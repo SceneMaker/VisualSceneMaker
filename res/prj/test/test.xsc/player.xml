@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="agent.1.host" val="127.0.0.1"/>
+  <Entry key="agent.1.name" val="Gloria"/>
+  <Entry key="agent.1.port" val="1001"/>
+  <Entry key="agent.1.uaid" val="1"/>
+  <Entry key="agent.2.host" val="127.0.0.1"/>
+  <Entry key="agent.2.name" val="Curtis"/>
+  <Entry key="agent.2.port" val="1002"/>
+  <Entry key="agent.2.uaid" val="1"/>
+  <Entry key="agents.count" val="2"/>
+  <Entry key="msslhost" val="127.0.0.1"/>
+  <Entry key="msslport" val="2003"/>
+  <Entry key="mssrconn" val="false"/>
+  <Entry key="mssrhost" val="127.0.0.1"/>
+  <Entry key="mssrport" val="3003"/>
+  <Entry key="nlufbase" val="./res/prj/test/test.nlu"/>
+  <Entry key="ssilhost" val="127.0.0.1"/>
+  <Entry key="ssilport" val="2001"/>
+  <Entry key="ssirconn" val="false"/>
+  <Entry key="ssirhost" val="127.0.0.1"/>
+  <Entry key="ssirport" val="3001"/>
+  <Entry key="swilbase" val="./res/prj/test/test.swi"/>
+  <Entry key="swilhost" val="127.0.0.1"/>
+  <Entry key="swilport" val="2002"/>
+  <Entry key="swirconn" val="false"/>
+  <Entry key="swirhost" val="127.0.0.1"/>
+  <Entry key="swirport" val="3002"/>
+</PlayerConfig>

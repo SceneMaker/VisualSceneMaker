@@ -1,0 +1,5 @@
+<action name="charlie" type="utterance" task="N45" date="23478785" time="2345"> [anim path="zeno\DefaultFace"] So.</action>
+<action name="charlie" type="utterance" task="N45" date="23478785" time="2345"> [anim path="zeno\FacialExpressions\HappinessC"] Achso Guten Tag auch ich bin uebrigens Zeno!</action>
+#<action name="charlie" type="utterance" task="N45" date="23478785" time="2345"> Bonjour [HappinessC]. Schemapell Zeno. Schene parl pa froncais.</action>
+#<action name="charlie" type="utterance" task="N45" date="23478785" time="6645">Hallo du da . Warum musst du um drei schon gehen?</action>
+#<action name="charlie" type="utterance" task="N65" date="23478785" time="789945">Ich kann Sachen machen [SadnessD].</action>

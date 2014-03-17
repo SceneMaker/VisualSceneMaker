@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="TestProject"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.charamel.CMLScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
