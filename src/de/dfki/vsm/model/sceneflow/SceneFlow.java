@@ -463,9 +463,17 @@ public class SceneFlow extends SuperNode{
                     + ((mGraphics == null) ? 0 : mGraphics.hashCode())
                     + ((mParentNode == null) ? 0 : mParentNode.hashCode())                    
                     + ((mHistoryNode == null) ? 0 : mHistoryNode.hashCode())
-                    + ((mStartNodeMap == null) ? 0 : mStartNodeMap.hashCode())
-                    + ((mUserCmdDefMap == null) ? 0 : mUserCmdDefMap.hashCode())
+                    + ((mStartNodeMap == null) ? 0 : mStartNodeMap.hashCode())                   
                     + ((mIsHistoryNode == true )? 1 : 0);
+        
+        // Add hash of existing user commands
+        for (FunDef fundDef: mUserCmdDefMap.values() ) {
+             hashCode += fundDef.getName().hashCode()
+                      + fundDef.getClassName().hashCode()
+                      + fundDef.getMethod().hashCode()
+                      + fundDef.getParamList().hashCode();
+        }
+        
         
         // Add hash of all nodes on workspace
         for (int cntNode = 0; cntNode < mNodeList.size(); cntNode++) {

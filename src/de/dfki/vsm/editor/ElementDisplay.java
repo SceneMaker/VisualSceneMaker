@@ -342,8 +342,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                     if (parentPath.getLastPathComponent().equals(mFunDefEntry)) {
                         
                         FunDef selectedDef =  (FunDef)((TreeEntry) path.getLastPathComponent()).getData();
-                        FunctionSelectedEvent ev = new FunctionSelectedEvent(this, selectedDef);
-                        mEventCaster.convey(ev);
+                        
+                        launchFunctionEvent(selectedDef);
+                       
                       
                         if (e.isPopupTrigger()) {
                             menu.add(functionModify);
@@ -360,6 +361,16 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 if (showPopup) {
                     menu.show (tree, e.getX(), e.getY());
                 }
+            }
+
+            private void launchFunctionEvent(FunDef funDef) {                
+                try{ 
+                    FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
+                    mEventCaster.convey(ev);
+                }
+                catch(Exception e){
+                    
+                }                
             }
         };
     }
@@ -455,15 +466,14 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
                 updateFunDefs();
                 Editor.getInstance().update();
-                FunctionSelectedEvent ev = new FunctionSelectedEvent(this, usrCmdDef);
-                mEventCaster.convey(ev);              
+                launchFunctionEvent(usrCmdDef);
+                      
             }
         } else if (source == functionModify) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent(); 
             modifyFunctionAction(entry);
             Editor.getInstance().update();
-            FunctionSelectedEvent ev = new FunctionSelectedEvent(this, (FunDef) entry.getData());
-            mEventCaster.convey(ev);
+            launchFunctionEvent((FunDef) entry.getData());
               
         } else if (source == functionRemove) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent(); 
@@ -472,15 +482,20 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 updateFunDefs();
                 Editor.getInstance().update();
-                FunctionSelectedEvent ev = new FunctionSelectedEvent(this, (FunDef) entry.getData());
-                mEventCaster.convey(ev);
+                launchFunctionEvent((FunDef) entry.getData());              
             }
         }
-        
-        
-        
     }
     
+    private void launchFunctionEvent(FunDef funDef) {                
+        try{ 
+            FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
+            mEventCaster.convey(ev);
+        }
+        catch(Exception e){
+        }                
+    }    
+            
     /**
      * ***********************************************************************
      *

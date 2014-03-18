@@ -117,7 +117,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     public void close() {
         if (mProject.hasChanged()) {
             int response = JOptionPane.showConfirmDialog(
-                    this, "The project \"" + "?" + "\" has changed.  Save it?",
+                    this, "The project \"" + mProject.getProjectName() + "\" has changed.  Save it?",
                     "Save before quitting?",
                     JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.YES_OPTION) {

@@ -64,9 +64,8 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         mContainer = new JPanel();
         mPanelList = new ArrayList<FunPropertiesPanel>();
         setMinimumSize(new Dimension(0, 200));
-    
-        
-        // initComponents();
+            
+        initComponents();
         
         // Add the element editor to the event multicaster
         EventCaster.getInstance().append(this);              
@@ -74,13 +73,10 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
     
      private void initComponents() {   
         
-        
         mContainer.setLayout(new BoxLayout(mContainer, BoxLayout.Y_AXIS)); 
        
         createFunctionPanes();
         setViewportView(mContainer);
-      
-       
     }
     
     private void createFunctionPanes(){     
@@ -110,6 +106,8 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         if (event instanceof FunctionSelectedEvent) {
             FunDef functionData = ((FunctionSelectedEvent)event).getFunction();            
          
+            createFunctionPanes();
+                    
             for (FunPropertiesPanel currentPanel: mPanelList){            
                 if(currentPanel.getFunDef().getName().equals(functionData.getName())){
                     currentPanel.setSelectedBackground(true);
@@ -132,9 +130,7 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
     public void update(java.util.Observable obs, Object obj) {
         mObservable.update(obj);
     }
-
-   
-
+    
     private class Observable extends java.util.Observable {
         public void update(Object obj) {
             setChanged();
@@ -161,7 +157,6 @@ class FunPropertiesPanel extends JPanel implements EventListener {
     private JComboBox mMethodComboBox;
     private JLabel mArgLabel;
     private JList mArgList;
-    private JScrollPane mArgScrollPane;
     
     private  JPanel mUpperPanel; 
     private  JPanel mLowerPanel;
@@ -229,9 +224,9 @@ class FunPropertiesPanel extends JPanel implements EventListener {
         mArgLabel = new JLabel("Arguments:");
         mArgLabel.setOpaque(true);
         mArgList = new JList();
-        //mArgList.setMaximumSize(new Dimension(20,20));
+        mArgList.setMaximumSize(new Dimension(1000,20));
+        mArgList.setBorder(BorderFactory.createEtchedBorder());
         mArgList.setModel(new DefaultListModel());
-        mArgScrollPane = new JScrollPane(mArgList);
         mArgList.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -280,8 +275,9 @@ class FunPropertiesPanel extends JPanel implements EventListener {
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         argContainer.add(mArgLabel);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-        argContainer.add(mArgScrollPane);
+         argContainer.add(mArgList);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+  
                     
         mUpperPanel = new JPanel(); 
         mUpperPanel.setOpaque(true);
@@ -354,8 +350,7 @@ class FunPropertiesPanel extends JPanel implements EventListener {
         // command definition.
         initMethodComboBox();
         mMethodComboBox.setSelectedItem(methodToString());
-        //mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
-
+        
         // Resize the argument name list to the size of the parameter
         // list of the selected method and fill the argument name list
         // with the parameter names of the user command definition.
@@ -516,7 +511,6 @@ class FunPropertiesPanel extends JPanel implements EventListener {
         
         this.repaint();
 
-        System.out.println(mNameTextField.getText());
         mFunDef.setName(mNameTextField.getText().trim());
         mFunDef.setClassName(mClassNameTextField.getText().trim());
         mFunDef.setMethod(mSelectedMethod.getName().trim());
@@ -542,3 +536,4 @@ class FunPropertiesPanel extends JPanel implements EventListener {
         return mFunDef;
     }    
 }
+  
