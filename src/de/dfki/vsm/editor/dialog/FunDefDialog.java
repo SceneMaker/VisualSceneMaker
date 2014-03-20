@@ -4,6 +4,8 @@ import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -15,6 +17,9 @@ import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -56,6 +61,13 @@ public class FunDefDialog extends Dialog {
     private JButton mCancelButton;
     private JLabel mMessageLabel;
     private JPanel mFunDefContent;
+    private JPanel nameContainer;
+    private JPanel methodContainer;
+    private JPanel classNameContainer;
+    private JPanel argContainer;
+    private JPanel mUpperPanel;
+    private JPanel mLowerPanel;
+    private Color mDefaultColor;
 
     public FunDefDialog(FunDef funDef) {
         super(Editor.getInstance(), "Function Definition", true);
@@ -137,7 +149,9 @@ public class FunDefDialog extends Dialog {
         addCompoment(mOkButton, 130, 175, 80, 20);
         addCompoment(mCancelButton, 210, 175, 80, 20);
         addCompoment(mMessageLabel, 10, 200, 280, 20);
-        packComponents(300, 230);                
+        packComponents(300, 230);  
+        
+        mDefaultColor = getBackground();
     }
        
     private void fillComponents() {
@@ -227,6 +241,65 @@ public class FunDefDialog extends Dialog {
             mMessageLabel.setForeground(Color.RED);
         }
     }
+    
+     public JPanel createPanel() {        
+        mFunDefContent = new JPanel();
+        mFunDefContent.setLayout(new BoxLayout(mFunDefContent, BoxLayout.Y_AXIS));
+        mFunDefContent.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); 
+        
+        nameContainer = new JPanel();
+        nameContainer.setLayout(new BoxLayout(nameContainer, BoxLayout.X_AXIS));      
+        nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        nameContainer.add(mNameLabel);
+        nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        nameContainer.add(mNameTextField);
+        nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+                
+        methodContainer = new JPanel();
+        methodContainer.setLayout(new BoxLayout(methodContainer, BoxLayout.X_AXIS)); 
+        methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        methodContainer.add(mMethodLabel);
+        methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        methodContainer.add(mMethodComboBox);
+        methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        
+        classNameContainer = new JPanel();
+        classNameContainer.setLayout(new BoxLayout(classNameContainer, BoxLayout.X_AXIS));     
+        classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        classNameContainer.add(mClassNameLabel);
+        classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        classNameContainer.add(mClassNameTextField);
+        classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        
+        argContainer = new JPanel();
+        argContainer.setLayout(new BoxLayout(argContainer, BoxLayout.X_AXIS)); 
+        argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        argContainer.add(mArgLabel);
+        argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        argContainer.add(mArgList);
+        argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+                      
+        mUpperPanel = new JPanel(); 
+        mUpperPanel.setOpaque(true);
+        mUpperPanel.setLayout(new GridLayout(0,2)); 
+        mUpperPanel.add(nameContainer);
+        mUpperPanel.add(methodContainer);
+         
+        mLowerPanel = new JPanel(); 
+        mLowerPanel.setOpaque(true);
+        mLowerPanel.setLayout(new GridLayout(0,2));
+        
+        mLowerPanel.add(classNameContainer);
+        mLowerPanel.add(argContainer);
+                        
+        mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
+        mFunDefContent.add(mUpperPanel);
+        mFunDefContent.add(Box.createRigidArea(new Dimension(5, 3)));
+        mFunDefContent.add(mLowerPanel);
+        mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
+        
+        return mFunDefContent;
+    }
 
     private void updateArgList() {
         // Clear the argument name list
@@ -273,7 +346,7 @@ public class FunDefDialog extends Dialog {
         updateArgList();
     }
 
-    private void classTextFieldKeyTyped(KeyEvent evt) {
+    public void classTextFieldKeyTyped(KeyEvent evt) {
         String className = mClassNameTextField.getText();
         if (!Character.isISOControl(evt.getKeyChar())) {
             int position = mClassNameTextField.getCaret().getDot();
@@ -283,7 +356,7 @@ public class FunDefDialog extends Dialog {
         initMethodComboBox(className);
     }
 
-    private void argumentListMouseClicked(MouseEvent evt) {
+    public void argumentListMouseClicked(MouseEvent evt) {
         if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
             if (mArgList.getSelectedValue() != null) {
                 int index = mArgList.getSelectedIndex();
@@ -360,6 +433,68 @@ public class FunDefDialog extends Dialog {
             return mFunDef;
         } else {
             return null;
+        }
+    }
+    
+    public FunDef getFunDef() {        
+        return mFunDef;
+    }
+    
+    public JTextField getNameInput() {        
+        return mNameTextField;
+    }
+    
+    public JTextField getClassNameInput() {        
+        return mClassNameTextField;
+    }
+    
+    public JComboBox getMethodBox() { 
+        return mMethodComboBox;
+        
+    }
+    
+    public Method getSelectedMethod() {        
+        return mSelectedMethod;
+    }
+    
+    public JList getArgList() { 
+        return mArgList;
+        
+    }
+    
+    public JPanel getContent() { 
+        return mFunDefContent;
+        
+    }
+    
+    public HashMap<String, String> getNameMap(){   
+        return mNameMap;
+    }  
+
+    public HashMap<String, String> getTypeMap(){   
+        return mTypeMap;
+    }   
+ 
+    public void paintPanel(Color color) {
+        mFunDefContent.setBackground(color);
+        mNameLabel.setBackground(color);
+        mClassNameLabel.setBackground(color);
+        mMethodLabel.setBackground(color);
+        mArgLabel.setBackground(color);
+        mUpperPanel.setBackground(color);
+        mLowerPanel.setBackground(color);
+        nameContainer.setBackground(color);
+        methodContainer.setBackground(color);
+        classNameContainer.setBackground(color);
+        argContainer.setBackground(color);
+    }       
+    
+    public void setSelectedBackground(boolean selected) {        
+        if(selected){        
+            paintPanel(Color.LIGHT_GRAY); 
+        }
+        else{
+            paintPanel(mDefaultColor);         
         }
     }
 }
