@@ -75,19 +75,15 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import java.awt.event.ActionEvent; 
-import java.awt.event.KeyAdapter; 
 import java.awt.event.KeyEvent; 
-import java.awt.event.KeyListener; 
 import javax.swing.AbstractAction; 
 import javax.swing.ActionMap; 
 import javax.swing.InputMap; 
 import javax.swing.KeyStroke; 
-import sun.awt.X11.MWMConstants; 
 
 /**
  * @author Gregor Mehlmann

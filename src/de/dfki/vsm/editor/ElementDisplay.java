@@ -363,14 +363,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 }
             }
 
-            private void launchFunctionEvent(FunDef funDef) {                
-                try{ 
-                    FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
-                    mEventCaster.convey(ev);
-                }
-                catch(Exception e){
-                    
-                }                
+            private void launchFunctionEvent(FunDef funDef) {                            
+                FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
+                mEventCaster.convey(ev);                             
             }
         };
     }
@@ -488,12 +483,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     }
     
     private void launchFunctionEvent(FunDef funDef) {                
-        try{ 
-            FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
-            mEventCaster.convey(ev);
-        }
-        catch(Exception e){
-        }                
+        FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
+        mEventCaster.convey(ev);                    
     }    
             
     /**
