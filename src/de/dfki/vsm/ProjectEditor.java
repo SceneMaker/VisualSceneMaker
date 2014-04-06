@@ -10,15 +10,13 @@ import javax.swing.SwingUtilities;
  */
 public class ProjectEditor extends DefaultEditor {
 
-    private final static LOGDefaultLogger sLogger
-            = LOGDefaultLogger.getInstance();
+    //private final static LOGDefaultLogger sLogger
+    //        = LOGDefaultLogger.getInstance();
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public static void main(final String args[]) {
-        //
-        sLogger.message(args[0]);
         //
         SwingUtilities.invokeLater(new Runnable() {
             @Override

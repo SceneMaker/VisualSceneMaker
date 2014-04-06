@@ -45,11 +45,14 @@ public class Interpreter {
     }
 
     public void lock() {
+        //mLogger.message("REQUEST (" + Thread.currentThread() + ")");
         mLock.lock();
+        //mLogger.message("AQUIRE (" + Thread.currentThread() + ")");
     }
 
     public void unlock() {
         mLock.unlock();
+        //mLogger.message("RELEASE (" + Thread.currentThread() + ")");
     }
 
     public void await() {
@@ -127,9 +130,8 @@ public class Interpreter {
     public void start() {
         //TODO: This is insecure, cause the thread could die in the meantime
         // alive is not the right condition
-        
+
         //PathLogger.startLogging();  
-        
         if ((mSceneFlowThread == null)
                 || (!mSceneFlowThread.isAlive())) {
             // Create a new thread
@@ -167,13 +169,11 @@ public class Interpreter {
             } finally {
                 unlock();
             }
-             // Wait here until terminated and clear data structures
-
-//
-//            /** Clean up the data structures of the interpreter */
-//            mSystemHistory.clear();
-//            mConfiguration.clear();
-//            mTimeoutManager.clear();
+            // Wait here until terminated and clear data structures 
+            //            /** Clean up the data structures of the interpreter */
+            //            mSystemHistory.clear();
+            //            mConfiguration.clear();
+            //            mTimeoutManager.clear();
             /**
              * Notification
              */
@@ -184,7 +184,7 @@ public class Interpreter {
         //mLogger.message("Stopping EventCaster and TimeoutManager");
         mTimeoutManager.cancel();
         mEventMulticaster.cancel();
-        
+
         //PathLogger.stopLogging();  
     }
 
@@ -260,7 +260,6 @@ public class Interpreter {
             unlock();
         }
     }
-    ///////
 
     public boolean setVariable(String varName, AbstractValue value) {
         try {
@@ -394,9 +393,5 @@ public class Interpreter {
         } finally {
             unlock();
         }
-    }
-
-    private class EventDispatcher {
-
     }
 }

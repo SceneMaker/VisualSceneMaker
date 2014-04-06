@@ -44,6 +44,7 @@ public class LOGDefaultLogger {
                     SYSUtilities.sLOGFILE_FILE_NAME,
                     10485760, 1, true)); // 10 MB Size
         } catch (Exception exc) {
+            exc.printStackTrace();
             sLogger.severe(exc.toString());
         }
     }

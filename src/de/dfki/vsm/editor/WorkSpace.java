@@ -160,7 +160,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         // rebuild node position
         mGridManager.update();
         for (Node node : mNodeSet) {
-            node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
+          //  node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
         }
         revalidate();
         repaint();

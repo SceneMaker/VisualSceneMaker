@@ -138,7 +138,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(nodeId, varName, exp);
             }
-
         }
         return false;
     }
@@ -151,7 +150,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new IntValue(value));
             }
-
         }
         return false;
     }
@@ -161,7 +159,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new IntValue(value));
             }
-
         }
         return false;
     }
@@ -171,7 +168,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new IntValue(value));
             }
-
         }
         return false;
     }
@@ -181,7 +177,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new FloatValue(value));
             }
-
         }
         return false;
     }
@@ -191,7 +186,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new FloatValue(value));
             }
-
         }
         return false;
     }
@@ -201,7 +195,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new FloatValue(value));
             }
-
         }
         return false;
     }
@@ -211,7 +204,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new BooleanValue(value));
             }
-
         }
         return false;
     }
@@ -221,7 +213,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new BooleanValue(value));
             }
-
         }
         return false;
     }
@@ -231,7 +222,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new BooleanValue(value));
             }
-
         }
         return false;
     }
@@ -241,7 +231,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new StringValue(value));
             }
-
         }
         return false;
     }
@@ -251,7 +240,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new StringValue(value));
             }
-
         }
         return false;
     }
@@ -261,7 +249,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new StringValue(value));
             }
-
         }
         return false;
     }
@@ -271,7 +258,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, value);
             }
-
         }
         return false;
     }
@@ -281,7 +267,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, value);
             }
-
         }
         return false;
     }
@@ -291,7 +276,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, value);
             }
-
         }
         return false;
     }
@@ -310,7 +294,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new IntValue(value));
             }
-
         }
         return false;
     }
@@ -320,7 +303,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new StringValue(value));
             }
-
         }
         return false;
     }
@@ -330,7 +312,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new BooleanValue(value));
             }
-
         }
         return false;
 
@@ -341,20 +322,16 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).hasLocalVariable(nodeId, varName);
             }
-
         }
         return false;
     }
 
     public synchronized boolean hasVariable(SceneFlow sceneFlow, String varName) {
-        System.err.println("setting variable on sceneflow " + sceneFlow);
         if (sceneFlow != null) {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).hasVariable(varName);
             }
-            System.err.println("sceneflow not there");
         }
-        System.err.println("sceneflow is null");
         return false;
     }
 
@@ -363,7 +340,6 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).hasVariable(varName, index);
             }
-
         }
         return false;
     }

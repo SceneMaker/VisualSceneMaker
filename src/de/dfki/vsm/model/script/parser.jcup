@@ -389,30 +389,35 @@ feature ::=
   | IDENTIFIER:key ASSIGNMENT BOOLEAN:val
     {:
         RESULT = new ActionFeature(
+            ActionFeature.Type.BOOLEAN,
             key.getLower(), val.getUpper(), 
             key.getValue(), val.getValue());
     :}
   | IDENTIFIER:key ASSIGNMENT INTEGER:val
     {:
          RESULT = new ActionFeature(
+            ActionFeature.Type.INTEGER,
             key.getLower(), val.getUpper(), 
             key.getValue(), val.getValue());
     :}
   | IDENTIFIER:key ASSIGNMENT FLOATING:val
     {:
         RESULT = new ActionFeature(
+            ActionFeature.Type.FLOATING,
             key.getLower(), val.getUpper(), 
             key.getValue(), val.getValue());
     :}
   | IDENTIFIER:key ASSIGNMENT STRING:val
     {:
         RESULT = new ActionFeature(
+            ActionFeature.Type.STRING,
             key.getLower(), val.getUpper(), 
             key.getValue(), val.getValue());
     :}
   | IDENTIFIER:key ASSIGNMENT IDENTIFIER:val
     {:
         RESULT = new ActionFeature(
+            ActionFeature.Type.IDENTIFIER,
             key.getLower(), val.getUpper(), 
             key.getValue(), val.getValue());
     :}

@@ -1,7 +1,20 @@
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.dialog.FunDefDialog;
+import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import static de.dfki.vsm.editor.util.Preferences.sBASICNODE_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sCEDGE_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sCOMMENT_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sEEDGE_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sFEDGE_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sFUNCTION_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sFUNCTION_ERROR_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sIEDGE_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sPEDGE_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sROOT_FOLDER;
+import static de.dfki.vsm.editor.util.Preferences.sSUPERNODE_ENTRY;
+import static de.dfki.vsm.editor.util.Preferences.sTEDGE_ENTRY;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
@@ -38,19 +51,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-
-import static de.dfki.vsm.editor.util.Preferences.sBASICNODE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sCOMMENT_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sEEDGE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sROOT_FOLDER;
-import static de.dfki.vsm.editor.util.Preferences.sSUPERNODE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sFUNCTION_ENTRY;
-import static de.dfki.vsm.editor.util.Preferences.sFUNCTION_ERROR_ENTRY;
 
 
 ///***************************************************************************
@@ -341,10 +341,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                     TreePath parentPath = path.getParentPath();
                     if (parentPath.getLastPathComponent().equals(mFunDefEntry)) {
                         
-                        FunDef selectedDef =  (FunDef)((TreeEntry) path.getLastPathComponent()).getData();
-                        
-                        launchFunctionEvent(selectedDef);
-                       
+                        FunDef selectedDef =  (FunDef)((TreeEntry) path.getLastPathComponent()).getData();                        
+                        launchFunctionSelectedEvent(selectedDef);
                       
                         if (e.isPopupTrigger()) {
                             menu.add(functionModify);
@@ -363,7 +361,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 }
             }
 
-            private void launchFunctionEvent(FunDef funDef) {                            
+            private void launchFunctionSelectedEvent(FunDef funDef) {                            
                 FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
                 mEventCaster.convey(ev);                             
             }
@@ -457,18 +455,17 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
         if (source == functionsAdd) {
             FunDef usrCmdDef = new FunDefDialog(null).run();
-            if (usrCmdDef != null) {
+            if (usrCmdDef != null) {                
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
                 updateFunDefs();
                 Editor.getInstance().update();
-                launchFunctionEvent(usrCmdDef);
-                      
+                launchFunctionCreatedEvent(usrCmdDef);                      
             }
         } else if (source == functionModify) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent(); 
             modifyFunctionAction(entry);
             Editor.getInstance().update();
-            launchFunctionEvent((FunDef) entry.getData());
+            launchFunctionSelectedEvent((FunDef) entry.getData());
               
         } else if (source == functionRemove) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent(); 
@@ -477,15 +474,20 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 updateFunDefs();
                 Editor.getInstance().update();
-                launchFunctionEvent((FunDef) entry.getData());              
+                launchFunctionCreatedEvent((FunDef) entry.getData());              
             }
         }
     }
     
-    private void launchFunctionEvent(FunDef funDef) {                
+    private void launchFunctionSelectedEvent(FunDef funDef) {                
         FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
         mEventCaster.convey(ev);                    
-    }    
+    }  
+    
+    private void launchFunctionCreatedEvent(FunDef funDef) {                
+        FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
+        mEventCaster.convey(ev);                    
+    } 
             
     /**
      * ***********************************************************************

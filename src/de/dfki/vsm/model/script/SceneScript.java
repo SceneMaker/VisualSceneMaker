@@ -12,13 +12,16 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class SceneScript extends SceneEntity{
+public final class SceneScript extends SceneEntity {
 
     // The List Of Scenes
     private LinkedList<SceneObject> mSceneList
             = new LinkedList<>();
     // Map Of Scene Groups
-    private HashMap<String, SceneGroup> mGroupMap
+    private final HashMap<String, SceneGroup> mGroupMap
+            = new HashMap<>();
+    // Map Of Scene Groups
+    private final HashMap<String, HashMap<String, SceneGroup>> mLangMap
             = new HashMap<>();
 
     ////////////////////////////////////////////////////////////////////////////
@@ -39,6 +42,29 @@ public final class SceneScript extends SceneEntity{
         mSceneList = list;
         // Initialize The Groups
         initGroupMap();
+        initLangMap();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void initLangMap() {
+        // First Clear The Groups
+        mLangMap.clear();
+        // Initialize The Groups
+        for (final SceneObject scene : mSceneList) {
+            // Get The Group Name
+            final String name = scene.getName();
+            final String lang = scene.getLanguage();
+            // Add Scene To Group
+            if (mLangMap.get(lang) == null) {
+                mLangMap.put(lang, new HashMap<String, SceneGroup>());
+            }
+            if (mLangMap.get(lang).get(name) == null) {
+                mLangMap.get(lang).put(name, new SceneGroup(name));
+            }
+            mLangMap.get(lang).get(name).add(scene);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -107,6 +133,13 @@ public final class SceneScript extends SceneEntity{
     ////////////////////////////////////////////////////////////////////////////
     public final SceneGroup getGroup(final String name) {
         return mGroupMap.get(name);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final SceneGroup getGroup(final String lang, final String name) {
+        return mLangMap.get(lang).get(name);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -219,10 +252,12 @@ public final class SceneScript extends SceneEntity{
             // Initialize The Scene List
             mSceneList = script.getSceneList();
             // Initialize The Group Map
+            initLangMap();
             initGroupMap();
         } else {
             mSceneList.clear();
             mGroupMap.clear();
+            mLangMap.clear();
         }
     }
 }

@@ -62,7 +62,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventCaster = EventCaster.getInstance();
     // GUI-Components
-    private final SceneFlowToolBar mNavigationBar;
+    private final SceneFlowToolBar mToolBar;
     private final WorkSpace mWorkSpace;
     private final ElementDisplay mElementDisplay;
     private final JPanel mNewElementDisplay;
@@ -193,13 +193,10 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         return mNewElementDisplay.isVisible();
     }
 
-    /**
-     * *************************************************************************
-     *
-     *
-     *
-     ***************************************************************************
-     */
+    public final SceneFlowToolBar getToolBar() {
+        return mToolBar;
+    }
+    //
     public SceneFlowEditor(SceneFlow sceneFlow) {
         
         final Polygon pUp = new Polygon();
@@ -262,10 +259,10 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mFooterLabel = new JLabel();
         mElementDisplay = new ElementDisplay(sceneFlow);
         mElementEditor = new ElementEditor();
-        mNavigationBar = new SceneFlowToolBar(this);
-        mNavigationBar.addPathComponent(mSceneFlow.getName());
+        mToolBar = new SceneFlowToolBar(this);
+        mToolBar.addPathComponent(mSceneFlow.getName());
         //
-        mObservable.addObserver(mNavigationBar);
+        mObservable.addObserver(mToolBar);
         mObservable.addObserver(mElementDisplay);
         mObservable.addObserver(mWorkSpace);
         mObservable.addObserver(mElementEditor);
@@ -282,7 +279,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 //        wssp.setVisible(false);
         
         setLayout(new BorderLayout());
-        add(mNavigationBar, BorderLayout.NORTH);
+        add(mToolBar, BorderLayout.NORTH);
 
         mNewElementDisplay = new JPanel();
         mNewElementDisplay.setLayout(new BorderLayout());
@@ -340,11 +337,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     }
 
     public void addPathComponent(String value) {
-        mNavigationBar.addPathComponent(value);
+        mToolBar.addPathComponent(value);
     }
 
     public String removePathComponent() {
-        return mNavigationBar.removePathComponent();
+        return mToolBar.removePathComponent();
     }
 
     public void setMessageLabelText(String value) {

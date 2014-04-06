@@ -653,13 +653,15 @@ public class Node extends Object {
 
         // Epsilon and Time Edges 
         for (int cntEdge = 0; cntEdge < getEdgeList().size(); cntEdge++) {
-            hashCode += getEdgeList().get(cntEdge).hashCode();
+            hashCode += getEdgeList().get(cntEdge).hashCode()
+                        + getEdgeList().get(cntEdge).mGraphics.getHashCode();
             // TODO: find a way to parse the TEDGE mDEGE to take timeout into accout           
         }
 
         // Add hash of all Conditional Edges
         for (int cntEdge=  0; cntEdge < getSizeOfCEdgeList(); cntEdge++) {
             hashCode += mCEdgeList.get(cntEdge).hashCode()
+                        + mCEdgeList.get(cntEdge).mGraphics.getHashCode()
                         + mCEdgeList.get(cntEdge).mCondition.hashCode()
                         + mCEdgeList.get(cntEdge).mSource.hashCode()
                         + mCEdgeList.get(cntEdge).mTarget.hashCode();           
@@ -668,6 +670,7 @@ public class Node extends Object {
         // Add hash of all Probability Edges
         for (int cntEdge = 0; cntEdge < getSizeOfPEdgeList(); cntEdge++) {
             hashCode += mPEdgeList.get(cntEdge).hashCode()
+                        + mPEdgeList.get(cntEdge).mGraphics.getHashCode()
                         + mPEdgeList.get(cntEdge).getProbability()
                         + mPEdgeList.get(cntEdge).mSource.hashCode()
                         + mPEdgeList.get(cntEdge).mTarget.hashCode(); 
@@ -676,6 +679,7 @@ public class Node extends Object {
         // Add hash of all Fork Edges
         for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
             hashCode += mFEdgeList.get(cntEdge).hashCode()
+                        + mFEdgeList.get(cntEdge).mGraphics.getHashCode()
                         + mFEdgeList.get(cntEdge).mSource.hashCode()
                         + mFEdgeList.get(cntEdge).mTarget.hashCode(); 
         }

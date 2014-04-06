@@ -460,20 +460,17 @@ public class SuperNode extends Node {
             hashCode += getNodeAt(cntNode).getHashCode(); 
         }
         
-               
-        // Add hash of all Epsilon and Time Edges 
+        // Epsilon and Time Edges 
         for (int cntEdge = 0; cntEdge < getEdgeList().size(); cntEdge++) {
-            //if(getEdgeList().get(cntEdge).getEdgeType().equals(Edge.Type.TEdge)){
-                 hashCode += getEdgeList().get(cntEdge).hashCode();
-                // TODO: find a way to parse the TEDGE mDEGE to take timeout into accout, other stuff is done :)
-                // except from moving edges graphically
-                //  mNodeList.get(i).mDEdge.mTimeout;
-            
+            hashCode += getEdgeList().get(cntEdge).hashCode()
+                        + getEdgeList().get(cntEdge).mGraphics.getHashCode();
+            // TODO: find a way to parse the TEDGE mDEGE to take timeout into accout           
         }
 
         // Add hash of all Conditional Edges
         for (int cntEdge=  0; cntEdge < getSizeOfCEdgeList(); cntEdge++) {
-            hashCode +=mCEdgeList.get(cntEdge).hashCode()
+            hashCode += mCEdgeList.get(cntEdge).hashCode()
+                        + mCEdgeList.get(cntEdge).mGraphics.getHashCode()
                         + mCEdgeList.get(cntEdge).mCondition.hashCode()
                         + mCEdgeList.get(cntEdge).mSource.hashCode()
                         + mCEdgeList.get(cntEdge).mTarget.hashCode();           
@@ -482,26 +479,30 @@ public class SuperNode extends Node {
         // Add hash of all Probability Edges
         for (int cntEdge = 0; cntEdge < getSizeOfPEdgeList(); cntEdge++) {
             hashCode += mPEdgeList.get(cntEdge).hashCode()
+                        + mPEdgeList.get(cntEdge).mGraphics.getHashCode()
                         + mPEdgeList.get(cntEdge).getProbability()
                         + mPEdgeList.get(cntEdge).mSource.hashCode()
                         + mPEdgeList.get(cntEdge).mTarget.hashCode(); 
         }
+
+        // Add hash of all Fork Edges
+        for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
+            hashCode += mFEdgeList.get(cntEdge).hashCode()
+                        + mFEdgeList.get(cntEdge).mGraphics.getHashCode()
+                        + mFEdgeList.get(cntEdge).mSource.hashCode()
+                        + mFEdgeList.get(cntEdge).mTarget.hashCode(); 
+        }
+      
         
         // Add hash of all Interruptive Edges
         for (int cntEdge = 0; cntEdge < getSizeOfIEdgeList(); cntEdge++) {
             hashCode += mIEdgeList.get(cntEdge).hashCode()
+                        + mIEdgeList.get(cntEdge).mGraphics.getHashCode()
                         + mIEdgeList.get(cntEdge).mCondition.hashCode()
                         + mIEdgeList.get(cntEdge).mSource.hashCode()
                         + mIEdgeList.get(cntEdge).mTarget.hashCode(); 
         }
-       
-        // Add hash of all Fork Edges
-        for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
-            hashCode += mFEdgeList.get(cntEdge).hashCode()
-                        + mFEdgeList.get(cntEdge).mSource.hashCode()
-                        + mFEdgeList.get(cntEdge).mTarget.hashCode(); 
-        }
-        
+
          // Check existing SuperNodes inside of this SuperNode
         for (int cntSNode = 0; cntSNode < mSuperNodeList.size(); cntSNode++) {           
             hashCode +=  getSuperNodeAt(cntSNode).getHashCode();

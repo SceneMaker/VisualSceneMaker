@@ -4,9 +4,11 @@ import de.dfki.vsm.DefaultEditor;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.model.acticon.ActiconObject;
 import de.dfki.vsm.model.configs.ConfigEntry;
+import de.dfki.vsm.model.configs.PlayerConfig;
 import de.dfki.vsm.model.configs.ProjectConfig;
 import de.dfki.vsm.model.gesticon.GesticonObject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
+import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconObject;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -97,7 +99,7 @@ public class CreateProjectDialog extends JDialog {
         mProperties.add(new ConfigEntry("project.data.gesticon", "gesticon.xml"));
         mProperties.add(new ConfigEntry("project.data.sceneflow", "sceneflow.xml"));
         mProperties.add(new ConfigEntry("project.player.config", "player.xml"));
-        mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.output.sceneplayer.DefaultScenePlayer"));
+        mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultPlayer"));
  
         mProjectConfig = new ProjectConfig(mProperties);
    
@@ -521,9 +523,14 @@ public class CreateProjectDialog extends JDialog {
 
             if (mScenesTextField.getText().equalsIgnoreCase(mProjectConfig.property("project.data.scenes"))) {
                 mScenesFile = new File(mLocationTextField.getText() + System.getProperty("file.separator") + mScenesTextField.getText());
-                if (!mScenesFile.exists()) {
+                if (!mScenesFile.exists()) {                    
+                    mScenesFile = new File(mLocationTextField.getText() + System.getProperty("file.separator") + mScenesTextField.getText());
                     mLogger.message("creating file " + mScenesFile);
-                    mScenesFile.createNewFile();
+                    SceneScript dummyScene = new SceneScript();
+                    IndentWriter out = new IndentWriter(mScenesFile);
+                    dummyScene.writeXML(out);
+                    out.close();
+                
                 } else {
                     mLogger.message("using existing file " + mScenesFile);
                 }
@@ -563,7 +570,7 @@ public class CreateProjectDialog extends JDialog {
                 copyFile(source, mVisiconFile);
             }
                       
-            // TODO: add acticon file (ask Dr. Gebhard whether I should add textbox)
+            // TODO: add acticon file
             mActiconFile = new File(mLocationTextField.getText() + System.getProperty("file.separator") + mProjectConfig.property("project.data.acticon"));
             mLogger.message("creating file " + mActiconFile);
             ActiconObject dummyActicon = new ActiconObject();
@@ -571,7 +578,17 @@ public class CreateProjectDialog extends JDialog {
             dummyActicon.writeXML(out);
             out.close();
 
+            
             // create scene player config file
+            File scenePlayerConfig = new File(mLocationTextField.getText() + System.getProperty("file.separator") + mDefaultScenePlayerConfigTextField.getText());
+            mLogger.message("creating file " + scenePlayerConfig);
+                    
+            PlayerConfig dummyPlayerConfig = new PlayerConfig();
+            IndentWriter fileOut = new IndentWriter(scenePlayerConfig);
+            dummyPlayerConfig.writeXML(fileOut);
+            fileOut.close();       
+                      
+            /*
             File scenePlayerConfig = new File(mLocationTextField.getText() + System.getProperty("file.separator") + mDefaultScenePlayerConfigTextField.getText());
             mLogger.message("creating file " + scenePlayerConfig);
             FileOutputStream fileOut = new FileOutputStream(scenePlayerConfig);
@@ -582,6 +599,7 @@ public class CreateProjectDialog extends JDialog {
             dspProp.setProperty("character.defaultId", "A");
             dspProp.store(fileOut, "Default Scene Player Configuration");
             fileOut.close();
+            */
             
             // build config file
             mProperties.set(0, new ConfigEntry("project.basic.name", mNameTextField.getText()));            

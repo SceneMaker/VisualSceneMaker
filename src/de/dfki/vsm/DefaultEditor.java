@@ -1,6 +1,5 @@
 package de.dfki.vsm;
 
-import de.dfki.vsm.api.aldebaran.NAOScenePlayer;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.model.project.ProjectData;
 import javax.swing.SwingUtilities;

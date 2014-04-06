@@ -95,8 +95,8 @@ public final class ScriptEditorPanel extends JPanel
         	
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane(); 
-        mTabPane.add("Script Editor", mScrollPane);  
-        mTabPane.add("Function Editor", mFunctionEditor);
+        mTabPane.add("Script", mScrollPane);  
+        mTabPane.add("Functions", mFunctionEditor);
 		
        
         // Initialize the Toolbar
@@ -254,7 +254,6 @@ public final class ScriptEditorPanel extends JPanel
     @Override
     public final void insertUpdate(final DocumentEvent event) {
         parse(event);
-        //mLogger.message("insertUpdate");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -263,7 +262,6 @@ public final class ScriptEditorPanel extends JPanel
     @Override
     public final void removeUpdate(final DocumentEvent event) {
         parse(event);
-        //mLogger.message("removeUpdate");
     }
 
     ////////////////////////////////////////////////////////////////////////////

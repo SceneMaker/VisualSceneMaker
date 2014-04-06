@@ -61,4 +61,13 @@ public class Graphics extends Object {
             }
         });
     }
+    
+    public int getHashCode() {
+        int hashCode = 0;
+        for(Point a: mArrow.getPointList()){
+            hashCode += a.getCtrlXPos();
+            hashCode += a.getCtrlYPos();
+        }
+        return hashCode;
+    }
 }

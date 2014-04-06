@@ -66,11 +66,13 @@ auxiliary.show.customizer.message=<message>
                     <ide-action name="test"/>
                 </context-menu>
             </view>
+            <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/3">
             <compilation-unit>
                 <package-root>src</package-root>
-                <source-level>1.5</source-level>
+                <classpath mode="compile">lib/JCup.jar:lib/JFlex.jar:lib/JPL3.jar</classpath>
+                <source-level>1.7</source-level>
             </compilation-unit>
         </java-data>
     </configuration>

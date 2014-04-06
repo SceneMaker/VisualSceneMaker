@@ -3,6 +3,7 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -34,15 +35,23 @@ import javax.swing.plaf.basic.BasicButtonUI;
  * @author Patrick Gebahrd
  */
 public class SceneFlowToolBar extends JToolBar implements Observer {
-    //
-    // private final WorkSpace mWorkSpace;
 
-    private final SceneFlowEditor mSceneFlowEditor;
-    private int mNodeSize; //only one dimension
+    // The VSM Runtime Instance
+    private final RunTime mRunTime
+            = RunTime.getInstance();
+    // The Parent Editor Window
+    private final Editor mWindow
+            = Editor.getInstance();
+    // The Parent SceneFlow Editor
+    private final SceneFlowEditor mEditor;
+    private final SceneFlow mSceneFlow;
     //
+    private int mNodeSize; //only one dimension
+    // The Button Components
     private JButton mElementButton;
     private JButton mModifyButton;
     private JButton mPlayButton;
+    private JButton mStopButton;
     // Path Display GUI Components
     private JPanel mPathDisplay;
     private JScrollBar mPathScrollBar;
@@ -53,9 +62,13 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventCaster = EventCaster.getInstance();
 
-    public SceneFlowToolBar(SceneFlowEditor sceneFlowEditor) {
+    public SceneFlowToolBar(final SceneFlowEditor sceneFlowEditor) {
         super("Navigation Bar", JToolBar.HORIZONTAL);
-        mSceneFlowEditor = sceneFlowEditor;
+        // Initialize The Editor
+        mEditor = sceneFlowEditor;
+        // Initialize The SceneFlow
+        mSceneFlow = mEditor.getSceneFlow();
+        //
         setFloatable(false);
         setRollover(true);
         setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
@@ -63,6 +76,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         initComponents();
     }
 
+    @Override
     public void update(Observable obs, Object obj) {
         //mLogger.message("SceneFlowToolBar.update");
         updatePathDisplay();
@@ -73,7 +87,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     public void updatePathDisplay() {
         mPathComponents.clear();
 
-        for (SuperNode superNode : mSceneFlowEditor.getSceneFlowManager().getActiveSuperNodes()) {
+        for (SuperNode superNode : mEditor.getSceneFlowManager().getActiveSuperNodes()) {
             mPathComponents.add(superNode.getName());
         }
         updatePathText();
@@ -120,7 +134,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
             Action action = new AbstractAction("ACTION_SET_LEVEL") {
                 public void actionPerformed(ActionEvent e) {
                     //System.err.println("setting level to node " + getValue(Action.NAME));
-                    mSceneFlowEditor.getWorkSpace().selectNewWorkSpaceLevel((String)getValue(Action.NAME)); 
+                    mEditor.getWorkSpace().selectNewWorkSpaceLevel((String) getValue(Action.NAME));
                 }
             };
             action.putValue(Action.SHORT_DESCRIPTION, str);
@@ -192,50 +206,43 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
                 Boolean.valueOf(Preferences.getProperty("showelements"))
                 ? ResourceLoader.loadImageIcon("/res/img/new/less.png")
                 : ResourceLoader.loadImageIcon("/res/img/new/more.png")) {
-            public void actionPerformed(ActionEvent evt) {
-                mSceneFlowEditor.showElementDisplay();
-                changeElementButtonState();
-                revalidate();
-                repaint();
-            }
-        });
+                    public void actionPerformed(ActionEvent evt) {
+                        mEditor.showElementDisplay();
+                        changeElementButtonState();
+                        revalidate();
+                        repaint();
+                    }
+                });
         sanitizeTinyButton(mElementButton);
 
         add(Box.createHorizontalGlue());
 
-        //
-        // Sceneflow Space
-        //
+        // The Stop SceneFlow Button
         mPlayButton = add(new AbstractAction("ACTION_PLAY", ResourceLoader.loadImageIcon("/res/img/new/play.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.err.println("Starting Sceneflow");
-                // TODO: Was kann man besser machen?
-                if (de.dfki.vsm.runtime.RunTime.getInstance().isSceneFlowRunnning(mSceneFlowEditor.getSceneFlow())) {
-                    Editor.getInstance().pauseSceneFlow();
-                } else {
-                    Editor.getInstance().startSceneFlow();
-                }
-                changeRuntimeButtonState();
+                actionStartSceneFlow();
             }
         });
         sanitizeTinyButton(mPlayButton);
 
         add(Box.createHorizontalStrut(2));
 
-        JButton b = add(new AbstractAction("ACTION_STOP", ResourceLoader.loadImageIcon("/res/img/new/stop.png")) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.err.println("Stopping Sceneflow");
-                Editor.getInstance().stopSceneFlow();
-                changeRuntimeButtonState();
-            }
-        });
-        sanitizeTinyButton(b);
-
+        // The Stop SceneFlow Button
+        mStopButton = add(
+                new AbstractAction("ACTION_STOP",
+                        ResourceLoader.loadImageIcon("/res/img/new/stop.png")) {
+                    @Override
+                    public final void actionPerformed(ActionEvent e) {
+                        actionStopSceneFlow();
+                    }
+                });
+        // Format The Button As Tiny
+        sanitizeTinyButton(mStopButton);
+        // Add Some Horizontal Space
         add(Box.createHorizontalStrut(2));
 
-        b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/new/window.png")) {
+        JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/new/window.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Editor.getInstance().showMonitor();
@@ -253,7 +260,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         b = add(new AbstractAction("ACTION_LEVEL_UP", ResourceLoader.loadImageIcon("/res/img/new/up.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mSceneFlowEditor.getWorkSpace().decreaseWorkSpaceLevel();
+                mEditor.getWorkSpace().decreaseWorkSpaceLevel();
             }
         });
         sanitizeTinyButton(b);
@@ -264,9 +271,9 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
             @Override
             public void actionPerformed(ActionEvent evt) {
 
-                TransferHandler handler = mSceneFlowEditor.getWorkSpace().getTransferHandler();
+                TransferHandler handler = mEditor.getWorkSpace().getTransferHandler();
                 if (handler != null) {
-                    handler.exportToClipboard(mSceneFlowEditor.getWorkSpace(), clipboard, TransferHandler.COPY);
+                    handler.exportToClipboard(mEditor.getWorkSpace(), clipboard, TransferHandler.COPY);
                 } else {
                     System.err.println("handler null");
                 }
@@ -309,23 +316,50 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
                 Boolean.valueOf(Preferences.getProperty("showelementproperties"))
                 ? ResourceLoader.loadImageIcon("/res/img/new/less.png")
                 : ResourceLoader.loadImageIcon("/res/img/new/more.png")) {
-            public void actionPerformed(ActionEvent evt) {
-                mSceneFlowEditor.showElementEditor();
-                changeModifyButtonState();
-                        
-                revalidate();
-                repaint();
+                    public void actionPerformed(ActionEvent evt) {
+                        mEditor.showElementEditor();
+                        changeModifyButtonState();
 
-            }
-        });
+                        revalidate();
+                        repaint();
+
+                    }
+                });
         sanitizeTinyButton(mModifyButton);
         add(Box.createHorizontalStrut(2));
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void actionStopSceneFlow() {
+        // Stop The Execution
+        mWindow.stopSceneFlow();
+        // Update The Buttons
+        changeRuntimeButtonState();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void actionStartSceneFlow() {
+        // Check State Of Execution
+        if (mRunTime.isSceneFlowRunnning(mSceneFlow)) {
+            mWindow.pauseSceneFlow();
+        } else {
+            mWindow.startSceneFlow();
+        }
+        // Update The Buttons
+        changeRuntimeButtonState();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     private void changeRuntimeButtonState() {
-        SceneFlow sceneFlow = mSceneFlowEditor.getSceneFlow();
-        if (de.dfki.vsm.runtime.RunTime.getInstance().isSceneFlowRunnning(sceneFlow)) {
-            if (de.dfki.vsm.runtime.RunTime.getInstance().isSceneFlowPaused(sceneFlow)) {
+        //
+        if (mRunTime.isSceneFlowRunnning(mSceneFlow)) {
+            if (mRunTime.isSceneFlowPaused(mSceneFlow)) {
                 mPlayButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/play_pause.png"));
             } else {
                 mPlayButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/pause.png"));
@@ -335,8 +369,11 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     private void changeElementButtonState() {
-        if (mSceneFlowEditor.isElementDisplayVisible()) {
+        if (mEditor.isElementDisplayVisible()) {
             mElementButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/less.png"));
         } else {
             mElementButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/more.png"));
@@ -344,7 +381,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     }
 
     private void changeModifyButtonState() {
-        if (mSceneFlowEditor.isElementEditorVisible()) {
+        if (mEditor.isElementEditorVisible()) {
             mModifyButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/less.png"));
         } else {
             mModifyButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/more.png"));

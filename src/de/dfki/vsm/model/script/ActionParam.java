@@ -26,7 +26,7 @@ public final class ActionParam extends ActionFeature {
             final String key,
             final String val) {
         // TODO: Get Text and Param
-        super(lower, upper, key, val);
+        super(Type.VARIABLE, lower, upper, key, val);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -53,6 +53,7 @@ public final class ActionParam extends ActionFeature {
         stream.print("<ActionParam "
                 + "lower=\"" + mLower + "\" "
                 + "upper=\"" + mUpper + "\" "
+                + "typ=\"" + mTyp + "\" "
                 + "key=\"" + mKey + "\" "
                 + "val=\"" + mVal + "\"/>");
     }
@@ -65,6 +66,8 @@ public final class ActionParam extends ActionFeature {
         // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
+        // Parse The Members
+        mTyp = Type.valueOf(element.getAttribute("typ"));
         // Parse The Members
         mKey = element.getAttribute("key");
         mVal = element.getAttribute("val");

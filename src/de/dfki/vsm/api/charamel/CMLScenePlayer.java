@@ -82,7 +82,6 @@ public class CMLScenePlayer extends VSMScenePlayer {
                 }
             }
         }
-
         // Execute The Player Task
         Task task = new Task(taskid) {
             @Override

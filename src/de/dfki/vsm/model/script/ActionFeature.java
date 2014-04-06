@@ -11,6 +11,18 @@ import org.w3c.dom.Element;
  */
 public class ActionFeature extends SceneEntity {
 
+    public enum Type {
+
+        STRING,
+        BOOLEAN,
+        INTEGER,
+        FLOATING,
+        IDENTIFIER,
+        VARIABLE
+    };
+
+    // The Type Of The Feature
+    protected Type mTyp;
     // The Key Of The Member
     protected String mKey;
     // The Value Of The Member
@@ -26,14 +38,30 @@ public class ActionFeature extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ActionFeature(
+            final Type typ,
             final int lower,
             final int upper,
             final String key,
             final String val) {
         super(lower, upper);
         // Initialize The Members
+        mTyp = typ;
         mKey = key;
         mVal = val;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final Type getTyp() {
+        return mTyp;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void setTyp(final Type typ) {
+        mTyp = typ;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -60,8 +88,8 @@ public class ActionFeature extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void setVal(final String value) {
-        mVal = value;
+    public final void setVal(final String val) {
+        mVal = val;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -88,6 +116,7 @@ public class ActionFeature extends SceneEntity {
         stream.print("<ActionFeature "
                 + "lower=\"" + mLower + "\" "
                 + "upper=\"" + mUpper + "\" "
+                + "typ=\"" + mTyp + "\" "
                 + "key=\"" + mKey + "\" "
                 + "val=\"" + mVal + "\"/>");
     }
@@ -101,6 +130,8 @@ public class ActionFeature extends SceneEntity {
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
         // Parse The Members
+        mTyp = Type.valueOf(element.getAttribute("typ"));
+        //
         mKey = element.getAttribute("key");
         mVal = element.getAttribute("val");
     }
@@ -110,6 +141,6 @@ public class ActionFeature extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public ActionFeature getCopy() {
-        return new ActionFeature(mLower, mUpper, mKey, mVal);
+        return new ActionFeature(mTyp, mLower, mUpper, mKey, mVal);
     }
 }

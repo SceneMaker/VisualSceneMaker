@@ -242,9 +242,10 @@ public class FunDefDialog extends Dialog {
         }
     }
     
-     public JPanel createPanel() {        
+    public JPanel createPanel() {        
         mFunDefContent = new JPanel();
         mFunDefContent.setLayout(new BoxLayout(mFunDefContent, BoxLayout.Y_AXIS));
+        //mFunDefContent.setLayout(new GridLayout(0,1)); 
         mFunDefContent.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); 
         
         nameContainer = new JPanel();
@@ -253,6 +254,7 @@ public class FunDefDialog extends Dialog {
         nameContainer.add(mNameLabel);
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         nameContainer.add(mNameTextField);
+        mNameTextField.setPreferredSize(new Dimension(0,25));
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
                 
         methodContainer = new JPanel();
@@ -261,6 +263,7 @@ public class FunDefDialog extends Dialog {
         methodContainer.add(mMethodLabel);
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         methodContainer.add(mMethodComboBox);
+        mMethodComboBox.setPreferredSize(new Dimension(0,25));
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         
         classNameContainer = new JPanel();
@@ -269,6 +272,7 @@ public class FunDefDialog extends Dialog {
         classNameContainer.add(mClassNameLabel);
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         classNameContainer.add(mClassNameTextField);
+        mClassNameTextField.setPreferredSize(new Dimension(0,25));
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         
         argContainer = new JPanel();
@@ -277,6 +281,7 @@ public class FunDefDialog extends Dialog {
         argContainer.add(mArgLabel);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         argContainer.add(mArgList);
+        mArgList.setPreferredSize(new Dimension(0,25));
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
                       
         mUpperPanel = new JPanel(); 
@@ -294,9 +299,11 @@ public class FunDefDialog extends Dialog {
                         
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
         mFunDefContent.add(mUpperPanel);
-        mFunDefContent.add(Box.createRigidArea(new Dimension(5, 3)));
+        mFunDefContent.add(Box.createRigidArea(new Dimension(5, 5)));
         mFunDefContent.add(mLowerPanel);
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
+        
+        mFunDefContent.setMaximumSize(new Dimension(Editor.getInstance().getSize().width,80));
         
         return mFunDefContent;
     }

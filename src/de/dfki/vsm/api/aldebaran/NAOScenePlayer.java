@@ -13,6 +13,7 @@ import de.dfki.vsm.model.script.SceneUttr;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
+import de.dfki.vsm.runtime.Process;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -107,7 +108,7 @@ public class NAOScenePlayer extends VSMScenePlayer {
     public final void play(final String name, final LinkedList<AbstractValue> args) {
         // Initialize Parameter Data
         // And Process Scene Arguments
-        final de.dfki.vsm.runtime.Process thread = ((de.dfki.vsm.runtime.Process) Thread.currentThread());
+        final Process thread =  (Process)Thread.currentThread();
         final String ident = thread.getName().toUpperCase() + name;
         final HashMap<String, String> map = new HashMap<String, String>();
         if (args != null && !args.isEmpty()) {

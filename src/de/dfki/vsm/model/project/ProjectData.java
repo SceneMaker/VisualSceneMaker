@@ -79,13 +79,19 @@ public class ProjectData implements Serializable {
     private final HashMap<String, Plugin> mPluginList = new HashMap<>();
     // Maintained ScenePlayer
     private ScenePlayer mScenePlayer;
-    
+
     protected int mProjectInitialHash;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    
+    public ProjectData(final String name) {
+        this(new File(name));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public ProjectData(final File file) {
         // Initialize The File And Name Members
         mProjectBaseFile = file;
@@ -173,9 +179,9 @@ public class ProjectData implements Serializable {
     }
 
     public final synchronized boolean createProject() {
-      return false;
+        return false;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -455,40 +461,40 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final synchronized boolean hasChanged() {
-        
+
         boolean hasChanged = false;
-        
-        if(getSceneInitialHash() != getHashCode()){
-             hasChanged = true;
-        }          
+
+        if (getSceneInitialHash() != getHashCode()) {
+            hasChanged = true;
+        }
         return hasChanged;
-        
+
         /*  
          * Remove commented code as comparison is now made through project hash
          *
-        String currentFileName = mProjectPathName + "~." + mProjectName + ".zip";
-        // Export the current version
-        exportZIP(currentFileName);
-        // Load the current version to a file
-        File currentFile = new File(currentFileName);
-        // Load the old version to a file
-        File zipFile = new File(mZipFileName);
-        // Compare the two versions
-        boolean hasChanged = false;
-        try {
-            hasChanged = !FileAttributes.compare(currentFile, zipFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return true;
-        } finally {
-            try {
-                //currentFile.delete();
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            }
-        }
-        return hasChanged;
-        */
+         String currentFileName = mProjectPathName + "~." + mProjectName + ".zip";
+         // Export the current version
+         exportZIP(currentFileName);
+         // Load the current version to a file
+         File currentFile = new File(currentFileName);
+         // Load the old version to a file
+         File zipFile = new File(mZipFileName);
+         // Compare the two versions
+         boolean hasChanged = false;
+         try {
+         hasChanged = !FileAttributes.compare(currentFile, zipFile);
+         } catch (IOException e) {
+         e.printStackTrace();
+         return true;
+         } finally {
+         try {
+         //currentFile.delete();
+         } catch (SecurityException e) {
+         e.printStackTrace();
+         }
+         }
+         return hasChanged;
+         */
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -770,6 +776,13 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+    public final synchronized ProjectConfig getProjectConfig() {
+        return mProjectConfig;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public final synchronized SceneFlow getSceneFlow() {
         return mSceneFlow;
     }
@@ -962,15 +975,15 @@ public class ProjectData implements Serializable {
         infoString += "___________________________________________________________________________________________________________________\r\n";
         mLogger.message(infoString);
     }
-    
+
     public void updateFileNames(String ProjectFileName, String ProjectDirPath) {
-  
+
         Path path = Paths.get(ProjectDirPath);
-        
-        mProjectFileName = ProjectFileName;        
+
+        mProjectFileName = ProjectFileName;
         mProjectDirPath = path.getParent().toString();
         mProjectPathName = mProjectDirPath + System.getProperty("file.separator");
-       
+
         // Read Project Properties
         mProjectName = mProjectConfig.property("project.basic.name");
         mProjectFullFileName = mProjectPathName + mProjectFileName;
@@ -984,16 +997,16 @@ public class ProjectData implements Serializable {
         mScenePlayerConfigFile = mProjectPathName + mProjectConfig.property("project.player.config");
         mZipFileName = mProjectPathName + mProjectName + ".zip";
     }
-    
+
     public synchronized void setSceneInitialHash(int value) {
         mProjectInitialHash = value;
     }
-    
+
     public synchronized int getSceneInitialHash() {
         return mProjectInitialHash;
     }
 
-    public synchronized int getHashCode() {      
+    public synchronized int getHashCode() {
         int hashCode = ((mSceneFlow == null) ? 0 : mSceneFlow.getHashCode());
         return hashCode;
     }

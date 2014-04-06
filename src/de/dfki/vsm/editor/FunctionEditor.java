@@ -1,16 +1,17 @@
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.dialog.FunDefDialog;
+import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
-;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-
+import de.dfki.vsm.util.ios.ResourceLoader;
+import java.awt.Color;
+import static java.awt.Component.CENTER_ALIGNMENT;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,15 +20,16 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observer;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.MouseInputAdapter;
 
 
@@ -43,16 +45,18 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
    
     private final Observable mObservable = new Observable();    
    
-    private final ArrayList<FunDefDialog> mPanelList;
+    private final ArrayList<FunDefDialog> mFunDefBoxList;
     private final SceneFlow mSceneFlow;
     private final JPanel mContainer;
+    private JPanel mButtonPanel;
+    private JButton mRemoveButton;
+    private JButton mAddFunctionButton;
     
     public FunctionEditor(SceneFlow sceneflow) {          
         mSceneFlow = sceneflow;
         mContainer = new JPanel();
-        mPanelList = new ArrayList<>();
-        setMinimumSize(new Dimension(0, 200));
-            
+        mFunDefBoxList = new ArrayList<>();
+        setMinimumSize(new Dimension(0, 200));            
         initComponents();
         
         // Add the element editor to the event multicaster
@@ -62,25 +66,67 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
      private void initComponents() {        
         mContainer.setLayout(new BoxLayout(mContainer, BoxLayout.Y_AXIS));             
         setViewportView(mContainer);
+        initButtonPanel();
         createFunctionPanes();
+    }
+          
+    private void initButtonPanel() {       
+        // Create Button 
+        mAddFunctionButton = new JButton("Add Function");
+        mAddFunctionButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {        
+              
+                FunDef usrCmdDef = new FunDef("", "java.lang.System.out", "printIn(String)");
+                mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
+                Editor.getInstance().update();
+                EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef)); 
+            }
+        });  
+        
+        // Button panel
+        mButtonPanel = new JPanel(null);        
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.Y_AXIS));
+        mButtonPanel.setAlignmentX(CENTER_ALIGNMENT);
+        mButtonPanel.add(Box.createRigidArea(new Dimension(45, 10)));
+        mButtonPanel.add(mAddFunctionButton);    
+        mButtonPanel.add(Box.createRigidArea(new Dimension(45, 10)));
     }
     
     private void createFunctionPanes(){          
-        mPanelList.clear();
+        mFunDefBoxList.clear();
         mContainer.removeAll();
        
         for (final FunDef funDef: mSceneFlow.getUsrCmdDefMap().values()){   
             final FunDefDialog funDefPanel = new FunDefDialog(funDef);
-            mPanelList.add(funDefPanel);  
+            mFunDefBoxList.add(funDefPanel);  
             mContainer.add(Box.createRigidArea(new Dimension(5, 5)));   
             
-            JPanel content = funDefPanel.createPanel();   
-        
-            content.setMaximumSize(new Dimension(Editor.getInstance().getBounds().width -280,75));
-            content.setPreferredSize(new Dimension(Editor.getInstance().getBounds().width-280 ,75));
-            content.setMinimumSize(new Dimension(Editor.getInstance().getBounds().width -280,75));
+            JPanel function = new JPanel();
+            function.setLayout(new BoxLayout(function, BoxLayout.X_AXIS));
+            JPanel content = funDefPanel.createPanel(); 
+            function.add(content);
             
-            mContainer.add(content);               
+            mRemoveButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/minus.png"));
+            mRemoveButton.setMinimumSize(new Dimension(20, 75));
+            mRemoveButton.setMaximumSize(new Dimension(20, 75));
+            mRemoveButton.setPreferredSize(new Dimension(20, 75));
+           
+            mRemoveButton.setOpaque(true);
+            mRemoveButton.setBackground(Color.GRAY);
+            mRemoveButton.setBorder(BorderFactory.createEmptyBorder());
+            mRemoveButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    mSceneFlow.removeUsrCmdDef(funDef.getName());
+                    Editor.getInstance().update();
+                    EventCaster.getInstance().convey(new FunctionCreatedEvent(this, funDef)); 
+                }
+             });
+            
+            function.add(mRemoveButton);           
+            mContainer.add(function);               
             
 
             // Add focus listeners to editable elements ------------------------ 
@@ -93,7 +139,7 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
 
                 @Override
                 public void focusLost(FocusEvent e) {
-                     funDefPanel.setSelectedBackground(false); 
+                    funDefPanel.setSelectedBackground(false); 
                 }
             });
            
@@ -137,9 +183,12 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
             
             funDefPanel.getNameInput().addKeyListener(new KeyAdapter() {
                 @Override
-                public void keyReleased(KeyEvent evt) {        
-                     funDef.setName(funDefPanel.getNameInput().getText().trim());  
-                     Editor.getInstance().update();           
+                public void keyReleased(KeyEvent evt) {  
+                    mSceneFlow.removeUsrCmdDef(funDef.getName());
+                    mSceneFlow.putUsrCmdDef(funDefPanel.getNameInput().getText().trim(), funDef);
+                    funDef.setName(funDefPanel.getNameInput().getText().trim()); 
+                    funDefPanel.getFunDef().setName(funDefPanel.getNameInput().getText().trim());
+                    Editor.getInstance().update();           
                 }
             });
             
@@ -183,37 +232,46 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                     }
                     Editor.getInstance().update(); 
                 }
-            });             
-            
+            });                         
         }
             
         mContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        mContainer.add(mButtonPanel);
         getVerticalScrollBar().setValue(0);
-    }
-    
+    }    
 
     @Override
-    public synchronized void update(EventObject event) {         
+    public void update(EventObject event) {         
         
         if (event instanceof FunctionSelectedEvent) {            
-            FunDef functionData = ((FunctionSelectedEvent)event).getFunction(); 
-            createFunctionPanes();                 
-            for (FunDefDialog currentPanel: mPanelList){            
-                if(currentPanel.getFunDef().getName().equals(functionData.getName())){
-                    System.out.println("selected: "+functionData.getName());
+            FunDef functionData = ((FunctionSelectedEvent)event).getFunction();             
+            for (FunDefDialog currentPanel: mFunDefBoxList){  
+                if(functionData.getName().equals(currentPanel.getFunDef().getName())){
                     currentPanel.setSelectedBackground(true);
-                    getVerticalScrollBar().setValue(mPanelList.indexOf(currentPanel)*75);
+                    getVerticalScrollBar().setValue(mFunDefBoxList.indexOf(currentPanel)*75);
                 }
                 else{
                     currentPanel.setSelectedBackground(false);
-                }                
-            }                     
-        } else if (event instanceof NodeSelectedEvent) {
-            for (FunDefDialog currentPanel: mPanelList) {                      
-                currentPanel.setSelectedBackground(false);                           
-            }              
-            getVerticalScrollBar().setValue(0);           
-        }
+                }
+            }
+        }    
+        
+        if (event instanceof FunctionCreatedEvent) {            
+                 
+            createFunctionPanes();     
+                   
+            // Highlight and set scrollbar to selected function
+            FunDef functionData = ((FunctionCreatedEvent)event).getFunction();      
+            for (FunDefDialog currentPanel: mFunDefBoxList){                 
+                if(functionData.getName().equals(currentPanel.getFunDef().getName())){
+                    currentPanel.getNameInput().requestFocus();
+                    getVerticalScrollBar().setValue(mFunDefBoxList.indexOf(currentPanel)*75);
+                }
+                else{
+                    currentPanel.setSelectedBackground(false);
+                }
+            }
+        }   
     }
 
     @Override

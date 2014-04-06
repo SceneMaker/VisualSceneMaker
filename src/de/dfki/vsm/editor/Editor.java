@@ -10,12 +10,10 @@ import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.runtime.event.AbortEvent;
-import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -212,26 +210,23 @@ public class Editor extends JFrame implements EventListener {
         setLocation(finalPos);
     }
 
-    /**
-     * *************************************************************************
-     *
-     *
-     *************************************************************************
-     */
-    public ProjectEditor getSelectedProjectEditor() {
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final ProjectEditor getSelectedProjectEditor() {
         return mProjectEditorList.getSelectedProjectEditor();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public ProjectEditorList getProjectEditorList() {
         return mProjectEditorList;
     }
 
-    /**
-     * *************************************************************************
-     *
-     *
-     *************************************************************************
-     */
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public void newProject() {
         CreateProjectDialog createProjectDialog = new CreateProjectDialog();
         if (createProjectDialog != null) {
@@ -248,19 +243,18 @@ public class Editor extends JFrame implements EventListener {
     }
 
     public void openProject() {
-        
+
         final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-    
-       
+
         fc.setFileView(new OpenProjectView());
-        
+
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setFileFilter(new FileFilter() {
             public boolean accept(File f) {
-                if (f.isDirectory()) {               
-                    
-                    File configFile = new File(f.getPath() + System.getProperty("file.separator") + "config.xml");                   
-                    if (configFile.exists()) {                        
+                if (f.isDirectory()) {
+
+                    File configFile = new File(f.getPath() + System.getProperty("file.separator") + "config.xml");
+                    if (configFile.exists()) {
                         return true;
                     }
 
@@ -270,7 +264,7 @@ public class Editor extends JFrame implements EventListener {
                             return true;
                         }
                     }
-                    
+
                 }
                 return false;
             }
@@ -341,21 +335,23 @@ public class Editor extends JFrame implements EventListener {
                 mProjectEditorList.getSelectedProject().getProjectDirPath(),
                 mProjectEditorList.getSelectedProject().getProjectName());
         // TODO: no return - what is pending -let project editor do this!
+
+        mProjectEditorList.getSelectedProject().setSceneInitialHash(mProjectEditorList.getSelectedProject().getHashCode());
         return mProjectEditorList.getSelectedProject();
     }
 
     public void saveFileAs() {
         CreateProjectDialog createProjectDialog = new CreateProjectDialog();
-        
+
         if (createProjectDialog != null) {
-             
-            ProjectData currentProject = mProjectEditorList.getSelectedProject();          
+
+            ProjectData currentProject = mProjectEditorList.getSelectedProject();
             currentProject.updateFileNames(createProjectDialog.mConfigFile.getName(), createProjectDialog.mConfigFile.getPath());
-            mProjectEditorList.saveCurrent();             
+            mProjectEditorList.saveCurrent();
             mProjectEditorList.setTitleAt(mProjectEditorList.getSelectedIndex(), createProjectDialog.mProjectName);
             mProjectEditorList.repaint();
 
-             // update rectent project list
+            // update rectent project list
             updateRecentProjects(createProjectDialog.mProjectDir.getPath(), createProjectDialog.mProjectName);
         }
     }
@@ -476,12 +472,9 @@ public class Editor extends JFrame implements EventListener {
         aboutDialog.setVisible(true);
     }
 
-    /**
-     * *************************************************************************
-     *
-     *
-     *************************************************************************
-     */
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public void startSceneFlow() {
         // Get the sceneflow that has to be executed
         ProjectData project = mProjectEditorList.getSelectedProject();
@@ -491,10 +484,10 @@ public class Editor extends JFrame implements EventListener {
         //ScenePlayer scenePlayer = mEditorList.getSelectedProject().loadPluginScenePlayer();
 
         //mRunTime.registerSceneFlow(sceneFlow, scenePlayer);
-        System.err.println("Registering Sceneflow " + project.getSceneFlow());
+        //mLogger.message("Registering Sceneflow " + project.getSceneFlow());
         mRunTime.register(project);
         // Start the interpreter for that sceneflow
-        System.err.println("Starting sceneflow " + project.getSceneFlow());
+        //mLogger.message("Starting Sceneflow " + project.getSceneFlow());
         mRunTime.startSceneFlow(project.getSceneFlow());
         // Disable the project list
         mProjectEditorList.setEnabled(false);
@@ -507,14 +500,19 @@ public class Editor extends JFrame implements EventListener {
 //        mMenuBar.setMonitorMenuEnabled(true);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public void stopSceneFlow() {
         // Get the current project
         ProjectData project = mProjectEditorList.getSelectedProject();
         // Stop the interpreter for that sceneflow
         //mRunTime.stopSceneFlow(sceneFlow);
         mRunTime.stopSceneFlow(project.getSceneFlow());
+        //mLogger.message("Stopping Sceneflow " + project.getSceneFlow());
         //
         mRunTime.unregister(project);
+        //mLogger.message("Unregistering Sceneflow " + project.getSceneFlow());
         // Enable the project list
         mProjectEditorList.setEnabled(true);
         //
@@ -524,11 +522,13 @@ public class Editor extends JFrame implements EventListener {
 //        mMenuBar.setStopMenuEnabled(false);
 //        mMenuBar.setPauseMenuEnabled(false);
 //        mMenuBar.setMonitorMenuEnabled(false);
-
         update();
 
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public void pauseSceneFlow() {
         SceneFlow sceneFlow = mProjectEditorList.getSelectedProject().getSceneFlow();
 
