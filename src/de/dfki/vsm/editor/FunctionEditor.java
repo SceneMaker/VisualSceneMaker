@@ -13,6 +13,8 @@ import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -23,13 +25,17 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observer;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.MouseInputAdapter;
 
 
@@ -70,20 +76,27 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         createFunctionPanes();
     }
           
-    private void initButtonPanel() {       
+    private void initButtonPanel() {   
+        
         // Create Button 
         mAddFunctionButton = new JButton("Add Function");
         mAddFunctionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {        
-              
-                FunDef usrCmdDef = new FunDef("", "java.lang.System.out", "printIn(String)");
-                mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-                Editor.getInstance().update();
-                EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef)); 
+                addNewFunction();               
             }
         });  
+     
+        Action action = new AbstractAction("AddFunction") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addNewFunction();
+            }
+        };
         
+        // configure the Action with the accelerator (aka: short cut)
+        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control F"));
+
         // Button panel
         mButtonPanel = new JPanel(null);        
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.Y_AXIS));
@@ -91,6 +104,19 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         mButtonPanel.add(Box.createRigidArea(new Dimension(45, 10)));
         mButtonPanel.add(mAddFunctionButton);    
         mButtonPanel.add(Box.createRigidArea(new Dimension(45, 10)));
+       
+        // manually register the accelerator in the button's component input map
+        mButtonPanel.getActionMap().put("myAction", action);
+        mButtonPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                (KeyStroke) action.getValue(Action.ACCELERATOR_KEY), "myAction");
+        
+    }
+    
+    private void addNewFunction(){
+        FunDef usrCmdDef = new FunDef("", "java.lang.System.out", "printIn(String)");
+        mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
+        Editor.getInstance().update();
+        EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef)); 
     }
     
     private void createFunctionPanes(){          
