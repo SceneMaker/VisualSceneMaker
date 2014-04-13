@@ -15,6 +15,7 @@ import de.dfki.vsm.editor.action.RemoveNodeAction;
 import de.dfki.vsm.editor.action.RemoveNodesAction;
 import de.dfki.vsm.editor.action.StraightenEdgeAction;
 import de.dfki.vsm.editor.action.ToggleStartNodeAction;
+import de.dfki.vsm.editor.dialog.CmdDialog;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
 import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
@@ -33,7 +34,9 @@ import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
+import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
@@ -58,6 +61,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -72,17 +77,16 @@ import java.util.LinkedList;
 import java.util.Observer;
 import java.util.Set;
 import java.util.Vector;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import java.awt.event.ActionEvent; 
-import java.awt.event.KeyEvent; 
-import javax.swing.AbstractAction; 
-import javax.swing.ActionMap; 
-import javax.swing.InputMap; 
+import javax.swing.InputMap;
+import javax.swing.JComponent; 
+import javax.swing.JMenuItem; 
+import javax.swing.JOptionPane; 
+import javax.swing.JPanel; 
+import javax.swing.JPopupMenu; 
+import javax.swing.JSeparator; 
 import javax.swing.KeyStroke; 
 
 /**
@@ -539,9 +543,17 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
     }
 
     public void createFunCall(Node node, String name) {
+     
         UsrCmd cmd = new UsrCmd();
+        
         cmd.setName(name);
         node.getDataNode().addCmd(cmd);
+       
+        Command newCmd = new CmdDialog(cmd).run();
+        if (newCmd != null) {
+            node.getDataNode().setCmdAt(newCmd, 0);
+
+        }
     }
 
     /**
