@@ -104,9 +104,10 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     }
 
     private void savePreferences() {
-//    Preferences.setProperty("node_width", Integer.toString(mNodeSize));
-//    Preferences.setProperty("node_height", Integer.toString(mNodeSize));
-//    Preferences.save();
+        Preferences.setProperty("node_width", Integer.toString(mNodeSize));
+        Preferences.setProperty("node_height", Integer.toString(mNodeSize));
+        Preferences.save();
+        Editor.getInstance().update();
     }
 
     public void addPathComponent(String value) {
@@ -290,7 +291,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         b = add(new AbstractAction("ACTION_ZOOM_IN", ResourceLoader.loadImageIcon("/res/img/new/zoom_plus.png")) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                mNodeSize = (mNodeSize < 200) ? mNodeSize++ : mNodeSize;
+                mNodeSize = (mNodeSize < 190) ? mNodeSize=mNodeSize+10 : mNodeSize;
                 savePreferences();
             }
         });
@@ -301,7 +302,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         b = add(new AbstractAction("ACTION_ZOOM_OUT", ResourceLoader.loadImageIcon("/res/img/new/zoom_minus.png")) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                mNodeSize = (mNodeSize > 20) ? mNodeSize-- : mNodeSize;
+                mNodeSize = (mNodeSize > 30) ? mNodeSize=mNodeSize-10: mNodeSize;
                 savePreferences();
             }
         });
