@@ -139,7 +139,7 @@ public class Evaluator {
                 if (fieldValue.getType() == AbstractValue.Type.INT) {
                     env.write(
                             ((ArrVarExp) lexp).getName(),
-                            ((IntValue) fieldValue).getValue().intValue(),
+                            ((IntValue) fieldValue).getValue(),
                             evaluate(rexp, env));
                 } else {
                     throw new RunTimeException(cmd,
@@ -605,23 +605,23 @@ public class Evaluator {
             } else if (operator == ComparisionCond.Operator.Ge) {
                 if (left instanceof IntValue && right instanceof IntValue) {
                     return new BooleanValue(
-                            ((IntValue) left).getValue().intValue()
-                            >= ((IntValue) right).getValue().intValue());
+                            ((IntValue) left).getValue()
+                            >= ((IntValue) right).getValue());
 
                 } else if (left instanceof FloatValue && right instanceof FloatValue) {
                     return new BooleanValue(
-                            ((FloatValue) left).getValue().floatValue()
-                            >= ((FloatValue) right).getValue().floatValue());
+                            ((FloatValue) left).getValue()
+                            >= ((FloatValue) right).getValue());
 
                 } else if (left instanceof LongValue && right instanceof LongValue) {
                     return new BooleanValue(
-                            ((LongValue) left).getValue().longValue()
-                            >= ((LongValue) right).getValue().longValue());
+                            ((LongValue) left).getValue()
+                            >= ((LongValue) right).getValue());
 
                 } else if (left instanceof DoubleValue && right instanceof DoubleValue) {
                     return new BooleanValue(
-                            ((DoubleValue) left).getValue().doubleValue()
-                            >= ((DoubleValue) right).getValue().doubleValue());
+                            ((DoubleValue) left).getValue()
+                            >= ((DoubleValue) right).getValue());
 
                 } else {
                     throw new RunTimeException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -629,23 +629,23 @@ public class Evaluator {
             } else if (operator == ComparisionCond.Operator.Gt) {
                 if (left instanceof IntValue && right instanceof IntValue) {
                     return new BooleanValue(
-                            ((IntValue) left).getValue().intValue()
-                            > ((IntValue) right).getValue().intValue());
+                            ((IntValue) left).getValue()
+                            > ((IntValue) right).getValue());
 
                 } else if (left instanceof FloatValue && right instanceof FloatValue) {
                     return new BooleanValue(
-                            ((FloatValue) left).getValue().floatValue()
-                            > ((FloatValue) right).getValue().floatValue());
+                            ((FloatValue) left).getValue()
+                            > ((FloatValue) right).getValue());
 
                 } else if (left instanceof LongValue && right instanceof LongValue) {
                     return new BooleanValue(
-                            ((LongValue) left).getValue().longValue()
-                            > ((LongValue) right).getValue().longValue());
+                            ((LongValue) left).getValue()
+                            > ((LongValue) right).getValue());
 
                 } else if (left instanceof DoubleValue && right instanceof DoubleValue) {
                     return new BooleanValue(
-                            ((DoubleValue) left).getValue().doubleValue()
-                            > ((DoubleValue) right).getValue().doubleValue());
+                            ((DoubleValue) left).getValue()
+                            > ((DoubleValue) right).getValue());
 
                 } else {
                     throw new RunTimeException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -653,23 +653,23 @@ public class Evaluator {
             } else if (operator == ComparisionCond.Operator.Le) {
                 if (left instanceof IntValue && right instanceof IntValue) {
                     return new BooleanValue(
-                            ((IntValue) left).getValue().intValue()
-                            <= ((IntValue) right).getValue().intValue());
+                            ((IntValue) left).getValue()
+                            <= ((IntValue) right).getValue());
 
                 } else if (left instanceof FloatValue && right instanceof FloatValue) {
                     return new BooleanValue(
-                            ((FloatValue) left).getValue().floatValue()
-                            <= ((FloatValue) right).getValue().floatValue());
+                            ((FloatValue) left).getValue()
+                            <= ((FloatValue) right).getValue());
 
                 } else if (left instanceof LongValue && right instanceof LongValue) {
                     return new BooleanValue(
-                            ((LongValue) left).getValue().longValue()
-                            <= ((LongValue) right).getValue().longValue());
+                            ((LongValue) left).getValue()
+                            <= ((LongValue) right).getValue());
 
                 } else if (left instanceof DoubleValue && right instanceof DoubleValue) {
                     return new BooleanValue(
-                            ((DoubleValue) left).getValue().doubleValue()
-                            <= ((DoubleValue) right).getValue().doubleValue());
+                            ((DoubleValue) left).getValue()
+                            <= ((DoubleValue) right).getValue());
 
                 } else {
                     throw new RunTimeException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -677,23 +677,23 @@ public class Evaluator {
             } else if (operator == ComparisionCond.Operator.Lt) {
                 if (left instanceof IntValue && right instanceof IntValue) {
                     return new BooleanValue(
-                            ((IntValue) left).getValue().intValue()
-                            < ((IntValue) right).getValue().intValue());
+                            ((IntValue) left).getValue()
+                            < ((IntValue) right).getValue());
 
                 } else if (left instanceof FloatValue && right instanceof FloatValue) {
                     return new BooleanValue(
-                            ((FloatValue) left).getValue().floatValue()
-                            < ((FloatValue) right).getValue().floatValue());
+                            ((FloatValue) left).getValue()
+                            < ((FloatValue) right).getValue());
 
                 } else if (left instanceof LongValue && right instanceof LongValue) {
                     return new BooleanValue(
-                            ((LongValue) left).getValue().longValue()
-                            < ((LongValue) right).getValue().longValue());
+                            ((LongValue) left).getValue()
+                            < ((LongValue) right).getValue());
 
                 } else if (left instanceof DoubleValue && right instanceof DoubleValue) {
                     return new BooleanValue(
-                            ((DoubleValue) left).getValue().doubleValue()
-                            < ((DoubleValue) right).getValue().doubleValue());
+                            ((DoubleValue) left).getValue()
+                            < ((DoubleValue) right).getValue());
 
                 } else {
                     throw new RunTimeException(exp,
@@ -875,7 +875,7 @@ public class Evaluator {
             throws RunTimeException/*
      * , InterruptException, TerminatedException
      */ {
-        HashMap<java.lang.String, AbstractValue> valueMap = new HashMap<java.lang.String, AbstractValue>();
+        HashMap<java.lang.String, AbstractValue> valueMap = new HashMap<>();
         for (Assignment exp : expList) {
             valueMap.put(
                     ((VarExp) exp.getLExp()).getName(),
@@ -920,29 +920,38 @@ public class Evaluator {
             java.lang.String paramType = paramDef.getType();
 
             Class paramClass = null;
-            if (paramType.equals("boolean")) {
-                paramClass = boolean.class;
-            } else if (paramType.equals("char")) {
-                paramClass = char.class;
-            } else if (paramType.equals("short")) {
-                paramClass = short.class;
-            } else if (paramType.equals("int")) {
-                paramClass = int.class;
-            } else if (paramType.equals("long")) {
-                paramClass = long.class;
-            } else if (paramType.equals("float")) {
-                paramClass = float.class;
-            } else if (paramType.equals("double")) {
-                paramClass = double.class;
-            } else if (paramType.equals("byte")) {
-                paramClass = byte.class;
-            } else {
-                try {
-                    paramClass = Class.forName(paramType);
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                    //System.err.println(e.toString());
-                }
+            switch (paramType) {
+                case "boolean":
+                    paramClass = boolean.class;
+                    break;
+                case "char":
+                    paramClass = char.class;
+                    break;
+                case "short":
+                    paramClass = short.class;
+                    break;
+                case "int":
+                    paramClass = int.class;
+                    break;
+                case "long":
+                    paramClass = long.class;
+                    break;
+                case "float":
+                    paramClass = float.class;
+                    break;
+                case "double":
+                    paramClass = double.class;
+                    break;
+                case "byte":
+                    paramClass = byte.class;
+                    break;
+                default:
+                    try {
+                        paramClass = Class.forName(paramType);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                        //System.err.println(e.toString());
+                    }   break;
             }
             paramClassList[i] = paramClass;
             // System.err.println("Parameter is " + paramClassList[i]);
@@ -1022,20 +1031,11 @@ public class Evaluator {
 
             }
 
-        } catch (SecurityException e) {
+        } catch (SecurityException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             //System.err.println(e.toString());
         } catch (ClassNotFoundException e) {
             //e.printStackTrace();
-            //System.err.println(e.toString());
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            //System.err.println(e.toString());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            //System.err.println(e.toString());
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
             //System.err.println(e.toString());
         }
 
@@ -1056,26 +1056,19 @@ public class Evaluator {
 
             // mLogger.message("Evaluator: Executing Java method '" + method + argListStr + "' on static object " + memberFieldObject);
             return method.invoke(memberFieldObject, argInstList);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-            //System.err.println(e.toString());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            //System.err.println(e.toString());
-        } catch (NoSuchFieldException e) {
+        } catch (SecurityException | ClassNotFoundException | NoSuchFieldException | InvocationTargetException | IllegalAccessException | StringIndexOutOfBoundsException e) {
             e.printStackTrace();
             //System.err.println(e.toString());
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            throw new RunTimeException(this,
+                        "Runtime Error: " +  "NoSuchMethodException");  
+            //e.printStackTrace();
             //System.err.println(e.toString());
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-            //System.err.println(e.toString());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            //System.err.println(e.toString());
-        } catch (StringIndexOutOfBoundsException e) {
-            e.printStackTrace();
+        }
+        catch (Exception e) {
+            throw new RunTimeException(this,
+                        "Runtime Error: " +  "Failed to execute user command");  
+            //e.printStackTrace();
             //System.err.println(e.toString());
         }
 
