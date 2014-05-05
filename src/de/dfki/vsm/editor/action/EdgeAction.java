@@ -25,6 +25,7 @@ import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Set;
 import javax.swing.undo.UndoManager;
 
 /**
@@ -120,7 +121,22 @@ public abstract class EdgeAction extends EditorAction {
 //        mWorkSpace.add(mGUIEdge);
 //        mWorkSpace.revalidate();
 //        mWorkSpace.repaint();
+        recalculateWeight();
         setEdgePath();
+    }
+    
+    public void recalculateWeight() {
+        mWorkSpace.getGridManager().resetGridWeight(mSourceGUINode);
+        mWorkSpace.getGridManager().resetGridWeight(mTargetGUINode);
+        mWorkSpace.getGridManager().resetGridWeight(mGUIEdge);
+        Set<de.dfki.vsm.editor.Edge> edgeSet = mWorkSpace.getEdges();
+        for(de.dfki.vsm.editor.Edge edge: edgeSet) {
+            if(!edge.getName().equals(mGUIEdge.getName())) {
+                mWorkSpace.getGridManager().setEdgeWeight(edge);
+                mWorkSpace.getGridManager().setNodeWeight(edge.getSourceNode());
+                mWorkSpace.getGridManager().setNodeWeight(edge.getTargetNode());
+            }
+        }
     }
     
     public void setEdgePath() {
