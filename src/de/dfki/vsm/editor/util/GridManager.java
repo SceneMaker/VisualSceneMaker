@@ -131,22 +131,22 @@ public class GridManager {
         // g2d.drawString("" + ai, r.x + 2, r.y + 12);
       }
       
-      for (GridRectangle[] r : mTransitionArea) {
-        for(GridRectangle s: r) {
-            int ai = mNodeAreas.indexOf(r);
-            // draw a litte cross
-            g2d.setColor(new Color(230, 230, 230, 200));
-            g2d.drawLine(s.x + s.width / 2 - 2, s.y + s.height / 2, s.x + s.width / 2 + 2, s.y + s.height / 2);
-            g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
-            // draw node areas
-            if(s.getWeight() > 1) {
-                g2d.setColor(Color.red);
-            }
-            g2d.drawRect(s.x, s.y, s.width, s.height);
-            g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
-            
-        }
-      }
+//      for (GridRectangle[] r : mTransitionArea) {
+//        for(GridRectangle s: r) {
+//            int ai = mNodeAreas.indexOf(r);
+//            // draw a litte cross
+//            g2d.setColor(new Color(230, 230, 230, 200));
+//            g2d.drawLine(s.x + s.width / 2 - 2, s.y + s.height / 2, s.x + s.width / 2 + 2, s.y + s.height / 2);
+//            g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
+//            // draw node areas
+//            if(s.getWeight() > 1) {
+//                g2d.setColor(Color.red);
+//            }
+//            g2d.drawRect(s.x, s.y, s.width, s.height);
+//            g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
+//            
+//        }
+//      }
     }
   }
 
@@ -186,10 +186,10 @@ public class GridManager {
             for(GridRectangle gridRectangle : gridParent) {
                 if(gridRectangle.isIntersectedbyNode(node)) {
                     gridRectangle.setWeight(GridConstants.NODE_WEIGHT);
-                    System.out.println("Setting weight of " + 
-                            GridConstants.NODE_WEIGHT + " to Grid <" +
-                            gridRectangle.getColumnIndex() + "," +
-                            gridRectangle.getRowIndex() + ">");
+//                    System.out.println("Setting weight of " + 
+//                            GridConstants.NODE_WEIGHT + " to Grid <" +
+//                            gridRectangle.getColumnIndex() + "," +
+//                            gridRectangle.getRowIndex() + ">");
                 }
             }
       }
@@ -200,10 +200,10 @@ public class GridManager {
             for(GridRectangle gridRectangle : gridParent) {
                 if(gridRectangle.isIntersectByRectangle(edge.mEg)) {
                     gridRectangle.setWeight(GridConstants.EDGE_WEIGHT);
-                    System.out.println("Setting weight of " + 
-                            GridConstants.EDGE_WEIGHT + " to Grid <" +
-                            gridRectangle.getColumnIndex() + "," +
-                            gridRectangle.getRowIndex() + ">");
+//                    System.out.println("Setting weight of " + 
+//                            GridConstants.EDGE_WEIGHT + " to Grid <" +
+//                            gridRectangle.getColumnIndex() + "," +
+//                            gridRectangle.getRowIndex() + ">");
                 }
             }
       }
@@ -214,10 +214,10 @@ public class GridManager {
             for(GridRectangle gridRectangle : gridParent) {
                 if(gridRectangle.isIntersectByRectangle(edge.mEg)) {
                     gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
-                    System.out.println("Setting weight of " + 
-                            GridConstants.INITIAL_WEIGHT + " to Grid <" +
-                            gridRectangle.getColumnIndex() + "," +
-                            gridRectangle.getRowIndex() + ">");
+//                    System.out.println("Setting weight of " + 
+//                            GridConstants.INITIAL_WEIGHT + " to Grid <" +
+//                            gridRectangle.getColumnIndex() + "," +
+//                            gridRectangle.getRowIndex() + ">");
                 }
             }
       }

@@ -77,8 +77,8 @@ public class NormalizeEdgeAction {
             Path alternatePath = aStarPath.getPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
                     gridDestination.getColumnIndex(), gridDestination.getRowIndex());
             
-            aStarPath.printPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
-                    gridDestination.getColumnIndex(), gridDestination.getRowIndex());
+//            aStarPath.printPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
+//                    gridDestination.getColumnIndex(), gridDestination.getRowIndex());
             
             // Calculate the control point of the bezier curve that should be made
             ArrayList<BezierPoint> pathPoints = new ArrayList<BezierPoint>();
