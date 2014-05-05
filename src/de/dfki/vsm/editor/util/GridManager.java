@@ -3,6 +3,8 @@
  */
 package de.dfki.vsm.editor.util;
 
+import de.dfki.vsm.editor.Edge;
+import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
 import static de.dfki.vsm.editor.util.Preferences.sGRID_NODEWIDTH;
 import static de.dfki.vsm.editor.util.Preferences.sGRID_XSPACE;
@@ -10,6 +12,8 @@ import static de.dfki.vsm.editor.util.Preferences.sGRID_YSPACE;
 import static de.dfki.vsm.editor.util.Preferences.sSHOWGRID;
 import static de.dfki.vsm.editor.util.Preferences.sXOFFSET;
 import static de.dfki.vsm.editor.util.Preferences.sYOFFSET;
+import de.dfki.vsm.editor.util.grid.GridConstants;
+import de.dfki.vsm.editor.util.grid.GridRectangle;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,6 +37,10 @@ public class GridManager {
   private WorkSpace mWorkSpace;
   private ArrayList<Rectangle> mNodeAreas;
   private int mNodesinRow = 0;
+  
+  // Subgrid for A* algorithm
+  private GridRectangle[][] mTransitionArea = null;
+  private boolean isSubgridEstablished = false;
 
   public GridManager(WorkSpace ws) {
     mWorkSpace = ws;
@@ -60,12 +68,44 @@ public class GridManager {
     int h = size.height - insets.top - insets.bottom;
     mNodesinRow = w / sGRID_XSPACE;
     mNodeAreas = new ArrayList<Rectangle>();
+    
+    if((w/sGRID_XSPACE) > 0 && (h/sGRID_YSPACE) > 0 && isSubgridEstablished == false) {
+        mTransitionArea = new GridRectangle[((w/sGRID_XSPACE)+1)*2][((h/sGRID_YSPACE)+1)*2];
+    }
+    
     int halfNodeSize = sGRID_NODEWIDTH / 2;
     for (int j = 0; j <= (h / sGRID_YSPACE); j++) {
       for (int i = 0; i <= (w / sGRID_XSPACE); i++) {
         Rectangle r = new Rectangle(sXOFFSET + (i * sGRID_XSPACE), sYOFFSET + (j * sGRID_YSPACE), sGRID_NODEWIDTH, sGRID_NODEWIDTH);
         mNodeAreas.add(r);
+        // Initiates subgrids. 
+        if((w/sGRID_XSPACE) > 0 && (h/sGRID_YSPACE) > 0 && isSubgridEstablished == false) {
+            GridRectangle s = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize - 4);
+            s.setColumnIndex(j*2);
+            s.setRowIndex(i*2);
+            mTransitionArea[i*2][j*2] = s;
+            //System.out.println("(" + (i*2) + "," + (j*2) + ")");
+            GridRectangle t = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize - 4);
+            t.setColumnIndex(j*2);
+            t.setRowIndex(i*2+1);
+            mTransitionArea[i*2+1][j*2] = t;
+            //System.out.println("(" + (i*2+1) + "," + (j*2) + ")");
+            GridRectangle u = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2, halfNodeSize - 4, halfNodeSize - 4);
+            u.setColumnIndex(j*2+1);
+            u.setRowIndex(i*2);
+            mTransitionArea[i*2][j*2+1] = u;
+            //System.out.println("(" + (i*2) + "," + (j*2+1) + ")");
+            GridRectangle v = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2, halfNodeSize - 4, halfNodeSize - 4);
+            mTransitionArea[i*2+1][j*2+1] = v;
+            v.setColumnIndex(j*2+1);
+            v.setRowIndex(i*2+1);
+            //System.out.println("(" + (i*2+1) + "," + (j*2+1) + ")");
+        }
       }
+    }
+    
+    if((w/sGRID_XSPACE) > 0 && (h/sGRID_YSPACE) > 0 && isSubgridEstablished == false) {
+        isSubgridEstablished = true;
     }
   }
 
@@ -89,6 +129,23 @@ public class GridManager {
         // draw node areas
         // g2d.drawRect(r.x, r.y, r.width, r.height);
         // g2d.drawString("" + ai, r.x + 2, r.y + 12);
+      }
+      
+      for (GridRectangle[] r : mTransitionArea) {
+        for(GridRectangle s: r) {
+            int ai = mNodeAreas.indexOf(r);
+            // draw a litte cross
+            g2d.setColor(new Color(230, 230, 230, 200));
+            g2d.drawLine(s.x + s.width / 2 - 2, s.y + s.height / 2, s.x + s.width / 2 + 2, s.y + s.height / 2);
+            g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
+            // draw node areas
+            if(s.getWeight() > 1) {
+                g2d.setColor(Color.red);
+            }
+            g2d.drawRect(s.x, s.y, s.width, s.height);
+            g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
+            
+        }
       }
     }
   }
@@ -118,6 +175,91 @@ public class GridManager {
       //System.out.println("point is in use - delete in occupied positions");
       mPlacedNodes.remove(p);
     }
+  }
+  
+  public GridRectangle[][] getmTransitionArea() {
+    return mTransitionArea;
+  }
+  
+  public void setNodeWeight(Node node) {
+      for(GridRectangle[] gridParent : mTransitionArea) {
+            for(GridRectangle gridRectangle : gridParent) {
+                if(gridRectangle.isIntersectedbyNode(node)) {
+                    gridRectangle.setWeight(GridConstants.NODE_WEIGHT);
+                    System.out.println("Setting weight of " + 
+                            GridConstants.NODE_WEIGHT + " to Grid <" +
+                            gridRectangle.getColumnIndex() + "," +
+                            gridRectangle.getRowIndex() + ">");
+                }
+            }
+      }
+  }
+  
+  public void setEdgeWeight(Edge edge) {
+      for(GridRectangle[] gridParent : mTransitionArea) {
+            for(GridRectangle gridRectangle : gridParent) {
+                if(gridRectangle.isIntersectByRectangle(edge.mEg)) {
+                    gridRectangle.setWeight(GridConstants.EDGE_WEIGHT);
+                    System.out.println("Setting weight of " + 
+                            GridConstants.EDGE_WEIGHT + " to Grid <" +
+                            gridRectangle.getColumnIndex() + "," +
+                            gridRectangle.getRowIndex() + ">");
+                }
+            }
+      }
+  }
+  
+  public void resetGridWeight(Edge edge) {
+      for(GridRectangle[] gridParent : mTransitionArea) {
+            for(GridRectangle gridRectangle : gridParent) {
+                if(gridRectangle.isIntersectByRectangle(edge.mEg)) {
+                    gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
+                    System.out.println("Setting weight of " + 
+                            GridConstants.INITIAL_WEIGHT + " to Grid <" +
+                            gridRectangle.getColumnIndex() + "," +
+                            gridRectangle.getRowIndex() + ">");
+                }
+            }
+      }
+  }
+  
+  public void resetGridWeight(Node node) {
+      for(GridRectangle[] gridParent : mTransitionArea) {
+            for(GridRectangle gridRectangle : gridParent) {
+                if(gridRectangle.isIntersectedbyNode(node)) {
+                    gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
+//                    System.out.println("Setting weight of " + 
+//                            GridConstants.INITIAL_WEIGHT + " to Grid <" +
+//                            gridRectangle.getColumnIndex() + "," +
+//                            gridRectangle.getRowIndex() + ">");
+                }
+            }
+      }
+  }
+  
+  public void normalizeGridWeight() {
+      for(GridRectangle[] gridParent : mTransitionArea) {
+        for(GridRectangle gridRectangle : gridParent) {
+            boolean isGridInteresected = false;
+            for(Edge edge : mWorkSpace.getEdges()) {
+                if(gridRectangle.isIntersectByRectangle(edge.mEg)) {
+                    gridRectangle.setWeight(GridConstants.EDGE_WEIGHT);
+                    isGridInteresected = true;
+                }
+            }
+
+            for(Node node : mWorkSpace.getNodes()) {
+                if(gridRectangle.isIntersectedbyNode(node)) {
+                    gridRectangle.setWeight(GridConstants.NODE_WEIGHT);
+                    isGridInteresected = true;
+                }
+            }
+
+            if(isGridInteresected == false) {
+                gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
+            }
+        }
+      }
   }
 
 /*
