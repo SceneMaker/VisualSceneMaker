@@ -8,6 +8,7 @@ import de.dfki.vsm.editor.action.CreateNodeAction;
 import de.dfki.vsm.editor.action.CutNodesAction;
 import de.dfki.vsm.editor.action.DeflectEdgeAction;
 import de.dfki.vsm.editor.action.ModifyEdgeAction;
+import de.dfki.vsm.editor.action.NormalizeEdgeAction;
 import de.dfki.vsm.editor.action.PasteNodesAction;
 import de.dfki.vsm.editor.action.RemoveCommentAction;
 import de.dfki.vsm.editor.action.RemoveEdgeAction;
@@ -252,9 +253,17 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         }
         return null;
     }
+    
+    public Set<Node> getNodes() {
+        return mNodeSet;
+    }
 
     public CmdBadge getCmdBadge(Node id) {
         return mCmdBadgeMap.get(id);
+    }
+    
+    public Set<Edge> getEdges() {
+        return mEdgeSet;
     }
 
     /**
@@ -773,6 +782,10 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         item = new JMenuItem("Straighten");
         StraightenEdgeAction renameAction = new StraightenEdgeAction(this, edge);
         item.addActionListener(renameAction.getActionListener());
+        pop.add(item);
+        item = new JMenuItem("Normalize");
+        NormalizeEdgeAction normalizeAction = new NormalizeEdgeAction(this, edge);
+        item.addActionListener(normalizeAction.getActionListener());
         pop.add(item);
         pop.show(this, evt.getX(), evt.getY());
     }
@@ -1461,6 +1474,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 }
 
                 mSelectedEdge.mouseReleased(event);
+                mGridManager.normalizeGridWeight();
                 return;
             } else {
                 //System.out.println(mSelectedEdge.getType() + " not released - deselected");
@@ -1484,6 +1498,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 mSelectedNode.mouseReleased(event);
                 revalidate();
                 repaint();
+                mGridManager.normalizeGridWeight();
                 return;
             } else {
                 //System.out.println(mSelectedNode.getDataNode().getName() + " not released - deselected");
