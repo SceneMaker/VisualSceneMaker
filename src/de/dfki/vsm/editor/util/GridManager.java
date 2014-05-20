@@ -62,10 +62,20 @@ public class GridManager {
   }
 
   private void compute() {
-    Dimension size = mWorkSpace.getSize();
-    Insets insets = mWorkSpace.getInsets();
-    int w = size.width - insets.left - insets.right;
-    int h = size.height - insets.top - insets.bottom;
+  
+    int w = 0;
+    int h = 0;
+    for(de.dfki.vsm.model.sceneflow.Node n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getNodeList()){
+        if(n.getGraphics().getPosition().getXPos() > w){
+                w = n.getGraphics().getPosition().getXPos();
+        }
+        if(n.getGraphics().getPosition().getYPos() > h){
+                h = n.getGraphics().getPosition().getXPos();
+        }               
+    }
+  
+    Dimension size = new Dimension(h,w);
+    
     mNodesinRow = w / sGRID_XSPACE;
     mNodeAreas = new ArrayList<Rectangle>();
     
@@ -152,8 +162,8 @@ public class GridManager {
 
   public Point getNodeLocation(Point inputPoint) {
             
-  // Point p = new Point(inputPoint.x+ sGRID_NODEWIDTH / 2, inputPoint.y + sGRID_NODEWIDTH / 2);
-   Point p = new Point(inputPoint.x,inputPoint.y);
+   Point p = new Point(inputPoint.x+ sGRID_NODEWIDTH / 2, inputPoint.y + sGRID_NODEWIDTH / 2);
+   //Point p = new Point(inputPoint.x,inputPoint.y);
    for (Rectangle r : mNodeAreas) {
       if (r.contains(p)) {
         p = new Point(r.x, r.y);

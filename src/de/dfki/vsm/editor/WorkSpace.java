@@ -199,8 +199,9 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
      *************************************************************************
      */
     public WorkSpace(SceneFlowEditor sceneFlowEditor) {
-        mGridManager = new GridManager(this);
+        
         mSceneFlowEditor = sceneFlowEditor;
+        mGridManager = new GridManager(this);
         // Add the mouse listeners
         addMouseMotionListener(this);
         addMouseListener(this);
@@ -1495,7 +1496,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                     mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
                     
                     // DEBUG
-                    //System.out.println("node " + mSelectedNode.getDataNode().getName() +  " dragged to: " +  mSelectedNode.getX()+ ", " +  mSelectedNode.getY());
+                    System.out.println("node " + mSelectedNode.getDataNode().getName() +  " dragged to: " +  mSelectedNode.getX()+ ", " +  mSelectedNode.getY());
                     
                     // Update sceneflow with new node position
                     mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(),mSelectedNode.getY());
