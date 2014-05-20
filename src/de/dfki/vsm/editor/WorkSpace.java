@@ -165,7 +165,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         // rebuild node position
         mGridManager.update();
         for (Node node : mNodeSet) {
-          //  node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
+          // node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
         }
         revalidate();
         repaint();
@@ -175,10 +175,10 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
      * *************************************************************************
      *
      *
-     *
      *************************************************************************
      */
     public void update(EventObject event) {
+    
     }
 
     /**
@@ -1452,6 +1452,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 // check location of each c
                 if (node.mDragged) {
                     node.resetLocation(mGridManager.getNodeLocation(p));
+                     
                 }
         // update workspace area - if dragged beyond current borders
                 // sWorkSpaceDrawArea = getSize();
@@ -1492,6 +1493,13 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 if (mSelectedNode.mDragged) {
                     Point p = mSelectedNode.getLocation();
                     mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
+                    
+                    // DEBUG
+                    //System.out.println("node " + mSelectedNode.getDataNode().getName() +  " dragged to: " +  mSelectedNode.getX()+ ", " +  mSelectedNode.getY());
+                    
+                    // Update sceneflow with new node position
+                    mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(),mSelectedNode.getY());
+                   
           // update workspace area - if dragged beyond current borders
                     //sWorkSpaceDrawArea = getSize();
                 }

@@ -151,7 +151,8 @@ public class GridManager {
   }
 
   public Point getNodeLocation(Point inputPoint) {
-   //Point p = new Point(inputPoint.x+ sGRID_NODEWIDTH / 2, inputPoint.y + sGRID_NODEWIDTH / 2);
+            
+  // Point p = new Point(inputPoint.x+ sGRID_NODEWIDTH / 2, inputPoint.y + sGRID_NODEWIDTH / 2);
    Point p = new Point(inputPoint.x,inputPoint.y);
    for (Rectangle r : mNodeAreas) {
       if (r.contains(p)) {
