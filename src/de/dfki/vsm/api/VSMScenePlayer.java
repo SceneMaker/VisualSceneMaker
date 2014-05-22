@@ -3,6 +3,7 @@ package de.dfki.vsm.api;
 import de.dfki.vsm.runtime.Process;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.configs.PlayerConfig;
+import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.Environment;
 import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.runtime.player.ScenePlayer;
@@ -21,8 +22,11 @@ import java.util.Map;
  */
 public abstract class VSMScenePlayer implements ScenePlayer {
 
+    // The VSM Runtime Environment
+    protected final RunTime mVSM3RunTime
+            = RunTime.getInstance();
     // The System File Logger
-    protected final LOGDefaultLogger mLogger
+    protected final LOGDefaultLogger mVSM3Log
             = LOGDefaultLogger.getInstance();
     // A Nova Logger Instance
     protected final LOGNovaFileLogger mNovaLog
@@ -31,9 +35,11 @@ public abstract class VSMScenePlayer implements ScenePlayer {
     protected final LOGSSISockLogger mSockLog
             = LOGSSISockLogger.getInstance("127.0.0.1", 4000);
     // The ScenePlayer Config
-    protected final PlayerConfig mConfigs;
+    protected final PlayerConfig mPlayerConfig;
     // The SceneMaker Project
-    protected final ProjectData mProject;
+    protected final ProjectData mProjectData;
+    // The SceneMaker Project
+    protected final SceneFlow mSceneFlow;
     // The System Timer Thead  
     protected volatile long mStartupTime;
     protected volatile long mCurrentTime;
@@ -54,11 +60,13 @@ public abstract class VSMScenePlayer implements ScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     protected VSMScenePlayer(final ProjectData project) {
         // Init SceneMaker 3 Project 
-        mProject = project;
+        mProjectData = project;
+        // Init The SceneMaker Sceneflow
+        mSceneFlow = project.getSceneFlow();
         // Init Scene Player Config
-        mConfigs = project.getScenePlayerProperties();
+        mPlayerConfig = project.getScenePlayerProperties();
         // Print Debug Information
-        mLogger.message("Creating Generic Player");
+        mVSM3Log.message("Creating Generic Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -67,18 +75,18 @@ public abstract class VSMScenePlayer implements ScenePlayer {
     @Override
     public void launch() {
         // Print Debug Information
-        mLogger.message("Launching Generic Player");
+        mVSM3Log.message("Launching Generic Player");
         // Initialize The Properties
-        final String numagent = mConfigs.property("agents.count");
+        final String numagent = mPlayerConfig.property("agents.count");
         for (int i = 1; i <= Integer.parseInt(numagent); i++) {
             // Get Agent's Name, Host And Port
-            final String name = mConfigs.property("agent." + i + ".name");
-            final String uaid = mConfigs.property("agent." + i + ".uaid");
-            final String host = mConfigs.property("agent." + i + ".host");
-            final String port = mConfigs.property("agent." + i + ".port");
+            final String name = mPlayerConfig.property("agent." + i + ".name");
+            final String uaid = mPlayerConfig.property("agent." + i + ".uaid");
+            final String host = mPlayerConfig.property("agent." + i + ".host");
+            final String port = mPlayerConfig.property("agent." + i + ".port");
 
             // Print Out The Properties
-            mLogger.message(""
+            mVSM3Log.message(""  
                     + "Agent-Name:" + name + "\r\n"
                     + "Agent-Uaid:" + uaid + "\r\n"
                     + "Agent-Host:" + host + "\r\n"
@@ -90,28 +98,28 @@ public abstract class VSMScenePlayer implements ScenePlayer {
             // Now Start The Client
             client.start();
             // Print Debug Information
-            mLogger.message("Starting Agent '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
+            mVSM3Log.message("Starting Agent '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
         }
         // Initialize The Properties
-        final String msslhost = mConfigs.property("msslhost");
-        final String msslport = mConfigs.property("msslport");
-        final String mssrhost = mConfigs.property("mssrhost");
-        final String mssrport = mConfigs.property("mssrport");
-        final String mssrconn = mConfigs.property("mssrconn");
-        final String swilhost = mConfigs.property("swilhost");
-        final String swilport = mConfigs.property("swilport");
-        final String swirhost = mConfigs.property("swirhost");
-        final String swirport = mConfigs.property("swirport");
-        final String swirconn = mConfigs.property("swirconn");
-        final String swilbase = mConfigs.property("swilbase");
-        final String ssilhost = mConfigs.property("ssilhost");
-        final String ssilport = mConfigs.property("ssilport");
-        final String ssirhost = mConfigs.property("ssirhost");
-        final String ssirport = mConfigs.property("ssirport");
-        final String ssirconn = mConfigs.property("ssirconn");
-        final String nlufbase = mConfigs.property("nlufbase");
+        final String msslhost = mPlayerConfig.property("msslhost");
+        final String msslport = mPlayerConfig.property("msslport");
+        final String mssrhost = mPlayerConfig.property("mssrhost");
+        final String mssrport = mPlayerConfig.property("mssrport");
+        final String mssrconn = mPlayerConfig.property("mssrconn");
+        final String swilhost = mPlayerConfig.property("swilhost");
+        final String swilport = mPlayerConfig.property("swilport");
+        final String swirhost = mPlayerConfig.property("swirhost");
+        final String swirport = mPlayerConfig.property("swirport");
+        final String swirconn = mPlayerConfig.property("swirconn");
+        final String swilbase = mPlayerConfig.property("swilbase");
+        final String ssilhost = mPlayerConfig.property("ssilhost");
+        final String ssilport = mPlayerConfig.property("ssilport");
+        final String ssirhost = mPlayerConfig.property("ssirhost");
+        final String ssirport = mPlayerConfig.property("ssirport");
+        final String ssirconn = mPlayerConfig.property("ssirconn");
+        final String nlufbase = mPlayerConfig.property("nlufbase");
         // Print Out The Properties
-        mLogger.message(""
+        mVSM3Log.message(""
                 + "SWI-Local-Host :" + swilhost + "\r\n"
                 + "SWI-Remote-Host :" + swirhost + "\r\n"
                 + "SWI-Local-Port :" + swilport + "\r\n"
@@ -179,10 +187,10 @@ public abstract class VSMScenePlayer implements ScenePlayer {
                 // Join With Agent Client
                 client.join();
                 // Print Debug Information
-                mLogger.message("Joining Agent Client");
+                mVSM3Log.message("Joining Agent Client");
             } catch (Exception exc) {
                 // Print Debug Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
             }
         }
         // Shutdown Other Threads
@@ -195,29 +203,29 @@ public abstract class VSMScenePlayer implements ScenePlayer {
             // Join With The Event Handler
             mEventHandler.join();
             // Print Debug Information
-            mLogger.message("Joining Event Handler");
+            mVSM3Log.message("Joining Event Handler");
             // Join With The Event Handler
             mTouchHandler.join();
             // Print Debug Information
-            mLogger.message("Joining Touch Handler");
+            mVSM3Log.message("Joining Touch Handler");
             // Join With The Query Handler
             mQueryHandler.join();
             // Print Debug Information
-            mLogger.message("Joining Query Handler");
+            mVSM3Log.message("Joining Query Handler");
             // Join With The System Timer
             mSystemTimer.join();
             // Print Debug Information
-            mLogger.message("Joining System Timer");
+            mVSM3Log.message("Joining System Timer");
         } catch (Exception exc) {
             // Print Debug Information
-            mLogger.warning(exc.toString());
+            mVSM3Log.warning(exc.toString());
         }
         // Clear The Task Map
         mPlayerTaskQueue.clear();
         // Clear The Agents Map
         mAgentClientMap.clear();
         // Print Debug Information
-        mLogger.message("Unloading Generic Player");
+        mVSM3Log.message("Unloading Generic Player");
     }
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -288,7 +296,7 @@ public abstract class VSMScenePlayer implements ScenePlayer {
                         //System.err.println(entry.getKey() + "->" + entry.getValue());
                     } catch (Exception exc) {
                         // Print Debug Information
-                        mLogger.failure(exc.toString());
+                        mVSM3Log.failure(exc.toString());
                     }
                 }
             } catch (Exception exc) {
@@ -296,7 +304,7 @@ public abstract class VSMScenePlayer implements ScenePlayer {
                 // Because An Extern Thread Is Trying
                 for (Map.Entry<String, String> entry : subst.entrySet()) {
                     RunTime.getInstance().setVariable(
-                            mProject.getSceneFlow(),
+                            mProjectData.getSceneFlow(),
                             entry.getKey(),
                             entry.getValue());
                 }
@@ -307,12 +315,13 @@ public abstract class VSMScenePlayer implements ScenePlayer {
         }
     }
 
+    /*
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final synchronized void print(final String printstr) {
         // Logg Some Message With Logger
-        mLogger.message(printstr);
+        mVSM3Log.message(printstr);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -341,7 +350,7 @@ public abstract class VSMScenePlayer implements ScenePlayer {
             mSockLog.message(logmsg);
         } catch (Exception exc) {
             // Debug Some Inforamtion
-            mLogger.warning(exc.toString());
+            mVSM3Log.warning(exc.toString());
             try {
                 // Try To get The VSM Process
                 final Task thread = ((Task) Thread.currentThread());
@@ -359,7 +368,7 @@ public abstract class VSMScenePlayer implements ScenePlayer {
                 mSockLog.message(logmsg);
             } catch (Exception ecx) {
                 // Debug Some Inforamtion
-                mLogger.warning(ecx.toString());
+                mVSM3Log.warning(ecx.toString());
                 try {
                     // Try To get The VSM Process
                     final Thread thread = Thread.currentThread();
@@ -377,11 +386,12 @@ public abstract class VSMScenePlayer implements ScenePlayer {
                     mSockLog.message(logmsg);
                 } catch (Exception xec) {
                     // Debug Some Inforamtion
-                    mLogger.failure(xec.toString());
+                    mVSM3Log.failure(xec.toString());
                 }
             }
         }
     }
+    */
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

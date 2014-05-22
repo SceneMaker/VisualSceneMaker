@@ -3,21 +3,36 @@
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>VisualSceneMaker</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <!-- Do not use Project Properties customizer when editing this file manually. 
  To prevent the customizer from showing, create nbproject/project.properties file and enter 
 auxiliary.show.customizer=false 
 property there. Adding 
 auxiliary.show.customizer.message=<message>
  will show your customized message when someone attempts to open the customizer.  -->
-            <name>VSM</name>
+            <name>VisualSceneMaker</name>
             <properties>
                 <property name="ant.script">prj/build.xml</property>
             </properties>
             <folders>
                 <source-folder>
+                    <label>res</label>
+                    <type>java</type>
+                    <location>res</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
                     <label>src</label>
                     <type>java</type>
                     <location>src</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>VisualSceneMaker</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
                 </source-folder>
             </folders>
             <ide-actions>
@@ -35,7 +50,7 @@ auxiliary.show.customizer.message=<message>
                 </action>
                 <action name="test">
                     <script>${ant.script}</script>
-                    <target>test-curtis</target>
+                    <target>profile</target>
                 </action>
                 <action name="rebuild">
                     <script>${ant.script}</script>
@@ -49,6 +64,10 @@ auxiliary.show.customizer.message=<message>
             </ide-actions>
             <view>
                 <items>
+                    <source-folder style="packages">
+                        <label>res</label>
+                        <location>res</location>
+                    </source-folder>
                     <source-folder style="packages">
                         <label>src</label>
                         <location>src</location>
@@ -68,11 +87,14 @@ auxiliary.show.customizer.message=<message>
             </view>
             <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/3">
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/4">
+            <compilation-unit>
+                <package-root>res</package-root>
+                <source-level>1.8</source-level>
+            </compilation-unit>
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">lib/JCup.jar:lib/JFlex.jar:lib/JPL3.jar</classpath>
-                <source-level>1.7</source-level>
+                <source-level>1.8</source-level>
             </compilation-unit>
         </java-data>
     </configuration>

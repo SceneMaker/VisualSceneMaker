@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0" length="2">
-  <SceneObject lower="0" upper="163" language="de" identifier="GloriaScene">
-    <SceneTurn lower="22" upper="163" speaker="Gloria">
-      <SceneUttr lower="30" upper="163" punct=".">
+  <SceneObject lower="0" upper="145" language="de" identifier="GloriaScene">
+    <SceneTurn lower="22" upper="145" speaker="Gloria">
+      <SceneUttr lower="30" upper="145" punct=".">
         <SceneWord lower="30" upper="35" text="Hallo"/>
         <ActionObject lower="36" upper="87" name="Motion">
           <ActionFeature lower="44" upper="86" key="path" val="'presentation/point/point_left_low01'"/></ActionObject>
@@ -13,28 +13,28 @@
         <SceneWord lower="107" upper="110" text="das"/>
         <SceneWord lower="111" upper="115" text="dort"/>
         <SceneWord lower="116" upper="119" text="ist"/>
-        <ActionObject lower="120" upper="157" name="Motion">
-          <ActionFeature lower="128" upper="156" key="path" val="'emotion/bored/bored01'"/></ActionObject>
-        <SceneWord lower="158" upper="162" text="Kurt"/>
+        <ActionObject lower="120" upper="139" name="Motion">
+          <ActionFeature lower="128" upper="138" key="path" val="hallo"/></ActionObject>
+        <SceneWord lower="140" upper="144" text="Kurt"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="165" upper="329" language="de" identifier="CurtisScene">
-    <SceneTurn lower="187" upper="329" speaker="Curtis">
-      <SceneUttr lower="195" upper="329" punct=".">
-        <SceneWord lower="195" upper="200" text="Hallo"/>
-        <ActionObject lower="201" upper="253" name="Motion">
-          <ActionFeature lower="209" upper="252" key="path" val="'presentation/point/point_right_low01'"/></ActionObject>
-        <SceneWord lower="254" upper="257" text="ich"/>
-        <SceneWord lower="258" upper="261" text="bin"/>
-        <SceneWord lower="262" upper="266" text="Kurt"/>
-        <SceneWord lower="267" upper="270" text="und"/>
-        <SceneWord lower="271" upper="274" text="das"/>
-        <SceneWord lower="275" upper="279" text="dort"/>
-        <SceneWord lower="280" upper="283" text="ist"/>
-        <ActionObject lower="284" upper="321" name="Motion">
-          <ActionFeature lower="292" upper="320" key="path" val="'emotion/bored/bored01'"/></ActionObject>
-        <SceneWord lower="322" upper="328" text="Gloria"/>
+  <SceneObject lower="147" upper="311" language="de" identifier="CurtisScene">
+    <SceneTurn lower="169" upper="311" speaker="Curtis">
+      <SceneUttr lower="177" upper="311" punct=".">
+        <SceneWord lower="177" upper="182" text="Hallo"/>
+        <ActionObject lower="183" upper="235" name="Motion">
+          <ActionFeature lower="191" upper="234" key="path" val="'presentation/point/point_right_low01'"/></ActionObject>
+        <SceneWord lower="236" upper="239" text="ich"/>
+        <SceneWord lower="240" upper="243" text="bin"/>
+        <SceneWord lower="244" upper="248" text="Kurt"/>
+        <SceneWord lower="249" upper="252" text="und"/>
+        <SceneWord lower="253" upper="256" text="das"/>
+        <SceneWord lower="257" upper="261" text="dort"/>
+        <SceneWord lower="262" upper="265" text="ist"/>
+        <ActionObject lower="266" upper="303" name="Motion">
+          <ActionFeature lower="274" upper="302" key="path" val="'emotion/bored/bored01'"/></ActionObject>
+        <SceneWord lower="304" upper="310" text="Gloria"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

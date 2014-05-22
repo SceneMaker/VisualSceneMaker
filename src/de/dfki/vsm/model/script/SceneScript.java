@@ -14,6 +14,12 @@ import org.w3c.dom.Element;
  */
 public final class SceneScript extends SceneEntity {
 
+    // The List Of Entities
+    private LinkedList<SceneEntity> mEntityList
+            = new LinkedList<>();
+    // The List Of Comments
+    private LinkedList<SceneComment> mCommentList
+            = new LinkedList<>();
     // The List Of Scenes
     private LinkedList<SceneObject> mSceneList
             = new LinkedList<>();
@@ -36,13 +42,34 @@ public final class SceneScript extends SceneEntity {
     public SceneScript(
             final int lower,
             final int upper,
-            final LinkedList<SceneObject> list) {
+            final LinkedList<SceneEntity> list) {
         super(lower, upper);
         // Initialize The List
-        mSceneList = list;
+        mEntityList = list;
+        // Initialize Object Lists
+        initObjectLists();
         // Initialize The Groups
         initGroupMap();
         initLangMap();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    private void initObjectLists() {
+        // First Clear The Groups
+        mSceneList.clear();
+        mCommentList.clear();
+        //
+        for (final SceneEntity entity : mEntityList) {
+            if (entity instanceof SceneObject) {
+                mSceneList.add((SceneObject) entity);
+            } else if (entity instanceof SceneObject) {
+                mCommentList.add((SceneComment) entity);
+            } else {
+                // This Should Not Happen
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -88,6 +115,20 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+    public final LinkedList<SceneEntity> getEntityList() {
+        return mEntityList;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void setEntityList(final LinkedList<SceneEntity> list) {
+        mEntityList = list;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public final LinkedList<SceneObject> getSceneList() {
         return mSceneList;
     }
@@ -97,6 +138,20 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     public final void setSceneList(final LinkedList<SceneObject> list) {
         mSceneList = list;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final LinkedList<SceneComment> getCommentList() {
+        return mCommentList;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void setCommentList(final LinkedList<SceneComment> list) {
+        mCommentList = list;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -117,7 +172,37 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final HashMap<String, SceneGroup> getGroupMap() {
+    public final LinkedList<SceneComment> copyCommentList() {
+        // Construct A List Copy
+        final LinkedList<SceneComment> copy
+                = new LinkedList<>();
+        // Copy Each Single Member
+        for (final SceneComment comment : mCommentList) {
+            copy.add(comment.getCopy());
+        }
+        // Return The Final Clone
+        return copy;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final LinkedList<SceneEntity> copyEntityList() {
+        // Construct A List Copy
+        final LinkedList<SceneEntity> copy
+                = new LinkedList<>();
+        // Copy Each Single Member
+        for (final SceneEntity entity : mEntityList) {
+            copy.add(entity.getCopy());
+        }
+        // Return The Final Clone
+        return copy;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final HashMap<String, SceneGroup> getSceneGroupMap() {
         return mGroupMap;
     }
 
@@ -131,28 +216,28 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final SceneGroup getGroup(final String name) {
+    public final SceneGroup getSceneGroup(final String name) {
         return mGroupMap.get(name);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final SceneGroup getGroup(final String lang, final String name) {
+    public final SceneGroup getSceneGroup(final String lang, final String name) {
         return mLangMap.get(lang).get(name);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final boolean isEmpty() {
+    public final boolean isSceneListEmpty() {
         return mSceneList.isEmpty();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final int getSize() {
+    public final int getSceneListSize() {
         return mSceneList.size();
     }
 
@@ -162,9 +247,9 @@ public final class SceneScript extends SceneEntity {
     @Override
     public final String getText() {
         String result = "";
-        for (int i = 0; i < mSceneList.size(); i++) {
-            result += mSceneList.get(i).getText();
-            if (i < mSceneList.size() - 1) {
+        for (int i = 0; i < mEntityList.size(); i++) {
+            result += mEntityList.get(i).getText();
+            if (i < mEntityList.size() - 1) {
                 result += "\n\n";
             }
         }
@@ -177,9 +262,9 @@ public final class SceneScript extends SceneEntity {
     @Override
     public final String getText(final HashMap<String, String> args) {
         String result = "";
-        for (int i = 0; i < mSceneList.size(); i++) {
-            result += mSceneList.get(i).getText(args);
-            if (i < mSceneList.size() - 1) {
+        for (int i = 0; i < mEntityList.size(); i++) {
+            result += mEntityList.get(i).getText(args);
+            if (i < mEntityList.size() - 1) {
                 result += "\n\n";
             }
         }
@@ -191,7 +276,7 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final SceneScript getCopy() {
-        return new SceneScript(mLower, mUpper, copySceneList());
+        return new SceneScript(mLower, mUpper, copyEntityList());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -203,11 +288,11 @@ public final class SceneScript extends SceneEntity {
         stream.println("<SceneScript "
                 + "lower=\"" + mLower + "\" "
                 + "upper=\"" + mUpper + "\" "
-                + "length=\"" + mSceneList.size() + "\">");
+                + "length=\"" + mCommentList.size() + "\">");
         stream.push();
-        for (final SceneObject scene : mSceneList) {
-            scene.writeXML(stream);
-            if (!scene.equals(mSceneList.getLast())) {
+        for (final SceneEntity entity : mEntityList) {
+            entity.writeXML(stream);
+            if (!entity.equals(mEntityList.getLast())) {
                 stream.endl();
             }
         }
@@ -229,13 +314,33 @@ public final class SceneScript extends SceneEntity {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
 
             @Override
-            public void run(Element element) throws XMLParseError {
-                // Create A New Token Style 
-                final SceneObject scene = new SceneObject();
-                // Parse The New Token Style
-                scene.parseXML(element);
-                // Put The New Style To The Map
-                mSceneList.add(scene);
+            public void run(final Element element) throws XMLParseError {
+                // Get The Child Tag Name
+                final String name = element.getTagName();
+                // Check The Child Tag Name
+                if (name.equals("SceneObject")) {
+                    // Create A New Token Style 
+                    final SceneObject entity = new SceneObject();
+                    // Parse The New Token Style
+                    entity.parseXML(element);
+                    // Put The New Style To The Map
+                    mEntityList.add(entity);
+                } else if (name.equals("SceneComment")) {
+                    // Create A New Token Style 
+                    final SceneComment entity = new SceneComment();
+                    // Parse The New Token Style
+                    entity.parseXML(element);
+                    // Put The New Style To The Map
+                    mEntityList.add(entity);
+                } else {
+                    // This Should Not Happen
+                }
+                // Initialize The Two Lists
+                //initObjectLists();
+                // Initialize The Group Map
+                //initLangMap();
+                //initGroupMap();
+
             }
         });
     }
@@ -246,16 +351,20 @@ public final class SceneScript extends SceneEntity {
     public final void parseTXT(final String text) {
         // Parse Content Into Scene Script
         final SceneScript script = ScriptParser.run(
-                "", text, false, false, false, false);
+                "", text, false, true, false, false);
         // Copy Content If Successfully
         if (script != null) {
             // Initialize The Scene List
-            mSceneList = script.getSceneList();
+            mEntityList = script.getEntityList();
+            // Initialize The Two Lists
+            initObjectLists();
             // Initialize The Group Map
             initLangMap();
             initGroupMap();
         } else {
+            mEntityList.clear();
             mSceneList.clear();
+            mCommentList.clear();
             mGroupMap.clear();
             mLangMap.clear();
         }

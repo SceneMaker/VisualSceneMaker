@@ -84,7 +84,7 @@ public class DefaultPlayer implements ScenePlayer {
             public void run() {
                 // Select The Scene
                 final SceneScript script = mProject.getSceneScript();
-                final SceneGroup group = script.getGroup(name);
+                final SceneGroup group = script.getSceneGroup(name);
                 final SceneObject scene = group.select();
                 // Scene Visualization
                 mLogger.message("Executing scene:\r\n" + scene.getText());

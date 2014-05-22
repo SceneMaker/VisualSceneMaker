@@ -45,7 +45,7 @@ public class LOGSSISockLogger {
         sLogger.setUseParentHandlers(false);
         try {
             // Install The Console Handler
-            install(new LOGSSISockHandler(host, port));
+            //install(new LOGSSISockHandler(mHost, mPort));
             // Install The Logfile Handler
             install(new LOGLogFileHandler(
                     SYSUtilities.sSOCKFILE_FILE_NAME,

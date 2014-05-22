@@ -154,15 +154,16 @@ terminal SyntaxDocToken ERRORSTATE;     // Error Symbols
 // Nonterminal Arrays
 non terminal LinkedList turn_sequence;
 non terminal LinkedList word_sequence;
-non terminal LinkedList scene_sequence;
+non terminal LinkedList entity_sequence;
 non terminal LinkedList feature_sequence;
 non terminal LinkedList utterance_sequence;
-non terminal LinkedList scene_sequence_opt;
+non terminal LinkedList entity_sequence_opt;
 non terminal LinkedList feature_sequence_opt;
 // Nonterminal Objects
 non terminal SceneTurn turn;
 non terminal AbstractWord word;
 non terminal SceneObject scene;
+non terminal SceneEntity entity;
 non terminal SceneUttr utterance;
 non terminal ActionFeature feature;
 non terminal SceneScript scenescript;
@@ -172,7 +173,7 @@ start with scenescript;
 // Scenescript /////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 scenescript ::=
-    scene_sequence_opt:sequence
+    entity_sequence_opt:sequence
     {:
         RESULT = new SceneScript(0, 0, sequence);
     :}
@@ -180,12 +181,12 @@ scenescript ::=
 ////////////////////////////////////////////////////////////////////////////////
 // Optional Scene Sequence /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-scene_sequence_opt ::=
+entity_sequence_opt ::=
 
     {:
-        RESULT = new LinkedList<SceneObject>();
+        RESULT = new LinkedList<SceneEntity>();
     :}
-  | scene_sequence:sequence
+  | entity_sequence:sequence
     {:
         RESULT = sequence;
     :}
@@ -193,17 +194,33 @@ scene_sequence_opt ::=
 ////////////////////////////////////////////////////////////////////////////////
 // Required Scene Sequence /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-scene_sequence ::=
-    scene_sequence:sequence scene:scene
+entity_sequence ::=
+    entity_sequence:sequence entity:entity
     {:
         RESULT = sequence;
-        RESULT.add(scene);
+        RESULT.add(entity);
     :}
-  | scene:scene
+  | entity:entity
     {:
-        RESULT = new LinkedList<SceneObject>();
-        RESULT.add(scene);
+        RESULT = new LinkedList<SceneEntity>();
+        RESULT.add(entity);
     :}
+;
+////////////////////////////////////////////////////////////////////////////////
+// SceneEntity Definition //////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+entity ::=
+    scene:scene
+    {:
+          RESULT = scene;
+    :}  
+  | COMMENT:comment 
+    {:
+          RESULT = new SceneComment( 
+                comment.getLower(), 
+                comment.getUpper(), 
+                comment.getValue());
+    :}  
 ;
 ////////////////////////////////////////////////////////////////////////////////
 // Scene Definition ////////////////////////////////////////////////////////////

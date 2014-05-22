@@ -63,7 +63,7 @@ public class ScenesDisplay extends JPanel implements Observer {
     public void showScenes(ProjectData project) {
         SceneScript sceneScript = project.getSceneScript();
         if (sceneScript != null) {
-            HashMap<String, SceneGroup> sceneGroupMap = sceneScript.getGroupMap();
+            HashMap<String, SceneGroup> sceneGroupMap = sceneScript.getSceneGroupMap();
             // Show the scenes of the given project
             for (Entry<String, SceneGroup> entry : sceneGroupMap.entrySet()) {
                 String sceneGroupName = entry.getKey();
@@ -93,7 +93,7 @@ public class ScenesDisplay extends JPanel implements Observer {
             SceneScript sceneScript = project.getSceneScript();
             if (sceneScript != null) {
                 //
-                if (!sceneScript.isEmpty()) {
+                if (!sceneScript.isSceneListEmpty()) {
                     removeAll();
                     showScenes(project);
                 } else {

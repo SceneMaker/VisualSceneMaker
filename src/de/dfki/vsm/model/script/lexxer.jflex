@@ -80,7 +80,7 @@ import java.io.*;
         // Initialize The Comment Flag
         mComment = comment;
         // Initialize The Comment Flag
-        mNewline = comment;
+        mNewline = newline; //comment
         // Initialize The Whitespace Flag
         mWhiteSpace = whitespace;
         // Reset  Token Object Index

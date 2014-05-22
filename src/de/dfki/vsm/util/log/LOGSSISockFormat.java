@@ -1,7 +1,6 @@
 package de.dfki.vsm.util.log;
 
 import de.dfki.vsm.util.sys.SYSUtilities;
-import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
@@ -66,6 +65,6 @@ public class LOGSSISockFormat extends Formatter {
         //        + SYSUtilities.sSYSPROPS_LINE_SEPR
         //        + SYSUtilities.sSYSPROPS_LINE_SEPR;
         // Return The Final Log Message
-        return message;
+        return record.getMessage();
     }
 }

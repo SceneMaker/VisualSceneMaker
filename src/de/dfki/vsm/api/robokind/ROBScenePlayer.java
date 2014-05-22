@@ -68,7 +68,7 @@ public class ROBScenePlayer extends VSMScenePlayer {
         // Create A Directory For User
         if (!dir.exists()) {
             //
-            mLogger.message("Creating Evaluation Directory '" + dir + "'");
+            mVSM3Log.message("Creating Evaluation Directory '" + dir + "'");
             // Create A Directory For User
             dir.mkdir();
         }
@@ -78,12 +78,12 @@ public class ROBScenePlayer extends VSMScenePlayer {
             // Create A New Condition File 
             if (!file.exists()) {
                 //
-                mLogger.message("Creating Evaluation Data File '" + file + "'");
+                mVSM3Log.message("Creating Evaluation Data File '" + file + "'");
                 file.createNewFile();
             }
 
             //
-            mLogger.message("Logging Evaluation Data To File '" + file + "'");
+            mVSM3Log.message("Logging Evaluation Data To File '" + file + "'");
             // Create The File Writer
             final FileWriter writer = new FileWriter(file);
             final BufferedWriter buffer = new BufferedWriter(writer);
@@ -128,8 +128,8 @@ public class ROBScenePlayer extends VSMScenePlayer {
             @Override
             public void run() {
                 // Select A Scene
-                final SceneScript script = mProject.getSceneScript();
-                final SceneGroup group = script.getGroup(name);
+                final SceneScript script = mProjectData.getSceneScript();
+                final SceneGroup group = script.getSceneGroup(name);
                 final SceneObject scene = group.select();
                 // Process Turns
                 for (SceneTurn turn : scene.getTurnList()) {
@@ -170,14 +170,14 @@ public class ROBScenePlayer extends VSMScenePlayer {
                                 + text
                                 + "</action>";
                         // Debug Some Information
-                        mLogger.message("Encoding '" + message + "' On '" + speaker + "'");
+                        mVSM3Log.message("Encoding '" + message + "' On '" + speaker + "'");
                         // Send Message And Then
                         // Await The Notification
                         synchronized (mPlayerTaskQueue) {
                             // Log The Notification
                             //nova("send", message);
                             // Send Message And Then
-                            getAgentClient(speaker).send(message);
+                            getAgentClient(speaker).sendString(message);
                             // Add Task To Waiters
                             mPlayerTaskQueue.put(ident, this);
                             // While The Task Waits
@@ -185,18 +185,18 @@ public class ROBScenePlayer extends VSMScenePlayer {
                                     && mPlayerTaskQueue.containsValue(this)) {
                                 try {
                                     // Print Information
-                                    mLogger.message("Enqueuing Task '" + ident + "'");
+                                    mVSM3Log.message("Enqueuing Task '" + ident + "'");
                                     // Wait For Notify
                                     mPlayerTaskQueue.wait();
                                     // Print Information
-                                    mLogger.message("Notifying Task '" + ident + "'");
+                                    mVSM3Log.message("Notifying Task '" + ident + "'");
                                 } catch (Exception exc) {
                                     // Print Information
-                                    mLogger.message("Interrupting Task '" + ident + "'");
+                                    mVSM3Log.message("Interrupting Task '" + ident + "'");
                                     // Exit If Interrupted
                                     if (mIsDone) {
                                         // Print Information
-                                        mLogger.message("Finishing Task '" + ident + "'");
+                                        mVSM3Log.message("Finishing Task '" + ident + "'");
                                         return;
                                     }
                                 }
@@ -207,19 +207,19 @@ public class ROBScenePlayer extends VSMScenePlayer {
                         // Exit If Interrupted
                         if (mIsDone) {
                             // Print Information
-                            mLogger.message("Finishing Task '" + ident + "'");
+                            mVSM3Log.message("Finishing Task '" + ident + "'");
                             return;
                         }
                     }
                     // Exit If Interrupted
                     if (mIsDone) {
                         // Print Information
-                        mLogger.message("Finishing Task '" + ident + "'");
+                        mVSM3Log.message("Finishing Task '" + ident + "'");
                         return;
                     }
                 }
                 // Print Information
-                mLogger.message("Finishing Task '" + ident + "'");
+                mVSM3Log.message("Finishing Task '" + ident + "'");
             }
         };
         // Start Player Task
@@ -234,7 +234,7 @@ public class ROBScenePlayer extends VSMScenePlayer {
                 finished = true;
             } catch (Exception exc) {
                 // Print Information
-                mLogger.warning("Interrupting '" + thread.getName() + "' In Scene '" + name + "'");
+                mVSM3Log.warning("Interrupting '" + thread.getName() + "' In Scene '" + name + "'");
                 // Terminate The Task
                 task.mIsDone = true;
                 // Interrupt The Task
@@ -249,13 +249,13 @@ public class ROBScenePlayer extends VSMScenePlayer {
     @Override
     protected final void handle(final VSMAgentClient client) {
         // Receive A Message
-        final String msg = client.recv();
+        final String msg = client.recvString();
         // Check The Message
         if (msg != null) {
             // Define Ack Pattern
             final Matcher matcher = mPattern.matcher(msg);
             // Debug Some Information
-            mLogger.message("Agent Client Receiving Notification '" + msg + "'");
+            mVSM3Log.message("Agent Client Receiving Notification '" + msg + "'");
             // Find Some Matches
             if (matcher.matches()) {
                 // Compute The Action Parameters
@@ -269,7 +269,7 @@ public class ROBScenePlayer extends VSMScenePlayer {
                 // Get The Waiters Lock
                 synchronized (mPlayerTaskQueue) {
                     // Print Information
-                    mLogger.message("Removing Task '" + task + "'");
+                    mVSM3Log.message("Removing Task '" + task + "'");
                     // Remove The Task 
                     mPlayerTaskQueue.remove(task);
                     // Notify Waitings

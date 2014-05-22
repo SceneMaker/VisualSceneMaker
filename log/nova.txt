@@ -5424,3 +5424,234 @@ INFO to NOVA on Tue Feb 04 10:44:33 CET 2014 by de.dfki.vsm.util.log.LOGNovaFile
 INFO to NOVA on Tue Feb 04 10:44:33 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
 <log type="stop_scene" node="N5" date="1391507073729" time="45234">CurtisScene</log>
 
+INFO to NOVA on Wed Mar 19 19:11:32 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[S2,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_supernode" node="S2" date="1395252692486" time="109">Dialogue</log>
+
+INFO to NOVA on Wed Mar 19 19:11:32 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252692658" time="266">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:32 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252692658" time="266">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:32 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252692658" time="266">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:32 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252692658" time="266">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:37 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252697736" time="5359">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:37 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252697736" time="5359">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:37 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252697861" time="5484">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:37 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252697861" time="5484">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:42 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252702783" time="10406">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:42 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252702783" time="10406">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:42 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252702924" time="10547">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:42 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252702986" time="10609">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:47 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252707841" time="15464">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:47 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252707888" time="15511">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:48 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252708045" time="15668">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:48 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252708045" time="15668">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:52 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252712951" time="20574">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:52 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252712951" time="20574">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:53 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252713107" time="20730">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:53 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252713107" time="20730">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252718045" time="25668">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252718045" time="25668">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252718185" time="25808">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:11:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252718201" time="25824">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:03 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252723107" time="30730">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:03 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252723107" time="30730">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:03 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252723279" time="30902">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:03 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252723279" time="30902">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:08 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252728185" time="35808">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:08 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252728185" time="35808">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:08 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252728326" time="35949">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:08 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252728342" time="35965">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:13 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252733248" time="40871">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:13 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252733248" time="40871">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:13 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252733404" time="41027">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:13 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252733404" time="41027">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:18 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252738295" time="45918">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:18 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252738295" time="45918">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:18 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252738482" time="46090">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:18 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252738482" time="46090">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:23 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252743342" time="50965">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:23 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252743342" time="50965">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:23 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252743529" time="51152">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:23 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252743545" time="51168">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:28 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252748420" time="56043">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:28 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252748420" time="56043">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:28 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252748639" time="56262">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:28 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252748639" time="56262">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:33 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252753467" time="61090">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:33 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252753483" time="61106">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:33 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252753686" time="61309">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:33 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252753701" time="61324">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:38 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252758530" time="66153">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:38 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252758530" time="66153">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:38 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252758748" time="66371">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:38 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252758748" time="66371">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:43 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252763592" time="71215">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:43 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252763592" time="71215">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:43 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252763811" time="71434">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:43 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252763811" time="71434">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:48 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252768655" time="76278">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:48 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252768655" time="76278">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:48 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252768873" time="76496">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:48 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252768873" time="76496">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:53 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252773733" time="81356">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:53 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252773749" time="81372">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:53 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252773920" time="81543">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:53 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252773920" time="81543">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252778827" time="86450">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252778827" time="86450">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252778999" time="86622">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:12:58 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252778999" time="86622">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:13:03 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N5" date="1395252783874" time="91497">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:13:03 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N5,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N5" date="1395252783874" time="91497">CurtisScene</log>
+
+INFO to NOVA on Wed Mar 19 19:13:04 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="start_scene" node="N6" date="1395252784046" time="91669">GloriaScene</log>
+
+INFO to NOVA on Wed Mar 19 19:13:04 CET 2014 by de.dfki.vsm.util.log.LOGNovaFileLogger in Thread[N6,6,main] at de.dfki.vsm.api.VSMScenePlayer.nova(VSMScenePlayer.java:340)
+<log type="stop_scene" node="N6" date="1395252784061" time="91684">GloriaScene</log>
+

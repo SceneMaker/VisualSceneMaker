@@ -509,7 +509,8 @@ public class ProjectData implements Serializable {
                 Method methodone = playerClass.getMethod("getInstance", ProjectData.class);
                 player = (ScenePlayer) methodone.invoke(null, this);
             } catch (Exception exc) {
-                System.err.println(exc.toString());
+                mLogger.warning(exc.toString());
+                exc.printStackTrace();
             }
         }
         if (player == null) {
@@ -518,7 +519,8 @@ public class ProjectData implements Serializable {
                 Method methodtwo = playerClass.getMethod("getInstance");
                 player = (ScenePlayer) methodtwo.invoke(null);
             } catch (Exception exc) {
-                System.err.println(exc.toString());
+                mLogger.warning(exc.toString());
+                exc.printStackTrace();
             }
         }
         if (player == null) {
@@ -527,6 +529,7 @@ public class ProjectData implements Serializable {
                 Constructor constructor = playerClass.getConstructor(ProjectData.class);
                 mScenePlayer = (ScenePlayer) constructor.newInstance(this);
             } catch (Exception exc) {
+                mLogger.warning(exc.toString());
                 exc.printStackTrace();
             }
         }

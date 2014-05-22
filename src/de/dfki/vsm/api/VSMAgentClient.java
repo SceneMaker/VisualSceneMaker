@@ -31,9 +31,9 @@ public class VSMAgentClient extends Thread {
     protected final String mUaid;
     protected final int mPort;
     // Termination Flag
-    protected boolean mDone = false;
+    protected volatile boolean mDone = false;
     // The System logger
-    protected final LOGDefaultLogger mLogger
+    protected final LOGDefaultLogger mVSM3Log
             = LOGDefaultLogger.getInstance();
 
     ////////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ public class VSMAgentClient extends Thread {
         mHost = host;
         mPort = port;
         // Debug Some Information
-        mLogger.message("Creating Agent Client");
+        mVSM3Log.message("Creating Agent Client");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -94,10 +94,10 @@ public class VSMAgentClient extends Thread {
             mWriter = new BufferedWriter(
                     new OutputStreamWriter(mSocket.getOutputStream(), "UTF-8"));
             // Debug Some Information
-            mLogger.message("Starting Agent Client");
+            mVSM3Log.message("Starting Agent Client");
         } catch (Exception exc) {
             // Debug Some Information
-            mLogger.warning(exc.toString());
+            mVSM3Log.warning(exc.toString());
         }
         // Start The Client Thread 
         super.start();
@@ -118,25 +118,26 @@ public class VSMAgentClient extends Thread {
                     // Close The Socket
                     mSocket.close();
                     // Debug Some Information
-                    mLogger.message("Aborting Agent Client Now");
+                    mVSM3Log.message("Aborting Agent Client Now");
                 } else {
                     // Debug Some Information
-                    mLogger.warning("Cannot Abort Agent Client");
+                    mVSM3Log.warning("Cannot Abort Agent Client");
                 }
             } catch (Exception exc) {
                 // Debug Some Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
             }
         } else {
             // Debug Some Information
-            mLogger.warning("Cannot Abort Agent Client");
+            mVSM3Log.warning("Cannot Abort Agent Client");
         }
     }
-
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final boolean send(final byte[] bytes) {
+    public final boolean sendBytes(final byte[] bytes) {
         // Try To Send The Message
         if (mOutput != null) {
             try {
@@ -145,16 +146,16 @@ public class VSMAgentClient extends Thread {
                 // Flush Out The Stream                
                 mOutput.flush();
                 // Debug Some Information
-                mLogger.message("Sending Message '" + BINUtilities.BytesToHexString(bytes) + "'");
+                mVSM3Log.message("Sending Message '" + BINUtilities.BytesToHexString(bytes) + "'");
                 // Return At Success
                 return true;
             } catch (Exception exc) {
                 // Debug Some Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
             }
         } else {
             // Debug Some Information
-            mLogger.warning("Cannot Send Over Agent Client");
+            mVSM3Log.warning("Cannot Send Over Agent Client");
         }
         // Return At Failure
         return false;
@@ -163,7 +164,7 @@ public class VSMAgentClient extends Thread {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void send(final String string) {
+    public final void sendString(final String string) {
         // Try To Send The Message
         if (mWriter != null) {
             try {
@@ -172,21 +173,21 @@ public class VSMAgentClient extends Thread {
                 mWriter.newLine();
                 mWriter.flush();
                 // Debug Some Information
-                mLogger.message("Sending Message '" + string + "'");
+                mVSM3Log.message("Sending Message '" + string + "'");
             } catch (Exception exc) {
                 // Debug Some Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
             }
         } else {
             // Debug Some Information
-            mLogger.warning("Cannot Send Over Agent Client");
+            mVSM3Log.warning("Cannot Send Over Agent Client");
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final byte[] recv(final int size) {
+    public final byte[] recvBytes(final int size) {
         // Try To Read The Line
         if (mInput != null) {
             try {
@@ -194,16 +195,16 @@ public class VSMAgentClient extends Thread {
                 byte[] bytes = new byte[size];
                 mInput.readFully(bytes);
                 // Debug Some Information
-                mLogger.message("Reading Message'" + BINUtilities.BytesToHexString(bytes) + "'");
+                mVSM3Log.message("Reading Message'" + BINUtilities.BytesToHexString(bytes) + "'");
                 // Return The Notification
                 return bytes;
             } catch (Exception exc) {
                 // Debug Some Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
             }
         } else {
             // Debug Some Information
-            mLogger.warning("Cannot Read From Agent Client");
+            mVSM3Log.warning("Cannot Read From Agent Client");
         }
         // Otherwise Return Null
         return null;
@@ -212,23 +213,23 @@ public class VSMAgentClient extends Thread {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final String recv() {
+    public final String recvString() {
         // Try To Read The Line
         if (mReader != null) {
             try {
                 // Read In The Answer
                 final String line = mReader.readLine();
                 // Debug Some Information
-                mLogger.message("Reading Message'" + line + "'");
+                mVSM3Log.message("Reading Message'" + line + "'");
                 // Return The Notification
                 return line;
             } catch (Exception exc) {
                 // Debug Some Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
             }
         } else {
             // Debug Some Information
-            mLogger.warning("Cannot Read From Agent Client");
+            mVSM3Log.warning("Cannot Read From Agent Client");
         }
         // Otherwise Return Null
         return null;
@@ -240,13 +241,18 @@ public class VSMAgentClient extends Thread {
     @Override
     public final void run() {
         // Debug Some Information
-        mLogger.message("Executing Agent Client");
-        // Constantly Read Data
-        while (!mDone) {
-            mPlayer.handle(this);
+        mVSM3Log.message("Executing Agent Client");
+        // Execute While Not Done
+        try {
+            while (!mDone) {
+                // Constantly Read Data
+                mPlayer.handle(this);
+            }
+        } catch (final Exception exc) {
+            // Debug Some Information
+            mVSM3Log.failure(exc.toString());
         }
         // Debug Some Information
-        mLogger.message("Stopping Agent Client");
+        mVSM3Log.message("Stopping Agent Client");
     }
-
 }
