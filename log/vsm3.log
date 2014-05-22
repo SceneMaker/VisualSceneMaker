@@ -18910,3 +18910,1778 @@ Saving Player Configuration
 </PlayerConfig>
 
 
+INFO to LOGFILE on Thu May 22 16:07:55 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:201)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="SociableAgent"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.charamel.CharamelPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Thu May 22 16:07:55 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:237)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="agent.1.host" val="127.0.0.1"/>
+  <Entry key="agent.1.name" val="Gloria"/>
+  <Entry key="agent.1.port" val="1234"/>
+  <Entry key="agent.1.uaid" val="1"/>
+  <Entry key="agents.count" val="1"/>
+  <Entry key="cmlfbase" val="res/cml"/>
+  <Entry key="msslhost" val="127.0.0.1"/>
+  <Entry key="msslport" val="1002"/>
+  <Entry key="mssrconn" val="false"/>
+  <Entry key="mssrhost" val="127.0.0.1"/>
+  <Entry key="mssrport" val="1000"/>
+  <Entry key="nlufbase" val="res/nlu"/>
+  <Entry key="ssilhost" val="127.0.0.1"/>
+  <Entry key="ssilport" val="1001"/>
+  <Entry key="ssirconn" val="false"/>
+  <Entry key="ssirhost" val="127.0.0.1"/>
+  <Entry key="ssirport" val="1000"/>
+  <Entry key="swilbase" val="res/swi"/>
+  <Entry key="swilhost" val="127.0.0.1"/>
+  <Entry key="swilport" val="1003"/>
+  <Entry key="swirconn" val="false"/>
+  <Entry key="swirhost" val="127.0.0.1"/>
+  <Entry key="swirport" val="1000"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Thu May 22 16:07:55 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:356)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Thu May 22 16:07:55 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:432)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Thu May 22 16:07:55 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:394)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Thu May 22 16:07:55 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:279)
+Loading Sceneflow
+SociableAgent
+
+INFO to LOGFILE on Thu May 22 16:07:55 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:318)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneComment lower="0" upper="70" comment="/*----------------------- TEST PAUSE -------------------------------*/"/>
+  <SceneObject lower="72" upper="261" language="de" identifier="TestCommandPause">
+    <SceneTurn lower="99" upper="138" speaker="Gloria">
+      <SceneUttr lower="107" upper="138" punct=".">
+        <SceneWord lower="107" upper="111" text="Eine"/>
+        <SceneWord lower="112" upper="119" text="Sekunde"/>
+        <ActionObject lower="120" upper="137" name="pause">
+          <ActionFeature lower="127" upper="136" typ="INTEGER" key="time" val="1000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="139" upper="179" speaker="Gloria">
+      <SceneUttr lower="147" upper="179" punct=".">
+        <SceneWord lower="147" upper="151" text="Zwei"/>
+        <SceneWord lower="152" upper="160" text="Sekunden"/>
+        <ActionObject lower="161" upper="178" name="pause">
+          <ActionFeature lower="168" upper="177" typ="INTEGER" key="time" val="2000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="180" upper="220" speaker="Gloria">
+      <SceneUttr lower="188" upper="220" punct=".">
+        <SceneWord lower="188" upper="192" text="Drei"/>
+        <SceneWord lower="193" upper="201" text="Sekunden"/>
+        <ActionObject lower="202" upper="219" name="pause">
+          <ActionFeature lower="209" upper="218" typ="INTEGER" key="time" val="3000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="221" upper="261" speaker="Gloria">
+      <SceneUttr lower="229" upper="261" punct=".">
+        <SceneWord lower="229" upper="233" text="Vier"/>
+        <SceneWord lower="234" upper="242" text="Sekunden"/>
+        <ActionObject lower="243" upper="260" name="pause">
+          <ActionFeature lower="250" upper="259" typ="INTEGER" key="time" val="4000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="263" upper="333" comment="/*----------------------- TEST CAMERA ------------------------------*/"/>
+  <SceneObject lower="335" upper="381" language="de" identifier="TestCameraFullCam">
+    <SceneTurn lower="363" upper="381" speaker="Gloria">
+      <SceneUttr lower="371" upper="381" punct=".">
+        <ActionObject lower="371" upper="380" name="fullcam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="383" upper="429" language="de" identifier="TestCameraBodyCam">
+    <SceneTurn lower="411" upper="429" speaker="Gloria">
+      <SceneUttr lower="419" upper="429" punct=".">
+        <ActionObject lower="419" upper="428" name="bodycam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="431" upper="479" language="de" identifier="TestCameraUpperCam">
+    <SceneTurn lower="460" upper="479" speaker="Gloria">
+      <SceneUttr lower="468" upper="479" punct=".">
+        <ActionObject lower="468" upper="478" name="uppercam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="481" upper="529" language="de" identifier="TestCameraCloseCam">
+    <SceneTurn lower="510" upper="529" speaker="Gloria">
+      <SceneUttr lower="518" upper="529" punct=".">
+        <ActionObject lower="518" upper="528" name="closecam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="531" upper="601" comment="/*----------------------- TEST STAND/SIT ---------------------------*/"/>
+  <SceneObject lower="603" upper="650" language="de" identifier="TestPostureSitDown">
+    <SceneTurn lower="632" upper="650" speaker="Gloria">
+      <SceneUttr lower="640" upper="650" punct=".">
+        <ActionObject lower="640" upper="649" name="sitdown">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="652" upper="699" language="de" identifier="TestPostureStandUp">
+    <SceneTurn lower="681" upper="699" speaker="Gloria">
+      <SceneUttr lower="689" upper="699" punct=".">
+        <ActionObject lower="689" upper="698" name="standup">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="701" upper="771" comment="/*----------------------- TEST SHOW/HIDE ---------------------------*/"/>
+  <SceneObject lower="773" upper="817" language="de" identifier="TestVisibilityShow">
+    <SceneTurn lower="802" upper="817" speaker="Gloria">
+      <SceneUttr lower="810" upper="817" punct=".">
+        <ActionObject lower="810" upper="816" name="show">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="819" upper="863" language="de" identifier="TestVisibilityHide">
+    <SceneTurn lower="848" upper="863" speaker="Gloria">
+      <SceneUttr lower="856" upper="863" punct=".">
+        <ActionObject lower="856" upper="862" name="hide">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="865" upper="935" comment="/*----------------------- TEST GESTURES ----------------------------*/"/>
+  <SceneObject lower="937" upper="1015" language="de" identifier="TestGesturePointLeft">
+    <SceneTurn lower="968" upper="1015" speaker="Gloria">
+      <SceneUttr lower="976" upper="1015" punct=".">
+        <SceneWord lower="976" upper="981" text="Hallo"/>
+        <SceneWord lower="982" upper="986" text="dies"/>
+        <ActionObject lower="987" upper="999" name="point_left">
+        </ActionObject>
+        <SceneWord lower="1000" upper="1003" text="ist"/>
+        <SceneWord lower="1004" upper="1008" text="eine"/>
+        <SceneWord lower="1009" upper="1014" text="Geste"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Thu May 22 16:07:56 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+SEVERE to LOGFILE on Thu May 22 16:08:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="111" state="26" lower="679" upper="680" line="27" column="27">
+
+
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Thu May 22 16:08:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="111" state="26" lower="679" upper="680" line="27" column="27">
+
+
+</SyntaxDocToken>'
+
+INFO to LOGFILE on Thu May 22 16:08:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveActicon(ProjectData.java:375)
+Saving Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Thu May 22 16:08:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveVisicon(ProjectData.java:451)
+Saving Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Thu May 22 16:08:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveGesticon(ProjectData.java:413)
+Saving Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Thu May 22 16:08:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneFlow(ProjectData.java:299)
+Saving Sceneflow
+SociableAgent
+
+INFO to LOGFILE on Thu May 22 16:08:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneScript(ProjectData.java:337)
+Saving Scenescript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneComment lower="0" upper="70" comment="/*----------------------- TEST PAUSE -------------------------------*/"/>
+  <SceneObject lower="72" upper="261" language="de" identifier="TestCommandPause">
+    <SceneTurn lower="99" upper="138" speaker="Gloria">
+      <SceneUttr lower="107" upper="138" punct=".">
+        <SceneWord lower="107" upper="111" text="Eine"/>
+        <SceneWord lower="112" upper="119" text="Sekunde"/>
+        <ActionObject lower="120" upper="137" name="pause">
+          <ActionFeature lower="127" upper="136" typ="INTEGER" key="time" val="1000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="139" upper="179" speaker="Gloria">
+      <SceneUttr lower="147" upper="179" punct=".">
+        <SceneWord lower="147" upper="151" text="Zwei"/>
+        <SceneWord lower="152" upper="160" text="Sekunden"/>
+        <ActionObject lower="161" upper="178" name="pause">
+          <ActionFeature lower="168" upper="177" typ="INTEGER" key="time" val="2000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="180" upper="220" speaker="Gloria">
+      <SceneUttr lower="188" upper="220" punct=".">
+        <SceneWord lower="188" upper="192" text="Drei"/>
+        <SceneWord lower="193" upper="201" text="Sekunden"/>
+        <ActionObject lower="202" upper="219" name="pause">
+          <ActionFeature lower="209" upper="218" typ="INTEGER" key="time" val="3000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="221" upper="261" speaker="Gloria">
+      <SceneUttr lower="229" upper="261" punct=".">
+        <SceneWord lower="229" upper="233" text="Vier"/>
+        <SceneWord lower="234" upper="242" text="Sekunden"/>
+        <ActionObject lower="243" upper="260" name="pause">
+          <ActionFeature lower="250" upper="259" typ="INTEGER" key="time" val="4000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="263" upper="333" comment="/*----------------------- TEST CAMERA ------------------------------*/"/>
+  <SceneObject lower="335" upper="381" language="de" identifier="TestCameraFullCam">
+    <SceneTurn lower="363" upper="381" speaker="Gloria">
+      <SceneUttr lower="371" upper="381" punct=".">
+        <ActionObject lower="371" upper="380" name="fullcam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="383" upper="429" language="de" identifier="TestCameraBodyCam">
+    <SceneTurn lower="411" upper="429" speaker="Gloria">
+      <SceneUttr lower="419" upper="429" punct=".">
+        <ActionObject lower="419" upper="428" name="bodycam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="431" upper="479" language="de" identifier="TestCameraUpperCam">
+    <SceneTurn lower="460" upper="479" speaker="Gloria">
+      <SceneUttr lower="468" upper="479" punct=".">
+        <ActionObject lower="468" upper="478" name="uppercam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="481" upper="529" language="de" identifier="TestCameraCloseCam">
+    <SceneTurn lower="510" upper="529" speaker="Gloria">
+      <SceneUttr lower="518" upper="529" punct=".">
+        <ActionObject lower="518" upper="528" name="closecam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="531" upper="601" comment="/*----------------------- TEST STAND/SIT ---------------------------*/"/>
+  <SceneObject lower="603" upper="650" language="de" identifier="TestPostureSitDown">
+    <SceneTurn lower="632" upper="650" speaker="Gloria">
+      <SceneUttr lower="640" upper="650" punct=".">
+        <ActionObject lower="640" upper="649" name="sitdown">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="652" upper="699" language="de" identifier="TestPostureStandUp">
+    <SceneTurn lower="681" upper="699" speaker="Gloria">
+      <SceneUttr lower="689" upper="699" punct=".">
+        <ActionObject lower="689" upper="698" name="standup">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="701" upper="771" comment="/*----------------------- TEST SHOW/HIDE ---------------------------*/"/>
+  <SceneObject lower="773" upper="817" language="de" identifier="TestVisibilityShow">
+    <SceneTurn lower="802" upper="817" speaker="Gloria">
+      <SceneUttr lower="810" upper="817" punct=".">
+        <ActionObject lower="810" upper="816" name="show">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="819" upper="863" language="de" identifier="TestVisibilityHide">
+    <SceneTurn lower="848" upper="863" speaker="Gloria">
+      <SceneUttr lower="856" upper="863" punct=".">
+        <ActionObject lower="856" upper="862" name="hide">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="865" upper="935" comment="/*----------------------- TEST GESTURES ----------------------------*/"/>
+  <SceneObject lower="937" upper="1015" language="de" identifier="TestGesturePointLeft">
+    <SceneTurn lower="968" upper="1015" speaker="Gloria">
+      <SceneUttr lower="976" upper="1015" punct=".">
+        <SceneWord lower="976" upper="981" text="Hallo"/>
+        <SceneWord lower="982" upper="986" text="dies"/>
+        <ActionObject lower="987" upper="999" name="point_left">
+        </ActionObject>
+        <SceneWord lower="1000" upper="1003" text="ist"/>
+        <SceneWord lower="1004" upper="1008" text="eine"/>
+        <SceneWord lower="1009" upper="1014" text="Geste"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Thu May 22 16:08:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveProjectConfig(ProjectData.java:218)
+Saving Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="SociableAgent"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.charamel.CharamelPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Thu May 22 16:08:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.savePlayerConfig(ProjectData.java:256)
+Saving Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="agent.1.host" val="127.0.0.1"/>
+  <Entry key="agent.1.name" val="Gloria"/>
+  <Entry key="agent.1.port" val="1234"/>
+  <Entry key="agent.1.uaid" val="1"/>
+  <Entry key="agents.count" val="1"/>
+  <Entry key="cmlfbase" val="res/cml"/>
+  <Entry key="msslhost" val="127.0.0.1"/>
+  <Entry key="msslport" val="1002"/>
+  <Entry key="mssrconn" val="false"/>
+  <Entry key="mssrhost" val="127.0.0.1"/>
+  <Entry key="mssrport" val="1000"/>
+  <Entry key="nlufbase" val="res/nlu"/>
+  <Entry key="ssilhost" val="127.0.0.1"/>
+  <Entry key="ssilport" val="1001"/>
+  <Entry key="ssirconn" val="false"/>
+  <Entry key="ssirhost" val="127.0.0.1"/>
+  <Entry key="ssirport" val="1000"/>
+  <Entry key="swilbase" val="res/swi"/>
+  <Entry key="swilhost" val="127.0.0.1"/>
+  <Entry key="swilport" val="1003"/>
+  <Entry key="swirconn" val="false"/>
+  <Entry key="swirhost" val="127.0.0.1"/>
+  <Entry key="swirport" val="1000"/>
+</PlayerConfig>
+
+
+WARNING to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadScenePlayer(ProjectData.java:512)
+java.lang.ClassNotFoundException: de.dfki.charamel.CharamelPlayer
+
+WARNING to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadScenePlayer(ProjectData.java:522)
+java.lang.ClassNotFoundException: de.dfki.charamel.CharamelPlayer
+
+WARNING to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadScenePlayer(ProjectData.java:532)
+java.lang.ClassNotFoundException: de.dfki.charamel.CharamelPlayer
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestVisibilityShow,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestVisibilityShow:
+Gloria: [show].
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestVisibilityShow,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: [show].
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestVisibilityShow,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: [show].
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestVisibilityShow,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[show]
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:18 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:19 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:20 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:21 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:22 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:23 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:25 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:26 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:27 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:28 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:29 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:30 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:31 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:32 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:34 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:35 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:36 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:39 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:40 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:90)
+Executing scene:
+scene_de TestGesturePointLeft:
+Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:95)
+Executing turn:Gloria: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:107)
+Executing utterance: Hallo dies [point_left] ist eine Geste.
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:dies
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:120)
+Executing action:[point_left]
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:ist
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:eine
+
+INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
+Executing vocable:Geste
+

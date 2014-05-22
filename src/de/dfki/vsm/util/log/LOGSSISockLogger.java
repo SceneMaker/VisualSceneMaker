@@ -28,6 +28,7 @@ public class LOGSSISockLogger {
         if (sInstance == null) {
             sInstance = new LOGSSISockLogger(host, port);
         }
+        // TODO: Remove Old Handlers And Install New Ones
         return sInstance;
     }
 
@@ -45,7 +46,7 @@ public class LOGSSISockLogger {
         sLogger.setUseParentHandlers(false);
         try {
             // Install The Console Handler
-            //install(new LOGSSISockHandler(mHost, mPort));
+            install(new LOGSSISockHandler(mHost, mPort));
             // Install The Logfile Handler
             install(new LOGLogFileHandler(
                     SYSUtilities.sSOCKFILE_FILE_NAME,
