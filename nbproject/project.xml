@@ -18,6 +18,11 @@ auxiliary.show.customizer.message=<message>
             </properties>
             <folders>
                 <source-folder>
+                    <label>VisualSceneMaker</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
                     <label>res</label>
                     <type>java</type>
                     <location>res</location>
@@ -27,11 +32,6 @@ auxiliary.show.customizer.message=<message>
                     <label>src</label>
                     <type>java</type>
                     <location>src</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
-                <source-folder>
-                    <label>VisualSceneMaker</label>
-                    <location>.</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
             </folders>
@@ -94,6 +94,7 @@ auxiliary.show.customizer.message=<message>
             </compilation-unit>
             <compilation-unit>
                 <package-root>src</package-root>
+                <classpath mode="compile">lib/JCup.jar:lib/JFlex.jar:lib/JPL3.jar:lib/javaGeom-0.11.1.jar:lib/ujmp-complete-0.2.5.jar</classpath>
                 <source-level>1.8</source-level>
             </compilation-unit>
         </java-data>
