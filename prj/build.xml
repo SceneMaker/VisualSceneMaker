@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="VSM3.0" default="build" basedir="..">
+<project name="VSM" default="build" basedir="..">
     <!-- Define Binary Directory -->
     <property name="bindir" value="${basedir}${file.separator}bin"/>
     <!-- Define Build Directory -->
