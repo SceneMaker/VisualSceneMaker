@@ -20685,3 +20685,1044 @@ Executing vocable:eine
 INFO to LOGFILE on Thu May 22 16:11:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N5TestGesturePointLeft,6,main] at de.dfki.vsm.runtime.player.DefaultPlayer$1.run(DefaultPlayer.java:113)
 Executing vocable:Geste
 
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:201)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="SociableAgent"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.charamel.CharamelPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:237)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="agent.1.host" val="127.0.0.1"/>
+  <Entry key="agent.1.name" val="Gloria"/>
+  <Entry key="agent.1.port" val="1234"/>
+  <Entry key="agent.1.uaid" val="1"/>
+  <Entry key="agent.2.host" val="127.0.0.1"/>
+  <Entry key="agent.2.name" val="Curtis"/>
+  <Entry key="agent.2.port" val="1234"/>
+  <Entry key="agent.2.uaid" val="2"/>
+  <Entry key="agents.count" val="2"/>
+  <Entry key="cmlfbase" val="res/cml"/>
+  <Entry key="msslhost" val="127.0.0.1"/>
+  <Entry key="msslport" val="1002"/>
+  <Entry key="mssrconn" val="false"/>
+  <Entry key="mssrhost" val="127.0.0.1"/>
+  <Entry key="mssrport" val="1000"/>
+  <Entry key="nlufbase" val="res/nlu"/>
+  <Entry key="ssilhost" val="127.0.0.1"/>
+  <Entry key="ssilport" val="1001"/>
+  <Entry key="ssirconn" val="false"/>
+  <Entry key="ssirhost" val="127.0.0.1"/>
+  <Entry key="ssirport" val="1000"/>
+  <Entry key="swilbase" val="res/swi"/>
+  <Entry key="swilhost" val="127.0.0.1"/>
+  <Entry key="swilport" val="1003"/>
+  <Entry key="swirconn" val="false"/>
+  <Entry key="swirhost" val="127.0.0.1"/>
+  <Entry key="swirport" val="1000"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:356)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:432)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:394)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:279)
+Loading Sceneflow
+SociableAgent
+
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:318)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneComment lower="0" upper="70" comment="/*----------------------- TEST HELLO WORLD -------------------------*/"/>
+  <SceneObject lower="72" upper="177" language="de" identifier="TestCurtisHelloWorld">
+    <SceneTurn lower="103" upper="177" speaker="Curtis">
+      <SceneUttr lower="111" upper="177" punct=".">
+        <SceneWord lower="111" upper="121" text="Willkommen"/>
+        <SceneWord lower="122" upper="125" text="zum"/>
+        <SceneWord lower="126" upper="135" text="Telekoleg"/>
+        <SceneWord lower="136" upper="139" text="f?r"/>
+        <SceneWord lower="140" upper="147" text="deutsch"/>
+        <SceneWord lower="148" upper="160" text="franz?sische"/>
+        <SceneWord lower="161" upper="176" text="Partnerschaften"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="179" upper="369" language="de" identifier="TestCurtisByeByeWorld">
+    <SceneTurn lower="211" upper="369" speaker="Curtis">
+      <SceneUttr lower="219" upper="369" punct=".">
+        <SceneWord lower="219" upper="222" text="Auf"/>
+        <SceneWord lower="223" upper="234" text="Wiedersehen"/>
+        <SceneWord lower="235" upper="237" text="an"/>
+        <SceneWord lower="238" upper="242" text="Alle"/>
+        <SceneWord lower="243" upper="246" text="die"/>
+        <SceneWord lower="247" upper="252" text="heute"/>
+        <SceneWord lower="253" upper="255" text="da"/>
+        <SceneWord lower="256" upper="261" text="waren"/>
+        <SceneWord lower="262" upper="268" text="m?chte"/>
+        <SceneWord lower="269" upper="272" text="ich"/>
+        <SceneWord lower="273" upper="277" text="auch"/>
+        <SceneWord lower="278" upper="282" text="beim"/>
+        <SceneWord lower="283" upper="291" text="n?chsten"/>
+        <SceneWord lower="292" upper="296" text="Male"/>
+        <SceneWord lower="297" upper="304" text="wiedeer"/>
+        <SceneWord lower="305" upper="308" text="zum"/>
+        <SceneWord lower="309" upper="318" text="Telekoleg"/>
+        <SceneWord lower="319" upper="322" text="f?r"/>
+        <SceneWord lower="323" upper="330" text="deutsch"/>
+        <SceneWord lower="331" upper="343" text="franz?sische"/>
+        <SceneWord lower="344" upper="359" text="Partnerschaften"/>
+        <SceneWord lower="360" upper="368" text="begr??en"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="371" upper="427" language="fr" identifier="TestGloriaHelloWorld">
+    <SceneTurn lower="402" upper="427" speaker="Gloria">
+      <SceneUttr lower="410" upper="427" punct=".">
+        <SceneWord lower="410" upper="417" text="Bonjour"/>
+        <SceneWord lower="418" upper="421" text="mes"/>
+        <SceneWord lower="422" upper="426" text="amis"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="429" upper="721" language="@@" identifier="TestBothIntroduction">
+    <SceneTurn lower="460" upper="485" speaker="Curtis">
+      <SceneUttr lower="468" upper="485" punct=".">
+        <SceneWord lower="468" upper="473" text="Hallo"/>
+        <SceneWord lower="474" upper="476" text="da"/>
+        <SceneWord lower="477" upper="484" text="drau?en"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="486" upper="511" speaker="Gloria">
+      <SceneUttr lower="494" upper="511" punct=".">
+        <SceneWord lower="494" upper="501" text="Bonjour"/>
+        <SceneWord lower="502" upper="505" text="mes"/>
+        <SceneWord lower="506" upper="510" text="amis"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="512" upper="571" speaker="Curtis">
+      <SceneUttr lower="520" upper="571" punct=".">
+        <SceneWord lower="520" upper="525" text="Meine"/>
+        <SceneWord lower="526" upper="534" text="Freundin"/>
+        <SceneWord lower="535" upper="541" text="Gloria"/>
+        <SceneWord lower="542" upper="544" text="da"/>
+        <SceneWord lower="545" upper="551" text="dr?ben"/>
+        <SceneWord lower="552" upper="555" text="ist"/>
+        <SceneWord lower="556" upper="560" text="eine"/>
+        <SceneWord lower="561" upper="570" text="Franz?sin"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="572" upper="632" speaker="Gloria">
+      <SceneUttr lower="580" upper="591" punct=".">
+        <SceneWord lower="580" upper="583" text="Oui"/>
+        <SceneWord lower="584" upper="590" text="Curtis"/>
+      </SceneUttr>
+      <SceneUttr lower="592" upper="622" punct=".">
+        <SceneWord lower="592" upper="594" text="Et"/>
+        <SceneWord lower="595" upper="597" text="tu"/>
+        <SceneWord lower="598" upper="600" text="es"/>
+        <SceneWord lower="601" upper="603" text="un"/>
+        <SceneWord lower="604" upper="612" text="allemand"/>
+        <SceneWord lower="613" upper="616" text="mon"/>
+        <SceneWord lower="617" upper="621" text="amis"/>
+      </SceneUttr>
+      <SceneUttr lower="623" upper="632" punct="?">
+        <SceneAbbrev lower="623" upper="631" first="D" second="accord"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="633" upper="721" speaker="Curtis">
+      <SceneUttr lower="641" upper="647" punct="!">
+        <SceneWord lower="641" upper="646" text="Genau"/>
+      </SceneUttr>
+      <SceneUttr lower="648" upper="721" punct=".">
+        <SceneWord lower="648" upper="651" text="Und"/>
+        <SceneWord lower="652" upper="657" text="jetzt"/>
+        <SceneWord lower="658" upper="665" text="startet"/>
+        <SceneWord lower="666" upper="669" text="der"/>
+        <SceneWord lower="670" upper="679" text="Telekoleg"/>
+        <SceneWord lower="680" upper="683" text="f?r"/>
+        <SceneWord lower="684" upper="691" text="deutsch"/>
+        <SceneWord lower="692" upper="704" text="franz?sische"/>
+        <SceneWord lower="705" upper="720" text="Partnerschaften"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="723" upper="793" comment="/*----------------------- TEST LANGUAGE ----------------------------*/"/>
+  <SceneObject lower="795" upper="845" language="de" identifier="TestGloriaLanguageDe">
+    <SceneTurn lower="826" upper="845" speaker="Gloria">
+      <SceneUttr lower="834" upper="845" punct=".">
+        <SceneWord lower="834" upper="839" text="Hallo"/>
+        <SceneWord lower="840" upper="844" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="847" upper="898" language="en" identifier="TestGloriaLanguageEn">
+    <SceneTurn lower="878" upper="898" speaker="Gloria">
+      <SceneUttr lower="886" upper="898" punct=".">
+        <SceneWord lower="886" upper="891" text="Hello"/>
+        <SceneWord lower="892" upper="897" text="World"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="900" upper="956" language="fr" identifier="TestGloriaLanguageFr">
+    <SceneTurn lower="931" upper="956" speaker="Gloria">
+      <SceneUttr lower="939" upper="956" punct=".">
+        <SceneWord lower="939" upper="946" text="Bonjour"/>
+        <SceneWord lower="947" upper="950" text="mes"/>
+        <SceneWord lower="951" upper="955" text="amis"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="958" upper="1028" comment="/*----------------------- TEST PAUSE -------------------------------*/"/>
+  <SceneObject lower="1030" upper="1225" language="de" identifier="TestGloriaCommandPause">
+    <SceneTurn lower="1063" upper="1102" speaker="Gloria">
+      <SceneUttr lower="1071" upper="1102" punct=".">
+        <SceneWord lower="1071" upper="1075" text="Eine"/>
+        <SceneWord lower="1076" upper="1083" text="Sekunde"/>
+        <ActionObject lower="1084" upper="1101" name="pause">
+          <ActionFeature lower="1091" upper="1100" typ="INTEGER" key="time" val="1000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1103" upper="1143" speaker="Gloria">
+      <SceneUttr lower="1111" upper="1143" punct=".">
+        <SceneWord lower="1111" upper="1115" text="Zwei"/>
+        <SceneWord lower="1116" upper="1124" text="Sekunden"/>
+        <ActionObject lower="1125" upper="1142" name="pause">
+          <ActionFeature lower="1132" upper="1141" typ="INTEGER" key="time" val="2000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1144" upper="1184" speaker="Gloria">
+      <SceneUttr lower="1152" upper="1184" punct=".">
+        <SceneWord lower="1152" upper="1156" text="Drei"/>
+        <SceneWord lower="1157" upper="1165" text="Sekunden"/>
+        <ActionObject lower="1166" upper="1183" name="pause">
+          <ActionFeature lower="1173" upper="1182" typ="INTEGER" key="time" val="3000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1185" upper="1225" speaker="Gloria">
+      <SceneUttr lower="1193" upper="1225" punct=".">
+        <SceneWord lower="1193" upper="1197" text="Vier"/>
+        <SceneWord lower="1198" upper="1206" text="Sekunden"/>
+        <ActionObject lower="1207" upper="1224" name="pause">
+          <ActionFeature lower="1214" upper="1223" typ="INTEGER" key="time" val="4000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1227" upper="1297" comment="/*----------------------- TEST CAMERA ------------------------------*/"/>
+  <SceneObject lower="1299" upper="1351" language="de" identifier="TestGloriaCameraFullCam">
+    <SceneTurn lower="1333" upper="1351" speaker="Gloria">
+      <SceneUttr lower="1341" upper="1351" punct=".">
+        <ActionObject lower="1341" upper="1350" name="fullcam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1353" upper="1405" language="de" identifier="TestGloriaCameraBodyCam">
+    <SceneTurn lower="1387" upper="1405" speaker="Gloria">
+      <SceneUttr lower="1395" upper="1405" punct=".">
+        <ActionObject lower="1395" upper="1404" name="bodycam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1407" upper="1461" language="de" identifier="TestGloriaCameraUpperCam">
+    <SceneTurn lower="1442" upper="1461" speaker="Gloria">
+      <SceneUttr lower="1450" upper="1461" punct=".">
+        <ActionObject lower="1450" upper="1460" name="uppercam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1463" upper="1517" language="de" identifier="TestGloriaCameraCloseCam">
+    <SceneTurn lower="1498" upper="1517" speaker="Gloria">
+      <SceneUttr lower="1506" upper="1517" punct=".">
+        <ActionObject lower="1506" upper="1516" name="closecam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1519" upper="1589" comment="/*----------------------- TEST STAND/SIT ---------------------------*/"/>
+  <SceneObject lower="1591" upper="1644" language="de" identifier="TestGloriaPostureSitDown">
+    <SceneTurn lower="1626" upper="1644" speaker="Gloria">
+      <SceneUttr lower="1634" upper="1644" punct=".">
+        <ActionObject lower="1634" upper="1643" name="sitdown">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1646" upper="1699" language="de" identifier="TestGloriaPostureStandUp">
+    <SceneTurn lower="1681" upper="1699" speaker="Gloria">
+      <SceneUttr lower="1689" upper="1699" punct=".">
+        <ActionObject lower="1689" upper="1698" name="standup">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1701" upper="1771" comment="/*----------------------- TEST SHOW/HIDE ---------------------------*/"/>
+  <SceneObject lower="1773" upper="1823" language="de" identifier="TestGloriaVisibilityShow">
+    <SceneTurn lower="1808" upper="1823" speaker="Gloria">
+      <SceneUttr lower="1816" upper="1823" punct=".">
+        <ActionObject lower="1816" upper="1822" name="show">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1825" upper="1875" language="de" identifier="TestGloriaVisibilityHide">
+    <SceneTurn lower="1860" upper="1875" speaker="Gloria">
+      <SceneUttr lower="1868" upper="1875" punct=".">
+        <ActionObject lower="1868" upper="1874" name="hide">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1877" upper="1947" comment="/*----------------------- TEST GESTURES ----------------------------*/"/>
+  <SceneObject lower="1949" upper="2033" language="de" identifier="TestGloriaGesturePointLeft">
+    <SceneTurn lower="1986" upper="2033" speaker="Gloria">
+      <SceneUttr lower="1994" upper="2033" punct=".">
+        <SceneWord lower="1994" upper="1999" text="Hallo"/>
+        <SceneWord lower="2000" upper="2004" text="dies"/>
+        <ActionObject lower="2005" upper="2017" name="point_left">
+        </ActionObject>
+        <SceneWord lower="2018" upper="2021" text="ist"/>
+        <SceneWord lower="2022" upper="2026" text="eine"/>
+        <SceneWord lower="2027" upper="2032" text="Geste"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri May 23 16:29:43 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:201)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="SociableAgent"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.charamel.CharamelPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:237)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="agent.1.host" val="127.0.0.1"/>
+  <Entry key="agent.1.name" val="Gloria"/>
+  <Entry key="agent.1.port" val="1234"/>
+  <Entry key="agent.1.uaid" val="1"/>
+  <Entry key="agent.2.host" val="127.0.0.1"/>
+  <Entry key="agent.2.name" val="Curtis"/>
+  <Entry key="agent.2.port" val="1234"/>
+  <Entry key="agent.2.uaid" val="2"/>
+  <Entry key="agents.count" val="2"/>
+  <Entry key="cmlfbase" val="res/cml"/>
+  <Entry key="msslhost" val="127.0.0.1"/>
+  <Entry key="msslport" val="1002"/>
+  <Entry key="mssrconn" val="false"/>
+  <Entry key="mssrhost" val="127.0.0.1"/>
+  <Entry key="mssrport" val="1000"/>
+  <Entry key="nlufbase" val="res/nlu"/>
+  <Entry key="ssilhost" val="127.0.0.1"/>
+  <Entry key="ssilport" val="1001"/>
+  <Entry key="ssirconn" val="false"/>
+  <Entry key="ssirhost" val="127.0.0.1"/>
+  <Entry key="ssirport" val="1000"/>
+  <Entry key="swilbase" val="res/swi"/>
+  <Entry key="swilhost" val="127.0.0.1"/>
+  <Entry key="swilport" val="1003"/>
+  <Entry key="swirconn" val="false"/>
+  <Entry key="swirhost" val="127.0.0.1"/>
+  <Entry key="swirport" val="1000"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:356)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:432)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:394)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:279)
+Loading Sceneflow
+SociableAgent
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:318)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneComment lower="0" upper="70" comment="/*----------------------- TEST HELLO WORLD -------------------------*/"/>
+  <SceneObject lower="72" upper="177" language="de" identifier="TestCurtisHelloWorld">
+    <SceneTurn lower="103" upper="177" speaker="Curtis">
+      <SceneUttr lower="111" upper="177" punct=".">
+        <SceneWord lower="111" upper="121" text="Willkommen"/>
+        <SceneWord lower="122" upper="125" text="zum"/>
+        <SceneWord lower="126" upper="135" text="Telekoleg"/>
+        <SceneWord lower="136" upper="139" text="f?r"/>
+        <SceneWord lower="140" upper="147" text="deutsch"/>
+        <SceneWord lower="148" upper="160" text="franz?sische"/>
+        <SceneWord lower="161" upper="176" text="Partnerschaften"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="179" upper="369" language="de" identifier="TestCurtisByeByeWorld">
+    <SceneTurn lower="211" upper="369" speaker="Curtis">
+      <SceneUttr lower="219" upper="369" punct=".">
+        <SceneWord lower="219" upper="222" text="Auf"/>
+        <SceneWord lower="223" upper="234" text="Wiedersehen"/>
+        <SceneWord lower="235" upper="237" text="an"/>
+        <SceneWord lower="238" upper="242" text="Alle"/>
+        <SceneWord lower="243" upper="246" text="die"/>
+        <SceneWord lower="247" upper="252" text="heute"/>
+        <SceneWord lower="253" upper="255" text="da"/>
+        <SceneWord lower="256" upper="261" text="waren"/>
+        <SceneWord lower="262" upper="268" text="m?chte"/>
+        <SceneWord lower="269" upper="272" text="ich"/>
+        <SceneWord lower="273" upper="277" text="auch"/>
+        <SceneWord lower="278" upper="282" text="beim"/>
+        <SceneWord lower="283" upper="291" text="n?chsten"/>
+        <SceneWord lower="292" upper="296" text="Male"/>
+        <SceneWord lower="297" upper="304" text="wiedeer"/>
+        <SceneWord lower="305" upper="308" text="zum"/>
+        <SceneWord lower="309" upper="318" text="Telekoleg"/>
+        <SceneWord lower="319" upper="322" text="f?r"/>
+        <SceneWord lower="323" upper="330" text="deutsch"/>
+        <SceneWord lower="331" upper="343" text="franz?sische"/>
+        <SceneWord lower="344" upper="359" text="Partnerschaften"/>
+        <SceneWord lower="360" upper="368" text="begr??en"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="371" upper="427" language="fr" identifier="TestGloriaHelloWorld">
+    <SceneTurn lower="402" upper="427" speaker="Gloria">
+      <SceneUttr lower="410" upper="427" punct=".">
+        <SceneWord lower="410" upper="417" text="Bonjour"/>
+        <SceneWord lower="418" upper="421" text="mes"/>
+        <SceneWord lower="422" upper="426" text="amis"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="429" upper="721" language="@@" identifier="TestBothIntroduction">
+    <SceneTurn lower="460" upper="485" speaker="Curtis">
+      <SceneUttr lower="468" upper="485" punct=".">
+        <SceneWord lower="468" upper="473" text="Hallo"/>
+        <SceneWord lower="474" upper="476" text="da"/>
+        <SceneWord lower="477" upper="484" text="drau?en"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="486" upper="511" speaker="Gloria">
+      <SceneUttr lower="494" upper="511" punct=".">
+        <SceneWord lower="494" upper="501" text="Bonjour"/>
+        <SceneWord lower="502" upper="505" text="mes"/>
+        <SceneWord lower="506" upper="510" text="amis"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="512" upper="571" speaker="Curtis">
+      <SceneUttr lower="520" upper="571" punct=".">
+        <SceneWord lower="520" upper="525" text="Meine"/>
+        <SceneWord lower="526" upper="534" text="Freundin"/>
+        <SceneWord lower="535" upper="541" text="Gloria"/>
+        <SceneWord lower="542" upper="544" text="da"/>
+        <SceneWord lower="545" upper="551" text="dr?ben"/>
+        <SceneWord lower="552" upper="555" text="ist"/>
+        <SceneWord lower="556" upper="560" text="eine"/>
+        <SceneWord lower="561" upper="570" text="Franz?sin"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="572" upper="632" speaker="Gloria">
+      <SceneUttr lower="580" upper="591" punct=".">
+        <SceneWord lower="580" upper="583" text="Oui"/>
+        <SceneWord lower="584" upper="590" text="Curtis"/>
+      </SceneUttr>
+      <SceneUttr lower="592" upper="622" punct=".">
+        <SceneWord lower="592" upper="594" text="Et"/>
+        <SceneWord lower="595" upper="597" text="tu"/>
+        <SceneWord lower="598" upper="600" text="es"/>
+        <SceneWord lower="601" upper="603" text="un"/>
+        <SceneWord lower="604" upper="612" text="allemand"/>
+        <SceneWord lower="613" upper="616" text="mon"/>
+        <SceneWord lower="617" upper="621" text="amis"/>
+      </SceneUttr>
+      <SceneUttr lower="623" upper="632" punct="?">
+        <SceneAbbrev lower="623" upper="631" first="D" second="accord"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="633" upper="721" speaker="Curtis">
+      <SceneUttr lower="641" upper="647" punct="!">
+        <SceneWord lower="641" upper="646" text="Genau"/>
+      </SceneUttr>
+      <SceneUttr lower="648" upper="721" punct=".">
+        <SceneWord lower="648" upper="651" text="Und"/>
+        <SceneWord lower="652" upper="657" text="jetzt"/>
+        <SceneWord lower="658" upper="665" text="startet"/>
+        <SceneWord lower="666" upper="669" text="der"/>
+        <SceneWord lower="670" upper="679" text="Telekoleg"/>
+        <SceneWord lower="680" upper="683" text="f?r"/>
+        <SceneWord lower="684" upper="691" text="deutsch"/>
+        <SceneWord lower="692" upper="704" text="franz?sische"/>
+        <SceneWord lower="705" upper="720" text="Partnerschaften"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="723" upper="793" comment="/*----------------------- TEST LANGUAGE ----------------------------*/"/>
+  <SceneObject lower="795" upper="845" language="de" identifier="TestGloriaLanguageDe">
+    <SceneTurn lower="826" upper="845" speaker="Gloria">
+      <SceneUttr lower="834" upper="845" punct=".">
+        <SceneWord lower="834" upper="839" text="Hallo"/>
+        <SceneWord lower="840" upper="844" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="847" upper="898" language="en" identifier="TestGloriaLanguageEn">
+    <SceneTurn lower="878" upper="898" speaker="Gloria">
+      <SceneUttr lower="886" upper="898" punct=".">
+        <SceneWord lower="886" upper="891" text="Hello"/>
+        <SceneWord lower="892" upper="897" text="World"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="900" upper="956" language="fr" identifier="TestGloriaLanguageFr">
+    <SceneTurn lower="931" upper="956" speaker="Gloria">
+      <SceneUttr lower="939" upper="956" punct=".">
+        <SceneWord lower="939" upper="946" text="Bonjour"/>
+        <SceneWord lower="947" upper="950" text="mes"/>
+        <SceneWord lower="951" upper="955" text="amis"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="958" upper="1028" comment="/*----------------------- TEST PAUSE -------------------------------*/"/>
+  <SceneObject lower="1030" upper="1225" language="de" identifier="TestGloriaCommandPause">
+    <SceneTurn lower="1063" upper="1102" speaker="Gloria">
+      <SceneUttr lower="1071" upper="1102" punct=".">
+        <SceneWord lower="1071" upper="1075" text="Eine"/>
+        <SceneWord lower="1076" upper="1083" text="Sekunde"/>
+        <ActionObject lower="1084" upper="1101" name="pause">
+          <ActionFeature lower="1091" upper="1100" typ="INTEGER" key="time" val="1000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1103" upper="1143" speaker="Gloria">
+      <SceneUttr lower="1111" upper="1143" punct=".">
+        <SceneWord lower="1111" upper="1115" text="Zwei"/>
+        <SceneWord lower="1116" upper="1124" text="Sekunden"/>
+        <ActionObject lower="1125" upper="1142" name="pause">
+          <ActionFeature lower="1132" upper="1141" typ="INTEGER" key="time" val="2000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1144" upper="1184" speaker="Gloria">
+      <SceneUttr lower="1152" upper="1184" punct=".">
+        <SceneWord lower="1152" upper="1156" text="Drei"/>
+        <SceneWord lower="1157" upper="1165" text="Sekunden"/>
+        <ActionObject lower="1166" upper="1183" name="pause">
+          <ActionFeature lower="1173" upper="1182" typ="INTEGER" key="time" val="3000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1185" upper="1225" speaker="Gloria">
+      <SceneUttr lower="1193" upper="1225" punct=".">
+        <SceneWord lower="1193" upper="1197" text="Vier"/>
+        <SceneWord lower="1198" upper="1206" text="Sekunden"/>
+        <ActionObject lower="1207" upper="1224" name="pause">
+          <ActionFeature lower="1214" upper="1223" typ="INTEGER" key="time" val="4000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1227" upper="1297" comment="/*----------------------- TEST CAMERA ------------------------------*/"/>
+  <SceneObject lower="1299" upper="1351" language="de" identifier="TestGloriaCameraFullCam">
+    <SceneTurn lower="1333" upper="1351" speaker="Gloria">
+      <SceneUttr lower="1341" upper="1351" punct=".">
+        <ActionObject lower="1341" upper="1350" name="fullcam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1353" upper="1405" language="de" identifier="TestGloriaCameraBodyCam">
+    <SceneTurn lower="1387" upper="1405" speaker="Gloria">
+      <SceneUttr lower="1395" upper="1405" punct=".">
+        <ActionObject lower="1395" upper="1404" name="bodycam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1407" upper="1461" language="de" identifier="TestGloriaCameraUpperCam">
+    <SceneTurn lower="1442" upper="1461" speaker="Gloria">
+      <SceneUttr lower="1450" upper="1461" punct=".">
+        <ActionObject lower="1450" upper="1460" name="uppercam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1463" upper="1517" language="de" identifier="TestGloriaCameraCloseCam">
+    <SceneTurn lower="1498" upper="1517" speaker="Gloria">
+      <SceneUttr lower="1506" upper="1517" punct=".">
+        <ActionObject lower="1506" upper="1516" name="closecam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1519" upper="1589" comment="/*----------------------- TEST STAND/SIT ---------------------------*/"/>
+  <SceneObject lower="1591" upper="1644" language="de" identifier="TestGloriaPostureSitDown">
+    <SceneTurn lower="1626" upper="1644" speaker="Gloria">
+      <SceneUttr lower="1634" upper="1644" punct=".">
+        <ActionObject lower="1634" upper="1643" name="sitdown">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1646" upper="1699" language="de" identifier="TestGloriaPostureStandUp">
+    <SceneTurn lower="1681" upper="1699" speaker="Gloria">
+      <SceneUttr lower="1689" upper="1699" punct=".">
+        <ActionObject lower="1689" upper="1698" name="standup">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1701" upper="1771" comment="/*----------------------- TEST SHOW/HIDE ---------------------------*/"/>
+  <SceneObject lower="1773" upper="1823" language="de" identifier="TestGloriaVisibilityShow">
+    <SceneTurn lower="1808" upper="1823" speaker="Gloria">
+      <SceneUttr lower="1816" upper="1823" punct=".">
+        <ActionObject lower="1816" upper="1822" name="show">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1825" upper="1875" language="de" identifier="TestGloriaVisibilityHide">
+    <SceneTurn lower="1860" upper="1875" speaker="Gloria">
+      <SceneUttr lower="1868" upper="1875" punct=".">
+        <ActionObject lower="1868" upper="1874" name="hide">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1877" upper="1947" comment="/*----------------------- TEST GESTURES ----------------------------*/"/>
+  <SceneObject lower="1949" upper="2033" language="de" identifier="TestGloriaGesturePointLeft">
+    <SceneTurn lower="1986" upper="2033" speaker="Gloria">
+      <SceneUttr lower="1994" upper="2033" punct=".">
+        <SceneWord lower="1994" upper="1999" text="Hallo"/>
+        <SceneWord lower="2000" upper="2004" text="dies"/>
+        <ActionObject lower="2005" upper="2017" name="point_left">
+        </ActionObject>
+        <SceneWord lower="2018" upper="2021" text="ist"/>
+        <SceneWord lower="2022" upper="2026" text="eine"/>
+        <SceneWord lower="2027" upper="2032" text="Geste"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri May 23 16:30:00 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+INFO to LOGFILE on Fri May 23 16:30:02 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveActicon(ProjectData.java:375)
+Saving Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri May 23 16:30:02 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveVisicon(ProjectData.java:451)
+Saving Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri May 23 16:30:02 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveGesticon(ProjectData.java:413)
+Saving Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri May 23 16:30:02 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneFlow(ProjectData.java:299)
+Saving Sceneflow
+SociableAgent
+
+INFO to LOGFILE on Fri May 23 16:30:02 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneScript(ProjectData.java:337)
+Saving Scenescript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneComment lower="0" upper="70" comment="/*----------------------- TEST HELLO WORLD -------------------------*/"/>
+  <SceneObject lower="72" upper="177" language="de" identifier="TestCurtisHelloWorld">
+    <SceneTurn lower="103" upper="177" speaker="Curtis">
+      <SceneUttr lower="111" upper="177" punct=".">
+        <SceneWord lower="111" upper="121" text="Willkommen"/>
+        <SceneWord lower="122" upper="125" text="zum"/>
+        <SceneWord lower="126" upper="135" text="Telekoleg"/>
+        <SceneWord lower="136" upper="139" text="f?r"/>
+        <SceneWord lower="140" upper="147" text="deutsch"/>
+        <SceneWord lower="148" upper="160" text="franz?sische"/>
+        <SceneWord lower="161" upper="176" text="Partnerschaften"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="179" upper="369" language="de" identifier="TestCurtisByeByeWorld">
+    <SceneTurn lower="211" upper="369" speaker="Curtis">
+      <SceneUttr lower="219" upper="369" punct=".">
+        <SceneWord lower="219" upper="222" text="Auf"/>
+        <SceneWord lower="223" upper="234" text="Wiedersehen"/>
+        <SceneWord lower="235" upper="237" text="an"/>
+        <SceneWord lower="238" upper="242" text="Alle"/>
+        <SceneWord lower="243" upper="246" text="die"/>
+        <SceneWord lower="247" upper="252" text="heute"/>
+        <SceneWord lower="253" upper="255" text="da"/>
+        <SceneWord lower="256" upper="261" text="waren"/>
+        <SceneWord lower="262" upper="268" text="m?chte"/>
+        <SceneWord lower="269" upper="272" text="ich"/>
+        <SceneWord lower="273" upper="277" text="auch"/>
+        <SceneWord lower="278" upper="282" text="beim"/>
+        <SceneWord lower="283" upper="291" text="n?chsten"/>
+        <SceneWord lower="292" upper="296" text="Male"/>
+        <SceneWord lower="297" upper="304" text="wiedeer"/>
+        <SceneWord lower="305" upper="308" text="zum"/>
+        <SceneWord lower="309" upper="318" text="Telekoleg"/>
+        <SceneWord lower="319" upper="322" text="f?r"/>
+        <SceneWord lower="323" upper="330" text="deutsch"/>
+        <SceneWord lower="331" upper="343" text="franz?sische"/>
+        <SceneWord lower="344" upper="359" text="Partnerschaften"/>
+        <SceneWord lower="360" upper="368" text="begr??en"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="371" upper="427" language="fr" identifier="TestGloriaHelloWorld">
+    <SceneTurn lower="402" upper="427" speaker="Gloria">
+      <SceneUttr lower="410" upper="427" punct=".">
+        <SceneWord lower="410" upper="417" text="Bonjour"/>
+        <SceneWord lower="418" upper="421" text="mes"/>
+        <SceneWord lower="422" upper="426" text="amis"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="429" upper="721" language="@@" identifier="TestBothIntroduction">
+    <SceneTurn lower="460" upper="485" speaker="Curtis">
+      <SceneUttr lower="468" upper="485" punct=".">
+        <SceneWord lower="468" upper="473" text="Hallo"/>
+        <SceneWord lower="474" upper="476" text="da"/>
+        <SceneWord lower="477" upper="484" text="drau?en"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="486" upper="511" speaker="Gloria">
+      <SceneUttr lower="494" upper="511" punct=".">
+        <SceneWord lower="494" upper="501" text="Bonjour"/>
+        <SceneWord lower="502" upper="505" text="mes"/>
+        <SceneWord lower="506" upper="510" text="amis"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="512" upper="571" speaker="Curtis">
+      <SceneUttr lower="520" upper="571" punct=".">
+        <SceneWord lower="520" upper="525" text="Meine"/>
+        <SceneWord lower="526" upper="534" text="Freundin"/>
+        <SceneWord lower="535" upper="541" text="Gloria"/>
+        <SceneWord lower="542" upper="544" text="da"/>
+        <SceneWord lower="545" upper="551" text="dr?ben"/>
+        <SceneWord lower="552" upper="555" text="ist"/>
+        <SceneWord lower="556" upper="560" text="eine"/>
+        <SceneWord lower="561" upper="570" text="Franz?sin"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="572" upper="632" speaker="Gloria">
+      <SceneUttr lower="580" upper="591" punct=".">
+        <SceneWord lower="580" upper="583" text="Oui"/>
+        <SceneWord lower="584" upper="590" text="Curtis"/>
+      </SceneUttr>
+      <SceneUttr lower="592" upper="622" punct=".">
+        <SceneWord lower="592" upper="594" text="Et"/>
+        <SceneWord lower="595" upper="597" text="tu"/>
+        <SceneWord lower="598" upper="600" text="es"/>
+        <SceneWord lower="601" upper="603" text="un"/>
+        <SceneWord lower="604" upper="612" text="allemand"/>
+        <SceneWord lower="613" upper="616" text="mon"/>
+        <SceneWord lower="617" upper="621" text="amis"/>
+      </SceneUttr>
+      <SceneUttr lower="623" upper="632" punct="?">
+        <SceneAbbrev lower="623" upper="631" first="D" second="accord"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="633" upper="721" speaker="Curtis">
+      <SceneUttr lower="641" upper="647" punct="!">
+        <SceneWord lower="641" upper="646" text="Genau"/>
+      </SceneUttr>
+      <SceneUttr lower="648" upper="721" punct=".">
+        <SceneWord lower="648" upper="651" text="Und"/>
+        <SceneWord lower="652" upper="657" text="jetzt"/>
+        <SceneWord lower="658" upper="665" text="startet"/>
+        <SceneWord lower="666" upper="669" text="der"/>
+        <SceneWord lower="670" upper="679" text="Telekoleg"/>
+        <SceneWord lower="680" upper="683" text="f?r"/>
+        <SceneWord lower="684" upper="691" text="deutsch"/>
+        <SceneWord lower="692" upper="704" text="franz?sische"/>
+        <SceneWord lower="705" upper="720" text="Partnerschaften"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="723" upper="793" comment="/*----------------------- TEST LANGUAGE ----------------------------*/"/>
+  <SceneObject lower="795" upper="845" language="de" identifier="TestGloriaLanguageDe">
+    <SceneTurn lower="826" upper="845" speaker="Gloria">
+      <SceneUttr lower="834" upper="845" punct=".">
+        <SceneWord lower="834" upper="839" text="Hallo"/>
+        <SceneWord lower="840" upper="844" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="847" upper="898" language="en" identifier="TestGloriaLanguageEn">
+    <SceneTurn lower="878" upper="898" speaker="Gloria">
+      <SceneUttr lower="886" upper="898" punct=".">
+        <SceneWord lower="886" upper="891" text="Hello"/>
+        <SceneWord lower="892" upper="897" text="World"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="900" upper="956" language="fr" identifier="TestGloriaLanguageFr">
+    <SceneTurn lower="931" upper="956" speaker="Gloria">
+      <SceneUttr lower="939" upper="956" punct=".">
+        <SceneWord lower="939" upper="946" text="Bonjour"/>
+        <SceneWord lower="947" upper="950" text="mes"/>
+        <SceneWord lower="951" upper="955" text="amis"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="958" upper="1028" comment="/*----------------------- TEST PAUSE -------------------------------*/"/>
+  <SceneObject lower="1030" upper="1225" language="de" identifier="TestGloriaCommandPause">
+    <SceneTurn lower="1063" upper="1102" speaker="Gloria">
+      <SceneUttr lower="1071" upper="1102" punct=".">
+        <SceneWord lower="1071" upper="1075" text="Eine"/>
+        <SceneWord lower="1076" upper="1083" text="Sekunde"/>
+        <ActionObject lower="1084" upper="1101" name="pause">
+          <ActionFeature lower="1091" upper="1100" typ="INTEGER" key="time" val="1000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1103" upper="1143" speaker="Gloria">
+      <SceneUttr lower="1111" upper="1143" punct=".">
+        <SceneWord lower="1111" upper="1115" text="Zwei"/>
+        <SceneWord lower="1116" upper="1124" text="Sekunden"/>
+        <ActionObject lower="1125" upper="1142" name="pause">
+          <ActionFeature lower="1132" upper="1141" typ="INTEGER" key="time" val="2000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1144" upper="1184" speaker="Gloria">
+      <SceneUttr lower="1152" upper="1184" punct=".">
+        <SceneWord lower="1152" upper="1156" text="Drei"/>
+        <SceneWord lower="1157" upper="1165" text="Sekunden"/>
+        <ActionObject lower="1166" upper="1183" name="pause">
+          <ActionFeature lower="1173" upper="1182" typ="INTEGER" key="time" val="3000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1185" upper="1225" speaker="Gloria">
+      <SceneUttr lower="1193" upper="1225" punct=".">
+        <SceneWord lower="1193" upper="1197" text="Vier"/>
+        <SceneWord lower="1198" upper="1206" text="Sekunden"/>
+        <ActionObject lower="1207" upper="1224" name="pause">
+          <ActionFeature lower="1214" upper="1223" typ="INTEGER" key="time" val="4000"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1227" upper="1297" comment="/*----------------------- TEST CAMERA ------------------------------*/"/>
+  <SceneObject lower="1299" upper="1351" language="de" identifier="TestGloriaCameraFullCam">
+    <SceneTurn lower="1333" upper="1351" speaker="Gloria">
+      <SceneUttr lower="1341" upper="1351" punct=".">
+        <ActionObject lower="1341" upper="1350" name="fullcam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1353" upper="1405" language="de" identifier="TestGloriaCameraBodyCam">
+    <SceneTurn lower="1387" upper="1405" speaker="Gloria">
+      <SceneUttr lower="1395" upper="1405" punct=".">
+        <ActionObject lower="1395" upper="1404" name="bodycam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1407" upper="1461" language="de" identifier="TestGloriaCameraUpperCam">
+    <SceneTurn lower="1442" upper="1461" speaker="Gloria">
+      <SceneUttr lower="1450" upper="1461" punct=".">
+        <ActionObject lower="1450" upper="1460" name="uppercam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1463" upper="1517" language="de" identifier="TestGloriaCameraCloseCam">
+    <SceneTurn lower="1498" upper="1517" speaker="Gloria">
+      <SceneUttr lower="1506" upper="1517" punct=".">
+        <ActionObject lower="1506" upper="1516" name="closecam">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1519" upper="1589" comment="/*----------------------- TEST STAND/SIT ---------------------------*/"/>
+  <SceneObject lower="1591" upper="1644" language="de" identifier="TestGloriaPostureSitDown">
+    <SceneTurn lower="1626" upper="1644" speaker="Gloria">
+      <SceneUttr lower="1634" upper="1644" punct=".">
+        <ActionObject lower="1634" upper="1643" name="sitdown">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1646" upper="1699" language="de" identifier="TestGloriaPostureStandUp">
+    <SceneTurn lower="1681" upper="1699" speaker="Gloria">
+      <SceneUttr lower="1689" upper="1699" punct=".">
+        <ActionObject lower="1689" upper="1698" name="standup">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1701" upper="1771" comment="/*----------------------- TEST SHOW/HIDE ---------------------------*/"/>
+  <SceneObject lower="1773" upper="1823" language="de" identifier="TestGloriaVisibilityShow">
+    <SceneTurn lower="1808" upper="1823" speaker="Gloria">
+      <SceneUttr lower="1816" upper="1823" punct=".">
+        <ActionObject lower="1816" upper="1822" name="show">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1825" upper="1875" language="de" identifier="TestGloriaVisibilityHide">
+    <SceneTurn lower="1860" upper="1875" speaker="Gloria">
+      <SceneUttr lower="1868" upper="1875" punct=".">
+        <ActionObject lower="1868" upper="1874" name="hide">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="1877" upper="1947" comment="/*----------------------- TEST GESTURES ----------------------------*/"/>
+  <SceneObject lower="1949" upper="2033" language="de" identifier="TestGloriaGesturePointLeft">
+    <SceneTurn lower="1986" upper="2033" speaker="Gloria">
+      <SceneUttr lower="1994" upper="2033" punct=".">
+        <SceneWord lower="1994" upper="1999" text="Hallo"/>
+        <SceneWord lower="2000" upper="2004" text="dies"/>
+        <ActionObject lower="2005" upper="2017" name="point_left">
+        </ActionObject>
+        <SceneWord lower="2018" upper="2021" text="ist"/>
+        <SceneWord lower="2022" upper="2026" text="eine"/>
+        <SceneWord lower="2027" upper="2032" text="Geste"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri May 23 16:30:02 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveProjectConfig(ProjectData.java:218)
+Saving Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="SociableAgent"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.charamel.CharamelPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri May 23 16:30:02 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.savePlayerConfig(ProjectData.java:256)
+Saving Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="agent.1.host" val="127.0.0.1"/>
+  <Entry key="agent.1.name" val="Gloria"/>
+  <Entry key="agent.1.port" val="1234"/>
+  <Entry key="agent.1.uaid" val="1"/>
+  <Entry key="agent.2.host" val="127.0.0.1"/>
+  <Entry key="agent.2.name" val="Curtis"/>
+  <Entry key="agent.2.port" val="1234"/>
+  <Entry key="agent.2.uaid" val="2"/>
+  <Entry key="agents.count" val="2"/>
+  <Entry key="cmlfbase" val="res/cml"/>
+  <Entry key="msslhost" val="127.0.0.1"/>
+  <Entry key="msslport" val="1002"/>
+  <Entry key="mssrconn" val="false"/>
+  <Entry key="mssrhost" val="127.0.0.1"/>
+  <Entry key="mssrport" val="1000"/>
+  <Entry key="nlufbase" val="res/nlu"/>
+  <Entry key="ssilhost" val="127.0.0.1"/>
+  <Entry key="ssilport" val="1001"/>
+  <Entry key="ssirconn" val="false"/>
+  <Entry key="ssirhost" val="127.0.0.1"/>
+  <Entry key="ssirport" val="1000"/>
+  <Entry key="swilbase" val="res/swi"/>
+  <Entry key="swilhost" val="127.0.0.1"/>
+  <Entry key="swilport" val="1003"/>
+  <Entry key="swirconn" val="false"/>
+  <Entry key="swirhost" val="127.0.0.1"/>
+  <Entry key="swirport" val="1000"/>
+</PlayerConfig>
+
+
