@@ -147,7 +147,7 @@ public class SceneFlow extends SuperNode{
             start += id + ";";
         }
 
-        out.println("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>");
+        out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         out.println(
                 "<SceneFlow " + "id=\"" + mId + "\" " + "name=\"" + mName + "\" " + "comment=\"" + mComment + "\" " + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "start=\"" + start + "\" " + //"context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "+
                 "context=\"" + mContextClass + "\" " + "package=\"" + mPackageName + "\" " + //      "scenefile=\"" + mSceneFileName + "\" " +
