@@ -31,14 +31,14 @@ public class LOGSSISockFormat extends Formatter {
                 + "<events ssi-v=\"" + version + "\">"
                 + "<event "
                 + "sender=\"" + sender + "\" "
-                + "event=\"" + event + "\" "
+                + "ev cent=\"" + event + "\" "
                 + "from=\"" + from + "\" "
                 + "dur=\"" + dur + "\" "
                 + "prob=\"" + prob + "\" "
                 + "type=\"" + type + "\" "
                 + "state=\"" + state + "\" "
                 + "glue=\"" + glue + "\">"
-                 + record.getMessage()
+                + record.getMessage()
                 + "</event>"               
                 + "</events>"
                 + SYSUtilities.sSYSPROPS_LINE_SEPR;
