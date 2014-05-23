@@ -88,8 +88,8 @@ public final class SceneAbbrev extends AbstractWord {
         stream.print("<SceneAbbrev "
                 + "lower=\"" + mLower + "\" "
                 + "upper=\"" + mUpper + "\" "
-                + "first=\"" + mLower + "\" "
-                + "second=\"" + mUpper + "\"/>");
+                + "first=\"" + mFirst + "\" "
+                + "second=\"" + mSecond + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
