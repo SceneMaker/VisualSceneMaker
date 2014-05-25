@@ -31,6 +31,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 
 /**
  *
@@ -68,6 +72,23 @@ public class FunDefDialog extends Dialog {
     private JPanel mUpperPanel;
     private JPanel mLowerPanel;
     private Color mDefaultColor;
+    
+    private final Document mNameDocument = new PlainDocument() {
+       
+        @Override
+        public void insertString(int offs, String str, AttributeSet attr)
+        throws BadLocationException {
+            String newstr = str.replaceAll(" ", "");  // could use "\\s" instead of " "
+            super.insertString(offs, newstr, attr);
+        }
+
+        @Override
+        public void replace(int offs, int len, String str, AttributeSet attr) 
+        throws BadLocationException {
+            String newstr = str.replaceAll(" ", "");  // could use "\\s" instead of " "
+            super.replace(offs, len, newstr, attr);
+        }
+    };
 
     public FunDefDialog(FunDef funDef) {
         super(Editor.getInstance(), "Function Definition", true);
@@ -87,6 +108,8 @@ public class FunDefDialog extends Dialog {
         //
         mNameLabel = new JLabel("Name:");
         mNameTextField = new JTextField();
+        mNameTextField.setDocument(mNameDocument);
+        
         //
         mClassNameLabel = new JLabel("Class:");
         mClassNameTextField = new JTextField();
@@ -164,7 +187,7 @@ public class FunDefDialog extends Dialog {
         // command definition.
         initMethodComboBox();
         mMethodComboBox.setSelectedItem(methodToString());
-        //mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
+       //mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
 
         // Resize the argument name list to the size of the parameter
         // list of the selected method and fill the argument name list
@@ -395,6 +418,8 @@ public class FunDefDialog extends Dialog {
     }
 
     private String methodToString() {
+        return mFunDef.getMethod();
+        /*
         String name = mFunDef.getMethod() + "(";
         for (int i = 0; i < mFunDef.getSizeOfParamList(); i++) {
             name += mFunDef.getParamAt(i).getType();
@@ -403,6 +428,7 @@ public class FunDefDialog extends Dialog {
             }
         }
         return name += ")";
+        */
     }
 
     @Override
@@ -503,5 +529,9 @@ public class FunDefDialog extends Dialog {
         else{
             paintPanel(mDefaultColor);         
         }
+    }
+    
+    public void setErrorBackground() {         
+            paintPanel(Color.ORANGE); 
     }
 }
