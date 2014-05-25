@@ -26,7 +26,7 @@ public class StartSign extends JComponent implements Observer {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventCaster = EventCaster.getInstance();
     //
-    private Point mRelPos;
+    private Point mRelPos = new Point(0,0);
     private Polygon mHead;
     private int mHalfHeight = sNODEWIDTH / 6;
     private int mWidth = sNODEWIDTH / 8;
@@ -82,10 +82,14 @@ public class StartSign extends JComponent implements Observer {
         graphics.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
-        //
+        //        
         setLocation(
+                mNode.getLocation().x - 0 - mWidth - 2 * mStrokeSize,
+                mNode.getLocation().y + 27 - mHalfHeight - 2 * mStrokeSize);
+                /*
                 mNode.getLocation().x - mRelPos.x - mWidth - 2 * mStrokeSize,
                 mNode.getLocation().y + mRelPos.y - mHalfHeight - 2 * mStrokeSize);
+                */
         //
         graphics.setColor(mColor);
         graphics.setStroke(new BasicStroke(mStrokeSize));
