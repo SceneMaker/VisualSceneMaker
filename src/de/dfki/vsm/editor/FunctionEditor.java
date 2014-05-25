@@ -52,7 +52,7 @@ import javax.swing.event.MouseInputAdapter;
 public class FunctionEditor extends JScrollPane implements EventListener, Observer {    
    
     private final Observable mObservable = new Observable();    
-   
+    private final EventCaster mEventCaster = EventCaster.getInstance();
     private final ArrayList<FunDefDialog> mFunDefBoxList;
     private final SceneFlow mSceneFlow;
     private final JPanel mContainer;
@@ -76,10 +76,9 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         setViewportView(mContainer);
         initButtonPanel();
         createFunctionPanes();
-    }
+     }
           
-    private void initButtonPanel() {   
-        
+    private void initButtonPanel() {           
         // Create Button 
         mAddFunctionButton = new JButton("Add Function");
         mAddFunctionButton.addActionListener(new ActionListener() {
@@ -115,11 +114,13 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
     }
     
     private void addNewFunction(){
+         
         FunDef usrCmdDef = new FunDef("", "java.lang.System.out", "printIn(String)");
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
         Editor.getInstance().update();
         EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef)); 
     }
+
     
     private void createFunctionPanes(){          
         mFunDefBoxList.clear();
@@ -146,28 +147,38 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
             mRemoveButton.setBorder(BorderFactory.createEmptyBorder());
             mRemoveButton.addActionListener(new ActionListener() {            
                 @Override
-                public void actionPerformed(ActionEvent e) {                    
-                   for(de.dfki.vsm.model.sceneflow.Node n:mSceneFlow.getNodeList()){
-                        Iterator<Command> it = n.getCmdList().iterator();
-                        if(it.hasNext()){
-                            for (int i = 0; it.hasNext(); i++) {
+                public void actionPerformed(ActionEvent e) {       
+                    
+                    boolean remove = true;
+                    
+                    // Go through all exising nodes
+                    for(de.dfki.vsm.model.sceneflow.Node currentNode:mSceneFlow.getNodeList()){
+                        
+                        Iterator<Command> it = currentNode.getCmdList().iterator();
+
+                        if(currentNode.getCmdList().size()> 0){                        
+                            // check node command list
+                            for (int i = 0; it.hasNext(); i++) {                          
                                 if(((UsrCmd)it.next()).getName().equals(funDef.getName())){
+                                    //  ask user to confirm
                                     if (JOptionPane.showConfirmDialog(null, "This will remove function usages in workspace \n"
                                                                     + "Are you sure?", "WARNING",
                                                                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {       
-                                            it.remove();
-                                            removeFunction(funDef);
+                                        it.remove();
+                                        
                                     } 
                                     else{
-                                        // do nothing
+                                        remove= false;// do nothing
                                     }
                                 } 
                             }
-                        }
-                        else{
-                            removeFunction(funDef);                           
-                        }                        
-                    }
+                        }  
+                    }  
+                    
+                    if(remove){
+                     removeFunction(funDef);
+                    }                
+                    
                 }
              });
             
@@ -186,6 +197,7 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false); 
+                    funDefPanel.getNameInput().setText(funDef.getName());
                 }
             });
            
@@ -209,7 +221,7 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
 
                 @Override
                 public void focusLost(FocusEvent e) {
-                     funDefPanel.setSelectedBackground(false); 
+                    funDefPanel.setSelectedBackground(false); 
                 }
             });
             
@@ -221,47 +233,65 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
 
                 @Override
                 public void focusLost(FocusEvent e) {
-                     funDefPanel.setSelectedBackground(false); 
+                    funDefPanel.setSelectedBackground(false); 
                 }
             });
 
             // Add action listeners to editable elements -----------------------
             
             funDefPanel.getNameInput().addKeyListener(new KeyAdapter() {
+                               
                 @Override
-                public void keyReleased(KeyEvent evt) {  
+                public void keyReleased(KeyEvent evt) { 
                     
-                    for(de.dfki.vsm.model.sceneflow.Node n:mSceneFlow.getNodeList()){
-                        for(Command c: n.getCmdList()){
-                            if(((UsrCmd)c).getName().equals(funDef.getName())){
-                                ((UsrCmd)c).setName(funDefPanel.getNameInput().getText().trim());
-                            }   
+                    String newFundDefName = funDefPanel.getNameInput().getText().trim();                                      
+               
+                    if(!(funDef.getName().equals(newFundDefName))){
+                        
+                        if(!newFundDefName.equals("")){
+                            // look if name is already being used by another command
+                            if(mSceneFlow.getUsrCmdDef(newFundDefName) != null){
+                                funDefPanel.setErrorBackground();
+                            }
+                            else{
+                                funDefPanel.setSelectedBackground(true);
+                                // look if function is being used by a node
+                                for(de.dfki.vsm.model.sceneflow.Node n:mSceneFlow.getNodeList()){
+                                    for(Command c: n.getCmdList()){
+                                        if(((UsrCmd)c).getName().equals(funDef.getName())){
+                                            ((UsrCmd)c).setName(newFundDefName);
+                                        }   
+                                    }
+                                }
+
+                                mSceneFlow.removeUsrCmdDef(funDef.getName());
+                                mSceneFlow.putUsrCmdDef(newFundDefName, funDef);
+                                funDef.setName(newFundDefName); 
+                                funDefPanel.getFunDef().setName(newFundDefName);
+                                Editor.getInstance().update();    
+                            }
                         }
-                    }
-                     
-                    mSceneFlow.removeUsrCmdDef(funDef.getName());
-                    mSceneFlow.putUsrCmdDef(funDefPanel.getNameInput().getText().trim(), funDef);
-                    funDef.setName(funDefPanel.getNameInput().getText().trim()); 
-                    funDefPanel.getFunDef().setName(funDefPanel.getNameInput().getText().trim());
-                    Editor.getInstance().update();           
+                    }                   
                 }
             });
             
             funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent evt) {      
-                     funDefPanel.classTextFieldKeyTyped(evt);
-                     funDef.setClassName(funDefPanel.getClassNameInput().getText().trim());  
-                     Editor.getInstance().update();     
+                    funDefPanel.classTextFieldKeyTyped(evt);
+                    funDef.setClassName(funDefPanel.getClassNameInput().getText().trim());  
+                    Editor.getInstance().update();     
                 }
             });
             
             funDefPanel.getMethodBox().addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent evt) {                    
-                    funDefPanel.methodComboBoxActionPerformed(evt);                     
-                    if (funDefPanel.getSelectedMethod() != null){
-                        funDef.setMethod(funDefPanel.getSelectedMethod().getName().trim());
+                public void actionPerformed(ActionEvent evt) { 
+                    String newSelectedMethod = funDefPanel.getMethodBox().getSelectedItem().toString();
+                    
+                    if (newSelectedMethod != null){
+                        funDef.setMethod(newSelectedMethod);   
+                        funDefPanel.methodComboBoxActionPerformed(evt);
                         funDef.getParamList().clear();
                         Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
                         while (args.hasMoreElements()) {
@@ -341,10 +371,17 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         }
     }
     
-    
     private void removeFunction(FunDef funDef){
-        mSceneFlow.removeUsrCmdDef(funDef.getName());
-        Editor.getInstance().update();
-        EventCaster.getInstance().convey(new FunctionCreatedEvent(this, funDef)); 
-    }
+        if (funDef != null) {       
+            mSceneFlow.removeUsrCmdDef(funDef.getName());
+            Editor.getInstance().update();
+            launchFunctionCreatedEvent(funDef);              
+        }
+    }    
+    private void launchFunctionCreatedEvent(FunDef funDef) {                
+        FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
+        mEventCaster.convey(ev);                    
+    } 
+    
+    
 }
