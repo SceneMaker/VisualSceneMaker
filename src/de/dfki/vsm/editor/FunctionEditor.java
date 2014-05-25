@@ -149,19 +149,24 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 public void actionPerformed(ActionEvent e) {                    
                    for(de.dfki.vsm.model.sceneflow.Node n:mSceneFlow.getNodeList()){
                         Iterator<Command> it = n.getCmdList().iterator();
-                        for (int i = 0; it.hasNext(); i++) {
-                            if(((UsrCmd)it.next()).getName().equals(funDef.getName())){
-                                if (JOptionPane.showConfirmDialog(null, "This will remove function usages in workspace \n"
-                                                                      + "Are you sure?", "WARNING",
-                                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {       
-                                    it.remove();
-                                    removeFunction(funDef);
+                        if(it.hasNext()){
+                            for (int i = 0; it.hasNext(); i++) {
+                                if(((UsrCmd)it.next()).getName().equals(funDef.getName())){
+                                    if (JOptionPane.showConfirmDialog(null, "This will remove function usages in workspace \n"
+                                                                    + "Are you sure?", "WARNING",
+                                                                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {       
+                                            it.remove();
+                                            removeFunction(funDef);
+                                    } 
+                                    else{
+                                        // do nothing
+                                    }
                                 } 
-                            }  
-                            else{
-                                removeFunction(funDef);                           
                             }
                         }
+                        else{
+                            removeFunction(funDef);                           
+                        }                        
                     }
                 }
              });
@@ -226,7 +231,6 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 @Override
                 public void keyReleased(KeyEvent evt) {  
                     
-                   
                     for(de.dfki.vsm.model.sceneflow.Node n:mSceneFlow.getNodeList()){
                         for(Command c: n.getCmdList()){
                             if(((UsrCmd)c).getName().equals(funDef.getName())){
