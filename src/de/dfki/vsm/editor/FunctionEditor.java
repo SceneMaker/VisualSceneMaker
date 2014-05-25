@@ -147,37 +147,51 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
             mRemoveButton.setBorder(BorderFactory.createEmptyBorder());
             mRemoveButton.addActionListener(new ActionListener() {            
                 @Override
-                public void actionPerformed(ActionEvent e) {       
+                public void actionPerformed(ActionEvent e) {  
                     
-                    boolean remove = true;
+                    removeFunction(funDef);
+                    
+                    // Commented workspace check for used functions
+                    /*
+                    boolean remove = false;
+                    boolean usedFunction = false;
+                    
+                    int index =0;
                     
                     // Go through all exising nodes
-                    for(de.dfki.vsm.model.sceneflow.Node currentNode:mSceneFlow.getNodeList()){
-                        
-                        Iterator<Command> it = currentNode.getCmdList().iterator();
-
-                        if(currentNode.getCmdList().size()> 0){                        
-                            // check node command list
-                            for (int i = 0; it.hasNext(); i++) {                          
-                                if(((UsrCmd)it.next()).getName().equals(funDef.getName())){
+                    for(de.dfki.vsm.model.sceneflow.Node currentNode:mSceneFlow.getNodeList()){                                            
+                        for (Command c : currentNode.getCmdList()) {                            
+                            if(c.toString().contains(funDef.getName())){
+                                usedFunction = true;
+                                if(!remove){
                                     //  ask user to confirm
                                     if (JOptionPane.showConfirmDialog(null, "This will remove function usages in workspace \n"
                                                                     + "Are you sure?", "WARNING",
                                                                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {       
-                                        it.remove();
-                                        
+                                        //currentNode.getCmdList().remove(c);
+                                        remove= true;
+                                        index++;
                                     } 
                                     else{
                                         remove= false;// do nothing
                                     }
-                                } 
+                                }
                             }
-                        }  
-                    }  
+                            else{
+                                remove= true;
+                            }
+                        }
+                        
+                        if(remove){
+                            removeFunction(funDef);
+                            currentNode.getCmdList().removeElementAt(index-1);
+                        } 
+                    }
                     
-                    if(remove){
-                     removeFunction(funDef);
-                    }                
+                    if(!usedFunction){
+                        removeFunction(funDef);
+                    } 
+                    */
                     
                 }
              });
@@ -245,7 +259,7 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 public void keyReleased(KeyEvent evt) { 
                     
                     String newFundDefName = funDefPanel.getNameInput().getText().trim();                                      
-               
+                                          
                     if(!(funDef.getName().equals(newFundDefName))){
                         
                         if(!newFundDefName.equals("")){
@@ -255,6 +269,8 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                             }
                             else{
                                 funDefPanel.setSelectedBackground(true);
+                                 // Commented workspace check for used functions
+                                /*
                                 // look if function is being used by a node
                                 for(de.dfki.vsm.model.sceneflow.Node n:mSceneFlow.getNodeList()){
                                     for(Command c: n.getCmdList()){
@@ -263,6 +279,7 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                                         }   
                                     }
                                 }
+                                */
 
                                 mSceneFlow.removeUsrCmdDef(funDef.getName());
                                 mSceneFlow.putUsrCmdDef(newFundDefName, funDef);
@@ -271,7 +288,8 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                                 Editor.getInstance().update();    
                             }
                         }
-                    }                   
+                    }  
+                    
                 }
             });
             
