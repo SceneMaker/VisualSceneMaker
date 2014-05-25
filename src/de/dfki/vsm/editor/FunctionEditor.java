@@ -265,10 +265,12 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                         if(!newFundDefName.equals("")){
                             // look if name is already being used by another command
                             if(mSceneFlow.getUsrCmdDef(newFundDefName) != null){
-                                funDefPanel.setErrorBackground();
+                               // funDefPanel.setErrorBackground();
+                                funDefPanel.getNameInput().setForeground(Color.red);
                             }
                             else{
-                                funDefPanel.setSelectedBackground(true);
+                                //funDefPanel.setSelectedBackground(true);
+                                funDefPanel.getNameInput().setForeground(Color.BLACK);
                                  // Commented workspace check for used functions
                                 /*
                                 // look if function is being used by a node
