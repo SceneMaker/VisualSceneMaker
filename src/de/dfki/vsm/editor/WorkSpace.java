@@ -552,17 +552,12 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         node.getDataNode().addCmd(psgCmd);
     }
 
-    public void createFunCall(Node node, String name) {
-     
-        UsrCmd cmd = new UsrCmd();
-        
+    public void createFunCall(Node node, String name) {     
+        UsrCmd cmd = new UsrCmd();        
         cmd.setName(name);
-        node.getDataNode().addCmd(cmd);
-       
         Command newCmd = new CmdDialog(cmd).run();
         if (newCmd != null) {
-            node.getDataNode().setCmdAt(newCmd, 0);
-
+            node.getDataNode().addCmd(cmd);
         }
     }
 
