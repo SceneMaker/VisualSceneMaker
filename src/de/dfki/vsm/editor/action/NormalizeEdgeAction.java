@@ -7,6 +7,7 @@
 package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.Edge;
+import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.util.grid.AStarEdgeFinder;
 import de.dfki.vsm.editor.util.grid.BezierFit;
@@ -62,12 +63,22 @@ public class NormalizeEdgeAction {
         mWorkSpace.getGridManager().resetGridWeight(mSourceGUINode);
         mWorkSpace.getGridManager().resetGridWeight(mTargetGUINode);
         mWorkSpace.getGridManager().resetGridWeight(mGUIEdge);
-        Set<Edge> edgeSet = mWorkSpace.getEdges();
-        for(Edge edge: edgeSet) {
+        Set<de.dfki.vsm.editor.Edge> edgeSet = mWorkSpace.getEdges();
+        for(de.dfki.vsm.editor.Edge edge: edgeSet) {
             if(!edge.getName().equals(mGUIEdge.getName())) {
                 mWorkSpace.getGridManager().setEdgeWeight(edge);
-                mWorkSpace.getGridManager().setNodeWeight(edge.getSourceNode());
-                mWorkSpace.getGridManager().setNodeWeight(edge.getTargetNode());
+                Node edgeSourceNode = edge.getSourceNode();
+                Node edgeTargetNode = edge.getTargetNode();
+                if(edgeSourceNode.getName() != null) {
+                    if(!edgeSourceNode.getName().equals(mSourceGUINode.getName())) {
+                        mWorkSpace.getGridManager().setNodeWeight(edge.getSourceNode());
+                    }
+                }
+                if(edgeTargetNode.getName() != null) {
+                    if(!edgeTargetNode.getName().equals(mTargetGUINode.getName())) {
+                        mWorkSpace.getGridManager().setNodeWeight(edge.getTargetNode());
+                    }
+                }
             }
         }
     }

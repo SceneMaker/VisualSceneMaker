@@ -40,8 +40,11 @@ public class GridManager {
   
   // Subgrid for A* algorithm
   private GridRectangle[][] mTransitionArea = null;
+  private GridRectangle[][] mTempTransitions = null;
   private boolean isSubgridEstablished = false;
-
+  private int height = 0;
+  private int width = 0;
+  
   public GridManager(WorkSpace ws) {
     mWorkSpace = ws;
     compute();
@@ -73,6 +76,10 @@ public class GridManager {
         mTransitionArea = new GridRectangle[((w/sGRID_XSPACE)+1)*2][((h/sGRID_YSPACE)+1)*2];
     }
     
+    if(!(height == h / sGRID_YSPACE && width == w / sGRID_XSPACE)) {
+        mTempTransitions = new GridRectangle[((w/sGRID_XSPACE)+1)*2][((h/sGRID_YSPACE)+1)*2];
+    }
+    
     int halfNodeSize = sGRID_NODEWIDTH / 2;
     for (int j = 0; j <= (h / sGRID_YSPACE); j++) {
       for (int i = 0; i <= (w / sGRID_XSPACE); i++) {
@@ -101,11 +108,49 @@ public class GridManager {
             v.setRowIndex(i*2+1);
             //System.out.println("(" + (i*2+1) + "," + (j*2+1) + ")");
         }
+        
+        if(!(height == (h / sGRID_YSPACE) && width == (w / sGRID_XSPACE))) {
+            if(j < height && i < width) {
+                mTempTransitions[i*2][j*2] = mTransitionArea[i*2][j*2];
+                mTempTransitions[i*2+1][j*2] = mTransitionArea[i*2+1][j*2];
+                mTempTransitions[i*2][j*2+1] = mTransitionArea[i*2][j*2+1];
+                mTempTransitions[i*2+1][j*2+1] = mTransitionArea[i*2+1][j*2+1];
+            }
+            else {
+                GridRectangle s = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize - 4);
+                s.setColumnIndex(j*2);
+                s.setRowIndex(i*2);
+                mTempTransitions[i*2][j*2] = s;
+                //System.out.println("(" + (i*2) + "," + (j*2) + ")");
+                GridRectangle t = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize - 4);
+                t.setColumnIndex(j*2);
+                t.setRowIndex(i*2+1);
+                mTempTransitions[i*2+1][j*2] = t;
+                //System.out.println("(" + (i*2+1) + "," + (j*2) + ")");
+                GridRectangle u = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2, halfNodeSize - 4, halfNodeSize - 4);
+                u.setColumnIndex(j*2+1);
+                u.setRowIndex(i*2);
+                mTempTransitions[i*2][j*2+1] = u;
+                //System.out.println("(" + (i*2) + "," + (j*2+1) + ")");
+                GridRectangle v = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2, halfNodeSize - 4, halfNodeSize - 4);
+                mTempTransitions[i*2+1][j*2+1] = v;
+                v.setColumnIndex(j*2+1);
+                v.setRowIndex(i*2+1);
+            }
+        }
       }
     }
     
     if((w/sGRID_XSPACE) > 0 && (h/sGRID_YSPACE) > 0 && isSubgridEstablished == false) {
         isSubgridEstablished = true;
+        height = h / sGRID_YSPACE;
+        width = w / sGRID_XSPACE;
+    }
+    
+    if(!(height == h / sGRID_YSPACE && width == w / sGRID_XSPACE)) {
+        mTransitionArea = mTempTransitions;
+        height = h / sGRID_YSPACE;
+        width = w / sGRID_XSPACE;
     }
   }
 

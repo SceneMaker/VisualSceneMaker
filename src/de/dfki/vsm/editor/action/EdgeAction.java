@@ -7,6 +7,7 @@ import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.TEDGE;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.Node.Flavour;
 import de.dfki.vsm.editor.SceneFlowEditor;
 import de.dfki.vsm.editor.WorkSpace;
@@ -135,8 +136,18 @@ public abstract class EdgeAction extends EditorAction {
         for(de.dfki.vsm.editor.Edge edge: edgeSet) {
             if(!edge.getName().equals(mGUIEdge.getName())) {
                 mWorkSpace.getGridManager().setEdgeWeight(edge);
-                mWorkSpace.getGridManager().setNodeWeight(edge.getSourceNode());
-                mWorkSpace.getGridManager().setNodeWeight(edge.getTargetNode());
+                Node edgeSourceNode = edge.getSourceNode();
+                Node edgeTargetNode = edge.getTargetNode();
+                if(edgeSourceNode.getName() != null) {
+                    if(!edgeSourceNode.getName().equals(mSourceGUINode.getName())) {
+                        mWorkSpace.getGridManager().setNodeWeight(edge.getSourceNode());
+                    }
+                }
+                if(edgeTargetNode.getName() != null) {
+                    if(!edgeTargetNode.getName().equals(mTargetGUINode.getName())) {
+                        mWorkSpace.getGridManager().setNodeWeight(edge.getTargetNode());
+                    }
+                }
             }
         }
     }
