@@ -84,8 +84,8 @@ public class StartSign extends JComponent implements Observer {
                 RenderingHints.VALUE_ANTIALIAS_ON);
         //        
         setLocation(
-                mNode.getLocation().x - 0 - mWidth - 2 * mStrokeSize,
-                mNode.getLocation().y + 27 - mHalfHeight - 2 * mStrokeSize);
+                mNode.getLocation().x - mWidth - 2 * mStrokeSize,
+                mNode.getLocation().y + sNODEWIDTH/2 - mHalfHeight - 2 * mStrokeSize);
                 /*
                 mNode.getLocation().x - mRelPos.x - mWidth - 2 * mStrokeSize,
                 mNode.getLocation().y + mRelPos.y - mHalfHeight - 2 * mStrokeSize);
