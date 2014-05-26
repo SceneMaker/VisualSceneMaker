@@ -166,7 +166,7 @@ public class SSIEventHandler extends Thread {
                         // TODO: SPIN NLU Engine Integration
                         //data = mEngine.parseToTFS(text, "  ");
                     }
-                } else if (sent.equals("msspeech") && mode.equals("speech")) {
+                } else if (sent.equals("msspeech") && mode.equals("spe ech")) {
                     if (text != null && !text.isEmpty()) {
                         data = text;
                     }
