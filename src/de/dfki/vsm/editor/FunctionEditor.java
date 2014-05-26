@@ -210,8 +210,10 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
 
                 @Override
                 public void focusLost(FocusEvent e) {
+                    
                     funDefPanel.setSelectedBackground(false); 
                     funDefPanel.getNameInput().setText(funDef.getName());
+                    funDefPanel.getNameInput().setForeground(Color.black);
                 }
             });
            
