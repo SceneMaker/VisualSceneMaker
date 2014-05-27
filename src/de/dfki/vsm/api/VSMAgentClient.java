@@ -152,7 +152,7 @@ public class VSMAgentClient extends Thread {
                 // Flush Out The Stream                
                 mOutput.flush();
                 // Debug Some Information
-                //mVSM3Log.message("Sending Message '" + BINUtilities.BytesToHexString(bytes) + "'");
+                mVSM3Log.message("Sending Message '" + BINUtilities.BytesToHexString(bytes) + "'");
                 // Return At Success
                 return true;
             } catch (Exception exc) {
@@ -179,7 +179,7 @@ public class VSMAgentClient extends Thread {
                 mWriter.newLine();
                 mWriter.flush();
                 // Debug Some Information
-                //mVSM3Log.message("Sending Message '" + string + "'");
+                mVSM3Log.message("Sending Message '" + string + "'");
             } catch (Exception exc) {
                 // Debug Some Information
                 mVSM3Log.warning(exc.toString());
