@@ -201,7 +201,7 @@ public class VSMAgentClient extends Thread {
                 byte[] bytes = new byte[size];
                 mInput.readFully(bytes);
                 // Debug Some Information
-                //mVSM3Log.message("Reading Message'" + BINUtilities.BytesToHexString(bytes) + "'");
+                mVSM3Log.message("Reading Message'" + BINUtilities.BytesToHexString(bytes) + "'");
                 // Return The Notification
                 return bytes;
             } catch (Exception exc) {
@@ -226,7 +226,7 @@ public class VSMAgentClient extends Thread {
                 // Read In The Answer
                 final String line = mReader.readLine();
                 // Debug Some Information
-                //mVSM3Log.message("Reading Message'" + line + "'");
+                mVSM3Log.message("Reading Message'" + line + "'");
                 // Return The Notification
                 return line;
             } catch (Exception exc) {
