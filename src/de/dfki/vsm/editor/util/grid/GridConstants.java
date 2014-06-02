@@ -11,7 +11,7 @@ package de.dfki.vsm.editor.util.grid;
  * @author Souza Putra
  */
 public class GridConstants {
-    public static final int MAX_WEIGHT_THRESHOLD = 200;
+    public static final int MAX_WEIGHT_THRESHOLD = 100;
     public static final int NODE_WEIGHT = 100;
     public static final int EDGE_WEIGHT = 100;
     public static final int INITIAL_WEIGHT = 1;
