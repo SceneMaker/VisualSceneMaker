@@ -173,12 +173,12 @@ public abstract class EdgeAction extends EditorAction {
                     mWorkSpace.mGridManager.getmTransitionArea()[alternatePath.getY(i)][alternatePath.getX(i)].getCenterX(),
                     mWorkSpace.mGridManager.getmTransitionArea()[alternatePath.getY(i)][alternatePath.getX(i)].getCenterY());
                 pathPoints.add(point);
-                if(i < alternatePath.getLength()/2) {
+                if(i < alternatePath.getLength()/2+2) {
                     deviationSourceX += (alternatePath.getX(i+1) - alternatePath.getX(i));
                     deviationSourceY += (alternatePath.getY(i+1) - alternatePath.getY(i));
                 }
                 
-                else if(i >= alternatePath.getLength()/2 && i < alternatePath.getLength()-1) {
+                else if(i >= alternatePath.getLength()/2-2 && i < alternatePath.getLength()-1) {
                     deviationTargetX += (alternatePath.getX(i+1) - alternatePath.getX(i));
                     deviationTargetY += (alternatePath.getY(i+1) - alternatePath.getY(i));
                 }
@@ -188,27 +188,32 @@ public abstract class EdgeAction extends EditorAction {
             int thresholdSourceY = 0;
             int thresholdTargetX = 0;
             int thresholdTargetY = 0;
+            
             // Indicate vertical movement tendency for source node
-            if(Math.abs(deviationSourceX) > Math.abs(deviationSourceY)) {
-                if(deviationSourceY > 0) thresholdSourceX = 50;
-                else thresholdSourceX = -50;
+            if(Math.abs(deviationSourceX) >= Math.abs(deviationSourceY)) {
+                //System.out.println("Vertical movement source." + deviationSourceX + "," + deviationSourceY);
+                if(deviationSourceY > 0) thresholdSourceX = 100;
+                else if(deviationSourceY < 0)thresholdSourceX = -100;
             }
             // Indicate horizontal movement tendency for source node
             else {
-                if(deviationSourceX > 0) thresholdSourceY = 50;
-                else thresholdSourceY = -50;
+                //System.out.println("Horizontal movement source." + deviationSourceX + "," + deviationSourceY);
+                if(deviationSourceX > 0) thresholdSourceY = 100;
+                else if(deviationSourceX < 0) thresholdSourceY = -100;
             }
             
             // Indicate vertical movement tendency for target node
-            if(Math.abs(deviationTargetX) > Math.abs(deviationTargetY)) {         
-                if(deviationTargetY > 0) thresholdTargetX = 50;
-                else thresholdTargetX = -50;
+            if(Math.abs(deviationTargetX) >= Math.abs(deviationTargetY)) { 
+                //System.out.println("Vertical movement target." + deviationTargetX + "," + deviationTargetY);
+                if(deviationTargetY > 0) thresholdTargetX = -100;
+                else if(deviationTargetY < 0) thresholdTargetX = 100;
             }
             
             // Indicate horizontal movement tendency for target node
             else {   
-                if(deviationTargetX > 0) thresholdTargetY = 50;
-                else thresholdTargetY = -50;
+                //System.out.println("Horizontal movement target." + deviationTargetX + "," + deviationTargetY);
+                if(deviationTargetX > 0) thresholdTargetY = -100;
+                else if(deviationTargetX < 0) thresholdTargetY = 100;
             }
             
             BezierFit bezierFit = new BezierFit();
