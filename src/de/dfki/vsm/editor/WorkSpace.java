@@ -28,6 +28,8 @@ import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
 import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
+import de.dfki.vsm.editor.util.grid.GridConstants;
+import de.dfki.vsm.editor.util.grid.GridRectangle;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.EEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
@@ -1455,6 +1457,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 node.mouseReleased(event);
                 repaint();
             }
+            mGridManager.normalizeGridWeight();
             return;
         }
 
