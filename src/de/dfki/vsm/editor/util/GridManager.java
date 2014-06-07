@@ -64,21 +64,26 @@ public class GridManager {
     }
   }
 
-  private void compute() {
-  
+  public void compute() {
+    
     int w = 0;
     int h = 0;
-    for(de.dfki.vsm.model.sceneflow.Node n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getNodeList()){
-        if(n.getGraphics().getPosition().getXPos() > w){
-                w = n.getGraphics().getPosition().getXPos();
-        }
-        if(n.getGraphics().getPosition().getYPos() > h){
-                h = n.getGraphics().getPosition().getXPos();
-        }               
-    }
-  
-    Dimension size = new Dimension(h,w);
     
+    if( mWorkSpace.getSize().equals(new Dimension(0,0))){    
+        for(de.dfki.vsm.model.sceneflow.Node n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getNodeList()){
+            if(n.getGraphics().getPosition().getXPos() > w){
+                    w = n.getGraphics().getPosition().getXPos();
+            }
+            if(n.getGraphics().getPosition().getYPos() > h){
+                    h = n.getGraphics().getPosition().getXPos();
+            }               
+        }
+    }
+    else{
+        w = mWorkSpace.getSize().width;
+        h = mWorkSpace.getSize().height;  
+    }
+ 
     mNodesinRow = w / sGRID_XSPACE;
     mNodeAreas = new ArrayList<Rectangle>();
     
@@ -162,10 +167,13 @@ public class GridManager {
         height = h / sGRID_YSPACE;
         width = w / sGRID_XSPACE;
     }
+    
+
   }
 
   public void update() {
     mPlacedNodes = new HashSet<Point>();
+    compute();
   }
 
   public void drawGrid(Graphics2D g2d) {
@@ -208,7 +216,6 @@ public class GridManager {
   public Point getNodeLocation(Point inputPoint) {
             
    Point p = new Point(inputPoint.x+ sGRID_NODEWIDTH / 2, inputPoint.y + sGRID_NODEWIDTH / 2);
-   //Point p = new Point(inputPoint.x,inputPoint.y);
    for (Rectangle r : mNodeAreas) {
       if (r.contains(p)) {
         p = new Point(r.x, r.y);
@@ -216,7 +223,6 @@ public class GridManager {
       }
     }
    
-
     // check if p is already in set of grid points
     if (mPlacedNodes.contains(p)) {
       //System.out.println("point already in use!");
