@@ -163,12 +163,18 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
 
     public void update(java.util.Observable obs, Object obj) {
         //mLogger.message("WorkSpace.update(" + obj + ")");
+        
+        clear();
         mObservable.update(obj);
         // rebuild node position
         mGridManager.update();
         for (Node node : mNodeSet) {
           // node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
         }
+  
+        showNodesOnWorkSpace();
+  
+        
         revalidate();
         repaint();
     }
@@ -221,11 +227,15 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         // TODO: move to somewhere??!!
         NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
 
+       
+        
         mEventCaster.convey(e);
         // display components
         showVariableBadge();
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
+        
+        
     }
 
     public void clearClipBoard() {
@@ -1902,6 +1912,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         super.paintComponent(g);
 
         mGridManager.drawGrid(g2d);
+     
 
         if (mDoAreaSelection) {
             mDrawArea.x = (mAreaSelection.width > 0) ? mAreaSelection.x : mAreaSelection.x + mAreaSelection.width;
