@@ -163,16 +163,15 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
 
     public void update(java.util.Observable obs, Object obj) {
         //mLogger.message("WorkSpace.update(" + obj + ")");
-        
-        clear();
+
         mObservable.update(obj);
         // rebuild node position
         mGridManager.update();
         for (Node node : mNodeSet) {
-          // node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
+           node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
         }
   
-        showNodesOnWorkSpace();
+       
   
         
         revalidate();
