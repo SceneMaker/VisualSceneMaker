@@ -129,25 +129,14 @@ public abstract class EdgeAction extends EditorAction {
     }
     
     public void recalculateWeight() {
-        mWorkSpace.getGridManager().resetGridWeight(mSourceGUINode);
-        mWorkSpace.getGridManager().resetGridWeight(mTargetGUINode);
-        mWorkSpace.getGridManager().resetGridWeight(mGUIEdge);
+        mWorkSpace.getGridManager().resetAllGridWeight();
         Set<de.dfki.vsm.editor.Edge> edgeSet = mWorkSpace.getEdges();
         for(de.dfki.vsm.editor.Edge edge: edgeSet) {
             if(!edge.getName().equals(mGUIEdge.getName())) {
                 mWorkSpace.getGridManager().setEdgeWeight(edge);
-                Node edgeSourceNode = edge.getSourceNode();
-                Node edgeTargetNode = edge.getTargetNode();
-                if(edgeSourceNode.getName() != null) {
-                    if(!edgeSourceNode.getName().equals(mSourceGUINode.getName())) {
-                        mWorkSpace.getGridManager().setNodeWeight(edge.getSourceNode());
-                    }
-                }
-                if(edgeTargetNode.getName() != null) {
-                    if(!edgeTargetNode.getName().equals(mTargetGUINode.getName())) {
-                        mWorkSpace.getGridManager().setNodeWeight(edge.getTargetNode());
-                    }
-                }
+                mWorkSpace.getGridManager().setNodeWeight(edge.getSourceNode());
+                mWorkSpace.getGridManager().setNodeWeight(edge.getTargetNode());
+                 
             }
         }
     }
@@ -246,26 +235,26 @@ public abstract class EdgeAction extends EditorAction {
             mGUIEdge.mEg.mCCrtl2.x = (int) Math.round(controlPoint[2].getX()) + thresholdTargetX;
             mGUIEdge.mEg.mCCrtl2.y = (int) Math.round(controlPoint[2].getY()) + thresholdTargetY;
             
-            getEdgeTotalWeight();
-            setGridWeight();
+            //getEdgeTotalWeight();
+            //setGridWeight();
             mWorkSpace.add(mGUIEdge);
             mWorkSpace.revalidate();
             mWorkSpace.repaint();
         }
         
         else {
-            setGridWeight();
+            //setGridWeight();
             mWorkSpace.add(mGUIEdge);
             mWorkSpace.revalidate();
             mWorkSpace.repaint();
         }
     }
     
-    public void setGridWeight() {
-        mWorkSpace.getGridManager().setEdgeWeight(mGUIEdge);
-        mWorkSpace.getGridManager().setNodeWeight(mSourceGUINode);
-        mWorkSpace.getGridManager().setNodeWeight(mTargetGUINode);
-    }
+//    public void setGridWeight() {
+//        mWorkSpace.getGridManager().setEdgeWeight(mGUIEdge);
+//        mWorkSpace.getGridManager().setNodeWeight(mSourceGUINode);
+//        mWorkSpace.getGridManager().setNodeWeight(mTargetGUINode);
+//    }
     
     public boolean isReroutingNeeded() {
         return getEdgeTotalWeight() >= GridConstants.MAX_WEIGHT_THRESHOLD;
@@ -320,7 +309,7 @@ public abstract class EdgeAction extends EditorAction {
                 }
             }
         }
-        //System.out.println("Sum Weight is :" + sumWeight);
+        System.out.println("Sum Weight is :" + sumWeight);
         return sumWeight;
     }
 
