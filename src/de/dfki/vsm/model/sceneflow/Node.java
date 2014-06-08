@@ -630,7 +630,7 @@ public class Node extends Object {
         // Add hash of General Attributes 
         int hashCode = ((mName == null) ? 0 : mName.hashCode()) 
                     + ((mComment == null) ? 0 : mComment.hashCode()) 
-                    + ((mGraphics == null) ? 0 : mGraphics.hashCode()); 
+                    + ((mGraphics == null) ? 0 : mGraphics.getPosition().hashCode()); 
                    
         // Add hash of all commands inside Node
         for (int cntCommand = 0; cntCommand < mCmdList.size(); cntCommand++) {

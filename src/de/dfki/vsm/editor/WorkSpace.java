@@ -168,11 +168,10 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         // rebuild node position
         mGridManager.update();
         for (Node node : mNodeSet) {
-           node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
+           Point p = mGridManager.getNodeLocation(node.getLocation());
+           node.resetLocation(p);
+           node.getDataNode().getGraphics().setPosition(p.x, p.y);
         }
-  
-       
-  
         
         revalidate();
         repaint();
@@ -1501,14 +1500,11 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 if (mSelectedNode.mDragged) {
                     Point p = mSelectedNode.getLocation();
                     mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
-                    
-                    // DEBUG
-                    System.out.println("node " + mSelectedNode.getDataNode().getName() +  " dragged to: " +  mSelectedNode.getX()+ ", " +  mSelectedNode.getY());
-                    
+                  
                     // Update sceneflow with new node position
                     mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(),mSelectedNode.getY());
                    
-          // update workspace area - if dragged beyond current borders
+                    // update workspace area - if dragged beyond current borders
                     //sWorkSpaceDrawArea = getSize();
                 }
                 mSelectedNode.mouseReleased(event);
