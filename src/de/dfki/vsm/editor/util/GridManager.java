@@ -66,24 +66,10 @@ public class GridManager {
 
   public void compute() {
     
-    int w = 0;
-    int h = 0;
+    Dimension area = obtainWorkAreaSize();
+    int w = area.width;
+    int h = area.height;
     
-    if( mWorkSpace.getSize().equals(new Dimension(0,0))){    
-        for(de.dfki.vsm.model.sceneflow.Node n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getNodeList()){
-            if(n.getGraphics().getPosition().getXPos() > w){
-                    w = n.getGraphics().getPosition().getXPos();
-            }
-            if(n.getGraphics().getPosition().getYPos() > h){
-                    h = n.getGraphics().getPosition().getXPos();
-            }               
-        }
-    }
-    else{
-        w = mWorkSpace.getSize().width;
-        h = mWorkSpace.getSize().height;  
-    }
- 
     mNodesinRow = w / sGRID_XSPACE;
     mNodeAreas = new ArrayList<Rectangle>();
     
@@ -167,13 +153,41 @@ public class GridManager {
         height = h / sGRID_YSPACE;
         width = w / sGRID_XSPACE;
     }
-    
-
   }
 
   public void update() {
     mPlacedNodes = new HashSet<Point>();
     compute();
+  }
+  
+  private Dimension obtainWorkAreaSize() {
+    int w = 0;
+    int h = 0;
+    
+    if( mWorkSpace.getSize().equals(new Dimension(0,0))){    
+        for(de.dfki.vsm.model.sceneflow.Node n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getNodeList()){
+            if(n.getGraphics().getPosition().getXPos() > w){
+                    w = n.getGraphics().getPosition().getXPos()+ Preferences.sNODEWIDTH;
+            }
+            if(n.getGraphics().getPosition().getYPos() > h){
+                    h = n.getGraphics().getPosition().getYPos()+ Preferences.sNODEHEIGHT;
+            }               
+        }
+        
+        for(de.dfki.vsm.model.sceneflow.SuperNode n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getSuperNodeList()){
+            if(n.getGraphics().getPosition().getXPos() > w){
+                    w = n.getGraphics().getPosition().getXPos()+ Preferences.sNODEWIDTH;
+            }
+            if(n.getGraphics().getPosition().getYPos() > h){
+                    h = n.getGraphics().getPosition().getYPos()+ Preferences.sNODEHEIGHT;
+            }               
+        }
+    }
+    else{
+        w = mWorkSpace.getSize().width;
+        h = mWorkSpace.getSize().height;  
+    }    
+    return new Dimension(w,h);      
   }
 
   public void drawGrid(Graphics2D g2d) {

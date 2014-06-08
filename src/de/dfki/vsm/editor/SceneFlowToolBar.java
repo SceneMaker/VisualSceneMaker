@@ -293,8 +293,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         b = add(new AbstractAction("ACTION_ZOOM_IN", ResourceLoader.loadImageIcon("/res/img/new/zoom_plus.png")) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                mNodeSize = (mNodeSize < 190) ? mNodeSize=mNodeSize+10 : mNodeSize;                
-                updateNodePosition("ZoomIn");
+                mNodeSize = (mNodeSize < 190) ? mNodeSize=mNodeSize+10 : mNodeSize;          
                 savePreferences();
             }
         });
@@ -306,7 +305,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 mNodeSize = (mNodeSize > 30) ? mNodeSize=mNodeSize-10: mNodeSize;
-                updateNodePosition("ZoomOut");
                 savePreferences();
             }
         });
@@ -360,29 +358,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    /*  When zoom in/out, the node position is modified according to mNodeSize 
-        to mantain the same ratio when reseting its location
-    */
-    private void updateNodePosition(String zoom) {        
-        WorkSpace workspace =  mEditor.getWorkSpace();
-        Vector<de.dfki.vsm.model.sceneflow.Node> nodeList = workspace.getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
-
-        int value = 0;
-        
-        if(zoom.equals("ZoomIn")){
-            value = mNodeSize/3;
-        }
-        else if(zoom.equals("ZoomOut")){
-            value = -mNodeSize/3;
-        }
-        
-        for (de.dfki.vsm.model.sceneflow.Node n : nodeList) {
-            n.getGraphics().getPosition().setXPos(n.getGraphics().getPosition().getXPos()+value);
-            n.getGraphics().getPosition().setYPos(n.getGraphics().getPosition().getYPos()+value);
-        }
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
