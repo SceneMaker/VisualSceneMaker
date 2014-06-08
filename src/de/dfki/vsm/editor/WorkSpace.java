@@ -1460,7 +1460,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 node.mouseReleased(event);
                 repaint();
             }
-            mGridManager.normalizeGridWeight();
+            //mGridManager.normalizeGridWeight();
             return;
         }
 
@@ -1477,7 +1477,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 }
 
                 mSelectedEdge.mouseReleased(event);
-                mGridManager.normalizeGridWeight();
+                //mGridManager.normalizeGridWeight();
                 return;
             } else {
                 //System.out.println(mSelectedEdge.getType() + " not released - deselected");
@@ -1501,7 +1501,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 mSelectedNode.mouseReleased(event);
                 revalidate();
                 repaint();
-                mGridManager.normalizeGridWeight();
+                //mGridManager.normalizeGridWeight();
                 return;
             } else {
                 //System.out.println(mSelectedNode.getDataNode().getName() + " not released - deselected");

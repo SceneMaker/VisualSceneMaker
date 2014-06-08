@@ -306,6 +306,14 @@ public class GridManager {
         }
       }
   }
+  
+  public void resetAllGridWeight() {
+      for(GridRectangle[] gridParent : mTransitionArea) {
+        for(GridRectangle gridRectangle : gridParent) {
+            gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
+        }
+      }
+  }
 
 /*
  * This method spirals around an occupied grid point in order to find a free
