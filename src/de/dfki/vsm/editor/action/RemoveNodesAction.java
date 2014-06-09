@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.action;
 
+import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
 import java.util.HashSet;
@@ -31,7 +32,6 @@ public class RemoveNodesAction extends EditorAction {
     }
 
     protected void createNodes() {
-
         for (RemoveNodeAction action : mRemoveNodeActions) {
             action.create();
         }
@@ -44,7 +44,6 @@ public class RemoveNodesAction extends EditorAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             createNodes();

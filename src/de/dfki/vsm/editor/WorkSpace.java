@@ -1857,6 +1857,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         if (mSelectedNode != null) { 
                  removeNode(); 
         } 
+        Editor.getInstance().update();
     } 
 
     private void removeEdge(){ 
@@ -1866,11 +1867,11 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
     } 
 
     private void removeNodes() { 
-      for (Node node : mNodeSet) { 
-          node.mSelected = false; 
-      } 
-          RemoveNodesAction deleteAction = new RemoveNodesAction(this, mSelectedNodes); 
-          deleteAction.run(); 
+        for (Node node : mNodeSet) { 
+            node.mSelected = false; 
+        } 
+        RemoveNodesAction deleteAction = new RemoveNodesAction(this, mSelectedNodes); 
+        deleteAction.run(); 
     } 
 
     private void removeNode() { 
@@ -1878,7 +1879,6 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
           RemoveNodeAction deleteAction = new RemoveNodeAction(this, mSelectedNode); 
           deleteAction.run(); 
     } 
-
 
     /*************************************************************************** 
     * 
