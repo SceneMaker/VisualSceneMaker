@@ -506,7 +506,14 @@ public class Node extends JComponent implements EventListener, Observer {
     public Point disconnectEdge(Edge e) {
         Point relPos = mDockingManager.freeDockPoint(e);
         Point pos = getLocation();
-        Point absLoc = new Point(relPos.x + pos.x, relPos.y + pos.y);
+        Point absLoc;
+        
+        if(relPos!=null){
+            absLoc = new Point(relPos.x + pos.x, relPos.y + pos.y);
+        }
+        else{
+            absLoc = new Point(pos.x, pos.y);
+        }
 
         return absLoc;
     }
@@ -538,9 +545,17 @@ public class Node extends JComponent implements EventListener, Observer {
 
         Point dp = mDockingManager.getDockPoint(e);
 
-        // make position absolute to underlying canvas
-        dp.setLocation(dp.x + loc.x, dp.y + loc.y);
-
+        // make position absolute to underlying canvas        
+        if(dp!=null){
+             dp.setLocation(dp.x + loc.x, dp.y + loc.y);
+        }
+        else{
+            if(this.mIsEndNode)
+                return (new Point(loc.x, loc.y + getHeight()/2));
+            else
+                return (new Point(loc.x + getWidth(), loc.y + getHeight()/2));
+        }
+      
         return dp;
     }
 
@@ -550,7 +565,15 @@ public class Node extends JComponent implements EventListener, Observer {
         Point dp = mDockingManager.getSecondDockPoint(e);
 
         // make position absolute to underlying canvas
-        dp.setLocation(dp.x + loc.x, dp.y + loc.y);
+        if(dp!=null){
+             dp.setLocation(dp.x + loc.x, dp.y + loc.y);
+        }
+        else{
+            if(this.mIsEndNode)
+                return (new Point(loc.x, loc.y + getHeight()/2));
+            else
+                return (new Point(loc.x + getWidth(), loc.y + getHeight()/2));
+        }
 
         return dp;
     }
