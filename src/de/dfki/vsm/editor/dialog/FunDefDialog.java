@@ -114,7 +114,6 @@ public class FunDefDialog extends Dialog {
         mClassNameLabel = new JLabel("Class:");
         mClassNameTextField = new JTextField();
         mClassNameTextField.addKeyListener(new KeyAdapter() {
-
             @Override
             public void keyTyped(KeyEvent evt) {
                 classTextFieldKeyTyped(evt);
@@ -259,7 +258,8 @@ public class FunDefDialog extends Dialog {
         resizeArgNameList();
         updateArgList();
         // Display a message on the message label
-        if (!isClass && !isObject) {
+        if (!isClass && !isObject) {         
+            mMethodComboBox.addItem("Specified class/object not found!");           
             mMessageLabel.setText("Specified class/object not found!");
             mMessageLabel.setForeground(Color.RED);
         }
