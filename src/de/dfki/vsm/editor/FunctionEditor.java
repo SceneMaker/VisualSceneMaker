@@ -219,24 +219,27 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 @Override
                 public void actionPerformed(ActionEvent evt) { 
                     
-                    String newSelectedMethod = null;
-                    if(funDefPanel.getMethodBox().getSelectedItem()!=null){
-                        newSelectedMethod = funDefPanel.getMethodBox().getSelectedItem().toString();
-                    }
-                    
-                    if (newSelectedMethod != null){
-                        funDef.setMethod(newSelectedMethod);   
-                        funDefPanel.methodComboBoxActionPerformed(evt);
-                        funDef.getParamList().clear();
-                        Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
-                        while (args.hasMoreElements()) {
-                            String argString = (String) args.nextElement();
-       
-    
-                         funDef.addParam(
-                                new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
+                    if(funDefPanel.getIsValidClass()){
+                        String newSelectedMethod = null;
+                        if(funDefPanel.getMethodBox().getSelectedItem()!=null){
+                            newSelectedMethod = funDefPanel.getMethodBox().getSelectedItem().toString();
                         }
-                        Editor.getInstance().update(); 
+
+                        if (newSelectedMethod != null){
+                            funDef.setMethod(newSelectedMethod);   
+                            funDefPanel.getFunDef().setMethod(newSelectedMethod);                                   
+                            funDefPanel.methodComboBoxActionPerformed(evt);
+                            funDef.getParamList().clear();
+                            Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
+                            while (args.hasMoreElements()) {
+                                String argString = (String) args.nextElement();
+
+
+                             funDef.addParam(
+                                    new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
+                            }
+                            Editor.getInstance().update(); 
+                        }
                     }
                 }
             });
