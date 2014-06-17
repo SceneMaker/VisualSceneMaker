@@ -225,15 +225,11 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         // TODO: move to somewhere??!!
         NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
 
-       
-        
         mEventCaster.convey(e);
         // display components
         showVariableBadge();
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
-        
-        
     }
 
     public void clearClipBoard() {
@@ -565,10 +561,10 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
     public void createFunCall(Node node, String name) {     
         UsrCmd cmd = new UsrCmd();        
         cmd.setName(name);
-        Command newCmd = new CmdDialog(cmd).run();
-        if (newCmd != null) {
+        //Command newCmd = new CmdDialog(cmd).run();
+        //if (newCmd != null) {
             node.getDataNode().addCmd(cmd);
-        }
+        // }
     }
 
     /**
@@ -1879,12 +1875,6 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
           RemoveNodeAction deleteAction = new RemoveNodeAction(this, mSelectedNode); 
           deleteAction.run(); 
     } 
-
-    /*************************************************************************** 
-    * 
-    * 
-    * 
-    **************************************************************************/ 
 
     /**
      * *************************************************************************
