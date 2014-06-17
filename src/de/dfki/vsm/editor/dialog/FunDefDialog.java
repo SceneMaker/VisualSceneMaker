@@ -72,6 +72,7 @@ public class FunDefDialog extends Dialog {
     private JPanel mUpperPanel;
     private JPanel mLowerPanel;
     private Color mDefaultColor;
+    private Boolean mIsValidClass;
     
     private final Document mNameDocument = new PlainDocument() {
        
@@ -207,6 +208,7 @@ public class FunDefDialog extends Dialog {
         ((DefaultComboBoxModel) mMethodComboBox.getModel()).removeAllElements();
         mMessageLabel.setText("Displaying methods of class/object " + className);
         mMessageLabel.setForeground(Color.GREEN);
+        mMethodComboBox.setForeground(Color.DARK_GRAY);
         boolean isClass = true;
         boolean isObject = true;
 
@@ -253,15 +255,23 @@ public class FunDefDialog extends Dialog {
                 isObject = false;
             }
         }
-        // Get the selected method and resize/fill the argument list
-        mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
-        resizeArgNameList();
-        updateArgList();
+        
         // Display a message on the message label
-        if (!isClass && !isObject) {         
-            mMethodComboBox.addItem("Specified class/object not found!");           
+        if (!isClass && !isObject) {     
+            mIsValidClass = false;
+            mMethodComboBox.addItem(mFunDef.getMethod() + " not found in classpath!"); 
+            mMethodComboBox.setForeground(Color.RED);
             mMessageLabel.setText("Specified class/object not found!");
             mMessageLabel.setForeground(Color.RED);
+            
+        }else{
+            // Get the selected method and resize/fill the argument list
+            mIsValidClass = true;
+            mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
+            resizeArgNameList();
+            updateArgList();
+            
+        
         }
     }
     
@@ -532,6 +542,10 @@ public class FunDefDialog extends Dialog {
     }
     
     public void setErrorBackground() {         
-            paintPanel(Color.ORANGE); 
+        paintPanel(Color.ORANGE); 
+    }
+    
+    public Boolean getIsValidClass(){
+        return mIsValidClass;    
     }
 }
