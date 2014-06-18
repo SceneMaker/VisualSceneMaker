@@ -3,6 +3,7 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.dialog.CmdDialog;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
+import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
 import de.dfki.vsm.editor.dialog.TypeDefDialog;
@@ -12,6 +13,7 @@ import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.Edge;
 import de.dfki.vsm.model.sceneflow.Edge.Type;
+import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
@@ -30,6 +32,7 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Component;
+import static java.awt.Component.RIGHT_ALIGNMENT;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -780,13 +783,15 @@ class EdgeEditor extends JPanel implements EventListener {
 
     private final TimeOutEditor mTimeOutEditor;
     private final ConditionEditor mConditionEditor;
-    private final ProbabilityEditor mProbabilityEditor;
+    private final ProbabilityEditor mProbabilityEditor;    
+    private final InterruptEditor mInterruptEditor;
 
     public EdgeEditor() {        
         // Init the child editors 
         mTimeOutEditor = new TimeOutEditor();
         mConditionEditor = new ConditionEditor();
-        mProbabilityEditor = new ProbabilityEditor();        
+        mProbabilityEditor = new ProbabilityEditor();    
+        mInterruptEditor = new InterruptEditor();
                
         // Init components
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -794,6 +799,7 @@ class EdgeEditor extends JPanel implements EventListener {
         add(mTimeOutEditor);
         add(mConditionEditor);
         add(mProbabilityEditor);
+        add(mInterruptEditor);
         
         EventCaster.getInstance().append(this);      
     }
@@ -814,6 +820,12 @@ class EdgeEditor extends JPanel implements EventListener {
                 mConditionEditor.setVisible(true);
             } else {
                 mConditionEditor.setVisible(false);
+            }
+            
+            if (edge instanceof IEdge) {
+                mInterruptEditor.setVisible(true);
+            } else {
+                mInterruptEditor.setVisible(false);
             }
             
             if (edge instanceof PEdge) {
@@ -891,6 +903,85 @@ class TimeOutEditor extends JPanel implements EventListener {
         mDataTEdge.setTimeout(Integer.parseInt(mTEdgeDialog.getInputTextField().getText()));               
     }
 }
+
+/**
+ * *****************************************************************************
+ *
+ * @author Sergio Soto
+ *
+ *****************************************************************************
+ */
+class InterruptEditor extends JPanel implements EventListener {
+
+    private IEdge mDataIEdge;
+    private ModifyIEdgeDialog mIEdgeDialog;
+
+    public InterruptEditor() {
+        initComponents();
+        EventCaster.getInstance().append(this);
+    }
+
+    private void initComponents() {        
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    }
+
+    @Override
+    public void update(EventObject event) {
+        if (event instanceof EdgeSelectedEvent) {
+            if (event instanceof EdgeSelectedEvent) {   
+                if(((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.IEdge)){
+                    
+                    mDataIEdge = (IEdge) ((EdgeSelectedEvent) event).getEdge();                
+                    mIEdgeDialog = new ModifyIEdgeDialog(mDataIEdge);
+                    
+                    removeAll();
+                
+                    mIEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));        
+                    mIEdgeDialog.getInputPanel().setMaximumSize(new Dimension(1000, 40));
+                    mIEdgeDialog.getInputPanel().setPreferredSize(new Dimension(200, 40));
+                    mIEdgeDialog.getInputPanel().setAlignmentX(RIGHT_ALIGNMENT);
+
+                    mIEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 90));        
+                    mIEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 90));
+                    mIEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 90));
+                    mIEdgeDialog.getAltStartNodePanel().setAlignmentX(RIGHT_ALIGNMENT);
+
+                    add(mIEdgeDialog.getInputPanel());
+                    add(mIEdgeDialog.getAltStartNodePanel());
+                
+                    
+                    mIEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {        
+                    @Override
+                    public void keyReleased(KeyEvent event) {               
+                        save();
+                        Editor.getInstance().update();
+                    }
+                });
+                
+                }
+            }   
+        } else {
+            // Do nothing
+        }
+    }
+
+    private void save() {   
+        String inputString =  mIEdgeDialog.getInputTextField().getText().trim();
+        try {
+            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
+            _SFSLParser_.run(inputString);
+            LogicalCond log = _SFSLParser_.logResult;
+            if (log != null && !_SFSLParser_.errorFlag) {
+                mDataIEdge.setCondition(log);
+            } else {
+                // Do nothing
+            }
+        } catch (Exception e) {
+         
+        }        
+    }
+}
+
 
 /**
  * *****************************************************************************
