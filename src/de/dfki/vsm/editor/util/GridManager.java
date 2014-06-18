@@ -44,6 +44,7 @@ public class GridManager {
   private boolean isSubgridEstablished = false;
   private int height = 0;
   private int width = 0;
+  private boolean isDebug = false;
   
   public GridManager(WorkSpace ws) {
     mWorkSpace = ws;
@@ -216,23 +217,29 @@ public class GridManager {
         // g2d.drawString("" + ai, r.x + 2, r.y + 12);
       }
       
-//      for (GridRectangle[] r : mTransitionArea) {
-//        for(GridRectangle s: r) {
-//            int ai = mNodeAreas.indexOf(r);
-//            // draw a litte cross
-//            g2d.setColor(new Color(230, 230, 230, 200));
-//            g2d.drawLine(s.x + s.width / 2 - 2, s.y + s.height / 2, s.x + s.width / 2 + 2, s.y + s.height / 2);
-//            g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
-//            // draw node areas
-//            if(s.getWeight() > 1) {
-//                g2d.setColor(Color.red);
-//            }
-//            g2d.drawRect(s.x, s.y, s.width, s.height);
-//            g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
-//            
-//        }
-//      }
+      if(isDebug) {
+        for (GridRectangle[] r : mTransitionArea) {
+          for(GridRectangle s: r) {
+              int ai = mNodeAreas.indexOf(r);
+              // draw a litte cross
+              g2d.setColor(new Color(230, 230, 230, 200));
+              g2d.drawLine(s.x + s.width / 2 - 2, s.y + s.height / 2, s.x + s.width / 2 + 2, s.y + s.height / 2);
+              g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
+              // draw node areas
+              if(s.getWeight() > 1) {
+                  g2d.setColor(Color.red);
+              }
+              g2d.drawRect(s.x, s.y, s.width, s.height);
+              g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
+
+          }
+        }
+      }
     }
+  }
+  
+  public void setDebugMode(boolean status) {
+      this.isDebug = status;
   }
 
   public Point getNodeLocation(Point inputPoint) {
