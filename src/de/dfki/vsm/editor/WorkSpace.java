@@ -781,11 +781,14 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         RemoveEdgeAction deleteAction = new RemoveEdgeAction(this, edge);
         item.addActionListener(deleteAction.getActionListener());
         pop.add(item);
+		item = new JMenuItem("Shortest Path");
+		item.setEnabled(false);
+        pop.add(item);
         item = new JMenuItem("Straighten");
         StraightenEdgeAction renameAction = new StraightenEdgeAction(this, edge);
         item.addActionListener(renameAction.getActionListener());
         pop.add(item);
-        item = new JMenuItem("Automatic Routing");
+        item = new JMenuItem("Smart Path");
         NormalizeEdgeAction normalizeAction = new NormalizeEdgeAction(this, edge);
         item.addActionListener(normalizeAction.getActionListener());
         pop.add(item);
