@@ -223,7 +223,7 @@ public abstract class EdgeAction extends EditorAction {
             
             if(targetDockingPoint.getIntersectionX() > -1 && 
                     targetDockingPoint.getIntersectionY() > -1) {
-                mTargetGUINodeDockPoint = mTargetGUINode.connectEdgeAtSourceNode(mGUIEdge, new Point(
+                mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, new Point(
                                             targetDockingPoint.getIntersectionX(), 
                                             targetDockingPoint.getIntersectionY()));
             }
