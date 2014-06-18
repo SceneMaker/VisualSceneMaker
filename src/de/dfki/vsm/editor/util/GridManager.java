@@ -44,7 +44,7 @@ public class GridManager {
   private boolean isSubgridEstablished = false;
   private int height = 0;
   private int width = 0;
-  private boolean isDebug = false;
+  private boolean isDebug = Preferences.sSHOW_SMART_PATH_DEBUG;
   
   public GridManager(WorkSpace ws) {
     mWorkSpace = ws;
@@ -165,6 +165,7 @@ public class GridManager {
   }
 
   public void update() {
+	isDebug = Preferences.sSHOW_SMART_PATH_DEBUG;
     mPlacedNodes = new HashSet<Point>();
     compute();
   }
