@@ -163,12 +163,16 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
 
     public void update(java.util.Observable obs, Object obj) {
         //mLogger.message("WorkSpace.update(" + obj + ")");
+
         mObservable.update(obj);
         // rebuild node position
         mGridManager.update();
         for (Node node : mNodeSet) {
-          //  node.resetLocation(mGridManager.getNodeLocation(node.getLocation()));
+           Point p = mGridManager.getNodeLocation(node.getLocation());
+           node.resetLocation(p);
+           node.getDataNode().getGraphics().setPosition(p.x, p.y);
         }
+        
         revalidate();
         repaint();
     }
@@ -177,10 +181,10 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
      * *************************************************************************
      *
      *
-     *
      *************************************************************************
      */
     public void update(EventObject event) {
+    
     }
 
     /**
@@ -201,8 +205,9 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
      *************************************************************************
      */
     public WorkSpace(SceneFlowEditor sceneFlowEditor) {
-        mGridManager = new GridManager(this);
+        
         mSceneFlowEditor = sceneFlowEditor;
+        mGridManager = new GridManager(this);
         // Add the mouse listeners
         addMouseMotionListener(this);
         addMouseListener(this);
@@ -220,11 +225,15 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         // TODO: move to somewhere??!!
         NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
 
+       
+        
         mEventCaster.convey(e);
         // display components
         showVariableBadge();
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
+        
+        
     }
 
     public void clearClipBoard() {
@@ -553,17 +562,12 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         node.getDataNode().addCmd(psgCmd);
     }
 
-    public void createFunCall(Node node, String name) {
-     
-        UsrCmd cmd = new UsrCmd();
-        
+    public void createFunCall(Node node, String name) {     
+        UsrCmd cmd = new UsrCmd();        
         cmd.setName(name);
-        node.getDataNode().addCmd(cmd);
-       
         Command newCmd = new CmdDialog(cmd).run();
         if (newCmd != null) {
-            node.getDataNode().setCmdAt(newCmd, 0);
-
+            node.getDataNode().addCmd(cmd);
         }
     }
 
@@ -785,7 +789,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         StraightenEdgeAction renameAction = new StraightenEdgeAction(this, edge);
         item.addActionListener(renameAction.getActionListener());
         pop.add(item);
-        item = new JMenuItem("Normalize");
+        item = new JMenuItem("Smart Path");
         NormalizeEdgeAction normalizeAction = new NormalizeEdgeAction(this, edge);
         item.addActionListener(normalizeAction.getActionListener());
         pop.add(item);
@@ -1454,6 +1458,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 // check location of each c
                 if (node.mDragged) {
                     node.resetLocation(mGridManager.getNodeLocation(p));
+                     
                 }
         // update workspace area - if dragged beyond current borders
                 // sWorkSpaceDrawArea = getSize();
@@ -1495,7 +1500,11 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
                 if (mSelectedNode.mDragged) {
                     Point p = mSelectedNode.getLocation();
                     mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
-          // update workspace area - if dragged beyond current borders
+                  
+                    // Update sceneflow with new node position
+                    mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(),mSelectedNode.getY());
+                   
+                    // update workspace area - if dragged beyond current borders
                     //sWorkSpaceDrawArea = getSize();
                 }
                 mSelectedNode.mouseReleased(event);
@@ -1848,6 +1857,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         if (mSelectedNode != null) { 
                  removeNode(); 
         } 
+        Editor.getInstance().update();
     } 
 
     private void removeEdge(){ 
@@ -1857,11 +1867,11 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
     } 
 
     private void removeNodes() { 
-      for (Node node : mNodeSet) { 
-          node.mSelected = false; 
-      } 
-          RemoveNodesAction deleteAction = new RemoveNodesAction(this, mSelectedNodes); 
-          deleteAction.run(); 
+        for (Node node : mNodeSet) { 
+            node.mSelected = false; 
+        } 
+        RemoveNodesAction deleteAction = new RemoveNodesAction(this, mSelectedNodes); 
+        deleteAction.run(); 
     } 
 
     private void removeNode() { 
@@ -1869,7 +1879,6 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
           RemoveNodeAction deleteAction = new RemoveNodeAction(this, mSelectedNode); 
           deleteAction.run(); 
     } 
-
 
     /*************************************************************************** 
     * 
@@ -1898,6 +1907,7 @@ public class WorkSpace extends JPanel implements Observer, EventListener, MouseL
         super.paintComponent(g);
 
         mGridManager.drawGrid(g2d);
+     
 
         if (mDoAreaSelection) {
             mDrawArea.x = (mAreaSelection.width > 0) ? mAreaSelection.x : mAreaSelection.x + mAreaSelection.width;

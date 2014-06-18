@@ -42,6 +42,7 @@ public class NormalizeEdgeAction {
         mGUIEdge = edge; 
         mSourceGUINode = mGUIEdge.getSourceNode();
         mTargetGUINode = mGUIEdge.getTargetNode();
+        //mWorkSpace.mGridManager.setDebugMode(true);
     }
 
     public ActionListener getActionListener() {
@@ -247,7 +248,7 @@ public class NormalizeEdgeAction {
             
             if(targetDockingPoint.getIntersectionX() > -1 && 
                     targetDockingPoint.getIntersectionY() > -1) {
-                mTargetGUINodeDockPoint = mTargetGUINode.connectEdgeAtSourceNode(mGUIEdge, new Point(
+                mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, new Point(
                                             targetDockingPoint.getIntersectionX(), 
                                             targetDockingPoint.getIntersectionY()));
             }

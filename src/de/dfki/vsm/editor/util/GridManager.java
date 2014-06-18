@@ -44,6 +44,7 @@ public class GridManager {
   private boolean isSubgridEstablished = false;
   private int height = 0;
   private int width = 0;
+  private boolean isDebug = false;
   
   public GridManager(WorkSpace ws) {
     mWorkSpace = ws;
@@ -64,11 +65,12 @@ public class GridManager {
     }
   }
 
-  private void compute() {
-    Dimension size = mWorkSpace.getSize();
-    Insets insets = mWorkSpace.getInsets();
-    int w = size.width - insets.left - insets.right;
-    int h = size.height - insets.top - insets.bottom;
+  public void compute() {
+    
+    Dimension area = obtainWorkAreaSize();
+    int w = area.width;
+    int h = area.height;
+    
     mNodesinRow = w / sGRID_XSPACE;
     mNodeAreas = new ArrayList<Rectangle>();
     
@@ -112,9 +114,17 @@ public class GridManager {
         if(!(height == (h / sGRID_YSPACE) && width == (w / sGRID_XSPACE))) {
             if(j < height && i < width) {
                 mTempTransitions[i*2][j*2] = mTransitionArea[i*2][j*2];
+                mTempTransitions[i*2][j*2].setLocation(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + 2);
+                mTempTransitions[i*2][j*2].setSize(halfNodeSize - 4, halfNodeSize - 4);
                 mTempTransitions[i*2+1][j*2] = mTransitionArea[i*2+1][j*2];
+                mTempTransitions[i*2+1][j*2].setLocation(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + 2);
+                mTempTransitions[i*2+1][j*2].setSize(halfNodeSize - 4, halfNodeSize - 4);
                 mTempTransitions[i*2][j*2+1] = mTransitionArea[i*2][j*2+1];
+                mTempTransitions[i*2][j*2+1].setLocation(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2);
+                mTempTransitions[i*2][j*2+1].setSize(halfNodeSize - 4, halfNodeSize - 4);
                 mTempTransitions[i*2+1][j*2+1] = mTransitionArea[i*2+1][j*2+1];
+                mTempTransitions[i*2+1][j*2+1].setLocation(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2);
+                mTempTransitions[i*2+1][j*2+1].setSize(halfNodeSize - 4, halfNodeSize - 4);
             }
             else {
                 GridRectangle s = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize - 4);
@@ -156,8 +166,44 @@ public class GridManager {
 
   public void update() {
     mPlacedNodes = new HashSet<Point>();
+    compute();
+  }
+  
+  private Dimension obtainWorkAreaSize() {
+    int w = 0;
+    int h = 0;
+    
+    if( mWorkSpace.getSize().equals(new Dimension(0,0))){    
+        for(de.dfki.vsm.model.sceneflow.Node n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getNodeList()){
+            if(n.getGraphics().getPosition().getXPos() > w){
+                    w = n.getGraphics().getPosition().getXPos()+ Preferences.sNODEWIDTH;
+            }
+            if(n.getGraphics().getPosition().getYPos() > h){
+                    h = n.getGraphics().getPosition().getYPos()+ Preferences.sNODEHEIGHT;
+            }               
+        }
+        
+        for(de.dfki.vsm.model.sceneflow.SuperNode n: mWorkSpace.getSceneFlowEditor().getSceneFlow().getSuperNodeList()){
+            if(n.getGraphics().getPosition().getXPos() > w){
+                    w = n.getGraphics().getPosition().getXPos()+ Preferences.sNODEWIDTH;
+            }
+            if(n.getGraphics().getPosition().getYPos() > h){
+                    h = n.getGraphics().getPosition().getYPos()+ Preferences.sNODEHEIGHT;
+            }               
+        }
+    }
+    else{
+        w = mWorkSpace.getSize().width;
+        h = mWorkSpace.getSize().height;  
+    }    
+    return new Dimension(w,h);      
   }
 
+  public void setDebugMode(boolean status) {
+      this.isDebug = status;
+      update();
+  }
+  
   public void drawGrid(Graphics2D g2d) {
     compute();
 
@@ -176,28 +222,30 @@ public class GridManager {
         // g2d.drawString("" + ai, r.x + 2, r.y + 12);
       }
       
-//      for (GridRectangle[] r : mTransitionArea) {
-//        for(GridRectangle s: r) {
-//            int ai = mNodeAreas.indexOf(r);
-//            // draw a litte cross
-//            g2d.setColor(new Color(230, 230, 230, 200));
-//            g2d.drawLine(s.x + s.width / 2 - 2, s.y + s.height / 2, s.x + s.width / 2 + 2, s.y + s.height / 2);
-//            g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
-//            // draw node areas
-//            if(s.getWeight() > 1) {
-//                g2d.setColor(Color.red);
-//            }
-//            g2d.drawRect(s.x, s.y, s.width, s.height);
-//            g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
-//            
-//        }
-//      }
+      if(isDebug) {
+        for (GridRectangle[] r : mTransitionArea) {
+          for(GridRectangle s: r) {
+              int ai = mNodeAreas.indexOf(r);
+              // draw a litte cross
+              g2d.setColor(new Color(230, 230, 230, 200));
+              g2d.drawLine(s.x + s.width / 2 - 2, s.y + s.height / 2, s.x + s.width / 2 + 2, s.y + s.height / 2);
+              g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
+              // draw node areas
+              if(s.getWeight() > 1) {
+                  g2d.setColor(Color.red);
+              }
+              g2d.drawRect(s.x, s.y, s.width, s.height);
+              g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
+
+          }
+        }
+      }
     }
   }
 
   public Point getNodeLocation(Point inputPoint) {
-   //Point p = new Point(inputPoint.x+ sGRID_NODEWIDTH / 2, inputPoint.y + sGRID_NODEWIDTH / 2);
-   Point p = new Point(inputPoint.x,inputPoint.y);
+            
+   Point p = new Point(inputPoint.x+ sGRID_NODEWIDTH / 2, inputPoint.y + sGRID_NODEWIDTH / 2);
    for (Rectangle r : mNodeAreas) {
       if (r.contains(p)) {
         p = new Point(r.x, r.y);
@@ -205,7 +253,6 @@ public class GridManager {
       }
     }
    
-
     // check if p is already in set of grid points
     if (mPlacedNodes.contains(p)) {
       //System.out.println("point already in use!");
