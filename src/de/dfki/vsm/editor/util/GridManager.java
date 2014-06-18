@@ -113,9 +113,17 @@ public class GridManager {
         if(!(height == (h / sGRID_YSPACE) && width == (w / sGRID_XSPACE))) {
             if(j < height && i < width) {
                 mTempTransitions[i*2][j*2] = mTransitionArea[i*2][j*2];
+                mTempTransitions[i*2][j*2].setLocation(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + 2);
+                mTempTransitions[i*2][j*2].setSize(halfNodeSize - 4, halfNodeSize - 4);
                 mTempTransitions[i*2+1][j*2] = mTransitionArea[i*2+1][j*2];
+                mTempTransitions[i*2+1][j*2].setLocation(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + 2);
+                mTempTransitions[i*2+1][j*2].setSize(halfNodeSize - 4, halfNodeSize - 4);
                 mTempTransitions[i*2][j*2+1] = mTransitionArea[i*2][j*2+1];
+                mTempTransitions[i*2][j*2+1].setLocation(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2);
+                mTempTransitions[i*2][j*2+1].setSize(halfNodeSize - 4, halfNodeSize - 4);
                 mTempTransitions[i*2+1][j*2+1] = mTransitionArea[i*2+1][j*2+1];
+                mTempTransitions[i*2+1][j*2+1].setLocation(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2);
+                mTempTransitions[i*2+1][j*2+1].setSize(halfNodeSize - 4, halfNodeSize - 4);
             }
             else {
                 GridRectangle s = new GridRectangle(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize - 4);
