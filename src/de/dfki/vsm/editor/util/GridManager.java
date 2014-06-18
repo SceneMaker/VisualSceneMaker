@@ -240,6 +240,7 @@ public class GridManager {
   
   public void setDebugMode(boolean status) {
       this.isDebug = status;
+      update();
   }
 
   public Point getNodeLocation(Point inputPoint) {
