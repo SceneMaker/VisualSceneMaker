@@ -121,11 +121,11 @@ public abstract class EdgeAction extends EditorAction {
         }
         //mSourceGUINode.update();
         Editor.getInstance().update();
-//        mWorkSpace.add(mGUIEdge);
-//        mWorkSpace.revalidate();
-//        mWorkSpace.repaint();
-        recalculateWeight();
-        setEdgePath();
+        mWorkSpace.add(mGUIEdge);
+        mWorkSpace.revalidate();
+        mWorkSpace.repaint();
+//        recalculateWeight();
+//        setEdgePath();
     }
     
     public void recalculateWeight() {
