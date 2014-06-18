@@ -259,8 +259,8 @@ public class FunDefDialog extends Dialog {
         // Display a message on the message label
         if (!isClass && !isObject) {     
             mIsValidClass = false;
-            mMethodComboBox.addItem(mFunDef.getMethod() + " not found in classpath!"); 
-            mMethodComboBox.setForeground(Color.RED);
+            mMethodComboBox.addItem(mFunDef.getMethod() + " not found in class or classpath!"); 
+            mMethodComboBox.setForeground(Color.RED.darker());
             mMessageLabel.setText("Specified class/object not found!");
             mMessageLabel.setForeground(Color.RED);
             
