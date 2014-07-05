@@ -24,6 +24,7 @@ public class GridRectangle extends Rectangle{
     private int rowIndex;
     private int columnIndex;
     private int weight;
+    private boolean aStarPath = false;
     private final int INITIAL_WEIGHT = 1;
     private int intersectionType = -1;
     public static final int NODE_INTERSECTION = 0;
@@ -76,6 +77,14 @@ public class GridRectangle extends Rectangle{
 
     public void setIntersectionType(int intersectionType) {
         this.intersectionType = intersectionType;
+    }
+
+    public boolean isaStarPath() {
+        return aStarPath;
+    }
+
+    public void setaStarPath(boolean aStarPath) {
+        this.aStarPath = aStarPath;
     }
     
     public boolean isIntersectedbyNode(Node node) {

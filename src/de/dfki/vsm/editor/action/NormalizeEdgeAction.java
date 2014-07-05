@@ -168,6 +168,7 @@ public class NormalizeEdgeAction {
     public void setEdgePath() {
         //if weight of grid intersection is larger than max weight threshold, rerouting needed.
         if(isReroutingNeeded()) {
+            System.out.println("Smart Path initiated!");
             AStarEdgeFinder aStarPath = new AStarEdgeFinder(mWorkSpace.mGridManager.getmTransitionArea());
             Path alternatePath = aStarPath.getPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
                     gridDestination.getColumnIndex(), gridDestination.getRowIndex());
@@ -185,6 +186,7 @@ public class NormalizeEdgeAction {
                 BezierPoint point = new BezierPoint(
                     mWorkSpace.mGridManager.getmTransitionArea()[alternatePath.getY(i)][alternatePath.getX(i)].getCenterX(),
                     mWorkSpace.mGridManager.getmTransitionArea()[alternatePath.getY(i)][alternatePath.getX(i)].getCenterY());
+                    mWorkSpace.mGridManager.getmTransitionArea()[alternatePath.getY(i)][alternatePath.getX(i)].setaStarPath(true);
                 pathPoints.add(point);
                 if(i < alternatePath.getLength()/2+2) {
                     deviationSourceX += (alternatePath.getX(i+1) - alternatePath.getX(i));
@@ -295,6 +297,7 @@ public class NormalizeEdgeAction {
         
         for(GridRectangle[] gridParent : mWorkSpace.mGridManager.getmTransitionArea()) {
             for(GridRectangle gridRectangle : gridParent) {
+                gridRectangle.setaStarPath(false);
                 if(gridRectangle.isIntersectedbyNode(mSourceGUINode)) {
                     gridRectangle.setIntersectionType(GridRectangle.NODE_INTERSECTION);
                     sumWeight += gridRectangle.getWeight();
