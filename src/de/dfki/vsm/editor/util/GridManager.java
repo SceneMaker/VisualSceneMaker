@@ -114,15 +114,19 @@ public class GridManager {
 				if (!(height == (h / sGRID_YSPACE) && width == (w / sGRID_XSPACE))) {
 					if (j < height && i < width) {
 						mTempTransitions[i * 2][j * 2] = mTransitionArea[i * 2][j * 2];
+                                                mTempTransitions[i * 2][j * 2].setaStarPath(mTransitionArea[i * 2][j * 2].isaStarPath());
 						mTempTransitions[i * 2][j * 2].setLocation(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + 2);
 						mTempTransitions[i * 2][j * 2].setSize(halfNodeSize - 4, halfNodeSize - 4);
 						mTempTransitions[i * 2 + 1][j * 2] = mTransitionArea[i * 2 + 1][j * 2];
+                                                mTempTransitions[i * 2 + 1][j * 2].setaStarPath(mTransitionArea[i * 2 + 1][j * 2].isaStarPath());
 						mTempTransitions[i * 2 + 1][j * 2].setLocation(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + 2);
 						mTempTransitions[i * 2 + 1][j * 2].setSize(halfNodeSize - 4, halfNodeSize - 4);
 						mTempTransitions[i * 2][j * 2 + 1] = mTransitionArea[i * 2][j * 2 + 1];
+                                                mTempTransitions[i * 2][j * 2 + 1].setaStarPath(mTransitionArea[i * 2][j * 2 + 1].isaStarPath());
 						mTempTransitions[i * 2][j * 2 + 1].setLocation(sXOFFSET + (i * sGRID_XSPACE) + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2);
 						mTempTransitions[i * 2][j * 2 + 1].setSize(halfNodeSize - 4, halfNodeSize - 4);
 						mTempTransitions[i * 2 + 1][j * 2 + 1] = mTransitionArea[i * 2 + 1][j * 2 + 1];
+                                                mTempTransitions[i * 2 + 1][j * 2 + 1].setaStarPath(mTransitionArea[i * 2 + 1][j * 2 + 1].isaStarPath());
 						mTempTransitions[i * 2 + 1][j * 2 + 1].setLocation(sXOFFSET + (i * sGRID_XSPACE) + halfNodeSize + 2, sYOFFSET + (j * sGRID_YSPACE) + halfNodeSize + 2);
 						mTempTransitions[i * 2 + 1][j * 2 + 1].setSize(halfNodeSize - 4, halfNodeSize - 4);
 					} else {
@@ -226,9 +230,12 @@ public class GridManager {
 						g2d.drawLine(s.x + s.width / 2, s.y + s.height / 2 - 2, s.x + s.width / 2, s.y + s.height / 2 + 2);
 						// draw node areas
 						if (s.getWeight() > 1) {
-							g2d.setColor(Color.red);
-							g2d.drawString("" + s.getWeight(), s.x + 2, s.y + s.height / 2 + 6);
+                                                    g2d.setColor(Color.red);
+                                                    g2d.drawString("" + s.getWeight(), s.x + 2, s.y + s.height / 2 + 6);
 						}
+                                                if (s.isaStarPath()) {
+                                                    g2d.setColor(Color.blue);
+                                                }
 						g2d.drawRect(s.x, s.y, s.width, s.height);
 						g2d.drawString("" + s.getColumnIndex() + "," + s.getRowIndex(), s.x + 2, s.y + 12);
 
