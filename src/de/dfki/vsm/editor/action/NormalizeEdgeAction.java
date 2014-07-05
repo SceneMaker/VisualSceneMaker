@@ -240,6 +240,7 @@ public class NormalizeEdgeAction {
             
             if(sourceDockingPoint.getIntersectionX() > -1 && 
                     sourceDockingPoint.getIntersectionY() > -1) {
+                mSourceGUINode.disconnectEdge(mGUIEdge);
                 mSourceGUINodeDockPoint = mSourceGUINode.connectEdgeAtSourceNode(mGUIEdge, new Point(
                                             sourceDockingPoint.getIntersectionX(), 
                                             sourceDockingPoint.getIntersectionY()));
@@ -247,6 +248,7 @@ public class NormalizeEdgeAction {
             
             if(targetDockingPoint.getIntersectionX() > -1 && 
                     targetDockingPoint.getIntersectionY() > -1) {
+                mTargetGUINode.disconnectEdge(mGUIEdge);
                 mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, new Point(
                                             targetDockingPoint.getIntersectionX(), 
                                             targetDockingPoint.getIntersectionY()));
