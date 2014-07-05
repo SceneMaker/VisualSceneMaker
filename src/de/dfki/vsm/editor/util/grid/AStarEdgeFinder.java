@@ -22,12 +22,12 @@ public class AStarEdgeFinder {
     }
     
     public Path getPath(int sourceX, int sourceY, int destinationX, int destinationY) {
-        AStarPathFinder pathFinder = new AStarPathFinder(gridMap, MAX_PATH_LENGTH, false);
+        AStarPathFinder pathFinder = new AStarPathFinder(gridMap, MAX_PATH_LENGTH, true);
         return pathFinder.findPath(null, sourceX, sourceY, destinationX, destinationY);
     }
     
     public void printPath(int sourceX, int sourceY, int destinationX, int destinationY) {
-        AStarPathFinder pathFinder = new AStarPathFinder(gridMap, MAX_PATH_LENGTH, false);
+        AStarPathFinder pathFinder = new AStarPathFinder(gridMap, MAX_PATH_LENGTH, true);
         Path path = pathFinder.findPath(null, sourceX, sourceY, destinationX, destinationY);
         for(int i = 0; i < path.getLength(); i++) {
             System.out.println("Move to: " + path.getX(i) + "," + path.getY(i) + ".");
