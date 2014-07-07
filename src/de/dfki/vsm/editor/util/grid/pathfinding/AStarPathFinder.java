@@ -346,6 +346,11 @@ public class AStarPathFinder implements PathFinder, PathFindingContext {
 		this.mover = mover;
 		this.sourceX = sx;
 		this.sourceY = sy;
+                
+                //TODO: Diagonal plus cost
+                System.out.println("Source x: " + sx + ", Source y: " + sy +
+                        ", Target x: " + tx + ", Target y: " + ty + " = " + 
+                        map.getCost(this, tx, ty));
 		
 		return map.getCost(this, tx, ty);
 	}

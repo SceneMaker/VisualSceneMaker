@@ -168,7 +168,7 @@ public class NormalizeEdgeAction {
     public void setEdgePath() {
         //if weight of grid intersection is larger than max weight threshold, rerouting needed.
         if(isReroutingNeeded()) {
-            System.out.println("Smart Path initiated!");
+            //System.out.println("Smart Path initiated!");
             AStarEdgeFinder aStarPath = new AStarEdgeFinder(mWorkSpace.mGridManager.getmTransitionArea());
             Path alternatePath = aStarPath.getPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
                     gridDestination.getColumnIndex(), gridDestination.getRowIndex());
