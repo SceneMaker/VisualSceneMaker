@@ -15,4 +15,5 @@ public class GridConstants {
     public static final int NODE_WEIGHT = 100;
     public static final int EDGE_WEIGHT = 100;
     public static final int INITIAL_WEIGHT = 1;
+    public static final int DIAGONAL_PATH_COST = 0;
 }

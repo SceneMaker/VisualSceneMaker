@@ -45,6 +45,8 @@ public class AStarPathFinder implements PathFinder, PathFindingContext {
 	private int sourceY;
 	/** The distance searched so far */
 	private int distance;
+        /** The diagonal path cost */
+        private int diagonalCost = 0;
 	
 	/**
 	 * Create a path finder with the default heuristic - closest to target.
@@ -331,6 +333,14 @@ public class AStarPathFinder implements PathFinder, PathFindingContext {
 		
 		return !invalid;
 	}
+        
+        public void setDiagonalPathCost(int costValue) {
+                this.diagonalCost = costValue;
+        }
+        
+        public int getDiagonalPathCost() {
+                return this.diagonalCost;
+        }
 	
 	/**
 	 * Get the cost to move through a given location
@@ -347,10 +357,12 @@ public class AStarPathFinder implements PathFinder, PathFindingContext {
 		this.sourceX = sx;
 		this.sourceY = sy;
                 
-                //TODO: Diagonal plus cost
-                System.out.println("Source x: " + sx + ", Source y: " + sy +
-                        ", Target x: " + tx + ", Target y: " + ty + " = " + 
-                        map.getCost(this, tx, ty));
+                if(sx != tx && sy != ty) {
+//                    System.out.println("Source x: " + sx + ", Source y: " + sy +
+//                        ", Target x: " + tx + ", Target y: " + ty + " = " + 
+//                        map.getCost(this, tx, ty) + this.diagonalCost);
+                    return map.getCost(this, tx, ty) + this.diagonalCost;
+                }
 		
 		return map.getCost(this, tx, ty);
 	}
@@ -597,4 +609,8 @@ public class AStarPathFinder implements PathFinder, PathFindingContext {
 	public int getSourceY() {
 		return sourceY;
 	}
+        
+        
+        
+        
 }
