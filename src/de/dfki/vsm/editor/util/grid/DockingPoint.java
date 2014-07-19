@@ -86,56 +86,56 @@ public class DockingPoint {
 
     }
     
-//    public Point2D getIntersectionPoint(Line2D lineA, Line2D lineB) {
-//
-//        double x1 = lineA.getX1();
-//        double y1 = lineA.getY1();
-//        double x2 = lineA.getX2();
-//        double y2 = lineA.getY2();
-//
-//        double x3 = lineB.getX1();
-//        double y3 = lineB.getY1();
-//        double x4 = lineB.getX2();
-//        double y4 = lineB.getY2();
-//
-//        Point2D p = null;
-//
-//        double d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-//        if (d != 0) {
-//            double xi = ((x3 - x4) * (x1 * y2 - y1 * x2) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d;
-//            double yi = ((y3 - y4) * (x1 * y2 - y1 * x2) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d;
-//
-//            p = new Point2D.Double(xi, yi);
-//
-//        }
-//        return p;
-//    }
+    public Point2D getIntersectionPoint(Line2D lineA, Line2D lineB) {
+
+        double x1 = lineA.getX1();
+        double y1 = lineA.getY1();
+        double x2 = lineA.getX2();
+        double y2 = lineA.getY2();
+
+        double x3 = lineB.getX1();
+        double y3 = lineB.getY1();
+        double x4 = lineB.getX2();
+        double y4 = lineB.getY2();
+
+        Point2D p = null;
+
+        double d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (d != 0) {
+            double xi = ((x3 - x4) * (x1 * y2 - y1 * x2) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d;
+            double yi = ((y3 - y4) * (x1 * y2 - y1 * x2) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d;
+
+            p = new Point2D.Double(xi, yi);
+
+        }
+        return p;
+    }
     
     public boolean intersects(Line2D line1, Line2D line2) {
         return line1.intersectsLine(line2);
     }
     
-    public Point2D getIntersectionPoint(Line2D line1, Line2D line2) {
-        double px = line1.getX1(),
-                py = line1.getY1(),
-                rx = line1.getX2()-px,
-                ry = line1.getY2()-py;
-        
-        double qx = line2.getX1(),
-                qy = line2.getY1(),
-                sx = line2.getX2()-qx,
-                sy = line2.getY2()-qy;
-
-        double det = sx*ry - sy*rx;
-        if (det == 0) {
-          return null;
-        } 
-        
-        else {
-          double z = (sx*(qy-py)+sy*(px-qx))/det;
-          if (z==0 ||  z==1) return null;  // intersection at end point!
-          return new Point2D.Double(
-            (double)(px+z*rx), (double)(py+z*ry));
-        }
-     } // end intersection line-line
+//    public Point2D getIntersectionPoint(Line2D line1, Line2D line2) {
+//        double px = line1.getX1(),
+//                py = line1.getY1(),
+//                rx = line1.getX2()-px,
+//                ry = line1.getY2()-py;
+//        
+//        double qx = line2.getX1(),
+//                qy = line2.getY1(),
+//                sx = line2.getX2()-qx,
+//                sy = line2.getY2()-qy;
+//
+//        double det = sx*ry - sy*rx;
+//        if (det == 0) {
+//          return null;
+//        } 
+//        
+//        else {
+//          double z = (sx*(qy-py)+sy*(px-qx))/det;
+//          if (z==0 ||  z==1) return null;  // intersection at end point!
+//          return new Point2D.Double(
+//            (double)(px+z*rx), (double)(py+z*ry));
+//        }
+//     } // end intersection line-line
 }
