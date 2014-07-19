@@ -34,7 +34,7 @@ public class NormalizeEdgeAction {
     protected GridRectangle gridDestination = null;
     protected de.dfki.vsm.editor.Node mSourceGUINode = null;
     protected de.dfki.vsm.editor.Node mTargetGUINode = null; 
-     protected Point mSourceGUINodeDockPoint = null;
+    protected Point mSourceGUINodeDockPoint = null;
     protected Point mTargetGUINodeDockPoint = null;
 
     public NormalizeEdgeAction(WorkSpace workSpace, de.dfki.vsm.editor.Edge edge) {
@@ -170,6 +170,7 @@ public class NormalizeEdgeAction {
         if(isReroutingNeeded()) {
             //System.out.println("Smart Path initiated!");
             AStarEdgeFinder aStarPath = new AStarEdgeFinder(mWorkSpace.mGridManager.getmTransitionArea());
+            aStarPath.setDiagonalPathCost(GridConstants.DIAGONAL_PATH_COST);
             Path alternatePath = aStarPath.getPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
                     gridDestination.getColumnIndex(), gridDestination.getRowIndex());
             
