@@ -84,8 +84,8 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         super(JSplitPane.VERTICAL_SPLIT, true);
 
         mProject = project;
-        mSceneFlowEditor = new SceneFlowEditor(mProject.getSceneFlow());
-        mSceneDocEditor = new ScriptEditorPanel(mProject.getSceneScript(), mProject.getSceneFlow());
+        mSceneFlowEditor = new SceneFlowEditor(mProject.getSceneFlow(), mProject);
+        mSceneDocEditor = new ScriptEditorPanel(mProject.getSceneScript(), mProject.getSceneFlow(), mProject.getPreferences());
 
         mObservable.addObserver(mSceneFlowEditor);
         mObservable.addObserver(mSceneDocEditor);

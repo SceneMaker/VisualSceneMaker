@@ -59,7 +59,6 @@ public class ModifyTEdgeDialog extends Dialog {
         // Init GUI-Components
         initComponents();
         String timeout = Long.toString(mTEdge.getTimeout());
-        System.out.println("timeout " + timeout);
         timeout = (timeout == null) ? "1000" : (timeout.isEmpty()) ? "1000" : timeout;
         mInputTextField.setText(Long.toString(mTEdge.getTimeout()));
         loadAltStartNodeMap();
