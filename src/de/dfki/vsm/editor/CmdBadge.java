@@ -1,10 +1,8 @@
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
-import static de.dfki.vsm.editor.util.Preferences.sNODEHEIGHT;
-import static de.dfki.vsm.editor.util.Preferences.sNODEWIDTH;
-import static de.dfki.vsm.editor.util.Preferences.sVISUALISATIONTIME;
 import de.dfki.vsm.editor.util.VisualisationTask;
+import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventCaster;
@@ -33,6 +31,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     // The node to which the badge is connected
     private final Node mNode;
+    private final ProjectPreferences mPreferences;
     private final Timer mVisuTimer;
     // The maintained list
     private ArrayList<TPLTuple<String, AttributedString>> mStringList;
@@ -61,6 +60,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      */
     public CmdBadge(Node node) {
         mNode = node;
+        mPreferences = node.getWorkSpace().getPreferences();
         mVisuTimer = new Timer("Command-Badge-Visualization-Timer");
         setSize(new Dimension(1, 1));
         setLocation(0, 0);
@@ -122,7 +122,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
                     }
                 }
                 if (contained) {
-                    VisualisationTask visuTask = new VisualisationTask(sVISUALISATIONTIME, this);
+                    VisualisationTask visuTask = new VisualisationTask(mPreferences.sVISUALISATIONTIME, this);
                     mVisuTimer.schedule(visuTask, 0, 25);
                 }
             }
@@ -141,8 +141,8 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
         Dimension dimension = computeTextRectSize(graphics);
         setSize(dimension);
         setLocation(
-                mNode.getLocation().x + (sNODEWIDTH / 2) - (dimension.width / 2),
-                mNode.getLocation().y + sNODEHEIGHT);
+                mNode.getLocation().x + (mPreferences.sNODEWIDTH / 2) - (dimension.width / 2),
+                mNode.getLocation().y + mPreferences.sNODEHEIGHT);
         // draw background
         graphics.setColor(new Color(100, 100, 100, 100));
         graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);

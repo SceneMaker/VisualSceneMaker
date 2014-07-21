@@ -1,14 +1,21 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Node.Type;
-import static de.dfki.vsm.editor.Node.Type.BasicNode;
-import static de.dfki.vsm.editor.Node.Type.SuperNode;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
+
+import static de.dfki.vsm.editor.Node.Type.BasicNode;
+import static de.dfki.vsm.editor.Node.Type.SuperNode;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.Point;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -18,34 +25,61 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class CreateNodeAction extends NodeAction {
+    public CreateNodeAction(WorkSpace workSpace, de.dfki.vsm.model.sceneflow.Node node) {
+        mWorkSpace        = workSpace;
+        mCoordinate       = new Point(node.getGraphics().getPosition().getXPos(),
+                                      node.getGraphics().getPosition().getYPos());
+        mGUINodeType      = (SuperNode.class.isInstance(node))
+                            ? de.dfki.vsm.editor.Node.Type.SuperNode
+                            : de.dfki.vsm.editor.Node.Type.BasicNode;
+        mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
+        mSceneFlowManager = mWorkSpace.getSceneFlowManager();
+        mUndoManager      = mSceneFlowPane.getUndoManager();
+        mIDManager        = mSceneFlowManager.getIDManager();
+        mDataNodeId       = node.getId();
+        mDataNode         = node;
+
+        // DEBUG mDataNode.writeXML(new IndentOutputStream(System.out));
+        mParentDataNode = mSceneFlowManager.getCurrentActiveSuperNode();
+
+        // Create the GUI-Node
+        mGUINode = new de.dfki.vsm.editor.Node(mWorkSpace, mDataNode);
+
+        // Create the command badge of the GUI-Node
+        mCmdBadge = new CmdBadge(mGUINode);
+        mGUINode.resetLocation(mWorkSpace.mGridManager.getNodeLocation(mCoordinate));
+    }
 
     public CreateNodeAction(WorkSpace workSpace, Point coordinate, Type type) {
-        mWorkSpace = workSpace;
-        mCoordinate = coordinate;
-        mGUINodeType = type;
-        mSceneFlowPane = mWorkSpace.getSceneFlowEditor();
+        mWorkSpace        = workSpace;
+        mCoordinate       = coordinate;
+        mGUINodeType      = type;
+        mPreferences      = mWorkSpace.getPreferences();
+        mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
         mSceneFlowManager = mWorkSpace.getSceneFlowManager();
-        mUndoManager = mSceneFlowPane.getUndoManager();
-        mIDManager = mSceneFlowManager.getIDManager();
+        mUndoManager      = mSceneFlowPane.getUndoManager();
+        mIDManager        = mSceneFlowManager.getIDManager();
+
         if (mGUINodeType == BasicNode) {
             mDataNodeId = mIDManager.getNextFreeNodeID();
-            mDataNode = new Node();
+            mDataNode   = new Node();
+            mDataNode.setNameAndId(mDataNodeId);
+            mDataNode.setExhaustive(false);
+            mDataNode.setPreserving(false);
+            mDataNode.setGraphics(new Graphics(mCoordinate.x, mCoordinate.y));
+            mParentDataNode = mSceneFlowManager.getCurrentActiveSuperNode();
+        } else if (mGUINodeType == SuperNode) {
+            mDataNodeId = mIDManager.getNextFreeSuperNodeID();
+            mDataNode   = new SuperNode();
             mDataNode.setNameAndId(mDataNodeId);
             mDataNode.setExhaustive(false);
             mDataNode.setPreserving(false);
             mDataNode.setGraphics(new Graphics(mCoordinate.x, mCoordinate.y));
             mParentDataNode = mSceneFlowManager.getCurrentActiveSuperNode();
 
-        } else if (mGUINodeType == SuperNode) {
-            mDataNodeId = mIDManager.getNextFreeSuperNodeID();
-            mDataNode = new SuperNode();
-            mDataNode.setNameAndId(mDataNodeId);
-            mDataNode.setExhaustive(false);
-            mDataNode.setPreserving(false);
-            mDataNode.setGraphics(new Graphics(mCoordinate.x, mCoordinate.y));
-            mParentDataNode = mSceneFlowManager.getCurrentActiveSuperNode();
             //////////////////
             Node mHistoryDataNode = new Node();
+
             mHistoryDataNode.setHistoryNodeFlag(true);
             mHistoryDataNode.setName("History");
             mHistoryDataNode.setId(mIDManager.getNextFreeNodeID());
@@ -58,38 +92,12 @@ public class CreateNodeAction extends NodeAction {
 
             ///////////////////
         }
-        // Create the GUI-Node
-        mGUINode = new de.dfki.vsm.editor.Node(mWorkSpace, mDataNode);
-        // Create the command badge of the GUI-Node
-        mCmdBadge = new CmdBadge(mGUINode);
-
-    }
-
-    public CreateNodeAction(WorkSpace workSpace, de.dfki.vsm.model.sceneflow.Node node) {
-        mWorkSpace = workSpace;
-
-        mCoordinate = new Point(node.getGraphics().getPosition().getXPos(),
-                node.getGraphics().getPosition().getYPos());
-
-        mGUINodeType = (SuperNode.class.isInstance(node)) ? de.dfki.vsm.editor.Node.Type.SuperNode : de.dfki.vsm.editor.Node.Type.BasicNode;
-
-        mSceneFlowPane = mWorkSpace.getSceneFlowEditor();
-        mSceneFlowManager = mWorkSpace.getSceneFlowManager();
-        mUndoManager = mSceneFlowPane.getUndoManager();
-        mIDManager = mSceneFlowManager.getIDManager();
-
-        mDataNodeId = node.getId();
-        mDataNode = node;
-
-        //DEBUG mDataNode.writeXML(new IndentOutputStream(System.out));
-        mParentDataNode = mSceneFlowManager.getCurrentActiveSuperNode();
 
         // Create the GUI-Node
         mGUINode = new de.dfki.vsm.editor.Node(mWorkSpace, mDataNode);
+
         // Create the command badge of the GUI-Node
         mCmdBadge = new CmdBadge(mGUINode);
-
-        mGUINode.resetLocation(mWorkSpace.mGridManager.getNodeLocation(mCoordinate));
     }
 
     public void run() {
@@ -100,7 +108,6 @@ public class CreateNodeAction extends NodeAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             delete();
@@ -108,6 +115,7 @@ public class CreateNodeAction extends NodeAction {
 
         @Override
         public void redo() throws CannotRedoException {
+
             // say IDMAnger thta id is used
             mIDManager.setID(mGUINode);
             create();

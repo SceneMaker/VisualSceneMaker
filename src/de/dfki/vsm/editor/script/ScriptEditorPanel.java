@@ -1,8 +1,9 @@
 package de.dfki.vsm.editor.script;
 
 import de.dfki.vsm.editor.Editor;
-import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.FunctionEditor;
+import de.dfki.vsm.editor.SceneElementDisplay;
+import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;
@@ -29,18 +30,15 @@ import javax.swing.text.BadLocationException;
 /**
  * @author Gregor Mehlmann
  */
-public final class ScriptEditorPanel extends JPanel
-        implements DocumentListener, EventListener, Observer {
+public final class ScriptEditorPanel extends JPanel 
+            implements DocumentListener, EventListener, Observer {
 
     // The System Logger
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The Event Caster
-    private final EventCaster mEventCaster
-            = EventCaster.getInstance();
+    private final EventCaster mEventCaster = EventCaster.getInstance();
     // The Observable Part
-    private final Noticeable mNoticeable
-            = new Noticeable();
+    private final Noticeable mNoticeable = new Noticeable();
     // The Script Editor Pane
     private final JScrollPane mScrollPane;
     private final ScriptToolBar mScenesToolbar;
@@ -51,12 +49,12 @@ public final class ScriptEditorPanel extends JPanel
 
     private final SceneScript mSceneScript;
     private final FunctionEditor mFunctionEditor;
+    private final ProjectPreferences mPreferences;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     private class Noticeable extends Observable {
-
         public void notify(final Object obj) {
             setChanged();
             notifyObservers(obj);
@@ -75,30 +73,28 @@ public final class ScriptEditorPanel extends JPanel
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ScriptEditorPanel(final SceneScript script, final SceneFlow sceneflow) {
+    public ScriptEditorPanel(final SceneScript script, 
+                                final SceneFlow sceneflow, 
+                                final ProjectPreferences preferences) {
         // Initialize The Scene Script
         mSceneScript = script;
+        // Grab project preferences
+        mPreferences = preferences;        
         // Initialize The Status Label
-        mStatusLabel = new CaretStatusLabel("");	
-		
+        mStatusLabel = new CaretStatusLabel("");			
         // Initialize The Editor Pane
-        mEditorPane = new ScriptEditorPane();
+        mEditorPane = new ScriptEditorPane(mPreferences);
         mEditorPane.addCaretListener(mStatusLabel);
-        mEditorPane.getDocument().addDocumentListener(this);
-		
+        mEditorPane.getDocument().addDocumentListener(this);		
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
-        mScrollPane.setBorder(BorderFactory.createEtchedBorder());
-        
+        mScrollPane.setBorder(BorderFactory.createEtchedBorder());        
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionEditor(sceneflow);
-        	
+        mFunctionEditor = new FunctionEditor(sceneflow);        	
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane(); 
         mTabPane.add("Script", mScrollPane);  
         mTabPane.add("Functions", mFunctionEditor);
-		
-       
         // Initialize the Toolbar
         mScenesToolbar  = new ScriptToolBar(this);
         // Initialize The Scroll Pane
@@ -120,7 +116,6 @@ public final class ScriptEditorPanel extends JPanel
         } catch (BadLocationException exc) {
             exc.printStackTrace();
         }
-
     }
 
     ////////////////////////////////////////////////////////////////////////////
