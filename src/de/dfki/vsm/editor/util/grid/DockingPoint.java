@@ -7,6 +7,7 @@
 package de.dfki.vsm.editor.util.grid;
 
 import de.dfki.vsm.editor.Node;
+import de.dfki.vsm.editor.Node.Type;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -24,7 +25,7 @@ public class DockingPoint {
         this.rectangle = new Rectangle2D.Double(node.getX(), node.getY(), node.getWidth(), node.getHeight());
         this.vectorLine = new Line2D.Double(this.rectangle.getCenterX(), this.rectangle.getCenterY(),
                                  controlPoint.getX(), controlPoint.getY());
-        this.intersectionLine = getIntersectionPoint(vectorLine, rectangle);
+        this.intersectionLine = getIntersectionPoint(vectorLine, rectangle, node);
     }
     
     public int getIntersectionX() {
@@ -43,45 +44,81 @@ public class DockingPoint {
         return -1;
     }
     
-    public Point2D getIntersectionPoint(Line2D line, Rectangle2D rectangle) {
+    public Point2D getIntersectionPoint(Line2D line, Rectangle2D rectangle, Node node) {
+        if(node.getType() == Type.SuperNode) {
+            //System.out.println("This is a super node!");
+            Line2D topLine = new Line2D.Double(rectangle.getX(), rectangle.getY(),
+                                rectangle.getX() + rectangle.getWidth(), rectangle.getY());
 
-        Line2D topLine = new Line2D.Double(rectangle.getX(), rectangle.getY(),
-                            rectangle.getX() + rectangle.getWidth(), rectangle.getY());
-        
-        Line2D bottomLine = new Line2D.Double(rectangle.getX(),
-                                rectangle.getY() + rectangle.getHeight(),
-                                rectangle.getX() + rectangle.getWidth(),
-                                rectangle.getY() + rectangle.getHeight());
-        
-        Line2D leftLine = new Line2D.Double(rectangle.getX(), rectangle.getY(),
-                            rectangle.getX(),
-                            rectangle.getY() + rectangle.getHeight());
-        
-        Line2D rightLine = new Line2D.Double(rectangle.getX() + rectangle.getWidth(),
-                                rectangle.getY(), rectangle.getX() + rectangle.getWidth(),
-                                rectangle.getY() + rectangle.getHeight());
-        
+            Line2D bottomLine = new Line2D.Double(rectangle.getX(),
+                                    rectangle.getY() + rectangle.getHeight(),
+                                    rectangle.getX() + rectangle.getWidth(),
+                                    rectangle.getY() + rectangle.getHeight());
 
-        // Top line
-        if(intersects(line, topLine)) {
-            return getIntersectionPoint(line, topLine);
+            Line2D leftLine = new Line2D.Double(rectangle.getX(), rectangle.getY(),
+                                rectangle.getX(),
+                                rectangle.getY() + rectangle.getHeight());
+
+            Line2D rightLine = new Line2D.Double(rectangle.getX() + rectangle.getWidth(),
+                                    rectangle.getY(), rectangle.getX() + rectangle.getWidth(),
+                                    rectangle.getY() + rectangle.getHeight());
+
+
+            // Top line
+            if(intersects(line, topLine)) {
+                return getIntersectionPoint(line, topLine);
+            }
+
+            // Bottom line
+            if(intersects(line, bottomLine)) {
+                return getIntersectionPoint(line, bottomLine);
+            }
+
+            // Left side...
+            if(intersects(line, leftLine)) {
+                return getIntersectionPoint(line, leftLine);
+            }
+
+            // Right side
+            if(intersects(line, rightLine)) {
+                return getIntersectionPoint(line, rightLine);
+            }
         }
         
-        // Bottom line
-        if(intersects(line, bottomLine)) {
-            return getIntersectionPoint(line, bottomLine);
+        else if(node.getType() == Type.BasicNode) {
+            //System.out.println("This is a basic node!");
+            Line2D topLine = new Line2D.Double(rectangle.getCenterX(), rectangle.getY(),
+                                rectangle.getX(), rectangle.getCenterY());
+
+            Line2D bottomLine = new Line2D.Double(rectangle.getX(), rectangle.getCenterY(),
+                                    rectangle.getCenterX(), rectangle.getY() + rectangle.getHeight());
+
+            Line2D leftLine = new Line2D.Double(rectangle.getCenterX(), rectangle.getY() + rectangle.getHeight(),
+                                rectangle.getX() + rectangle.getWidth(), rectangle.getCenterY());
+
+            Line2D rightLine = new Line2D.Double(rectangle.getX() + rectangle.getWidth(), rectangle.getCenterY(), 
+                                rectangle.getCenterX(), rectangle.getY());
+            
+            // Top line
+            if(intersects(line, topLine)) {
+                return getIntersectionPoint(line, topLine);
+            }
+
+            // Bottom line
+            if(intersects(line, bottomLine)) {
+                return getIntersectionPoint(line, bottomLine);
+            }
+
+            // Left side...
+            if(intersects(line, leftLine)) {
+                return getIntersectionPoint(line, leftLine);
+            }
+
+            // Right side
+            if(intersects(line, rightLine)) {
+                return getIntersectionPoint(line, rightLine);
+            }
         }
-        
-        // Left side...
-        if(intersects(line, leftLine)) {
-            return getIntersectionPoint(line, leftLine);
-        }
- 
-        // Right side
-        if(intersects(line, rightLine)) {
-            return getIntersectionPoint(line, rightLine);
-        }
-        
         return null;
 
     }
