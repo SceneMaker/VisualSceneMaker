@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.script;
 
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.acticon.ActiconAction;
+import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
 import de.dfki.vsm.model.visicon.VisiconViseme;
 import de.dfki.vsm.util.evt.EventCaster;
@@ -46,13 +47,18 @@ public class ScriptEditorPane extends JEditorPane
     private DropTarget mDropTarget;
     private int mValidActions;
     // Activity monitor
-    private final Font mFont = new Font("Courier New", Font.PLAIN, 12);
+    private Font mFont = new Font("Courier New", Font.PLAIN, 12);
+    private final ProjectPreferences mPreferences;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Construct The Text Pane
-    public ScriptEditorPane() {
+    public ScriptEditorPane(ProjectPreferences preferences) {
+        
+        mPreferences = preferences;
+        mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);
+        
         setFont(mFont);
         // Set Lexxer And Editor
         setEditorKit(new ScriptEditorKit());
@@ -254,6 +260,8 @@ public class ScriptEditorPane extends JEditorPane
     @Override
     public void update(final Observable obs, final Object obj) {
         // Do Nothing
+        mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);        
+        setFont(mFont);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -262,6 +270,8 @@ public class ScriptEditorPane extends JEditorPane
     @Override
     public void update(final EventObject event) {
         // Do Nothing
+        mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);        
+        setFont(mFont);
     }
 
     ////////////////////////////////////////////////////////////////////////////

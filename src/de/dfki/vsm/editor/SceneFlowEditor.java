@@ -5,6 +5,7 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
+import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
@@ -50,6 +51,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
     //
     private final SceneFlow mSceneFlow;
+    private final ProjectData mProject;
     // TODO: remove sceneflow manager
     private final SceneFlowManager mSceneFlowManager;
     // TODO: move undo manager up at least to project editor
@@ -197,7 +199,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         return mToolBar;
     }
     //
-    public SceneFlowEditor(SceneFlow sceneFlow) {
+    public SceneFlowEditor(SceneFlow sceneFlow, ProjectData project) {
         
         final Polygon pUp = new Polygon();
         pUp.addPoint(1, 4);
@@ -244,10 +246,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
         
         mSceneFlow = sceneFlow;
+        mProject = project;
         mUndoManager = new UndoManager();
         mSceneFlowManager = new SceneFlowManager(mSceneFlow);
         // The center component is the workspace
-        mWorkSpace = new WorkSpace(this);
+        mWorkSpace = new WorkSpace(this, mProject);
         mWorkSpace.setTransferHandler(new SceneFlowImage());
         JScrollPane mWorkSpaceScrollPane = new JScrollPane(mWorkSpace);
         mWorkSpaceScrollPane.setBorder(BorderFactory.createEtchedBorder());
@@ -259,7 +262,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mFooterLabel = new JLabel();
         mElementDisplay = new ElementDisplay(sceneFlow);
         mElementEditor = new ElementEditor();
-        mToolBar = new SceneFlowToolBar(this);
+        mToolBar = new SceneFlowToolBar(this, mProject);
         mToolBar.addPathComponent(mSceneFlow.getName());
         //
         mObservable.addObserver(mToolBar);
