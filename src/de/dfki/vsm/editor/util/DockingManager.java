@@ -2,8 +2,7 @@ package de.dfki.vsm.editor.util;
 
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import static de.dfki.vsm.editor.util.Preferences.sNODEHEIGHT;
-import static de.dfki.vsm.editor.util.Preferences.sNODEWIDTH;
+import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Point;
 import java.util.Hashtable;
@@ -20,6 +19,7 @@ import java.util.Vector;
 public class DockingManager {
 
     private Node mGUINode = null;
+    private ProjectPreferences mPreferences;
     private Node.Type mNodeType = null; // The type defines the location of the dock points
     private Vector<DockPoint> mDockPoints = new Vector<DockPoint>();
     private Hashtable<Edge, DockPoint> mEdgeDockPoints = new Hashtable<Edge, DockPoint>();
@@ -28,6 +28,7 @@ public class DockingManager {
 
     public DockingManager(Node node) {
         mGUINode = node;
+        mPreferences = mGUINode.getWorkSpace().getPreferences();
         mNodeType = node.getType();
 
         switch (mNodeType) {
@@ -357,10 +358,10 @@ public class DockingManager {
             a = cnt * Math.PI / 12.0d + (Math.PI);
             dpName = "dp" + cnt;
 
-            dockXPos = Math.round((Math.sin(a) * 0.5d + 0.5d) * sNODEWIDTH);
-            dockYPos = Math.round((Math.cos(a) * 0.5d + 0.5d) * sNODEHEIGHT);
+            dockXPos = Math.round((Math.sin(a) * 0.5d + 0.5d) * mPreferences.sNODEWIDTH);
+            dockYPos = Math.round((Math.cos(a) * 0.5d + 0.5d) * mPreferences.sNODEHEIGHT);
 
-            if ((dockXPos == 0) && (dockYPos == sNODEHEIGHT / 2)) {
+            if ((dockXPos == 0) && (dockYPos == mPreferences.sNODEHEIGHT / 2)) {
                 // use most left dockpoint as startsign dockpoint
                 if (hasDockpoint(dpName)) {
                     // update dockpoint
@@ -393,8 +394,8 @@ public class DockingManager {
         double ya = 0.0d;
         double fy = 0.0d;
         double fx = 0.0d;
-        double rh = sNODEHEIGHT / 2.0d;
-        double rw = sNODEWIDTH / 2.0d;
+        double rh = mPreferences.sNODEHEIGHT / 2.0d;
+        double rw = mPreferences.sNODEWIDTH / 2.0d;
         double dockXPos = 0.0d;
         double dockYPos = 0.0d;
 
@@ -415,7 +416,7 @@ public class DockingManager {
             }
             // Debug System.out.println("(x,y)= " + dockXPos + "," + dockYPos);
 
-            if ((dockXPos == 0) && (dockYPos == sNODEHEIGHT / 2)) {
+            if ((dockXPos == 0) && (dockYPos == mPreferences.sNODEHEIGHT / 2)) {
                 // use most left dockpoint as startsign dockpoint
                 if (hasDockpoint(dpName)) {
                     // update dockpoint

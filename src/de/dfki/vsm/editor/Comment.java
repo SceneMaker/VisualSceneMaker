@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor;
 
-import static de.dfki.vsm.editor.util.Preferences.sWORKSPACEFONTSIZE;
+
+import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -34,6 +35,7 @@ import javax.swing.text.html.HTMLEditorKit;
 public class Comment extends JComponent implements EventListener, MouseListener, MouseMotionListener {
 
     private WorkSpace mWorkSpace;
+    private ProjectPreferences mPreferences;
     // image
     private Image mResizeMarker;
     private AlphaComposite mAC;
@@ -65,13 +67,14 @@ public class Comment extends JComponent implements EventListener, MouseListener,
         mAC = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace = ws;
+        mPreferences = mWorkSpace.getPreferences();
 
         mDataComment = dataComment;
         // resize marker
         mResizeMarker = ResourceLoader.loadImage("/res/img/new/resize.png");
 
         // font setup
-        mFont = new Font("SansSerif", Font.ITALIC, /*(mWorkSpace != null) ?*/ sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
+        mFont = new Font("SansSerif", Font.ITALIC, /*(mWorkSpace != null) ?*/ mPreferences.sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
         // size setup
         Rectangle rect = new Rectangle(
                 mDataComment.getGraphics().getRect().getXPos(),
