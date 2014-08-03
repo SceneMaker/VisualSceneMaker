@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -46,11 +47,14 @@ public class GridManager {
     private final ProjectPreferences   mPreferences;
     private ArrayList<Rectangle> mNodeAreas;
     private boolean              isDebug;
+    private boolean              isDockingView;
+    private ArrayList<Point2D>   dockingPoints        = new ArrayList<Point2D>();
 
     public GridManager(WorkSpace ws) {
         mWorkSpace   = ws;
         mPreferences = ws.getPreferences();
         isDebug      = mPreferences.sSHOW_SMART_PATH_DEBUG;
+        isDockingView = false;
         compute();
     }
 
@@ -297,6 +301,15 @@ public class GridManager {
                 }
             }
         }
+        
+        if(isDockingView) {
+            for(int i=0; i < this.dockingPoints.size(); i++) {
+                g2d.setColor(new Color(0, 0, 255, 255));
+                g2d.setBackground(new Color(0, 0, 255, 255));
+                g2d.drawOval((int)Math.round(this.dockingPoints.get(i).getX()-10), 
+                        (int)Math.round(this.dockingPoints.get(i).getY()-10), 20, 20);
+            }
+        }
     }
 
     
@@ -305,6 +318,24 @@ public class GridManager {
         update();
     }
     
+    public void setDockingView(boolean status) {
+        this.isDockingView = status;
+        update();
+    }
+    
+    public void addDockingPoints(Point2D point) {
+        this.dockingPoints.add(point);
+    }
+    
+    public void deleteDockingPoints(Point2D point) {
+        for(int i = 0; i < this.dockingPoints.size(); i++) {
+            if(this.dockingPoints.get(i).getX() == point.getX() &&
+                    this.dockingPoints.get(i).getY() == point.getY()) {
+                this.dockingPoints.remove(i);
+                break;
+            }
+        }
+    }
 
     public Point getNodeLocation(Point inputPoint) {
         Point p = new Point(inputPoint.x + mPreferences.sGRID_NODEWIDTH / 2,

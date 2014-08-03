@@ -247,6 +247,7 @@ public class NormalizeEdgeAction {
                 mSourceGUINodeDockPoint = mSourceGUINode.connectEdgeAtSourceNode(mGUIEdge, new Point(
                                             sourceDockingPoint.getIntersectionX(), 
                                             sourceDockingPoint.getIntersectionY()));
+                this.mWorkSpace.mGridManager.addDockingPoints(mSourceGUINodeDockPoint);
             }
             
             if(targetDockingPoint.getIntersectionX() > -1 && 
@@ -255,6 +256,7 @@ public class NormalizeEdgeAction {
                 mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, new Point(
                                             targetDockingPoint.getIntersectionX(), 
                                             targetDockingPoint.getIntersectionY()));
+                this.mWorkSpace.mGridManager.addDockingPoints(mTargetGUINodeDockPoint);
             }
             
             //Manipulate the control point based on the BezierFit calculation

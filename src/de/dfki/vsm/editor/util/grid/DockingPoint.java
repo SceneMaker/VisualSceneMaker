@@ -118,6 +118,7 @@ public class DockingPoint {
             if(intersects(line, rightLine)) {
                 return getIntersectionPoint(line, rightLine);
             }
+            //return getLineCircleIntersection(this.vectorLine, this.rectangle);
         }
         return null;
 
@@ -152,27 +153,30 @@ public class DockingPoint {
         return line1.intersectsLine(line2);
     }
     
-//    public Point2D getIntersectionPoint(Line2D line1, Line2D line2) {
-//        double px = line1.getX1(),
-//                py = line1.getY1(),
-//                rx = line1.getX2()-px,
-//                ry = line1.getY2()-py;
-//        
-//        double qx = line2.getX1(),
-//                qy = line2.getY1(),
-//                sx = line2.getX2()-qx,
-//                sy = line2.getY2()-qy;
-//
-//        double det = sx*ry - sy*rx;
-//        if (det == 0) {
-//          return null;
-//        } 
-//        
-//        else {
-//          double z = (sx*(qy-py)+sy*(px-qx))/det;
-//          if (z==0 ||  z==1) return null;  // intersection at end point!
-//          return new Point2D.Double(
-//            (double)(px+z*rx), (double)(py+z*ry));
-//        }
-//     } // end intersection line-line
+    public Point2D getLineCircleIntersection(Line2D line, Rectangle2D rectangle) {
+        double radius = Math.abs(rectangle.getCenterY() - rectangle.getY());
+        double baX = Math.abs(line.getX2() - line.getX1());
+        double baY = Math.abs(line.getY2() - line.getY1());
+        double caX = Math.abs(rectangle.getCenterX() - line.getX1());
+        double caY = Math.abs(rectangle.getCenterY() - line.getY1());
+        
+        double a = baX * baX + baY * baY;
+        double bBy2 = baX * caX + baY * caY;
+        double c = caX * caX + caY * caY - radius * radius;
+
+        double pBy2 = bBy2 / a;
+        double q = c / a;
+        
+        double disc = pBy2 * pBy2 - q;
+        
+        // if disc == 0 ... dealt with later
+        double tmpSqrt = Math.sqrt(disc);
+        double abScalingFactor1 = -pBy2 + tmpSqrt;
+        
+        System.out.println((line.getX1() - baX * abScalingFactor1) + "," + 
+                (line.getY1() - baY * abScalingFactor1));
+        
+        return new Point2D.Double(line.getX1() - baX * abScalingFactor1, line.getY1()
+                - baY * abScalingFactor1);
+    }
 }
