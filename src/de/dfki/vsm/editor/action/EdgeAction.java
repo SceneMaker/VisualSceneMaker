@@ -381,7 +381,6 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint = mSourceGUINode.disconnectEdge(mGUIEdge);
             mTargetGUINodeDockPoint = mTargetGUINode.disconnectEdge(mGUIEdge);
         }
-
         cleanUpData();
     }
 

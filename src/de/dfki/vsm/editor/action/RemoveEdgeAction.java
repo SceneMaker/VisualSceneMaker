@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.WorkSpace;
+import java.awt.geom.Point2D;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -32,6 +33,8 @@ public class RemoveEdgeAction extends EdgeAction {
         mUndoManager.addEdit(new Edit());
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
+        this.mWorkSpace.mGridManager.deleteDockingPoints(mSourceGUINodeDockPoint);
+        this.mWorkSpace.mGridManager.deleteDockingPoints(mTargetGUINodeDockPoint);
     }
 
     private class Edit extends AbstractUndoableEdit {
