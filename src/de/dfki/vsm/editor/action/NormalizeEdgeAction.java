@@ -260,12 +260,26 @@ public class NormalizeEdgeAction {
             }
             
             //Manipulate the control point based on the BezierFit calculation
-            mGUIEdge.mEg.mCCrtl1.x = (int) Math.round(controlPoint[1].getX()) + thresholdSourceX;
-            mGUIEdge.mEg.mCCrtl1.y = (int) Math.round(controlPoint[1].getY()) + thresholdSourceY;
             
-            mGUIEdge.mEg.mCCrtl2.x = (int) Math.round(controlPoint[2].getX()) + thresholdTargetX;
-            mGUIEdge.mEg.mCCrtl2.y = (int) Math.round(controlPoint[2].getY()) + thresholdTargetY;
+            if(((int) Math.round(controlPoint[1].getX()) + thresholdSourceX) > 0)
+                mGUIEdge.mEg.mCCrtl1.x = (int) Math.round(controlPoint[1].getX()) + thresholdSourceX;
+            else
+                mGUIEdge.mEg.mCCrtl1.x = 50;
+            if(((int) Math.round(controlPoint[1].getY()) + thresholdSourceY) > 0)
+                mGUIEdge.mEg.mCCrtl1.y = (int) Math.round(controlPoint[1].getY()) + thresholdSourceY;
+            else
+                mGUIEdge.mEg.mCCrtl1.y = 50;
             
+            if(((int) Math.round(controlPoint[2].getX()) + thresholdTargetX) > 0)
+                mGUIEdge.mEg.mCCrtl2.x = (int) Math.round(controlPoint[2].getX()) + thresholdTargetX;
+            else
+                mGUIEdge.mEg.mCCrtl2.x = 50;
+            if(((int) Math.round(controlPoint[2].getY()) + thresholdTargetY) > 0)
+                mGUIEdge.mEg.mCCrtl2.y = (int) Math.round(controlPoint[2].getY()) + thresholdTargetY;
+            else 
+                mGUIEdge.mEg.mCCrtl2.y = 50;
+            //System.out.println("Control Point 1: " + mGUIEdge.mEg.mCCrtl1.x + "," + mGUIEdge.mEg.mCCrtl1.y);
+            //System.out.println("Control Point 2: " + mGUIEdge.mEg.mCCrtl2.x + "," + mGUIEdge.mEg.mCCrtl2.y);
             //getEdgeTotalWeight();
             //setGridWeight();
             mWorkSpace.add(mGUIEdge);
