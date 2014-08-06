@@ -6,8 +6,8 @@ import de.dfki.vsm.model.configs.PlayerConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.Environment;
 import de.dfki.vsm.runtime.RunTime;
-import de.dfki.vsm.runtime.player.ScenePlayer;
-import de.dfki.vsm.runtime.player.ScenePlayer.Task;
+import de.dfki.vsm.runtime.player.SceneGroupPlayer;
+import de.dfki.vsm.runtime.player.SceneGroupPlayer.Task;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * @author Gregor Mehlmann
  */
-public abstract class VSMScenePlayer implements ScenePlayer {
+public abstract class VSMScenePlayer implements SceneGroupPlayer {
 
     // The VSM Runtime Environment
     protected final RunTime mVSM3RunTime

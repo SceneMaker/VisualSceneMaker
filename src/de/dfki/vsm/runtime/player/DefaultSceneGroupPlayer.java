@@ -29,7 +29,7 @@ import java.util.Map.Entry;
 /**
  * @author Gregor Mehlmann
  */
-public class DefaultPlayer implements ScenePlayer {
+public class DefaultSceneGroupPlayer implements SceneGroupPlayer {
 
     // The Logger Instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -39,7 +39,7 @@ public class DefaultPlayer implements ScenePlayer {
     private final ProjectData mProject;
 
     // Construct A Default Player
-    public DefaultPlayer(final ProjectData project) {
+    public DefaultSceneGroupPlayer(final ProjectData project) {
         mProject = project;
         mProperties = project.getScenePlayerProperties();
     }

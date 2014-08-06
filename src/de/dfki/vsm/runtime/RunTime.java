@@ -4,7 +4,8 @@ import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.runtime.player.ScenePlayer;
+import de.dfki.vsm.runtime.player.DialogueActPlayer;
+import de.dfki.vsm.runtime.player.SceneGroupPlayer;
 import de.dfki.vsm.runtime.value.BooleanValue;
 import de.dfki.vsm.runtime.value.FloatValue;
 import de.dfki.vsm.runtime.value.IntValue;
@@ -37,6 +38,8 @@ public class RunTime {
     public synchronized void register(ProjectData project) {
         // Load the sceneplayer
         project.loadScenePlayer();
+        // Load the dialogue act player
+        project.loadDialogueActPlayer();
         // Load the service list
         project.loadServiceList();
         // Load the request list
@@ -45,9 +48,11 @@ public class RunTime {
         project.loadPluginList();
         // Get the sceneflow and the scenepayer of that
         // project and Create a new interpreter for them
-        SceneFlow sceneFlow = project.getSceneFlow();
-        ScenePlayer scenePlayer = project.getScenePlayer();
-        Interpreter interpreter = new Interpreter(sceneFlow, scenePlayer);
+        final SceneFlow sceneFlow = project.getSceneFlow();
+        final SceneGroupPlayer sceneGroupPlayer = project.getScenePlayer();
+        final DialogueActPlayer dialogueActPlayer = project.getDialogueActPlayer();
+        // Construct the Interpreter
+        Interpreter interpreter = new Interpreter(sceneFlow, sceneGroupPlayer, dialogueActPlayer);
         // If this sceneflow is not yet registered then register it
         if (!mSceneFlowMap.containsKey(sceneFlow)) {
             mSceneFlowMap.put(sceneFlow, interpreter);

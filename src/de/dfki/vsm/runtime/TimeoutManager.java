@@ -2,6 +2,7 @@ package de.dfki.vsm.runtime;
 
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.model.sceneflow.command.Command;
+import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
 import de.dfki.vsm.model.sceneflow.command.expression.BinaryExp;
@@ -110,6 +111,11 @@ public class TimeoutManager {
         if (cmd instanceof PlaySceneGroup) {
             startTimeoutHandler(((PlaySceneGroup) cmd).getArg(), env);
             for (Expression arg : ((PlaySceneGroup) cmd).getArgList()) {
+                startTimeoutHandler(arg, env);
+            }
+        } else if (cmd instanceof PlayDialogueAct) {
+            startTimeoutHandler(((PlayDialogueAct) cmd).getArg(), env);
+            for (Expression arg : ((PlayDialogueAct) cmd).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
         } else if (cmd instanceof UnblockSceneGroup) {
