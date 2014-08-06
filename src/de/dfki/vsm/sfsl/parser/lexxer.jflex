@@ -28,6 +28,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 
 %%
 "PlaySceneGroup" { return new Symbol(_SFSLToken_.PSG); }
+"PlayDialogueAct" { return new Symbol(_SFSLToken_.PDA); }
 "UnblockSceneGroup" { return new Symbol(_SFSLToken_.USG); }
 "UnblockAllSceneGroups" { return new Symbol(_SFSLToken_.UASG); }
 "Get" { return new Symbol(_SFSLToken_.GET); }

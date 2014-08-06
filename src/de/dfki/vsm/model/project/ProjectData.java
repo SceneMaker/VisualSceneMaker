@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.project;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.acticon.ActiconObject;
 import de.dfki.vsm.model.configs.ConfigEntry;
 import de.dfki.vsm.model.configs.PlayerConfig;
@@ -11,8 +10,9 @@ import de.dfki.vsm.model.gesticon.GesticonObject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconObject;
-import de.dfki.vsm.runtime.player.DefaultPlayer;
-import de.dfki.vsm.runtime.player.ScenePlayer;
+import de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer;
+import de.dfki.vsm.runtime.player.DialogueActPlayer;
+import de.dfki.vsm.runtime.player.SceneGroupPlayer;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.plugin.Plugin;
 import de.dfki.vsm.util.request.Crowd;
@@ -22,7 +22,6 @@ import de.dfki.vsm.util.service.Service;
 import de.dfki.vsm.util.xml.XMLParseTools;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,15 +57,15 @@ public class ProjectData implements Serializable {
     // Maintained Plugins
     private final HashMap<String, Service> mServiceList = new HashMap<>();
     private final HashMap<String, Request> mRequestList = new HashMap<>();
-    private final HashMap<String, Plugin>  mPluginList  = new HashMap<>();
+    private final HashMap<String, Plugin> mPluginList = new HashMap<>();
 
     // Project Information
     private final File mProjectBaseFile;
     private final File mProjectDirFile;
-    private String     mProjectFileName;
-    private String     mProjectDirPath;
-    private String     mProjectPathName;
-    private String     mProjectFullFileName;
+    private String mProjectFileName;
+    private String mProjectDirPath;
+    private String mProjectPathName;
+    private String mProjectFullFileName;
 
     // Export Information
     private String mZipFileName;
@@ -81,24 +80,27 @@ public class ProjectData implements Serializable {
     private String mPreferencesFileName;
 
     // ScenePlayer Content
-    private String             mScenePlayerClassName;
-    private String             mScenePlayerConfigFile;
+    private String mScenePlayerClassName;
+    private String mScenePlayerConfigFile;
     private final PlayerConfig mPlayerConfig;
 
     // According Properties
     private final ProjectConfig mProjectConfig;
 
     // Maintained Structures
-    private final SceneFlow      mSceneFlow;
-    private final SceneScript    mSceneScript;
-    private final ActiconObject  mActicon;
+    private final SceneFlow mSceneFlow;
+    private final SceneScript mSceneScript;
+    private final ActiconObject mActicon;
     private final GesticonObject mGesticon;
-    private final VisiconObject  mVisicon;
+    private final VisiconObject mVisicon;
 
     // Maintained ScenePlayer
-    private ScenePlayer        mScenePlayer;
-    protected int              mProjectInitialHash;
+    private SceneGroupPlayer mScenePlayer;
+    protected int mProjectInitialHash;
     private ProjectPreferences mProjectPreferences;
+
+    // The Dialogue Act Player 
+    private DialogueActPlayer mDialogueActPlayer;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -108,32 +110,32 @@ public class ProjectData implements Serializable {
         // Initialize The File And Name Members
         mProjectBaseFile = file;
         mProjectFileName = file.getName();
-        mProjectDirFile  = mProjectBaseFile.getParentFile();
-        mProjectDirPath  = mProjectDirFile.getPath();
+        mProjectDirFile = mProjectBaseFile.getParentFile();
+        mProjectDirPath = mProjectDirFile.getPath();
         mProjectPathName = mProjectDirPath + System.getProperty("file.separator");
 
         // Create Project and Player Property
         mProjectConfig = new ProjectConfig();
-        mPlayerConfig  = new PlayerConfig();
+        mPlayerConfig = new PlayerConfig();
 
         // Load And Sort Project Properties
         loadProjectConfig();
         mProjectConfig.sort();
 
         // Read Project Properties
-        mProjectName         = mProjectConfig.property("project.basic.name");
+        mProjectName = mProjectConfig.property("project.basic.name");
         mProjectFullFileName = mProjectPathName + mProjectFileName;
-        mSceneFlowFileName   = mProjectPathName + mProjectConfig.property("project.data.sceneflow");
+        mSceneFlowFileName = mProjectPathName + mProjectConfig.property("project.data.sceneflow");
         mSceneScriptFileName = mProjectPathName + mProjectConfig.property("project.data.scenes");
-        mGesticonFileName    = mProjectPathName + mProjectConfig.property("project.data.gesticon");
-        mVisiconFileName     = mProjectPathName + mProjectConfig.property("project.data.visicon");
-        mActiconFileName     = mProjectPathName + mProjectConfig.property("project.data.acticon");
+        mGesticonFileName = mProjectPathName + mProjectConfig.property("project.data.gesticon");
+        mVisiconFileName = mProjectPathName + mProjectConfig.property("project.data.visicon");
+        mActiconFileName = mProjectPathName + mProjectConfig.property("project.data.acticon");
         mPreferencesFileName = mProjectPathName + mProjectConfig.property("project.data.preferences");
 
         // Read Player Propertiesy
-        mScenePlayerClassName  = mProjectConfig.property("project.player.class");
+        mScenePlayerClassName = mProjectConfig.property("project.player.class");
         mScenePlayerConfigFile = mProjectPathName + mProjectConfig.property("project.player.config");
-        mZipFileName           = mProjectPathName + mProjectName + ".zip";
+        mZipFileName = mProjectPathName + mProjectName + ".zip";
 
         // Load And Sort Player Properties
         loadPlayerConfig();
@@ -168,10 +170,10 @@ public class ProjectData implements Serializable {
 
         // Finally Initialize The Project By
         // Create The Internal Data Structures
-        mSceneFlow   = new SceneFlow();
-        mActicon     = new ActiconObject();
-        mVisicon     = new VisiconObject();
-        mGesticon    = new GesticonObject();
+        mSceneFlow = new SceneFlow();
+        mActicon = new ActiconObject();
+        mVisicon = new VisiconObject();
+        mGesticon = new GesticonObject();
         mSceneScript = new SceneScript();
 
         // Load The Internal Data Structures
@@ -180,7 +182,7 @@ public class ProjectData implements Serializable {
         // Load Project Preferences
         mProjectPreferences = new ProjectPreferences();
         mProjectPreferences.load(mPreferencesFileName);
-        
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -518,7 +520,7 @@ public class ProjectData implements Serializable {
         // Return At Save Failure
         return false;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -598,17 +600,21 @@ public class ProjectData implements Serializable {
          */
     }
 
+    public final synchronized void loadDialogueActPlayer() {
+        // Up to you Sergio ...
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final synchronized void loadScenePlayer() {
         // Try to load the plugin
-        ScenePlayer player = null;
+        SceneGroupPlayer player = null;
         if (player == null) {
             try {
                 Class playerClass = Class.forName(mScenePlayerClassName);
                 Method methodone = playerClass.getMethod("getInstance", ProjectData.class);
-                player = (ScenePlayer) methodone.invoke(null, this);
+                player = (SceneGroupPlayer) methodone.invoke(null, this);
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
                 exc.printStackTrace();
@@ -618,7 +624,7 @@ public class ProjectData implements Serializable {
             try {
                 Class playerClass = Class.forName(mScenePlayerClassName);
                 Method methodtwo = playerClass.getMethod("getInstance");
-                player = (ScenePlayer) methodtwo.invoke(null);
+                player = (SceneGroupPlayer) methodtwo.invoke(null);
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
                 exc.printStackTrace();
@@ -628,7 +634,7 @@ public class ProjectData implements Serializable {
             try {
                 Class playerClass = Class.forName(mScenePlayerClassName);
                 Constructor constructor = playerClass.getConstructor(ProjectData.class);
-                mScenePlayer = (ScenePlayer) constructor.newInstance(this);
+                mScenePlayer = (SceneGroupPlayer) constructor.newInstance(this);
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
                 exc.printStackTrace();
@@ -636,7 +642,7 @@ public class ProjectData implements Serializable {
         }
         // Check if the plugin was loaded
         if (player == null) {
-            player = new DefaultPlayer(this);
+            player = new DefaultSceneGroupPlayer(this);
         }
         //        
         mScenePlayer = player;
@@ -915,8 +921,15 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized ScenePlayer getScenePlayer() {
+    public final synchronized SceneGroupPlayer getScenePlayer() {
         return mScenePlayer;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final synchronized DialogueActPlayer getDialogueActPlayer() {
+        return mDialogueActPlayer;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -925,14 +938,14 @@ public class ProjectData implements Serializable {
     public final synchronized ProjectPreferences getPreferences() {
         return mProjectPreferences;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final synchronized String getPreferencesFileName() {
         return mPreferencesFileName;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

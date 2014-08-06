@@ -5,6 +5,7 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
 import de.dfki.vsm.model.sceneflow.command.HistoryDeepClear;
 import de.dfki.vsm.model.sceneflow.command.HistorySetDepth;
+import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups;
 import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
@@ -104,7 +105,34 @@ public class Evaluator {
                         + cmd.getConcreteSyntax() + " was evaluated to '" + value.getConcreteSyntax() + "' which is not a string constant";
                 throw new RunTimeException(cmd, errorMsg);
             }
-        }//
+        }
+
+        ////////////////////////////////////////////////////////////////////
+        // PLAY DIALOGUE ACT
+        ////////////////////////////////////////////////////////////////////
+        if (cmd instanceof PlayDialogueAct) {
+            // Try To Evaluate The Name Expression
+            final AbstractValue name = evaluate(((PlayDialogueAct) cmd).getArg(), env);
+            // Try To Evaluate The Feature List 
+            LinkedList<AbstractValue> valueList = evaluateExpList(((PlayDialogueAct) cmd).getArgList(), env);
+            // Check The Type of The Name Expression
+            if (name.getType() == AbstractValue.Type.STRING) {
+                // Unlock The Interpreter Lock Now
+                mInterpreter.unlock();
+                // Execute The Dialogue Act Player
+                mInterpreter.getDialoguePlayer().play(((StringValue) name).getValue(), valueList);
+                // Relock The Interpreter Lock Now
+                mInterpreter.lock();
+
+            } else {
+                java.lang.String errorMsg
+                        = "An error occured while executing thread " + Process.currentThread().toString() + " : "
+                        + "The dialogue act argument of the playback command '"
+                        + cmd.getConcreteSyntax() + " was evaluated to '" + name.getConcreteSyntax() + "' which is not a string constant";
+                throw new RunTimeException(cmd, errorMsg);
+            }
+        } 
+
         ////////////////////////////////////////////////////////////////////
         // UnblockSceneGroup
         ////////////////////////////////////////////////////////////////////

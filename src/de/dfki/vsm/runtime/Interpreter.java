@@ -5,7 +5,8 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.runtime.error.RunTimeException;
 import de.dfki.vsm.runtime.event.AbortEvent;
-import de.dfki.vsm.runtime.player.ScenePlayer;
+import de.dfki.vsm.runtime.player.DialogueActPlayer;
+import de.dfki.vsm.runtime.player.SceneGroupPlayer;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -27,12 +28,16 @@ public class Interpreter {
     private final TimeoutManager mTimeoutManager;
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
-    private final ScenePlayer mScenePlayer;
+    private final SceneGroupPlayer mSceneGroupPlayer;
+    private final DialogueActPlayer mDialogueActPlayer;
     private Process mSceneFlowThread;
 
-    public Interpreter(SceneFlow sceneFlow, ScenePlayer scenePlayer) {
+    public Interpreter(final SceneFlow sceneFlow,
+            final SceneGroupPlayer sceneGroupPlayer,
+            final DialogueActPlayer dialogueActPlayer) {
         mSceneFlow = sceneFlow;
-        mScenePlayer = scenePlayer;
+        mSceneGroupPlayer = sceneGroupPlayer;
+        mDialogueActPlayer = dialogueActPlayer;
         mLogger = LOGDefaultLogger.getInstance();
         mEventMulticaster = EventCaster.getInstance();
         mLock = new ReentrantLock(true);
@@ -82,10 +87,19 @@ public class Interpreter {
         }
     }
 
-    public ScenePlayer getScenePlayer() {
+    public SceneGroupPlayer getScenePlayer() {
         try {
             lock();
-            return mScenePlayer;
+            return mSceneGroupPlayer;
+        } finally {
+            unlock();
+        }
+    }
+
+    public DialogueActPlayer getDialoguePlayer() {
+        try {
+            lock();
+            return mDialogueActPlayer;
         } finally {
             unlock();
         }

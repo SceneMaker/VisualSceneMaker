@@ -12,11 +12,12 @@ public abstract class Command extends Object {
 
     public enum CmdType {
 
-        PSG, UASG, USG, ASGN, EXP, HC, HDC, HSD
+        PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD
     }
 
     public abstract CmdType getCmdType();
 
+    @Override
     public abstract Command getCopy();
 
     public static Command parse(Element element) throws XMLParseError {
@@ -24,6 +25,9 @@ public abstract class Command extends Object {
         String tag = element.getTagName();
         if (tag.equals("PlaySceneGroup")) {
             cmd = new PlaySceneGroup();
+            cmd.parseXML(element);
+        } else if (tag.equals("PlayDialogueAct")) {
+            cmd = new PlayDialogueAct();
             cmd.parseXML(element);
         } else if (tag.equals("UnblockSceneGroup")) {
             cmd = new UnblockSceneGroup();
