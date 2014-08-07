@@ -84,7 +84,7 @@ public class Evaluator {
      * Execute a command
      * ************************************************************************
      */
-    public void execute(Command cmd, Environment env) throws RunTimeException {
+    public void execute(final Command cmd, final Environment env) throws RunTimeException {
         //
         ////////////////////////////////////////////////////////////////////
         // PLAYSCENEGROUP
@@ -110,7 +110,7 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // PLAY DIALOGUE ACT
         ////////////////////////////////////////////////////////////////////
-        if (cmd instanceof PlayDialogueAct) {
+        else if (cmd instanceof PlayDialogueAct) {
             // Try To Evaluate The Name Expression
             final AbstractValue name = evaluate(((PlayDialogueAct) cmd).getArg(), env);
             // Try To Evaluate The Feature List 
