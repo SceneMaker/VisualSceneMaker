@@ -235,30 +235,6 @@ public class NormalizeEdgeAction {
             BezierFit bezierFit = new BezierFit();
             BezierPoint[] controlPoint = bezierFit.bestFit(pathPoints);
             
-            DockingPoint sourceDockingPoint = new DockingPoint(mSourceGUINode, new Point2D.Double(
-                                                    controlPoint[1].getX(),controlPoint[1].getY()));
-            
-            DockingPoint targetDockingPoint = new DockingPoint(mTargetGUINode, new Point2D.Double(
-                                                    controlPoint[2].getX(),controlPoint[2].getY()));
-            
-            if(sourceDockingPoint.getIntersectionX() > -1 && 
-                    sourceDockingPoint.getIntersectionY() > -1) {
-                mSourceGUINode.disconnectEdge(mGUIEdge);
-                mSourceGUINodeDockPoint = mSourceGUINode.connectEdgeAtSourceNode(mGUIEdge, new Point(
-                                            sourceDockingPoint.getIntersectionX(), 
-                                            sourceDockingPoint.getIntersectionY()));
-                this.mWorkSpace.mGridManager.addDockingPoints(mSourceGUINodeDockPoint);
-            }
-            
-            if(targetDockingPoint.getIntersectionX() > -1 && 
-                    targetDockingPoint.getIntersectionY() > -1) {
-                mTargetGUINode.disconnectEdge(mGUIEdge);
-                mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, new Point(
-                                            targetDockingPoint.getIntersectionX(), 
-                                            targetDockingPoint.getIntersectionY()));
-                this.mWorkSpace.mGridManager.addDockingPoints(mTargetGUINodeDockPoint);
-            }
-            
             //Manipulate the control point based on the BezierFit calculation
             
             if(((int) Math.round(controlPoint[1].getX()) + thresholdSourceX) > 0)
@@ -282,6 +258,31 @@ public class NormalizeEdgeAction {
             //System.out.println("Control Point 2: " + mGUIEdge.mEg.mCCrtl2.x + "," + mGUIEdge.mEg.mCCrtl2.y);
             //getEdgeTotalWeight();
             //setGridWeight();
+            
+             DockingPoint sourceDockingPoint = new DockingPoint(mSourceGUINode, new Point2D.Double(
+                                                    mGUIEdge.mEg.mCCrtl1.x,mGUIEdge.mEg.mCCrtl1.y));
+            
+            DockingPoint targetDockingPoint = new DockingPoint(mTargetGUINode, new Point2D.Double(
+                                                    mGUIEdge.mEg.mCCrtl2.x,mGUIEdge.mEg.mCCrtl2.y));
+            
+            if(sourceDockingPoint.getIntersectionX() > -1 && 
+                    sourceDockingPoint.getIntersectionY() > -1) {
+                mSourceGUINode.disconnectEdge(mGUIEdge);
+                mSourceGUINodeDockPoint = mSourceGUINode.connectEdgeAtSourceNode(mGUIEdge, new Point(
+                                            sourceDockingPoint.getIntersectionX(), 
+                                            sourceDockingPoint.getIntersectionY()));
+                this.mWorkSpace.mGridManager.addDockingPoints(mSourceGUINodeDockPoint);
+            }
+            
+            if(targetDockingPoint.getIntersectionX() > -1 && 
+                    targetDockingPoint.getIntersectionY() > -1) {
+                mTargetGUINode.disconnectEdge(mGUIEdge);
+                mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, new Point(
+                                            targetDockingPoint.getIntersectionX(), 
+                                            targetDockingPoint.getIntersectionY()));
+                this.mWorkSpace.mGridManager.addDockingPoints(mTargetGUINodeDockPoint);
+            }
+            
             mWorkSpace.add(mGUIEdge);
             mWorkSpace.revalidate();
             mWorkSpace.repaint();
