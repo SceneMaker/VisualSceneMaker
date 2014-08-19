@@ -455,6 +455,10 @@ public class GridManager {
                 if (isGridInteresected == false) {
                     gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
                 }
+                
+                if (gridRectangle.isaStarPath()) {
+                    gridRectangle.setaStarPath(false);
+                }
             }
         }
     }

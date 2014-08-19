@@ -1113,6 +1113,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
 //      showVariablesOnWorkSpace(superNode);
         // Update the workspace
+        mGridManager.normalizeGridWeight();
         revalidate();
         repaint();
     }
@@ -1187,6 +1188,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
         showVariableBadge();
+        mGridManager.normalizeGridWeight();
 
         // Update the workspace
         revalidate();
@@ -1508,7 +1510,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
             if (!entityClicked) {
                 NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
-
                 mEventCaster.convey(e);
             }
         } else {
