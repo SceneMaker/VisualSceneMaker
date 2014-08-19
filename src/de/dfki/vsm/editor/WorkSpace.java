@@ -72,6 +72,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import java.io.IOException;
@@ -850,6 +851,15 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
 
         repaint();
+    }
+    
+    public void straightenAllOutOfBoundEdges() {
+        for (Edge edge : mEdgeSet) {
+            if(edge.mEg.mCCrtl1.x < 0 || edge.mEg.mCCrtl1.y < 0 || 
+                    edge.mEg.mCCrtl2.x < 0 || edge.mEg.mCCrtl2.y < 0) {
+                edge.straightenEdge();
+            }
+        }
     }
     
     /**
@@ -1711,6 +1721,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     @Override
     public void mouseReleased(MouseEvent event) {
+        straightenAllOutOfBoundEdges();
         if (mDoAreaSelection) {
             mDoAreaSelection = false;
             repaint();
