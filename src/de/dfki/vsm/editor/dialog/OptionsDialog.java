@@ -6,14 +6,11 @@ import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -358,7 +355,15 @@ public class OptionsDialog extends JDialog {
         mScriptFontTypeLabel = new JLabel("Font Type:");
 
         GraphicsEnvironment g            = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        String[]            fonts        = g.getAvailableFontFamilyNames();
+        String[]            allFonts        = g.getAvailableFontFamilyNames();
+        Vector<String> fonts=new Vector<String>();
+         
+        for(String font: allFonts){
+            if(font.contains("Mono")){
+                fonts.add(font);            
+            }
+        }
+        
         JPanel              controlPanel = new JPanel();
 
         mScriptFontComboBox = new JComboBox(fonts);
