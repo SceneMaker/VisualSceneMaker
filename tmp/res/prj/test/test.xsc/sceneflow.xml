@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<SceneFlow id="RobotPuzzle" name="RobotPuzzle" comment="RobotPuzzle" exhaustive="false" preserving="false" start="S2;S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <Variable type="String" name ="SystemTime">
+      <String value="undefined"/>
+    </Variable>
+  </Declare>
+  <Commands>
+  </Commands>
+  <VariableBadge>
+    <Position x-pos="11" y-pos="11"/>
+  </VariableBadge>
+  <SuperNode id="S1" name="Statistics" comment="" exhaustive="false" preserving="false" start="N1;N3;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position x-pos="200" y-pos="81"/>
+    </Graphics>
+    <VariableBadge>
+      <Position x-pos="10" y-pos="10"/>
+    </VariableBadge>
+    <Node id="N2" name="History" exhaustive="false" preserving="false" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position x-pos="140" y-pos="140"/>
+      </Graphics>
+    </Node>
+    <Node id="N3" name="Timer" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <UserCommand name="query">
+          <String value="now(SystemTime)."/>
+        </UserCommand>
+      </Commands>
+      <EEdge target="N3" start ="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="298" y-pos="141" control-x-pos="314" control-y-pos="83"/>
+          <Point x-pos="316" y-pos="155" control-x-pos="368" control-y-pos="125"/>
+        </Arrow>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position x-pos="260" y-pos="140"/>
+      </Graphics>
+    </Node>
+    <Node id="N1" name="Statistics" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <UserCommand name="query">
+          <String value="statistics."/>
+        </UserCommand>
+      </Commands>
+      <TEdge target="N1" start="" timeout="60000">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="478" y-pos="141" control-x-pos="494" control-y-pos="83"/>
+          <Point x-pos="496" y-pos="155" control-x-pos="548" control-y-pos="125"/>
+        </Arrow>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position x-pos="440" y-pos="140"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S2" name="Dialogue" comment="" exhaustive="false" preserving="false" start="N6;N5;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <UserCommand name="nova">
+        <String value="start_supernode"/>
+        <String value="Dialogue"/>
+      </UserCommand>
+    </Commands>
+    <Graphics>
+      <Position x-pos="204" y-pos="153"/>
+    </Graphics>
+    <VariableBadge>
+      <Position x-pos="10" y-pos="10"/>
+    </VariableBadge>
+    <Node id="N4" name="History" exhaustive="false" preserving="false" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position x-pos="200" y-pos="140"/>
+      </Graphics>
+    </Node>
+    <Node id="N5" name="Curtis" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <UserCommand name="nova">
+          <String value="start_scene"/>
+          <String value="CurtisScene"/>
+        </UserCommand>
+        <PlaySceneGroup>
+          <String value="CurtisScene"/>
+        </PlaySceneGroup>
+        <UserCommand name="nova">
+          <String value="stop_scene"/>
+          <String value="CurtisScene"/>
+        </UserCommand>
+      </Commands>
+      <EEdge target="N8" start ="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="590" y-pos="320" control-x-pos="590" control-y-pos="305"/>
+          <Point x-pos="590" y-pos="260" control-x-pos="590" control-y-pos="275"/>
+        </Arrow>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position x-pos="564" y-pos="319"/>
+      </Graphics>
+    </Node>
+    <Node id="N6" name="Gloria" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <UserCommand name="nova">
+          <String value="start_scene"/>
+          <String value="GloriaScene"/>
+        </UserCommand>
+        <PlaySceneGroup>
+          <String value="GloriaScene"/>
+        </PlaySceneGroup>
+        <UserCommand name="nova">
+          <String value="stop_scene"/>
+          <String value="GloriaScene"/>
+        </UserCommand>
+      </Commands>
+      <EEdge target="N7" start ="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="358" y-pos="321" control-x-pos="362" control-y-pos="306"/>
+          <Point x-pos="358" y-pos="259" control-x-pos="362" control-y-pos="273"/>
+        </Arrow>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position x-pos="321" y-pos="332"/>
+      </Graphics>
+    </Node>
+    <Node id="N7" name="Wait" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N6" start="" timeout="5000">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="350" y-pos="260" control-x-pos="350" control-y-pos="275"/>
+          <Point x-pos="350" y-pos="320" control-x-pos="350" control-y-pos="305"/>
+        </Arrow>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position x-pos="321" y-pos="212"/>
+      </Graphics>
+    </Node>
+    <Node id="N8" name="Wait" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N5" start="" timeout="5000">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="598" y-pos="259" control-x-pos="602" control-y-pos="273"/>
+          <Point x-pos="598" y-pos="321" control-x-pos="602" control-y-pos="306"/>
+        </Arrow>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position x-pos="564" y-pos="199"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <UserCommands>
+    <UserCommand name="nova" classname ="de.dfki.vsm.api.charamel.CMLScenePlayer.sInstance" method="nova">
+      <Argument name="type" type="java.lang.String"/>
+      <Argument name="value" type="java.lang.String"/>
+    </UserCommand>
+    <UserCommand name="query" classname ="de.dfki.vsm.api.charamel.CMLScenePlayer.sInstance" method="query">
+      <Argument name="query" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

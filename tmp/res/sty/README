@@ -1,0 +1,6 @@
+-----------------------------------------------------------------------------
+			Syntax Highlighting Style Definitions
+-----------------------------------------------------------------------------
+scripts.xml contains the definitions for the scene script scripting language
+prolog.xml contains the definitions for the SWI-Prolog programming language
+xscjava.xml contains the definitions for the state chart scripting language
