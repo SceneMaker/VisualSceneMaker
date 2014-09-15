@@ -48,8 +48,6 @@ import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
 import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
 import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
 import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
-import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -335,11 +333,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                     // System.err.println("Accept Drag over");
                 }
-                
-                 if (data instanceof DialogAct) {
-                    dtde.acceptDrag(dtde.getDropAction());
-
-                }
 
                 if (data instanceof Edge) {
                     Point pos = dtde.getLocation();
@@ -406,17 +399,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                                 mSceneFlowEditor.setMessageLabelText("");
                             }
                         }
-                    } else if (data instanceof DialogAct) {
-                        for (Node node : mNodeSet) {
-                            if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
-                                createPDA(node, ((DialogAct) data).getName());                               
-                                dtde.acceptDrop(mAcceptableActions);
-                                dtde.getDropTargetContext().dropComplete(true);
-//                              c.update();
-                            } else {
-                                mSceneFlowEditor.setMessageLabelText("");
-                            }
-                        }
+
                     // TODO: reject drop if not on a c!!!
                     } else if (data instanceof FunDef) {
                         for (Node node : mNodeSet) {
@@ -599,17 +582,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         new CreateCommentAction(this, point).run();
     }
 
-     /**
-     * 
-     *
-     */
-    public void createPDA(Node node, String name) {
-        PlayDialogueAct pdaCmd = new PlayDialogueAct();
-
-        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
-        node.getDataNode().addCmd(pdaCmd);
-    }
-    
     /**
      * 
      *

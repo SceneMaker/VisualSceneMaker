@@ -260,7 +260,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 //        JScrollPane wssp = new JScrollPane(w);
         // The west component is the workbar
         mFooterLabel = new JLabel();
-        mElementDisplay = new ElementDisplay(sceneFlow, mProject);
+        mElementDisplay = new ElementDisplay(sceneFlow);
         mElementEditor = new ElementEditor();
         mToolBar = new SceneFlowToolBar(this, mProject);
         mToolBar.addPathComponent(mSceneFlow.getName());

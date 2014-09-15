@@ -4,7 +4,6 @@ import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.FunctionEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.model.configs.ProjectPreferences;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;
@@ -49,9 +48,7 @@ public final class ScriptEditorPanel extends JPanel
     private final SceneElementDisplay mElementPane;
 
     private final SceneScript mSceneScript;
-    private final FunctionEditor mFunctionEditor;    
-    private final DialogActEditor     mDialogActEditor;
-    private final ProjectData  mProject;
+    private final FunctionEditor mFunctionEditor;
     private final ProjectPreferences mPreferences;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -78,31 +75,26 @@ public final class ScriptEditorPanel extends JPanel
     ////////////////////////////////////////////////////////////////////////////
     public ScriptEditorPanel(final SceneScript script, 
                                 final SceneFlow sceneflow, 
-                                final ProjectData project) {
+                                final ProjectPreferences preferences) {
         // Initialize The Scene Script
         mSceneScript = script;
         // Grab project preferences
-        mProject = project;       
-         // Grab project preferences
-        mPreferences = mProject.getPreferences();
+        mPreferences = preferences;        
         // Initialize The Status Label
         mStatusLabel = new CaretStatusLabel("");			
         // Initialize The Editor Pane
         mEditorPane = new ScriptEditorPane(mPreferences);
         mEditorPane.addCaretListener(mStatusLabel);
-        mEditorPane.getDocument().addDocumentListener(this);       
+        mEditorPane.getDocument().addDocumentListener(this);		
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
         mScrollPane.setBorder(BorderFactory.createEtchedBorder());        
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionEditor(sceneflow); 
-        // Initialize The Dialog Act Panel
-        mDialogActEditor = new DialogActEditor(mProject);        
+        mFunctionEditor = new FunctionEditor(sceneflow);        	
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane(); 
         mTabPane.add("Script", mScrollPane);  
         mTabPane.add("Functions", mFunctionEditor);
-        mTabPane.add("DialogAct", mDialogActEditor);
         // Initialize the Toolbar
         mScenesToolbar  = new ScriptToolBar(this);
         // Initialize The Scroll Pane
