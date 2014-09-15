@@ -10,6 +10,9 @@ import de.dfki.vsm.model.gesticon.GesticonObject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconObject;
+import de.dfki.vsm.runtime.dialogact.DialogActInterface;
+import de.dfki.vsm.runtime.dialogact.DummyDialogAct;
+import de.dfki.vsm.runtime.player.DefaultDialogueActPlayer;
 import de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer;
 import de.dfki.vsm.runtime.player.DialogueActPlayer;
 import de.dfki.vsm.runtime.player.SceneGroupPlayer;
@@ -31,6 +34,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.nio.file.Path;
@@ -78,6 +82,10 @@ public class ProjectData implements Serializable {
     private String mVisiconFileName;
     private String mActiconFileName;
     private String mPreferencesFileName;
+    
+     // DialogueAct Content
+    private String mDialogueActClassName;
+    private String mDialogueActPlayerClassName;
 
     // ScenePlayer Content
     private String mScenePlayerClassName;
@@ -99,6 +107,8 @@ public class ProjectData implements Serializable {
     protected int mProjectInitialHash;
     private ProjectPreferences mProjectPreferences;
 
+    // DialogueActInterface
+    private DialogActInterface mDialogueAct;
     // The Dialogue Act Player 
     private DialogueActPlayer mDialogueActPlayer;
 
@@ -130,6 +140,9 @@ public class ProjectData implements Serializable {
         mGesticonFileName = mProjectPathName + mProjectConfig.property("project.data.gesticon");
         mVisiconFileName = mProjectPathName + mProjectConfig.property("project.data.visicon");
         mActiconFileName = mProjectPathName + mProjectConfig.property("project.data.acticon");
+        
+        mDialogueActClassName = mProjectConfig.property("project.dialogact.class");
+        mDialogueActPlayerClassName = mProjectConfig.property("project.dialogact.player");
         
         // Added condition for legacy support for project independent preferences
         if(mProjectConfig.property("project.data.preferences") == null){
@@ -186,6 +199,9 @@ public class ProjectData implements Serializable {
 
         // Load The Internal Data Structures
         loadDataStructures();
+        
+        //
+        loadDialogueAct();
 
         // Load Project Preferences
         mProjectPreferences = new ProjectPreferences();
@@ -607,10 +623,43 @@ public class ProjectData implements Serializable {
          return hasChanged;
          */
     }
+    
+    public final synchronized void loadDialogueAct() {
+       
+        if(mDialogueActClassName!=null){
+            try {
+                    Class daClass = Class.forName(mDialogueActClassName);
+                    mDialogueAct = (DialogActInterface) daClass.getConstructor().newInstance();
 
-    public final synchronized void loadDialogueActPlayer() {
-        // Up to you Sergio ...
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | 
+                   InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
+                    // do nothing
+            }    
+       }else{
+            mDialogueAct = new DummyDialogAct();
+       }
     }
+    
+    public final synchronized void loadDialogueActPlayer() {
+      
+        if(mDialogueActPlayerClassName!=null){
+            try {
+                    Class daPlayerClass = Class.forName(mDialogueActPlayerClassName);
+                    mDialogueActPlayer = (DialogueActPlayer) daPlayerClass.getConstructor().newInstance();
+
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | 
+                   InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
+
+                    mDialogueActPlayer = new DefaultDialogueActPlayer(this);                  
+            }    
+       }else{
+            mDialogueActPlayer = new DefaultDialogueActPlayer(this);
+       }
+        
+       mDialogueActPlayer.launch();
+     
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -981,6 +1030,14 @@ public class ProjectData implements Serializable {
     public final synchronized ProjectConfig getProjectProperties() {
         return mProjectConfig;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final synchronized DialogActInterface getDialogAct() {
+        return mDialogueAct;
+    }
+    
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

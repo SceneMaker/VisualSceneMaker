@@ -16,6 +16,7 @@ import static de.dfki.vsm.editor.util.Preferences.sPEDGE_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sROOT_FOLDER;
 import static de.dfki.vsm.editor.util.Preferences.sSUPERNODE_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sTEDGE_ENTRY;
+import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
@@ -40,7 +41,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -108,7 +111,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     private final TreeEntry mRootEntry = new TreeEntry("SceneFlow", sROOT_FOLDER, null);
     private final TreeEntry mBasicEntry = new TreeEntry("Elements", null, null);
     private final TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
-    private final TreeEntry mFunDefEntry = new TreeEntry("Functions", null, null);
+    private final TreeEntry mFunDefEntry = new TreeEntry("Functions", null, null);    
+    private final TreeEntry mDAEntry        = new TreeEntry("DialogActs", null, null);
     private final TreeEntry mSuperNodeEntry = new TreeEntry("Super Node", sSUPERNODE_ENTRY, Node.Type.SuperNode);
     private final TreeEntry mBasicNodeEntry = new TreeEntry("Basic Node", sBASICNODE_ENTRY, Node.Type.BasicNode);
     private final TreeEntry mEEdgeEntry = new TreeEntry("Epsilon Edge", sEEDGE_ENTRY, new Edge(Edge.TYPE.EEDGE));
@@ -135,6 +139,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     private final EventCaster mEventCaster = EventCaster.getInstance();
     //private final EventCaster mEventMulticaster = EventCaster.getInstance();
     // private final Observable mObservable = new Observable();
+    
+
+    private final ProjectData   mProject;
 
     /**
      * ***********************************************************************
@@ -219,10 +226,11 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *************************************************************************
      */
-    public ElementTree(SceneFlow sceneFlow) {
+    public ElementTree(SceneFlow sceneFlow, ProjectData project) {
         super(new DefaultTreeModel(null));
         //
-        mSceneFlow = sceneFlow;
+        mSceneFlow = sceneFlow;        
+        mProject = project;
         setBorder(BorderFactory.createEmptyBorder());
         setCellRenderer(new CellRenderer());
         setBackground(Color.WHITE);
@@ -272,7 +280,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         //
         mRootEntry.add(mBasicEntry);
         mRootEntry.add(mSceneEntry);
-        mRootEntry.add(mFunDefEntry);
+        mRootEntry.add(mFunDefEntry);        
+        mRootEntry.add(mDAEntry);
         //
         ((DefaultTreeModel) getModel()).setRoot(mRootEntry);
         
@@ -299,6 +308,50 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             }
         }
         //
+        expandAll();
+    }
+    
+    /**
+     *
+     */
+    void updatDialogueActs() {
+
+        mDAEntry.removeAllChildren();        
+       
+        Map<String,  List<String>> attributeValueMap = new HashMap();
+        List<String> valueList = new ArrayList<>();
+        
+        // Populate attributeValueMap with DA attributes and its values
+        for(String att: mProject.getDialogAct().getNLGAttributes()){
+            for(String val: mProject.getDialogAct().getNLGAttributeValues(att)){
+               valueList.add(val);
+            }
+             attributeValueMap.put(att, valueList);
+        }
+        
+        for (String phase : mProject.getDialogAct().getDialogueActPhases()) { 
+            for (String da : mProject.getDialogAct().getDialogueActs(phase)) {
+                mDAEntry.add(new TreeEntry( da  + " ("+ phase +")", null,  new DialogAct(da, phase, attributeValueMap)));
+            }
+        }
+    }
+
+    
+     /**
+     *
+     */
+    private void updatDialogueActs(ProjectData project){
+            
+        mDAEntry.removeAllChildren();
+
+        for (String phase : project.getDialogAct().getDialogueActPhases()) {
+           // mDAEntry.add(new TreeEntry(phase, null, null));
+
+            for (String da : project.getDialogAct().getDialogueActs(phase)) {
+              //  mDAEntry.add(new TreeEntry(da, null, new DialogAct(da, phase)));
+            }
+        }
+
         expandAll();
     }
     
@@ -549,12 +602,19 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
         //mLogger.message("ElementDisplay.update(" + obj + ")");
         mObservable.update(obj);
         updateFunctionList();
+        updateDAList();
     }
 
     private void updateFunctionList(){
         mElementTree.updateFunDefs();
+        
+       
     }
-   
+
+    private void updateDAList() {
+        mElementTree.updatDialogueActs();
+    }
+     
     @Override
     public void update(EventObject event) {       
     }
@@ -563,9 +623,10 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
         return mElementTree;
     }
 
-    public ElementDisplay(SceneFlow sceneFlow) {
+    public ElementDisplay(SceneFlow sceneFlow, ProjectData project) {
         
-        mElementTree = new ElementTree(sceneFlow);
+        
+        mElementTree = new ElementTree(sceneFlow, project);
         mObservable.addObserver(mElementTree);
         //
         setBackground(Color.WHITE);

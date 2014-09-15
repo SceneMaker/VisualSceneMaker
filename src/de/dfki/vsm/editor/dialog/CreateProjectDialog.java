@@ -103,8 +103,16 @@ public class CreateProjectDialog extends JDialog {
         mProperties.add(new ConfigEntry("project.data.gesticon", "gesticon.xml"));
         mProperties.add(new ConfigEntry("project.data.sceneflow", "sceneflow.xml"));
         mProperties.add(new ConfigEntry("project.data.preferences", "preferences.xml"));
+        
+        mProperties.add(new ConfigEntry("project.dialogact.class", "de.dfki.vsm.runtime.dialogact.DummyDialogAct"));
+        mProperties.add(new ConfigEntry("project.dialogact.player", "de.dfki.vsm.runtime.player.DefaultDialogueActPlayer"));
+      
+        
         mProperties.add(new ConfigEntry("project.player.config", "player.xml"));
         mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultPlayer"));
+        
+       
+        
         mProjectConfig = new ProjectConfig(mProperties);
         initComponents();
         setVisible(true);
