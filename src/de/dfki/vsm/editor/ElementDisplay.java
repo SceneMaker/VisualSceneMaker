@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
+import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import static de.dfki.vsm.editor.util.Preferences.sBASICNODE_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sCEDGE_ENTRY;
@@ -383,6 +384,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
                 updateFunDefs();
+                
+                FunctionModifiedEvent ev = new FunctionModifiedEvent(this, usrCmdDef);
+                EventCaster.getInstance().convey(ev);       
           }
         }
     }  

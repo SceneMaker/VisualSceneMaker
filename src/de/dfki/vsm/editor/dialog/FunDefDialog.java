@@ -1,8 +1,11 @@
 package de.dfki.vsm.editor.dialog;
 
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.event.FunctionCreatedEvent;
+import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
+import de.dfki.vsm.util.evt.EventCaster;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -46,11 +49,15 @@ public class FunDefDialog extends Dialog {
     private final FunDef mFunDef;
     // The Java reflect method that is mapped to
     private Method mSelectedMethod;
+
+ 
     //
     private Vector<String> mArgNameList = new Vector<String>();
     private HashMap<String, String> mNameMap = new HashMap<String, String>();
     private HashMap<String, String> mTypeMap = new HashMap<String, String>();
     private HashMap<String, Method> mMethodMap = new HashMap<String, Method>();
+
+  
     // GUI Components
     private JLabel mNameLabel;
     private JTextField mNameTextField;
@@ -120,7 +127,7 @@ public class FunDefDialog extends Dialog {
                 classTextFieldKeyTyped(evt);
             }
         });
-        //
+        
         mMethodLabel = new JLabel("Method:");
         mMethodComboBox = new JComboBox();
         mMethodComboBox.setModel(new DefaultComboBoxModel());
@@ -186,8 +193,11 @@ public class FunDefDialog extends Dialog {
         // definition and set the selected method to the method of the user
         // command definition.
         initMethodComboBox();
-        mMethodComboBox.setSelectedItem(methodToString());
-       //mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
+        String selectedMethod = mFunDef.getMethod().toString() + mFunDef.getParamPrettyPrint();
+        System.out.println(selectedMethod);
+        
+        mMethodComboBox.setSelectedItem(selectedMethod);        
+        mSelectedMethod = mMethodMap.get(selectedMethod);
 
         // Resize the argument name list to the size of the parameter
         // list of the selected method and fill the argument name list
@@ -461,6 +471,9 @@ public class FunDefDialog extends Dialog {
             mFunDef.addParam(
                     new ParamDef(mNameMap.get(argString), mTypeMap.get(argString)));
         }
+        
+           
+        
         //
         dispose(Button.OK);
     }
@@ -510,6 +523,10 @@ public class FunDefDialog extends Dialog {
         
     }
     
+    public HashMap<String, Method> getmMethodMap() {
+        return mMethodMap;
+    }
+      
     public HashMap<String, String> getNameMap(){   
         return mNameMap;
     }  
@@ -548,4 +565,11 @@ public class FunDefDialog extends Dialog {
     public Boolean getIsValidClass(){
         return mIsValidClass;    
     }
+    
+    public void setSelectedMethod(Method value) {
+        mSelectedMethod = value;
+    }
+
+               
+
 }

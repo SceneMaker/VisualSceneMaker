@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
+import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
@@ -20,6 +21,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observer;
@@ -61,10 +63,12 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
      **************************************************************************/          
     public FunctionEditor(SceneFlow sceneflow) {          
         mSceneFlow = sceneflow;       
+        
         mFunDefDialogList = new ArrayList<>();
         setMinimumSize(new Dimension(0, 200));  
         
         mFunctionsPanel = new JPanel();
+        
         initComponents();
         
         // Add the element editor to the event multicaster
@@ -78,24 +82,26 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         mFunctionsPanel.setLayout(new BoxLayout(mFunctionsPanel, BoxLayout.Y_AXIS));             
         setViewportView(mFunctionsPanel);
         initButtonPanel(); 
-        createFunctionPanes();               
+        displayFunctionPanels();               
     }
      
     /***************************************************************************
      * 
      **************************************************************************/ 
-    private void createFunctionPanes(){          
+    private void displayFunctionPanels(){          
+        
         //  Inititalize panel
         mFunDefDialogList.clear();
         mFunctionsPanel.removeAll();
         
-        //  Create a FunDefDialog object for every existing function           
+        //  Create a FunDefDialog object for every existing function  
+        //  in order to reuse components
         for (final FunDef funDef: mSceneFlow.getUsrCmdDefMap().values()){   
             
             final FunDefDialog funDefPanel = new FunDefDialog(funDef);            
             mFunDefDialogList.add(funDefPanel);  
                                    
-            // add content of funDefPanel to the function container
+            // Add content of the function container
             JPanel functionContent = funDefPanel.createPanel(); 
             JPanel functionContainer = new JPanel();       
             functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
@@ -118,13 +124,16 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
             functionContainer.add(mRemoveButton);    
             
             mFunctionsPanel.add(Box.createRigidArea(new Dimension(5, 5)));  
-            mFunctionsPanel.add(functionContainer);               
-            
-
+            mFunctionsPanel.add(functionContainer);     
+                        
             /*  
-                Add focus listeners to editable elements from the funDefPanel 
+                Add action and focus listeners to editable elements from 
                 content to highlight the functionContainer being edited
-            */
+                nd save edited changes
+            */           
+            
+            // Function Name
+            
             funDefPanel.getNameInput().addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -138,19 +147,42 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                     funDefPanel.getNameInput().setForeground(Color.black);
                 }
             });
-           
-            funDefPanel.getClassNameInput().addFocusListener(new FocusListener() {
+            
+            funDefPanel.getNameInput().addKeyListener(new KeyAdapter() {                               
                 @Override
-                public void focusGained(FocusEvent e) {
-                   funDefPanel.setSelectedBackground(true);  
+                public void keyReleased(KeyEvent evt) { 
+                    
+                    String newFundDefName = funDefPanel.getNameInput().getText().trim();                                      
+                                          
+                    if(!(funDef.getName().equals(newFundDefName))){
+                        
+                        if(!newFundDefName.equals("")){
+                            // look if name is already being used by another command
+                            if(mSceneFlow.getUsrCmdDef(newFundDefName) != null){
+                                funDefPanel.getNameInput().setForeground(Color.red);
+                            }
+                            else{
+                                funDefPanel.getNameInput().setForeground(Color.BLACK);                       
+                                mSceneFlow.removeUsrCmdDef(funDef.getName());
+                                mSceneFlow.putUsrCmdDef(newFundDefName, funDef);                               
+                                updateFunDef(funDef, funDefPanel);
+                            }
+                        }
+                    }                      
                 }
-
+            });            
+                       
+             // Function Class Name
+            
+            funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
                 @Override
-                public void focusLost(FocusEvent e) {
-                   funDefPanel.setSelectedBackground(false); 
+                public void keyReleased(KeyEvent evt) {      
+                    updateFunDef(funDef, funDefPanel);     
                 }
             });
-         
+            
+            // Function Method    
+            
             funDefPanel.getMethodBox().addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -163,71 +195,24 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 }
             });
             
-            funDefPanel.getArgList().addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                   funDefPanel.setSelectedBackground(true);    
-                }
-
-                @Override
-                public void focusLost(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(false); 
-                }
-            });
-
-            /* 
-                Add action listeners to editable elements from the funDefPanel 
-            */
-            funDefPanel.getNameInput().addKeyListener(new KeyAdapter() {                               
-                @Override
-                public void keyReleased(KeyEvent evt) { 
-                    
-                    String newFundDefName = funDefPanel.getNameInput().getText().trim();                                      
-                                          
-                    if(!(funDef.getName().equals(newFundDefName))){
-                        
-                        if(!newFundDefName.equals("")){
-                            // look if name is already being used by another command
-                            if(mSceneFlow.getUsrCmdDef(newFundDefName) != null){
-                               // funDefPanel.setErrorBackground();
-                                funDefPanel.getNameInput().setForeground(Color.red);
-                            }
-                            else{
-                                //funDefPanel.setSelectedBackground(true);
-                                funDefPanel.getNameInput().setForeground(Color.BLACK);                       
-                                mSceneFlow.removeUsrCmdDef(funDef.getName());
-                                mSceneFlow.putUsrCmdDef(newFundDefName, funDef);
-                                funDef.setName(newFundDefName); 
-                                funDefPanel.getFunDef().setName(newFundDefName);
-                                Editor.getInstance().update();    
-                            }
-                        }
-                    }                      
-                }
-            });
-            
-            funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyReleased(KeyEvent evt) {      
-                    funDef.setClassName(funDefPanel.getClassNameInput().getText().trim());                     
-                    //funDefPanel.classTextFieldKeyTyped(evt);
-                    //Editor.getInstance().update();      
-                }
-            });
-            
             funDefPanel.getMethodBox().addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent evt) { 
                     
                     if(funDefPanel.getIsValidClass()){
-                        String newSelectedMethod = null;
+                      
+                        
                         if(funDefPanel.getMethodBox().getSelectedItem()!=null){
-                            newSelectedMethod = funDefPanel.getMethodBox().getSelectedItem().toString();
-                        }
-
-                        if (newSelectedMethod != null){
-                            funDef.setMethod(newSelectedMethod);   
-                            funDefPanel.getFunDef().setMethod(newSelectedMethod);                                   
+                            funDefPanel.setSelectedMethod(funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
+                        }                        
+                        if (funDefPanel.getSelectedMethod() != null){
+                            
+                            //updateFunDef(funDef, funDefPanel);
+                            
+                            String newSelectedMethodName =funDefPanel.getSelectedMethod().getName().trim();
+                          
+                            funDef.setMethod(newSelectedMethodName);   
+                            funDefPanel.getFunDef().setMethod(newSelectedMethodName);                                   
                             funDefPanel.methodComboBoxActionPerformed(evt);
                             funDef.getParamList().clear();
                             Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
@@ -239,8 +224,24 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                                     new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
                             }
                             Editor.getInstance().update(); 
+                            
                         }
+                        
                     }
+                }
+            });
+            
+            // Function Arguments
+            
+            funDefPanel.getArgList().addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                   funDefPanel.setSelectedBackground(true);    
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    funDefPanel.setSelectedBackground(false); 
                 }
             });
             
@@ -307,7 +308,12 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
      * 
      **************************************************************************/ 
     private void addNewFunction(){         
-        FunDef usrCmdDef = new FunDef("", "java.lang.System.out", "printIn(String)");
+        
+        FunDef usrCmdDef = new FunDef("newCommand", "java.lang.System.out", "println");
+        usrCmdDef.addParam(new ParamDef("text", "String"));
+        
+        updateArguments(usrCmdDef);
+                    
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
         Editor.getInstance().update();
         EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef)); 
@@ -332,8 +338,8 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
             }
         }    
         
-        if (event instanceof FunctionCreatedEvent) {                         
-            createFunctionPanes();     
+        else if (event instanceof FunctionCreatedEvent) {                         
+            displayFunctionPanels();     
                    
             // Highlight and set scrollbar to selected function
             FunDef functionData = ((FunctionCreatedEvent)event).getFunction();      
@@ -347,6 +353,28 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 }
             }
         }   
+        
+        else if (event instanceof FunctionModifiedEvent) {                         
+            displayFunctionPanels();     
+             
+          
+             FunDef functionData = ((FunctionModifiedEvent)event).getFunction();   
+                    
+             // Look for function in list
+             for (FunDefDialog currentPanel: mFunDefDialogList){                 
+                if(functionData.getName().equals(currentPanel.getFunDef().getName())){
+                    currentPanel.getNameInput().requestFocus();
+                    updateFunDef(functionData,currentPanel);
+                }
+                else{
+                    currentPanel.setSelectedBackground(false);
+                }
+            }
+             
+            
+        }
+        
+        Editor.getInstance().update();
     }
 
     /***************************************************************************
@@ -355,6 +383,38 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
     @Override
     public void update(java.util.Observable obs, Object obj) {
         mObservable.update(obj);
+    }
+    
+    private void updateFunDef(FunDef funDef, FunDefDialog funDefDialog) {
+        
+        funDef.setName(funDefDialog.getNameInput().getText().trim());
+        funDef.setClassName(funDefDialog.getClassNameInput().getText().trim());
+        funDef.setMethod(funDefDialog.getSelectedMethod().getName().trim());
+
+        // Clear the parameter list and fill it again
+        funDef.getParamList().clear();
+        Enumeration args = ((DefaultListModel) funDefDialog.getArgList().getModel()).elements();
+        while (args.hasMoreElements()) {
+            String argString = (String) args.nextElement();
+            funDef.addParam(
+                    new ParamDef(funDefDialog.getNameMap().get(argString), funDefDialog.getTypeMap().get(argString)));
+        }
+        
+        Editor.getInstance().update();     
+    }
+
+    private void updateArguments(FunDef funDef) {
+        
+        final FunDefDialog funDefPanel = new FunDefDialog(funDef);    
+         
+        funDef.getParamList().clear();
+        Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
+        while (args.hasMoreElements()) {
+            String argString = (String) args.nextElement();
+            funDef.addParam(
+                    new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
+        }
+        Editor.getInstance().update();     
     }
     
     /***************************************************************************

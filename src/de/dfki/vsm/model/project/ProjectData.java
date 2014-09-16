@@ -130,7 +130,15 @@ public class ProjectData implements Serializable {
         mGesticonFileName = mProjectPathName + mProjectConfig.property("project.data.gesticon");
         mVisiconFileName = mProjectPathName + mProjectConfig.property("project.data.visicon");
         mActiconFileName = mProjectPathName + mProjectConfig.property("project.data.acticon");
-        mPreferencesFileName = mProjectPathName + mProjectConfig.property("project.data.preferences");
+        
+        // Added condition for legacy support for project independent preferences
+        if(mProjectConfig.property("project.data.preferences") == null){
+            mPreferencesFileName = mProjectPathName + "preferences.xml";
+        }
+        else{
+            mPreferencesFileName = mProjectPathName + mProjectConfig.property("project.data.preferences");           
+        }
+       
 
         // Read Player Propertiesy
         mScenePlayerClassName = mProjectConfig.property("project.player.class");
