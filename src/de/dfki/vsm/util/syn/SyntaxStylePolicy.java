@@ -55,17 +55,9 @@ public final class SyntaxStylePolicy implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AttributeSet getStyle(final String token) {
-        final SyntaxTokenStyle entry = mStyleMap.get(token);
-        SimpleAttributeSet set = new SimpleAttributeSet();
-        StyleConstants.setFontFamily(set, "Courier New");
-        StyleConstants.setFontSize(set, 12);
-        StyleConstants.setBold(set, entry.isBold());
-        StyleConstants.setItalic(set, entry.isEmph());
-        StyleConstants.setUnderline(set, entry.isUndl());
-        StyleConstants.setForeground(set, entry.getFCol());
-        StyleConstants.setBackground(set, entry.getBCol());
-        return set;
+    public final SyntaxTokenStyle getStyle(final String token) {
+        // Get The Syntax Style Entry
+        return mStyleMap.get(token);
     }
 
     ////////////////////////////////////////////////////////////////////////////

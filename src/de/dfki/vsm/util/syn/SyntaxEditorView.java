@@ -30,6 +30,9 @@ public class SyntaxEditorView extends PlainView {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             @SuppressWarnings("unchecked")
             Map<RenderingHints.Key, ?> map = (Map<RenderingHints.Key, ?>) toolkit.getDesktopProperty("awt.font.desktophints");
+            
+    
+            //
             sRendHints = new RenderingHints(map);
         } catch (Throwable t) {
         }
@@ -67,6 +70,8 @@ public class SyntaxEditorView extends PlainView {
         final Graphics2D graphics2D = (Graphics2D) graphics;
         // Set The Rendering Hints
         graphics2D.addRenderingHints(sRendHints);
+        //
+        //graphics2D.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         // Remember The Current Font 
         final Font font = graphics2D.getFont();
         // Get The Syntax Document

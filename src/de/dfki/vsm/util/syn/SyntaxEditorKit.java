@@ -18,19 +18,21 @@ public class SyntaxEditorKit extends DefaultEditorKit implements ViewFactory {
     public SyntaxEditorKit(final SyntaxDocLexxer lexxer) {
         mLexxer = lexxer;
     }
-
+    
     @Override
     public ViewFactory getViewFactory() {
         return this;
     }
-
+    
     @Override
     public View create(final Element element) {
+         System.err.println("Creating View");
         return new SyntaxEditorView(element);
     }
 
     @Override
     public Document createDefaultDocument() {
+         System.err.println("Creating Document");
         return new SyntaxDocument(mLexxer);
     }
 
