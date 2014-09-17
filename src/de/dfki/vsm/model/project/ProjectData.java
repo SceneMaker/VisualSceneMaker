@@ -618,6 +618,7 @@ public class ProjectData implements Serializable {
     public final synchronized void loadScenePlayer() {
         // Try to load the plugin
         SceneGroupPlayer player = null;
+        /*
         if (player == null) {
             try {
                 Class playerClass = Class.forName(mScenePlayerClassName);
@@ -648,6 +649,7 @@ public class ProjectData implements Serializable {
                 exc.printStackTrace();
             }
         }
+                */
         // Check if the plugin was loaded
         if (player == null) {
             player = new DefaultSceneGroupPlayer(this);
