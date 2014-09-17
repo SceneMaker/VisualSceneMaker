@@ -374,7 +374,7 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
             
         }
         
-        Editor.getInstance().update();
+       // Editor.getInstance().update();
     }
 
     /***************************************************************************
