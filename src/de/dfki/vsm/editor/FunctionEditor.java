@@ -21,7 +21,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observer;
@@ -178,6 +177,18 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
                 @Override
                 public void keyReleased(KeyEvent evt) {      
                     updateFunDef(funDef, funDefPanel);     
+                }
+            });
+            
+            funDefPanel.getClassNameInput().addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                   funDefPanel.setSelectedBackground(true);    
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    funDefPanel.setSelectedBackground(false); 
                 }
             });
             

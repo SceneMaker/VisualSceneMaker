@@ -109,7 +109,7 @@ public class CreateProjectDialog extends JDialog {
       
         
         mProperties.add(new ConfigEntry("project.player.config", "player.xml"));
-        mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultPlayer"));
+        mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer"));
         
        
         

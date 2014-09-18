@@ -11,6 +11,7 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -32,6 +33,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -41,17 +44,18 @@ import javax.swing.event.ListSelectionListener;
 /**
  * @author Sergio Soto
  */
-class DialogActEditor extends JScrollPane implements EventListener, Observer {
+class DialogActEditor extends JPanel implements EventListener, Observer {
+    
+    
     private final Observable         mObservable = new DialogActEditor.Observable();
     // Main Pane Containers
     private JSplitPane               mMainSplitPane;
-    private JScrollPane              mDialogActsPanel;
+    private JPanel                   mDialogActsPanel;
     private JPanel                   mUtterancePanel;
     // Left Panel
     private JPanel                   mDATitlePanel;
-    private JLabel                   mDATitle;
-    private JPanel                   mDAContainerPanel;
-    private JPanel                   mPhasesListPanel;
+    private JLabel                   mDATitleLabel;
+    private JScrollPane              mPhasesListPanel;
     // Right Panel
     private JPanel                   mUtteranceTitlePanel;
     private JLabel                   mUtteranceTitle;
@@ -68,8 +72,6 @@ class DialogActEditor extends JScrollPane implements EventListener, Observer {
     private List<DialogAct> mDialogActList;
     
             
-            
-            
     public DialogActEditor(ProjectData project) {
         mProject   = project;
         mDialogAct = mProject.getDialogAct();
@@ -78,103 +80,122 @@ class DialogActEditor extends JScrollPane implements EventListener, Observer {
         mDialogActList = new ArrayList<>();
         
         initComponents();
-
         // Add the element editor to the event multicaster
         EventCaster.getInstance().append(this);
     }
 
     private void initComponents() {
-        // init components
+        // Init components
         initDialogActsPanel();
         initUtterancePanel();
-        // set up gui
+        // set up Dialog Editor
         mMainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, mDialogActsPanel, mUtterancePanel);
         mMainSplitPane.setResizeWeight(0.2);
-        mMainSplitPane.setDividerSize(1);
-        mMainSplitPane.setContinuousLayout(true);
-        setViewportView(mMainSplitPane);
+        mMainSplitPane.setDividerSize(1);        
+        setLayout(new GridLayout(0, 1));  
+       
+        add(mMainSplitPane);
     }
 
     private void initDialogActsPanel() {
-        // Title bar
-        mDATitle = new JLabel("DialogueActs & Phases");
-        mDATitle.setBackground(Color.DARK_GRAY);
-        mDATitle.setForeground(Color.WHITE);
+        
+        initTitlePanel();
+        loadDialogActs();        
+       
+        mDialogActsPanel = new JPanel();
+        mDialogActsPanel.setLayout(new BoxLayout(mDialogActsPanel, BoxLayout.Y_AXIS));
+        
+        mDialogActsPanel.add(mDATitlePanel);
+        mDialogActsPanel.add(mPhasesListPanel);        
+    }
+    
+    private void initTitlePanel() {
+        
+        mDATitleLabel = new JLabel("DialogueActs & Phases");
+        mDATitleLabel.setBackground(Color.DARK_GRAY);
+        mDATitleLabel.setForeground(Color.WHITE);
+        
         mDATitlePanel = new JPanel();
         mDATitlePanel.setBackground(Color.LIGHT_GRAY);
         mDATitlePanel.setMaximumSize(new Dimension(20000, 20)); // TODO: change that 2000 to actual width   
         mDATitlePanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        mDATitlePanel.add(mDATitle);
+        mDATitlePanel.add(mDATitleLabel);
         mDATitlePanel.setBackground(Color.DARK_GRAY);
         mDATitlePanel.setForeground(Color.WHITE);
+    }
 
-        
-        // Fill with phases and their corresponding dialog acts
-        mPhasesListPanel = new JPanel();
-        mPhasesListPanel.setLayout(new BoxLayout(mPhasesListPanel, BoxLayout.Y_AXIS));
-
-        for (String var : mDialogAct.getDialogueActPhases()) {
-            
-          
-          
-            mPhasesListPanel.add(createPhase(var));
-        }
-
-        mDAContainerPanel = new JPanel();
-        mDAContainerPanel.setLayout(new BoxLayout(mDAContainerPanel, BoxLayout.Y_AXIS));
-        mDAContainerPanel.add(mDATitlePanel);
-        mDAContainerPanel.add(mPhasesListPanel);
-        mDialogActsPanel = new JScrollPane(mDAContainerPanel);
-         mDialogActsPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        //mDialogActsPanel.setViewportView(mDAContainerPanel);
+    private void loadDialogActs() {
        
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        
+        mPhasesListPanel = new JScrollPane(container);
+        mPhasesListPanel.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
+                
+        // For every phase, add the corresponfing dialogActList
+        mDAJLists.clear();
+        for (String phaseName : mDialogAct.getDialogueActPhases()) {
+             // container contains all phase-dialogActsList pairs     
+            container.add(loadPhase(phaseName));
+        }        
     }
     
     /**
      *
      */
-    private JPanel createPhase(String phase) {
+    private JPanel loadPhase(String phase) {
         
         JPanel phaseContainer = new JPanel();
         phaseContainer.setLayout(new BoxLayout(phaseContainer, BoxLayout.X_AXIS));
-
+        //phaseContainer.setBackground(Color.DARK_GRAY);
         
+        JLabel phaseLabel = new JLabel(phase);
+       // phaseLabel.setPreferredSize(new Dimension(110, 35));
+               
+        // Fill list with all dialog acts from this phase
+        DefaultListModel dialogActListModel = new DefaultListModel();
         
-        
-
-        // Fill list with all dialog acts from phase
-         DefaultListModel dialogActListModel = new DefaultListModel();
-        for (String var : mDialogAct.getDialogueActs(phase)) {
-            dialogActListModel.addElement(var);
-           // mDialogActList.add(new DialogAct(var, phase));
+        for (String dialogAct : mDialogAct.getDialogueActs(phase)) {
+            dialogActListModel.addElement(dialogAct);            
         }
+        
         final JList dialogActList = new JList(dialogActListModel);
         mDAJLists.add(dialogActList);
-
-        dialogActList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
-        if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==0) 
-        { 
-            phaseContainer.setBackground(Color.LIGHT_GRAY);
-            dialogActList.setBackground(Color.LIGHT_GRAY);
-        }
-        else{
-            dialogActList.setBackground(UIManager.getColor("TableHeader.background"));
-        }
-        // 
-        //dialogActList.setBackground(UIManager.getColor("TableHeader.background"));
+                 
+        // Dialog Act List properties
+        dialogActList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);       
         dialogActList.setSelectionBackground(Color.DARK_GRAY);
         dialogActList.setSelectionForeground(Color.WHITE);
-        dialogActList.setOpaque(true);
-        
-        Border emptyBorder = BorderFactory.createEmptyBorder();
-        dialogActList.setBorder(emptyBorder);
-
+        dialogActList.setOpaque(true);      
         dialogActList.setVisibleRowCount(3);
+  
+        
+        if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==0){
+            phaseContainer.setBackground(Color.LIGHT_GRAY);
+            dialogActList.setBackground(Color.LIGHT_GRAY); 
+            phaseLabel.setBackground(Color.LIGHT_GRAY); 
+        }
+        else{
+            phaseContainer.setBackground(UIManager.getColor("TableHeader.background"));
+            dialogActList.setBackground(UIManager.getColor("TableHeader.background"));
+            phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));
+        }
+
+        JScrollPane listScrollPane = new JScrollPane(dialogActList);          
+        listScrollPane.setPreferredSize(new Dimension(10,25*dialogActListModel.getSize()));      
+        listScrollPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
+        
+        phaseLabel.setPreferredSize(new Dimension(110,25*dialogActListModel.getSize())); 
+      
+        phaseContainer.add(listScrollPane);
+        phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
+        phaseContainer.add(phaseLabel);
+        phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
+        
+        // set click listener for text areas
         dialogActList.addListSelectionListener(new ListSelectionListener() {
             @Override
-            public void valueChanged(ListSelectionEvent e) {
-               
+            public void valueChanged(ListSelectionEvent e) {               
                  
                 for(JList i: mDAJLists){
                     if(!(i.equals(e.getSource()))){
@@ -187,53 +208,29 @@ class DialogActEditor extends JScrollPane implements EventListener, Observer {
                     mAttributeValueMap.put(atttribute, getAttributeSelectedValue(atttribute));
                 }
                      
-                mUtteranceTextArea.setText(mDialogAct.getUtterances(dialogActList.getSelectedValue().toString(),mAttributeValueMap));
-                mFMLTextArea.setText(mDialogAct.getFMLCommands(dialogActList.getSelectedValue().toString(),mAttributeValueMap).toString());
-                
+                try{
+                    mUtteranceTextArea.setText(mDialogAct.getUtterances(dialogActList.getSelectedValue().toString(),mAttributeValueMap));
+                    mFMLTextArea.setText(mDialogAct.getFMLCommands(dialogActList.getSelectedValue().toString(),mAttributeValueMap).toString());             
+                }catch(Exception ex){}
             }
-
-           
         });
+        
         dialogActList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
-                JList list = (JList) evt.getSource();
+                JList list = (JList) evt.getSource();                
                 
-                
-                if (evt.getClickCount() == 2) {
-                   
-
-                    // mUtteranceTextArea.setText("DoubleClick");
-                    // new FunDefDialog(null);
-                    // attributes = new de.dfki.vsm.editor.dialog.DialogActAttributes();
-                    DialogActAttributes tedgeDialog = new DialogActAttributes(mDialogAct);
-
-                    tedgeDialog.run();
+                if (evt.getClickCount() == 2) {                   
+                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct);
+                    daAttributeDialog.run();
                 }
             }
         });
-
-        JScrollPane listScrollPane = new JScrollPane(dialogActList);
-        listScrollPane.setPreferredSize(new Dimension(10,22*dialogActListModel.getSize()));
-        listScrollPane.setBorder(emptyBorder);
         
-        JPanel      daContainer    = new JPanel();
-        daContainer.setLayout(new BoxLayout(daContainer, BoxLayout.Y_AXIS));
-
-        JLabel phaseLabel = new JLabel(phase);
-        
-    
-        phaseLabel.setPreferredSize(new Dimension(110, 20));
-        phaseContainer.add(listScrollPane);
-        phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
-        phaseContainer.add(phaseLabel);
-        phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
-
         return phaseContainer;
     }
     
     private String getAttributeSelectedValue(String atttribute) {
         // TODO
-        System.out.println("todo");
         return "pending";
     }
 
@@ -295,9 +292,7 @@ class DialogActEditor extends JScrollPane implements EventListener, Observer {
         mUtterancePanel.add(mUtteranceTextPanel);
         mUtterancePanel.setVisible(true);
     }
-
     
-
     /**
      *
      */
