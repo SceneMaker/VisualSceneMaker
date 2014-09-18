@@ -150,6 +150,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         //phaseContainer.setBackground(Color.DARK_GRAY);
         
         JLabel phaseLabel = new JLabel(phase);
+        phaseLabel.setOpaque(true);
        // phaseLabel.setPreferredSize(new Dimension(110, 35));
                
         // Fill list with all dialog acts from this phase
@@ -168,6 +169,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         dialogActList.setSelectionForeground(Color.WHITE);
         dialogActList.setOpaque(true);      
         dialogActList.setVisibleRowCount(3);
+        dialogActList.setBorder(null);
   
         
         if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==0){
@@ -184,6 +186,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         JScrollPane listScrollPane = new JScrollPane(dialogActList);          
         listScrollPane.setPreferredSize(new Dimension(10,25*dialogActListModel.getSize()));      
         listScrollPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
+        listScrollPane.setBorder(null);
         
         phaseLabel.setPreferredSize(new Dimension(110,25*dialogActListModel.getSize())); 
       
@@ -239,9 +242,10 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         mUtteranceTitle.setBackground(Color.DARK_GRAY);
         mUtteranceTitle.setForeground(Color.WHITE);
 
-        
         // Create Text Button
         mTextButton = new JButton("Text");
+        mTextButton.setOpaque(true);
+        mTextButton.setBackground(Color.lightGray);
         mTextButton.setBorderPainted(false);
         mTextButton.addActionListener(new ActionListener() {
             @Override
@@ -256,6 +260,8 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         // Create FML Button
         mFMLButton = new JButton("FML");
         mFMLButton.setBorderPainted(false);
+        mFMLButton.setOpaque(true);
+        mFMLButton.setBackground(Color.lightGray);
         mFMLButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -272,6 +278,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         mUtteranceTitlePanel.add(mUtteranceTitle);
         mUtteranceTitlePanel.add(Box.createHorizontalGlue());
         mUtteranceTitlePanel.add(mTextButton);
+        mUtteranceTitlePanel.add(Box.createRigidArea(new Dimension(1, 0)));
         mUtteranceTitlePanel.add(mFMLButton);
         mUtteranceTextPanel = new JScrollPane();
         mUtteranceTextPanel.setBorder(BorderFactory.createEmptyBorder());
