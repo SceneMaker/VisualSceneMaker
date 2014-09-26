@@ -30,15 +30,16 @@ import java.util.regex.Pattern;
 public class NAOScenePlayer extends VSMScenePlayer {
 
     // The Message Pattern
-    private final Pattern mPattern = Pattern.compile(""
-            + "<action "
-            + "name=\"(.*?)\" "
-            + "type=\"(.*?)\" "
-            + "task=\"(.*?)\" "
-            + "date=\"(.*?)\" "
-            + "time=\"(.*?)\">"
-            + "(.*?)"
-            + "</action>");
+    private final Pattern mPattern
+            = Pattern.compile(""
+                    + "<action "
+                    + "name=\"(.*?)\" "
+                    + "type=\"(.*?)\" "
+                    + "task=\"(.*?)\" "
+                    + "date=\"(.*?)\" "
+                    + "time=\"(.*?)\">"
+                    + "(.*?)"
+                    + "</action>");
     // The Scene Player
     public static NAOScenePlayer sInstance;
 
@@ -108,7 +109,7 @@ public class NAOScenePlayer extends VSMScenePlayer {
     public final void play(final String name, final LinkedList<AbstractValue> args) {
         // Initialize Parameter Data
         // And Process Scene Arguments
-        final Process thread =  (Process)Thread.currentThread();
+        final Process thread = (Process) Thread.currentThread();
         final String ident = thread.getName().toUpperCase() + name;
         final HashMap<String, String> map = new HashMap<String, String>();
         if (args != null && !args.isEmpty()) {
@@ -160,6 +161,8 @@ public class NAOScenePlayer extends VSMScenePlayer {
                         }
                         // Append Punctation
                         text += utt.getPunct();
+                        
+                        
                         // Create The Command 
                         final String message = ""
                                 + "<action "

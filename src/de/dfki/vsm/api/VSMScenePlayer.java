@@ -86,7 +86,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             final String port = mPlayerConfig.property("agent." + i + ".port");
 
             // Print Out The Properties
-            mVSM3Log.message(""  
+            mVSM3Log.message(""
                     + "Agent-Name:" + name + "\r\n"
                     + "Agent-Uaid:" + uaid + "\r\n"
                     + "Agent-Host:" + host + "\r\n"
@@ -101,23 +101,23 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             mVSM3Log.message("Starting Agent '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
         }
         // Initialize The Properties
-        final String msslhost = mPlayerConfig.property("msslhost");
-        final String msslport = mPlayerConfig.property("msslport");
-        final String mssrhost = mPlayerConfig.property("mssrhost");
-        final String mssrport = mPlayerConfig.property("mssrport");
-        final String mssrconn = mPlayerConfig.property("mssrconn");
+        //final String msslhost = mPlayerConfig.property("msslhost");
+        //final String msslport = mPlayerConfig.property("msslport");
+        //final String mssrhost = mPlayerConfig.property("mssrhost");
+        //final String mssrport = mPlayerConfig.property("mssrport");
+        //final String mssrconn = mPlayerConfig.property("mssrconn");
         final String swilhost = mPlayerConfig.property("swilhost");
         final String swilport = mPlayerConfig.property("swilport");
         final String swirhost = mPlayerConfig.property("swirhost");
         final String swirport = mPlayerConfig.property("swirport");
         final String swirconn = mPlayerConfig.property("swirconn");
         final String swilbase = mPlayerConfig.property("swilbase");
-        final String ssilhost = mPlayerConfig.property("ssilhost");
-        final String ssilport = mPlayerConfig.property("ssilport");
-        final String ssirhost = mPlayerConfig.property("ssirhost");
-        final String ssirport = mPlayerConfig.property("ssirport");
-        final String ssirconn = mPlayerConfig.property("ssirconn");
-        final String nlufbase = mPlayerConfig.property("nlufbase");
+        //final String ssilhost = mPlayerConfig.property("ssilhost");
+        //final String ssilport = mPlayerConfig.property("ssilport");
+        //final String ssirhost = mPlayerConfig.property("ssirhost");
+        //final String ssirport = mPlayerConfig.property("ssirport");
+        //final String ssirconn = mPlayerConfig.property("ssirconn");
+        //final String nlufbase = mPlayerConfig.property("nlufbase");
         // Print Out The Properties
         mVSM3Log.message(""
                 + "SWI-Local-Host :" + swilhost + "\r\n"
@@ -125,18 +125,18 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
                 + "SWI-Local-Port :" + swilport + "\r\n"
                 + "SWI-Remote-Port :" + swirport + "\r\n"
                 + "SWI-Remote-Flag :" + swirconn + "\r\n"
-                + "SWI-Base-Files :" + swilbase + "\r\n"
-                + "MSS-Local-Host :" + msslhost + "\r\n"
-                + "MSS-Remote-Host :" + mssrhost + "\r\n"
-                + "MSS-Local-Port :" + msslport + "\r\n"
-                + "MSS-Remote-Port :" + mssrport + "\r\n"
-                + "MSS-Remote-Flag :" + mssrconn + "\r\n"
-                + "NLU-Base-Files :" + nlufbase + "\r\n"
-                + "SSI-Local-Host :" + ssilhost + "\r\n"
-                + "SSI-Remote-Host :" + ssirhost + "\r\n"
-                + "SSI-Local-Port :" + ssilport + "\r\n"
-                + "SSI-Remote-Port :" + ssirport + "\r\n"
-                + "SSI-Remote-Flag :" + ssirconn + "");
+                + "SWI-Base-Files :" + swilbase + "");
+        //        + "MSS-Local-Host :" + msslhost + "\r\n"
+        //        + "MSS-Remote-Host :" + mssrhost + "\r\n"
+        //        + "MSS-Local-Port :" + msslport + "\r\n"
+        //        + "MSS-Remote-Port :" + mssrport + "\r\n"
+        //        + "MSS-Remote-Flag :" + mssrconn + "\r\n"
+        //        + "NLU-Base-Files :" + nlufbase + "\r\n"
+        //        + "SSI-Local-Host :" + ssilhost + "\r\n"
+        //        + "SSI-Remote-Host :" + ssirhost + "\r\n"
+        //        + "SSI-Local-Port :" + ssilport + "\r\n"
+        //        + "SSI-Remote-Port :" + ssirport + "\r\n"
+        //        + "SSI-Remote-Flag :" + ssirconn + "");
         // Initialize the JPL Engine
         JPLEngine.init();
         // Load The Prolog Program

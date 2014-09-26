@@ -130,15 +130,13 @@ public class ProjectData implements Serializable {
         mGesticonFileName = mProjectPathName + mProjectConfig.property("project.data.gesticon");
         mVisiconFileName = mProjectPathName + mProjectConfig.property("project.data.visicon");
         mActiconFileName = mProjectPathName + mProjectConfig.property("project.data.acticon");
-        
+
         // Added condition for legacy support for project independent preferences
-        if(mProjectConfig.property("project.data.preferences") == null){
+        if (mProjectConfig.property("project.data.preferences") == null) {
             mPreferencesFileName = mProjectPathName + "preferences.xml";
+        } else {
+            mPreferencesFileName = mProjectPathName + mProjectConfig.property("project.data.preferences");
         }
-        else{
-            mPreferencesFileName = mProjectPathName + mProjectConfig.property("project.data.preferences");           
-        }
-       
 
         // Read Player Propertiesy
         mScenePlayerClassName = mProjectConfig.property("project.player.class");
@@ -618,7 +616,7 @@ public class ProjectData implements Serializable {
     public final synchronized void loadScenePlayer() {
         // Try to load the plugin
         SceneGroupPlayer player = null;
-        /*
+
         if (player == null) {
             try {
                 Class playerClass = Class.forName(mScenePlayerClassName);
@@ -649,14 +647,14 @@ public class ProjectData implements Serializable {
                 exc.printStackTrace();
             }
         }
-                */
+
         // Check if the plugin was loaded
         if (player == null) {
             player = new DefaultSceneGroupPlayer(this);
         }
-        //        
+        // Set the new ScenePlayer here     
         mScenePlayer = player;
-        //
+        // Launch the ScenePlayer now
         mScenePlayer.launch();
     }
 
