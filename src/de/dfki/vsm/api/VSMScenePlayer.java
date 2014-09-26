@@ -47,9 +47,9 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     // The Query Handler
     protected VSMQueryHandler mQueryHandler;
     // The Event Handler
-    protected SSIEventHandler mEventHandler;
+    //protected SSIEventHandler mEventHandler;
     // The Event Handler
-    protected MSSEventHandler mTouchHandler;
+    //protected MSSEventHandler mTouchHandler;
     // The Waiting Tasks 
     protected final HashMap<String, Task> mPlayerTaskQueue = new HashMap<>();
     // The Agent Clients    
@@ -146,31 +146,31 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         // Initialize The System Timer
         mSystemTimer = new VSMSystemTimer(this, 10);
         // Init SSI Speech Server
-        mEventHandler = new SSIEventHandler(this);
+        //mEventHandler = new SSIEventHandler(this);
         // Init Touch Event Server
-        mTouchHandler = new MSSEventHandler(this);
+        //mTouchHandler = new MSSEventHandler(this);
         //Initialize Query Handler
         mQueryHandler.init(swilhost, Integer.parseInt(swilport),
                 swirhost, Integer.parseInt(swirport),
                 Boolean.parseBoolean(swirconn));
         // Initialize The Event Handler
-        mEventHandler.init(
-                ssilhost, Integer.parseInt(ssilport),
-                ssirhost, Integer.parseInt(ssirport),
-                Boolean.parseBoolean(ssirconn));
+        //mEventHandler.init(
+        //        ssilhost, Integer.parseInt(ssilport),
+        //        ssirhost, Integer.parseInt(ssirport),
+        //        Boolean.parseBoolean(ssirconn));
         // Initialize The Event Handler
-        mTouchHandler.init(
-                msslhost, Integer.parseInt(msslport),
-                mssrhost, Integer.parseInt(mssrport),
-                Boolean.parseBoolean(mssrconn));
+        //mTouchHandler.init(
+        //        msslhost, Integer.parseInt(msslport),
+        //        mssrhost, Integer.parseInt(mssrport),
+        //        Boolean.parseBoolean(mssrconn));
         // Now Start The System Timer
         mSystemTimer.start();
         // Now Start The Query Handler
         mQueryHandler.start();
         // Now Start The Event Handler
-        mEventHandler.start();
+        //mEventHandler.start();
         // Now Start The Event Handler
-        mTouchHandler.start();
+        //mTouchHandler.start();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -194,20 +194,20 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             }
         }
         // Shutdown Other Threads
-        mEventHandler.abort();
-        mTouchHandler.abort();
+        //mEventHandler.abort();
+        //mTouchHandler.abort();
         mQueryHandler.abort();
         mSystemTimer.abort();
         // Join With All Threads
         try {
             // Join With The Event Handler
-            mEventHandler.join();
+            //mEventHandler.join();
             // Print Debug Information
-            mVSM3Log.message("Joining Event Handler");
+            //mVSM3Log.message("Joining Event Handler");
             // Join With The Event Handler
-            mTouchHandler.join();
+            //mTouchHandler.join();
             // Print Debug Information
-            mVSM3Log.message("Joining Touch Handler");
+            //mVSM3Log.message("Joining Touch Handler");
             // Join With The Query Handler
             mQueryHandler.join();
             // Print Debug Information
