@@ -222,26 +222,5 @@
                 <include name="**/*.java"/>
             </fileset>
         </javadoc>
-    </target>
-     <!-- Test Some Project -->
-    <target name="test-gloria">
-        <java classname="de.dfki.vsm.test.TestCMLClient" fork="true">
-            <arg line="./res/test/actions.txt 127.0.0.1 1001 1 Wiedersehen"/>
-            <classpath refid="clspath"/>
-        </java>
-    </target>     
-    <!-- Test Some Project -->
-    <target name="test-curtis">
-        <java classname="de.dfki.vsm.test.TestCMLClient" fork="true">
-            <arg line="./res/test/actions.txt 127.0.0.1 1001 2 Hallöchen"/>
-            <classpath refid="clspath"/>
-        </java>
-    </target>       
-     <!-- Test Some Project -->
-    <target name="test-ssilog">
-        <java classname="de.dfki.vsm.test.TestSSITCPLog" fork="true">
-            <arg line="4000"/>
-            <classpath refid="clspath"/>
-        </java>
-    </target>       
+    </target>    
 </project>
