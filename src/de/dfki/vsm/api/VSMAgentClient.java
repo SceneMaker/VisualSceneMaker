@@ -170,7 +170,7 @@ public class VSMAgentClient extends Thread {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void sendString(final String string) {
+    public final boolean sendString(final String string) {
         // Try To Send The Message
         if (mWriter != null) {
             try {
@@ -180,6 +180,8 @@ public class VSMAgentClient extends Thread {
                 mWriter.flush();
                 // Debug Some Information
                 mVSM3Log.message("Sending Message '" + string + "'");
+                // Return At Success
+                return true;
             } catch (Exception exc) {
                 // Debug Some Information
                 mVSM3Log.warning(exc.toString());
@@ -188,6 +190,8 @@ public class VSMAgentClient extends Thread {
             // Debug Some Information
             mVSM3Log.warning("Cannot Send Over Agent Client For '" + mName + "' With Id '" + mUaid + "'");
         }
+         // Return At Failure
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
