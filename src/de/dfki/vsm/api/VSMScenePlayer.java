@@ -46,10 +46,6 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     protected VSMSystemTimer mSystemTimer;
     // The Query Handler
     protected VSMQueryHandler mQueryHandler;
-    // The Event Handler
-    //protected SSIEventHandler mEventHandler;
-    // The Event Handler
-    //protected MSSEventHandler mTouchHandler;
     // The Waiting Tasks 
     protected final HashMap<String, Task> mPlayerTaskQueue = new HashMap<>();
     // The Agent Clients    
@@ -78,13 +74,12 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         mVSM3Log.message("Launching Generic Player");
         // Initialize The Properties
         final String numagent = mPlayerConfig.property("agents.count");
-        for (int i = 1; i <= Integer.parseInt(numagent); i++) {
+        for (int i = 0; i < Integer.parseInt(numagent); i++) {
             // Get Agent's Name, Host And Port
             final String name = mPlayerConfig.property("agent." + i + ".name");
             final String uaid = mPlayerConfig.property("agent." + i + ".uaid");
             final String host = mPlayerConfig.property("agent." + i + ".host");
             final String port = mPlayerConfig.property("agent." + i + ".port");
-
             // Print Out The Properties
             mVSM3Log.message(""
                     + "Agent-Name:" + name + "\r\n"
@@ -101,23 +96,12 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             mVSM3Log.message("Starting Agent '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
         }
         // Initialize The Properties
-        //final String msslhost = mPlayerConfig.property("msslhost");
-        //final String msslport = mPlayerConfig.property("msslport");
-        //final String mssrhost = mPlayerConfig.property("mssrhost");
-        //final String mssrport = mPlayerConfig.property("mssrport");
-        //final String mssrconn = mPlayerConfig.property("mssrconn");
         final String swilhost = mPlayerConfig.property("swilhost");
         final String swilport = mPlayerConfig.property("swilport");
         final String swirhost = mPlayerConfig.property("swirhost");
         final String swirport = mPlayerConfig.property("swirport");
         final String swirconn = mPlayerConfig.property("swirconn");
         final String swilbase = mPlayerConfig.property("swilbase");
-        //final String ssilhost = mPlayerConfig.property("ssilhost");
-        //final String ssilport = mPlayerConfig.property("ssilport");
-        //final String ssirhost = mPlayerConfig.property("ssirhost");
-        //final String ssirport = mPlayerConfig.property("ssirport");
-        //final String ssirconn = mPlayerConfig.property("ssirconn");
-        //final String nlufbase = mPlayerConfig.property("nlufbase");
         // Print Out The Properties
         mVSM3Log.message(""
                 + "SWI-Local-Host :" + swilhost + "\r\n"
@@ -126,17 +110,6 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
                 + "SWI-Remote-Port :" + swirport + "\r\n"
                 + "SWI-Remote-Flag :" + swirconn + "\r\n"
                 + "SWI-Base-Files :" + swilbase + "");
-        //        + "MSS-Local-Host :" + msslhost + "\r\n"
-        //        + "MSS-Remote-Host :" + mssrhost + "\r\n"
-        //        + "MSS-Local-Port :" + msslport + "\r\n"
-        //        + "MSS-Remote-Port :" + mssrport + "\r\n"
-        //        + "MSS-Remote-Flag :" + mssrconn + "\r\n"
-        //        + "NLU-Base-Files :" + nlufbase + "\r\n"
-        //        + "SSI-Local-Host :" + ssilhost + "\r\n"
-        //        + "SSI-Remote-Host :" + ssirhost + "\r\n"
-        //        + "SSI-Local-Port :" + ssilport + "\r\n"
-        //        + "SSI-Remote-Port :" + ssirport + "\r\n"
-        //        + "SSI-Remote-Flag :" + ssirconn + "");
         // Initialize the JPL Engine
         JPLEngine.init();
         // Load The Prolog Program
@@ -145,32 +118,14 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         mQueryHandler = new VSMQueryHandler(this);
         // Initialize The System Timer
         mSystemTimer = new VSMSystemTimer(this, 10);
-        // Init SSI Speech Server
-        //mEventHandler = new SSIEventHandler(this);
-        // Init Touch Event Server
-        //mTouchHandler = new MSSEventHandler(this);
         //Initialize Query Handler
         mQueryHandler.init(swilhost, Integer.parseInt(swilport),
                 swirhost, Integer.parseInt(swirport),
                 Boolean.parseBoolean(swirconn));
-        // Initialize The Event Handler
-        //mEventHandler.init(
-        //        ssilhost, Integer.parseInt(ssilport),
-        //        ssirhost, Integer.parseInt(ssirport),
-        //        Boolean.parseBoolean(ssirconn));
-        // Initialize The Event Handler
-        //mTouchHandler.init(
-        //        msslhost, Integer.parseInt(msslport),
-        //        mssrhost, Integer.parseInt(mssrport),
-        //        Boolean.parseBoolean(mssrconn));
         // Now Start The System Timer
         mSystemTimer.start();
         // Now Start The Query Handler
         mQueryHandler.start();
-        // Now Start The Event Handler
-        //mEventHandler.start();
-        // Now Start The Event Handler
-        //mTouchHandler.start();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -200,14 +155,6 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         mSystemTimer.abort();
         // Join With All Threads
         try {
-            // Join With The Event Handler
-            //mEventHandler.join();
-            // Print Debug Information
-            //mVSM3Log.message("Joining Event Handler");
-            // Join With The Event Handler
-            //mTouchHandler.join();
-            // Print Debug Information
-            //mVSM3Log.message("Joining Touch Handler");
             // Join With The Query Handler
             mQueryHandler.join();
             // Print Debug Information
