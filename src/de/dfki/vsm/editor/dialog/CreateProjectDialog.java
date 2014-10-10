@@ -107,7 +107,7 @@ public class CreateProjectDialog extends JDialog {
         mProperties.add(new ConfigEntry("project.data.sceneflow", "sceneflow.xml"));
         mProperties.add(new ConfigEntry("project.data.preferences", "preferences.xml"));
         mProperties.add(new ConfigEntry("project.player.config", "player.xml"));
-        mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultPlayer"));
+        mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer"));
         mProjectConfig = new ProjectConfig(mProperties);
         initComponents();
         setVisible(true);
