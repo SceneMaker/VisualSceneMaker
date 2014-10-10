@@ -105,9 +105,7 @@ public class Evaluator {
                         + cmd.getConcreteSyntax() + " was evaluated to '" + value.getConcreteSyntax() + "' which is not a string constant";
                 throw new RunTimeException(cmd, errorMsg);
             }
-        }
-
-        ////////////////////////////////////////////////////////////////////
+        } ////////////////////////////////////////////////////////////////////
         // PLAY DIALOGUE ACT
         ////////////////////////////////////////////////////////////////////
         else if (cmd instanceof PlayDialogueAct) {
@@ -131,9 +129,7 @@ public class Evaluator {
                         + cmd.getConcreteSyntax() + " was evaluated to '" + name.getConcreteSyntax() + "' which is not a string constant";
                 throw new RunTimeException(cmd, errorMsg);
             }
-        } 
-
-        ////////////////////////////////////////////////////////////////////
+        } ////////////////////////////////////////////////////////////////////
         // UnblockSceneGroup
         ////////////////////////////////////////////////////////////////////
         else if (cmd instanceof UnblockSceneGroup) {
@@ -1029,25 +1025,15 @@ public class Evaluator {
             // Invoke the method
             Method mthd = myClass.getMethod(cmdMethodName, paramClassList);
 
-            //mLogger.message("Evaluator: Executing Java method '" + mthd + argListStr + "'");
-            /**
-             * *
-             *
-             */
-            try {  ////
-//                ((InterpreterThread) Process.currentThread()).releaseLock();
-//                mConfiguration.releaseWriteLock();
+            mLogger.message("Evaluator: Executing static Java method '" + mthd + argListStr + "'");
+            try {
+                // Release The Lock
                 mInterpreter.unlock();
-                ///
-
+                // Invoke The Method
                 return mthd.invoke(null, argInstList);
             } finally {
-                ////
-//                mConfiguration.acquireWriteLock();
-//                ((InterpreterThread) Process.currentThread()).acquireLock();
+                // Aquire The Lock
                 mInterpreter.lock();
-                ///
-
             }
 
         } catch (SecurityException e) {
@@ -1082,8 +1068,17 @@ public class Evaluator {
             Method method = memberFieldClass.getMethod(cmdMethodName, paramClassList);
             // DEBUG
 
-            // mLogger.message("Evaluator: Executing Java method '" + method + argListStr + "' on static object " + memberFieldObject);
-            return method.invoke(memberFieldObject, argInstList);
+            // ATTENTION: This Lock was not released before
+            mLogger.message("Evaluator: Executing Java method '" + method + argListStr + "' on static object " + memberFieldObject);
+            try {
+                // Release The Lock
+                mInterpreter.unlock();
+                // Invoke The Method
+                return method.invoke(memberFieldObject, argInstList);
+            } finally {
+                // Aquire The Lock
+                mInterpreter.lock();
+            }
         } catch (SecurityException e) {
             e.printStackTrace();
             //System.err.println(e.toString());
