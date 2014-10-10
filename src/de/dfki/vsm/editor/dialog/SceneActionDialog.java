@@ -239,7 +239,7 @@ public class SceneActionDialog extends JDialog {
         removeButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("removing argument");
+                //System.out.println("removing argument");
                 int index = mList.getSelectedIndex();
                 if (index != -1) {
                     mListModel.removeElementAt(index);
@@ -258,7 +258,7 @@ public class SceneActionDialog extends JDialog {
         editButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Edit Argument()");
+                //System.out.println("Edit Argument()");
             }
         });
 

@@ -33,7 +33,7 @@ public class AStarEdgeFinder {
         Path path = pathFinder.findPath(null, sourceX, sourceY, destinationX, destinationY);
         pathFinder.setDiagonalPathCost(this.diagonalCost);
         for(int i = 0; i < path.getLength(); i++) {
-            System.out.println("Move to: " + path.getX(i) + "," + path.getY(i) + ".");
+            //System.out.println("Move to: " + path.getX(i) + "," + path.getY(i) + ".");
         }
     }
     

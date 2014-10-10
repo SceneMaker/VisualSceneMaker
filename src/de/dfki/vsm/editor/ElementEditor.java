@@ -1153,7 +1153,7 @@ class ProbabilityEditor extends JPanel implements EventListener {
     private void save() {        
         mPEdgeDialog.okActionPerformed();
         Editor.getInstance().update();
-        System.out.println("save");
+        //System.out.println("save");
     }    
 }
 

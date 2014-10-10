@@ -194,7 +194,7 @@ public class FunDefDialog extends Dialog {
         // command definition.
         initMethodComboBox();
         String selectedMethod = mFunDef.getMethod().toString() + mFunDef.getParamPrettyPrint();
-        System.out.println(selectedMethod);
+        //System.out.println(selectedMethod);
         
         mMethodComboBox.setSelectedItem(selectedMethod);        
         mSelectedMethod = mMethodMap.get(selectedMethod);

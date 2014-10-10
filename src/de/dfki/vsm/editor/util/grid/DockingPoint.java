@@ -173,8 +173,8 @@ public class DockingPoint {
         double tmpSqrt = Math.sqrt(disc);
         double abScalingFactor1 = -pBy2 + tmpSqrt;
         
-        System.out.println((line.getX1() - baX * abScalingFactor1) + "," + 
-                (line.getY1() - baY * abScalingFactor1));
+        //System.out.println((line.getX1() - baX * abScalingFactor1) + "," + 
+        //        (line.getY1() - baY * abScalingFactor1));
         
         return new Point2D.Double(line.getX1() - baX * abScalingFactor1, line.getY1()
                 - baY * abScalingFactor1);
