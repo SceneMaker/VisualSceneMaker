@@ -380,8 +380,8 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * Return a URL for the image source, or null if it could not be determined.
      */
     private URL getSourceURL() {
-        System.out.println("felement " + fElement);
-        System.out.println("attributes " + fElement.getAttributes());
+        //System.out.println("felement " + fElement);
+        //System.out.println("attributes " + fElement.getAttributes());
 
         String src = (String) fElement.getAttributes().getAttribute(HTML.Attribute.SRC);
         if (src == null) {
@@ -438,7 +438,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public void changedUpdate(DocumentEvent e, Shape a, ViewFactory f) {
         if (DEBUG) {
-            System.out.println("ImageView: changedUpdate begin...");
+            //System.out.println("ImageView: changedUpdate begin...");
         }
         super.changedUpdate(e, a, f);
         float align = getVerticalAlignment();
@@ -452,12 +452,12 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
         boolean wChanged = fWidth != width;
         if (hChanged || wChanged || getVerticalAlignment() != align) {
             if (DEBUG) {
-                System.out.println("ImageView: calling preferenceChanged");
+                //System.out.println("ImageView: calling preferenceChanged");
             }
             getParent().preferenceChanged(this, hChanged, wChanged);
         }
         if (DEBUG) {
-            System.out.println("ImageView: changedUpdate end; valign=" + getVerticalAlignment());
+            //System.out.println("ImageView: changedUpdate end; valign=" + getVerticalAlignment());
         }
     }
 

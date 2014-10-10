@@ -173,21 +173,21 @@ public class ROBScenePlayer extends VSMScenePlayer {
                         mVSM3Log.message("Encoding '" + message + "' On '" + speaker + "'");
                         // Send Message And Then
                         // Await The Notification
-                        synchronized (mPlayerTaskQueue) {
+                        synchronized (mWaitingThreadQueue) {
                             // Log The Notification
                             //nova("send", message);
                             // Send Message And Then
                             getAgentClient(speaker).sendString(message);
                             // Add Task To Waiters
-                            mPlayerTaskQueue.put(ident, this);
+                            mWaitingThreadQueue.put(ident, this);
                             // While The Task Waits
-                            while (mPlayerTaskQueue.containsKey(ident)
-                                    && mPlayerTaskQueue.containsValue(this)) {
+                            while (mWaitingThreadQueue.containsKey(ident)
+                                    && mWaitingThreadQueue.containsValue(this)) {
                                 try {
                                     // Print Information
                                     mVSM3Log.message("Enqueuing Task '" + ident + "'");
                                     // Wait For Notify
-                                    mPlayerTaskQueue.wait();
+                                    mWaitingThreadQueue.wait();
                                     // Print Information
                                     mVSM3Log.message("Notifying Task '" + ident + "'");
                                 } catch (Exception exc) {
@@ -267,13 +267,13 @@ public class ROBScenePlayer extends VSMScenePlayer {
                 final String time = matcher.group(5);
                 final String text = matcher.group(6);
                 // Get The Waiters Lock
-                synchronized (mPlayerTaskQueue) {
+                synchronized (mWaitingThreadQueue) {
                     // Print Information
                     mVSM3Log.message("Removing Task '" + task + "'");
                     // Remove The Task 
-                    mPlayerTaskQueue.remove(task);
+                    mWaitingThreadQueue.remove(task);
                     // Notify Waitings
-                    mPlayerTaskQueue.notifyAll();
+                    mWaitingThreadQueue.notifyAll();
                 }
             }
         } else {

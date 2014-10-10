@@ -153,7 +153,7 @@ public class IDManager {
                 String oldID = node.getId();
                 String newID = getNextFreeSuperNodeID();
                 //DEBUG
-                System.out.println("Supernode " + node.getName() + " has old id " + oldID + " gets " + newID);
+                //System.out.println("Supernode " + node.getName() + " has old id " + oldID + " gets " + newID);
                 node.setId(newID);
                 currentOldNewIDRef.put(oldID, newID);
                 Vector<Node> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
@@ -163,7 +163,7 @@ public class IDManager {
                 String oldID = node.getId();
                 String newID = getNextFreeNodeID();
                 //DEBUG
-                System.out.println("Node " + node.getName() + " has old id " + oldID + " gets " + newID);
+                //System.out.println("Node " + node.getName() + " has old id " + oldID + " gets " + newID);
                 node.setId(newID);
                 currentOldNewIDRef.put(oldID, newID);
             }
@@ -180,7 +180,7 @@ public class IDManager {
 
         for (String key : snm.keySet()) {
             // DEBUG
-            System.out.println("\treassign old start node id " + key + " to " + relationOldNewIDRef.get(key));
+            //System.out.println("\treassign old start node id " + key + " to " + relationOldNewIDRef.get(key));
             newSNM.put(relationOldNewIDRef.get(key), snm.get(key));
         }
 
@@ -199,7 +199,7 @@ public class IDManager {
 
         for (Node node : nodes) {
             if (node instanceof SuperNode) {
-                System.out.println("Checking start node IDs of super node " + node.getId());
+                //System.out.println("Checking start node IDs of super node " + node.getId());
 
                 HashMap<String, Node> newSNM = new HashMap<String, Node>();
                 SuperNode sn = (SuperNode) node;
@@ -208,7 +208,7 @@ public class IDManager {
 
                 for (String key : snm.keySet()) {
                     // DEBUG
-                    System.out.println("\treassign old start node id " + key + " to " + relationOldNewIDRef.get(key));
+                    //System.out.println("\treassign old start node id " + key + " to " + relationOldNewIDRef.get(key));
                     newSNM.put(relationOldNewIDRef.get(key), snm.get(key));
                 }
 

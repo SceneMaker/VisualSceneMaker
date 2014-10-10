@@ -47,7 +47,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     // The Query Handler
     protected VSMQueryHandler mQueryHandler;
     // The Waiting Tasks 
-    protected final HashMap<String, Task> mPlayerTaskQueue = new HashMap<>();
+    protected final HashMap<String, Thread> mWaitingThreadQueue = new HashMap<>();
     // The Agent Clients    
     protected HashMap<String, VSMAgentClient> mAgentClientMap = new HashMap<>();
 
@@ -168,7 +168,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             mVSM3Log.warning(exc.toString());
         }
         // Clear The Task Map
-        mPlayerTaskQueue.clear();
+        mWaitingThreadQueue.clear();
         // Clear The Agents Map
         mAgentClientMap.clear();
         // Print Debug Information
@@ -206,8 +206,8 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final HashMap<String, Task> getPlayerTaskQueue() {
-        return mPlayerTaskQueue;
+    public final HashMap<String, Thread> getWaitingThreadQueue() {
+        return mWaitingThreadQueue;
     }
 
     ////////////////////////////////////////////////////////////////////////////
