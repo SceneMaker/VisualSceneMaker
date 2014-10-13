@@ -9,7 +9,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -17,6 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 
 /**
  * @author Sergio Soto
@@ -31,33 +31,51 @@ public class DialogActAttributes extends Dialog {
     private JPanel      mButtonPanel;
     private JButton     mOkButton;
     private JButton     mCancelButton;
-    
+    private JPanel      mNamePanel;
+    private JLabel      mNameLabel;
+    private JTextField  mNameText;
+  
     
     DialogActInterface mDialogAct;
+    String mName;
 
-    public DialogActAttributes(DialogActInterface dialogAct) {
+    public DialogActAttributes(DialogActInterface dialogAct, String name) {
         super(Editor.getInstance(), "Dialog Act Attributes", true);
 
         mDialogAct = dialogAct;
+        mName = name;
         // Set the edge data
         // Init GUI-Components
         initComponents();
     }
 
     private void initComponents() {
+        
+        mNameLabel = new JLabel("Name: ");
+        mNameText  = new JTextField(10);
+        mNameText.setText(mName);
+        
+        mNamePanel = new JPanel();
+        mNamePanel.setLayout(new BoxLayout(mNamePanel, BoxLayout.X_AXIS));
+        
+        mNamePanel.add(mNameLabel);
+        mNamePanel.add(mNameText);
+                
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
         mMainPanel.add(Box.createRigidArea(new Dimension(15, 10)));
         
+        mMainPanel.add(mNamePanel);
+        
         for(String attribute: mDialogAct.getNLGAttributes()){
             createAttributePanel(attribute);
-             mMainPanel.add(mAttributePanel);
+            mMainPanel.add(mAttributePanel);
         }
 
         // Init button panel
         initButtonPanel();
         
  
-       // addCompoment(mMainPanel, 20, 40);
+       
         addCompoment(mButtonPanel, 320, 100);
         mMainPanel.add(Box.createRigidArea(new Dimension(15, 10)));
         packComponents(330, 150);

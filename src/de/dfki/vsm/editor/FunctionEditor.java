@@ -446,8 +446,9 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
     
      if (funDef != null) {       
             mSceneFlow.removeUsrCmdDef(funDef.getName());
+            launchFunctionCreatedEvent(funDef);   
             Editor.getInstance().update();
-            launchFunctionCreatedEvent(funDef);              
+                       
         }
     }   
     

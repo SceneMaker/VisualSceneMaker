@@ -1,12 +1,20 @@
 package de.dfki.vsm.runtime.player;
 
+import de.dfki.vsm.editor.event.SceneExecutedEvent;
+import de.dfki.vsm.editor.event.TurnExecutedEvent;;
 import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.model.script.SceneGroup;
+import de.dfki.vsm.model.script.SceneObject;
+import de.dfki.vsm.model.script.SceneScript;
+import de.dfki.vsm.model.script.SceneTurn;
 import de.dfki.vsm.runtime.Process;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.AbstractValue.Type;
+import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import static java.lang.Thread.sleep;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
@@ -67,14 +75,44 @@ public class DefaultDialogueActPlayer implements DialogueActPlayer {
         Task task = new Task(process.getName() + name) {
             @Override
             public void run() {
-
-                while (true) {
-
+                
+                
+                //while (true) {                    
+                //    // Exit If Interrupted
+                //    if (mIsDone) {
+                //        return;
+                //    }
+                //}
+           
+                final SceneScript script = mProject.getSceneScript();
+                final SceneGroup group = script.getSceneGroup(name);
+                final SceneObject scene = group.select();
+                // Scene Visualization
+                mLogger.message("Executing dialogAct:\r\n" + scene.getText());
+                EventCaster.getInstance().convey(new SceneExecutedEvent(this, scene));
+                
+                 // Process The Turns
+                for (SceneTurn turn : scene.getTurnList()) {
+                    // Turn Visualization
+                    mLogger.message("Executing turn:" + turn.getText());
+                    EventCaster.getInstance().convey(new TurnExecutedEvent(this, turn));
+                    // Get The Turn Speaker
+            
+                    // Count The Word Number
+                    int wordCount = 0;
+                    
+                    // Utterance Simulation 
+                    try {
+                        sleep(wordCount * 100);
+                    } catch (InterruptedException exc) {
+                        mLogger.warning(exc.toString());
+                    }
                     // Exit If Interrupted
                     if (mIsDone) {
                         return;
                     }
                 }
+
             }
         };
 

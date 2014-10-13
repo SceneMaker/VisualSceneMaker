@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor;
 
+import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
@@ -22,6 +23,7 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.script.SceneGroup;
 import de.dfki.vsm.model.script.SceneScript;
+import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -142,6 +144,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     
 
     private final ProjectData   mProject;
+    private final DialogActInterface mDialogAct;
 
     /**
      * ***********************************************************************
@@ -231,6 +234,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         //
         mSceneFlow = sceneFlow;        
         mProject = project;
+        mDialogAct = mProject.getDialogAct();
         setBorder(BorderFactory.createEmptyBorder());
         setCellRenderer(new CellRenderer());
         setBackground(Color.WHITE);
@@ -408,7 +412,19 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                             modifyFunctionAction(entry);
                         }
                     }
+                    
+                    else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
+                                    
+                        if (e.isPopupTrigger()) {
+                            
+                        }
+                        else if (e.getClickCount() == 2 && !e.isConsumed()) {
+                            TreeEntry entry = (TreeEntry) path.getLastPathComponent();
+                            modifyDialogAct(entry);
+                        }
+                    }
                 }
+                
 
                 if (showPopup) {
                     menu.show (tree, e.getX(), e.getY());
@@ -419,6 +435,16 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
                 mEventCaster.convey(ev);                             
             }
+
+            private void modifyDialogAct(TreeEntry entry) {
+                if (entry != null) {                    
+                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct,entry.getText());
+                    daAttributeDialog.run();
+                    
+                    
+                }
+           }
+            
         };
     }
     

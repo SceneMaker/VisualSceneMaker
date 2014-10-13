@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.project.ProjectData;
@@ -9,11 +10,14 @@ import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -32,12 +36,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -69,7 +72,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
     private final DialogActInterface mDialogAct;
 
     private final List<JList> mDAJLists;
-    private List<DialogAct> mDialogActList;
+    private final List<DialogAct> mDialogActList;
     
             
     public DialogActEditor(ProjectData project) {
@@ -111,17 +114,41 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
     
     private void initTitlePanel() {
         
+        JButton addButton;
+        
+        addButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/plus.png"));
+        addButton.setMaximumSize(new Dimension(20, 20));
+        addButton.setPreferredSize(new Dimension(20, 20));
+	addButton.setMinimumSize(new Dimension(20, 20));   
+        addButton.setBorder(BorderFactory.createEmptyBorder());
+        addButton.setOpaque(true);
+        addButton.setBackground(Color.GRAY);
+ 
+        
+        addButton.addActionListener(new ActionListener() {      
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                // Add new phase
+              
+            }
+        });
+        
         mDATitleLabel = new JLabel("DialogueActs & Phases");
         mDATitleLabel.setBackground(Color.DARK_GRAY);
         mDATitleLabel.setForeground(Color.WHITE);
         
         mDATitlePanel = new JPanel();
+        mDATitlePanel.setLayout(new BoxLayout(mDATitlePanel, BoxLayout.X_AXIS));
         mDATitlePanel.setBackground(Color.LIGHT_GRAY);
         mDATitlePanel.setMaximumSize(new Dimension(20000, 20)); // TODO: change that 2000 to actual width   
-        mDATitlePanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        mDATitlePanel.add(mDATitleLabel);
+        mDATitlePanel.add(Box.createRigidArea(new Dimension(10, 0)));       
         mDATitlePanel.setBackground(Color.DARK_GRAY);
         mDATitlePanel.setForeground(Color.WHITE);
+        
+        mDATitlePanel.add(mDATitleLabel);        
+        mDATitlePanel.add(Box.createHorizontalGlue());
+        mDATitlePanel.add(addButton);
     }
 
     private void loadDialogActs() {
@@ -143,15 +170,53 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
     /**
      *
      */
-    private JPanel loadPhase(String phase) {
+    private JPanel loadPhase(final String phase) {
         
         JPanel phaseContainer = new JPanel();
-        phaseContainer.setLayout(new BoxLayout(phaseContainer, BoxLayout.X_AXIS));
-        //phaseContainer.setBackground(Color.DARK_GRAY);
+        phaseContainer.setLayout(new BoxLayout(phaseContainer, BoxLayout.X_AXIS));           
         
-        JLabel phaseLabel = new JLabel(phase);
+        final JTextField phaseLabel = new JTextField(10);
+        phaseLabel.setText("  " + phase);
+        phaseLabel.setForeground(Color.black);
+        phaseLabel.setBorder(null);
+        phaseLabel.setEditable(false);
         phaseLabel.setOpaque(true);
-       // phaseLabel.setPreferredSize(new Dimension(110, 35));
+        phaseLabel.setMaximumSize(phaseLabel.getPreferredSize());
+        
+        phaseLabel.setForeground(Color.black);
+        
+        phaseLabel.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e){
+               if (e.getClickCount() == 2) {
+                        phaseLabel.setEditable(true);
+                             phaseLabel.setBackground(Color.white);
+                    
+   
+               }                      
+            }
+        });
+           
+        phaseLabel.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                phaseLabel.setEditable(false);
+                
+
+                if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==0){
+                    phaseLabel.setBackground(Color.LIGHT_GRAY); 
+                }
+                else{
+                    phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));            
+                }
+            }
+        });
+
                
         // Fill list with all dialog acts from this phase
         DefaultListModel dialogActListModel = new DefaultListModel();
@@ -170,30 +235,55 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         dialogActList.setOpaque(true);      
         dialogActList.setVisibleRowCount(3);
         dialogActList.setBorder(null);
-  
+        dialogActList.setFixedCellHeight(25);
+       // dialogActList.setFixedCellWidth(100);
         
-        if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==0){
-            phaseContainer.setBackground(Color.LIGHT_GRAY);
-            dialogActList.setBackground(Color.LIGHT_GRAY); 
-            phaseLabel.setBackground(Color.LIGHT_GRAY); 
-        }
-        else{
-            phaseContainer.setBackground(UIManager.getColor("TableHeader.background"));
-            dialogActList.setBackground(UIManager.getColor("TableHeader.background"));
-            phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));
-        }
-
+        
         JScrollPane listScrollPane = new JScrollPane(dialogActList);          
         listScrollPane.setPreferredSize(new Dimension(10,25*dialogActListModel.getSize()));      
         listScrollPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
         listScrollPane.setBorder(null);
         
         phaseLabel.setPreferredSize(new Dimension(110,25*dialogActListModel.getSize())); 
+        
+        JButton addButton;
+        addButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/plus.png"));
+        addButton.setPreferredSize(new Dimension(18,25*dialogActListModel.getSize()));           
+        addButton.setMinimumSize(new Dimension(18,25*dialogActListModel.getSize()));      
+        addButton.setMaximumSize(new Dimension(18,25*dialogActListModel.getSize()));      
+        addButton.setOpaque(true);
+        addButton.setBorder(BorderFactory.createEmptyBorder());
+        addButton.addActionListener(new ActionListener() {            
+            @Override
+            public void actionPerformed(ActionEvent e) {                      
+                // Add Dialog Act
+            }
+         });  
+        
+        
+                
+        if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==0){
+            phaseContainer.setBackground(Color.LIGHT_GRAY);
+            dialogActList.setBackground(Color.LIGHT_GRAY); 
+            phaseLabel.setBackground(Color.LIGHT_GRAY); 
+            addButton.setBackground(Color.LIGHT_GRAY.darker()); 
+        }
+        else{
+            phaseContainer.setBackground(UIManager.getColor("TableHeader.background"));
+            dialogActList.setBackground(UIManager.getColor("TableHeader.background"));
+            phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));       
+            addButton.setBackground(UIManager.getColor("TableHeader.background"));  
+            addButton.setBackground(UIManager.getColor("TableHeader.background").darker()); 
+        }
+
+        
+      //  phasePanel.setMaximumSize(new Dimension(20, 50));
       
         phaseContainer.add(listScrollPane);
-        phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
+        phaseContainer.add(addButton);
+        //phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
         phaseContainer.add(phaseLabel);
-        phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
+        //phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
         
         // set click listener for text areas
         dialogActList.addListSelectionListener(new ListSelectionListener() {
@@ -219,11 +309,12 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         });
         
         dialogActList.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent evt) {
                 JList list = (JList) evt.getSource();                
                 
                 if (evt.getClickCount() == 2) {                   
-                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct);
+                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct, dialogActList.getSelectedValue().toString());
                     daAttributeDialog.run();
                 }
             }
@@ -231,6 +322,8 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         
         return phaseContainer;
     }
+    
+    
     
     private String getAttributeSelectedValue(String atttribute) {
         // TODO
