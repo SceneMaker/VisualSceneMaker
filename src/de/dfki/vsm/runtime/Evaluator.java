@@ -1025,7 +1025,7 @@ public class Evaluator {
             // Invoke the method
             Method mthd = myClass.getMethod(cmdMethodName, paramClassList);
 
-            mLogger.message("Evaluator: Executing static Java method '" + mthd + argListStr + "'");
+            //mLogger.message("Evaluator: Executing static Java method '" + mthd + argListStr + "'");
             try {
                 // Release The Lock
                 mInterpreter.unlock();
@@ -1069,7 +1069,7 @@ public class Evaluator {
             // DEBUG
 
             // ATTENTION: This Lock was not released before
-            mLogger.message("Evaluator: Executing Java method '" + method + argListStr + "' on static object " + memberFieldObject);
+            //mLogger.message("Evaluator: Executing Java method '" + method + argListStr + "' on static object " + memberFieldObject);
             try {
                 // Release The Lock
                 mInterpreter.unlock();
