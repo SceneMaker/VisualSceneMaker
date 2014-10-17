@@ -48352,3 +48352,745 @@ Loading Style Policy:
   <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
 </StylePolicy>
 
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:243)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="TestProject"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.charamel.CMLScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:290)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="agent.1.host" val="127.0.0.1"/>
+  <Entry key="agent.1.name" val="Gloria"/>
+  <Entry key="agent.1.port" val="1001"/>
+  <Entry key="agent.1.uaid" val="1"/>
+  <Entry key="agent.2.host" val="127.0.0.1"/>
+  <Entry key="agent.2.name" val="Curtis"/>
+  <Entry key="agent.2.port" val="1002"/>
+  <Entry key="agent.2.uaid" val="1"/>
+  <Entry key="agents.count" val="2"/>
+  <Entry key="msslhost" val="127.0.0.1"/>
+  <Entry key="msslport" val="2003"/>
+  <Entry key="mssrconn" val="false"/>
+  <Entry key="mssrhost" val="127.0.0.1"/>
+  <Entry key="mssrport" val="3003"/>
+  <Entry key="nlufbase" val="./res/prj/test/test.nlu"/>
+  <Entry key="ssilhost" val="127.0.0.1"/>
+  <Entry key="ssilport" val="2001"/>
+  <Entry key="ssirconn" val="false"/>
+  <Entry key="ssirhost" val="127.0.0.1"/>
+  <Entry key="ssirport" val="3001"/>
+  <Entry key="swilbase" val="./res/prj/test/test.swi"/>
+  <Entry key="swilhost" val="127.0.0.1"/>
+  <Entry key="swilport" val="2002"/>
+  <Entry key="swirconn" val="false"/>
+  <Entry key="swirhost" val="127.0.0.1"/>
+  <Entry key="swirport" val="3002"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:445)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:541)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:495)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:345)
+Loading Sceneflow
+RobotPuzzle
+
+SEVERE to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.xml.XMLParseTools.parseFromXMLFile(XMLParseTools.java:73)
+java.lang.IllegalArgumentException: No enum constant de.dfki.vsm.model.script.ActionFeature.Type.
+
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:395)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+
+</SceneScript>
+
+INFO to LOGFILE on Fri Oct 17 10:52:24 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:243)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="TestProject"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.charamel.CMLScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:290)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.name" val="gloria"/>
+  <Entry key="vsm.agent.0.port" val="1001"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.name" val="curtis"/>
+  <Entry key="vsm.agent.1.port" val="1002"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agents.count" val="2"/>
+  <Entry key="vsm.swilbase" val="./res/prj/test/test.swi"/>
+  <Entry key="vsm.swilhost" val="127.0.0.1"/>
+  <Entry key="vsm.swilport" val="2002"/>
+  <Entry key="vsm.swirconn" val="false"/>
+  <Entry key="vsm.swirhost" val="127.0.0.1"/>
+  <Entry key="vsm.swirport" val="3002"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:445)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:541)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:495)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:345)
+Loading Sceneflow
+RobotPuzzle
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.xml.XMLParseTools.parseFromXMLFile(XMLParseTools.java:73)
+java.lang.IllegalArgumentException: No enum constant de.dfki.vsm.model.script.ActionFeature.Type.
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:395)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+
+</SceneScript>
+
+INFO to LOGFILE on Fri Oct 17 10:56:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:14 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="2" state="26" lower="6" upper="7" line="0" column="6">
+  @
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Fri Oct 17 10:56:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.script.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="2" state="26" lower="6" upper="7" line="0" column="6">
+  @
+</SyntaxDocToken>'
+
+INFO to LOGFILE on Fri Oct 17 10:56:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveActicon(ProjectData.java:470)
+Saving Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Oct 17 10:56:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveVisicon(ProjectData.java:560)
+Saving Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveGesticon(ProjectData.java:520)
+Saving Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneFlow(ProjectData.java:370)
+Saving Sceneflow
+RobotPuzzle
+
+INFO to LOGFILE on Fri Oct 17 10:56:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneScript(ProjectData.java:420)
+Saving Scenescript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="57" language="@@" identifier="Welcome">
+    <SceneTurn lower="18" upper="37" speaker="gloria">
+      <SceneUttr lower="26" upper="37" punct=".">
+        <SceneWord lower="26" upper="31" text="Hallo"/>
+        <SceneWord lower="32" upper="36" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="38" upper="57" speaker="curtis">
+      <SceneUttr lower="46" upper="57" punct=".">
+        <SceneWord lower="46" upper="51" text="Hallo"/>
+        <SceneWord lower="52" upper="56" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Oct 17 10:56:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveProjectConfig(ProjectData.java:265)
+Saving Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="TestProject"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.charamel.CMLScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:33 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.savePlayerConfig(ProjectData.java:315)
+Saving Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.name" val="gloria"/>
+  <Entry key="vsm.agent.0.port" val="1001"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.name" val="curtis"/>
+  <Entry key="vsm.agent.1.port" val="1002"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agents.count" val="2"/>
+  <Entry key="vsm.swilbase" val="./res/prj/test/test.swi"/>
+  <Entry key="vsm.swilhost" val="127.0.0.1"/>
+  <Entry key="vsm.swilport" val="2002"/>
+  <Entry key="vsm.swirconn" val="false"/>
+  <Entry key="vsm.swirhost" val="127.0.0.1"/>
+  <Entry key="vsm.swirport" val="3002"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 10:56:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+INFO to LOGFILE on Fri Oct 17 10:56:37 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+INFO to LOGFILE on Fri Oct 17 10:56:38 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+INFO to LOGFILE on Fri Oct 17 10:57:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveActicon(ProjectData.java:470)
+Saving Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Oct 17 10:57:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveVisicon(ProjectData.java:560)
+Saving Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:57:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveGesticon(ProjectData.java:520)
+Saving Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Oct 17 10:57:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneFlow(ProjectData.java:370)
+Saving Sceneflow
+RobotPuzzle
+
+INFO to LOGFILE on Fri Oct 17 10:57:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneScript(ProjectData.java:420)
+Saving Scenescript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="57" language="@@" identifier="Welcome">
+    <SceneTurn lower="18" upper="37" speaker="gloria">
+      <SceneUttr lower="26" upper="37" punct=".">
+        <SceneWord lower="26" upper="31" text="Hallo"/>
+        <SceneWord lower="32" upper="36" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="38" upper="57" speaker="curtis">
+      <SceneUttr lower="46" upper="57" punct=".">
+        <SceneWord lower="46" upper="51" text="Hallo"/>
+        <SceneWord lower="52" upper="56" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Oct 17 10:57:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveProjectConfig(ProjectData.java:265)
+Saving Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="TestProject"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.charamel.CMLScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 10:57:17 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.savePlayerConfig(ProjectData.java:315)
+Saving Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.name" val="gloria"/>
+  <Entry key="vsm.agent.0.port" val="1001"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.name" val="curtis"/>
+  <Entry key="vsm.agent.1.port" val="1002"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agents.count" val="2"/>
+  <Entry key="vsm.swilbase" val="./res/prj/test/test.swi"/>
+  <Entry key="vsm.swilhost" val="127.0.0.1"/>
+  <Entry key="vsm.swilport" val="2002"/>
+  <Entry key="vsm.swirconn" val="false"/>
+  <Entry key="vsm.swirhost" val="127.0.0.1"/>
+  <Entry key="vsm.swirport" val="3002"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:243)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="TestProject"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:290)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.name" val="gloria"/>
+  <Entry key="vsm.agent.0.port" val="1001"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.name" val="curtis"/>
+  <Entry key="vsm.agent.1.port" val="1002"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agents.count" val="2"/>
+  <Entry key="vsm.swilbase" val="./res/prj/test/test.swi"/>
+  <Entry key="vsm.swilhost" val="127.0.0.1"/>
+  <Entry key="vsm.swilport" val="2002"/>
+  <Entry key="vsm.swirconn" val="false"/>
+  <Entry key="vsm.swirhost" val="127.0.0.1"/>
+  <Entry key="vsm.swirport" val="3002"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:445)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Oct 17 11:00:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:541)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:495)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:03 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:345)
+Loading Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Fri Oct 17 11:00:04 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:395)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="57" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="18" upper="37" speaker="gloria">
+      <SceneUttr lower="26" upper="37" punct=".">
+        <SceneWord lower="26" upper="31" text="Hallo"/>
+        <SceneWord lower="32" upper="36" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="38" upper="57" speaker="curtis">
+      <SceneUttr lower="46" upper="57" punct=".">
+        <SceneWord lower="46" upper="51" text="Hallo"/>
+        <SceneWord lower="52" upper="56" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Oct 17 11:00:04 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+INFO to LOGFILE on Fri Oct 17 11:00:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveActicon(ProjectData.java:470)
+Saving Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Oct 17 11:00:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveVisicon(ProjectData.java:560)
+Saving Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveGesticon(ProjectData.java:520)
+Saving Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneFlow(ProjectData.java:370)
+Saving Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Fri Oct 17 11:00:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneScript(ProjectData.java:420)
+Saving Scenescript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Oct 17 11:00:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveProjectConfig(ProjectData.java:265)
+Saving Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="TestProject"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Oct 17 11:00:41 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.savePlayerConfig(ProjectData.java:315)
+Saving Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.name" val="gloria"/>
+  <Entry key="vsm.agent.0.port" val="1001"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.name" val="curtis"/>
+  <Entry key="vsm.agent.1.port" val="1002"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agents.count" val="2"/>
+  <Entry key="vsm.swilbase" val="./res/prj/test/test.swi"/>
+  <Entry key="vsm.swilhost" val="127.0.0.1"/>
+  <Entry key="vsm.swilport" val="2002"/>
+  <Entry key="vsm.swirconn" val="false"/>
+  <Entry key="vsm.swirhost" val="127.0.0.1"/>
+  <Entry key="vsm.swirport" val="3002"/>
+</PlayerConfig>
+
+
+WARNING to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadScenePlayer(ProjectData.java:626)
+java.lang.NoSuchMethodException: de.dfki.vsm.api.VSMScenePlayer.getInstance(de.dfki.vsm.model.project.ProjectData)
+
+WARNING to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadScenePlayer(ProjectData.java:636)
+java.lang.NoSuchMethodException: de.dfki.vsm.api.VSMScenePlayer.getInstance()
+
+WARNING to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadScenePlayer(ProjectData.java:646)
+java.lang.NoSuchMethodException: de.dfki.vsm.api.VSMScenePlayer.<init>(de.dfki.vsm.model.project.ProjectData)
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:90)
+Executing scene:
+scene_@@ HelloWorld:
+gloria: Hallo Welt.
+curtis: Hallo Welt.
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:95)
+Executing turn:gloria: Hallo Welt.
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:107)
+Executing utterance: Hallo Welt.
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:113)
+Executing vocable:Welt
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:95)
+Executing turn:curtis: Hallo Welt.
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:107)
+Executing utterance: Hallo Welt.
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:113)
+Executing vocable:Hallo
+
+INFO to LOGFILE on Fri Oct 17 11:00:42 CEST 2014 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[N11HelloWorld,6,main] at de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer$1.run(DefaultSceneGroupPlayer.java:113)
+Executing vocable:Welt
+

@@ -7,7 +7,7 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public interface DialogueActPlayer extends Plugin{
+public interface DialogueActPlayer extends Plugin {
 
     // A Single Task Of The Scene Player
     public static class Task extends Thread {
