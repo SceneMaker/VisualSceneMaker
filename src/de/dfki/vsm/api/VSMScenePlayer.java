@@ -7,7 +7,6 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.Environment;
 import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.runtime.player.SceneGroupPlayer;
-import de.dfki.vsm.runtime.player.SceneGroupPlayer.Task;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
@@ -21,7 +20,6 @@ import java.util.Map;
  * @author Gregor Mehlmann
  */
 public abstract class VSMScenePlayer implements SceneGroupPlayer {
-
     // The VSM Runtime Environment
     protected final RunTime mVSM3RunTime
             = RunTime.getInstance();
@@ -73,13 +71,13 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         // Print Debug Information
         mVSM3Log.message("Launching Generic Player");
         // Initialize The Properties
-        final String numagent = mPlayerConfig.property("agents.count");
+        final String numagent = mPlayerConfig.property("vsm.agent.number");
         for (int i = 0; i < Integer.parseInt(numagent); i++) {
             // Get Agent's Name, Host And Port
-            final String name = mPlayerConfig.property("agent." + i + ".name");
-            final String uaid = mPlayerConfig.property("agent." + i + ".uaid");
-            final String host = mPlayerConfig.property("agent." + i + ".host");
-            final String port = mPlayerConfig.property("agent." + i + ".port");
+            final String name = mPlayerConfig.property("vsm.agent." + i + ".name");
+            final String uaid = mPlayerConfig.property("vsm.agent." + i + ".uaid");
+            final String host = mPlayerConfig.property("vsm.agent." + i + ".host");
+            final String port = mPlayerConfig.property("vsm.agent." + i + ".port");
             // Print Out The Properties
             mVSM3Log.message(""
                     + "Agent-Name:" + name + "\r\n"
@@ -96,12 +94,12 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             mVSM3Log.message("Starting Agent '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
         }
         // Initialize The Properties
-        final String swilhost = mPlayerConfig.property("swilhost");
-        final String swilport = mPlayerConfig.property("swilport");
-        final String swirhost = mPlayerConfig.property("swirhost");
-        final String swirport = mPlayerConfig.property("swirport");
-        final String swirconn = mPlayerConfig.property("swirconn");
-        final String swilbase = mPlayerConfig.property("swilbase");
+        final String swilhost = mPlayerConfig.property("vsm.swilhost");
+        final String swilport = mPlayerConfig.property("vsm.swilport");
+        final String swirhost = mPlayerConfig.property("vsm.swirhost");
+        final String swirport = mPlayerConfig.property("vsm.swirport");
+        final String swirconn = mPlayerConfig.property("vsm.swirconn");
+        final String swilbase = mPlayerConfig.property("vsm.swilbase");
         // Print Out The Properties
         mVSM3Log.message(""
                 + "SWI-Local-Host :" + swilhost + "\r\n"
