@@ -10,6 +10,7 @@ import de.dfki.vsm.runtime.player.SceneGroupPlayer;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
+import de.dfki.vsm.util.jpl.JPLUtility;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.log.LOGNovaFileLogger;
 import de.dfki.vsm.util.log.LOGSSISockLogger;
@@ -236,9 +237,9 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
                 for (Map.Entry<String, String> entry : subst.entrySet()) {
                     try {
                         environment.write(entry.getKey(),
-                                new StringValue(entry.getValue()));
+                                new StringValue(JPLUtility.convert(entry.getValue())));
                         // Print Some Information
-                        //System.err.println(entry.getKey() + "->" + entry.getValue());
+                        System.err.println(entry.getKey() + "->" + entry.getValue());
                     } catch (Exception exc) {
                         // Print Debug Information
                         mVSM3Log.failure(exc.toString());
