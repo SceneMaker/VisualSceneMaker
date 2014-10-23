@@ -136,6 +136,12 @@
         <java classname="de.dfki.vsm.DefaultEditor" fork="true">
             <classpath refid="clspath"/>
         </java>
+    </target>  
+     <!-- Execute Project -->
+    <target name="test">
+        <java classname="de.dfki.vsm.test.TestFSRConvert" fork="true">
+            <classpath refid="clspath"/>
+        </java>
     </target>   
     <!-- Scanner Generation -->
     <target name="-lexxer">
