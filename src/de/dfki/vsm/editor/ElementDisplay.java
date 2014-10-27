@@ -118,7 +118,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
     private final TreeEntry mRootEntry = new TreeEntry("SceneFlow", sROOT_FOLDER, null);
     private final TreeEntry mBasicEntry = new TreeEntry("Elements", null, null);
-    //private final TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
+    private final TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
     private ArrayList<TreeEntry> mSceneListEntry = new ArrayList<TreeEntry>();
     private final TreeEntry mFunDefEntry = new TreeEntry("Functions", null, null);    
     private final TreeEntry mDAEntry        = new TreeEntry("DialogActs", null, null);
@@ -208,7 +208,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 launchFunctionSelectedEvent(selectedDef);
             }
             
-             else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
+            else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
                 // Do nothing
             }
             
@@ -321,10 +321,12 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         mBasicEntry.add(mCommentEntry);
         //
         mRootEntry.add(mBasicEntry);
-        //mRootEntry.add(mSceneEntry);
-        for(int i = 0; i < mSceneListEntry.size(); i++) {
-            mRootEntry.add(mSceneListEntry.get(i));
-        }
+        mRootEntry.add(mSceneEntry);
+//        TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
+//        mSceneListEntry.add(mSceneEntry);
+//        for(int i = 0; i < mSceneListEntry.size(); i++) {
+//            mRootEntry.add(mSceneListEntry.get(i));
+//        }
         mRootEntry.add(mFunDefEntry);        
         mRootEntry.add(mDAEntry);
         //
@@ -347,9 +349,13 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      */
     private void updateScenes(ProjectData project) {
         //
+        //System.out.println("Updating Scenes");
         for(int i = 0 ; i < mSceneListEntry.size(); i++) {
             mSceneListEntry.get(i).removeAllChildren();
+            //System.out.println("Getting:" + mSceneListEntry.get(i).getText());
+            
             if(mSceneListEntry.get(i).isNodeChild(mRootEntry)) {
+                //System.out.println("Removing: " + mSceneListEntry.get(i).getText());
                 mRootEntry.remove(mSceneListEntry.get(i));
             }
         }
@@ -357,48 +363,54 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         //
         SceneScript sceneScript = project.getSceneScript();
         if (sceneScript != null) {
-            for (SceneGroup group : sceneScript.getOrderedGroupSet().descendingSet()) {
-                ArrayList<SceneObject> whiteList = group.getWhiteList();
-                ArrayList<SceneObject> blackList = group.getBlackList();
-                ArrayList<String> languageList = new ArrayList<String>();
-                
-                for(SceneObject scene : whiteList) {
-                    //System.out.println("White List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
-                    if(!languageList.contains(scene.getLanguage())) {
-                        languageList.add(scene.getLanguage());
-                        TreeEntry sceneEntry = getSceneEntry(scene.getLanguage());
-                        // Add new scene language to the root entry
-                        if(sceneEntry == null) {
-                            sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
-                            sceneEntry.add(new TreeEntry(scene.getName(), null, group));
-                            mSceneListEntry.add(sceneEntry);
-                            mRootEntry.add(sceneEntry);
-                        }
+            if(sceneScript.getSceneListSize() > 0) {
+                for (SceneGroup group : sceneScript.getOrderedGroupSet().descendingSet()) {
+                    ArrayList<SceneObject> whiteList = group.getWhiteList();
+                    ArrayList<SceneObject> blackList = group.getBlackList();
+                    ArrayList<String> languageList = new ArrayList<String>();
+                    
+                    if(mRootEntry.isNodeDescendant(mSceneEntry)) {
+                        mRootEntry.remove(mSceneEntry);
+                    }
 
-                        else {
-                            sceneEntry.add(new TreeEntry(scene.getName(), null, group)); //PG: added a space before the number cnt of scenes in scenegroup for better readability
+                    for(SceneObject scene : whiteList) {
+                        //System.out.println("White List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                        if(!languageList.contains(scene.getLanguage())) {
+                            languageList.add(scene.getLanguage());
+                            TreeEntry sceneEntry = getSceneEntry(scene.getLanguage());
+                            // Add new scene language to the root entry
+                            if(sceneEntry == null) {
+                                sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group));
+                                mSceneListEntry.add(sceneEntry);
+                                mRootEntry.add(sceneEntry);
+                            }
+
+                            else {
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group)); //PG: added a space before the number cnt of scenes in scenegroup for better readability
+                            }
                         }
                     }
-                }
-                
-                for(SceneObject scene : blackList) {
-                    //System.out.println("Black List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
-                    if(!languageList.contains(scene.getLanguage())) {
-                        languageList.add(scene.getLanguage());
-                        TreeEntry sceneEntry = getSceneEntry(scene.getLanguage());
-                        // Add new scene language to the root entry
-                        if(sceneEntry == null) {
-                            sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
-                            sceneEntry.add(new TreeEntry(scene.getName(), null, group));
-                            mSceneListEntry.add(sceneEntry);
-                            mRootEntry.add(sceneEntry);
-                        }
 
-                        else {
-                            sceneEntry.add(new TreeEntry(scene.getName(), null, group)); //PG: added a space before the number cnt of scenes in scenegroup for better readability
+                    for(SceneObject scene : blackList) {
+                        //System.out.println("Black List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                        if(!languageList.contains(scene.getLanguage())) {
+                            languageList.add(scene.getLanguage());
+                            TreeEntry sceneEntry = getSceneEntry(scene.getLanguage());
+                            // Add new scene language to the root entry
+                            if(sceneEntry == null) {
+                                sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group));
+                                mSceneListEntry.add(sceneEntry);
+                                mRootEntry.add(sceneEntry);
+                            }
+
+                            else {
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group)); //PG: added a space before the number cnt of scenes in scenegroup for better readability
+                            }
                         }
                     }
-                }
+               }    
            }
         }
         //
