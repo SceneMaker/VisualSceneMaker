@@ -239,7 +239,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
                         environment.write(entry.getKey(),
                                 new StringValue(JPLUtility.convert(entry.getValue())));
                         // Print Some Information
-                        System.err.println(entry.getKey() + "->" + entry.getValue());
+                        //System.err.println(entry.getKey() + "->" + entry.getValue());
                     } catch (Exception exc) {
                         // Print Debug Information
                         mVSM3Log.failure(exc.toString());
