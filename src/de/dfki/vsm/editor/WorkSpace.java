@@ -1113,7 +1113,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
 //      showVariablesOnWorkSpace(superNode);
         // Update the workspace
-        mGridManager.normalizeGridWeight();
+        //mGridManager.normalizeGridWeight();
         revalidate();
         repaint();
     }
@@ -1188,7 +1188,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
         showVariableBadge();
-        mGridManager.normalizeGridWeight();
+        //mGridManager.normalizeGridWeight();
 
         // Update the workspace
         revalidate();
