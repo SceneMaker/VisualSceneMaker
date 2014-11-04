@@ -4,6 +4,8 @@ import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import de.dfki.vsm.editor.event.SceneSelectedEvent;
+import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import static de.dfki.vsm.editor.util.Preferences.sBASICNODE_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sCEDGE_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sCOMMENT_ENTRY;
@@ -20,6 +22,7 @@ import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.script.SceneGroup;
+import de.dfki.vsm.model.script.SceneObject;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
@@ -40,7 +43,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -49,9 +54,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 
 ///***************************************************************************
@@ -103,12 +111,14 @@ import javax.swing.tree.TreePath;
  *
  ***************************************************************************
  */
-class ElementTree extends JTree implements Observer, EventListener, ActionListener { 
+class ElementTree extends JTree implements Observer, EventListener, ActionListener, TreeSelectionListener { 
 
     private final TreeEntry mRootEntry = new TreeEntry("SceneFlow", sROOT_FOLDER, null);
     private final TreeEntry mBasicEntry = new TreeEntry("Elements", null, null);
     private final TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
-    private final TreeEntry mFunDefEntry = new TreeEntry("Functions", null, null);
+    private ArrayList<TreeEntry> mSceneListEntry = new ArrayList<TreeEntry>();
+    private final TreeEntry mFunDefEntry = new TreeEntry("Functions", null, null);    
+    private final TreeEntry mDAEntry        = new TreeEntry("DialogActs", null, null);
     private final TreeEntry mSuperNodeEntry = new TreeEntry("Super Node", sSUPERNODE_ENTRY, Node.Type.SuperNode);
     private final TreeEntry mBasicNodeEntry = new TreeEntry("Basic Node", sBASICNODE_ENTRY, Node.Type.BasicNode);
     private final TreeEntry mEEdgeEntry = new TreeEntry("Epsilon Edge", sEEDGE_ENTRY, new Edge(Edge.TYPE.EEDGE));
@@ -124,6 +134,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     private final JMenuItem functionRemove = new JMenuItem("Remove");
     
     private final SceneFlow mSceneFlow;
+    private final ScriptEditorPanel mScriptEditorPanel;
   
     // Drag & Drop support
     private DragSource mDragSource;
@@ -135,6 +146,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     private final EventCaster mEventCaster = EventCaster.getInstance();
     //private final EventCaster mEventMulticaster = EventCaster.getInstance();
     // private final Observable mObservable = new Observable();
+    
+
+    private final ProjectData   mProject;
 
     /**
      * ***********************************************************************
@@ -175,6 +189,35 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         // Update the visual appearance of the ElementTree
         updateUI();
         throw new Error();
+    }
+    
+    @Override
+    public void valueChanged(TreeSelectionEvent e) {
+        TreePath path = e.getPath();
+        int pathCount = path.getPathCount();
+        
+        if (pathCount == 3) {
+            TreePath parentPath = path.getParentPath();
+            if (parentPath.getLastPathComponent().equals(mFunDefEntry)) {
+                mScriptEditorPanel.getTabPane().setSelectedIndex(1);
+                FunDef selectedDef =  (FunDef)((TreeEntry) path.getLastPathComponent()).getData();                        
+                launchFunctionSelectedEvent(selectedDef);
+            }
+            
+            else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
+                // Do nothing
+            }
+            
+            else {
+                mScriptEditorPanel.getTabPane().setSelectedIndex(0);
+                String sceneLanguageSelect = ((TreeEntry)parentPath.getLastPathComponent()).getText();
+                //System.out.println("Language: " + sceneLanguageSelect);
+                SceneGroup selectedScene = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();
+                //System.out.println("Scene is: " + selectedScene.getName());
+                launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);
+            }
+        }
+        
     }
 
     /**
@@ -219,10 +262,12 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *************************************************************************
      */
-    public ElementTree(SceneFlow sceneFlow) {
+    public ElementTree(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
         super(new DefaultTreeModel(null));
         //
         mSceneFlow = sceneFlow;
+        mScriptEditorPanel = scriptEditor;
+        mProject = project;
         setBorder(BorderFactory.createEmptyBorder());
         setCellRenderer(new CellRenderer());
         setBackground(Color.WHITE);
@@ -272,13 +317,22 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         //
         mRootEntry.add(mBasicEntry);
         mRootEntry.add(mSceneEntry);
-        mRootEntry.add(mFunDefEntry);
+//        TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
+//        mSceneListEntry.add(mSceneEntry);
+//        for(int i = 0; i < mSceneListEntry.size(); i++) {
+//            mRootEntry.add(mSceneListEntry.get(i));
+//        }
+        mRootEntry.add(mFunDefEntry);        
+        mRootEntry.add(mDAEntry);
         //
         ((DefaultTreeModel) getModel()).setRoot(mRootEntry);
         
         functionsAdd.addActionListener(this);
         functionModify.addActionListener(this);
         functionRemove.addActionListener(this);
+        
+        getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        addTreeSelectionListener(this);
     }
 
     /**
@@ -290,17 +344,74 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      */
     private void updateScenes(ProjectData project) {
         //
-        mSceneEntry.removeAllChildren();
+        //System.out.println("Updating Scenes");
+        for(int i = 0 ; i < mSceneListEntry.size(); i++) {
+            mSceneListEntry.get(i).removeAllChildren();
+            //System.out.println("Getting:" + mSceneListEntry.get(i).getText());
+            
+            if(mSceneListEntry.get(i).isNodeChild(mRootEntry)) {
+                //System.out.println("Removing: " + mSceneListEntry.get(i).getText());
+                mRootEntry.remove(mSceneListEntry.get(i));
+            }
+        }
+
         //
         SceneScript sceneScript = project.getSceneScript();
         if (sceneScript != null) {
-            for (SceneGroup group : sceneScript.getOrderedGroupSet().descendingSet()) {
-                mSceneEntry.add(new TreeEntry(group.getName() + " (" + group.getSize() + ")", null, group)); //PG: added a space before the number cnt of scenes in scenegroup for better readability
-            }
+            if(sceneScript.getSceneListSize() > 0) {
+                for (SceneGroup group : sceneScript.getOrderedGroupSet().descendingSet()) {
+                    ArrayList<SceneObject> whiteList = group.getWhiteList();
+                    ArrayList<SceneObject> blackList = group.getBlackList();
+                    ArrayList<String> languageList = new ArrayList<String>();
+                    
+                    if(mRootEntry.isNodeDescendant(mSceneEntry)) {
+                        mRootEntry.remove(mSceneEntry);
+                    }
+
+                    for(SceneObject scene : whiteList) {
+                        //System.out.println("White List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                        if(!languageList.contains(scene.getLanguage())) {
+                            languageList.add(scene.getLanguage());
+                            TreeEntry sceneEntry = getSceneEntry(scene.getLanguage());
+                            // Add new scene language to the root entry
+                            if(sceneEntry == null) {
+                                sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group));
+                                mSceneListEntry.add(sceneEntry);
+                                mRootEntry.add(sceneEntry);
+                            }
+
+                            else {
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group)); //PG: added a space before the number cnt of scenes in scenegroup for better readability
+                            }
+                        }
+                    }
+
+                    for(SceneObject scene : blackList) {
+                        //System.out.println("Black List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                        if(!languageList.contains(scene.getLanguage())) {
+                            languageList.add(scene.getLanguage());
+                            TreeEntry sceneEntry = getSceneEntry(scene.getLanguage());
+                            // Add new scene language to the root entry
+                            if(sceneEntry == null) {
+                                sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group));
+                                mSceneListEntry.add(sceneEntry);
+                                mRootEntry.add(sceneEntry);
+                            }
+
+                            else {
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group)); //PG: added a space before the number cnt of scenes in scenegroup for better readability
+                            }
+                        }
+                    }
+               }    
+           }
         }
         //
         expandAll();
     }
+  
     
     /**
      * ***********************************************************************
@@ -355,7 +466,18 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                             modifyFunctionAction(entry);
                         }
                     }
+                    
+                    else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
+                                    
+                        if (e.isPopupTrigger()) {
+                            
+                        }
+                        else if (e.getClickCount() == 2 && !e.isConsumed()) {
+                            TreeEntry entry = (TreeEntry) path.getLastPathComponent();
+                        }
+                    }
                 }
+                
 
                 if (showPopup) {
                     menu.show (tree, e.getX(), e.getY());
@@ -366,6 +488,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
                 mEventCaster.convey(ev);                             
             }
+
+                        
         };
     }
     
@@ -492,6 +616,12 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
         mEventCaster.convey(ev);                    
     } 
+    
+    private void launchSceneSelectedEvent(SceneGroup sceneGroup, String sceneLanguage) {
+        SceneSelectedEvent ev = new SceneSelectedEvent(this, sceneGroup);
+        ev.setLanguage(sceneLanguage);
+        mEventCaster.convey(ev);
+    }
             
     /**
      * ***********************************************************************
@@ -520,6 +650,27 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         // Set the default drag gesture recognizer
         mDragSource.createDefaultDragGestureRecognizer(this, mAcceptableDnDActions, mDragGestureListener);
     }
+    
+    public boolean isSceneLanguageAlreadyExist(String language) {
+        boolean isLang = false;
+        for(int i = 0; i < mSceneListEntry.size(); i++) {
+            if(mSceneListEntry.get(i).getText().equals("Scenes (" + language + ")")) {
+                isLang = true;
+            }
+        }
+        return isLang;
+    }
+    
+    public TreeEntry getSceneEntry(String language) {
+        for(int i = 0; i < mSceneListEntry.size(); i++) {
+//            System.out.println("Compare: " + mSceneListEntry.get(i).getText() + 
+//                    " with " + "Scenes (" + language + ")");
+            if(mSceneListEntry.get(i).getText().equals("Scenes (" + language + ")")) {
+                return mSceneListEntry.get(i);
+            }
+        }
+        return null;
+    }
 }
 
 /**
@@ -535,6 +686,7 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventMulticaster = EventCaster.getInstance();
     private final ElementTree mElementTree;
+    private final ScriptEditorPanel mScriptEditor;
 
     private class Observable extends java.util.Observable {
 
@@ -553,8 +705,11 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
 
     private void updateFunctionList(){
         mElementTree.updateFunDefs();
+        
+       
     }
-   
+
+     
     @Override
     public void update(EventObject event) {       
     }
@@ -563,9 +718,9 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
         return mElementTree;
     }
 
-    public ElementDisplay(SceneFlow sceneFlow) {
-        
-        mElementTree = new ElementTree(sceneFlow);
+    public ElementDisplay(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
+        mScriptEditor = scriptEditor;     
+        mElementTree = new ElementTree(sceneFlow, project, mScriptEditor);
         mObservable.addObserver(mElementTree);
         //
         setBackground(Color.WHITE);

@@ -11,6 +11,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -20,6 +21,11 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.font.TextAttribute;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -32,7 +38,7 @@ import javax.swing.text.html.HTMLEditorKit;
  * @author Patrick Gebhard
  * @author Gregor Mehlmann
  */
-public class Comment extends JComponent implements EventListener, MouseListener, MouseMotionListener {
+public class Comment extends JComponent implements EventListener, Observer, MouseListener, MouseMotionListener {
 
     private WorkSpace mWorkSpace;
     private ProjectPreferences mPreferences;
@@ -58,6 +64,8 @@ public class Comment extends JComponent implements EventListener, MouseListener,
     private Point mLastMousePosition = new Point(0, 0);
     // edit
     private boolean mEditMode = false;
+    
+
 
     public Comment() {
         mDataComment = null;
@@ -110,13 +118,47 @@ public class Comment extends JComponent implements EventListener, MouseListener,
     }
 
     public void update(EventObject event) {
-//      System.err.println("Updating comment" + this);
+        
+   
+     
+//    System.err.println("Updating comment" + this);
 //    mFont = new Font("SansSerif", Font.PLAIN, /*(mWorkSpace != null) ?*/ sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
 //    String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
 //    ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
 //
 //    repaint();
     }
+    
+     /**
+     * 
+     * 
+     */
+    @Override
+    public void update(Observable o, Object obj) {
+        
+       update();
+      
+    }
+    
+     public void update() {
+        
+        mFont = new Font("SansSerif", Font.ITALIC, mPreferences.sWORKSPACEFONTSIZE);        
+        mTextLabel.setFont(mFont);
+        mTextEditor.setFont(mFont);
+        
+       String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
+       ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
+       
+       mDataComment.setHTMLText(mTextEditor.getText());
+               
+        mTextEditor.setText(mDataComment.getHTMLText());
+        mTextLabel.setText(mTextEditor.getText());
+                
+        repaint();
+      
+    }
+    
+   
 
     public String getDescription() {
         return toString();
@@ -283,6 +325,7 @@ public class Comment extends JComponent implements EventListener, MouseListener,
         mDragged = false;
         mResizing = false;
         repaint();
+        update();
     }
 
     public synchronized void updateLocation(Point mouseMovementVector) {

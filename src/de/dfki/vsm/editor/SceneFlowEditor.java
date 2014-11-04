@@ -3,6 +3,7 @@
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
+import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.ProjectData;
@@ -71,6 +72,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     private final ElementEditor mElementEditor;
     private final JLabel mFooterLabel;
     private final JSplitPane mSplitPane;
+    private final ScriptEditorPanel mScriptEditorPanel;
 
     /**
      * *************************************************************************
@@ -198,8 +200,10 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     public final SceneFlowToolBar getToolBar() {
         return mToolBar;
     }
-    //
-    public SceneFlowEditor(SceneFlow sceneFlow, ProjectData project) {
+   
+    public SceneFlowEditor(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
+        
+        mScriptEditorPanel = scriptEditor;
         
         final Polygon pUp = new Polygon();
         pUp.addPoint(1, 4);
@@ -260,7 +264,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 //        JScrollPane wssp = new JScrollPane(w);
         // The west component is the workbar
         mFooterLabel = new JLabel();
-        mElementDisplay = new ElementDisplay(sceneFlow);
+        mElementDisplay = new ElementDisplay(sceneFlow, mProject, mScriptEditorPanel);
         mElementEditor = new ElementEditor();
         mToolBar = new SceneFlowToolBar(this, mProject);
         mToolBar.addPathComponent(mSceneFlow.getName());
