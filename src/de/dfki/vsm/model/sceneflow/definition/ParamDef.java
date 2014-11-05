@@ -50,7 +50,7 @@ public class ParamDef extends Object {
         }
 
         // remove the leading 'L' and first appearance of ';'
-        if (pretty.startsWith("L")) {
+        if ((pretty.startsWith("L"))&&(!pretty.equals("Locale"))) {
           pretty = pretty.substring(1);
 
           int semicolonIndex = pretty.indexOf(';');
