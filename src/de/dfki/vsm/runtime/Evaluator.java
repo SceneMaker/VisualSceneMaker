@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime;
 
+import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
@@ -52,7 +53,9 @@ import de.dfki.vsm.runtime.value.ObjectValue;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
 import de.dfki.vsm.runtime.value.AbstractValue;
+import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.tpl.TPLTuple;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -392,13 +395,19 @@ public class Evaluator {
                     throw new RunTimeException(exp,
                             "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            }//
+            }
             ////////////////////////////////////////////////////////////////////
             // OPERATOR AddFirst
             ////////////////////////////////////////////////////////////////////
             else if (operator == BinaryExp.Operator.AddFirst) {
                 if (left instanceof ListValue) {
-                    ((ListValue) left).getValueList().addFirst(right);
+                    // Convert The Left Expression
+                    final ListValue listValue = (ListValue) left;
+                    // Get The Java List From Value  
+                    final LinkedList<AbstractValue> list = listValue.getValueList();
+                    // Add The Abstract Value Here
+                    list.addFirst(right);
+                    //
                     return left;
                 } else {
                     throw new RunTimeException(exp,
@@ -434,6 +443,8 @@ public class Evaluator {
             else if (operator == BinaryExp.Operator.Remove) {
                 if (left instanceof ListValue && right instanceof IntValue) {
                     return ((ListValue) left).getValueList().remove(((IntValue) right).getValue().intValue());
+                    
+                    
                 } else {
                     throw new RunTimeException(exp,
                             "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
