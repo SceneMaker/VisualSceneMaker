@@ -6,6 +6,6 @@
   <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
   <Entry key="project.data.scenes" val="scenes.xml"/>
   <Entry key="project.data.visicon" val="visicon.xml"/>
-  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMDefaultPlayer"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMDefaultPlayer"/>  
   <Entry key="project.player.config" val="player.xml"/>
 </ProjectConfig>
