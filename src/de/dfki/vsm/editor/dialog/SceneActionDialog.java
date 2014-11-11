@@ -271,7 +271,7 @@ public class SceneActionDialog extends JDialog {
         argListPanel.add(Box.createHorizontalGlue());
 
         argAddPanel.setLayout(new BoxLayout(argAddPanel, BoxLayout.X_AXIS));
-        JButton addButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/plus.png"));
+        JButton addButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/minus.png"));
         addButton.setMinimumSize(new Dimension(20, 20));
         addButton.setMaximumSize(new Dimension(20, 20));
         addButton.setPreferredSize(new Dimension(20, 20));

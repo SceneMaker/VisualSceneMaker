@@ -203,7 +203,6 @@ public final class Node extends JComponent implements EventListener, Observer {
      */
     @Override
     public void update(Observable o, Object obj) {
-
         // mLogger.message("Node.update(" + obj + ")");
         update();
     }
@@ -224,7 +223,7 @@ public final class Node extends JComponent implements EventListener, Observer {
             mAltStartSign.update();
         }
 
-        /////////////////////////////////////
+        /////////////////////////////////////font
         // mLogger.message("Node.update()");
         mIsEndNode = (!mDataNode.hasEdge())
                      ? true

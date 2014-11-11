@@ -63,6 +63,7 @@ public class ProjectData implements Serializable {
     private final File mProjectBaseFile;
     private final File mProjectDirFile;
     private String mProjectFileName;
+
     private String mProjectDirPath;
     private String mProjectPathName;
     private String mProjectFullFileName;
@@ -609,22 +610,27 @@ public class ProjectData implements Serializable {
     public final synchronized void loadDialogueActPlayer() {
         // Up to you Sergio ...
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void loadScenePlayer() {
+    
+     public final synchronized void loadScenePlayer() {
         // Try to load the plugin
         SceneGroupPlayer player = null;
-
-        if (player == null) {
-            try {
+        
+          if (player == null) {
+            try {               
                 Class playerClass = Class.forName(mScenePlayerClassName);
-                Method methodone = playerClass.getMethod("getInstance", ProjectData.class);
-                player = (SceneGroupPlayer) methodone.invoke(null, this);
+                player = (SceneGroupPlayer) playerClass.getConstructor(ProjectData.class).newInstance(this);                
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
-                exc.printStackTrace();
+            }
+        }
+                  
+        if (player == null) {
+            try {                
+                Class playerClass = Class.forName(mScenePlayerClassName);
+                Method methodone = playerClass.getMethod("getInstance", ProjectData.class);
+                player = (SceneGroupPlayer) methodone.invoke(null, this);              
+            } catch (Exception exc) {
+                mLogger.warning(exc.toString());
             }
         }
         if (player == null) {
@@ -634,27 +640,17 @@ public class ProjectData implements Serializable {
                 player = (SceneGroupPlayer) methodtwo.invoke(null);
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
-                exc.printStackTrace();
             }
         }
-        if (player == null) {
-            try {
-                Class playerClass = Class.forName(mScenePlayerClassName);
-                Constructor constructor = playerClass.getConstructor(ProjectData.class);
-                mScenePlayer = (SceneGroupPlayer) constructor.newInstance(this);
-            } catch (Exception exc) {
-                mLogger.warning(exc.toString());
-                exc.printStackTrace();
-            }
-        }
-
+      
+        
         // Check if the plugin was loaded
         if (player == null) {
             player = new DefaultSceneGroupPlayer(this);
         }
-        // Set the new ScenePlayer here     
+        //        
         mScenePlayer = player;
-        // Launch the ScenePlayer now
+        //
         mScenePlayer.launch();
     }
 

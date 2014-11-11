@@ -722,6 +722,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mCmtSet.add(c);
         super.add(c);
         mEventCaster.append(c);
+        mObservable.addObserver(c);
     }
 
     /**
@@ -732,6 +733,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mCmtSet.remove(c);
         super.remove(c);
         mEventCaster.remove(c);
+        mObservable.deleteObserver(c);
     }
 
     /**
