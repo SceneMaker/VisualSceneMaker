@@ -174,10 +174,10 @@ public class Preferences {
     public static boolean sACTIVITYTRACE = true;
     public static int sVISUALISATIONTIME = 15; // 25 = 1 second
     public static boolean sSHOW_VARIABLE_BADGE_ON_WORKSPACE = true;
-	public static boolean sSHOW_SMART_PATH_DEBUG = false;
+    public static boolean sSHOW_SMART_PATH_DEBUG = false;
     public static boolean sSHOWIDSOFNODES = true;
-    private static int sPROPERTIES_PANE_SIZE;
-
+    private static int sPROPERTIES_PANE_SIZE;   
+    public static final Color sHIGHLIGHT_SCENE_COLOR = Color.YELLOW;
     /**
      *
      */

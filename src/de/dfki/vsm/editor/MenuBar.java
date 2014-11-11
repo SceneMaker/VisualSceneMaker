@@ -210,7 +210,7 @@ public class MenuBar extends JMenuBar {
         });
 
         mSaveFileMenuItem = new JMenuItem("Save");
-//    mSaveFileMenuItem.setIcon(new ImageIcon("data/img/save.png"));
+  //    mSaveFileMenuItem.setIcon(new ImageIcon("data/img/save.png"));
         mSaveFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mSaveFileMenuItem.addActionListener(new ActionListener() {
 

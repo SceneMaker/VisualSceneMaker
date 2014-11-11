@@ -24,6 +24,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -108,7 +109,8 @@ public class FunDefDialog extends Dialog {
             mFunDef = new FunDef("newCommand", "java.lang.System.out", "println");
             mFunDef.addParam(new ParamDef("text", "String"));
         }
-        initComponents();
+        
+        initComponents();      
         fillComponents();
     }
 
@@ -194,10 +196,12 @@ public class FunDefDialog extends Dialog {
         // command definition.
         initMethodComboBox();
         String selectedMethod = mFunDef.getMethod().toString() + mFunDef.getParamPrettyPrint();
+        selectedMethod = selectedMethod.replaceAll("\\s+","");
         //System.out.println(selectedMethod);
         
         mMethodComboBox.setSelectedItem(selectedMethod);        
         mSelectedMethod = mMethodMap.get(selectedMethod);
+        
 
         // Resize the argument name list to the size of the parameter
         // list of the selected method and fill the argument name list
@@ -319,12 +323,20 @@ public class FunDefDialog extends Dialog {
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         
         argContainer = new JPanel();
+        JList list = mArgList;
+        list.setVisibleRowCount(1);  
+        list.setLayoutOrientation(JList.HORIZONTAL_WRAP);  
         argContainer.setLayout(new BoxLayout(argContainer, BoxLayout.X_AXIS)); 
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         argContainer.add(mArgLabel);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-        argContainer.add(mArgList);
-        mArgList.setPreferredSize(new Dimension(0,25));
+        argContainer.add(list);
+        list.setPreferredSize(new Dimension(0,25));
+        DefaultListCellRenderer renderer =  (DefaultListCellRenderer)list.getCellRenderer();  
+        renderer.setHorizontalAlignment(JLabel.CENTER);  
+        
+        
+        
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
                       
         mUpperPanel = new JPanel(); 
@@ -359,17 +371,23 @@ public class FunDefDialog extends Dialog {
             // Get the list of parameters for the selected method
             Class[] parameterTypes = mSelectedMethod.getParameterTypes();
             for (int i = 0; i < parameterTypes.length; i++) {
-                Class parameterType = parameterTypes[i];
+                
+                      
+                Class parameterType = parameterTypes[i];                
+                
                 // Get the name of the parameter and of its type
                 String parameterName = mArgNameList.get(i);
-                String parameterTypeName = parameterType.getName();//parameterType.getSimpleName();
+                
+  
+                //String parameterTypeName = parameterType.getName();//parameterType.getSimpleName();
+                String parameterTypeName = parameterType.getSimpleName();
 
                 String composedParameterName = parameterName + " (" + parameterTypeName + ")";
                 // Add the name and the name of the type to the appropriate map
                 mNameMap.put(composedParameterName, parameterName);
                 mTypeMap.put(composedParameterName, parameterTypeName);
                 // Add the argument to the list
-                ((DefaultListModel) mArgList.getModel()).addElement(composedParameterName);
+                ((DefaultListModel) mArgList.getModel()).addElement(composedParameterName); 
             }
         }
     }
@@ -378,7 +396,8 @@ public class FunDefDialog extends Dialog {
         if (mSelectedMethod == null) {
             // Resize to zero if there is no method selected
             mArgNameList.setSize(0);
-        } else {
+        } 
+        else {
             mArgNameList.setSize(mSelectedMethod.getParameterTypes().length);
             for (int i = 0; i < mArgNameList.size(); i++) {
                 // If the argument has not yet a name then assign a default name

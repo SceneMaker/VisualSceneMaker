@@ -37,7 +37,7 @@ import javax.swing.event.ChangeListener;
  */
 public class OptionsDialog extends JDialog {
     
-        private static OptionsDialog sSingeltonInstance = null;
+    private static OptionsDialog sSingeltonInstance = null;
 
     // private JComboBox mScenePlayerComboBox;
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -87,6 +87,7 @@ public class OptionsDialog extends JDialog {
 
     private OptionsDialog() {
         super(Editor.getInstance(), "Preferences", false);
+        
         initComponents();
         initPreferences();
     
@@ -261,12 +262,14 @@ public class OptionsDialog extends JDialog {
                 mEditor.update();
             }
         });
-
+        
+        ProjectPreferences preferences = mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+   
         // Node size stuff
         mNodeSizeLabel            = new JLabel("Node Size:");
-        mNodeSizeSpinner          = new JSpinner(new SpinnerNumberModel(60, 20, 200, 2));
-        mGridScaleSpinner         = new JSpinner(new SpinnerNumberModel(1, 1, 8, 1));
-        mWorkspaceFontSizeSpinner = new JSpinner(new SpinnerNumberModel(10, 8, 16, 1));
+        mNodeSizeSpinner          = new JSpinner(new SpinnerNumberModel(preferences.sNODEHEIGHT, 20, 200, 2));
+        mGridScaleSpinner         = new JSpinner(new SpinnerNumberModel(preferences.sGRID_YSCALE, 1, 8, 1));
+        mWorkspaceFontSizeSpinner = new JSpinner(new SpinnerNumberModel(preferences.sWORKSPACEFONTSIZE, 8, 16, 1));
         ((JSpinner.NumberEditor) mNodeSizeSpinner.getEditor()).getTextField().setEditable(false);
         ((JSpinner.NumberEditor) mGridScaleSpinner.getEditor()).getTextField().setEditable(false);
         mVisualizationCheckBox = new JCheckBox("Activitiy Visualization", true);
@@ -352,6 +355,10 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initScriptPanel() {
+        
+        ProjectPreferences preferences = mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+   
+          
         mScriptFontTypeLabel = new JLabel("Font Type:");
 
         GraphicsEnvironment g            = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -366,7 +373,9 @@ public class OptionsDialog extends JDialog {
         
         JPanel              controlPanel = new JPanel();
 
+     
         mScriptFontComboBox = new JComboBox(fonts);
+        mScriptFontComboBox.setSelectedItem(preferences.sSCRIPT_FONT_TYPE);
         mScriptFontComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
@@ -374,7 +383,7 @@ public class OptionsDialog extends JDialog {
             }
         });
         mScriptFontSizeLabel   = new JLabel("Font Size:");
-        mScriptFontSizeSpinner = new JSpinner(new SpinnerNumberModel(10, 8, 16, 1));
+        mScriptFontSizeSpinner = new JSpinner(new SpinnerNumberModel(preferences.sSCRIPT_FONT_SIZE, 8, 16, 1));
 
         // Do the Layout - pack all stuff into little small cute boxesÏ
         JPanel fontAndSize = new JPanel();
@@ -491,6 +500,7 @@ public class OptionsDialog extends JDialog {
         
         mProject     = mEditor.getSelectedProjectEditor().getProject();
         mPreferences = mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+       
         
         ((DefaultListModel) mRecentFileList.getModel()).clear();
 

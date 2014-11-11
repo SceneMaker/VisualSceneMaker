@@ -1,5 +1,6 @@
 package de.dfki.vsm.model.sceneflow;
 
+import de.dfki.vsm.editor.Editor;
 import static de.dfki.vsm.editor.util.Preferences.sWORKSPACEFONTSIZE;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
 import de.dfki.vsm.util.ios.IndentWriter;
@@ -20,7 +21,10 @@ public class Comment extends Object {
     protected Graphics mGraphics;
     protected SuperNode mParentNode = null;
     protected String mHTMLText = "";
-
+    protected int mFontSize;
+    JEditorPane mTextEditor;
+    
+  
     public void setParentNode(SuperNode value) {
         mParentNode = value;
     }
@@ -32,6 +36,10 @@ public class Comment extends Object {
     public void setGraphics(Graphics value) {
         mGraphics = value;
     }
+    
+    public void setFontSize(int value) {
+        mFontSize = value;
+    }
 
     public String getHTMLText() {
         return mHTMLText.trim();
@@ -40,8 +48,8 @@ public class Comment extends Object {
     public void setHTMLText(String text) {
         mHTMLText = text.trim();
     }
-
-    @Override
+    
+     @Override
     public String getAbstractSyntax() {
         return "";
     }
@@ -57,10 +65,16 @@ public class Comment extends Object {
     }
 
     private void formatHTML() {
-        JEditorPane mTextEditor = new JEditorPane();
+        
+        mFontSize = Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences().sWORKSPACEFONTSIZE;
+    
+        if(mTextEditor==null){
+            mTextEditor = new JEditorPane();
+        }
+       
         mTextEditor.setContentType(new HTMLEditorKit().getContentType());
         // now use the same font than the label!
-        Font mFont = new Font("SansSerif", Font.PLAIN, sWORKSPACEFONTSIZE);
+        Font mFont = new Font("SansSerif", Font.PLAIN, mFontSize);
         String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
         ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
 

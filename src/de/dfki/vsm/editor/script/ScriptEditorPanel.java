@@ -3,6 +3,8 @@ package de.dfki.vsm.editor.script;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.FunctionEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
+import de.dfki.vsm.editor.event.SceneSelectedEvent;
+import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
@@ -13,6 +15,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
@@ -26,6 +29,11 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
+import javax.swing.text.JTextComponent;
+import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * @author Gregor Mehlmann
@@ -50,6 +58,11 @@ public final class ScriptEditorPanel extends JPanel
     private final SceneScript mSceneScript;
     private final FunctionEditor mFunctionEditor;
     private final ProjectPreferences mPreferences;
+    
+    private ArrayList<Integer> searchOffsets;
+    private String lastSearchedScene;
+    private int lastIndex;
+    Highlighter.HighlightPainter painter;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -116,6 +129,18 @@ public final class ScriptEditorPanel extends JPanel
         } catch (BadLocationException exc) {
             exc.printStackTrace();
         }
+        
+        searchOffsets = new ArrayList<Integer>();
+        lastSearchedScene = "";
+        lastIndex = 0;
+
+        Highlighter highlighter = new DefaultHighlighter();
+        mEditorPane.setHighlighter(highlighter);
+        painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
+ }
+
+    public JTabbedPane getTabPane() {
+        return mTabPane;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -232,6 +257,89 @@ public final class ScriptEditorPanel extends JPanel
          } catch (BadLocationException e) {
          e.printStackTrace();
          }*/
+        
+        if (event instanceof SceneSelectedEvent) {
+            String sg = ((SceneSelectedEvent) event).getGroup().getName().trim();
+            String language = ((SceneSelectedEvent) event).getLanguage();
+            //System.out.println("Language selected: " + language);
+            // This indicates user clicked the same scene name, advance to next
+            // search offset.
+            if(lastSearchedScene.equals("scene_" + language + " " + sg)) {
+                advanceToNextSearchOffset();
+            }
+            // Different search is required, perform offset recalculation.
+            else {
+                search(sg, language, mEditorPane, painter);
+            }
+            if (searchOffsets.size() > 0) {
+                try {
+                    mEditorPane.requestFocus();
+                    mEditorPane.setCaretPosition(searchOffsets.get(lastIndex) +
+                    sg.length() + 5);
+                    mEditorPane.scrollRectToVisible(mEditorPane.modelToView(
+                    searchOffsets.get(lastIndex)));
+                }
+                catch (BadLocationException e) {
+                    System.out.println("" + e);
+                }
+            }
+        }
+        
+    }
+        
+    public void advanceToNextSearchOffset() {
+        if(lastIndex == searchOffsets.size()-1) {
+            lastIndex = 0;
+        }
+        else {
+            lastIndex++;
+        }
+    }
+    
+    
+    /* Search for a scene name and give the position of the selected text */
+    public void search(String word, String language, JTextComponent comp, Highlighter.HighlightPainter painter) {
+        this.lastIndex = 0;
+        this.lastSearchedScene = "scene_" + language + " "+ word;
+        this.searchOffsets = new ArrayIndexList<Integer>();
+        Highlighter highlighter = comp.getHighlighter();
+        // Remove any existing highlights for last word
+        Highlighter.Highlight[] highlights = highlighter.getHighlights();
+        
+        for (int i = 0; i < highlights.length; i++) {
+            Highlighter.Highlight h = highlights[i];
+            if (h.getPainter() instanceof DefaultHighlighter.DefaultHighlightPainter) {
+                highlighter.removeHighlight(h);
+            }
+        }
+       
+        String content = null;
+        try {
+            Document d = comp.getDocument();
+            content = d.getText(0, d.getLength()).toLowerCase();
+        } catch (BadLocationException e) {
+            // Cannot happen
+        }
+        
+        word = word.toLowerCase();
+        int lastLocalIndex = 0;
+        int wordSize = word.length();
+        
+        while ((lastLocalIndex = content.indexOf("scene_" + language + " " + word, lastLocalIndex)) != -1) {
+            lastLocalIndex += 9;
+            int endIndex = lastLocalIndex + wordSize;
+            int limiterIndex = content.indexOf(':',lastLocalIndex);
+            try {
+                if((lastLocalIndex + endIndex) == (lastLocalIndex + limiterIndex)) {
+                    highlighter.addHighlight(lastLocalIndex, endIndex, painter);
+                    searchOffsets.add(lastLocalIndex);
+                }   
+            }
+            catch (BadLocationException e) {
+            // Nothing to do
+            }
+        lastLocalIndex = endIndex;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
