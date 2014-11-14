@@ -21,7 +21,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observer;
@@ -97,7 +96,6 @@ public class FunctionEditor extends JScrollPane implements EventListener, Observ
         //  Create a FunDefDialog object for every existing function  
         //  in order to reuse components
         for (final FunDef funDef: mSceneFlow.getUsrCmdDefMap().values()){   
-            
             final FunDefDialog funDefPanel = new FunDefDialog(funDef);            
             mFunDefDialogList.add(funDefPanel);  
                                    
