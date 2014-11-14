@@ -47,7 +47,7 @@ public class CreateIEdgeDialog extends Dialog {
     private JButton mEditAltStartNodeButton;
 
     public CreateIEdgeDialog(Node sourceNode, Node targetNode) {
-        super(Editor.getInstance(), "Create Conditional Edge", true);
+        super(Editor.getInstance(), "Create Interruptive Edge", true);
         // Init edge data
         mIEdge = new IEdge();
         mIEdge.setTarget(targetNode.getId());
