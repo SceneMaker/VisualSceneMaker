@@ -196,6 +196,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         TreePath path = e.getPath();
         int pathCount = path.getPathCount();
         
+        TreeEntry lastPathComponent = (TreeEntry) path.getLastPathComponent();
+        
         if (pathCount == 3) {
             TreePath parentPath = path.getParentPath();
             if (parentPath.getLastPathComponent().equals(mFunDefEntry)) {
@@ -208,7 +210,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 // Do nothing
             }
             
-            else {
+            else if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.script.SceneGroup.class))
+            {
                 mScriptEditorPanel.getTabPane().setSelectedIndex(0);
                 String sceneLanguageSelect = ((TreeEntry)parentPath.getLastPathComponent()).getText();
                 //System.out.println("Language: " + sceneLanguageSelect);
