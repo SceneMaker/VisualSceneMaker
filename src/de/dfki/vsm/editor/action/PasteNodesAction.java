@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.action;
 
+import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.SceneFlowEditor;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.util.IDManager;

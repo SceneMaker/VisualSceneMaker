@@ -65,6 +65,7 @@ public class ProjectPreferences {
     public boolean   sSHOWIDSOFNODES                   = true;
     public String    sSCRIPT_FONT_TYPE                 = "Arial";
     public int       sSCRIPT_FONT_SIZE                 = 11;
+    public boolean   sSHOWSCENE_ELEMENTS               = true;
 
     /**
      *
@@ -83,6 +84,7 @@ public class ProjectPreferences {
         sSHOW_SMART_PATH_DEBUG            = Boolean.valueOf(sPROPERTIES.getProperty("showsmartpathcalculations"));
         sSCRIPT_FONT_TYPE                 = String.valueOf(sPROPERTIES.getProperty("scriptfonttype"));
         sSCRIPT_FONT_SIZE                 = Integer.valueOf(sPROPERTIES.getProperty("scriptfonsize"));
+          sSHOWSCENE_ELEMENTS             =  Boolean.valueOf(sPROPERTIES.getProperty("showsceneelements"));
         sSUPERNODEWIDTH                   = sNODEWIDTH;
         sSUPERNODEHEIGHT                  = sNODEWIDTH;
         sGRID_NODEWIDTH                   = sNODEWIDTH;
@@ -93,6 +95,7 @@ public class ProjectPreferences {
         sGRID_YSPACE                      = sNODEHEIGHT * sGRID_YSCALE;
         sXOFFSET                          = sGRID_NODEWIDTH / 3;
         sYOFFSET                          = sGRID_NODEHEIGHT / 3;
+      
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -214,6 +217,11 @@ public class ProjectPreferences {
 
         if (!sPROPERTIES.containsKey("showsmartpathcalculations")) {
             sPROPERTIES.setProperty("showsmartpathcalculations", "false");
+        }
+        
+                
+        if (!sPROPERTIES.containsKey("showsceneelements")) {
+            sPROPERTIES.setProperty("showsceneelements", "true");
         }
 
         // default values for editor appearance

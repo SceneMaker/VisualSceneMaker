@@ -352,7 +352,7 @@ public abstract class EdgeAction extends EditorAction {
             }
         }
 
-        System.out.println("Sum Weight is :" + sumWeight);
+        //  System.out.println("Sum Weight is :" + sumWeight);
 
         return sumWeight;
     }

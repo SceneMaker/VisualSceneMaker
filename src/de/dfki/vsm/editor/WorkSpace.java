@@ -2269,10 +2269,10 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     @Override
     public void paintComponent(Graphics g) {
-
+        
         // mLogger.message("Drawing Workspace");
         Graphics2D g2d = (Graphics2D) g;
-
+              
         if (mSelectTargetNodeMode) {
             setBackground(Color.LIGHT_GRAY);
         } else {
