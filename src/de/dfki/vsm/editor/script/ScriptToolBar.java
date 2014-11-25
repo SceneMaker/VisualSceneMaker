@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.script;
 
 import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -17,20 +18,22 @@ public class ScriptToolBar extends JToolBar {
 
     private JButton mGesticonButton;
     private ScriptEditorPanel mParent;
+     private ProjectPreferences mPreferences;
 
     public ScriptToolBar(ScriptEditorPanel parent) {
         super("Scenes Tool Bar", JToolBar.HORIZONTAL);
         mParent = parent;
+        mPreferences =  mParent.getPreferences();
         setFloatable(false);
         setRollover(true);
         setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
-        initComponents();
+        initComponents();        
     }
 
     private void initComponents() {
         add(Box.createHorizontalStrut(2));
         mGesticonButton = add(new AbstractAction("ACTION_SHOW_ELEMENTS",
-                Boolean.valueOf(Preferences.getProperty("showsceneelements"))
+                Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
                 ? ResourceLoader.loadImageIcon("/res/img/new/less.png")
                 : ResourceLoader.loadImageIcon("/res/img/new/more.png")) {
 
@@ -57,12 +60,13 @@ public class ScriptToolBar extends JToolBar {
     private void changeGesticonDisplayButtonState(boolean state) {
         if (state) {
             mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/less.png"));
-            Preferences.setProperty("showsceneelements", "true");
-            Preferences.save();
+            mPreferences.setProperty("showsceneelements", "true");
+            mPreferences.save(mParent.getPreferencesFileName());
+ 
         } else {
             mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/more.png"));
-            Preferences.setProperty("showsceneelements", "false");
-            Preferences.save();
+            mPreferences.setProperty("showsceneelements", "false");
+            mPreferences.save(mParent.getPreferencesFileName());
         }
     }
 }

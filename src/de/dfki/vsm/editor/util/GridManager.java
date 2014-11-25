@@ -30,7 +30,7 @@ import java.util.HashSet;
 /*
 * @author Patrick
 * This class manages the node placement on the workspace.
-* Additional methods are provided for an intelligent placement
+* Additional methods are provided for an intelligent placement 
 * of nodes
  */
 public class GridManager {
@@ -43,7 +43,7 @@ public class GridManager {
     private boolean              isSubgridEstablished = false;
     private int                  height               = 0;
     private int                  width                = 0;
-    private final WorkSpace            mWorkSpace;
+    private final WorkSpace      mWorkSpace;
     private final ProjectPreferences   mPreferences;
     private ArrayList<Rectangle> mNodeAreas;
     private boolean              isDebug;
@@ -61,8 +61,8 @@ public class GridManager {
     public final void compute() {
         Dimension area = obtainWorkAreaSize();
         int       w    = area.width;
-        int       h    = area.height;
-
+        int       h    = area.height; // <- 
+        
         mNodesinRow = w / mPreferences.sGRID_XSPACE;
         mNodeAreas  = new ArrayList<>();
 
@@ -245,8 +245,8 @@ public class GridManager {
                 }
             }
         } else {
-            w = mWorkSpace.getSize().width;
-            h = mWorkSpace.getSize().height;
+            w = mWorkSpace.getSize().width + Preferences.sNODEWIDTH;
+            h = mWorkSpace.getSize().height + Preferences.sNODEWIDTH;
         }
 
         return new Dimension(w, h);
@@ -335,7 +335,7 @@ public class GridManager {
                 break;
             }
         }
-    }
+  }
 
     public Point getNodeLocation(Point inputPoint) {
         Point p = new Point(inputPoint.x + mPreferences.sGRID_NODEWIDTH / 2,

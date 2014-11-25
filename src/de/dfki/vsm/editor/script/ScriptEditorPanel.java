@@ -58,11 +58,13 @@ public final class ScriptEditorPanel extends JPanel
     private final SceneScript mSceneScript;
     private final FunctionEditor mFunctionEditor;
     private final ProjectPreferences mPreferences;
+    private final String mPreferencesFileName;
     
     private ArrayList<Integer> searchOffsets;
     private String lastSearchedScene;
     private int lastIndex;
     Highlighter.HighlightPainter painter;
+
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -86,17 +88,21 @@ public final class ScriptEditorPanel extends JPanel
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ScriptEditorPanel(final SceneScript script, 
-                                final SceneFlow sceneflow, 
-                                final ProjectPreferences preferences) {
-        // Initialize The Scene Script
-        mSceneScript = script;
-        // Grab project preferences
+     public ScriptEditorPanel(final SceneScript script, 
+                             final SceneFlow sceneflow, 
+                             final ProjectPreferences preferences, 
+                             final String preferencesFileName) {
+           // Grab project preferences
         mPreferences = preferences;        
-        // Initialize The Status Label
-        mStatusLabel = new CaretStatusLabel("");			
+        mPreferencesFileName = preferencesFileName;
         // Initialize The Editor Pane
         mEditorPane = new ScriptEditorPane(mPreferences);
+        // Initialize The Scene Script
+        mSceneScript = script;
+     
+        // Initialize The Status Label
+        mStatusLabel = new CaretStatusLabel("");			
+        
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);		
         // Initialize The Scroll Pane
@@ -111,7 +117,9 @@ public final class ScriptEditorPanel extends JPanel
         // Initialize the Toolbar
         mScenesToolbar  = new ScriptToolBar(this);
         // Initialize The Scroll Pane
-        mElementPane = new SceneElementDisplay();
+        mElementPane = new SceneElementDisplay();     
+        mElementPane.setVisible(Boolean.valueOf(mPreferences.getProperty("showsceneelements")));            
+        
         mNoticeable.addObserver(mElementPane);
         mNoticeable.addObserver(mEditorPane);
         // Initialize The Components
@@ -141,6 +149,14 @@ public final class ScriptEditorPanel extends JPanel
 
     public JTabbedPane getTabPane() {
         return mTabPane;
+    }
+    
+    public ProjectPreferences getPreferences() {
+        return mPreferences;
+    }
+    
+    public String getPreferencesFileName() {
+        return mPreferencesFileName;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -435,7 +451,9 @@ public final class ScriptEditorPanel extends JPanel
                     if (dot == mark) {
                         try {
                             Rectangle caretCoords = mEditorPane.modelToView(dot);
-                            setText(dot + " : [" + caretCoords.x + ", " + caretCoords.y + "]" + "\r\n");
+                            if(caretCoords!=null){
+                                setText(dot + " : [" + caretCoords.x + ", " + caretCoords.y + "]" + "\r\n");
+                            }                         
                         } catch (BadLocationException ble) {
                             setText(dot + "\r\n");
                         }
