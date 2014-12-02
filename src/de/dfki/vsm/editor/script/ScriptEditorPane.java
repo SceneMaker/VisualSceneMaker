@@ -259,8 +259,7 @@ public class ScriptEditorPane extends JEditorPane
     public void update(final Observable obs, final Object obj) {
         // Do Nothing
         mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);        
-        setFont(mFont);
-        
+        setFont(mFont);        
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -271,8 +270,6 @@ public class ScriptEditorPane extends JEditorPane
         // Do Nothing
         mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);        
         setFont(mFont);
-
-        
     }
 
     ////////////////////////////////////////////////////////////////////////////

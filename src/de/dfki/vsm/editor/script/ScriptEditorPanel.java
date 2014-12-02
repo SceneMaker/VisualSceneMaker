@@ -64,8 +64,7 @@ public final class ScriptEditorPanel extends JPanel
     private String lastSearchedScene;
     private int lastIndex;
     Highlighter.HighlightPainter painter;
-
-
+    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -145,7 +144,8 @@ public final class ScriptEditorPanel extends JPanel
         Highlighter highlighter = new DefaultHighlighter();
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
- }
+      
+    }  
 
     public JTabbedPane getTabPane() {
         return mTabPane;
@@ -158,6 +158,7 @@ public final class ScriptEditorPanel extends JPanel
     public String getPreferencesFileName() {
         return mPreferencesFileName;
     }
+     
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -274,7 +275,10 @@ public final class ScriptEditorPanel extends JPanel
          e.printStackTrace();
          }*/
         
-        if (event instanceof SceneSelectedEvent) {
+        
+        
+        if (event instanceof SceneSelectedEvent) {            
+            
             String sg = ((SceneSelectedEvent) event).getGroup().getName().trim();
             String language = ((SceneSelectedEvent) event).getLanguage();
             //System.out.println("Language selected: " + language);
@@ -288,10 +292,10 @@ public final class ScriptEditorPanel extends JPanel
                 search(sg, language, mEditorPane, painter);
             }
             if (searchOffsets.size() > 0) {
-                try {
+                try {                  
                     mEditorPane.requestFocus();
                     mEditorPane.setCaretPosition(searchOffsets.get(lastIndex) +
-                    sg.length() + 5);
+                    sg.length() + 10);
                     mEditorPane.scrollRectToVisible(mEditorPane.modelToView(
                     searchOffsets.get(lastIndex)));
                 }
@@ -299,6 +303,7 @@ public final class ScriptEditorPanel extends JPanel
                     System.out.println("" + e);
                 }
             }
+           
         }
         
     }

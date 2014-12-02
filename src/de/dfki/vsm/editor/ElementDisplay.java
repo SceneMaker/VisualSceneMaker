@@ -31,6 +31,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -43,10 +44,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Observer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
@@ -196,6 +197,11 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         TreePath path = e.getPath();
         int pathCount = path.getPathCount();
         
+        // Make sure that focus can be requested
+        if(requestFocusInWindow()){
+            updateUI();       
+        }
+        
         TreeEntry lastPathComponent = (TreeEntry) path.getLastPathComponent();
         
         if (pathCount == 3) {
@@ -214,13 +220,10 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             {
                 mScriptEditorPanel.getTabPane().setSelectedIndex(0);
                 String sceneLanguageSelect = ((TreeEntry)parentPath.getLastPathComponent()).getText();
-                //System.out.println("Language: " + sceneLanguageSelect);
-                SceneGroup selectedScene = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();
-                //System.out.println("Scene is: " + selectedScene.getName());
-                launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);
-            }
+                SceneGroup selectedScene = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();        
+                launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);         
+           }
         }
-        
     }
 
     /**
@@ -490,9 +493,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             private void launchFunctionSelectedEvent(FunDef funDef) {                            
                 FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
                 mEventCaster.convey(ev);                             
-            }
-
-                        
+            }         
         };
     }
     
@@ -518,7 +519,6 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         }
     }  
 
-    
 
     /**
      * ***********************************************************************
@@ -708,8 +708,6 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
 
     private void updateFunctionList(){
         mElementTree.updateFunDefs();
-        
-       
     }
 
      
