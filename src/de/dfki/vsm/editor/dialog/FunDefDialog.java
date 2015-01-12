@@ -361,8 +361,9 @@ public class FunDefDialog extends Dialog {
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 5)));
         mFunDefContent.add(mLowerPanel);
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
-
-        mFunDefContent.setMaximumSize(new Dimension(Editor.getInstance().getSize().width, 80));
+        Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        double width = screenSize.getWidth();
+        mFunDefContent.setMaximumSize(new Dimension((int)width, 80));
 
         return mFunDefContent;
     }
