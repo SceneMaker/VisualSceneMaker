@@ -89,6 +89,5 @@ souza_nurafrianto.windiartono@dfki.de
 
 ------------------------------------------------------------------------------
 
-  The VSM Framework is published under the Creative Commons Attribution-NonCommercial 4.0 International License.   
-  To view a copy of this license, visit [this site](http://creativecommons.org/licenses/by-nc/4.0/).
+  The VSM Framework is published under the Creative Commons Attribution-NonCommercial 4.0 International License. To view a copy of this license, visit [this site](http://creativecommons.org/licenses/by-nc/4.0/).
  
