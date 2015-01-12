@@ -444,7 +444,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mAddFunctionButton.setText("");
         mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/plus.png"));
         mAddFunctionButton.setOpaque(true);
-        mAddFunctionButton.setBackground(Color.GRAY);
+        //mAddFunctionButton.setBackground(Color.GRAY);
         mAddFunctionButton.setMaximumSize(new Dimension(15, 15));
     }
 

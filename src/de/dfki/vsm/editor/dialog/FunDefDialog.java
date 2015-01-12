@@ -383,7 +383,7 @@ public class FunDefDialog extends Dialog {
                 String parameterName = mArgNameList.get(i);
 
                 //String parameterTypeName = parameterType.getName();//parameterType.getSimpleName();
-                String parameterTypeName = parameterType.getSimpleName();
+                String parameterTypeName = parameterType.getName();
 
                 String composedParameterName = parameterName + " (" + parameterTypeName + ")";
                 // Add the name and the name of the type to the appropriate map
