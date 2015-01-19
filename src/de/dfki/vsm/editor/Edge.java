@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.action.ModifyEdgeAction;
 import de.dfki.vsm.editor.event.EdgeExecutedEvent;
 import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
@@ -469,6 +470,9 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
             mWorkSpace.showContextMenu(event, this);
         } else if ((event.getClickCount() == 2)) {
+            
+            
+            
             if (mType.equals(TYPE.TEDGE)) {
                 String timeout = getDescription();
 
@@ -478,9 +482,18 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 timeout = timeout.replace("\n", "");
                 mValueEditor.setText(timeout);
             }
+            else  if (mType.equals(TYPE.PEDGE)) {
+                ModifyEdgeAction modifyAction = new ModifyEdgeAction(this, mWorkSpace);
+                modifyAction.run();
+                Editor.getInstance().update();
 
-            add(mValueEditor);
-            mEditMode = true;
+            }
+
+            if (mType.equals(TYPE.TEDGE)||mType.equals(TYPE.CEDGE)) {
+                add(mValueEditor);
+                mEditMode = true;
+            }
+            
         }
     }
 
