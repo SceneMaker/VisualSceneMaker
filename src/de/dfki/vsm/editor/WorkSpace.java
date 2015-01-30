@@ -20,6 +20,7 @@ import de.dfki.vsm.editor.action.ShortestEdgeAction;
 import de.dfki.vsm.editor.action.StraightenEdgeAction;
 import de.dfki.vsm.editor.action.ToggleStartNodeAction;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
 import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
@@ -72,7 +73,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import java.io.IOException;
@@ -234,7 +234,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public void clearClipBoard() {
         mClipboard.clear();
     }
-
+    
     public ClipBoard getClipBoard() {
         return mClipboard;
     }
@@ -1348,7 +1348,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public void mouseClicked(MouseEvent event) {
         mLastMousePosition = event.getPoint();
 
-        // System.out.println("mouse clicked");
+        //System.out.println("mouse clicked");
+        launchWorkSpaceSelectedEvent();
         if (mSelectTargetNodeMode) {
             try {
                 createNewEdgeSelectTargetNode(event.getX(), event.getY());
@@ -1529,7 +1530,10 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             }
         }
     }
-    
+    private void launchWorkSpaceSelectedEvent() {                
+        WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
+        mEventCaster.convey(ev);                    
+    }  
     /**
      * 
      *
