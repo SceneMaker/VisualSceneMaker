@@ -4,6 +4,7 @@ import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import static de.dfki.vsm.editor.util.Preferences.sBASICNODE_ENTRY;
@@ -208,6 +209,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             TreePath parentPath = path.getParentPath();
             if (parentPath.getLastPathComponent().equals(mFunDefEntry)) {
                 mScriptEditorPanel.getTabPane().setSelectedIndex(1);
+                mScriptEditorPanel.getmParentPE().showSceneDocEditor();
                 FunDef selectedDef =  (FunDef)((TreeEntry) path.getLastPathComponent()).getData();                        
                 launchFunctionSelectedEvent(selectedDef);
             }
@@ -441,7 +443,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 boolean showPopup = false;
                 JPopupMenu menu = new JPopupMenu();
                 int pathCount = path.getPathCount();
-                
+                System.out.println(pathCount);
                 // TODO: why do we check the pathCount?
                 // test if the user clicked on the Functions entry
                 if (pathCount == 2) {                    
@@ -450,6 +452,10 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                             menu.add(functionsAdd);
                             showPopup = true;
                         }
+                    }
+                    if (path.getLastPathComponent() instanceof TreeEntry)
+                    {
+                        launchTreeEntrySelectedEvent((TreeEntry)path.getLastPathComponent());
                     }
                 } 
 
@@ -494,6 +500,11 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
                 mEventCaster.convey(ev);                             
             }         
+
+            private void launchTreeEntrySelectedEvent(TreeEntry entry) {
+                TreeEntrySelectedEvent ev = new TreeEntrySelectedEvent(this, entry);
+                mEventCaster.convey(ev);     
+            }
         };
     }
     

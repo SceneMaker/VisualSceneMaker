@@ -2,8 +2,10 @@ package de.dfki.vsm.editor.script;
 
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.FunctionEditor;
+import de.dfki.vsm.editor.ProjectEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
+import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
@@ -60,11 +62,12 @@ public final class ScriptEditorPanel extends JPanel
     private final ProjectPreferences mPreferences;
     private final String mPreferencesFileName;
     
+    private ProjectEditor mParentPE; //CONTAINER PROJECT EDITOR
+    
     private ArrayList<Integer> searchOffsets;
     private String lastSearchedScene;
     private int lastIndex;
     Highlighter.HighlightPainter painter;
-    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -74,7 +77,7 @@ public final class ScriptEditorPanel extends JPanel
             notifyObservers(obj);
         }
     }
-
+    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -90,15 +93,18 @@ public final class ScriptEditorPanel extends JPanel
      public ScriptEditorPanel(final SceneScript script, 
                              final SceneFlow sceneflow, 
                              final ProjectPreferences preferences, 
-                             final String preferencesFileName) {
-           // Grab project preferences
+                             final String preferencesFileName, final ProjectEditor parentPE) {
+        // Parent project editor
+        mParentPE = parentPE;
+        // Grab project preferences
         mPreferences = preferences;        
         mPreferencesFileName = preferencesFileName;
         // Initialize The Editor Pane
         mEditorPane = new ScriptEditorPane(mPreferences);
         // Initialize The Scene Script
         mSceneScript = script;
-     
+        
+        
         // Initialize The Status Label
         mStatusLabel = new CaretStatusLabel("");			
         
@@ -146,7 +152,14 @@ public final class ScriptEditorPanel extends JPanel
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
       
     }  
-
+    /**
+     * Function to know if the panel can be hidden
+     * @return boolean 
+     */
+    public boolean isPinPricked()
+    {
+        return mScenesToolbar.isPinPricked();
+    }
     public JTabbedPane getTabPane() {
         return mTabPane;
     }
@@ -158,8 +171,17 @@ public final class ScriptEditorPanel extends JPanel
     public String getPreferencesFileName() {
         return mPreferencesFileName;
     }
-     
-
+    
+    
+    //**********************************
+    //Get and set parent project editor
+    public ProjectEditor getmParentPE() {
+        return mParentPE;
+    }
+    
+    public void setmParentPE(ProjectEditor mParentPE) {
+        this.mParentPE = mParentPE;
+    }
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -305,7 +327,17 @@ public final class ScriptEditorPanel extends JPanel
             }
            
         }
-        
+        if(event instanceof TreeEntrySelectedEvent)
+        {
+            if(((TreeEntrySelectedEvent)event).getmEntry().getText().contains("Scenes"))
+            {
+               mTabPane.setSelectedComponent(mScrollPane);
+            }
+            else if(  ((TreeEntrySelectedEvent)event).getmEntry().getText().contains("Functions"))
+            {
+                mTabPane.setSelectedComponent(mFunctionEditor);
+            }
+        }
     }
         
     public void advanceToNextSearchOffset() {

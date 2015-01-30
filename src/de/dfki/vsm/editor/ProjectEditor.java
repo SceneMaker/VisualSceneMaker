@@ -1,5 +1,8 @@
 package de.dfki.vsm.editor;
 
+import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.ProjectData;
@@ -15,6 +18,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
 import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
@@ -39,7 +43,13 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     private final Observable mObservable = new Observable();
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventCaster = EventCaster.getInstance();
-
+    
+    
+    private final double topElement = 0.6;
+    private long previousTime;
+    private boolean firstEntrance = false;
+    
+    
     /**
      * *************************************************************************
      *
@@ -70,7 +80,17 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      */
     @Override
     public void update(EventObject evt) {
-        // mLogger.message("ProjectEditor.update(" + evt + ")");
+        //System.out.println(evt.getClass());
+        if (evt instanceof FunctionSelectedEvent || evt instanceof TreeEntrySelectedEvent) {
+            if(((TreeEntrySelectedEvent)evt).getmEntry().getText().contains("Scenes") ||  ((TreeEntrySelectedEvent)evt).getmEntry().getText().contains("Functions"))
+            {
+                showSceneDocEditor();
+            }
+        }
+        if(evt instanceof NodeSelectedEvent && !mSceneDocEditor.isPinPricked())
+        {
+            hideSceneDocEditor();
+        }
     }
 
     /**
@@ -83,9 +103,9 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     public ProjectEditor(ProjectData project) {
         super(JSplitPane.VERTICAL_SPLIT, true);
 
-        mProject = project;      
+        mProject = project;
         
-        mSceneDocEditor = new ScriptEditorPanel(mProject.getSceneScript(), mProject.getSceneFlow(), mProject.getPreferences(), mProject.getPreferencesFileName());
+        mSceneDocEditor = new ScriptEditorPanel(mProject.getSceneScript(), mProject.getSceneFlow(), mProject.getPreferences(), mProject.getPreferencesFileName(), this);
         mSceneFlowEditor = new SceneFlowEditor(mProject.getSceneFlow(), mProject, mSceneDocEditor);
    
 
@@ -169,7 +189,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         pDown.addPoint(13, 0);
         pDown.addPoint(17, 4);
         pDown.addPoint(21, 0);
-
+        //ProjectEditor thisPE = this;
         setUI(new BasicSplitPaneUI() {
 
             @Override
@@ -194,17 +214,50 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
                         graphics.drawPolygon(pDown);
                         graphics.fillPolygon(pDown);
                     }
+                    /**
+                     * Shows the bottom part of the editor when mouse goes over the border
+                     * @param me
+                     */
+                    @Override 
+                    protected void processMouseMotionEvent(MouseEvent me) {
+                        super.processMouseMotionEvent(me);
+                        switch (me.getID()) {
+                            case MouseEvent.MOUSE_MOVED:
+                                showSceneDocEditor();                                   
+                        }
+                    }
                 };
+                
             }
         });
-
-        setDividerSize(5);
-
+//        Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
+//            public void eventDispatched(AWTEvent event) {
+//                if(event instanceof MouseEvent){
+//                    MouseEvent evt = (MouseEvent)event;
+//                    /*System.out.println(evt.getID()+"    "+topElement*java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight()+ "     "+ Editor.getInstance().getHeight() 
+//                    + "     " + evt.getComponent() + "        " + evt.getXOnScreen() );*/
+//                    System.out.println(evt.getComponent());
+//                    if(evt.getComponent() instanceof de.dfki.vsm.editor.ElementEditor || 
+//                       evt.getComponent() instanceof de.dfki.vsm.editor.WorkSpace) {
+//                        if(firstEntrance){
+//                            firstEntrance = false;
+//                            previousTime = System.currentTimeMillis();
+//                        }
+//                        double waiting = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-previousTime);
+//                        //System.out.println(waiting);
+//                        if(waiting >= 2){
+//                            hideSceneDocEditor();
+//                        }
+//                    }
+//                }
+//            }
+//        }, AWTEvent.MOUSE_EVENT_MASK);
+        
+        setDividerSize(10);
         setContinuousLayout(true);
 
         setTopComponent(mSceneFlowEditor);
         setBottomComponent(mSceneDocEditor);
-
         // setting size
         boolean showSceneFlowEditor = Boolean.valueOf(Preferences.getProperty("showscenefloweditor"));
         boolean showSceneDocEditor = Boolean.valueOf(Preferences.getProperty("showsceneeditor"));
@@ -249,4 +302,19 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             }
         });
     }
+    /**
+     * Shows the bottom part of the project editor
+     */
+    public void showSceneDocEditor(){
+        int originalPos = (int)(topElement*java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+        this.setDividerLocation(originalPos);
+        firstEntrance = true;
+    }
+    /*
+    * Hides the bottom part of the project editor
+    */
+    public void hideSceneDocEditor(){
+        this.setDividerLocation(this.getHeight());
+    }
+    
 }
