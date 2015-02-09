@@ -68,6 +68,11 @@ public class Editor extends JFrame implements EventListener {
      */
     private final MenuBar mMenuBar;
     private final ProjectEditorList mProjectEditorList;
+    /*
+     *   Welcome screen
+     */
+    private final WelcomePanel mWelcomePanel;
+
     private ComponentListener mComponentListener = new ComponentListener() {
         public void componentResized(ComponentEvent e) {
             Preferences.setProperty("frame_height", Integer.toString(getHeight()));
@@ -128,6 +133,11 @@ public class Editor extends JFrame implements EventListener {
         // Init the project editor list
         mProjectEditorList = new ProjectEditorList();
         mObservable.addObserver(mProjectEditorList);
+
+        mWelcomePanel = new WelcomePanel(this);
+        mWelcomePanel.setMinimumSize(new Dimension(300, 200));
+        add(mWelcomePanel);
+
         // Init the windows closing support
         addWindowListener(new WindowAdapter() {
             @Override
@@ -146,12 +156,29 @@ public class Editor extends JFrame implements EventListener {
         setTitle(Preferences.getProperty("frame_title"));
         setName(Preferences.getProperty("frame_name"));
         setJMenuBar(mMenuBar);
-        add(mProjectEditorList);
+
+        //add(mProjectEditorList); // COMMENTED BY M.FALLAS
         pack();
         // handle resize and positioning
         this.addComponentListener(mComponentListener);
         // Register the editor as event listener
         mEventMulticaster.append(this);
+    }
+
+    /**
+     * Shows or hides project editor list. Used by the welcome screen
+     *
+     * @param state
+     */
+    public void toggleProjectEditorList(boolean state) {
+        if (state) {
+            add(mProjectEditorList);
+            remove(mWelcomePanel);
+        } else {
+            add(mWelcomePanel);
+            remove(mProjectEditorList);
+        }
+        this.update(this.getGraphics());
     }
 
     public synchronized static Editor getInstance() {
@@ -230,12 +257,16 @@ public class Editor extends JFrame implements EventListener {
     public void newProject() {
         CreateProjectDialog createProjectDialog = new CreateProjectDialog();
         if (createProjectDialog != null) {
+            if (mProjectEditorList.getTabCount() == 0) {
+                toggleProjectEditorList(true);
+            }
             ProjectData project = new ProjectData(new File(createProjectDialog.mConfigFile.getPath()));
             project.setPending(true);
             addProject(project);
             // update rectent project list
             updateRecentProjects(createProjectDialog.mProjectDir.getPath(), createProjectDialog.mProjectName);
         }
+        
     }
 
     public void openSceneflow() {
@@ -243,11 +274,10 @@ public class Editor extends JFrame implements EventListener {
     }
 
     public void openProject() {
-
+        
         final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 
         fc.setFileView(new OpenProjectView());
-
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setFileFilter(new FileFilter() {
             public boolean accept(File f) {
@@ -297,9 +327,13 @@ public class Editor extends JFrame implements EventListener {
      * @param file the project directory
      */
     public void openProject(File file) {
+        if (mProjectEditorList.getTabCount() == 0) {
+            toggleProjectEditorList(true);
+        }
         File configFile = new File(file + System.getProperty("file.separator") + "config.xml");
         ProjectData project = new ProjectData(configFile);
         openProject(project);
+        
     }
 
     /**
@@ -384,6 +418,7 @@ public class Editor extends JFrame implements EventListener {
         if (mProjectEditorList.getTabCount() == 0) {
             mMenuBar.setFileSaveMenuEnabled(false);
             mMenuBar.setCloseMenuEnabled(false);
+            toggleProjectEditorList(false);
             //mMenuBar.setRunMenuEnabled(false);
             //mMenuBar.setStopMenuEnabled(false);
             //mMenuBar.setPauseMenuEnabled(false);
