@@ -1101,7 +1101,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         SuperNode superNode = (SuperNode) node.getDataNode();
 
         getSceneFlowManager().addActiveSuperNode(superNode);
-        mSceneFlowEditor.addPathComponent(superNode.getName());
+        mSceneFlowEditor.addPathComponent(superNode);
 
         // Create a new Gridmanager for the workspace
         mGridManager.update();
@@ -1124,19 +1124,25 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      * 
      *
      */
-    public void selectNewWorkSpaceLevel(String name) {
+    public void selectNewWorkSpaceLevel(SuperNode supernode) {
+        
+        
         if (getSceneFlowManager().getActiveSuperNodes().size() < 2) {
             return;
         }
-
+        
+        if (getSceneFlowManager().getCurrentActiveSuperNode().equals(supernode)) {     
+            return;
+        }
+                       
         clearCurrentWorkspace();
-
         SuperNode parent = getSceneFlowManager().getCurrentActiveSuperNode();
-
-        while (parent.getName().compareTo(name) != 0) {
+        
+        while (parent.equals(supernode) != true) {
             decreaseWorkSpaceLevel();
             parent = getSceneFlowManager().getCurrentActiveSuperNode();
         }
+        
     }
     
     /**
@@ -1179,7 +1185,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         // Pop the current active supernode from the list of
         // active supernodes and remove it's name from the path
         SuperNode s   = getSceneFlowManager().removeActiveSuperNode();
-        String    str = mSceneFlowEditor.removePathComponent();
+        SuperNode    sn = mSceneFlowEditor.removePathComponent();
 
         // Create a new Gridmanager for the workspace
         mGridManager.update();
