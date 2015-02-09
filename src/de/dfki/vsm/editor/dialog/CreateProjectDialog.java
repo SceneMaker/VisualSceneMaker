@@ -16,6 +16,7 @@ import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseTools;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.awt.Color;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -33,6 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import javax.swing.BorderFactory;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -42,6 +44,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.MouseInputListener;
 
 /**
  * @author Patrick Gebhard
@@ -118,6 +121,25 @@ public class CreateProjectDialog extends JDialog {
         mNameTextField = new JTextField(mProjectConfig.property("project.basic.name"));
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
+        mNameTextField.addMouseListener(new MouseInputListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                mNameTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            }
+            @Override
+            public void mousePressed(MouseEvent me) {}
+            @Override
+            public void mouseReleased(MouseEvent me) {}
+            @Override
+            public void mouseEntered(MouseEvent me) {}
+            @Override
+            public void mouseExited(MouseEvent me) {}
+            @Override
+            public void mouseDragged(MouseEvent me) {}
+            @Override
+            public void mouseMoved(MouseEvent me) {}
+        });
         mSceneFlowTextField = new JTextField(mProjectConfig.property("project.data.sceneflow"));
         mSceneFlowTextField.setMinimumSize(tSize);
         mSceneFlowTextField.setPreferredSize(tSize);
@@ -245,7 +267,9 @@ public class CreateProjectDialog extends JDialog {
         });
         mLocationTextField.addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {}
+            public void mouseClicked(MouseEvent e) {
+                 mLocationTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            }
             @Override
             public void mousePressed(MouseEvent e) {
                 locationDialogShown();
@@ -638,10 +662,12 @@ public class CreateProjectDialog extends JDialog {
 
     private boolean validateValues() {
         if (mNameTextField.getText().length() == 0) {
+            mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             return false;
         }
 
         if (mLocationTextField.getText().length() == 0) {
+            mLocationTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             return false;
         }
 

@@ -257,16 +257,26 @@ public class Editor extends JFrame implements EventListener {
     public void newProject() {
         CreateProjectDialog createProjectDialog = new CreateProjectDialog();
         if (createProjectDialog != null) {
-            if (mProjectEditorList.getTabCount() == 0) {
-                toggleProjectEditorList(true);
+            try {
+                String path = createProjectDialog.mConfigFile.getPath();
+                if (!path.equals("")) {
+                if (mProjectEditorList.getTabCount() == 0) {
+                    toggleProjectEditorList(true);
+                }
+                ProjectData project = new ProjectData(new File(path));
+                project.setPending(true);
+                addProject(project);
+                // update rectent project list
+                updateRecentProjects(createProjectDialog.mProjectDir.getPath(), createProjectDialog.mProjectName);
             }
-            ProjectData project = new ProjectData(new File(createProjectDialog.mConfigFile.getPath()));
-            project.setPending(true);
-            addProject(project);
-            // update rectent project list
-            updateRecentProjects(createProjectDialog.mProjectDir.getPath(), createProjectDialog.mProjectName);
+            } catch (Exception e) {
+                
+                System.out.println("Not selected path");
+            }
+            
+            
         }
-        
+
     }
 
     public void openSceneflow() {
@@ -274,7 +284,7 @@ public class Editor extends JFrame implements EventListener {
     }
 
     public void openProject() {
-        
+
         final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 
         fc.setFileView(new OpenProjectView());
@@ -307,6 +317,9 @@ public class Editor extends JFrame implements EventListener {
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 
             if (new File(fc.getSelectedFile() + System.getProperty("file.separator"), "config.xml").exists()) {
+                if (mProjectEditorList.getTabCount() == 0) {
+                    toggleProjectEditorList(true);
+                }
                 File configFile = new File(fc.getSelectedFile() + System.getProperty("file.separator") + "config.xml");
                 ProjectData project = new ProjectData(configFile);
                 addProject(project);
@@ -333,7 +346,7 @@ public class Editor extends JFrame implements EventListener {
         File configFile = new File(file + System.getProperty("file.separator") + "config.xml");
         ProjectData project = new ProjectData(configFile);
         openProject(project);
-        
+
     }
 
     /**
@@ -478,6 +491,7 @@ public class Editor extends JFrame implements EventListener {
         }
         // save properties
         Preferences.save();
+        mWelcomePanel.createListOfRecentProj();
     }
 
     /**
