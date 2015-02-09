@@ -116,7 +116,8 @@ public class MenuBar extends JMenuBar {
 
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
-                if (projectDir.exists()) {
+                if (projectDir.exists()) 
+                {
                     hasEntries = true;
                     JMenuItem recentFileMenuItem = new JMenuItem(projectName);
                     recentFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(Preferences.sDYNAMIC_KEYS.get(i), Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -199,7 +200,7 @@ public class MenuBar extends JMenuBar {
         });
 
         mCloseFileMenuItem = new JMenuItem("Close");
-//    mCloseFileMenuItem.setIcon(new ImageIcon("data/img/close.png"));
+//      mCloseFileMenuItem.setIcon(new ImageIcon("data/img/close.png"));
         mCloseFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mCloseFileMenuItem.addActionListener(new ActionListener() {
 
