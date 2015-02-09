@@ -46,13 +46,13 @@ public class WelcomePanel extends JPanel implements Observer {
     private JList mRecentProjects;
     private DefaultListModel model;
     private Editor parentEditor;
-
+    private JMenuBar mRecentProjectsBar;
     public WelcomePanel(final Editor mParent) {
         parentEditor = mParent;
         setBackground(java.awt.Color.white);
-        setLayout(new GridLayout(2,2));
+        setLayout(new GridLayout(2, 2));
         setBorder(BorderFactory.createEmptyBorder(100, 100, 100, 100));
-        
+
         /**
          * ELEMENTS
          */
@@ -64,7 +64,7 @@ public class WelcomePanel extends JPanel implements Observer {
         mOpenProjButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                mParent.openProject();
+                parentEditor.openProject();
             }
         });
         mNewProjButton = new JButton(ResourceLoader.loadImageIcon("/res/img/newproject.png"));
@@ -72,13 +72,30 @@ public class WelcomePanel extends JPanel implements Observer {
         mNewProjButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                mParent.newProject();
+                parentEditor.newProject();
             }
         });
-        JMenuBar mRecentProjectsBar = new JMenuBar();
+        mRecentProjectsBar  = new JMenuBar();
         mRecentProjectsBar.setBackground(Color.white);
         mRecentProjectsBar.setLayout(new BoxLayout(mRecentProjectsBar, BoxLayout.PAGE_AXIS));
         mRecentProjectsBar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
+        createListOfRecentProj();
+        container.add(mRecentProjectsBar);
+        add(container);
+        Box bx = Box.createHorizontalBox();
+        bx.add(mNewProjButton);
+        bx.add(mOpenProjButton);
+        add(bx);
+
+    }
+
+    @Override
+    public void update(Observable o, Object o1) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void createListOfRecentProj() {
+        mRecentProjectsBar.removeAll();
         for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
             String projectDirName = Preferences.getProperty("recentprojectdir" + i);
             String projectName = Preferences.getProperty("recentprojectname" + i);
@@ -93,22 +110,19 @@ public class WelcomePanel extends JPanel implements Observer {
 
                         @Override
                         public void mouseClicked(MouseEvent me) {
-                            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                         }
 
                         @Override
                         public void mousePressed(MouseEvent me) {
-                            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                         }
 
                         @Override
                         public void mouseReleased(MouseEvent me) {
-                            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                         }
 
                         @Override
                         public void mouseEntered(MouseEvent me) {
-                            me.getComponent().setBackground(new Color(82, 127, 255)); 
+                            me.getComponent().setBackground(new Color(82, 127, 255));
                         }
 
                         @Override
@@ -120,7 +134,7 @@ public class WelcomePanel extends JPanel implements Observer {
                     recentFileMenuItem.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
-                            mParent.toggleProjectEditorList(true);
+                            parentEditor.toggleProjectEditorList(true);
                             parentEditor.openProject(projectDir);
                         }
                     });
@@ -128,17 +142,5 @@ public class WelcomePanel extends JPanel implements Observer {
                 }
             }
         }
-        container.add(mRecentProjectsBar);
-        add(container);
-        Box bx = Box.createHorizontalBox();
-        bx.add(mNewProjButton);
-        bx.add(mOpenProjButton);
-        add(bx);
-
-    }
-
-    @Override
-    public void update(Observable o, Object o1) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
