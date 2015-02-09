@@ -54,7 +54,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
 
     // Clipboard
     final Clipboard                  clipboard       = getToolkit().getSystemClipboard();
-    private final LinkedList<String> mPathComponents = new LinkedList<>();
+    private final LinkedList<SuperNode> mPathComponents = new LinkedList<>();
     private final LOGDefaultLogger   mLogger         = LOGDefaultLogger.getInstance();
     private final EventCaster        mEventCaster    = EventCaster.getInstance();
     private final Editor             mSMEditor       = Editor.getInstance();
@@ -76,6 +76,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private JPanel             mPathDisplay;
     private JScrollBar         mPathScrollBar;
     private JScrollPane        mPathScrollPane;
+    
     
     //
     private final ProjectData        mProject;
@@ -111,7 +112,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mPathComponents.clear();
 
         for (SuperNode superNode : mEditor.getSceneFlowManager().getActiveSuperNodes()) {
-            mPathComponents.add(superNode.getName());
+            mPathComponents.add(superNode);
         }
 
         updatePathText();
@@ -144,8 +145,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         Editor.getInstance().update();
     }
 
-    public void addPathComponent(String value) {
-        mPathComponents.addLast(value);
+    public void addPathComponent(SuperNode supernode) {
+        mPathComponents.addLast(supernode);
         updatePathText();
 
         int va = mPathScrollBar.getMaximum();
@@ -153,36 +154,39 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mPathScrollBar.setValue(va);
     }
 
-    public String removePathComponent() {
-        String str = mPathComponents.removeLast();
+    public SuperNode removePathComponent() {
+        
+        SuperNode sn = mPathComponents.removeLast();
+       // String str = mPathComponents.removeLast();
 
         updatePathText();
 
-        return str;
+        return sn;
     }
 
-    public void setPathComponent(int index, String value) {
-        mPathComponents.set(index, value);
+    public void setPathComponent(int index, SuperNode supernode) {
+        mPathComponents.set(index, supernode);
         updatePathText();
     }
 
     private void updatePathText() {
         mPathDisplay.removeAll();
 
-        for (String str : mPathComponents) {
+        
+        for (final SuperNode sn : mPathComponents) {
             Action action = new AbstractAction("ACTION_SET_LEVEL") {
                 public void actionPerformed(ActionEvent e) {
-
-                    // System.err.println("setting level to node " + getValue(Action.NAME));
-                    mEditor.getWorkSpace().selectNewWorkSpaceLevel((String) getValue(Action.NAME));
-                }
+                    //System.err.println("setting level to node " + getValue(Action.NAME));
+                        mEditor.getWorkSpace().selectNewWorkSpaceLevel(sn);
+                    }
             };
-
-            action.putValue(Action.SHORT_DESCRIPTION, str);
-            action.putValue(Action.NAME, str);
-
-            JLabel  lab   = new JLabel("\u2192");
+            
+            action.putValue(Action.SHORT_DESCRIPTION, sn.getName());
+            action.putValue(Action.NAME, sn.getName());
+            JLabel lab = new JLabel("\u2192");
             JButton label = new JButton(action);
+
+
 
             label.setUI(new BasicButtonUI());
             label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -304,6 +308,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         addSeparator();
         initPathDisplay();
         add(mPathScrollPane);
+        
         add(Box.createHorizontalStrut(2));
         b = add(new AbstractAction("ACTION_LEVEL_UP", ResourceLoader.loadImageIcon("/res/img/new/up.png")) {
             @Override

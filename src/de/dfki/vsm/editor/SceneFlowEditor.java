@@ -8,6 +8,7 @@ import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
+import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -267,7 +268,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mElementDisplay = new ElementDisplay(sceneFlow, mProject, mScriptEditorPanel);
         mElementEditor = new ElementEditor();
         mToolBar = new SceneFlowToolBar(this, mProject);
-        mToolBar.addPathComponent(mSceneFlow.getName());
+        mToolBar.addPathComponent(mSceneFlow);
         //
         mObservable.addObserver(mToolBar);
         mObservable.addObserver(mElementDisplay);
@@ -343,11 +344,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         return mUndoManager;
     }
 
-    public void addPathComponent(String value) {
-        mToolBar.addPathComponent(value);
+    public void addPathComponent(SuperNode supernode) {
+        mToolBar.addPathComponent(supernode);
     }
 
-    public String removePathComponent() {
+    public SuperNode removePathComponent() {
         return mToolBar.removePathComponent();
     }
 
