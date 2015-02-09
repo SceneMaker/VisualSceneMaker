@@ -71,6 +71,14 @@ Human Centered Multimedia
 Augsburg University   
 kathrin.janowski@informatik.uni-augsburg.de  
 http://www.hcm-lab.de   
+
+* **Michael Kipp**    
+Hochschule Augsburg      
+michael.kipp@hs-augsburg.de
+
+* **Martin Rumpler**    
+Umweltcampus Birkenfeld  
+m.rumpler@umwelt-campus.de
 	
 ### Former Contributors
 
