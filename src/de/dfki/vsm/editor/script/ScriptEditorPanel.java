@@ -8,6 +8,7 @@ import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;
@@ -16,6 +17,7 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Observable;
@@ -58,8 +60,10 @@ public final class ScriptEditorPanel extends JPanel
     private final SceneElementDisplay mElementPane;
 
     private final SceneScript mSceneScript;
-    private final FunctionEditor mFunctionEditor;
+    private final FunctionEditor mFunctionEditor;    
+    private final DialogActEditor     mDialogActEditor;
     private final ProjectPreferences mPreferences;
+
     private final String mPreferencesFileName;
     
     private ProjectEditor mParentPE; //CONTAINER PROJECT EDITOR
@@ -68,6 +72,7 @@ public final class ScriptEditorPanel extends JPanel
     private String lastSearchedScene;
     private int lastIndex;
     Highlighter.HighlightPainter painter;
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -90,35 +95,37 @@ public final class ScriptEditorPanel extends JPanel
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+
      public ScriptEditorPanel(final SceneScript script, 
                              final SceneFlow sceneflow, 
                              final ProjectPreferences preferences, 
                              final String preferencesFileName, final ProjectEditor parentPE) {
         // Parent project editor
         mParentPE = parentPE;
+
+        // Initialize The Scene Script
+        mSceneScript = script;
         // Grab project preferences
         mPreferences = preferences;        
         mPreferencesFileName = preferencesFileName;
-        // Initialize The Editor Pane
-        mEditorPane = new ScriptEditorPane(mPreferences);
-        // Initialize The Scene Script
-        mSceneScript = script;
-        
-        
         // Initialize The Status Label
-        mStatusLabel = new CaretStatusLabel("");			
-        
+        mStatusLabel = new CaretStatusLabel("");
+        // Initialize The Editor Pane
+        mEditorPane = new ScriptEditorPane(mPreferences);        
         mEditorPane.addCaretListener(mStatusLabel);
-        mEditorPane.getDocument().addDocumentListener(this);		
+        mEditorPane.getDocument().addDocumentListener(this);       
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
         mScrollPane.setBorder(BorderFactory.createEtchedBorder());        
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionEditor(sceneflow);        	
+        mFunctionEditor = new FunctionEditor(sceneflow); 
+        // Initialize The Dialog Act Panel
+        mDialogActEditor = new DialogActEditor(mParentPE.getProject());        
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane(); 
         mTabPane.add("Script", mScrollPane);  
         mTabPane.add("Functions", mFunctionEditor);
+        mTabPane.add("DialogAct [Experimental]", mDialogActEditor);
         // Initialize the Toolbar
         mScenesToolbar  = new ScriptToolBar(this);
         // Initialize The Scroll Pane
@@ -146,12 +153,12 @@ public final class ScriptEditorPanel extends JPanel
         searchOffsets = new ArrayList<Integer>();
         lastSearchedScene = "";
         lastIndex = 0;
-
+        
         Highlighter highlighter = new DefaultHighlighter();
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
-      
-    }  
+    }
+     
     /**
      * Function to know if the panel can be hidden
      * @return boolean 
@@ -182,9 +189,10 @@ public final class ScriptEditorPanel extends JPanel
     public void setmParentPE(ProjectEditor mParentPE) {
         this.mParentPE = mParentPE;
     }
+    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////    
     @Override
     public void update(final EventObject event) {
         /*

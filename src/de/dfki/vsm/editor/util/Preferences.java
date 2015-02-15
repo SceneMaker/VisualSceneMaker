@@ -71,6 +71,7 @@ public class Preferences {
     public static final Color sCOMMENT_BADGE_COLOR = new Color(246, 231, 191, 128);
     public static final Color sSTART_SIGN_COLOR = new Color(181, 45, 13);
     public static final Color sMESSAGE_COLOR = new Color(181, 45, 13);
+    public static final Color sHIGHLIGHT_SCENE_COLOR = Color.YELLOW;
     //////////////////////////////////////////////////////////////////////////////
     // APPEARANCE CONFIGURATION
     //////////////////////////////////////////////////////////////////////////////
@@ -177,7 +178,6 @@ public class Preferences {
     public static boolean sSHOW_SMART_PATH_DEBUG = false;
     public static boolean sSHOWIDSOFNODES = true;
     private static int sPROPERTIES_PANE_SIZE;   
-    public static final Color sHIGHLIGHT_SCENE_COLOR = Color.YELLOW;
     /**
      *
      */

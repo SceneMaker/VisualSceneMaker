@@ -1,5 +1,3 @@
-
-
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
@@ -201,7 +199,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     public final SceneFlowToolBar getToolBar() {
         return mToolBar;
     }
-   
+
     public SceneFlowEditor(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
         
         mScriptEditorPanel = scriptEditor;
