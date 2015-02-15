@@ -1,6 +1,8 @@
 package de.dfki.vsm.editor;
 
+import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
+import de.dfki.vsm.editor.event.DialogActSelectedEvent;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
@@ -19,12 +21,14 @@ import static de.dfki.vsm.editor.util.Preferences.sPEDGE_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sROOT_FOLDER;
 import static de.dfki.vsm.editor.util.Preferences.sSUPERNODE_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sTEDGE_ENTRY;
+import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.script.SceneGroup;
 import de.dfki.vsm.model.script.SceneObject;
 import de.dfki.vsm.model.script.SceneScript;
+import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -32,7 +36,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -45,10 +48,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
@@ -151,6 +154,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     
 
     private final ProjectData   mProject;
+    private final DialogActInterface mDialogAct;
 
     /**
      * ***********************************************************************
@@ -215,7 +219,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             }
             
             else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
-                // Do nothing
+                mScriptEditorPanel.getTabPane().setSelectedIndex(2);
+                DialogAct selectedDA = (DialogAct)((TreeEntry) path.getLastPathComponent()).getData();
+                launchDASelectedEvent(selectedDA);
             }
             
             else if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.script.SceneGroup.class))
@@ -226,6 +232,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);         
            }
         }
+
     }
 
     /**
@@ -276,6 +283,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         mSceneFlow = sceneFlow;
         mScriptEditorPanel = scriptEditor;
         mProject = project;
+        mDialogAct = mProject.getDialogAct();
         setBorder(BorderFactory.createEmptyBorder());
         setCellRenderer(new CellRenderer());
         setBackground(Color.WHITE);
@@ -419,6 +427,50 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         //
         expandAll();
     }
+    
+    /**
+     *
+     */
+    void updatDialogueActs() {
+
+        mDAEntry.removeAllChildren();        
+       
+        Map<String,  List<String>> attributeValueMap = new HashMap();
+        List<String> valueList = new ArrayList<>();
+        
+        // Populate attributeValueMap with DA attributes and its values
+        for(String att: mProject.getDialogAct().getNLGAttributes()){
+            for(String val: mProject.getDialogAct().getNLGAttributeValues(att)){
+               valueList.add(val);
+            }
+             attributeValueMap.put(att, valueList);
+        }
+        
+        for (String phase : mProject.getDialogAct().getDialogueActPhases()) { 
+            for (String da : mProject.getDialogAct().getDialogueActs(phase)) {
+                mDAEntry.add(new TreeEntry( da  + " ("+ phase +")", null,  new DialogAct(da, phase, attributeValueMap)));
+            }
+        }
+    }
+
+    
+     /**
+     *
+     */
+    private void updatDialogueActs(ProjectData project){
+            
+        mDAEntry.removeAllChildren();
+
+        for (String phase : project.getDialogAct().getDialogueActPhases()) {
+           // mDAEntry.add(new TreeEntry(phase, null, null));
+
+            for (String da : project.getDialogAct().getDialogueActs(phase)) {
+              //  mDAEntry.add(new TreeEntry(da, null, new DialogAct(da, phase)));
+            }
+        }
+
+        expandAll();
+    }
   
     
     /**
@@ -486,6 +538,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                         }
                         else if (e.getClickCount() == 2 && !e.isConsumed()) {
                             TreeEntry entry = (TreeEntry) path.getLastPathComponent();
+                            modifyDialogAct(entry);
                         }
                     }
                 }
@@ -505,6 +558,13 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 TreeEntrySelectedEvent ev = new TreeEntrySelectedEvent(this, entry);
                 mEventCaster.convey(ev);     
             }
+
+            private void modifyDialogAct(TreeEntry entry) {
+                if (entry != null) {                    
+                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct,entry.getText());
+                    daAttributeDialog.run();                                
+                }
+           }            
         };
     }
     
@@ -636,6 +696,11 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         ev.setLanguage(sceneLanguage);
         mEventCaster.convey(ev);
     }
+    
+    private void launchDASelectedEvent(DialogAct dialogAct) {                
+        DialogActSelectedEvent ev = new DialogActSelectedEvent(this, dialogAct);
+        mEventCaster.convey(ev);                    
+    }  
             
     /**
      * ***********************************************************************
@@ -715,12 +780,16 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
         //mLogger.message("ElementDisplay.update(" + obj + ")");
         mObservable.update(obj);
         updateFunctionList();
+        updateDAList();
     }
 
     private void updateFunctionList(){
         mElementTree.updateFunDefs();
     }
 
+    private void updateDAList() {
+        mElementTree.updatDialogueActs();
+    }
      
     @Override
     public void update(EventObject event) {       
