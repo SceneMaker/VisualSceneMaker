@@ -230,7 +230,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 String sceneLanguageSelect = ((TreeEntry)parentPath.getLastPathComponent()).getText();
                 SceneGroup selectedScene = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();        
                 launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);         
-           }
+            }
         }
 
     }

@@ -82,7 +82,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     public void update(EventObject evt) {
         //System.out.println(evt.getClass());
         if (evt instanceof FunctionSelectedEvent || evt instanceof TreeEntrySelectedEvent) {
-            if(((TreeEntrySelectedEvent)evt).getmEntry().getText().contains("Scenes") ||  ((TreeEntrySelectedEvent)evt).getmEntry().getText().contains("Functions"))
             {
                 showSceneDocEditor();
             }

@@ -1,11 +1,8 @@
 package de.dfki.vsm.editor.dialog;
 
 import de.dfki.vsm.editor.Editor;
-import de.dfki.vsm.editor.event.FunctionCreatedEvent;
-import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
-import de.dfki.vsm.util.evt.EventCaster;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -14,9 +11,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
@@ -79,7 +82,7 @@ public class FunDefDialog extends Dialog {
     private JPanel mLowerPanel;
     private Color mDefaultColor;
     private Boolean mIsValidClass;
-
+      
     private final Document mNameDocument = new PlainDocument() {
 
         @Override
@@ -118,17 +121,18 @@ public class FunDefDialog extends Dialog {
         mNameTextField = new JTextField();
         mNameTextField.setDocument(mNameDocument);
 
-        //
+        //        
         mClassNameLabel = new JLabel("Class:");
-        mClassNameTextField = new JTextField();
-        mClassNameTextField.addKeyListener(new KeyAdapter() {
+        mClassNameTextField = new JTextField();   
+          mClassNameTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent evt) {
                 classTextFieldKeyTyped(evt);
             }
         });
 
-        mMethodLabel = new JLabel("Method:");
+        //    
+        mMethodLabel = new JLabel("Method:");      
         mMethodComboBox = new JComboBox();
         mMethodComboBox.setModel(new DefaultComboBoxModel());
         mMethodComboBox.addActionListener(new ActionListener() {
@@ -137,6 +141,7 @@ public class FunDefDialog extends Dialog {
                 methodComboBoxActionPerformed(evt);
             }
         });
+        
         //
         mArgLabel = new JLabel("Arguments:");
         mArgList = new JList();
@@ -148,6 +153,7 @@ public class FunDefDialog extends Dialog {
                 argumentListMouseClicked(evt);
             }
         });
+        
         //
         mOkButton = new JButton("Ok");
         mOkButton.addActionListener(new ActionListener() {
@@ -156,6 +162,7 @@ public class FunDefDialog extends Dialog {
                 okActionPerformed();
             }
         });
+        
         //
         mCancelButton = new JButton("Cancel");
         mCancelButton.addActionListener(new ActionListener() {
@@ -164,10 +171,11 @@ public class FunDefDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
+        
         //
         mMessageLabel = new JLabel();
-        //         
-
+        
+        //  
         addCompoment(mNameLabel, 10, 10, 70, 20);
         addCompoment(mNameTextField, 90, 10, 200, 20);
         addCompoment(mClassNameLabel, 10, 35, 70, 20);
@@ -193,7 +201,7 @@ public class FunDefDialog extends Dialog {
         // definition and set the selected method to the method of the user
         // command definition.
         initMethodComboBox();
-        String selectedMethod = mFunDef.getMethod().toString() + mFunDef.getParamPrettyPrint();
+        String selectedMethod = mFunDef.getMethod() + mFunDef.getParamPrettyPrint();
         selectedMethod = selectedMethod.replaceAll("\\s+", "");
 
         mMethodComboBox.setSelectedItem(selectedMethod);
@@ -231,9 +239,7 @@ public class FunDefDialog extends Dialog {
                     mMethodMap.put(methodStr, method);
                 }
             }
-        } catch (SecurityException ex) {
-            ex.printStackTrace();
-        } catch (ClassNotFoundException ex) {
+        }  catch (ClassNotFoundException ex) {
             isClass = false;
         }
         if (!isClass) {
@@ -246,16 +252,10 @@ public class FunDefDialog extends Dialog {
                 Field javaField = parentClass.getField(memberName);
                 Class javaClass = javaField.getType();
 
-                if (Modifier.isStatic(javaField.getModifiers()) && Modifier.isPublic(javaField.getModifiers())) {
+                if (Modifier.isStatic(javaField.getModifiers()) && Modifier.isPublic(javaField.getModifiers())) {                          
                     getAvailableMethodNames(javaClass); //PG added 10.1.14: recursively get all available methods
                 }
-            } catch (SecurityException ex) {
-                ex.printStackTrace();
-            } catch (ClassNotFoundException ex) {
-                isObject = false;
-            } catch (NoSuchFieldException ex) {
-                isObject = false;
-            } catch (StringIndexOutOfBoundsException ex) {
+            } catch (ClassNotFoundException | NoSuchFieldException | StringIndexOutOfBoundsException ex) {
                 isObject = false;
             }
         }
@@ -282,6 +282,7 @@ public class FunDefDialog extends Dialog {
     * Collects recursively all avaiable method names
     */
     private void getAvailableMethodNames(Class c) {
+   
         for (Method method : c.getDeclaredMethods()) {
             if (Modifier.isPublic(method.getModifiers())) {
                 String methodStr = methodToString(method);
@@ -445,7 +446,7 @@ public class FunDefDialog extends Dialog {
         }
     }
 
-////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
 // Helper Methods
     private String methodToString(Method method) {
         String name = method.getName() + "(";
@@ -587,5 +588,5 @@ public class FunDefDialog extends Dialog {
     public void setSelectedMethod(Method value) {
         mSelectedMethod = value;
     }
-
+    
 }
