@@ -71,7 +71,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mFunDefDialogList = new ArrayList<>();
         setLayout(new GridLayout(1, 0));
         initComponents();
-
         // Add the element editor to the event multicaster
         EventCaster.getInstance().append(this);
     }
@@ -105,6 +104,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             @Override
             public BasicSplitPaneDivider createDefaultDivider() {
                 return new BasicSplitPaneDivider(this) {
+                    @Override
                     public void setBorder(Border b) {}
                 };
             }
@@ -256,8 +256,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                              funDef.addParam(
                                     new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
                             }
-                            Editor.getInstance().update(); 
                             
+                            Editor.getInstance().update();                             
                         }                        
                     }
                 }
