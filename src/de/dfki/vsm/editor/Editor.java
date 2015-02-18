@@ -13,6 +13,7 @@ import de.dfki.vsm.runtime.event.AbortEvent;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
@@ -30,6 +31,8 @@ import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -72,6 +75,7 @@ public class Editor extends JFrame implements EventListener {
      *   Welcome screen
      */
     private final WelcomePanel mWelcomePanel;
+    private final JScrollPane mWelcomeScrollPanel;
 
     private ComponentListener mComponentListener = new ComponentListener() {
         public void componentResized(ComponentEvent e) {
@@ -133,11 +137,12 @@ public class Editor extends JFrame implements EventListener {
         // Init the project editor list
         mProjectEditorList = new ProjectEditorList();
         mObservable.addObserver(mProjectEditorList);
-
+        // Init welcome screen
         mWelcomePanel = new WelcomePanel(this);
-        mWelcomePanel.setMinimumSize(new Dimension(300, 200));
-        add(mWelcomePanel);
-
+        mWelcomeScrollPanel = new JScrollPane(mWelcomePanel);
+        add(mWelcomeScrollPanel);
+        
+        setIconImage(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png").getImage());
         // Init the windows closing support
         addWindowListener(new WindowAdapter() {
             @Override
@@ -173,9 +178,9 @@ public class Editor extends JFrame implements EventListener {
     public void toggleProjectEditorList(boolean state) {
         if (state) {
             add(mProjectEditorList);
-            remove(mWelcomePanel);
+            remove(mWelcomeScrollPanel);
         } else {
-            add(mWelcomePanel);
+            add(mWelcomeScrollPanel);
             remove(mProjectEditorList);
         }
         this.update(this.getGraphics());
@@ -207,8 +212,6 @@ public class Editor extends JFrame implements EventListener {
 
     private void checkAndSetLocation() {
         Point finalPos = new Point(0, 0);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
         Point editorPosition = new Point(
                 Integer.valueOf(Preferences.getProperty("frame_posx")),
                 Integer.valueOf(Preferences.getProperty("frame_posy")));
