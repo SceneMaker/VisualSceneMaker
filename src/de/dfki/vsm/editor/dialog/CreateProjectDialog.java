@@ -13,6 +13,7 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconObject;
 import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseTools;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -21,6 +22,7 @@ import java.awt.Color;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -43,7 +45,9 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.MouseInputListener;
 
 /**
@@ -59,7 +63,7 @@ public class CreateProjectDialog extends JDialog {
     // buttons
     private JButton mOkButton     = null;
     private JButton mCancelButton = null;
-
+    private JButton mLocationButton;
     // text fields
     private JTextField            mLocationTextField                 = null;
     private JTextField            mNameTextField                     = null;
@@ -73,7 +77,12 @@ public class CreateProjectDialog extends JDialog {
     private JTextField            mDefaultScenePlayerConfigTextField = null;
     private ArrayList<JTextField> mScenePlayerTextFields             = null;
     private ArrayList<JTextField> mScenePlayerConfigTextFields       = null;
-
+    
+    //Labels
+    private JLabel errorMsg;
+    private JLabel lblName;
+    private JLabel lblPath;
+    
     // flags
     private boolean mLocationDialog = false;
 
@@ -96,6 +105,7 @@ public class CreateProjectDialog extends JDialog {
     // essential strings
     public String         mProjectName;
     private ProjectConfig mProjectConfig;
+    
 
     public CreateProjectDialog() {
         super(Editor.getInstance(), "New Project", true);
@@ -109,7 +119,7 @@ public class CreateProjectDialog extends JDialog {
                 
         mProperties.add(new ConfigEntry("project.dialogact.class", "de.dfki.vsm.runtime.dialogact.DummyDialogAct"));
         mProperties.add(new ConfigEntry("project.dialogact.player", "de.dfki.vsm.runtime.player.DefaultDialogueActPlayer"));
-      
+        
         
         mProperties.add(new ConfigEntry("project.player.config", "player.xml"));
         mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer"));
@@ -122,8 +132,9 @@ public class CreateProjectDialog extends JDialog {
     private void initComponents() {
 
         // create contentfields and set inital content
-        Dimension tSize = new Dimension(150, 30);
-
+        Dimension tSize = new Dimension(250, 30);
+        Dimension labelSize = new Dimension(100, 30);
+        setBackground(Color.white);
         mNameTextField = new JTextField(mProjectConfig.property("project.basic.name"));
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
@@ -271,7 +282,14 @@ public class CreateProjectDialog extends JDialog {
             @Override
             public void focusLost(FocusEvent e) {}
         });
-        mLocationTextField.addMouseListener(new MouseListener() {
+        mLocationButton = new JButton(ResourceLoader.loadImageIcon("/res/img/search_icon.png"));
+        mLocationButton.setOpaque(false);
+        mLocationButton.setFocusable(false);
+        mLocationButton.setBorder(null);
+        mLocationButton.setContentAreaFilled(false);
+        mLocationButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/search_icon_blue.png"));
+        mLocationButton.setToolTipText("Search Path...");
+        mLocationButton.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
                  mLocationTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
@@ -302,7 +320,16 @@ public class CreateProjectDialog extends JDialog {
         });
 
         // create buttons
-        mOkButton = new JButton("Ok");
+        mOkButton = new JButton(ResourceLoader.loadImageIcon("/res/img/ok_icon.png"));
+        mOkButton.setOpaque(false);
+        mOkButton.setFocusable(false);
+        mOkButton.setBorder(null);
+        mOkButton.setContentAreaFilled(false);
+        mOkButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png"));
+        mOkButton.setToolTipText("Create Project");
+        mOkButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mOkButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mOkButton.setText("Ok");
         mOkButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -310,7 +337,16 @@ public class CreateProjectDialog extends JDialog {
             }
         });
         mOkButton.setSelected(true);
-        mCancelButton = new JButton("Cancel");
+        mCancelButton = new JButton(ResourceLoader.loadImageIcon("/res/img/cancel_icon.png"));
+        mCancelButton.setOpaque(false);
+        mCancelButton.setFocusable(false);
+        mCancelButton.setBorder(null);
+        mCancelButton.setContentAreaFilled(false);
+        mCancelButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png"));
+        mCancelButton.setToolTipText("Cancel");
+        mCancelButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        mCancelButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        mCancelButton.setText("Cancel");
         mCancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -328,21 +364,27 @@ public class CreateProjectDialog extends JDialog {
         locationPanel.setOpaque(false);
         locationPanel.setLayout(new BoxLayout(locationPanel, BoxLayout.X_AXIS));
         locationPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        locationPanel.add(new JLabel("Path"));
+        lblPath = new JLabel("Path :");
+        lblPath.setPreferredSize(labelSize);
+        locationPanel.add(lblPath);
         locationPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         locationPanel.add(mLocationTextField);
-        locationPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        locationPanel.add(Box.createRigidArea(new Dimension(22, 0)));
+        locationPanel.add(mLocationButton);
+        locationPanel.add(Box.createRigidArea(new Dimension(5, 1)));
 
         JPanel namePanel = new JPanel();
 
         namePanel.setOpaque(false);
         namePanel.setLayout(new BoxLayout(namePanel, BoxLayout.X_AXIS));
         namePanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        namePanel.add(new JLabel("Name"));
+        lblName = new JLabel("Name :");
+        lblName.setPreferredSize(labelSize);
+        namePanel.add(lblName);
         namePanel.add(Box.createRigidArea(new Dimension(5, 0)));
         namePanel.add(mNameTextField);
-        namePanel.add(Box.createRigidArea(new Dimension(5, 0)));
-
+        namePanel.add(Box.createRigidArea(new Dimension(50, 0)));
+        
 //      JPanel sceneFlowPanel = new JPanel();
 //      sceneFlowPanel.setLayout(new BoxLayout(sceneFlowPanel, BoxLayout.X_AXIS));
 //      sceneFlowPanel.add(Box.createRigidArea(new Dimension(5, 0)));
@@ -393,9 +435,13 @@ public class CreateProjectDialog extends JDialog {
 
         // compose config panel
         mConfigPanel.add(namePanel);
+        mConfigPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         mConfigPanel.add(locationPanel);
         mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        mConfigPanel.add(errorMsg);
 
 //      mConfigPanel.add(sceneFlowPanel);
 //      mConfigPanel.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -413,15 +459,17 @@ public class CreateProjectDialog extends JDialog {
 //      mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 //      mConfigPanel.add(defaultScenePlayerConfigPanel);
         mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
+        mConfigPanel.add(new JSeparator(JSeparator.HORIZONTAL));
         // compose panels
         mButtonsPanel = new JPanel();
         mButtonsPanel.setOpaque(false);
         mButtonsPanel.setLayout(new BoxLayout(mButtonsPanel, BoxLayout.X_AXIS));
+        mButtonsPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 40));
         mButtonsPanel.add(Box.createHorizontalGlue());
         mButtonsPanel.add(mCancelButton);
+        mButtonsPanel.add(Box.createRigidArea(new Dimension(100, 1)));
         mButtonsPanel.add(mOkButton);
-        mButtonsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        mButtonsPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         mMainPanel = new JPanel();
 
 //      {  
@@ -449,16 +497,18 @@ public class CreateProjectDialog extends JDialog {
 //          }  
 //      };
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
+        mMainPanel.setOpaque(false);
         mMainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         mMainPanel.add(mConfigPanel);
         mMainPanel.add(Box.createVerticalGlue());
         mMainPanel.add(mButtonsPanel);
         mMainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         add(mMainPanel);
+        getContentPane().setBackground(Color.white);
         setResizable(false);
         pack();
 
-        // setSize(550, 425);
+        // setSize(400, 300);
         setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
                     getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
     }
@@ -669,14 +719,16 @@ public class CreateProjectDialog extends JDialog {
     private boolean validateValues() {
         if (mNameTextField.getText().length() == 0) {
             mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
             return false;
         }
 
         if (mLocationTextField.getText().length() == 0) {
             mLocationTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
             return false;
         }
-
+        errorMsg.setForeground(Color.white);
         // TODO!
         // check exisiting files
         return true;
