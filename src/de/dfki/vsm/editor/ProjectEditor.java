@@ -303,7 +303,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      * Shows the bottom part of the project editor
      */
     public void showSceneDocEditor(){
-        int originalPos = (int)(topElement*java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+        int originalPos = (int)(topElement*getHeight());
         this.setDividerLocation(originalPos);
         firstEntrance = true;
     }
