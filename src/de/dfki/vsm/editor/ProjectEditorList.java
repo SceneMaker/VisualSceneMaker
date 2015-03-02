@@ -122,6 +122,9 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
 
     public void saveCurrent() {
         ((ProjectEditor) getSelectedComponent()).save();
+     
+        setTitleAt(getSelectedIndex(), getTitleAt(getSelectedIndex()).replace("*", ""));
+      
     }
 
     public void closeCurrent() {

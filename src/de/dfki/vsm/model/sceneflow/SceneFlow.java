@@ -149,10 +149,25 @@ public class SceneFlow extends SuperNode{
 
         out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         out.println(
-                "<SceneFlow " + "id=\"" + mId + "\" " + "name=\"" + mName + "\" " + "comment=\"" + mComment + "\" " + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "start=\"" + start + "\" " + //"context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "+
-                "context=\"" + mContextClass + "\" " + "package=\"" + mPackageName + "\" " + //      "scenefile=\"" + mSceneFileName + "\" " +
-                //      "sceneinfo=\"" + mSceneInfoFileName + "\" " +
-                "xmlns=\"" + Preferences.getProperty("xmlns") + "\" " + "xmlns:xsi=\"" + Preferences.getProperty("xmlns_xsi") + "\" " + "xsi:schemaLocation=\"" + Preferences.getProperty("xmlns") + " " + Preferences.getProperty("xsi_schemeLocation") + "\">").push();
+                "<SceneFlow " + "id=\"" + mId 
+                        + "\" " + "name=\"" + mName + "\" " 
+                        + "comment=\"" + mComment 
+                        + "\" hideLocalVar=\"" + mHideLocalVarBadge
+                        + "\" hideGlobalVar=\"" + mHideGlobalVarBadge
+                        + "\" " + "exhaustive=\"" + mExhaustive 
+                        + "\" " + "preserving=\"" + mPreserving 
+                        + "\" " + "start=\"" + start 
+                        + "\" " 
+                        // + "context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "
+                        + "context=\"" + mContextClass + "\" " + "package=\"" + mPackageName + "\" " 
+                        // + "scenefile=\"" + mSceneFileName + "\" " 
+                        // + "sceneinfo=\"" + mSceneInfoFileName + "\" " 
+                        + "xmlns=\"" + Preferences.getProperty("xmlns") 
+                        + "\" " + "xmlns:xsi=\"" + Preferences.getProperty("xmlns_xsi") 
+                        + "\" " + "xsi:schemaLocation=\"" + Preferences.getProperty("xmlns") + " " + Preferences.getProperty("xsi_schemeLocation") + "\">").push();
+       
+        
+         
         int i = 0;
 
         out.println("<Define>").push();
@@ -189,8 +204,12 @@ public class SceneFlow extends SuperNode{
             mDEdge.writeXML(out);
         }
 
-        if (mVariableBadge != null) {
-            mVariableBadge.writeXML(out);
+        if (mLocalVariableBadge != null) {
+            mLocalVariableBadge.writeXML(out);
+        }
+        
+        if (mGlobalVariableBadge != null) {
+            mGlobalVariableBadge.writeXML(out);
         }
 
         for (i = 0; i < mCommentList.size(); i++) {
@@ -366,7 +385,10 @@ public class SceneFlow extends SuperNode{
         mPreserving = Boolean.valueOf(element.getAttribute("preserving"));
         mXMLSchemeLocation = element.getAttribute("xsi:schemaLocation");
         mXMLNameSpace = element.getAttribute("xmlns");
-        mXMLSchemeInstance = element.getAttribute("xmlns:xsi");
+        mXMLSchemeInstance = element.getAttribute("xmlns:xsi");        
+        mHideLocalVarBadge = Boolean.valueOf(element.getAttribute("hideLocalVar"));
+        mHideGlobalVarBadge = Boolean.valueOf(element.getAttribute("hideGlobalVar"));
+        
         //mSceneFileName = element.getAttribute("scenefile");
         //mSceneInfoFileName = element.getAttribute("sceneinfo");
 
@@ -400,10 +422,16 @@ public class SceneFlow extends SuperNode{
                             mVarDefList.add(def);
                         }
                     });
-                } else if (tag.equals("VariableBadge")) {
-                    VariableBadge varBadge = new VariableBadge();
+                } else if (tag.equals("LocalVariableBadge")) {
+                    VariableBadge varBadge = new VariableBadge("LocalVariableBadge");
                     varBadge.parseXML(element);
-                    mVariableBadge = varBadge;
+                    mLocalVariableBadge = varBadge;
+                } else if (tag.equals("GlobalVariableBadge")) {
+                    VariableBadge varBadge = new VariableBadge("GlobalVariableBadge");
+                    varBadge.parseXML(element);
+                    mGlobalVariableBadge = varBadge;  
+                } else if (tag.equals("VariableBadge")) {
+                  // do nothing (left for old project's compatibility)                    
                 } else if (tag.equals("Comment")) {
                     Comment comment = new Comment();
                     comment.parseXML(element);
@@ -461,7 +489,11 @@ public class SceneFlow extends SuperNode{
                     + ((mParentNode == null) ? 0 : mParentNode.hashCode())                    
                     + ((mHistoryNode == null) ? 0 : mHistoryNode.hashCode())
                     + ((mStartNodeMap == null) ? 0 : mStartNodeMap.hashCode())                   
-                    + ((mIsHistoryNode == true )? 1 : 0);
+                    + ((mIsHistoryNode == true )? 1 : 0)
+                    + ((mLocalVariableBadge == null) ? 0 : mLocalVariableBadge.hashCode()) 
+                    + ((mGlobalVariableBadge == null) ? 0 : mGlobalVariableBadge.hashCode()) 
+                    + ((mHideLocalVarBadge == true )? 1 : 0)
+                    + ((mHideGlobalVarBadge == true )? 1 : 0);
         
         // Add hash of existing user commands
         for (FunDef fundDef: mUserCmdDefMap.values() ) {
