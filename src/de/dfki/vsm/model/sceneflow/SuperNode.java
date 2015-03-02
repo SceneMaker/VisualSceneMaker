@@ -21,13 +21,21 @@ import org.w3c.dom.Element;
  */
 public class SuperNode extends Node {
 
-    protected VariableBadge mVariableBadge = new VariableBadge();
+   
     protected Vector<Comment> mCommentList = new Vector<Comment>();
     protected Vector<Node> mNodeList = new Vector<Node>();
     protected Vector<SuperNode> mSuperNodeList = new Vector<SuperNode>();
     protected HashMap<String, Node> mStartNodeMap = new HashMap<String, Node>();
     protected Node mHistoryNode = null;
-
+    
+    
+    protected boolean mHideLocalVarBadge = false; 
+    protected boolean mHideGlobalVarBadge = false; 
+    
+    protected VariableBadge mLocalVariableBadge = new VariableBadge("LocalVariableBadge");
+    protected VariableBadge mGlobalVariableBadge = new VariableBadge("GlobalVariableBadge");
+    
+ 
     public SuperNode() {
     }
 
@@ -52,6 +60,22 @@ public class SuperNode extends Node {
 
     public void addComment(Comment value) {
         mCommentList.add(value);
+    }
+    
+    public void hideGlobalVarBadge(Boolean value) {
+        mHideGlobalVarBadge = value;
+    }
+    
+    public Boolean isGlobalVarBadgeHidden() {
+        return mHideGlobalVarBadge;
+    }
+    
+    public void hideLocalVarBadge(Boolean value) {
+        mHideLocalVarBadge = value;
+    }
+    
+    public Boolean isLocalVarBadgeHidden() {
+        return mHideLocalVarBadge;
     }
 
     public void removeComment(Comment value) {
@@ -178,14 +202,22 @@ public class SuperNode extends Node {
         return null;
     }
 
-    public VariableBadge getVariableBadge() {
-        return mVariableBadge;
+    public VariableBadge getLocalVariableBadge() {
+        return mLocalVariableBadge;
     }
 
-    public void setVariableBadge(VariableBadge vb) {
-        mVariableBadge = vb;
+    public void setLocalVariableBadge(VariableBadge vb) {
+        mLocalVariableBadge = vb;
     }
 
+    public VariableBadge getGlobalVariableBadge() {
+        return mGlobalVariableBadge;
+    }
+
+    public void setGlobalVariableBadge(VariableBadge vb) {
+        mGlobalVariableBadge = vb;
+    }
+    
     @Override
     public void establishTargetNodes() {
         super.establishTargetNodes();
@@ -243,6 +275,8 @@ public class SuperNode extends Node {
                 + "\" comment=\"" + mComment
                 + "\" exhaustive=\"" + mExhaustive
                 + "\" preserving=\"" + mPreserving
+                + "\" hideLocalVar=\"" + mHideLocalVarBadge
+                + "\" hideGlobalVar=\"" + mHideGlobalVarBadge
                 + "\" start=\"" + start
                 + "\">").push();
         int i = 0;
@@ -295,8 +329,12 @@ public class SuperNode extends Node {
             mGraphics.writeXML(out);
         }
 
-        if (mVariableBadge != null) {
-            mVariableBadge.writeXML(out);
+        if (mLocalVariableBadge != null) {
+            mLocalVariableBadge.writeXML(out);
+        }
+        
+        if (mGlobalVariableBadge != null) {
+            mGlobalVariableBadge.writeXML(out);
         }
 
         for (i = 0; i < mCommentList.size(); i++) {
@@ -310,6 +348,7 @@ public class SuperNode extends Node {
         for (i = 0; i < mSuperNodeList.size(); i++) {
             mSuperNodeList.get(i).writeXML(out);
         }
+        
 
         out.pop().println("</SuperNode>");
     }
@@ -321,6 +360,9 @@ public class SuperNode extends Node {
         mComment = element.getAttribute("comment");
         mExhaustive = Boolean.valueOf(element.getAttribute("exhaustive"));
         mPreserving = Boolean.valueOf(element.getAttribute("preserving"));
+        mHideLocalVarBadge = Boolean.valueOf(element.getAttribute("hideLocalVar"));
+        mHideGlobalVarBadge = Boolean.valueOf(element.getAttribute("hideGlobalVar"));
+                
 
         String[] arr = element.getAttribute("start").split(";");
         for (String str : arr) {
@@ -357,10 +399,16 @@ public class SuperNode extends Node {
                             mCmdList.add(Command.parse(element));
                         }
                     });
-                } else if (tag.equals("VariableBadge")) {
-                    VariableBadge varBadge = new VariableBadge();
+                } else if (tag.equals("LocalVariableBadge")) {
+                    VariableBadge varBadge = new VariableBadge("LocalVariableBadge");
                     varBadge.parseXML(element);
-                    mVariableBadge = varBadge;
+                    mLocalVariableBadge = varBadge;
+                } else if (tag.equals("GlobalVariableBadge")) {
+                    VariableBadge varBadge = new VariableBadge("GlobalVariableBadge");
+                    varBadge.parseXML(element);
+                    mGlobalVariableBadge = varBadge;
+                } else if (tag.equals("VariableBadge")) {
+                    // do nothing (left for old project's compatibility)     
                 } else if (tag.equals("Comment")) {
                     Comment comment = new Comment();
                     comment.parseXML(element);
@@ -428,13 +476,17 @@ public class SuperNode extends Node {
     }
     
     public int getHashCode() {
-     
+        
+       
         // Add hash of General Attributes 
         int hashCode = ((mName == null) ? 0 : mName.hashCode()) 
                     + ((mComment == null) ? 0 : mComment.hashCode()) 
                     + ((mGraphics == null) ? 0 : mGraphics.toString().hashCode())               
                     + ((mHistoryNode == null) ? 0 : mHistoryNode.hashCode())
-                    + ((mIsHistoryNode == true )? 1 : 0);
+                    + ((mLocalVariableBadge == null) ? 0 : mLocalVariableBadge.hashCode()) 
+                    + ((mGlobalVariableBadge == null) ? 0 : mGlobalVariableBadge.hashCode()) 
+                    + ((mHideLocalVarBadge == true )? 1 : 0)
+                    + ((mHideGlobalVarBadge == true )? 1 : 0);
 
         // Add hash of all nommands inside SuperNode
         for (int cntCommand = 0; cntCommand < getSizeOfCmdList(); cntCommand++) {

@@ -22,9 +22,15 @@ import de.dfki.vsm.editor.action.ToggleStartNodeAction;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
+import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.EEdge;
@@ -33,27 +39,18 @@ import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
+import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
+import de.dfki.vsm.model.sceneflow.graphics.node.Position;
 import de.dfki.vsm.model.script.SceneGroup;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
-import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -76,11 +73,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
-
 import java.io.IOException;
-
 import java.text.AttributedString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,7 +82,6 @@ import java.util.LinkedList;
 import java.util.Observer;
 import java.util.Set;
 import java.util.Vector;
-
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -116,21 +109,26 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     private final HashMap<Node, CmdBadge> mCmdBadgeMap = new HashMap<>();
 
     // Variable display
-    private VarBadge          mVarDisplay          = null;
-    private NodeVariableBadge mNodeVariableDisplay = null;
-
+    private VarBadgeLocal      mLocalVarDisplay       = null;
+    private VarBadgeGlobal     mGlobalVarDisplay      = null;       
+    private NodeVariableBadge  mNodeVariableDisplay   = null;
+    private boolean  mVisibleBadges   = true;
+    
+  
     // Flags for mouse interaction
+    private VarBadgeLocal      mSelectedLocalVariableBadge = null;
+    private VarBadgeGlobal     mSelectedGlobalVariableBadge = null;
+    
     private Node               mSelectedNode          = null;
     public Edge                mSelectedEdge          = null;
-    private Comment            mSelectedComment       = null;
-    private VarBadge           mSelectedVariableBadge = null;
+    private Comment            mSelectedComment       = null;    
     private Rectangle2D.Double mAreaSelection         = null;
     private Rectangle2D.Double mDrawArea              = null;
     private Point              mLastMousePosition     = new Point(0, 0);
     private boolean            mDoAreaSelection       = false;
     private boolean            mDoAreaAction          = false;
     private Set<Node>          mSelectedNodes         = new HashSet<>();
-
+    
     // Variables for edge creation
     private Edge                   mEdgeInProgress   = null;
     private Node                   mEdgeSourceNode   = null;
@@ -153,7 +151,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     private final EventCaster      mEventCaster = EventCaster.getInstance();
 
     //
-    private final LinkedList<VarBadge> mVarBadgeStack = new LinkedList<>();
+    private final LinkedList<VarBadgeLocal> mVarBadgeStack = new LinkedList<>();
 
     // Drag & Drop support
     private DropTarget         mDropTarget;
@@ -195,9 +193,11 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
 
         mEventCaster.convey(e);
+          // Add the element editor to the event multicaster
+        mEventCaster.append(this);
 
         // display components
-        showVariableBadge();
+        showVariableBadges();
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
     }
@@ -231,7 +231,20 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      * 
      */
     @Override
-    public void update(EventObject event) {}
+    public void update(EventObject event) {    
+       checkChangesOnWorkspace();
+    }
+    
+    private void checkChangesOnWorkspace() {
+         //checkHash
+        if(Editor.getInstance().getProjectEditorList().getSelectedProject()!=null){
+            if(mProject.hasChanged()){        
+                Editor.getInstance().getProjectEditorList().setTitleAt(
+                        Editor.getInstance().getProjectEditorList().getSelectedIndex(), 
+                        mProject.getProjectName() + "*");
+            }
+        }
+    }
 
     public void clearClipBoard() {
         mClipboard.clear();
@@ -332,13 +345,11 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                 if (data instanceof Comment) {
                     dtde.acceptDrag(dtde.getDropAction());
-
                     // System.err.println("Accept Drag over");
                 }
                 
-                 if (data instanceof DialogAct) {
+                if (data instanceof DialogAct) {
                     dtde.acceptDrag(dtde.getDropAction());
-
                 }
 
                 if (data instanceof Edge) {
@@ -373,26 +384,25 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 mSceneFlowEditor.setMessageLabelText("");
 
                 try {
-
                     // Get the data of the transferable
                     Object data =
                         dtde.getTransferable().getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
                     if (data instanceof Node.Type) {
                         createNode(dtde.getLocation(), (Node.Type) data);
-//                      revalidate();
-//                      repaint();
+                        // revalidate();
+                        // repaint();
                         dtde.acceptDrop(mAcceptableActions);
                         dtde.getDropTargetContext().dropComplete(true);
                     } else if (data instanceof Edge) {
                         createNewEdgeSelectSourceNode((Edge) data, dtde.getLocation().x, dtde.getLocation().y);
-//                      revalidate();
-//                      repaint();
+                        // revalidate();
+                        // repaint();
                         dtde.acceptDrop(mAcceptableActions);
                         dtde.getDropTargetContext().dropComplete(true);
                     } else if (data instanceof Comment) {
                         createComment(dtde.getLocation());
-//                      revalidate();
-//                      repaint();
+                        // revalidate();
+                        // repaint();
                         dtde.acceptDrop(mAcceptableActions);
                         dtde.getDropTargetContext().dropComplete(true);
                     } else if (data instanceof SceneGroup) {
@@ -400,8 +410,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                             if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
                                 createPSG(node, ((SceneGroup) data).getName());
                                 dtde.acceptDrop(mAcceptableActions);
-                                dtde.getDropTargetContext().dropComplete(true);
-//                              c.update();
+                                dtde.getDropTargetContext().dropComplete(true); 
+                                // c.update();
                             } else {
                                 mSceneFlowEditor.setMessageLabelText("");
                             }
@@ -412,7 +422,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                                 createPDA(node, ((DialogAct) data).getName());                               
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
-//                              c.update();
+                                // c.update();
                             } else {
                                 mSceneFlowEditor.setMessageLabelText("");
                             }
@@ -424,12 +434,11 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                                 createFunCall(node, ((FunDef) data).getName());
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
-//                              c.update();
+                                // c.update();
                             } else {
                                 mSceneFlowEditor.setMessageLabelText("");
                             }
                         }
-
                         // TODO: reject drop if not on a c!!!
                     } else {
                         dtde.rejectDrop();
@@ -437,7 +446,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 } catch (ClassNotFoundException | UnsupportedFlavorException | IOException e) {
                     dtde.rejectDrop();
                 }
-
                 // Update whole editor after a drop!!!!
                 Editor.getInstance().update();
             }
@@ -445,12 +453,34 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mDropTarget = new DropTarget(this, mDropTargetListener);
     }
 
+    void showVariablesOnWorkspace() {
+        
+        if(mLocalVarDisplay !=null){
+            if(mVisibleBadges){
+                mLocalVarDisplay.setVisible(false);
+                if(mGlobalVarDisplay !=null){
+                    mGlobalVarDisplay.setVisible(false);
+                }
+                mVisibleBadges = false;
+            } else{
+                mLocalVarDisplay.setVisible(true);
+                if(mGlobalVarDisplay !=null){
+                    mGlobalVarDisplay.setVisible(true);           
+                }
+                mVisibleBadges = true;
+            }
+        }
+        
+       
+            
+        Editor.getInstance().update();
+    }
+
     /**
      * 
      *
      */
     public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.Node> {}
-
 
     /**
      * 
@@ -463,20 +493,33 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
     }
     
-    
    /**
      * 
      * 
      */
-    public void showVariableBadge() {
-
-        mVarDisplay = new VarBadge(getSceneFlowManager().getCurrentActiveSuperNode());
-        add(mVarDisplay);
-        mEventCaster.append(mVarDisplay);
-        mObservable.addObserver(mVarDisplay);
+    public void showVariableBadges() {
+        
+        SuperNode sn = getSceneFlowManager().getCurrentActiveSuperNode(); 
+        
+        mLocalVarDisplay = new VarBadgeLocal(sn,sn.isLocalVarBadgeHidden());
+        
+        
+        add(mLocalVarDisplay);
+        mEventCaster.append(mLocalVarDisplay);
+        mObservable.addObserver(mLocalVarDisplay);
+        
+        if(getSceneFlowManager().getParentSuperNode(sn)!= null){
+            
+            mGlobalVarDisplay = new VarBadgeGlobal(sn,sn.isGlobalVarBadgeHidden());
+         
+            add(mGlobalVarDisplay);
+            mEventCaster.append(mGlobalVarDisplay);
+            mObservable.addObserver(mGlobalVarDisplay);           
+        }      
+        
         // add/remove to/from stack
-//      VarBadgeStack.a(mVarDisplay);
-//      repaint();
+        // VarBadgeStack.a(mVarDisplay);
+        // repaint();
     }
     
     /**
@@ -648,7 +691,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         for (Node node : mNodeSet) {
             if (node.containsPoint(x, y)) {
                 sourceNode = node;
-
                 break;
             }
         }
@@ -665,7 +707,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         mSelectNodePoint = new Point(x, y);
 
-        // Set the current edge in process, the current source
+        // Set the current edge in process, the cien colegaurrent source
         // c and enter the target c selection mode.
         mEdgeInProgress       = edge;
         mEdgeSourceNode       = sourceNode;
@@ -728,7 +770,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mIgnoreMouseInput = true;
 
         // synchronized (ActivityEventMulticaster.getInstance().mActivityEventListenerListLock) {
-        removeEventListeners();
+      //  removeEventListeners();
         mObservable.deleteObservers();
 
         // }
@@ -851,8 +893,12 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      *
      */
     private void removeEventListeners() {
-        if (mVarDisplay != null) {
-            mEventCaster.remove(mVarDisplay);
+        if (mLocalVarDisplay != null) {
+            mEventCaster.remove(mLocalVarDisplay);
+        }
+        
+         if (mGlobalVarDisplay != null) {
+            mEventCaster.remove(mGlobalVarDisplay);
         }
 
         for (CmdBadge c : mCmdBadgeMap.values()) {
@@ -1122,7 +1168,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mSelectedEdge          = null;
         mSelectedNode          = null;
         mSelectedComment       = null;
-        mSelectedVariableBadge = null;
+        mSelectedLocalVariableBadge = null;
+        mSelectedGlobalVariableBadge = null;
 
         // Push the current active supernode to the list
         // of active supernodes and add it's name to the path
@@ -1139,11 +1186,11 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         // Show the variables on workspace.
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
-        showVariableBadge();
+        showVariableBadges();
 
-//      showVariablesOnWorkSpace(superNode);
+        // showVariablesOnWorkSpace(superNode);
         // Update the workspace
-        //mGridManager.normalizeGridWeight();
+        // mGridManager.normalizeGridWeight();
         revalidate();
         repaint();
     }
@@ -1208,7 +1255,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mSelectedEdge          = null;
         mSelectedNode          = null;
         mSelectedComment       = null;
-        mSelectedVariableBadge = null;
+        mSelectedLocalVariableBadge = null;
+        mSelectedGlobalVariableBadge = null;
+
 
         // Pop the current active supernode from the list of
         // active supernodes and remove it's name from the path
@@ -1223,7 +1272,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         // Show the variables on workspace.
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
-        showVariableBadge();
+        showVariableBadges();
         //mGridManager.normalizeGridWeight();
 
         // Update the workspace
@@ -1353,9 +1402,14 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      *
      */ 
     private void deselectAllOtherComponents(JComponent comp) {
-        if ((!comp.equals(mSelectedVariableBadge)) && (mSelectedVariableBadge != null)) {
-            mSelectedVariableBadge.deSelect();
-            mSelectedVariableBadge = null;
+        if ((!comp.equals(mSelectedLocalVariableBadge)) && (mSelectedLocalVariableBadge != null)) {
+            mSelectedLocalVariableBadge.deSelect();
+            mSelectedLocalVariableBadge = null;
+        }
+        
+        if ((!comp.equals(mSelectedGlobalVariableBadge)) && (mSelectedGlobalVariableBadge != null)) {
+            mSelectedGlobalVariableBadge.deSelect();
+            mSelectedGlobalVariableBadge = null;
         }
 
         if ((!comp.equals(mSelectedComment)) && (mSelectedComment != null)) {
@@ -1478,19 +1532,36 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
 
         // if there is a specific selected variable badge use it - much faster than checking all nodes
-        if (mSelectedVariableBadge != null) {
-            if (mSelectedVariableBadge.containsPoint(event.getPoint())) {
+        if (mSelectedLocalVariableBadge != null) {
+            if (mSelectedLocalVariableBadge.containsPoint(event.getPoint())) {
 
                 // DEBUG System.out.println(mSelectedNode.getDataNode().getName() + " clicked - (re) selected");
                 // tell c that it has been clicked
-                mSelectedVariableBadge.mouseClicked(event);
+                mSelectedLocalVariableBadge.mouseClicked(event);
 
                 return;
             } else {
 
                 // System.out.println(mSelectedNode.getDataNode().getName() + " not clicked - deselected");
-                mSelectedVariableBadge.deSelect();
-                mSelectedVariableBadge = null;
+                mSelectedLocalVariableBadge.deSelect();
+                mSelectedLocalVariableBadge = null;
+            }
+        }
+        
+          // if there is a specific selected variable badge use it - much faster than checking all nodes
+        if (mSelectedGlobalVariableBadge != null) {
+            if (mSelectedGlobalVariableBadge.containsPoint(event.getPoint())) {
+
+                // DEBUG System.out.println(mSelectedNode.getDataNode().getName() + " clicked - (re) selected");
+                // tell c that it has been clicked
+                mSelectedGlobalVariableBadge.mouseClicked(event);
+
+                return;
+            } else {
+
+                // System.out.println(mSelectedNode.getDataNode().getName() + " not clicked - deselected");
+                mSelectedGlobalVariableBadge.deSelect();
+                mSelectedGlobalVariableBadge = null;
             }
         }
 
@@ -1534,13 +1605,22 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 }
             }
 
-            // look of mouse click was on a variable badge
-            if (mVarDisplay != null) {
-                if (mVarDisplay.containsPoint(event.getPoint())) {
-                    mSelectedVariableBadge = mVarDisplay;
-                    mSelectedVariableBadge.mouseClicked(event);
+            // look of mouse click was on a local variable badge
+            if (mLocalVarDisplay != null) {
+                if (mLocalVarDisplay.containsPoint(event.getPoint())) {
+                    mSelectedLocalVariableBadge = mLocalVarDisplay;
+                    mSelectedLocalVariableBadge.mouseClicked(event);
                     entityClicked = true;
-
+                    return;
+                }
+            } else 
+            
+            // look of mouse click was on a global variable badge
+            if (mGlobalVarDisplay != null) {
+                if (mGlobalVarDisplay.containsPoint(event.getPoint())) {
+                    mSelectedGlobalVariableBadge = mGlobalVarDisplay;
+                    mSelectedGlobalVariableBadge.mouseClicked(event);
+                    entityClicked = true;
                     return;
                 }
             }
@@ -1593,7 +1673,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             mDoAreaAction = false;
 
             Node clickedNode = null;
-
+           
+            // BUG  HERE
             for (Node node : mSelectedNodes) {
                 if (node.containsPoint(event.getX(), event.getY())) {
                     clickedNode   = node;
@@ -1653,6 +1734,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 mSelectedNode = null;
             }
         }
+           
 
         // if there is a specific selected comment use it - much faster than checking all nodes
         if (mSelectedComment != null) {
@@ -1672,21 +1754,39 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
 
         // if there is a specific selected variable badge use it - much faster than checking all nodes
-        if (mSelectedVariableBadge != null) {
-            if (mSelectedVariableBadge.containsPoint(event.getPoint())) {
+        if (mSelectedGlobalVariableBadge != null) {
+            if (mSelectedGlobalVariableBadge.containsPoint(event.getPoint())) {
 
                 // DEBUG System.out.println(mSelectedNode.getDataNode().getName() + " clicked - (re) selected");
                 // tell c that it has been clicked
-                mSelectedVariableBadge.mouseClicked(event);
+                mSelectedGlobalVariableBadge.mouseClicked(event);
+
+                return;
+            } else {
+                // System.out.println(mSelectedNode.getDataNode().getName() + " not clicked - deselected");
+                mSelectedGlobalVariableBadge.deSelect();
+                mSelectedGlobalVariableBadge = null;
+            }
+        }
+        
+        // if there is a specific selected variable badge use it - much faster than checking all nodes
+        if (mSelectedLocalVariableBadge != null) {
+            if (mSelectedLocalVariableBadge.containsPoint(event.getPoint())) {
+
+                // DEBUG System.out.println(mSelectedNode.getDataNode().getName() + " clicked - (re) selected");
+                // tell c that it has been clicked
+                mSelectedLocalVariableBadge.mouseClicked(event);
 
                 return;
             } else {
 
                 // System.out.println(mSelectedNode.getDataNode().getName() + " not clicked - deselected");
-                mSelectedVariableBadge.deSelect();
-                mSelectedVariableBadge = null;
+                mSelectedLocalVariableBadge.deSelect();
+                mSelectedLocalVariableBadge = null;
             }
         }
+        
+        
 
         //
         // Fall back cases - lookup
@@ -1729,11 +1829,19 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
 
         // look of mouse click was on a variable badge
-        if (mVarDisplay != null) {
-            if (mVarDisplay.containsPoint(event.getPoint())) {
-                mSelectedVariableBadge = mVarDisplay;
-                mSelectedVariableBadge.mousePressed(event);
-
+        if (mLocalVarDisplay != null) {
+            if (mLocalVarDisplay.containsPoint(event.getPoint())) {
+                mSelectedLocalVariableBadge = mLocalVarDisplay;
+                mSelectedLocalVariableBadge.mousePressed(event);
+                return;
+            }
+        }
+        
+        // look of mouse click was on a variable badge
+        if (mGlobalVarDisplay != null) {
+            if (mGlobalVarDisplay.containsPoint(event.getPoint())) {
+                mSelectedGlobalVariableBadge = mGlobalVarDisplay;
+                mSelectedGlobalVariableBadge.mousePressed(event);
                 return;
             }
         }
@@ -1762,6 +1870,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     @Override
     public void mouseReleased(MouseEvent event) {
+        
         straightenAllOutOfBoundEdges();
         if (mDoAreaSelection) {
             mDoAreaSelection = false;
@@ -1892,6 +2001,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 e.printStackTrace(System.out);
             }
 
+            checkChangesOnWorkspace();
             return;
         }
 
@@ -1938,7 +2048,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 mSelectedEdge.mouseDragged(event);
                 revalidate();
                 repaint();
-
+                checkChangesOnWorkspace();
                 return;
             }
         }
@@ -1953,7 +2063,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
             mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
             dragNodes(mSelectedNodes, event, mouseMoveVector);
-
+            checkChangesOnWorkspace();
             return;
         }
 
@@ -1968,10 +2078,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                 mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
                 dragNode(mSelectedNode, event, mouseMoveVector);
-
+                checkChangesOnWorkspace();
                 return;
             } else {
-
                 // System.out.println(mSelectedNode.getDataNode().getName() + " not dragged - deselected");
                 mSelectedNode.setDeselected();
                 mSelectedNode = null;
@@ -1981,7 +2090,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         // if there is a specific selected comment use it
         if (mSelectedComment != null) {
             Point currentMousePosition = event.getPoint();
-
             // if not dragged, but once resized, leave it by resized and vice versa, leave it by dragged
             if (!mSelectedComment.mDragged) {
                 mSelectedComment.mResizing = mSelectedComment.isResizingAreaSelected(currentMousePosition);
@@ -2000,7 +2108,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 } else {
                     dragComment(mSelectedComment, event, mouseMoveVector);
                 }
-
+                checkChangesOnWorkspace();
                 return;
             } else {
 
@@ -2010,23 +2118,49 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
 
         // if there is a specific selected comment use it
-        if (mSelectedVariableBadge != null) {
+        if (mSelectedLocalVariableBadge != null) {
             Point currentMousePosition = event.getPoint();
-
-            if (mSelectedVariableBadge.mSelected) {
+           // mLocalVarDisplay.setPosition(new Point(event.getXOnScreen(), event.getYOnScreen()));
+            
+            getSceneFlowManager().getCurrentActiveSuperNode().getLocalVariableBadge().setPosition(new Position(event.getX(), event.getY()));
+           
+            if (mSelectedLocalVariableBadge.mSelected) {
 
                 // compute movement trajectory vectors
                 Point mouseMoveVector = new Point(currentMousePosition.x - mLastMousePosition.x,
                                                   currentMousePosition.y - mLastMousePosition.y);
 
                 mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
-                dragVariableBadge(mSelectedVariableBadge, event, mouseMoveVector);
-
+                dragVariableBadge(mSelectedLocalVariableBadge, event, mouseMoveVector);
+                checkChangesOnWorkspace();
                 return;
             } else {
 
                 // System.out.println(mSelectedNode.getDataNode().getName() + " not dragged - deselected");
-                mSelectedVariableBadge = null;
+                mSelectedLocalVariableBadge = null;
+            }
+        }
+        
+        // if there is a specific selected comment use it
+        if (mSelectedGlobalVariableBadge != null) {
+            Point currentMousePosition = event.getPoint();
+            getSceneFlowManager().getCurrentActiveSuperNode().getGlobalVariableBadge().setPosition(new Position(event.getX(), event.getY()));
+           
+
+            if (mSelectedGlobalVariableBadge.mSelected) {
+
+                // compute movement trajectory vectors
+                Point mouseMoveVector = new Point(currentMousePosition.x - mLastMousePosition.x,
+                                                  currentMousePosition.y - mLastMousePosition.y);
+
+                mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
+                dragVariableBadge(mSelectedGlobalVariableBadge, event, mouseMoveVector);
+                checkChangesOnWorkspace();
+                return;
+            } else {
+
+                // System.out.println(mSelectedNode.getDataNode().getName() + " not dragged - deselected");
+                mSelectedGlobalVariableBadge = null;
             }
         }
 
@@ -2036,6 +2170,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mAreaSelection.height = event.getY() - mAreaSelection.y;
         selectNodesInArea();
         repaint();
+  
     }
 
     /**
@@ -2152,7 +2287,33 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      * 
      * 
      */
-    private void dragVariableBadge(VarBadge vb, MouseEvent event, Point moveVec) {
+    private void dragVariableBadge(VarBadgeLocal vb, MouseEvent event, Point moveVec) {
+        boolean validDragging = true;
+        Point   vbPos         = vb.getLocation();
+
+        if (((vbPos.x + moveVec.x) <= 0) || ((vbPos.y + moveVec.y) <= 0)) {
+
+            // stop dragging, if upper and left border would be passed!
+            validDragging = false;
+        }
+
+        if (validDragging) {
+            vb.updateLocation(moveVec);
+
+            if ((event.getModifiersEx() == 1024)) {
+                vb.mDragged = true;
+            }
+
+            revalidate();
+            repaint();
+        }
+    }
+    
+    /**
+     * 
+     * 
+     */
+    private void dragVariableBadge(VarBadgeGlobal vb, MouseEvent event, Point moveVec) {
         boolean validDragging = true;
         Point   vbPos         = vb.getLocation();
 
@@ -2415,4 +2576,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             mWorkspace.deleteSelectedItem();
         }
     }
+        
+    public boolean isVarBadgeVisible() {
+        return mLocalVarDisplay.isVisible();
+    }
+
 }

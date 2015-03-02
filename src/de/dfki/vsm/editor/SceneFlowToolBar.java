@@ -71,6 +71,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private JButton mModifyButton;
     private JButton mPlayButton;
     private JButton mStopButton;
+    private JButton mShowVarButton;
 
     // Path Display GUI Components
     private JPanel             mPathDisplay;
@@ -297,7 +298,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         // Add Some Horizontal Space
         add(Box.createHorizontalStrut(2));
 
-        JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/new/window.png")) {
+        JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/new/window.png")) {      
             @Override
             public void actionPerformed(ActionEvent e) {
                 Editor.getInstance().showMonitor();
@@ -305,6 +306,30 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         });
 
         sanitizeTinyButton(b);
+        
+        addSeparator();
+        
+        // The Show Variables Button
+         mShowVarButton = add(new AbstractAction("ACTION_SHOW_VARIABLES",
+                Boolean.valueOf(Preferences.getProperty("showVariables"))
+                ? ResourceLoader.loadImageIcon("/res/img/new/varHide.png")
+                : ResourceLoader.loadImageIcon("/res/img/new/varShow.png")) {
+            public void actionPerformed(ActionEvent evt) {
+                mEditor.getWorkSpace().showVariablesOnWorkspace();
+                changeShowVariablesButtonState();
+                revalidate();
+                repaint();
+            }
+        });
+         
+
+      
+        // Format The Button As Tiny
+        sanitizeTinyButton(mShowVarButton);
+        // Add Some Horizontal Space
+        add(Box.createHorizontalStrut(2));
+        
+        
         addSeparator();
         initPathDisplay();
         add(mPathScrollPane);
@@ -441,6 +466,14 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
             mModifyButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/less.png"));
         } else {
             mModifyButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/more.png"));
+        }
+    }
+    
+    private void changeShowVariablesButtonState() {
+        if (mEditor.getWorkSpace().isVarBadgeVisible()) {
+            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varHide.png"));
+        } else {
+            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varShow.png"));
         }
     }
 
