@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.util.Preferences;
@@ -10,12 +5,10 @@ import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
@@ -25,12 +18,9 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -39,14 +29,9 @@ import javax.swing.JEditorPane;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyledDocument;
 
 /**
  *
@@ -273,7 +258,7 @@ public class WelcomePanel extends JPanel implements Observer {
                     recentFileMenuItem.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
-                            parentEditor.toggleProjectEditorList(true);
+                            //parentEditor.toggleProjectEditorList(true);
                             parentEditor.openProject(projectDir);
                         }
                     });
