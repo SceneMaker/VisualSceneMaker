@@ -178,7 +178,7 @@ public class HCMScenePlayer extends VSMScenePlayer {
     public final void play(final String sceneName, final LinkedList<AbstractValue> args) {
         // get the current thread
         final Process process = ((Process) java.lang.Thread.currentThread());
-        String taskID = process.getName() + sceneName;
+        final String taskID = process.getName() + sceneName;
         
         // Process The Arguments -----------------------------------------------
         final HashMap<String, String> mSceneParamMap = new HashMap<String, String>();
@@ -357,7 +357,7 @@ public class HCMScenePlayer extends VSMScenePlayer {
     public boolean anim(final String agentName, final String animName) {
         // get the current thread
         final Process process = ((Process) java.lang.Thread.currentThread());
-        String taskID = process.getName() + animName;
+        final String taskID = process.getName() + animName;
 
         // Create The Player Task ----------------------------------------------
         Task task = new Task(taskID) {
@@ -444,7 +444,7 @@ public class HCMScenePlayer extends VSMScenePlayer {
      */
     public final void request(String name, String type, Task task, long time, String text, VSMAgentClient client) {
         try {
-            String taskID = task.getName();
+            final String taskID = task.getName();
             
             // Create The Command 
             final String message = "<action "
