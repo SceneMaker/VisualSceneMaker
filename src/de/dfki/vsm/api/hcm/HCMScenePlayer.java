@@ -96,8 +96,7 @@ public class HCMScenePlayer extends VSMScenePlayer {
     // Launch The Default Player
     @Override
     public void launch() {
-        mVSM3Log.message("Launching HCM Remote Scene Player");
-        mVSM3Log.message("HCM Remote Scene Player instance: "+sInstance.toString());
+        
     
         //check directory
         /*try {
@@ -108,6 +107,9 @@ public class HCMScenePlayer extends VSMScenePlayer {
         }*/
         
         super.launch();
+        
+        mVSM3Log.message("Launching HCM Remote Scene Player");
+        //mVSM3Log.message("HCM Remote Scene Player instance: "+sInstance.toString());
         
         //----------------------------------------------------------------------
         // start the SSI event handler
@@ -488,11 +490,11 @@ public class HCMScenePlayer extends VSMScenePlayer {
     @Override
     public final void handle(VSMAgentClient client) {
         try {
-            mVSM3Log.message("Awaiting notification from Proxy.");
+           // mVSM3Log.message("Awaiting notification from Proxy.");
 
             final String message = client.recvString();
 
-            mVSM3Log.message("Received notification: " + message + "");
+           // mVSM3Log.message("Received notification: " + message + "");
 
             
             if (message != null)
