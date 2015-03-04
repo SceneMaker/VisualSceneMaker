@@ -62,7 +62,8 @@ import java.util.Map.Entry;
  * The player connects to a proxy application via network.
  * All these proxies must be able to process the same data format.
  * 
- * @author Gregor Mehlmann, Kathrin Janowski
+ * @author Gregor Mehlmann
+ * @author Kathrin Janowski
  */
 public class HCMScenePlayer extends VSMScenePlayer {
     
@@ -88,13 +89,13 @@ public class HCMScenePlayer extends VSMScenePlayer {
     }
 
     // construct the player
-    private HCMScenePlayer(final ProjectData project) {
+    protected HCMScenePlayer(final ProjectData project) {
         super(project);  
     }
 
     // Launch The Default Player
     @Override
-    public final void launch() {
+    public void launch() {
         mVSM3Log.message("Launching HCM Remote Scene Player");
         mVSM3Log.message("HCM Remote Scene Player instance: "+sInstance.toString());
     
@@ -147,7 +148,7 @@ public class HCMScenePlayer extends VSMScenePlayer {
 
     // Unload The Default Player
     @Override
-    public final void unload() {
+    public void unload() {
         super.unload();
         
         mEventHandler.abort();
@@ -175,7 +176,7 @@ public class HCMScenePlayer extends VSMScenePlayer {
      * @param args the arguments for this scene
      */
     @Override
-    public final void play(final String sceneName, final LinkedList<AbstractValue> args) {
+    public void play(final String sceneName, final LinkedList<AbstractValue> args) {
         // get the current thread
         final Process process = ((Process) java.lang.Thread.currentThread());
         final String taskID = process.getName() + sceneName;
@@ -576,5 +577,28 @@ public class HCMScenePlayer extends VSMScenePlayer {
                     +"\" in \""+dir.getPath()+"\": "
                     +exc.toString());
         }
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void logToSSI(
+            final String eventid,
+            final String agent,
+            final String state,
+            final String feature,
+            final String content) {
+        // Construct The Message
+        final String message
+                = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<event "
+                + "ueid=\"" + eventid + "\" "
+                + "agent=\"" + agent + "\" "
+                + "state=\"" + state + "\" "
+                + "feature=\"" + feature + "\">"
+                + content
+                + "</event>";
+        //              
+        mSockLog.message(message);
     }
 }

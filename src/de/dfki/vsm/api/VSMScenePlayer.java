@@ -21,6 +21,7 @@ import java.util.Map;
  * @author Gregor Mehlmann
  */
 public abstract class VSMScenePlayer implements SceneGroupPlayer {
+
     // The VSM Runtime Environment
     protected final RunTime mVSM3RunTime
             = RunTime.getInstance();
@@ -261,6 +262,58 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void setVariable(final String name, final String value) {
+        if (mVSM3RunTime.hasVariable(mSceneFlow, name)) {
+            // Debug Some Information
+            mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
+            // Set The Variable Now
+            mVSM3RunTime.setVariable(mSceneFlow, name, value);
+            // Debug Some Information
+            mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
+        } else {
+            // Debug Some Information
+            mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void setVariable(final String name, final boolean value) {
+        if (mVSM3RunTime.hasVariable(mSceneFlow, name)) {
+            // Debug Some Information
+            mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
+            // Set The Variable Now
+            mVSM3RunTime.setVariable(mSceneFlow, name, value);
+            // Debug Some Information
+            mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
+        } else {
+            // Debug Some Information
+            mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final void setVariable(final String name, final int value) {
+        if (mVSM3RunTime.hasVariable(mSceneFlow, name)) {
+            // Debug Some Information
+            mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
+            // Set The Variable Now
+            mVSM3RunTime.setVariable(mSceneFlow, name, value);
+            // Debug Some Information
+            mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
+        } else {
+            // Debug Some Information
+            mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
+        }
+    }
+
+    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
