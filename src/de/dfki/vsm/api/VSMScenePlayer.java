@@ -96,20 +96,20 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             mVSM3Log.message("Starting Agent '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
         }
         // Initialize The Properties
-        final String swilhost = mPlayerConfig.property("vsm.swilhost");
-        final String swilport = mPlayerConfig.property("vsm.swilport");
-        final String swirhost = mPlayerConfig.property("vsm.swirhost");
-        final String swirport = mPlayerConfig.property("vsm.swirport");
-        final String swirconn = mPlayerConfig.property("vsm.swirconn");
-        final String swilbase = mPlayerConfig.property("vsm.swilbase");
+        final String swilhost = mPlayerConfig.property("vsm.swipl.local.host");
+        final String swilport = mPlayerConfig.property("vsm.swipl.local.port");
+        final String swirhost = mPlayerConfig.property("vsm.swipl.remote.host");
+        final String swirport = mPlayerConfig.property("vsm.swipl.remote.port");
+        final String swirconn = mPlayerConfig.property("vsm.swipl.remote.flag");
+        final String swilbase = mPlayerConfig.property("vsm.swipl.local.base");
         // Print Out The Properties
         mVSM3Log.message(""
-                + "SWI-Local-Host :" + swilhost + "\r\n"
-                + "SWI-Remote-Host :" + swirhost + "\r\n"
-                + "SWI-Local-Port :" + swilport + "\r\n"
-                + "SWI-Remote-Port :" + swirport + "\r\n"
-                + "SWI-Remote-Flag :" + swirconn + "\r\n"
-                + "SWI-Base-Files :" + swilbase + "");
+                + "Swipl-Local-Host :" + swilhost + "\r\n"
+                + "Swipl-Remote-Host :" + swirhost + "\r\n"
+                + "Swipl-Local-Port :" + swilport + "\r\n"
+                + "Swipl-Remote-Port :" + swirport + "\r\n"
+                + "Swipl-Remote-Flag :" + swirconn + "\r\n"
+                + "Swipl-Base-Files :" + swilbase + "");
         // Initialize the JPL Engine
         JPLEngine.init();
         // Load The Prolog Program
