@@ -59,6 +59,8 @@ public class VSMQueryHandler extends Thread {
             mLAddr = new InetSocketAddress(lhost, lport);
             // Create The UDP Socket
             mSocket = new DatagramSocket(mLAddr);
+            // Debug Some Information
+            mLogger.message("Initializing Query Handler");
             // Connect The UDP Socket
             if (rconn) {
                 // Create The Addresses
@@ -69,7 +71,7 @@ public class VSMQueryHandler extends Thread {
                 mLogger.message("Connecting Query Handler");
             }
             // Print Debug Information
-            mLogger.message("Creating Query Handler");
+            mLogger.message("Constructing Query Handler");
         } catch (Exception exc) {
             // Debug Some Information
             mLogger.warning(exc.toString());
@@ -94,8 +96,8 @@ public class VSMQueryHandler extends Thread {
                 mLogger.warning(exc.toString());
             }
         } else {
-             // Debug Some Information
-             mLogger.message("Cannot Abort Query Handler");
+            // Debug Some Information
+            mLogger.message("Cannot Abort Query Handler");
         }
     }
 
@@ -109,11 +111,11 @@ public class VSMQueryHandler extends Thread {
         while (mSocket != null
                 && !mSocket.isClosed()) {
             try {
-                 // Debug Some Information
+                // Debug Some Information
                 mLogger.message("Query Handler Trying To Receive");
                 // Receive The Data Packet
                 mSocket.receive(mPacket);
-                 // Debug Some Information
+                // Debug Some Information
                 mLogger.message("Query Handler Received Some Data");
                 // Get The String Data
                 final String received = new String(
