@@ -62,7 +62,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         // Init Scene Player Config
         mPlayerConfig = project.getScenePlayerProperties();
         // Print Debug Information
-        mVSM3Log.message("Creating Generic Player");
+        mVSM3Log.message("Creating Generic VSM Scenen Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     @Override
     public void launch() {
         // Print Debug Information
-        mVSM3Log.message("Launching Generic Player");
+        mVSM3Log.message("Launching Generic VSM Scenen Player");
         // Initialize The Properties
         final String numagent = mPlayerConfig.property("vsm.agent.number");
         for (int i = 0; i < Integer.parseInt(numagent); i++) {
@@ -93,23 +93,23 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             // Now Start The Client
             client.start();
             // Print Debug Information
-            mVSM3Log.message("Starting Agent '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
+            mVSM3Log.message("Starting Generic VSM Agent Client '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
         }
         // Initialize The Properties
-        final String swilhost = mPlayerConfig.property("vsm.swipl.local.host");
-        final String swilport = mPlayerConfig.property("vsm.swipl.local.port");
-        final String swirhost = mPlayerConfig.property("vsm.swipl.remote.host");
-        final String swirport = mPlayerConfig.property("vsm.swipl.remote.port");
-        final String swirconn = mPlayerConfig.property("vsm.swipl.remote.flag");
-        final String swilbase = mPlayerConfig.property("vsm.swipl.local.base");
+        final String swilhost = mPlayerConfig.property("swi.socket.local.host");
+        final String swilport = mPlayerConfig.property("swi.socket.local.port");
+        final String swirhost = mPlayerConfig.property("swi.socket.remote.host");
+        final String swirport = mPlayerConfig.property("swi.socket.remote.port");
+        final String swirconn = mPlayerConfig.property("swi.socket.remote.flag");
+        final String swilbase = mPlayerConfig.property("swi.socket.local.base");
         // Print Out The Properties
         mVSM3Log.message(""
-                + "Swipl-Local-Host :" + swilhost + "\r\n"
-                + "Swipl-Remote-Host :" + swirhost + "\r\n"
-                + "Swipl-Local-Port :" + swilport + "\r\n"
-                + "Swipl-Remote-Port :" + swirport + "\r\n"
-                + "Swipl-Remote-Flag :" + swirconn + "\r\n"
-                + "Swipl-Base-Files :" + swilbase + "");
+                + "SWI-Socket-Local-Host :" + swilhost + "\r\n"
+                + "SWI-Socket-Remote-Host :" + swirhost + "\r\n"
+                + "SWI-Socket-Local-Port :" + swilport + "\r\n"
+                + "SWI-Socket-Remote-Port :" + swirport + "\r\n"
+                + "SWI-Socket-Remote-Flag :" + swirconn + "\r\n"
+                + "SWI-Socket-Base-Files :" + swilbase + "");
         // Initialize the JPL Engine
         JPLEngine.init();
         // Load The Prolog Program
@@ -142,15 +142,13 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
                 // Join With Agent Client
                 client.join();
                 // Print Debug Information
-                mVSM3Log.message("Joining Agent Client");
+                mVSM3Log.message("Joining Generic VSM Agent Client");
             } catch (Exception exc) {
                 // Print Debug Information
                 mVSM3Log.warning(exc.toString());
             }
         }
         // Shutdown Other Threads
-        //mEventHandler.abort();
-        //mTouchHandler.abort();
         mQueryHandler.abort();
         mSystemTimer.abort();
         // Join With All Threads
@@ -172,7 +170,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         // Clear The Agents Map
         mAgentClientMap.clear();
         // Print Debug Information
-        mVSM3Log.message("Unloading Generic Player");
+        mVSM3Log.message("Unloading Generic VSM Scenen Player");
     }
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -313,7 +311,6 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         }
     }
 
-    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
