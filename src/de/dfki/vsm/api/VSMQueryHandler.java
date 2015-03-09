@@ -60,7 +60,7 @@ public class VSMQueryHandler extends Thread {
             // Create The UDP Socket
             mSocket = new DatagramSocket(mLAddr);
             // Debug Some Information
-            mLogger.message("Initializing Query Handler");
+            mLogger.message("Initializing SWI Query Handler");
             // Connect The UDP Socket
             if (rconn) {
                 // Create The Addresses
@@ -68,10 +68,10 @@ public class VSMQueryHandler extends Thread {
                 // Connect The UDP Socket
                 mSocket.connect(mRAddr);
                 // Debug Some Information
-                mLogger.message("Connecting Query Handler");
+                mLogger.message("ConnectingSWI Query Handler");
             }
             // Print Debug Information
-            mLogger.message("Constructing Query Handler");
+            mLogger.message("Constructing SWI Query Handler");
         } catch (Exception exc) {
             // Debug Some Information
             mLogger.warning(exc.toString());
@@ -89,7 +89,7 @@ public class VSMQueryHandler extends Thread {
                 if (!mSocket.isClosed()) {
                     mSocket.close();
                     // Debug Some Information
-                    mLogger.message("Aborting Query Handler");
+                    mLogger.message("Aborting SWI Query Handler");
                 }
             } catch (Exception exc) {
                 // Debug Some Information
@@ -97,7 +97,7 @@ public class VSMQueryHandler extends Thread {
             }
         } else {
             // Debug Some Information
-            mLogger.message("Cannot Abort Query Handler");
+            mLogger.message("Cannot Abort SWI Query Handler");
         }
     }
 
@@ -107,22 +107,22 @@ public class VSMQueryHandler extends Thread {
     @Override
     public final void run() {
         // Debug Some Information
-        mLogger.message("Starting Query Handler");
+        mLogger.message("Starting SWI Query Handler");
         while (mSocket != null
                 && !mSocket.isClosed()) {
             try {
                 // Debug Some Information
-                mLogger.message("Query Handler Trying To Receive");
+                mLogger.message("SWI Query Handler Trying To Receive");
                 // Receive The Data Packet
                 mSocket.receive(mPacket);
                 // Debug Some Information
-                mLogger.message("Query Handler Received Some Data");
+                mLogger.message("SWI Query Handler Received Some Data");
                 // Get The String Data
                 final String received = new String(
                         mPacket.getData(), 0,
                         mPacket.getLength(), "UTF-8");
                 // Print Some Information
-                mLogger.message("Query Handler Receiving:\r\n" + received);
+                mLogger.message("SWI Query Handler Receiving:\r\n" + received);
                 // Parse The Received
                 final Matcher matcher = mPattern.matcher(received);
                 //
@@ -132,7 +132,7 @@ public class VSMQueryHandler extends Thread {
                     final String query = matcher.group(2);
                     //
                     // Print Some Information
-                    mLogger.message("Query Handler Executing:\r\n" + query);
+                    mLogger.message("SWI Query Handler Executing:\r\n" + query);
                     // Get The Prolog Query 
                     if (type.equalsIgnoreCase("vsm")) {
                         // Execute The Query In SceneMaker
@@ -148,7 +148,7 @@ public class VSMQueryHandler extends Thread {
                         // Execute The Query Directly
                         JPLResult result = JPLEngine.query(query);
                         // Print Some Information
-                        mLogger.message("Query Handler Resulting:\r\n" + result.toString());
+                        mLogger.message("SWI Query Handler Resulting:\r\n" + result.toString());
                         // Create The Answer Packet
                         //final DatagramPacket answer = new DatagramPacket(
                         //        result.toString().getBytes(),
@@ -172,6 +172,6 @@ public class VSMQueryHandler extends Thread {
             }
         }
         // Debug Some Information
-        mLogger.message("Stopping Query Handler");
+        mLogger.message("Stopping SWI Query Handler");
     }
 }

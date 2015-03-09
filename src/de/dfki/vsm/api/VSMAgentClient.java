@@ -53,9 +53,9 @@ public class VSMAgentClient extends Thread {
         mHost = host;
         mPort = port;
         // Debug Some Information
-        mVSM3Log.message("Creating Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+        mVSM3Log.message("Creating Generic VSM Agent Client For '" + mName + "' With Id '" + mUaid + "'");
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ public class VSMAgentClient extends Thread {
             mWriter = new BufferedWriter(
                     new OutputStreamWriter(mSocket.getOutputStream(), "UTF-8"));
             // Debug Some Information
-            mVSM3Log.message("Starting Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+            mVSM3Log.message("Starting Generic VSM Client For '" + mName + "' With Id '" + mUaid + "'");
         } catch (Exception exc) {
             // Debug Some Information
             mVSM3Log.warning(exc.toString());
@@ -125,10 +125,10 @@ public class VSMAgentClient extends Thread {
                     // Close The Socket
                     mSocket.close();
                     // Debug Some Information
-                    mVSM3Log.message("Aborting Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+                    mVSM3Log.message("Aborting Generic VSM CAgent lient '" + mName + "' With Id '" + mUaid + "'");
                 } else {
                     // Debug Some Information
-                    mVSM3Log.warning("Cannot Abort Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+                    mVSM3Log.warning("Cannot Abort Generic VSM Agent Client '" + mName + "' With Id '" + mUaid + "'");
                 }
             } catch (Exception exc) {
                 // Debug Some Information
@@ -136,7 +136,7 @@ public class VSMAgentClient extends Thread {
             }
         } else {
             // Debug Some Information
-            mVSM3Log.warning("Cannot Abort Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+            mVSM3Log.warning("Cannot Abort Generic VSM Agent Client '" + mName + "' With Id '" + mUaid + "'");
         }
     }
 
@@ -152,7 +152,8 @@ public class VSMAgentClient extends Thread {
                 // Flush Out The Stream                
                 mOutput.flush();
                 // Debug Some Information
-                mVSM3Log.message("Sending Message '" + BINUtilities.BytesToHexString(bytes) + "'");
+                mVSM3Log.message("Sending Message '" + BINUtilities.BytesToHexString(bytes)
+                        + "' Over Generic VSM Agent Client '" + mName + "' With Id '" + mUaid + "'");
                 // Return At Success
                 return true;
             } catch (Exception exc) {
@@ -161,7 +162,7 @@ public class VSMAgentClient extends Thread {
             }
         } else {
             // Debug Some Information
-            mVSM3Log.warning("Cannot Send Over Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+            mVSM3Log.warning("Cannot Send Over Generic VSM Agent Client '" + mName + "' With Id '" + mUaid + "'");
         }
         // Return At Failure
         return false;
@@ -179,7 +180,8 @@ public class VSMAgentClient extends Thread {
                 mWriter.newLine();
                 mWriter.flush();
                 // Debug Some Information
-                mVSM3Log.message("Sending Message '" + string + "'");
+                mVSM3Log.message("Sending Message '" + string
+                        + "' Over Generic VSM Agent Client '" + mName + "' With Id '" + mUaid + "'");
                 // Return At Success
                 return true;
             } catch (Exception exc) {
@@ -188,9 +190,9 @@ public class VSMAgentClient extends Thread {
             }
         } else {
             // Debug Some Information
-            mVSM3Log.warning("Cannot Send Over Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+            mVSM3Log.warning("Cannot Send Over Generic VSM Agent Client '" + mName + "' With Id '" + mUaid + "'");
         }
-         // Return At Failure
+        // Return At Failure
         return false;
     }
 
@@ -205,7 +207,8 @@ public class VSMAgentClient extends Thread {
                 byte[] bytes = new byte[size];
                 mInput.readFully(bytes);
                 // Debug Some Information
-                mVSM3Log.message("Reading Message'" + BINUtilities.BytesToHexString(bytes) + "'");
+                mVSM3Log.message("Reading Message'" + BINUtilities.BytesToHexString(bytes)
+                        + "' From Generic VSM Agent Client '" + mName + "' With Id '" + mUaid + "'");
                 // Return The Notification
                 return bytes;
             } catch (Exception exc) {
@@ -251,7 +254,7 @@ public class VSMAgentClient extends Thread {
     @Override
     public final void run() {
         // Debug Some Information
-        mVSM3Log.message("Executing Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+        mVSM3Log.message("Executing Generic VSM Agent Client For '" + mName + "' With Id '" + mUaid + "'");
         // Execute While Not Done
         try {
             while (!mDone) {
@@ -263,6 +266,6 @@ public class VSMAgentClient extends Thread {
             mVSM3Log.failure(exc.toString());
         }
         // Debug Some Information
-        mVSM3Log.message("Stopping Agent Client For '" + mName + "' With Id '" + mUaid + "'");
+        mVSM3Log.message("Stopping Generic VSM Agent Client For '" + mName + "' With Id '" + mUaid + "'");
     }
 }
