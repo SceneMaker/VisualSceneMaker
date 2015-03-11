@@ -10,43 +10,26 @@ import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.TextArea;
-import java.awt.Toolkit;
 import java.awt.color.ColorSpace;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JEditorPane;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.StyledDocument;
 
 /**
  *
@@ -55,151 +38,61 @@ import javax.swing.text.StyledDocument;
  */
 public class WelcomePanel extends JPanel implements Observer {
 
-    private final JButton mOpenProjButton;
-    private final JButton mNewProjButton;
-    private Editor parentEditor;
-    private final JMenuBar mRecentProjectsBar;
+//    private final JButton mOpenProjButton;
+//    private final JButton mNewProjButton;
+    private final Editor parentEditor;
+    private final Box mRecentProjects;
     private final String backgroundImage = "/res/img/icon_big.png"; //Background for the welcome screen
     private final int paddingSize;
     private final Dimension screenDimension;
+    private final Dimension buttonSize;
+    private final Dimension halfScreenDimension;
 
     public WelcomePanel(final Editor mParent) {
 
+        try {
+
+            //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+        }
         parentEditor = mParent;
+        buttonSize = new Dimension(100, 125);
         screenDimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        halfScreenDimension = new Dimension((int) (java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2), (int) java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight());
         paddingSize = (int) (0.075 * screenDimension.getHeight());
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(BorderFactory.createEmptyBorder(paddingSize * 2, paddingSize, paddingSize, paddingSize));
-        //LEFT AND RIGHT PANELS
-        Box leftContainer = Box.createVerticalBox();
-        Box righContainer = Box.createVerticalBox();
+        setBorder(BorderFactory.createEmptyBorder(paddingSize, paddingSize, paddingSize, paddingSize));
+        JLabel titleLabel = new JLabel("Welcome to Visual SceneMaker");
+        titleLabel.setOpaque(false);
+        titleLabel.setFont(new Font("Helvetica", Font.BOLD, 24));
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////LEFT SIDE ELEMENTS
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //CONTAINER FOR THE RECENT PROJECTS
-        Box bxRecentProj = Box.createVerticalBox();
-        bxRecentProj.setOpaque(false);
-        bxRecentProj.setBorder(BorderFactory.createTitledBorder("Recent Projects"));
-        //bxRecentProj.setMaximumSize(new Dimension((int)(screenDimension.getWidth()/3), (int)screenDimension.getHeight()));
-        //OPEN PROJECT BUTTON
-        mOpenProjButton = new JButton(ResourceLoader.loadImageIcon("/res/img/open_project_icon.png"));
-        mOpenProjButton.setRolloverEnabled(true);
-        mOpenProjButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/open_project_icon_blue.png"));
-        mOpenProjButton.setToolTipText("Open a Project");
-        mOpenProjButton.setFocusable(false);
-        mOpenProjButton.setBorder(null);
-        mOpenProjButton.setContentAreaFilled(false);
-        mOpenProjButton.setOpaque(false);
-        mOpenProjButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                parentEditor.openProject();
-            }
-        });
-
-        //NEW PROJECT BUTTON
-        mNewProjButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new_project_icon.png"));
-        mNewProjButton.setRolloverEnabled(true);
-        mNewProjButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/new_project_icon_blue.png"));
-        mNewProjButton.setToolTipText("Create New Project");
-        mNewProjButton.setFocusable(false);
-        mNewProjButton.setBorder(null);
-        mNewProjButton.setContentAreaFilled(false);
-        mNewProjButton.setOpaque(false);
-        mNewProjButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                parentEditor.newProject();
-            }
-        });
-        //RECENTPROJECTS PANEL
-        mRecentProjectsBar = new JMenuBar();
-        mRecentProjectsBar.setLayout(new BoxLayout(mRecentProjectsBar, BoxLayout.PAGE_AXIS));
-        mRecentProjectsBar.setOpaque(false);
-        mRecentProjectsBar.setBackground(Color.white);
-        mRecentProjectsBar.setBorder(null);
-        UIManager.put("MenuItem.opaque", false);
+        JLabel msgLabel = new JLabel("<html>This welcome screen provides quick starting actions, like a new project, open a recent project, <br>"
+                + "open a example project, and check news and documentation</html>");
+        msgLabel.setOpaque(false);
+        msgLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
+        msgLabel.setFont(new Font("Helvetica", Font.PLAIN, 18));
+        msgLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
+        mRecentProjects = Box.createVerticalBox();
+        mRecentProjects.setOpaque(false);
+        //mRecentProjects.setMinimumSize(halfScreenDimension);
+        mRecentProjects.setMaximumSize(halfScreenDimension);
         createListOfRecentProj();
-        bxRecentProj.add(mRecentProjectsBar);
-        //BUTTONS CONTAINER
-        Box bxButtons = Box.createHorizontalBox();
-        bxButtons.setBorder(BorderFactory.createEmptyBorder(paddingSize, 0, 0, 0));
-        bxButtons.add(mNewProjButton);
-        JPanel empty = new JPanel();
-        empty.setOpaque(false);
-        empty.setMaximumSize(new Dimension(paddingSize, 10));
-        bxButtons.add(empty);
-        bxButtons.add(mOpenProjButton);
-        bxButtons.setAlignmentX(LEFT_ALIGNMENT);
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////MIDDLE ELEMENTS
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        String infoMessage = "Lorem ipsum dolor sit amet, eu albucius euripidis reprehendunt vel, no nam case eros argumentum. Qui agam torquatos cu, ut alii constituto usu, eos nullam altera ut. Vix tota vivendo eu, his oporteat iudicabit prodesset an, conceptam reformidans ut pro. Libris rationibus ne nec, timeam delectus pro et. Mel cu inani virtute, putent inimicus et ius.\n"
-                + "\n"
-                + "Ut debitis similique eum, tempor albucius recteque te quo. Latine appellantur ex per, apeirian disputando dissentiet nam ei. Pri iusto quaerendum ea, nec voluptatum voluptatibus ei. Hinc quot oblique nec eu, ei quo dolor virtute debitis, ne his vero lobortis.\n"
-                + "\n"
-                + "No pro dolorum pericula contentiones, in qui mundi efficiendi. Quo alia duis graece ex, putent ullamcorper eos cu, an sea dicant quaeque. Facilisis accusamus argumentum ea quo, quot alienum invidunt ex nam. Id forensibus deseruisse his. Vim et laoreet voluptatum.\n"
-                + "\n"
-                + "Ius putent graeco suscipit ea. Quo an erat fugit verterem, quem inciderint persequeris ut mel. Eam inermis apeirian in, eam in labores fabellas. Vix te case eius nominavi, eum ad viris diceret, ei mazim minimum recusabo eos.\n"
-                + "\n"
-                + "Modo vivendo ad usu, esse animal nam id. Sonet postulant omittantur sed id, te amet docendi consulatu his. Aliquip sadipscing pri an, at fastidii facilisi accommodare has, et ullum rationibus sed. Illud explicari interpretaris eam ex, usu no noluisse probatus oportere. Persequeris philosophia ne pro, sonet quando incorrupte duo ut. In liber ridens delicata nec, quo et phaedrum necessitatibus, an erant iisque has.\n"
-                + "\n"
-                + "Copiosae praesent id has, te quo congue expetendis. Summo molestie rationibus ut per, mea quas aperiam ea. Quo et utinam quaeque. Ex torquatos moderatius delicatissimi has. Ut vis novum tritani torquatos, in voluptua maluisset repudiare per, eum semper bonorum ad.\n"
-                + "\n"
-                + "Id his nibh habeo tempor, cu sit tollit ocurreret. Sit ad feugait principes sententiae, discere inimicus eam in. His ex velit graecis probatus, ei modo ridens vis. Option epicurei id mel, cu vix salutatus rationibus. Ut vim tota patrioque. Ut sit efficiendi adversarium, ex eos iusto mollis imperdiet. Eam vidit everti ut.\n"
-                + "\n"
-                + "Vis aeque vocent nominati te, ex consequat torquatos quo, id vis mutat fugit. No malis ridens malorum per, modo iracundia cu ius. Cu sed esse natum dissentiunt, similique interpretaris no usu. Ex eos alterum conceptam. No diceret postulant mei, tantas verterem sensibus his an.\n"
-                + "\n"
-                + "Primis graecis has in, ubique scripserit id his. Quot electram usu ex, cum delicata accusamus expetendis in. Eam et nisl tempor deterruisset, epicuri perfecto scripserit vis at. Et hinc autem senserit his. Sea alterum voluptatum ut. Purto laudem soleat ex usu, ex pro stet viris.";
-
-        JEditorPane infoArea = new JEditorPane();
-        infoArea.setEditable(false);
-        infoArea.setText(infoMessage);
-        infoArea.setOpaque(false);
-
-        /*JScrollPane textScroll = new JScrollPane(infoArea);
-         textScroll.setOpaque(false);*/
-        //infoArea.setBackground(new Color(0, 0, 0, 0.0f));
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////RIGHT SIDE ELEMENTS
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        JPanel sampleProjects = new JPanel();
-        sampleProjects.setBorder(BorderFactory.createTitledBorder("Sample Projects"));
-        sampleProjects.setOpaque(false);
-        //sampleProjects.setMinimumSize(new Dimension(600, 600));
-        JPanel helpPanel = new JPanel();
-        helpPanel.setBorder(BorderFactory.createTitledBorder("Help and Tutorials"));
-        helpPanel.setOpaque(false);
-        //helpPanel.setMinimumSize(new Dimension(600, 600));
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////SCREEN SETUP
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //SETUP LEFT SIDE
-        leftContainer.add(bxRecentProj);
-        leftContainer.add(bxButtons);
-
-        //SETUP RIGHT SIDE
-        righContainer.setBorder(BorderFactory.createEmptyBorder(0, paddingSize, paddingSize, 0));
-        righContainer.add(sampleProjects);
-        righContainer.add(helpPanel);
-        //SETUP THE SCREEN
-        add(new JSeparator(JSeparator.HORIZONTAL));
-        JPanel elementContainer = new JPanel(new GridLayout(0, 3));
-        elementContainer.setOpaque(false);
-        elementContainer.add(leftContainer);
-        elementContainer.add(infoArea);
-        elementContainer.add(righContainer);
-        add(elementContainer);
-        add(new JSeparator(JSeparator.HORIZONTAL));
+        add(titleLabel);
+        add(msgLabel);
+//        JSeparator js = new JSeparator(JSeparator.HORIZONTAL);
+//        js.setMaximumSize(new Dimension(5000, 1));
+//        add(js);
+        add(mRecentProjects);
+        setMaximumSize(parentEditor.getSize());
+        setPreferredSize(parentEditor.getSize());
         setOpaque(true);
+        //setBackground(new Color(250, 250, 250));
         setBackground(Color.white);
     }
 
     @Override
     public void update(Observable o, Object o1) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
     }
 
     /**
@@ -210,43 +103,123 @@ public class WelcomePanel extends JPanel implements Observer {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Image img = ResourceLoader.loadImageIcon(backgroundImage).getImage();
-        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-        ColorConvertOp op = new ColorConvertOp(cs, null);
-
-        BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null),
-                BufferedImage.TYPE_INT_ARGB);
-        //Graphics g2 = bufferedImage.createGraphics();
-        Graphics2D g2d = (Graphics2D) bufferedImage.getGraphics();
-        g2d.setComposite(AlphaComposite.SrcOver.derive(0.1f));
-        g2d.drawImage(img, 0, 0, null);
-        g2d.dispose();
-        //BufferedImage image = op.filter(bufferedImage, null);
-        g.drawImage(ResourceLoader.loadImageIcon("/res/img/welcome_message.png").getImage(), getWidth() / 3, paddingSize / 2, this);
-        g.drawImage(bufferedImage, getWidth() / 4, paddingSize, null);
+        Image image = ResourceLoader.loadImageIcon(backgroundImage).getImage();
+//        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+//        ColorConvertOp op = new ColorConvertOp(cs, null);
+//
+//        BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null),
+//                BufferedImage.TYPE_INT_ARGB);
+//        //Graphics g2 = bufferedImage.createGraphics();
+//
+//        Graphics2D g2d = (Graphics2D) bufferedImage.getGraphics();
+//        g2d.setComposite(AlphaComposite.SrcOver.derive(0.1f));
+//        g2d.drawImage(img, 0, 0, null);
+//        g2d.dispose();
+//        BufferedImage image = op.filter(bufferedImage, null);
+        //g.drawImage(ResourceLoader.loadImageIcon("/res/img/welcome_message.png").getImage(), getWidth() / 3, paddingSize / 2, this);
+        g.drawImage(image, -300, 0, null);
     }
 
     /**
      * Creates the list of recent projects
      */
     public void createListOfRecentProj() {
-        mRecentProjectsBar.removeAll();
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+
+        mRecentProjects.removeAll();
+        //PROJECTS SECTION
+        JLabel actionMenu = new JLabel("Projects");
+        actionMenu.setMaximumSize(new Dimension(5000, 75));
+        actionMenu.setPreferredSize(new Dimension(500, 50));
+        actionMenu.setOpaque(true);
+        actionMenu.setBackground(new Color(255, 255, 255, 180));
+        actionMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
+        mRecentProjects.add(actionMenu);
+        //NEW PROJECT BUTTON
+        JLabel mNewProjMenu = new JLabel("New Project");
+        mNewProjMenu.setToolTipText("Create New Project");
+        mNewProjMenu.setIcon(ResourceLoader.loadImageIcon("/res/img/arrow_icon.png"));
+        mNewProjMenu.setMaximumSize(new Dimension(5000, 75));
+        mNewProjMenu.setPreferredSize(new Dimension(500, 50));
+        mNewProjMenu.setFont(new Font("Helvetica", Font.PLAIN, 18));
+        mNewProjMenu.setOpaque(false);
+        mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                parentEditor.newProject();
+            }
+
+            public void mouseEntered(MouseEvent me) {
+                ((JLabel) me.getComponent()).setOpaque(true);
+                me.getComponent().setBackground(new Color(82, 127, 255));
+            }
+
+            public void mouseExited(MouseEvent me) {
+                ((JLabel) me.getComponent()).setOpaque(false);
+                me.getComponent().setBackground(new Color(1f, 1f, 1f));
+
+            }
+        });
+        mRecentProjects.add(mNewProjMenu);
+        JLabel mOpenProjectMenu = new JLabel("Open a Project");
+        mOpenProjectMenu.setToolTipText("Open an external Project");
+        mOpenProjectMenu.setIcon(ResourceLoader.loadImageIcon("/res/img/arrow_icon.png"));
+        mOpenProjectMenu.setMaximumSize(new Dimension(5000, 75));
+        mOpenProjectMenu.setPreferredSize(new Dimension(500, 50));
+        mOpenProjectMenu.setOpaque(false);
+        mOpenProjectMenu.setFont(new Font("Helvetica", Font.PLAIN, 18));
+        mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                parentEditor.openProject();
+            }
+
+            public void mouseEntered(MouseEvent me) {
+                ((JLabel) me.getComponent()).setOpaque(true);
+                me.getComponent().setBackground(new Color(82, 127, 255));
+            }
+
+            public void mouseExited(MouseEvent me) {
+                ((JLabel) me.getComponent()).setOpaque(false);
+                me.getComponent().setBackground(new Color(255, 255, 255, 180));
+            }
+        });
+        mRecentProjects.add(mOpenProjectMenu);
+        JSeparator jsNP = new JSeparator();
+        jsNP.setMaximumSize(new Dimension(5000, 10));
+        mRecentProjects.add(jsNP);
+        JLabel titleMenu = new JLabel("Open Recent Project");
+        titleMenu.setBorder(null);
+        titleMenu.setOpaque(true);
+
+        titleMenu.setBackground(new Color(255, 255, 255, 180));
+        titleMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
+        mRecentProjects.add(titleMenu);
+        titleMenu.setMaximumSize(new Dimension(5000, 75));
+        titleMenu.setPreferredSize(new Dimension(500, 50));
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+        JLabel[] projectList = new JLabel[Preferences.sMAX_RECENT_FILE_COUNT];
+        JPanel recentPanel = new JPanel();
+        recentPanel.setOpaque(false);
+        recentPanel.setLayout(new BoxLayout(recentPanel, BoxLayout.Y_AXIS));
         for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
             String projectDirName = Preferences.getProperty("recentprojectdir" + i);
             String projectName = Preferences.getProperty("recentprojectname" + i);
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
                 if (projectDir.exists()) {
-                    JMenuItem recentFileMenuItem = new JMenuItem(projectName + "  (" + sdf.format(projectDir.lastModified()) + ")");
-                    recentFileMenuItem.setBorder(null);
-                    recentFileMenuItem.setContentAreaFilled(false);
-                    recentFileMenuItem.setOpaque(true);
-                    recentFileMenuItem.setBackground(Color.white);
-                    recentFileMenuItem.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-                    recentFileMenuItem.addMouseListener(new MouseListener() {
+                    projectList[i] = new JLabel(projectName + ", last edited: " + sdf.format(projectDir.lastModified()));
+                    projectList[i].setLayout(new BoxLayout(projectList[i], BoxLayout.X_AXIS));
+                    projectList[i].setOpaque(false);
+                    projectList[i].setMaximumSize(new Dimension(5000, 75));
+                    projectList[i].setPreferredSize(new Dimension(5000, 50));
+                    projectList[i].setFont(new Font("Helvetica", Font.PLAIN, 18));
+                    projectList[i].setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+                    projectList[i].addMouseListener(new MouseListener() {
+
                         @Override
                         public void mouseClicked(MouseEvent me) {
+                            parentEditor.toggleProjectEditorList(true);
+                            parentEditor.openProject(projectDir);
                         }
 
                         @Override
@@ -259,28 +232,55 @@ public class WelcomePanel extends JPanel implements Observer {
 
                         @Override
                         public void mouseEntered(MouseEvent me) {
-                            //recentFileMenuItem.setOpaque(true);
+                            ((JLabel) me.getComponent()).setOpaque(true);
                             me.getComponent().setBackground(new Color(82, 127, 255));
                         }
 
                         @Override
                         public void mouseExited(MouseEvent me) {
-                            //recentFileMenuItem.setOpaque(false);
-                            me.getComponent().setBackground(Color.white);
-                        }
-                    });
-                    recentFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(Preferences.sDYNAMIC_KEYS.get(i), Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-                    recentFileMenuItem.addActionListener(new ActionListener() {
+                            ((JLabel) me.getComponent()).setOpaque(false);
+                            me.getComponent().setBackground(new Color(1f, 1f, 1f));
 
-                        public void actionPerformed(ActionEvent e) {
-                            parentEditor.toggleProjectEditorList(true);
-                            parentEditor.openProject(projectDir);
                         }
                     });
-                    mRecentProjectsBar.add(recentFileMenuItem);
+                    recentPanel.add(projectList[i]);
+                    JSeparator js = new JSeparator();
+                    js.setMaximumSize(new Dimension(5000, 1));
+                    recentPanel.add(js);
                 }
             }
         }
+        recentPanel.remove(recentPanel.getComponentCount() - 1);
+        JScrollPane jsRecent = new JScrollPane(recentPanel);
+        jsRecent.setOpaque(false);
+        jsRecent.setMaximumSize(new Dimension(5000, 75));
+        jsRecent.setPreferredSize(new Dimension(500, 50));
+        jsRecent.setBorder(null);
+        jsRecent.getViewport().setOpaque(false);
+        jsRecent.setMaximumSize(halfScreenDimension);
+        mRecentProjects.add(recentPanel);
+        JSeparator jsSP = new JSeparator();
+        jsNP.setMaximumSize(new Dimension(5000, 1));
+        mRecentProjects.add(jsSP);
+        JLabel exampleMenu = new JLabel("Sample Projects");
+        exampleMenu.setBorder(null);
+        exampleMenu.setMaximumSize(new Dimension(5000, 75));
+        exampleMenu.setPreferredSize(new Dimension(500, 50));
+        exampleMenu.setOpaque(true);
+        exampleMenu.setBackground(new Color(255, 255, 255, 180));
+        exampleMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
+        mRecentProjects.add(exampleMenu);
+        JLabel mDocuMenu = new JLabel("News and Documentation");
+        mDocuMenu.setToolTipText("News and Documentation online");
+        mDocuMenu.setMaximumSize(new Dimension(5000, 75));
+        mDocuMenu.setPreferredSize(new Dimension(500, 50));
+        mDocuMenu.setOpaque(true);
+        mDocuMenu.setBackground(new Color(255, 255, 255, 180));
+        mDocuMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
+        mRecentProjects.add(mDocuMenu);
+        JLabelURL link = new JLabelURL("Visual SceneMaker Online", "http://scenemaker.dfki.de/");
+
+        mRecentProjects.add(link);
     }
 
 }
