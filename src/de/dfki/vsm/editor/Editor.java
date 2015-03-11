@@ -21,7 +21,6 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
@@ -31,7 +30,6 @@ import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileFilter;
 
@@ -75,7 +73,7 @@ public class Editor extends JFrame implements EventListener {
      *   Welcome screen
      */
     private final WelcomePanel mWelcomePanel;
-    private final JScrollPane mWelcomeScrollPanel;
+    private final JScrollPane jsWelcome;
 
     private ComponentListener mComponentListener = new ComponentListener() {
         public void componentResized(ComponentEvent e) {
@@ -139,8 +137,10 @@ public class Editor extends JFrame implements EventListener {
         mObservable.addObserver(mProjectEditorList);
         // Init welcome screen
         mWelcomePanel = new WelcomePanel(this);
-        mWelcomeScrollPanel = new JScrollPane(mWelcomePanel);
-        add(mWelcomeScrollPanel);
+        jsWelcome = new JScrollPane(mWelcomePanel);
+        jsWelcome.setOpaque(false);
+        jsWelcome.getViewport().setOpaque(false);
+        add(jsWelcome);
         
         setIconImage(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png").getImage());
         // Init the windows closing support
@@ -178,9 +178,9 @@ public class Editor extends JFrame implements EventListener {
     public void toggleProjectEditorList(boolean state) {
         if (state) {
             add(mProjectEditorList);
-            remove(mWelcomeScrollPanel);
+            remove(jsWelcome);
         } else {
-            add(mWelcomeScrollPanel);
+            add(jsWelcome);
             remove(mProjectEditorList);
         }
         this.update(this.getGraphics());
@@ -343,9 +343,6 @@ public class Editor extends JFrame implements EventListener {
      * @param file the project directory
      */
     public void openProject(File file) {
-        if (mProjectEditorList.getTabCount() == 0) {
-            toggleProjectEditorList(true);
-        }
         File configFile = new File(file + System.getProperty("file.separator") + "config.xml");
         ProjectData project = new ProjectData(configFile);
         openProject(project);
@@ -358,6 +355,9 @@ public class Editor extends JFrame implements EventListener {
      * @param project the project object
      */
     public void openProject(ProjectData project) {
+        if (mProjectEditorList.getTabCount() == 0) {
+            toggleProjectEditorList(true);
+        }
         addProject(project);
         // update recent project list
         updateRecentProjects(project.getProjectDirPath(), project.getProjectName());
