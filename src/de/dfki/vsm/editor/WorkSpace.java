@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.action.ChangeNodeTypeAction;
 import de.dfki.vsm.editor.action.CopyNodesAction;
 import de.dfki.vsm.editor.action.CreateCommentAction;
@@ -53,7 +52,6 @@ import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -92,6 +90,7 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -110,70 +109,70 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     private final ClipBoard mClipboard = new ClipBoard();
 
     // Elements to draw
-    private final Set<Node>               mNodeSet     = new HashSet<>();
-    private final Set<Edge>               mEdgeSet     = new HashSet<>();
-    private final Set<Comment>            mCmtSet      = new HashSet<>();
+    private final Set<Node> mNodeSet = new HashSet<>();
+    private final Set<Edge> mEdgeSet = new HashSet<>();
+    private final Set<Comment> mCmtSet = new HashSet<>();
     private final HashMap<Node, CmdBadge> mCmdBadgeMap = new HashMap<>();
 
     // Variable display
-    private VarBadge          mVarDisplay          = null;
+    private VarBadge mVarDisplay = null;
     private NodeVariableBadge mNodeVariableDisplay = null;
 
     // Flags for mouse interaction
-    private Node               mSelectedNode          = null;
-    public Edge                mSelectedEdge          = null;
-    private Comment            mSelectedComment       = null;
-    private VarBadge           mSelectedVariableBadge = null;
-    private Rectangle2D.Double mAreaSelection         = null;
-    private Rectangle2D.Double mDrawArea              = null;
-    private Point              mLastMousePosition     = new Point(0, 0);
-    private boolean            mDoAreaSelection       = false;
-    private boolean            mDoAreaAction          = false;
-    private Set<Node>          mSelectedNodes         = new HashSet<>();
+    private Node mSelectedNode = null;
+    public Edge mSelectedEdge = null;
+    private Comment mSelectedComment = null;
+    private VarBadge mSelectedVariableBadge = null;
+    private Rectangle2D.Double mAreaSelection = null;
+    private Rectangle2D.Double mDrawArea = null;
+    private Point mLastMousePosition = new Point(0, 0);
+    private boolean mDoAreaSelection = false;
+    private boolean mDoAreaAction = false;
+    private Set<Node> mSelectedNodes = new HashSet<>();
 
     // Variables for edge creation
-    private Edge                   mEdgeInProgress   = null;
-    private Node                   mEdgeSourceNode   = null;
-    private Point                  mSelectNodePoint  = null;
+    private Edge mEdgeInProgress = null;
+    private Node mEdgeSourceNode = null;
+    private Point mSelectNodePoint = null;
     private final AttributedString sEdgeCreationHint = new AttributedString("Select Target Node");
 
     //
-    private boolean mIgnoreMouseInput       = false;
-    private boolean mSelectTargetNodeMode   = false;
+    private boolean mIgnoreMouseInput = false;
+    private boolean mSelectTargetNodeMode = false;
     private boolean mEdgeSourceNodeReassign = false;
     private boolean mEdgeTargetNodeReassign = false;
-    private Node    mReassignNode           = null;
+    private Node mReassignNode = null;
 
     // Snap to grid support
     public GridManager mGridManager = null;
 
     //
-    public final Observable        mObservable  = new Observable();
-    private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    public final Observable mObservable = new Observable();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventCaster mEventCaster = EventCaster.getInstance();
 
     //
     private final LinkedList<VarBadge> mVarBadgeStack = new LinkedList<>();
 
     // Drag & Drop support
-    private DropTarget         mDropTarget;
+    private DropTarget mDropTarget;
     private DropTargetListener mDropTargetListener;
-    private int                mAcceptableActions;
+    private int mAcceptableActions;
 
     // The parent SceneFlowEditor (TODO: remove)
-    private final SceneFlowEditor    mSceneFlowEditor;
-    private final ProjectData        mProject;
+    private final SceneFlowEditor mSceneFlowEditor;
+    private final ProjectData mProject;
     private final ProjectPreferences mPreferences;
 
     /**
-     * 
-     * 
+     *
+     *
      */
     public WorkSpace(SceneFlowEditor sceneFlowEditor, ProjectData project) {
         mSceneFlowEditor = sceneFlowEditor;
-        mProject         = project;
-        mPreferences     = mProject.getPreferences();
-        mGridManager     = new GridManager(this);
+        mProject = project;
+        mPreferences = mProject.getPreferences();
+        mGridManager = new GridManager(this);
 
         // Add the mouse listeners
         addMouseMotionListener(this);
@@ -203,8 +202,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     @Override
     public void update(java.util.Observable obs, Object obj) {
@@ -227,16 +226,17 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     @Override
-    public void update(EventObject event) {}
+    public void update(EventObject event) {
+    }
 
     public void clearClipBoard() {
         mClipboard.clear();
     }
-    
+
     public ClipBoard getClipBoard() {
         return mClipboard;
     }
@@ -260,7 +260,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public CmdBadge getCmdBadge(Node id) {
         return mCmdBadgeMap.get(id);
     }
-       
+
     public GridManager getGridManager() {
         return mGridManager;
     }
@@ -283,23 +283,26 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     private void initDnDSupport() {
-        mAcceptableActions  = DnDConstants.ACTION_COPY;
+        mAcceptableActions = DnDConstants.ACTION_COPY;
         mDropTargetListener = new DropTargetAdapter() {
             @Override
-            public void dragEnter(DropTargetDragEvent dtde) {}
+            public void dragEnter(DropTargetDragEvent dtde) {
+            }
+
             @Override
             public void dragOver(DropTargetDragEvent dtde) {
-                Object     data   = null;
+                System.out.println("SSSSSSSSSSSSSS");
+                Object data = null;
                 DataFlavor flavor = null;
 
                 try {
                     try {
                         flavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType);
-                    } catch (ClassNotFoundException e) {                        
+                    } catch (ClassNotFoundException e) {
                         e.printStackTrace(System.out);
                     }
 
@@ -310,7 +313,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                 if (data instanceof SceneGroup) {
                     Point pos = dtde.getLocation();
-
                     for (Node node : mNodeSet) {
                         if (node.containsPoint(pos.x, pos.y)) {
                             dtde.acceptDrag(dtde.getDropAction());
@@ -335,8 +337,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                     // System.err.println("Accept Drag over");
                 }
-                
-                 if (data instanceof DialogAct) {
+
+                if (data instanceof DialogAct) {
                     dtde.acceptDrag(dtde.getDropAction());
 
                 }
@@ -364,19 +366,22 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                     dtde.rejectDrag();
                 }
             }
+
             @Override
             public void dragExit(DropTargetEvent dte) {
                 mSceneFlowEditor.setMessageLabelText("");
             }
+
             @Override
             public void drop(DropTargetDropEvent dtde) {
+                System.out.println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
                 mSceneFlowEditor.setMessageLabelText("");
 
                 try {
 
                     // Get the data of the transferable
-                    Object data =
-                        dtde.getTransferable().getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
+                    Object data
+                            = dtde.getTransferable().getTransferData(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType));
                     if (data instanceof Node.Type) {
                         createNode(dtde.getLocation(), (Node.Type) data);
 //                      revalidate();
@@ -409,7 +414,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                     } else if (data instanceof DialogAct) {
                         for (Node node : mNodeSet) {
                             if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
-                                createPDA(node, ((DialogAct) data).getName());                               
+                                createPDA(node, ((DialogAct) data).getName());
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
 //                              c.update();
@@ -417,7 +422,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                                 mSceneFlowEditor.setMessageLabelText("");
                             }
                         }
-                    // TODO: reject drop if not on a c!!!
+                        // TODO: reject drop if not on a c!!!
                     } else if (data instanceof FunDef) {
                         for (Node node : mNodeSet) {
                             if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
@@ -446,27 +451,27 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
-    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.Node> {}
-
+    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.Node> {
+    }
 
     /**
-     * 
+     *
      *
      */
     public class Observable extends java.util.Observable {
+
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);
         }
     }
-    
-    
-   /**
-     * 
-     * 
+
+    /**
+     *
+     *
      */
     public void showVariableBadge() {
 
@@ -478,16 +483,16 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 //      VarBadgeStack.a(mVarDisplay);
 //      repaint();
     }
-    
+
     /**
-     * 
-     * 
+     *
+     *
      */
     public void showNodeVariables(Node node) {
-        ArrayList<String> localTypeDefList  = new ArrayList<>();
+        ArrayList<String> localTypeDefList = new ArrayList<>();
         ArrayList<String> globalTypeDefList = new ArrayList<>();
-        ArrayList<String> localVarDefList   = new ArrayList<>();
-        ArrayList<String> globalVarDefList  = new ArrayList<>();
+        ArrayList<String> localVarDefList = new ArrayList<>();
+        ArrayList<String> globalVarDefList = new ArrayList<>();
 
         Vector<TypeDef> typeDefs = node.getDataNode().getTypeDefList();
 
@@ -542,9 +547,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         add(mNodeVariableDisplay, 0);
     }
 
-     /**
-     * 
-     * 
+    /**
+     *
+     *
      */
     private void selectNodesInArea() {
         mSelectedNodes = new HashSet<>();
@@ -555,7 +560,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             if (node.getBounds().intersects(mDrawArea)) {
                 if (node.getDataNode().isHistoryNode()) {
                     mSceneFlowEditor.setMessageLabelText(
-                        "Copy, cut and remove actions are not allowed on History nodes!");
+                            "Copy, cut and remove actions are not allowed on History nodes!");
                 }
 
                 node.mSelected = true;
@@ -566,9 +571,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
     }
 
-     /**
-     * 
-     * 
+    /**
+     *
+     *
      */
     public void deselectAllNodes() {
         mSelectedNodes = new HashSet<>();
@@ -586,21 +591,21 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     public void createNode(Point point, Node.Type type) {
         Point correctedPoint = new Point(point.x - mPreferences.sGRID_NODEWIDTH / 2,
-                                         point.y - mPreferences.sGRID_NODEWIDTH / 2);
+                point.y - mPreferences.sGRID_NODEWIDTH / 2);
 
         new CreateNodeAction(this, mGridManager.getNodeLocation(correctedPoint), type).run();
     }
 
     /**
-     * 
+     *
      *
      */
     private void createComment(Point point) {
         new CreateCommentAction(this, point).run();
     }
 
-     /**
-     * 
+    /**
+     *
      *
      */
     public void createPDA(Node node, String name) {
@@ -609,9 +614,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
         node.getDataNode().addCmd(pdaCmd);
     }
-    
+
     /**
-     * 
+     *
      *
      */
     public void createPSG(Node node, String name) {
@@ -622,7 +627,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void createFunCall(Node node, String name) {
@@ -667,8 +672,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         // Set the current edge in process, the current source
         // c and enter the target c selection mode.
-        mEdgeInProgress       = edge;
-        mEdgeSourceNode       = sourceNode;
+        mEdgeInProgress = edge;
+        mEdgeSourceNode = sourceNode;
         mSelectTargetNodeMode = true;
 
         // repaint();
@@ -677,7 +682,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void createNewEdgeSelectTargetNode(int x, int y) {
@@ -708,7 +713,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void cleanup() {
@@ -717,9 +722,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         clearClipBoard();
         clear();
     }
-    
+
     /**
-     * 
+     *
      *
      */
     public void clear() {
@@ -743,7 +748,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void add(Comment c) {
@@ -754,7 +759,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void remove(Comment c) {
@@ -765,7 +770,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void addNode(Node node) {
@@ -776,7 +781,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void remove(Node node) {
@@ -784,8 +789,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         // TODO: deselect all components instead
         if (mSelectedNode != null) {
             mSelectedNode = (mSelectedNode.equals(node))
-                            ? null
-                            : mSelectedNode;
+                    ? null
+                    : mSelectedNode;
         }
 
         super.remove(node);
@@ -795,7 +800,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void add(Edge edge) {
@@ -806,7 +811,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void remove(Edge edge) {
@@ -814,8 +819,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         // TODO: deselect all components instead
         if (mSelectedEdge != null) {
             mSelectedEdge = (mSelectedEdge.equals(edge))
-                            ? null
-                            : mSelectedEdge;
+                    ? null
+                    : mSelectedEdge;
         }
 
         mEdgeSet.remove(edge);
@@ -823,8 +828,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mEventCaster.remove(edge);
         mObservable.deleteObserver(edge);
     }
+
     /**
-     * 
+     *
      *
      */
     public void addCmdBadge(Node node, CmdBadge badge) {
@@ -835,7 +841,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void removeCmdBadge(Node node) {
@@ -845,9 +851,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mEventCaster.remove(badge);
         mObservable.deleteObserver(badge);
     }
-    
+
     /**
-     * 
+     *
      *
      */
     private void removeEventListeners() {
@@ -872,7 +878,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void straightenAllEdges() {
@@ -882,18 +888,18 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         repaint();
     }
-    
+
     public void straightenAllOutOfBoundEdges() {
         for (Edge edge : mEdgeSet) {
-            if(edge.mEg.mCCrtl1.x < 0 || edge.mEg.mCCrtl1.y < 0 || 
-                    edge.mEg.mCCrtl2.x < 0 || edge.mEg.mCCrtl2.y < 0) {
+            if (edge.mEg.mCCrtl1.x < 0 || edge.mEg.mCCrtl1.y < 0
+                    || edge.mEg.mCCrtl2.x < 0 || edge.mEg.mCCrtl2.y < 0) {
                 edge.straightenEdge();
             }
         }
     }
-    
+
     /**
-     * 
+     *
      *
      */
     public void normalizeAllEdges() {
@@ -905,12 +911,12 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void showContextMenu(MouseEvent evt, Edge edge) {
-        JPopupMenu       pop          = new JPopupMenu();
-        JMenuItem        item         = new JMenuItem("Modify");
+        JPopupMenu pop = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Modify");
         ModifyEdgeAction modifyAction = new ModifyEdgeAction(edge, this);
 
         item.addActionListener(modifyAction.getActionListener());
@@ -944,12 +950,12 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void showContextMenu(MouseEvent evt, Comment comment) {
-        JPopupMenu          pop          = new JPopupMenu();
-        JMenuItem           item         = new JMenuItem("Delete");
+        JPopupMenu pop = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Delete");
         RemoveCommentAction deleteAction = new RemoveCommentAction(this, comment);
 
         item.addActionListener(deleteAction.getActionListener());
@@ -958,20 +964,20 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void showContextMenu(MouseEvent evt, Node node) {
-        JPopupMenu pop  = new JPopupMenu();
-        JMenuItem  item = null;
+        JPopupMenu pop = new JPopupMenu();
+        JMenuItem item = null;
 
         if (!node.getDataNode().isHistoryNode()) {
-            HashMap<String, de.dfki.vsm.model.sceneflow.Node> startNodes =
-                node.getDataNode().getParentNode().getStartNodeMap();
+            HashMap<String, de.dfki.vsm.model.sceneflow.Node> startNodes
+                    = node.getDataNode().getParentNode().getStartNodeMap();
 
             item = new JMenuItem((startNodes.containsKey(node.getDataNode().getId()))
-                                 ? "Unset Start"
-                                 : "Set Start");
+                    ? "Unset Start"
+                    : "Set Start");
 
             ToggleStartNodeAction toggleStartnodeAction = new ToggleStartNodeAction(node, this);
 
@@ -1017,7 +1023,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void multipleNodesContextMenu(MouseEvent evt, Node node) {
@@ -1031,8 +1037,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             }
         }
 
-        JPopupMenu      pop        = new JPopupMenu();
-        JMenuItem       item       = new JMenuItem("Copy Nodes");
+        JPopupMenu pop = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Copy Nodes");
         CopyNodesAction copyAction = new CopyNodesAction(this, filteredSelectedNodes);
 
         item.addActionListener(copyAction.getActionListener());
@@ -1054,7 +1060,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void copyNodes() {
@@ -1069,9 +1075,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         if ((mSelectedNode == null) && (mSelectedNodes.size() > 0)) {
             CopyNodesAction copyAction = new CopyNodesAction(this, mSelectedNodes);
-            String          message    = (mSelectedNodes.size() > 1)
-                                         ? "Nodes copied"
-                                         : "Node copied";
+            String message = (mSelectedNodes.size() > 1)
+                    ? "Nodes copied"
+                    : "Node copied";
 
             mSceneFlowEditor.setMessageLabelText(mSelectedNodes.size() + message);
             copyAction.getActionListener();
@@ -1080,13 +1086,13 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void gobalContextMenu(MouseEvent evt) {
-        JPopupMenu       pop         = new JPopupMenu();
-        int              nc          = mClipboard.size();
-        JMenuItem        item        = new JMenuItem((nc > 1)
+        JPopupMenu pop = new JPopupMenu();
+        int nc = mClipboard.size();
+        JMenuItem item = new JMenuItem((nc > 1)
                 ? "Paste " + nc + " Nodes"
                 : "Paste Node");
         PasteNodesAction pasteAction = new PasteNodesAction(this);
@@ -1095,9 +1101,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         pop.add(item);
         pop.show(this, evt.getX(), evt.getY());
     }
-    
+
     /**
-     * 
+     *
      *
      */
     public void increaseWorkSpaceLevel(Node node) {
@@ -1110,7 +1116,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mObservable.deleteObservers();
 
 //      }
-       
         // Clear the list of currently shown nodes and edges and
         // remove all components from the workspace. Additionally
         // clear the selected edges and nodes of the workspace.
@@ -1119,9 +1124,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mCmtSet.clear();
         mCmdBadgeMap.clear();
         removeAll();
-        mSelectedEdge          = null;
-        mSelectedNode          = null;
-        mSelectedComment       = null;
+        mSelectedEdge = null;
+        mSelectedNode = null;
+        mSelectedComment = null;
         mSelectedVariableBadge = null;
 
         // Push the current active supernode to the list
@@ -1149,34 +1154,33 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     public void selectNewWorkSpaceLevel(SuperNode supernode) {
-        
-        
+
         if (getSceneFlowManager().getActiveSuperNodes().size() < 2) {
             return;
         }
-        
-        if (getSceneFlowManager().getCurrentActiveSuperNode().equals(supernode)) {     
+
+        if (getSceneFlowManager().getCurrentActiveSuperNode().equals(supernode)) {
             return;
         }
-                       
+
         clearCurrentWorkspace();
         SuperNode parent = getSceneFlowManager().getCurrentActiveSuperNode();
-        
+
         while (parent.equals(supernode) != true) {
             decreaseWorkSpaceLevel();
             parent = getSceneFlowManager().getCurrentActiveSuperNode();
         }
-        
+
     }
-    
+
     /**
-     * 
      *
-     */ 
+     *
+     */
     public void decreaseWorkSpaceLevel() {
         if (getSceneFlowManager().getActiveSuperNodes().size() < 2) {
             return;
@@ -1190,9 +1194,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
      *
-     */ 
+     *
+     */
     private void clearCurrentWorkspace() {
         removeEventListeners();
         mObservable.deleteObservers();
@@ -1205,15 +1209,15 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mCmtSet.clear();
         mCmdBadgeMap.clear();
         removeAll();
-        mSelectedEdge          = null;
-        mSelectedNode          = null;
-        mSelectedComment       = null;
+        mSelectedEdge = null;
+        mSelectedNode = null;
+        mSelectedComment = null;
         mSelectedVariableBadge = null;
 
         // Pop the current active supernode from the list of
         // active supernodes and remove it's name from the path
-        SuperNode s   = getSceneFlowManager().removeActiveSuperNode();
-        SuperNode    sn = mSceneFlowEditor.removePathComponent();
+        SuperNode s = getSceneFlowManager().removeActiveSuperNode();
+        SuperNode sn = mSceneFlowEditor.removePathComponent();
 
         // Create a new Gridmanager for the workspace
         mGridManager.update();
@@ -1232,28 +1236,28 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
      *
-     */ 
+     *
+     */
     public void showNodesOnWorkSpace() {
-        Vector<de.dfki.vsm.model.sceneflow.Node> nodeList =
-            getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
+        Vector<de.dfki.vsm.model.sceneflow.Node> nodeList
+                = getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
 
         for (de.dfki.vsm.model.sceneflow.Node n : nodeList) {
             Point p = mGridManager.getNodeLocation(new Point(n.getGraphics().getPosition().getXPos(),
-                          n.getGraphics().getPosition().getYPos()));
+                    n.getGraphics().getPosition().getYPos()));
 
             n.getGraphics().setPosition(p.x, p.y);
 
-            Node     guiNode  = new Node(this, n);
+            Node guiNode = new Node(this, n);
             CmdBadge cmdBadge = new CmdBadge(guiNode);
 
             addNode(guiNode);
             addCmdBadge(guiNode, cmdBadge);
         }
 
-        Vector<de.dfki.vsm.model.sceneflow.Comment> commentList =
-            getSceneFlowManager().getCurrentActiveSuperNode().getCommentList();
+        Vector<de.dfki.vsm.model.sceneflow.Comment> commentList
+                = getSceneFlowManager().getCurrentActiveSuperNode().getCommentList();
 
         for (de.dfki.vsm.model.sceneflow.Comment n : commentList) {
             add(new Comment(this, n));
@@ -1261,9 +1265,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
      *
-     */ 
+     *
+     */
     public void showEdgesOnWorkSpace() {
         for (Node sourceNode : mNodeSet) {
             Node targetNode = null;
@@ -1321,8 +1325,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             }
 
             // Show the DEdge
-            de.dfki.vsm.model.sceneflow.Edge dedge     = sourceNode.getDataNode().getDedge();
-            Edge.TYPE                        dEdgeType = null;
+            de.dfki.vsm.model.sceneflow.Edge dedge = sourceNode.getDataNode().getDedge();
+            Edge.TYPE dEdgeType = null;
 
             if (dedge != null) {
                 targetNode = getNode(dedge.getTarget());
@@ -1349,9 +1353,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
      *
-     */ 
+     *
+     */
     private void deselectAllOtherComponents(JComponent comp) {
         if ((!comp.equals(mSelectedVariableBadge)) && (mSelectedVariableBadge != null)) {
             mSelectedVariableBadge.deSelect();
@@ -1375,7 +1379,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     @Override
@@ -1402,7 +1406,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
             for (Node node : mSelectedNodes) {
                 if (node.containsPoint(event.getX(), event.getY())) {
-                    clickedNode   = node;
+                    clickedNode = node;
                     mDoAreaAction = true;
                 }
             }
@@ -1420,7 +1424,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                     return;
                 } else {
-                    mSelectedNode    = (Node) (mSelectedNodes.toArray())[0];
+                    mSelectedNode = (Node) (mSelectedNodes.toArray())[0];
                     mDoAreaSelection = false;
                     deselectAllNodes();
                 }
@@ -1564,12 +1568,14 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             }
         }
     }
-    private void launchWorkSpaceSelectedEvent() {                
+
+    private void launchWorkSpaceSelectedEvent() {
         WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
-        mEventCaster.convey(ev);                    
-    }  
+        mEventCaster.convey(ev);
+    }
+
     /**
-     * 
+     *
      *
      */
     @Override
@@ -1577,7 +1583,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mLastMousePosition = event.getPoint();
 
         // System.out.println("mouse pressed");
-
         if (mSelectTargetNodeMode) {
             try {
                 createNewEdgeSelectTargetNode(event.getX(), event.getY());
@@ -1596,7 +1601,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
             for (Node node : mSelectedNodes) {
                 if (node.containsPoint(event.getX(), event.getY())) {
-                    clickedNode   = node;
+                    clickedNode = node;
                     mDoAreaAction = true;
                 }
             }
@@ -1614,7 +1619,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                     return;
                 } else {
-                    mSelectedNode    = (Node) (mSelectedNodes.toArray())[0];
+                    mSelectedNode = (Node) (mSelectedNodes.toArray())[0];
                     mDoAreaSelection = false;
                     deselectAllNodes();
                 }
@@ -1750,14 +1755,14 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
 
         // get point as possible point for area selection!
-        mAreaSelection.x      = event.getX();
-        mAreaSelection.width  = event.getX();
-        mAreaSelection.y      = event.getY();
+        mAreaSelection.x = event.getX();
+        mAreaSelection.width = event.getX();
+        mAreaSelection.y = event.getY();
         mAreaSelection.height = event.getY();
     }
 
     /**
-     * 
+     *
      *
      */
     @Override
@@ -1807,7 +1812,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 if (mEdgeTargetNodeReassign) {
                     new DeflectEdgeAction(this, mSelectedEdge, mReassignNode, event.getPoint()).run();
                     mEdgeTargetNodeReassign = false;
-                    mReassignNode           = null;
+                    mReassignNode = null;
 
                     return;
                 }
@@ -1878,7 +1883,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     @Override
@@ -1909,7 +1914,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                     for (Node node : mNodeSet) {
                         if (node != mSelectedEdge.getSourceNode()) {
                             if (node.containsPoint(event.getX(), event.getY())) {
-                                mReassignNode           = node;
+                                mReassignNode = node;
                                 mEdgeSourceNodeReassign = true;
 
                                 break;
@@ -1926,7 +1931,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                     for (Node node : mNodeSet) {
                         if (node != mSelectedEdge.getTargetNode()) {
                             if (node.containsPoint(event.getX(), event.getY())) {
-                                mReassignNode           = node;
+                                mReassignNode = node;
                                 mEdgeTargetNodeReassign = true;
 
                                 break;
@@ -1948,8 +1953,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
             // compute movement trajectory vectors
             Point currentMousePosition = event.getPoint();
-            Point mouseMoveVector      = new Point(currentMousePosition.x - mLastMousePosition.x,
-                                             currentMousePosition.y - mLastMousePosition.y);
+            Point mouseMoveVector = new Point(currentMousePosition.x - mLastMousePosition.x,
+                    currentMousePosition.y - mLastMousePosition.y);
 
             mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
             dragNodes(mSelectedNodes, event, mouseMoveVector);
@@ -1963,8 +1968,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                 // compute movement trajectory vectors
                 Point currentMousePosition = event.getPoint();
-                Point mouseMoveVector      = new Point(currentMousePosition.x - mLastMousePosition.x,
-                                                 currentMousePosition.y - mLastMousePosition.y);
+                Point mouseMoveVector = new Point(currentMousePosition.x - mLastMousePosition.x,
+                        currentMousePosition.y - mLastMousePosition.y);
 
                 mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
                 dragNode(mSelectedNode, event, mouseMoveVector);
@@ -1991,7 +1996,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                 // compute movement trajectory vectors
                 Point mouseMoveVector = new Point(currentMousePosition.x - mLastMousePosition.x,
-                                                  currentMousePosition.y - mLastMousePosition.y);
+                        currentMousePosition.y - mLastMousePosition.y);
 
                 mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
 
@@ -2017,7 +2022,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
                 // compute movement trajectory vectors
                 Point mouseMoveVector = new Point(currentMousePosition.x - mLastMousePosition.x,
-                                                  currentMousePosition.y - mLastMousePosition.y);
+                        currentMousePosition.y - mLastMousePosition.y);
 
                 mLastMousePosition = new Point(currentMousePosition.x, currentMousePosition.y);
                 dragVariableBadge(mSelectedVariableBadge, event, mouseMoveVector);
@@ -2031,29 +2036,31 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
 
         // mouse interaction has to be the selection of an area ...
-        mDoAreaSelection      = true;
-        mAreaSelection.width  = event.getX() - mAreaSelection.x;
+        mDoAreaSelection = true;
+        mAreaSelection.width = event.getX() - mAreaSelection.x;
         mAreaSelection.height = event.getY() - mAreaSelection.y;
         selectNodesInArea();
         repaint();
     }
 
     /**
-     * 
+     *
      *
      */
     @Override
-    public void mouseEntered(MouseEvent event) {}
+    public void mouseEntered(MouseEvent event) {
+    }
 
     /**
-     * 
+     *
      *
      */
     @Override
-    public void mouseExited(MouseEvent event) {}
+    public void mouseExited(MouseEvent event) {
+    }
 
     /**
-     * 
+     *
      *
      */
     @Override
@@ -2095,12 +2102,12 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     private void dragNode(Node node, MouseEvent event, Point moveVec) {
         boolean validDragging = true;
-        Point   nodePos       = node.getLocation();
+        Point nodePos = node.getLocation();
 
         if (((nodePos.x + moveVec.x) <= 0) || ((nodePos.y + moveVec.y) <= 0)) {
             validDragging = false;
@@ -2123,12 +2130,12 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     private void dragComment(Comment comment, MouseEvent event, Point moveVec) {
         boolean validDragging = true;
-        Point   commentPos    = comment.getLocation();
+        Point commentPos = comment.getLocation();
 
         if (((commentPos.x + moveVec.x) <= 0) || ((commentPos.y + moveVec.y) <= 0)) {
 
@@ -2149,12 +2156,12 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     private void dragVariableBadge(VarBadge vb, MouseEvent event, Point moveVec) {
         boolean validDragging = true;
-        Point   vbPos         = vb.getLocation();
+        Point vbPos = vb.getLocation();
 
         if (((vbPos.x + moveVec.x) <= 0) || ((vbPos.y + moveVec.y) <= 0)) {
 
@@ -2173,10 +2180,10 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             repaint();
         }
     }
-    
+
     /**
-     * 
-     * 
+     *
+     *
      */
     private void resizeComment(Comment comment, MouseEvent event, Point moveVec) {
         Point nodePos = comment.getLocation();
@@ -2192,8 +2199,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     private void dragNodes(Set<Node> nodes, MouseEvent event, Point moveVec) {
         boolean validDragging = true;
@@ -2227,25 +2234,24 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * Implementation of the delete button.
-     * the del-key is bound to the function mWorkspace.deleteSelectedItem
-     * this detects which items are selected and will throw them away
-     * selection will be canceled.
-     * 1-2-2014 Bert Bierman TNO
+     * Implementation of the delete button. the del-key is bound to the function
+     * mWorkspace.deleteSelectedItem this detects which items are selected and
+     * will throw them away selection will be canceled. 1-2-2014 Bert Bierman
+     * TNO
      */
     private void setKeyBindings() {
         ActionMap actionMap = getActionMap();
-        int       condition = JComponent.WHEN_IN_FOCUSED_WINDOW;
-        InputMap  inputMap  = getInputMap(condition);
-        String    vkDel     = "VK_DEL";
+        int condition = JComponent.WHEN_IN_FOCUSED_WINDOW;
+        InputMap inputMap = getInputMap(condition);
+        String vkDel = "VK_DEL";
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), vkDel);
         actionMap.put(vkDel, new KeyAction(this));
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     public void deleteSelectedItem() {
         if (mSelectedEdge != null) {
@@ -2264,8 +2270,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     private void removeEdge() {
         mSelectedEdge.mIsSelected = false;
@@ -2276,8 +2282,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     private void removeNodes() {
         for (Node node : mNodeSet) {
@@ -2290,8 +2296,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     private void removeNode() {
         mSelectedNode.mSelected = false;
@@ -2302,15 +2308,15 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     }
 
     /**
-     * 
+     *
      *
      */
     @Override
     public void paintComponent(Graphics g) {
-        
+
         // mLogger.message("Drawing Workspace");
         Graphics2D g2d = (Graphics2D) g;
-              
+
         if (mSelectTargetNodeMode) {
             setBackground(Color.LIGHT_GRAY);
         } else {
@@ -2321,13 +2327,13 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mGridManager.drawGrid(g2d);
 
         if (mDoAreaSelection) {
-            mDrawArea.x      = (mAreaSelection.width > 0)
-                               ? mAreaSelection.x
-                               : mAreaSelection.x + mAreaSelection.width;
-            mDrawArea.y      = (mAreaSelection.height > 0)
-                               ? mAreaSelection.y
-                               : mAreaSelection.y + mAreaSelection.height;
-            mDrawArea.width  = Math.abs(mAreaSelection.width);
+            mDrawArea.x = (mAreaSelection.width > 0)
+                    ? mAreaSelection.x
+                    : mAreaSelection.x + mAreaSelection.width;
+            mDrawArea.y = (mAreaSelection.height > 0)
+                    ? mAreaSelection.y
+                    : mAreaSelection.y + mAreaSelection.height;
+            mDrawArea.width = Math.abs(mAreaSelection.width);
             mDrawArea.height = Math.abs(mAreaSelection.height);
             g2d.draw(mDrawArea);
         }
@@ -2335,30 +2341,30 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         Color indicator = Color.WHITE;
 
         switch (getSceneFlowManager().getCurrentActiveSuperNode().getFlavour()) {
-        case CNODE :
-            indicator = sCEDGE_COLOR;
+            case CNODE:
+                indicator = sCEDGE_COLOR;
 
-            break;
+                break;
 
-        case PNODE :
-            indicator = sPEDGE_COLOR;
+            case PNODE:
+                indicator = sPEDGE_COLOR;
 
-            break;
+                break;
 
-        case FNODE :
-            indicator = sFEDGE_COLOR;
+            case FNODE:
+                indicator = sFEDGE_COLOR;
 
-            break;
+                break;
 
-        case INODE :
-            indicator = sIEDGE_COLOR;
+            case INODE:
+                indicator = sIEDGE_COLOR;
 
-            break;
+                break;
 
-        case TNODE :
-            indicator = sTEDGE_COLOR;
+            case TNODE:
+                indicator = sTEDGE_COLOR;
 
-            break;
+                break;
         }
 
         g2d.setColor(indicator);
@@ -2376,32 +2382,33 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 g2d.drawLine(sourceNodeCenter.x, sourceNodeCenter.y, mSelectNodePoint.x, mSelectNodePoint.y);
 
                 TextLayout textLayout = new TextLayout(sEdgeCreationHint.getIterator(), g2d.getFontRenderContext());
-                int height  = (int) (textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading());
-                int width   = (int) textLayout.getVisibleAdvance();
+                int height = (int) (textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading());
+                int width = (int) textLayout.getVisibleAdvance();
 
                 g2d.setStroke(new BasicStroke(0.5f));
                 g2d.drawLine(mSelectNodePoint.x, mSelectNodePoint.y, mSelectNodePoint.x,
-                             mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) + (height / 2));
+                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) + (height / 2));
                 g2d.setColor(new Color(100, 100, 100, 100));
                 g2d.fillRoundRect(mSelectNodePoint.x - (width / 2) - 5,
-                                  mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
-                                  height + 5, 5, 5);
+                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
+                        height + 5, 5, 5);
                 g2d.setColor(Color.WHITE);
                 g2d.setStroke(new BasicStroke(2.0f));
                 g2d.drawRoundRect(mSelectNodePoint.x - (width / 2) - 5,
-                                  mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
-                                  height + 5, 5, 5);
+                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
+                        height + 5, 5, 5);
                 g2d.drawString(sEdgeCreationHint.getIterator(), mSelectNodePoint.x - (width / 2),
-                               mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) + 1);
+                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) + 1);
             }
         }
     }
 
     /**
-     * 
+     *
      *
      */
     private class KeyAction extends AbstractAction {
+
         WorkSpace mWorkspace = null;
 
         public KeyAction(WorkSpace workspace) {

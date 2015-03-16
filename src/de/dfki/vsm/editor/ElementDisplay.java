@@ -495,7 +495,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 boolean showPopup = false;
                 JPopupMenu menu = new JPopupMenu();
                 int pathCount = path.getPathCount();
-                System.out.println(pathCount);
+                //System.out.println(pathCount);
                 // TODO: why do we check the pathCount?
                 // test if the user clicked on the Functions entry
                 if (pathCount == 2) {                    
@@ -720,6 +720,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
                 // TODO: NULLPOINTEREXCEPTION abfangen
+                System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxx");
                 TreeEntry selectedEntry = (TreeEntry) getSelectionPath().getLastPathComponent();
                 mDragSource.startDrag(event, DragSource.DefaultCopyDrop, selectedEntry, mDragSourceListener);
             }

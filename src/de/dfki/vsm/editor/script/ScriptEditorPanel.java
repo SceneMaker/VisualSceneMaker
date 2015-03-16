@@ -345,6 +345,10 @@ public final class ScriptEditorPanel extends JPanel
             {
                 mTabPane.setSelectedComponent(mFunctionEditor);
             }
+            else if(  ((TreeEntrySelectedEvent)event).getmEntry().getText().contains("Dialog"))
+            {
+                mTabPane.setSelectedComponent(mDialogActEditor);
+            }
         }
     }
         
