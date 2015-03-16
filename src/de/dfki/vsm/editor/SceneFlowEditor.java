@@ -31,10 +31,12 @@ import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
@@ -66,6 +68,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     // GUI-Components
     private final SceneFlowToolBar mToolBar;
     private final WorkSpace mWorkSpace;
+    private final ProjectToolBar mProjectToolBar;
     private final ElementDisplay mElementDisplay;
     private final JPanel mNewElementDisplay;
     private final ElementEditor mElementEditor;
@@ -264,11 +267,13 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         // The west component is the workbar
         mFooterLabel = new JLabel();
         mElementDisplay = new ElementDisplay(sceneFlow, mProject, mScriptEditorPanel);
+        mProjectToolBar = new ProjectToolBar(sceneFlow, mProject, mScriptEditorPanel);
         mElementEditor = new ElementEditor();
         mToolBar = new SceneFlowToolBar(this, mProject);
         mToolBar.addPathComponent(mSceneFlow);
         //
         mObservable.addObserver(mToolBar);
+        mObservable.addObserver(mProjectToolBar);
         mObservable.addObserver(mElementDisplay);
         mObservable.addObserver(mWorkSpace);
         mObservable.addObserver(mElementEditor);
@@ -288,8 +293,10 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         add(mToolBar, BorderLayout.NORTH);
 
         mNewElementDisplay = new JPanel();
-        mNewElementDisplay.setLayout(new BorderLayout());
-        mNewElementDisplay.add(mElementDisplay, BorderLayout.CENTER);
+        mNewElementDisplay.setLayout(new BoxLayout(mNewElementDisplay, BoxLayout.Y_AXIS));
+        mNewElementDisplay.add(mProjectToolBar);
+        //mNewElementDisplay.add(new JSeparator(JSeparator.HORIZONTAL));
+        mNewElementDisplay.add(mElementDisplay);
                 
         //PG 17.12.13 - FUTURE FEATURE! mNewElementDisplay.add(new EdgeTypeSelection(), BorderLayout.NORTH);
         add(mNewElementDisplay, BorderLayout.WEST);
