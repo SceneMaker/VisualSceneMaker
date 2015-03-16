@@ -62,7 +62,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         // Init Scene Player Config
         mPlayerConfig = project.getScenePlayerProperties();
         // Print Debug Information
-        mVSM3Log.message("Creating Generic VSM Scenen Player");
+        mVSM3Log.message("Creating VSM Scene Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,45 +71,66 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     @Override
     public void launch() {
         // Print Debug Information
-        mVSM3Log.message("Launching Generic VSM Scenen Player");
+        mVSM3Log.message("Launching VSM Scene Player");
         // Initialize The Properties
         final String numagent = mPlayerConfig.property("vsm.agent.number");
         for (int i = 0; i < Integer.parseInt(numagent); i++) {
-            // Get Agent's Name, Host And Port
+            // Get Agent's Initial Data
             final String name = mPlayerConfig.property("vsm.agent." + i + ".name");
             final String uaid = mPlayerConfig.property("vsm.agent." + i + ".uaid");
-            final String host = mPlayerConfig.property("vsm.agent." + i + ".host");
-            final String port = mPlayerConfig.property("vsm.agent." + i + ".port");
+            final String type = mPlayerConfig.property("vsm.agent." + i + ".type");
+            final String rhost = mPlayerConfig.property("vsm.agent." + i + ".remote.host");
+            final String rport = mPlayerConfig.property("vsm.agent." + i + ".remote.port");
+            final String rflag = mPlayerConfig.property("vsm.agent." + i + ".remote.flag");
+            final String lhost = mPlayerConfig.property("vsm.agent." + i + ".local.host");
+            final String lport = mPlayerConfig.property("vsm.agent." + i + ".local.port");
             // Print Out The Properties
             mVSM3Log.message(""
-                    + "Agent-Name:" + name + "\r\n"
-                    + "Agent-Uaid:" + uaid + "\r\n"
-                    + "Agent-Host:" + host + "\r\n"
-                    + "Agent-Port:" + port);
+                    + "Agent #" + i + " Name        : '" + name + "'" + "\r\n"
+                    + "Agent #" + i + " Uaid        : '" + uaid + "'" + "\r\n"
+                    + "Agent #" + i + " Type        : '" + type + "'" + "\r\n"
+                    + "Agent #" + i + " Remote Host : '" + rhost + "'" + "\r\n"
+                    + "Agent #" + i + " Remote Port : '" + rport + "'" + "\r\n"
+                    + "Agent #" + i + " Remote Flag : '" + rflag + "'" + "\r\n"
+                    + "Agent #" + i + " Local Host  : '" + lhost + "'" + "\r\n"
+                    + "Agent #" + i + " Local Port  : '" + lport);
             // Create A Client For This Agent
-            VSMAgentClient client = new VSMAgentClient(this, name, uaid, host, Integer.parseInt(port));
-            // Add The Client To Map
-            mAgentClientMap.put(name, client);
-            // Now Start The Client
-            client.start();
-            // Print Debug Information
-            mVSM3Log.message("Starting Generic VSM Agent Client '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
+            // Check The Type Of This Agent
+            if (type.equals("tcp")) {
+                final VSMAgentClient client = new VSMTCPSockClient(this, name, uaid,
+                        rhost, Integer.parseInt(rport));
+                // Add The Client To Map
+                mAgentClientMap.put(name, client);
+                // Now Start The Client
+                client.start();
+            } else if (type.equals("udp")) {
+                final VSMAgentClient client = new VSMUDPSockClient(this, name, uaid,
+                        lhost, Integer.parseInt(lport),
+                        rhost, Integer.parseInt(rport),
+                        Boolean.parseBoolean(rflag));
+                // Add The Client To Map
+                mAgentClientMap.put(name, client);
+                // Now Start The Client
+                client.start();
+            } else {
+                // Unknown Protocol
+            }
         }
         // Initialize The Properties
-        final String swilhost = mPlayerConfig.property("swi.socket.local.host");
-        final String swilport = mPlayerConfig.property("swi.socket.local.port");
-        final String swirhost = mPlayerConfig.property("swi.socket.remote.host");
-        final String swirport = mPlayerConfig.property("swi.socket.remote.port");
-        final String swirconn = mPlayerConfig.property("swi.socket.remote.flag");
-        final String swilbase = mPlayerConfig.property("swi.socket.local.base");
+        final String swilhost = mPlayerConfig.property("swi.handler.local.host");
+        final String swilport = mPlayerConfig.property("swi.handler.local.port");
+        final String swirhost = mPlayerConfig.property("swi.handler.remote.host");
+        final String swirport = mPlayerConfig.property("swi.handler.remote.port");
+        final String swirconn = mPlayerConfig.property("swi.handler.remote.flag");
+        final String swilbase = mPlayerConfig.property("swi.handler.local.base");
         // Print Out The Properties
         mVSM3Log.message(""
-                + "SWI-Socket-Local-Host :" + swilhost + "\r\n"
-                + "SWI-Socket-Remote-Host :" + swirhost + "\r\n"
-                + "SWI-Socket-Local-Port :" + swilport + "\r\n"
-                + "SWI-Socket-Remote-Port :" + swirport + "\r\n"
-                + "SWI-Socket-Remote-Flag :" + swirconn + "\r\n"
-                + "SWI-Socket-Base-Files :" + swilbase + "");
+                + "SWI Query Handler Local Host  : '" + swilhost + "'" + "\r\n"
+                + "SWI Query Handler Remote Host : '" + swirhost + "'" + "\r\n"
+                + "SWI Query Handler Local Port  : '" + swilport + "'" + "\r\n"
+                + "SWI Query Handler Remote Port : '" + swirport + "'" + "\r\n"
+                + "SWI Query Handler Remote Flag : '" + swirconn + "'" + "\r\n"
+                + "SWI Query Handler Base Files  : '" + swilbase + "'");
         // Initialize the JPL Engine
         JPLEngine.init();
         // Load The Prolog Program
@@ -149,14 +170,14 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
             }
         }
         // Shutdown Other Threads
-        mQueryHandler.abort();
+        //mQueryHandler.abort();
         mSystemTimer.abort();
         // Join With All Threads
         try {
             // Join With The Query Handler
-            mQueryHandler.join();
+            //mQueryHandler.join();
             // Print Debug Information
-            mVSM3Log.message("Joining Query Handler");
+            mVSM3Log.message("Awaiting System Timer");
             // Join With The System Timer
             mSystemTimer.join();
             // Print Debug Information
@@ -218,7 +239,9 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean query(final String querystr) {
+    // TODO: Does This Method Need To be Synchronized 
+    // What Are The Advantaged If It Is Synchronized
+    public final /*synchronized*/ boolean query(final String querystr) {
         // Make The Query To The KB
         JPLResult result = JPLEngine.query(querystr);
         // Check The Query Results 

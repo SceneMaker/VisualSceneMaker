@@ -50171,3 +50171,258 @@ Loading Style Policy:
 WARNING to LOGFILE on Tue Mar 03 15:06:15 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:65)
 Could not find resource '/res/img/new/varShow.png'.
 
+INFO to LOGFILE on Wed Mar 11 15:51:37 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:259)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="HelloWorld"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMDefaultPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:37 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:306)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.name" val="gloria"/>
+  <Entry key="vsm.agent.0.port" val="1001"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.name" val="curtis"/>
+  <Entry key="vsm.agent.1.port" val="1002"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agent.number" val="2"/>
+  <Entry key="vsm.swilbase" val="./res/prj/test/swi"/>
+  <Entry key="vsm.swilhost" val="127.0.0.1"/>
+  <Entry key="vsm.swilport" val="2002"/>
+  <Entry key="vsm.swirconn" val="false"/>
+  <Entry key="vsm.swirhost" val="127.0.0.1"/>
+  <Entry key="vsm.swirport" val="3002"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:37 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:461)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Wed Mar 11 15:51:37 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:557)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:37 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:511)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:38 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:361)
+Loading Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Wed Mar 11 15:51:38 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:411)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Wed Mar 11 15:51:38 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:48)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Wed Mar 11 15:51:38 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:65)
+Could not find resource '/res/img/new/varShow.png'.
+
+INFO to LOGFILE on Wed Mar 11 15:51:50 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveActicon(ProjectData.java:486)
+Saving Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Wed Mar 11 15:51:50 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveVisicon(ProjectData.java:576)
+Saving Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:50 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveGesticon(ProjectData.java:536)
+Saving Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:50 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneFlow(ProjectData.java:386)
+Saving Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Wed Mar 11 15:51:50 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveSceneScript(ProjectData.java:436)
+Saving Scenescript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Wed Mar 11 15:51:50 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.saveProjectConfig(ProjectData.java:281)
+Saving Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="HelloWorld"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMDefaultPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:50 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.savePlayerConfig(ProjectData.java:331)
+Saving Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.name" val="gloria"/>
+  <Entry key="vsm.agent.0.port" val="1001"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.name" val="curtis"/>
+  <Entry key="vsm.agent.1.port" val="1002"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agent.number" val="2"/>
+  <Entry key="vsm.swilbase" val="./res/prj/test/swi"/>
+  <Entry key="vsm.swilhost" val="127.0.0.1"/>
+  <Entry key="vsm.swilport" val="2002"/>
+  <Entry key="vsm.swirconn" val="false"/>
+  <Entry key="vsm.swirhost" val="127.0.0.1"/>
+  <Entry key="vsm.swirport" val="3002"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Wed Mar 11 15:51:53 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.<init>(VSMScenePlayer.java:65)
+Creating Generic VSM Scenen Player
+
+INFO to LOGFILE on Wed Mar 11 15:51:53 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:75)
+Launching Generic VSM Scenen Player
+
+INFO to LOGFILE on Wed Mar 11 15:51:53 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:85)
+Agent-Name:gloria
+Agent-Uaid:1
+Agent-Host:127.0.0.1
+Agent-Port:1001
+
+INFO to LOGFILE on Wed Mar 11 15:51:53 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMAgentClient.<init>(VSMAgentClient.java:56)
+Creating Generic VSM Agent Client For 'gloria' With Id '1'
+
+WARNING to LOGFILE on Wed Mar 11 15:51:54 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMAgentClient.start(VSMAgentClient.java:107)
+java.net.ConnectException: Connection refused: connect
+
+INFO to LOGFILE on Wed Mar 11 15:51:54 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:97)
+Starting Generic VSM Agent Client 'gloria' With Id '1' On '127.0.0.1:1001'
+
+INFO to LOGFILE on Wed Mar 11 15:51:54 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:85)
+Agent-Name:curtis
+Agent-Uaid:2
+Agent-Host:127.0.0.1
+Agent-Port:1002
+
+INFO to LOGFILE on Wed Mar 11 15:51:54 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMAgentClient.<init>(VSMAgentClient.java:56)
+Creating Generic VSM Agent Client For 'curtis' With Id '2'
+
+INFO to LOGFILE on Wed Mar 11 15:51:54 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-27,6,main] at de.dfki.vsm.api.VSMAgentClient.run(VSMAgentClient.java:257)
+Executing Generic VSM Agent Client For 'gloria' With Id '1'
+
+WARNING to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMAgentClient.start(VSMAgentClient.java:107)
+java.net.ConnectException: Connection refused: connect
+
+INFO to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:97)
+Starting Generic VSM Agent Client 'curtis' With Id '2' On '127.0.0.1:1002'
+
+INFO to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-28,6,main] at de.dfki.vsm.api.VSMAgentClient.run(VSMAgentClient.java:257)
+Executing Generic VSM Agent Client For 'curtis' With Id '2'
+
+INFO to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:107)
+SWI-Socket-Local-Host :null
+SWI-Socket-Remote-Host :null
+SWI-Socket-Local-Port :null
+SWI-Socket-Remote-Port :null
+SWI-Socket-Remote-Flag :null
+SWI-Socket-Base-Files :null
+
+INFO to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.jpl.JPLEngine.init(JPLEngine.java:71)
+Initializing JPL Engine 'JPLEngine(3.1.4-alpha,[swipl,-g,true,-nosignals])'
+
+INFO to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[JPLLoader(null/*.pl),6,main] at de.dfki.vsm.util.jpl.JPLLoader.run(JPLLoader.java:30)
+Consulted Source 'null/*.pl' In JPL Engine 'JPLEngine(3.1.4-alpha,[swipl,-g,true,-nosignals])'
+
+INFO to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMSystemTimer.<init>(VSMSystemTimer.java:29)
+Creating System Timer
+
+INFO to LOGFILE on Wed Mar 11 15:51:55 CET 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-29,6,main] at de.dfki.vsm.api.VSMSystemTimer.run(VSMSystemTimer.java:50)
+Starting System Timer
+

@@ -3,6 +3,7 @@ package de.dfki.vsm.api;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -33,7 +34,7 @@ public class VSMQueryHandler extends Thread {
     private final Pattern mPattern = Pattern.compile(
             "<query type=\"(.*?)\">(.*?)</query>");
     // The Scene Player
-    private VSMScenePlayer mPlayer;
+    private final VSMScenePlayer mPlayer;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -68,7 +69,7 @@ public class VSMQueryHandler extends Thread {
                 // Connect The UDP Socket
                 mSocket.connect(mRAddr);
                 // Debug Some Information
-                mLogger.message("ConnectingSWI Query Handler");
+                mLogger.message("Connecting SWI Query Handler");
             }
             // Print Debug Information
             mLogger.message("Constructing SWI Query Handler");
@@ -130,7 +131,6 @@ public class VSMQueryHandler extends Thread {
                     // Get The Prolog Query 
                     final String type = matcher.group(1);
                     final String query = matcher.group(2);
-                    //
                     // Print Some Information
                     mLogger.message("SWI Query Handler Executing:\r\n" + query);
                     // Get The Prolog Query 
@@ -166,7 +166,7 @@ public class VSMQueryHandler extends Thread {
                     // Send The Answer Packet
                     //mSocket.send(answer);
                 }
-            } catch (Exception exc) {
+            } catch (IOException exc) {
                 // Debug Some Information
                 mLogger.warning(exc.toString());
             }
