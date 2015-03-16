@@ -1,6 +1,5 @@
 package de.dfki.vsm.runtime;
 
-import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
@@ -53,9 +52,7 @@ import de.dfki.vsm.runtime.value.ObjectValue;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
 import de.dfki.vsm.runtime.value.AbstractValue;
-import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.tpl.TPLTuple;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -395,8 +392,7 @@ public class Evaluator {
                     throw new RunTimeException(exp,
                             "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            }
-            ////////////////////////////////////////////////////////////////////
+            } ////////////////////////////////////////////////////////////////////
             // OPERATOR AddFirst
             ////////////////////////////////////////////////////////////////////
             else if (operator == BinaryExp.Operator.AddFirst) {
@@ -443,8 +439,7 @@ public class Evaluator {
             else if (operator == BinaryExp.Operator.Remove) {
                 if (left instanceof ListValue && right instanceof IntValue) {
                     return ((ListValue) left).getValueList().remove(((IntValue) right).getValue().intValue());
-                    
-                    
+
                 } else {
                     throw new RunTimeException(exp,
                             "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -926,10 +921,7 @@ public class Evaluator {
      * Execute a user command
      * ************************************************************************
      */
-    private java.lang.Object executeUsrCmd(UsrCmd cmd, Environment env)
-            throws RunTimeException/*
-     * , InterruptException, TerminatedException
-     */ {
+    private java.lang.Object executeUsrCmd(UsrCmd cmd, Environment env) throws RunTimeException {
         // Get the name of the command
         java.lang.String cmdName = ((UsrCmd) cmd).getName();
         // Evaluate the argument list of the command
@@ -1064,16 +1056,20 @@ public class Evaluator {
             //System.err.println(e.toString());
         }
 
-// We have an object
+        // We have an object
         try {
             int dotIndex = cmdClassName.lastIndexOf('.');
             java.lang.String parentClassName = cmdClassName.substring(0, dotIndex);
             java.lang.String memberFieldName = cmdClassName.substring(dotIndex + 1);
             //
             Class parentClass = Class.forName(parentClassName);
+            //mLogger.message("Evaluator: Parent Class Is " + parentClass);
             Field memberField = parentClass.getField(memberFieldName);
+            //mLogger.message("Evaluator: Member Field Is " + memberField);
             Class memberFieldClass = memberField.getType();
+            //mLogger.message("Evaluator: Member Field  Type Is " + memberFieldClass);
             java.lang.Object memberFieldObject = memberField.get(null);
+            //mLogger.message("Evaluator: Member Field Object Is " + memberFieldObject);
 
             // Invoke the method
             Method method = memberFieldClass.getMethod(cmdMethodName, paramClassList);

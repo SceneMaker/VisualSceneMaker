@@ -8,6 +8,8 @@
     <property name="docdir" value="${basedir}${file.separator}doc"/>
     <!-- Define Library Directory -->
     <property name="libdir" value="${basedir}${file.separator}lib"/>
+    <!-- Define Logger Directory -->
+    <property name="logdir" value="${basedir}${file.separator}log"/>
     <!-- Define Project Directory -->
     <property name="prjdir" value="${basedir}${file.separator}prj"/>
     <!-- Define Resources Directory -->
@@ -133,10 +135,11 @@
     </target>
     <!-- Execute Project -->
     <target name="exec">
-        <java classname="de.dfki.vsm.DefaultEditor" fork="true">
+        <java classname="de.dfki.vsm.ProjectEditor" fork="true">
             <classpath refid="clspath"/>
+            <arg line="res/prj/hcm/vsm/config.xml"/>
         </java>
-    </target>  
+    </target>
      <!-- Execute Project -->
     <target name="test">
         <java classname="de.dfki.vsm.test.TestFSRConvert" fork="true">
@@ -199,6 +202,13 @@
             <dirset dir="${docdir}">
                 <include name="**/*"/>
             </dirset>
+        </delete>
+        <echo message="Cleaning '${logdir}'"/>
+        <delete>
+            <fileset dir="${logdir}">
+                <exclude name="*.log"/>
+                <include name="**/*"/>
+            </fileset>            
         </delete>
         <echo message="Cleaning '${scngendir}'"/>
         <delete file="${scnprsfile}"/>

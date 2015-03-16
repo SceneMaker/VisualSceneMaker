@@ -5,17 +5,17 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 /**
  * @author Gregor Mehlmann
  */
-public class VSMSystemTimer extends Thread {
+public final class VSMSystemTimer extends Thread {
 
     // Termination Flag
-    private boolean mDone = false;
+    private volatile boolean mDone = false;
     // The System Logger
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
     // The Scene Player
     private final VSMScenePlayer mPlayer;
     // The Wait Interval
-    private final long mInterval;
+    private final long mTimerInterval;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -24,9 +24,9 @@ public class VSMSystemTimer extends Thread {
         // Initialize The Player
         mPlayer = player;
         // Initialize The Interval
-        mInterval = interval;
+        mTimerInterval = interval;
         // Debug Some Information
-        mLogger.message("Creating System Timer");
+        mLogger.message("Creating VSM System Timer");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ public class VSMSystemTimer extends Thread {
     ////////////////////////////////////////////////////////////////////////////
     public final void abort() {
         // Debug Some Information
-        mLogger.message("Aborting System Timer");
+        mLogger.message("Aborting VSM System Timer");
         // Set Termination Flag
         mDone = true;
         // Interrupt Thread State
@@ -47,17 +47,19 @@ public class VSMSystemTimer extends Thread {
     @Override
     public final void run() {
         // Debug Some Information
-        mLogger.message("Starting System Timer");
+        mLogger.message("Starting VSM System Timer");
         // Initialize Startup Time
         mPlayer.setStartupTime(System.currentTimeMillis());
         // Update The Current Time
         while (!mDone) {
             // Sleep For Some Time
             try {
-                Thread.sleep(mInterval);
-            } catch (Exception exc) {
+                Thread.sleep(mTimerInterval);
+            } catch (InterruptedException exc) {
                 // Debug Some Information
                 mLogger.warning(exc.toString());
+                // Debug Some Information
+                mLogger.warning("Interrupting VSM System Timer");
                 // Exit On An Interrupt
                 mDone = true;
             }
@@ -69,6 +71,6 @@ public class VSMSystemTimer extends Thread {
                     + " assertz(now(" + mPlayer.getCurrentTime() + ")).");
         }
         // Print Some Information
-        mLogger.message("Stopping System Timer");
+        mLogger.message("Stopping VSM System Timer");
     }
 }

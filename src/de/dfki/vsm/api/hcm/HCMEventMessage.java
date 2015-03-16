@@ -13,11 +13,12 @@ import org.xml.sax.SAXException;
 
 /**
  * Data structure for a message exchanged between VSM and the agent proxies.
- * 
- * @author Gregor Mehlmann, Kathrin Janowski
+ *
+ * @author Gregor Mehlmann
+ * @author Kathrin Janowski
  */
-public final class VSMMessage {
-    
+public final class HCMEventMessage {
+
     private final LOGDefaultLogger mVSM3Log = LOGDefaultLogger.getInstance();
 
     // The Action Name
@@ -32,15 +33,14 @@ public final class VSMMessage {
     private String mTime;
     // The Action Text
     private String mText;
-    
+
     //the default value (used to avoid Null Pointer Exceptions)
-    public static final String cUnknownValue = "unknown"; 
+    public static final String cUnknownValue = "unknown";
 
-
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public VSMMessage(
+    public HCMEventMessage(
             final String name,
             final String type,
             final String task,
@@ -57,16 +57,15 @@ public final class VSMMessage {
 
     /**
      * Parses an XML message string from a proxy application.
-     * 
-     * The attributes in the source string can be given in any order,
-     * as long as it the String a valid XML element.
-     * Missing attributes are set to cUnknownValue.
-     * 
+     *
+     * The attributes in the source string can be given in any order, as long as
+     * it the String a valid XML element. Missing attributes are set to
+     * cUnknownValue.
+     *
      * @param message the XML message
      */
-    public VSMMessage(String message)
-    {
-        try{
+    public HCMEventMessage(String message) {
+        try {
             //parse the XML
             DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
@@ -80,41 +79,43 @@ public final class VSMMessage {
             mTask = action.getAttribute("task");
             mDate = action.getAttribute("time");
             mTime = action.getAttribute("time");
-        
+
             mText = action.getTextContent();
-        }
-        catch(ParserConfigurationException pce)
-        {
+        } catch (ParserConfigurationException pce) {
             mVSM3Log.failure("Could not create XML Document Builder: "
-                    +pce.getMessage());
-        }
-        catch (SAXException ex) {
+                    + pce.getMessage());
+        } catch (SAXException ex) {
             mVSM3Log.failure("Could not parse XML message: "
-                    +ex.getMessage());
-        }
-        catch (IOException ex) {
+                    + ex.getMessage());
+        } catch (IOException ex) {
             mVSM3Log.failure("Could not create input source for parsing XML message: "
-                    +ex.getMessage());
-        }
-        finally
-        {
+                    + ex.getMessage());
+        } finally {
             //initialize missing values
-            if ((mName==null) || mName.isEmpty()) mName = cUnknownValue;
-            if ((mType==null) || mType.isEmpty()) mType = cUnknownValue;
-            if ((mTask==null) || mTask.isEmpty()) mTask = cUnknownValue;
-            if ((mTime==null) || mTime.isEmpty()) mTime = cUnknownValue;
-            if (mText == null) mText="";
+            if ((mName == null) || mName.isEmpty()) {
+                mName = cUnknownValue;
+            }
+            if ((mType == null) || mType.isEmpty()) {
+                mType = cUnknownValue;
+            }
+            if ((mTask == null) || mTask.isEmpty()) {
+                mTask = cUnknownValue;
+            }
+            if ((mTime == null) || mTime.isEmpty()) {
+                mTime = cUnknownValue;
+            }
+            if (mText == null) {
+                mText = "";
+            }
         }
     }
 
-    
     //==========================================================================
     // getters & setters
     //==========================================================================
-    
     /**
-     * @return the action's message string representation
-     * which is ready to be sent to a VSM proxy
+     * @return the action's message string representation which is ready to be
+     * sent to a VSM proxy
      */
     @Override
     public final String toString() {
@@ -122,8 +123,8 @@ public final class VSMMessage {
     }
 
     /**
-     * @return the action's message string representation
-     * which is ready to be sent to a VSM proxy
+     * @return the action's message string representation which is ready to be
+     * sent to a VSM proxy
      */
     public final String getMessageString() {
 
@@ -136,37 +137,36 @@ public final class VSMMessage {
                 + mText + "</action>";
     }
 
-
     /**
-     * @return the name of the agent 
+     * @return the name of the agent
      */
     public final String getName() {
         return mName;
     }
 
     /**
-     * @return the task type 
+     * @return the task type
      */
     public final String getType() {
         return mType;
     }
 
     /**
-     * @return the task ID 
+     * @return the task ID
      */
     public final String getTask() {
         return mTask;
     }
 
     /**
-     * @return the date when the task was created  
+     * @return the date when the task was created
      */
     public final String getDate() {
         return mDate;
     }
 
     /**
-     * @return the time when the task was created  
+     * @return the time when the task was created
      */
     public final String getTime() {
         return mTime;
@@ -220,29 +220,23 @@ public final class VSMMessage {
     public final void setText(final String text) {
         mText = text;
     }
-    
-    
+
     //==========================================================================
     // availability of core attributes
     //==========================================================================
-
-    public boolean hasName()
-    {
+    public boolean hasName() {
         return !mName.equals(cUnknownValue);
     }
 
-    public boolean hasType()
-    {
+    public boolean hasType() {
         return !mTask.equals(cUnknownValue);
     }
 
-    public boolean hasTask()
-    {
+    public boolean hasTask() {
         return !mTask.equals(cUnknownValue);
     }
 
-    public boolean hasText()
-    {
+    public boolean hasText() {
         return !mText.isEmpty();
     }
 
