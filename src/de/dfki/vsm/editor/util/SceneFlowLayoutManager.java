@@ -8,7 +8,7 @@ import de.dfki.vsm.editor.Comment;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.StartSign;
-import de.dfki.vsm.editor.VarBadge;
+import de.dfki.vsm.editor.VarBadgeLocal;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -64,7 +64,7 @@ public class SceneFlowLayoutManager implements LayoutManager {
                 //System.out.println("StartSign");
             } else if (c instanceof Comment) {
                 //System.out.println("Comment");
-            } else if (c instanceof VarBadge) {
+            } else if (c instanceof VarBadgeLocal) {
                 //System.out.println("VarBadge");
             } else {
                 //System.out.println("Unknown");

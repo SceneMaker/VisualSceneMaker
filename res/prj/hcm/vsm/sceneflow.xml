@@ -135,7 +135,7 @@
     </Node>
   </SuperNode>
   <UserCommands>
-    <UserCommand name="query" classname ="de.dfki.vsm.api.VSMDefaultPlayer.sInstance" method="query">
+    <UserCommand name="query" classname ="de.dfki.vsm.api.hcm.HCMScenePlayer.sInstance" method="query">
       <Argument name="Arg0" type="java.lang.String"/>
     </UserCommand>
   </UserCommands>
