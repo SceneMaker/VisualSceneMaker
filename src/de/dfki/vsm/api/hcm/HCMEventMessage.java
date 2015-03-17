@@ -1,189 +1,177 @@
 package de.dfki.vsm.api.hcm;
 
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
- * Data structure for a message exchanged between VSM and the agent proxies.
- *
  * @author Gregor Mehlmann
  * @author Kathrin Janowski
  */
 public final class HCMEventMessage {
 
-    private final LOGDefaultLogger mVSM3Log = LOGDefaultLogger.getInstance();
-
-    // The Action Name
-    private String mName;
+    // The VSM Logger
+    private static LOGDefaultLogger sLogger
+            = LOGDefaultLogger.getInstance();
+    // The Message Id
+    private static long sId = 0;
     // The Action Type
     private String mType;
-    // The Action Task
-    private String mTask;
-    // The Action Date
-    private String mDate;
-    // The Action Time
-    private String mTime;
+    // The Request Task
+    private String mUtid;
+    // The Agent Name
+    private String mName;
+    // The Agent Uaid
+    private String mUaid;
     // The Action Text
     private String mText;
+    // The Action Umid
+    private long mUmid;
+    // The Action Date
+    private long mDate;
+    // The Action Time
+    private long mTime;
 
-    //the default value (used to avoid Null Pointer Exceptions)
-    public static final String cUnknownValue = "unknown";
-
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public HCMEventMessage(
-            final String name,
+    private HCMEventMessage(
             final String type,
-            final String task,
-            final String date,
-            final String time,
-            final String text) {
-        mName = name;
+            final String utid,
+            final String name,
+            final String uaid,
+            final String text,
+            final long umid,
+            final long date,
+            final long time) {
         mType = type;
-        mTask = task;
+        mUtid = utid;
+        mName = name;
+        mUaid = uaid;
+        mText = text;
+        mUmid = umid;
         mDate = date;
         mTime = time;
-        mText = text;
     }
 
-    /**
-     * Parses an XML message string from a proxy application.
-     *
-     * The attributes in the source string can be given in any order, as long as
-     * it the String a valid XML element. Missing attributes are set to
-     * cUnknownValue.
-     *
-     * @param message the XML message
-     */
-    public HCMEventMessage(String message) {
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    private static synchronized long newId() {
+        // Return New Id
+        return (++sId);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public static HCMEventMessage newInstance(
+            final String type,
+            final String utid,
+            final String name,
+            final String uaid,
+            final String text,
+            final long date,
+            final long time) {
+        // Get New Message Id
+        final long umid = newId();
+        // Return New Message
+        return new HCMEventMessage(type, utid, name, uaid, text, umid, date, time);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public static HCMEventMessage getInstance(final String input) {
         try {
-            //parse the XML
-            DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
-            InputSource inputSource = new InputSource();
-            inputSource.setCharacterStream(new StringReader(message));
-            Document document = documentBuilder.parse(inputSource);
-            Element action = document.getDocumentElement();
-
-            mName = action.getAttribute("name");
-            mType = action.getAttribute("type");
-            mTask = action.getAttribute("task");
-            mDate = action.getAttribute("time");
-            mTime = action.getAttribute("time");
-
-            mText = action.getTextContent();
-        } catch (ParserConfigurationException pce) {
-            mVSM3Log.failure("Could not create XML Document Builder: "
-                    + pce.getMessage());
-        } catch (SAXException ex) {
-            mVSM3Log.failure("Could not parse XML message: "
-                    + ex.getMessage());
-        } catch (IOException ex) {
-            mVSM3Log.failure("Could not create input source for parsing XML message: "
-                    + ex.getMessage());
-        } finally {
-            //initialize missing values
-            if ((mName == null) || mName.isEmpty()) {
-                mName = cUnknownValue;
-            }
-            if ((mType == null) || mType.isEmpty()) {
-                mType = cUnknownValue;
-            }
-            if ((mTask == null) || mTask.isEmpty()) {
-                mTask = cUnknownValue;
-            }
-            if ((mTime == null) || mTime.isEmpty()) {
-                mTime = cUnknownValue;
-            }
-            if (mText == null) {
-                mText = "";
-            }
+            // Parse the XML String
+            final ByteArrayInputStream stream
+                    = new ByteArrayInputStream(input.getBytes("UTF-8"));
+            final DocumentBuilderFactory factory
+                    = DocumentBuilderFactory.newInstance();
+            final DocumentBuilder builder
+                    = factory.newDocumentBuilder();
+            final Document document = builder.parse(stream);
+            // Get The Root Element
+            final Element action = document.getDocumentElement();
+            // Get The Attributes   
+            final String type = action.getAttribute("type");
+            final String utid = action.getAttribute("utid");
+            final String name = action.getAttribute("name");
+            final String uaid = action.getAttribute("uaid");
+            final String umid = action.getAttribute("umid");
+            final String date = action.getAttribute("date");
+            final String time = action.getAttribute("time");
+            final String text = action.getTextContent();
+            // Construct The Message
+            final HCMEventMessage message = new HCMEventMessage(
+                    type, utid, name, uaid, text,
+                    Long.parseLong(umid),
+                    Long.parseLong(date),
+                    Long.parseLong(time));
+            // Return The Message
+            return message;
+        } catch (final Exception exc) {
+            sLogger.failure(exc.toString());
         }
+        // Return Null Otherwise
+        return null;
     }
 
-    //==========================================================================
-    // getters & setters
-    //==========================================================================
-    /**
-     * @return the action's message string representation which is ready to be
-     * sent to a VSM proxy
-     */
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String toString() {
-        return getMessageString();
-    }
-
-    /**
-     * @return the action's message string representation which is ready to be
-     * sent to a VSM proxy
-     */
-    public final String getMessageString() {
-
+        // Create The New Command 
         return "<action "
-                + "name=\"" + mName + "\" "
                 + "type=\"" + mType + "\" "
-                + "task=\"" + mTask + "\" "
+                + "utid=\"" + mUtid + "\" "
+                + "name=\"" + mName + "\" "
+                + "uaid=\"" + mUaid + "\" "
+                + "umid=\"" + mUaid + "\" "
                 + "date=\"" + mDate + "\" "
                 + "time=\"" + mTime + "\">"
-                + mText + "</action>";
+                + mText
+                + "</action>";
     }
 
-    /**
-     * @return the name of the agent
-     */
-    public final String getName() {
-        return mName;
-    }
-
-    /**
-     * @return the task type
-     */
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public final String getType() {
         return mType;
     }
 
-    /**
-     * @return the task ID
-     */
-    public final String getTask() {
-        return mTask;
+    public final String getUtid() {
+        return mUtid;
     }
 
-    /**
-     * @return the date when the task was created
-     */
-    public final String getDate() {
+    public final String getName() {
+        return mName;
+    }
+
+    public final String getUaid() {
+        return mUaid;
+    }
+
+    public final long getUmid() {
+        return mUmid;
+    }
+
+    public final long getDate() {
         return mDate;
     }
 
-    /**
-     * @return the time when the task was created
-     */
-    public final String getTime() {
+    public final long getTime() {
         return mTime;
     }
 
-    /**
-     * @return the command sent to the agent
-     */
     public final String getText() {
         return mText;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void setName(final String name) {
-        mName = name;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -193,51 +181,31 @@ public final class HCMEventMessage {
         mType = type;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void setTask(final String task) {
-        mTask = task;
+    public final void setUtid(final String utid) {
+        mUtid = utid;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void setDate(final String date) {
+    public final void setName(final String name) {
+        mName = name;
+    }
+
+    public final void setUaid(final String uaid) {
+        mUaid = uaid;
+    }
+
+    public final void setUmid(final long umid) {
+        mUmid = umid;
+    }
+
+    public final void setDate(final long date) {
         mDate = date;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void setTime(final String time) {
+    public final void setTime(final long time) {
         mTime = time;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
     public final void setText(final String text) {
         mText = text;
     }
-
-    //==========================================================================
-    // availability of core attributes
-    //==========================================================================
-    public boolean hasName() {
-        return !mName.equals(cUnknownValue);
-    }
-
-    public boolean hasType() {
-        return !mTask.equals(cUnknownValue);
-    }
-
-    public boolean hasTask() {
-        return !mTask.equals(cUnknownValue);
-    }
-
-    public boolean hasText() {
-        return !mText.isEmpty();
-    }
-
 }
