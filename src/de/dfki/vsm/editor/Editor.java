@@ -162,6 +162,7 @@ public class Editor extends JFrame implements EventListener {
         setName(Preferences.getProperty("frame_name"));
         setJMenuBar(mMenuBar);
 
+        setContentPane(mWelcomeScrollPanel);
         //add(mProjectEditorList); // COMMENTED BY M.FALLAS
         pack();
         // handle resize and positioning
@@ -263,9 +264,9 @@ public class Editor extends JFrame implements EventListener {
             try {
                 String path = createProjectDialog.mConfigFile.getPath();
                 if (!path.equals("")) {
-                if (mProjectEditorList.getTabCount() == 0) {
-                    toggleProjectEditorList(true);
-                }
+//                if (mProjectEditorList.getTabCount() == 0) {
+//                    toggleProjectEditorList(true);
+//                }
                 ProjectData project = new ProjectData(new File(path));
                 project.setPending(true);
                 addProject(project);
@@ -320,9 +321,9 @@ public class Editor extends JFrame implements EventListener {
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 
             if (new File(fc.getSelectedFile() + System.getProperty("file.separator"), "config.xml").exists()) {
-                if (mProjectEditorList.getTabCount() == 0) {
-                    toggleProjectEditorList(true);
-                }
+                //if (mProjectEditorList.getTabCount() == 0) {
+                    //toggleProjectEditorList(true);
+                //}
                 File configFile = new File(fc.getSelectedFile() + System.getProperty("file.separator") + "config.xml");
                 ProjectData project = new ProjectData(configFile);
                 addProject(project);
@@ -419,6 +420,7 @@ public class Editor extends JFrame implements EventListener {
             mMenuBar.setCloseMenuEnabled(true);
             //mMenuBar.setRunMenuEnabled(true);
             //mMenuBar.setMonitorMenuEnabled(false);
+            setContentPane(mProjectEditorList);
 
         }
         mProjectEditorList.add(project);
@@ -434,11 +436,12 @@ public class Editor extends JFrame implements EventListener {
         if (mProjectEditorList.getTabCount() == 0) {
             mMenuBar.setFileSaveMenuEnabled(false);
             mMenuBar.setCloseMenuEnabled(false);
-            toggleProjectEditorList(false);
+           // toggleProjectEditorList(false);
             //mMenuBar.setRunMenuEnabled(false);
             //mMenuBar.setStopMenuEnabled(false);
             //mMenuBar.setPauseMenuEnabled(false);
             //mMenuBar.setMonitorMenuEnabled(false);
+            setContentPane(mWelcomeScrollPanel);
         }
     }
 

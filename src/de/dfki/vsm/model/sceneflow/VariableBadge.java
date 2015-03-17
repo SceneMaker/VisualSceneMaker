@@ -12,12 +12,14 @@ import org.w3c.dom.Element;
 public class VariableBadge extends Object {
 
     protected Position mPosition;
+    protected String mType;
 
-    public VariableBadge() {
+    public VariableBadge(String type) {
         mPosition = new Position(10, 10);
+        mType = type;
     }
 
-    public VariableBadge(Position position) {
+    public VariableBadge(String type, Position position) {
         mPosition = position;
     }
 
@@ -61,11 +63,11 @@ public class VariableBadge extends Object {
     }
 
     public void writeXML(IndentWriter out) {
-        out.println("<VariableBadge>").push();
+        out.println("<" + mType + ">").push();
         if (mPosition != null) {
             mPosition.writeXML(out);
         }
-        out.pop().println("</VariableBadge>");
+        out.pop().println("</"+ mType +">");
     }
 
     public Object getCopy() {

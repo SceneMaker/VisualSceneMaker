@@ -1,18 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PlayerConfig>
-  <Entry key="vsm.agent.0.host" val="127.0.0.1"/>
-  <Entry key="vsm.agent.0.name" val="gloria"/>
-  <Entry key="vsm.agent.0.port" val="1001"/>
-  <Entry key="vsm.agent.0.uaid" val="1"/>
-  <Entry key="vsm.agent.1.host" val="127.0.0.1"/>
-  <Entry key="vsm.agent.1.name" val="curtis"/>
-  <Entry key="vsm.agent.1.port" val="1002"/>
-  <Entry key="vsm.agent.1.uaid" val="2"/>
-  <Entry key="vsm.agent.number" val="2"/>
-  <Entry key="vsm.swilbase" val="./res/prj/test/swi"/>
-  <Entry key="vsm.swilhost" val="127.0.0.1"/>
-  <Entry key="vsm.swilport" val="2002"/>
-  <Entry key="vsm.swirconn" val="false"/>
-  <Entry key="vsm.swirhost" val="127.0.0.1"/>
-  <Entry key="vsm.swirport" val="3002"/>
+  <Entry key="swi.socket.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.socket.local.host" val="127.0.0.1"/>
+  <Entry key="swi.socket.local.port" val="878"/>
+  <Entry key="swi.socket.remote.flag" val="false"/>
+  <Entry key="swi.socket.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.socket.remote.port" val="787"/>
+  <Entry key="vsm.agent.number" val="0"/>
 </PlayerConfig>
