@@ -27,7 +27,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     // The Feedback Game UI 
     private HCMUserInterface mUserInterface;
     // The HCM Event Handler
-    private HCMEventHandler mHCMEventHandler;
+    private HCMEventHandler mEventHandler;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -54,11 +54,11 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void launch() {
-        // Load Basic Scene Player
+        // Load Parent Scene Player
         super.launch();
-        //
+        // Initialize Scene Player
         try {
-            // Initialize The HCM Event Handler
+            // Initialize Event Handler
             final String lhost = mPlayerConfig.property("hcm.handler.local.host");
             final String rhost = mPlayerConfig.property("hcm.handler.remote.host");
             final String lport = mPlayerConfig.property("hcm.handler.local.port");
@@ -71,15 +71,15 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                     + "HCM Event Handler Remote Host : '" + rhost + "'" + "\r\n"
                     + "HCM Event Handler Remote Port : '" + rport + "'" + "\r\n"
                     + "HCM Event Handler Remote Flag : '" + rflag + "'");
-            // Construct The HCM Event Handler
-            mHCMEventHandler = new HCMEventHandler(this);
-            // Initialize The HCM Event Handler
-            mHCMEventHandler.init(
+            // Construct Event Handler
+            mEventHandler = new HCMEventHandler(this);
+            // Initialize Event Handler
+            mEventHandler.init(
                     lhost, Integer.parseInt(lport),
                     rhost, Integer.parseInt(rport),
                     Boolean.valueOf(rflag));
-            // Start The HCM Event Handler Now
-            mHCMEventHandler.start();
+            // Start Event Handler Now
+            mEventHandler.start();
         } catch (final NumberFormatException exc) {
             // Debug Some Information
             mVSM3Log.failure(exc.toString());
@@ -97,16 +97,16 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void unload() {
-        // Unload The Scene Player
+        // Unload Parent Scene Player
         super.unload();
-        // Dispose User Interface
+        // Dispose The User Interface
         mUserInterface.dispose();
-        // Abort The HCM Socket
-        mHCMEventHandler.abort();
+        // Abort The Event Handler
+        mEventHandler.abort();
         // Join With All Threads
         try {
-            // Join With The HCM Socket
-            mHCMEventHandler.join();
+            // Join With Event Handler
+            mEventHandler.join();
             // Print Debug Information
             mVSM3Log.message("Joining HCM Event Handler");
         } catch (Exception exc) {
@@ -141,23 +141,23 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     @Override
     public final void handle(final VSMAgentClient client) {
         // Receive The Next Incoming String
-        final String data = client.recvString();
+        final String input = client.recvString();
         // Check The Incoming Data String
-        if (data != null) {
+        if (input != null) {
             // Debug Some Information
-            mVSM3Log.message("VSM Agent Client Receiving Data '" + data + "'");
+            mVSM3Log.message("Agent #" + client.getAgentUaid() + " Receiving Data '" + input + "'");
             // Parse The Data To A New Message
-            final HCMEventMessage message = new HCMEventMessage(data);
+            final HCMEventMessage message = HCMEventMessage.getInstance(input);
             // Find The Message Task Identifier
-            if (message.hasTask()) {
+            if (message.getUtid() != null) {
                 // Get The Message Task Identifier
-                final String threadId = message.getTask();
+                final String utid = message.getUtid();
                 // Notify The Right Waiting Thread
                 synchronized (mWaitingThreadQueue) {
                     // Remove Respective Task 
-                    final Thread threadObj = mWaitingThreadQueue.remove(threadId);
+                    final Thread task = mWaitingThreadQueue.remove(utid);
                     // Debug Some Information
-                    mVSM3Log.message("Removing The Waiting Thread '" + threadObj + "' With Id '" + threadId + "'");
+                    mVSM3Log.message("Removing The Waiting Thread '" + task + "' With Id '" + utid + "'");
                     // Debug Some Information
                     mVSM3Log.message("Notifying All Waiting Threads");
                     // Notify Waiting Tasks
@@ -165,7 +165,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                 }
             } else {
                 // Debug Some Information
-                mVSM3Log.warning("Message Has Wrong Format '" + data + "'");
+                mVSM3Log.warning("Message Has Wrong Format '" + input + "'");
             }
         } else {
             // Debug Some Information
@@ -177,47 +177,42 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     public final void request(
             final String type,
-            final String task,
+            final String utid,
             final String name,
             final String uaid,
             final String text,
-            final long vsmTime,
-            final long sysTime,
-            final Thread threadObj,
+            final long date,
+            final long time,
+            final Thread task,
             final VSMAgentClient client) {
-        // Create The New Command 
-        final String message = "<action "
-                + "type=\"" + type + "\" "
-                + "task=\"" + task + "\" "
-                + "name=\"" + name + "\" "
-                + "uaid=\"" + uaid + "\" "
-                + "date=\"" + sysTime + "\" "
-                + "time=\"" + vsmTime + "\">"
-                + text
-                + "</action>";
+        // Construct Event Message
+        final HCMEventMessage message
+                = HCMEventMessage.newInstance(
+                        type, utid, name, uaid,
+                        text, date, time);
         // Send The New Command
         synchronized (mWaitingThreadQueue) {
-            if (client.sendString(message)) {
+            if (client.sendString(message.toString())) {
                 // Print Information
-                mVSM3Log.message("Enqueuing Waiting Thread '" + threadObj + "' With Id '" + task + "'");
+                mVSM3Log.message("Enqueuing Waiting Thread '" + task + "' With Id '" + utid + "'");
                 // Enqueue The Waiting Thread
-                mWaitingThreadQueue.put(task, Thread.currentThread());
+                mWaitingThreadQueue.put(utid, Thread.currentThread());
                 // And Await The Notification
-                while (mWaitingThreadQueue.containsKey(task)) {
+                while (mWaitingThreadQueue.containsKey(utid)) {
                     // Print Information
-                    mVSM3Log.message("Awaiting Notification For '" + threadObj + "' With Id '" + task + "'");
+                    mVSM3Log.message("Awaiting Notification For '" + task + "' With Id '" + utid + "'");
                     // Print Information
                     try {
                         mWaitingThreadQueue.wait();
                     } catch (final InterruptedException exc) {
                         // Print Information
-                        mVSM3Log.message("Interrupting Waiting Task '" + threadObj + "' With Id '" + task + "'");
+                        mVSM3Log.message("Interrupting Waiting Task '" + task + "' With Id '" + utid + "'");
                     }
                     // Print Information
-                    mVSM3Log.message("Searching Notification For '" + threadObj + "' With Id '" + task + "'");
+                    mVSM3Log.message("Searching Notification For '" + task + "' With Id '" + utid + "'");
                 }
                 // Print Information
-                mVSM3Log.message("Received Notification For '" + threadObj + "' With Id '" + task + "'");
+                mVSM3Log.message("Received Notification For '" + task + "' With Id '" + utid + "'");
             }
         }
     }
@@ -228,8 +223,8 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     @Override
     public void play(final String sceneName, final LinkedList<AbstractValue> sceneArgs) {
         // Initialize Parameter Data
-        final Process threadName = (Process) Thread.currentThread();
-        final String taskId = threadName.getName() + "::" + sceneName;
+        final Process process = (Process) Thread.currentThread();
+        final String utid = process.getName() + "::" + sceneName;
         // And Process Scene Arguments
         final HashMap<String, String> argMap = new HashMap<>();
         if (sceneArgs != null && !sceneArgs.isEmpty()) {
@@ -245,7 +240,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             }
         }
         // Create The Player Task
-        Task task = new Task(taskId) {
+        Task task = new Task(utid) {
             @Override
             public void run() {
                 // Select A Scene From Script
@@ -282,29 +277,29 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                             textBuilder.append(sceneUtt.getPunct());
                         }
                         // Get The Speaker Name
-                        final String agentName = sceneTurn.getSpeaker();
+                        final String name = sceneTurn.getSpeaker();
                         // Check if The Speaker Exists
-                        if (agentName != null) {
+                        if (name != null) {
                             // Get The Adequate Agent
-                            final VSMAgentClient vsmClient = mAgentClientMap.get(agentName);
+                            final VSMAgentClient client = mAgentClientMap.get(name);
                             // Check if The Client Exists
-                            if (vsmClient != null) {
+                            if (client != null) {
                                 // Get The Current Thread Object
-                                final Thread threadObj = (Thread) this;
+                                final Thread thread = (Thread) this;
                                 // Get The Current Player Time
-                                final long vsmTime = getCurrentTime();
+                                final long time = getCurrentTime();
                                 // Get The Agent Unique Id
-                                final String agentUaid = vsmClient.getAgentUaid();
+                                final String uaid = client.getAgentUaid();
                                 // Get The Current System Time
-                                final long sysTime = System.currentTimeMillis();
+                                final long date = System.currentTimeMillis();
                                 // Get the Message Text Content 
-                                final String vsmMessage = textBuilder.toString();
+                                final String text = textBuilder.toString();
                                 // Request Command Execution
-                                request("utterance", taskId, agentName, agentUaid,
-                                        vsmMessage, vsmTime, sysTime, threadObj, vsmClient);
+                                request("utterance", utid, name, uaid,
+                                        text, date, time, thread, client);
                             } else {
                                 // Get The Default Speaker
-                                mVSM3Log.failure("Agent '" + agentName + "'Does Not Exist");
+                                mVSM3Log.failure("Agent '" + name + "'Does Not Exist");
                             }
                         } else {
                             // Get The Default Speaker
@@ -313,14 +308,14 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                         // Exit If Interrupted After Utterance
                         if (mIsDone) {
                             // Print Information
-                            mVSM3Log.message("Finishing Task '" + taskId + "' After Utterance");
+                            mVSM3Log.message("Finishing Task '" + utid + "' After Utterance");
                             return;
                         }
                     }
                     // Exit If Interrupted After Turn
                     if (mIsDone) {
                         // Print Information
-                        mVSM3Log.message("Finishing Task '" + taskId + "' After Turn");
+                        mVSM3Log.message("Finishing Task '" + utid + "' After Turn");
                         return;
                     }
                 }
