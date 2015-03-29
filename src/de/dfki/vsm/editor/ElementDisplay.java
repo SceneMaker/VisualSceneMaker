@@ -119,12 +119,13 @@ import javax.swing.tree.TreeSelectionModel;
 class ElementTree extends JTree implements Observer, EventListener, ActionListener, TreeSelectionListener { 
 
     private final TreeEntry mRootEntry = new TreeEntry("SceneFlow", sROOT_FOLDER, null);
-    private final TreeEntry mBasicEntry = new TreeEntry("Elements", null, null);
+    //private final TreeEntry mBasicEntry = new TreeEntry("Elements", null, null);
     private final TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
     private ArrayList<TreeEntry> mSceneListEntry = new ArrayList<TreeEntry>();
     private final TreeEntry mFunDefEntry = new TreeEntry("Functions", null, null);    
     private final TreeEntry mDAEntry        = new TreeEntry("DialogActs", null, null);
-    private final TreeEntry mSuperNodeEntry = new TreeEntry("Super Node", sSUPERNODE_ENTRY, Node.Type.SuperNode);
+    //COMMENTED BY M. FALLAS ON 03-2015
+    /*private final TreeEntry mSuperNodeEntry = new TreeEntry("Super Node", sSUPERNODE_ENTRY, Node.Type.SuperNode);
     private final TreeEntry mBasicNodeEntry = new TreeEntry("Basic Node", sBASICNODE_ENTRY, Node.Type.BasicNode);
     private final TreeEntry mEEdgeEntry = new TreeEntry("Epsilon Edge", sEEDGE_ENTRY, new Edge(Edge.TYPE.EEDGE));
     private final TreeEntry mTEdgeEntry = new TreeEntry("Timeout Edge", sTEDGE_ENTRY, new Edge(Edge.TYPE.TEDGE));
@@ -132,7 +133,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     private final TreeEntry mCEdgeEntry = new TreeEntry("Conditional Edge", sCEDGE_ENTRY, new Edge(Edge.TYPE.CEDGE));
     private final TreeEntry mIEdgeEntry = new TreeEntry("Interruptive Edge", sIEDGE_ENTRY, new Edge(Edge.TYPE.IEDGE));
     private final TreeEntry mFEdgeEntry = new TreeEntry("Fork Edge", sFEDGE_ENTRY, new Edge(Edge.TYPE.FEDGE));
-    private final TreeEntry mCommentEntry = new TreeEntry("Comment", sCOMMENT_ENTRY, new Comment());
+    private final TreeEntry mCommentEntry = new TreeEntry("Comment", sCOMMENT_ENTRY, new Comment());*/
     
     private final JMenuItem functionsAdd = new JMenuItem("Add...");
     private final JMenuItem functionModify = new JMenuItem("Modify...");
@@ -321,7 +322,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      */
     private void initComponents() {
         // Add basic element entries
-        mBasicEntry.add(mSuperNodeEntry);
+        //COMMENTED BY M. FALLAS ON 03-2015
+/*        mBasicEntry.add(mSuperNodeEntry);
         mBasicEntry.add(mBasicNodeEntry);
         mBasicEntry.add(mEEdgeEntry);
         mBasicEntry.add(mTEdgeEntry);
@@ -332,7 +334,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         mBasicEntry.add(mCommentEntry);
         //
         mRootEntry.add(mBasicEntry);
-        mRootEntry.add(mSceneEntry);
+        mRootEntry.add(mSceneEntry);*/
 //        TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
 //        mSceneListEntry.add(mSceneEntry);
 //        for(int i = 0; i < mSceneListEntry.size(); i++) {
@@ -495,7 +497,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 boolean showPopup = false;
                 JPopupMenu menu = new JPopupMenu();
                 int pathCount = path.getPathCount();
-                System.out.println(pathCount);
+                //System.out.println(pathCount);
                 // TODO: why do we check the pathCount?
                 // test if the user clicked on the Functions entry
                 if (pathCount == 2) {                    
@@ -720,6 +722,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
                 // TODO: NULLPOINTEREXCEPTION abfangen
+                System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxx");
                 TreeEntry selectedEntry = (TreeEntry) getSelectionPath().getLastPathComponent();
                 mDragSource.startDrag(event, DragSource.DefaultCopyDrop, selectedEntry, mDragSourceListener);
             }

@@ -183,6 +183,7 @@ public class Editor extends JFrame implements EventListener {
         } else {
             add(jsWelcome);
             remove(mProjectEditorList);
+            jsWelcome.update(jsWelcome.getGraphics());
         }
         this.update(this.getGraphics());
     }
@@ -449,7 +450,12 @@ public class Editor extends JFrame implements EventListener {
         ArrayList<String> recentProjectNames = new ArrayList<String>();
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
             String pDir = Preferences.getProperty("recentprojectdir" + i);
+            System.out.println(pDir);
             if (pDir != null) {
+                if (pDir.startsWith("res"+System.getProperty("file.separator")+"prj")) {
+                    System.out.println("ppppppp");
+                    continue;
+                }
                 recentProjectDirs.add(Preferences.getProperty("recentprojectdir" + i));
             }
             String pName = Preferences.getProperty("recentprojectname" + i);
