@@ -4,6 +4,7 @@ import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.util.evt.EventCaster;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -180,7 +181,7 @@ public class MenuBar extends JMenuBar {
                         Preferences.removeProperty("recentprojectname" + i);
                     }
                 }
-
+                
                 Preferences.save();
 
                 refreshRecentFileMenu();
