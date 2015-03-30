@@ -211,7 +211,13 @@ public class Evaluator {
         // EVALUATE EXPRESSION
         ////////////////////////////////////////////////////////////////////
         else {
-            evaluate((Expression) cmd, env);
+            try{
+                evaluate((Expression) cmd, env);
+            }
+            catch(Exception e){
+                throw new RunTimeException(env,
+                            "Runtime Error: '" + cmd.toString() + "' cannot be evaluated.");
+            }
         }
     }
 

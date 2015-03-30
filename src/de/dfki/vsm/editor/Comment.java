@@ -11,7 +11,6 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -21,9 +20,6 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.font.TextAttribute;
-import java.util.Hashtable;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
@@ -65,8 +61,6 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     // edit
     private boolean mEditMode = false;
     
-
-
     public Comment() {
         mDataComment = null;
     }
@@ -117,10 +111,8 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
     }
 
+    @Override
     public void update(EventObject event) {
-        
-   
-     
 //    System.err.println("Updating comment" + this);
 //    mFont = new Font("SansSerif", Font.PLAIN, /*(mWorkSpace != null) ?*/ sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
 //    String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
@@ -135,9 +127,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
      */
     @Override
     public void update(Observable o, Object obj) {
-        
        update();
-      
     }
     
      public void update() {
@@ -158,8 +148,6 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
       
     }
     
-   
-
     public String getDescription() {
         return toString();
     }
@@ -245,6 +233,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         }
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         //DEBUG System.out.println("mouse clicked");
         mPressed = false;
@@ -274,6 +263,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         repaint();
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         //DEBUG System.out.println("mouse pressed");
         mPressed = true;
@@ -285,6 +275,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mClickPosition.setLocation(clickLoc.x - loc.x, clickLoc.y - loc.y);
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         //DEBUG System.out.println("mouse released");
         mPressed = false;
@@ -293,15 +284,19 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         repaint();
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
     }
 
