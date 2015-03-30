@@ -489,20 +489,34 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
     }
 
     private void updateFunDef(FunDef funDef, FunDefDialog funDefDialog) {
+        
+        boolean isClass = true;
+        
         funDef.setName(funDefDialog.getNameInput().getText().trim());
         funDef.setClassName(funDefDialog.getClassNameInput().getText().trim());
-        funDef.setMethod(funDefDialog.getSelectedMethod().getName().trim());
+        
+        try{
+            Class.forName(funDef.getClassName());
+        }  catch (ClassNotFoundException ex) {
+            isClass = false;
+        }
+                   
+                
+        if(isClass){
+            funDef.setMethod(funDefDialog.getSelectedMethod().getName().trim());
+        
+            // Clear the parameter list and fill it again
+            funDef.getParamList().clear();
 
-        // Clear the parameter list and fill it again
-        funDef.getParamList().clear();
+            Enumeration args = ((DefaultListModel) funDefDialog.getArgList().getModel()).elements();
 
-        Enumeration args = ((DefaultListModel) funDefDialog.getArgList().getModel()).elements();
+            while (args.hasMoreElements()) {
+                String argString = (String) args.nextElement();
 
-        while (args.hasMoreElements()) {
-            String argString = (String) args.nextElement();
-
-            funDef.addParam(new ParamDef(funDefDialog.getNameMap().get(argString),
-                                         funDefDialog.getTypeMap().get(argString)));
+                funDef.addParam(new ParamDef(funDefDialog.getNameMap().get(argString),
+                                             funDefDialog.getTypeMap().get(argString)));
+            }
+        
         }
 
         Editor.getInstance().update();
