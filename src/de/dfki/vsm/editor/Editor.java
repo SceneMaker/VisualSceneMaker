@@ -138,6 +138,7 @@ public class Editor extends JFrame implements EventListener {
         // Init welcome screen
         mWelcomePanel = new WelcomePanel(this);
         jsWelcome = new JScrollPane(mWelcomePanel);
+        jsWelcome.setMaximumSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
         jsWelcome.setOpaque(false);
         jsWelcome.getViewport().setOpaque(false);
         add(jsWelcome);
@@ -186,6 +187,10 @@ public class Editor extends JFrame implements EventListener {
             jsWelcome.update(jsWelcome.getGraphics());
         }
         this.update(this.getGraphics());
+    }
+    public void clearRecentProjects()
+    {
+        mWelcomePanel.updateWelcomePanel();
     }
 
     public synchronized static Editor getInstance() {
@@ -450,10 +455,8 @@ public class Editor extends JFrame implements EventListener {
         ArrayList<String> recentProjectNames = new ArrayList<String>();
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
             String pDir = Preferences.getProperty("recentprojectdir" + i);
-            System.out.println(pDir);
             if (pDir != null) {
                 if (pDir.startsWith("res"+System.getProperty("file.separator")+"prj")) {
-                    System.out.println("ppppppp");
                     continue;
                 }
                 recentProjectDirs.add(Preferences.getProperty("recentprojectdir" + i));
@@ -503,6 +506,7 @@ public class Editor extends JFrame implements EventListener {
         // save properties
         Preferences.save();
         mWelcomePanel.createListOfRecentProj();
+        mMenuBar.refreshRecentFileMenu();
     }
 
     /**
