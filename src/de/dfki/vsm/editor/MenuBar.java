@@ -107,7 +107,7 @@ public class MenuBar extends JMenuBar {
         initHelpMenu();
     }
 
-    private void refreshRecentFileMenu() {
+    public void refreshRecentFileMenu() {
         mOpenRecentFileMenu.removeAll();
 
         boolean hasEntries = false;
@@ -181,7 +181,7 @@ public class MenuBar extends JMenuBar {
                         Preferences.removeProperty("recentprojectname" + i);
                     }
                 }
-                
+                mEditor.clearRecentProjects();
                 Preferences.save();
 
                 refreshRecentFileMenu();

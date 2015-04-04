@@ -6,19 +6,15 @@
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.color.ColorSpace;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Observable;
@@ -47,6 +43,8 @@ public class WelcomePanel extends JPanel implements Observer {
     private final Dimension screenDimension;
     private final Dimension buttonSize;
     private final Dimension halfScreenDimension;
+    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+    private final File SampleProjFolder = new File("res/prj/");
 
     public WelcomePanel(final Editor mParent) {
 
@@ -56,9 +54,9 @@ public class WelcomePanel extends JPanel implements Observer {
         } catch (Exception e) {
         }
         parentEditor = mParent;
-        buttonSize = new Dimension(100, 125);
         screenDimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         halfScreenDimension = new Dimension((int) (java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2), (int) java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+        buttonSize = new Dimension((int) halfScreenDimension.getWidth(), 50);
         paddingSize = (int) (0.075 * screenDimension.getHeight());
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(paddingSize, paddingSize, paddingSize, paddingSize));
@@ -120,26 +118,44 @@ public class WelcomePanel extends JPanel implements Observer {
         g.drawImage(image, -300, 0, null);
     }
 
+    public void updateWelcomePanel() {
+        createListOfRecentProj();
+        //update(this.getGraphics());
+    }
+
     /**
      * Creates the list of recent projects
      */
     public void createListOfRecentProj() {
-
         mRecentProjects.removeAll();
+        mRecentProjects.revalidate();
+        mRecentProjects.repaint();
+        createMenuButtons();
+        listOfRecentProjects();
+        listOfSampleProjects();
+        newsAndDoc();
+    }
+
+    /**
+     * Creates open and new project buttons
+     */
+    private void createMenuButtons() {
         //PROJECTS SECTION
         JLabel actionMenu = new JLabel("Projects");
-        actionMenu.setMaximumSize(new Dimension(5000, 75));
-        actionMenu.setPreferredSize(new Dimension(500, 50));
+        actionMenu.setMaximumSize(new Dimension(buttonSize));
+        actionMenu.setPreferredSize(new Dimension(buttonSize));
         actionMenu.setOpaque(true);
-        actionMenu.setBackground(new Color(255, 255, 255, 180));
+        actionMenu.setBackground(new Color(255, 255, 255));
         actionMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
         mRecentProjects.add(actionMenu);
-        //NEW PROJECT BUTTON
+        //*****************************************************************************************************************************************************
+        //NEW PROJECT BUTTON***********************************************************************************************************************************
+        //*****************************************************************************************************************************************************
         JLabel mNewProjMenu = new JLabel("New Project");
         mNewProjMenu.setToolTipText("Create New Project");
         mNewProjMenu.setIcon(ResourceLoader.loadImageIcon("/res/img/arrow_icon.png"));
-        mNewProjMenu.setMaximumSize(new Dimension(5000, 75));
-        mNewProjMenu.setPreferredSize(new Dimension(500, 50));
+        mNewProjMenu.setMaximumSize(new Dimension(buttonSize));
+        mNewProjMenu.setPreferredSize(new Dimension(buttonSize));
         mNewProjMenu.setFont(new Font("Helvetica", Font.PLAIN, 18));
         mNewProjMenu.setOpaque(false);
         mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -160,11 +176,14 @@ public class WelcomePanel extends JPanel implements Observer {
             }
         });
         mRecentProjects.add(mNewProjMenu);
+        //*****************************************************************************************************************************************************
+        //OPEN PROJECT BUTTON***********************************************************************************************************************************
+        //*****************************************************************************************************************************************************
         JLabel mOpenProjectMenu = new JLabel("Open a Project");
         mOpenProjectMenu.setToolTipText("Open an external Project");
         mOpenProjectMenu.setIcon(ResourceLoader.loadImageIcon("/res/img/arrow_icon.png"));
-        mOpenProjectMenu.setMaximumSize(new Dimension(5000, 75));
-        mOpenProjectMenu.setPreferredSize(new Dimension(500, 50));
+        mOpenProjectMenu.setMaximumSize(new Dimension(buttonSize));
+        mOpenProjectMenu.setPreferredSize(new Dimension(buttonSize));
         mOpenProjectMenu.setOpaque(false);
         mOpenProjectMenu.setFont(new Font("Helvetica", Font.PLAIN, 18));
         mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -180,23 +199,31 @@ public class WelcomePanel extends JPanel implements Observer {
 
             public void mouseExited(MouseEvent me) {
                 ((JLabel) me.getComponent()).setOpaque(false);
-                me.getComponent().setBackground(new Color(255, 255, 255, 180));
+                me.getComponent().setBackground(new Color(255, 255, 255));
             }
         });
         mRecentProjects.add(mOpenProjectMenu);
         JSeparator jsNP = new JSeparator();
         jsNP.setMaximumSize(new Dimension(5000, 10));
         mRecentProjects.add(jsNP);
+    }
+
+    /**
+     * creates the box with the list of recent projects
+     */
+    private void listOfRecentProjects() {
+        //*****************************************************************************************************************************************************
+        //LIST OF RECENT PROJECTS******************************************************************************************************************************
+        //*****************************************************************************************************************************************************
         JLabel titleMenu = new JLabel("Open Recent Project");
         titleMenu.setBorder(null);
         titleMenu.setOpaque(true);
 
-        titleMenu.setBackground(new Color(255, 255, 255, 180));
+        titleMenu.setBackground(new Color(255, 255, 255));
         titleMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
         mRecentProjects.add(titleMenu);
-        titleMenu.setMaximumSize(new Dimension(5000, 75));
-        titleMenu.setPreferredSize(new Dimension(500, 50));
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+        titleMenu.setMaximumSize(new Dimension(buttonSize));
+        titleMenu.setPreferredSize(new Dimension(buttonSize));
         JLabel[] projectList = new JLabel[Preferences.sMAX_RECENT_FILE_COUNT];
         JPanel recentPanel = new JPanel();
         recentPanel.setOpaque(false);
@@ -207,11 +234,14 @@ public class WelcomePanel extends JPanel implements Observer {
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
                 if (projectDir.exists()) {
+                    if (projectDirName.startsWith("res" + System.getProperty("file.separator") + "prj")) {
+                        continue;
+                    }
                     projectList[i] = new JLabel(projectName + ", last edited: " + sdf.format(projectDir.lastModified()));
                     projectList[i].setLayout(new BoxLayout(projectList[i], BoxLayout.X_AXIS));
                     projectList[i].setOpaque(false);
-                    projectList[i].setMaximumSize(new Dimension(5000, 75));
-                    projectList[i].setPreferredSize(new Dimension(5000, 50));
+                    projectList[i].setMaximumSize(new Dimension(buttonSize));
+                    projectList[i].setPreferredSize(new Dimension(buttonSize));
                     projectList[i].setFont(new Font("Helvetica", Font.PLAIN, 18));
                     projectList[i].setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
                     projectList[i].addMouseListener(new MouseListener() {
@@ -250,36 +280,129 @@ public class WelcomePanel extends JPanel implements Observer {
                 }
             }
         }
-        recentPanel.remove(recentPanel.getComponentCount() - 1);
+        if (recentPanel.getComponentCount() > 0) {
+            recentPanel.remove(recentPanel.getComponentCount() - 1);
+        }
         JScrollPane jsRecent = new JScrollPane(recentPanel);
         jsRecent.setOpaque(false);
-        jsRecent.setMaximumSize(new Dimension(5000, 75));
-        jsRecent.setPreferredSize(new Dimension(500, 50));
+        jsRecent.setMaximumSize(new Dimension(buttonSize));
+        jsRecent.setPreferredSize(new Dimension(buttonSize));
         jsRecent.setBorder(null);
         jsRecent.getViewport().setOpaque(false);
         jsRecent.setMaximumSize(halfScreenDimension);
         mRecentProjects.add(recentPanel);
         JSeparator jsSP = new JSeparator();
-        jsNP.setMaximumSize(new Dimension(5000, 1));
+        jsSP.setMaximumSize(new Dimension(5000, 1));
         mRecentProjects.add(jsSP);
+    }
+
+    /**
+     * Creates a list of sample projects
+     */
+    private void listOfSampleProjects() {
+        //*****************************************************************************************************************************************************
+        //LIST OF SAMPLE PROJECTS******************************************************************************************************************************
+        //*****************************************************************************************************************************************************
         JLabel exampleMenu = new JLabel("Sample Projects");
         exampleMenu.setBorder(null);
-        exampleMenu.setMaximumSize(new Dimension(5000, 75));
-        exampleMenu.setPreferredSize(new Dimension(500, 50));
+        exampleMenu.setMaximumSize(new Dimension(buttonSize));
+        exampleMenu.setPreferredSize(new Dimension(buttonSize));
         exampleMenu.setOpaque(true);
-        exampleMenu.setBackground(new Color(255, 255, 255, 180));
+        exampleMenu.setBackground(new Color(255, 255, 255));
         exampleMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
         mRecentProjects.add(exampleMenu);
+
+        JPanel sampleProjPanel = new JPanel();
+        sampleProjPanel.setOpaque(false);
+        sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
+        File listDirs[] = SampleProjFolder.listFiles();
+        for (final File sampleDir : listDirs) {
+            File sampleProj = new File(sampleDir.getPath() + "/vsm");
+            if (sampleProj.exists()) {
+                File configFile = new File(sampleDir.getPath() + "/vsm/" + "config.xml");
+                ProjectData project = new ProjectData(configFile);
+
+                JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: " + sdf.format(sampleProj.lastModified()));
+                newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
+                newSampleProj.setOpaque(false);
+                newSampleProj.setMaximumSize(new Dimension(buttonSize));
+                newSampleProj.setPreferredSize(new Dimension(buttonSize));
+                newSampleProj.setFont(new Font("Helvetica", Font.PLAIN, 18));
+                newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+                newSampleProj.addMouseListener(new MouseListener() {
+
+                    @Override
+                    public void mouseClicked(MouseEvent me) {
+                        parentEditor.toggleProjectEditorList(true);
+                        parentEditor.openProject(sampleProj);
+                    }
+
+                    @Override
+                    public void mousePressed(MouseEvent me) {
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent me) {
+                    }
+
+                    @Override
+                    public void mouseEntered(MouseEvent me) {
+                        ((JLabel) me.getComponent()).setOpaque(true);
+                        me.getComponent().setBackground(new Color(82, 127, 255));
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent me) {
+                        ((JLabel) me.getComponent()).setOpaque(false);
+                        me.getComponent().setBackground(new Color(1f, 1f, 1f));
+
+                    }
+                });
+                sampleProjPanel.add(newSampleProj);
+                JSeparator js = new JSeparator();
+                js.setMaximumSize(new Dimension(5000, 1));
+                sampleProjPanel.add(js);
+            }
+        }
+        if (sampleProjPanel.getComponentCount() > 0) {
+            sampleProjPanel.remove(sampleProjPanel.getComponentCount() - 1);
+        }
+        JScrollPane jsSample = new JScrollPane(sampleProjPanel);
+        jsSample.setOpaque(false);
+        jsSample.setMaximumSize(new Dimension(buttonSize));
+        jsSample.setPreferredSize(new Dimension(buttonSize));
+        jsSample.setBorder(null);
+        jsSample.getViewport().setOpaque(false);
+        jsSample.setMaximumSize(halfScreenDimension);
+        mRecentProjects.add(sampleProjPanel);
+        JSeparator jsSampleProj = new JSeparator();
+        jsSampleProj.setMaximumSize(new Dimension(5000, 1));
+        mRecentProjects.add(jsSampleProj);
+    }
+
+    /**
+     * Adds information items
+     */
+    private void newsAndDoc() {
+        //*****************************************************************************************************************************************************
+        //NEWS AND DOCUMENTATION*****************************************************************************************************************************
+        //*****************************************************************************************************************************************************
         JLabel mDocuMenu = new JLabel("News and Documentation");
-        mDocuMenu.setToolTipText("News and Documentation online");
-        mDocuMenu.setMaximumSize(new Dimension(5000, 75));
-        mDocuMenu.setPreferredSize(new Dimension(500, 50));
-        mDocuMenu.setOpaque(true);
-        mDocuMenu.setBackground(new Color(255, 255, 255, 180));
-        mDocuMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
+
+        mDocuMenu.setToolTipText(
+                "News and Documentation online");
+        mDocuMenu.setMaximumSize(
+                new Dimension(buttonSize));
+        mDocuMenu.setPreferredSize(
+                new Dimension(buttonSize));
+        mDocuMenu.setOpaque(
+                true);
+        mDocuMenu.setBackground(
+                new Color(255, 255, 255));
+        mDocuMenu.setFont(
+                new Font("Helvetica", Font.PLAIN, 24));
         mRecentProjects.add(mDocuMenu);
         JLabelURL link = new JLabelURL("Visual SceneMaker Online", "http://scenemaker.dfki.de/");
-
         mRecentProjects.add(link);
     }
 
