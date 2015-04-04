@@ -312,8 +312,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         // The Show Variables Button
          mShowVarButton = add(new AbstractAction("ACTION_SHOW_VARIABLES",
                 Boolean.valueOf(Preferences.getProperty("showVariables"))
-                ? ResourceLoader.loadImageIcon("/res/img/new/varHide.png")
-                : ResourceLoader.loadImageIcon("/res/img/new/varShow.png")) {
+                ? ResourceLoader.loadImageIcon("/res/img/new/varButton.png")
+                : ResourceLoader.loadImageIcon("/res/img/new/varButton.png")) {
             public void actionPerformed(ActionEvent evt) {
                 mEditor.getWorkSpace().showVariablesOnWorkspace();
                 changeShowVariablesButtonState();
@@ -471,9 +471,9 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     
     private void changeShowVariablesButtonState() {
         if (mEditor.getWorkSpace().isVarBadgeVisible()) {
-            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varHide.png"));
+            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varButton.png"));
         } else {
-            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varShow.png"));
+            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varButton.png"));
         }
     }
 
@@ -487,7 +487,32 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
                                           JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         mPathScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
-        // mPathScrollPane.setBorder(BorderFactory.createEtchedBorder());
+        // mPathScrollPane.setBorder(Bor  for (Node node : nodes) {
+//            Point nodePos = node.getLocation();
+//
+//            if (((nodePos.x + moveVec.x) <= 0) || ((nodePos.y + moveVec.y) <= 0)) {
+//
+//                // stop dragging, if upper and left border would be passed!
+//                validDragging = false;
+//            }
+//        }
+//
+//        if (validDragging) {
+//            for (Node node : nodes) {
+//                Point nodeLoc = node.getLocation();
+//
+//                mGridManager.freeGridPosition(nodeLoc);
+//                node.updateLocation(moveVec);
+//
+//                if ((event.getModifiersEx() == 1024)) {
+//                    node.mDragged = true;
+//                }
+//
+//                // sWorkSpaceDrawArea = getSize();
+//                revalidate();
+//                repaint();
+//            }
+//        }derFactory.createEtchedBorder());
         mPathScrollPane.setMaximumSize(new Dimension(500, 22));
         mPathScrollPane.setMinimumSize(new Dimension(500, 22));
         mPathScrollPane.setPreferredSize(new Dimension(500, 22));

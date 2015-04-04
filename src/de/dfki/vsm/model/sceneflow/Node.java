@@ -22,6 +22,7 @@ public class Node extends Object {
 
         NONE, ENODE, TNODE, CNODE, PNODE, INODE, FNODE
     };
+    
     protected String mId = new String();
     protected String mName = new String();
     protected String mComment = new String();
