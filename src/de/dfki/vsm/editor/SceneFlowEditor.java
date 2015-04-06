@@ -217,7 +217,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         pDown.addPoint(17, 4);
         pDown.addPoint(21, 0);
         
-        mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,true);        
+        mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,true);     
         mSplitPane.setBorder(BorderFactory.createEmptyBorder());
         mSplitPane.setOneTouchExpandable(true);
         
