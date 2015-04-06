@@ -1,9 +1,5 @@
 package de.dfki.vsm.editor;
 
-import de.dfki.vsm.editor.script.ScriptEditorPanel;
-import de.dfki.vsm.model.project.ProjectData;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -89,7 +85,7 @@ public class ProjectToolBar extends JPanel implements Observer, EventListener, A
         //super(new DefaultTreeModel(null));
         //
         setLayout(new GridLayout(0, 2));
-        setBorder(BorderFactory.createEmptyBorder());
+        setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.DARK_GRAY));
         //setCellRenderer(new CellRenderer());
         setBackground(Color.WHITE);
         setPreferredSize(new Dimension(250, 330));

@@ -42,8 +42,8 @@ import org.ujmp.core.collections.ArrayIndexList;
 /**
  * @author Gregor Mehlmann
  */
-public final class ScriptEditorPanel extends JPanel 
-            implements DocumentListener, EventListener, Observer {
+public final class ScriptEditorPanel extends JPanel
+        implements DocumentListener, EventListener, Observer {
 
     // The System Logger
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -60,14 +60,14 @@ public final class ScriptEditorPanel extends JPanel
     private final SceneElementDisplay mElementPane;
 
     private final SceneScript mSceneScript;
-    private final FunctionEditor mFunctionEditor;    
-    private final DialogActEditor     mDialogActEditor;
+    private final FunctionEditor mFunctionEditor;
+    private final DialogActEditor mDialogActEditor;
     private final ProjectPreferences mPreferences;
 
     private final String mPreferencesFileName;
-    
+
     private ProjectEditor mParentPE; //CONTAINER PROJECT EDITOR
-    
+
     private ArrayList<Integer> searchOffsets;
     private String lastSearchedScene;
     private int lastIndex;
@@ -77,12 +77,13 @@ public final class ScriptEditorPanel extends JPanel
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     private class Noticeable extends Observable {
+
         public void notify(final Object obj) {
             setChanged();
             notifyObservers(obj);
         }
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -95,48 +96,48 @@ public final class ScriptEditorPanel extends JPanel
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-
-     public ScriptEditorPanel(final SceneScript script, 
-                             final SceneFlow sceneflow, 
-                             final ProjectPreferences preferences, 
-                             final String preferencesFileName, final ProjectEditor parentPE) {
+    public ScriptEditorPanel(final SceneScript script,
+            final SceneFlow sceneflow,
+            final ProjectPreferences preferences,
+            final String preferencesFileName, final ProjectEditor parentPE) {
         // Parent project editor
         mParentPE = parentPE;
 
         // Initialize The Scene Script
         mSceneScript = script;
         // Grab project preferences
-        mPreferences = preferences;        
+        mPreferences = preferences;
         mPreferencesFileName = preferencesFileName;
         // Initialize The Status Label
         mStatusLabel = new CaretStatusLabel("");
         // Initialize The Editor Pane
-        mEditorPane = new ScriptEditorPane(mPreferences);        
+        mEditorPane = new ScriptEditorPane(mPreferences);
         mEditorPane.addCaretListener(mStatusLabel);
-        mEditorPane.getDocument().addDocumentListener(this);       
+        mEditorPane.getDocument().addDocumentListener(this);
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
-        mScrollPane.setBorder(BorderFactory.createEtchedBorder());        
+        mScrollPane.setBorder(BorderFactory.createEtchedBorder());
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionEditor(sceneflow); 
+        mFunctionEditor = new FunctionEditor(sceneflow);
         // Initialize The Dialog Act Panel
-        mDialogActEditor = new DialogActEditor(mParentPE.getProject());        
+        mDialogActEditor = new DialogActEditor(mParentPE.getProject());
         // Initialize Tabbed Pane
-        mTabPane = new JTabbedPane(); 
-        mTabPane.add("Script", mScrollPane);  
+        mTabPane = new JTabbedPane();
+        mTabPane.add("Script", mScrollPane);
         mTabPane.add("Functions", mFunctionEditor);
         mTabPane.add("DialogAct [Experimental]", mDialogActEditor);
         // Initialize the Toolbar
-        mScenesToolbar  = new ScriptToolBar(this);
+        mScenesToolbar = new ScriptToolBar(this);
         // Initialize The Scroll Pane
-        mElementPane = new SceneElementDisplay();     
-        mElementPane.setVisible(Boolean.valueOf(mPreferences.getProperty("showsceneelements")));            
-        
+        mElementPane = new SceneElementDisplay();
+        mElementPane.setVisible(Boolean.valueOf(mPreferences.getProperty("showsceneelements")));
+
         mNoticeable.addObserver(mElementPane);
         mNoticeable.addObserver(mEditorPane);
         // Initialize The Components
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
+        setBackground(Color.WHITE);
         add(mScenesToolbar, BorderLayout.NORTH);
         add(mElementPane, BorderLayout.WEST);
         add(mTabPane, BorderLayout.CENTER);
@@ -149,47 +150,47 @@ public final class ScriptEditorPanel extends JPanel
         } catch (BadLocationException exc) {
             exc.printStackTrace();
         }
-        
+
         searchOffsets = new ArrayList<Integer>();
         lastSearchedScene = "";
         lastIndex = 0;
-        
+
         Highlighter highlighter = new DefaultHighlighter();
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
     }
-     
+
     /**
      * Function to know if the panel can be hidden
-     * @return boolean 
+     *
+     * @return boolean
      */
-    public boolean isPinPricked()
-    {
+    public boolean isPinPricked() {
         return mScenesToolbar.isPinPricked();
     }
+
     public JTabbedPane getTabPane() {
         return mTabPane;
     }
-    
+
     public ProjectPreferences getPreferences() {
         return mPreferences;
     }
-    
+
     public String getPreferencesFileName() {
         return mPreferencesFileName;
     }
-    
-    
+
     //**********************************
     //Get and set parent project editor
     public ProjectEditor getmParentPE() {
         return mParentPE;
     }
-    
+
     public void setmParentPE(ProjectEditor mParentPE) {
         this.mParentPE = mParentPE;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////    
@@ -304,80 +305,68 @@ public final class ScriptEditorPanel extends JPanel
          } catch (BadLocationException e) {
          e.printStackTrace();
          }*/
-        
-        
-        
-        if (event instanceof SceneSelectedEvent) {            
-            
+
+        if (event instanceof SceneSelectedEvent) {
+
             String sg = ((SceneSelectedEvent) event).getGroup().getName().trim();
             String language = ((SceneSelectedEvent) event).getLanguage();
             //System.out.println("Language selected: " + language);
             // This indicates user clicked the same scene name, advance to next
             // search offset.
-            if(lastSearchedScene.equals("scene_" + language + " " + sg)) {
+            if (lastSearchedScene.equals("scene_" + language + " " + sg)) {
                 advanceToNextSearchOffset();
-            }
-            // Different search is required, perform offset recalculation.
+            } // Different search is required, perform offset recalculation.
             else {
                 search(sg, language, mEditorPane, painter);
             }
             if (searchOffsets.size() > 0) {
-                try {                  
+                try {
                     mEditorPane.requestFocus();
-                    mEditorPane.setCaretPosition(searchOffsets.get(lastIndex) +
-                    sg.length() + 10);
+                    mEditorPane.setCaretPosition(searchOffsets.get(lastIndex)
+                            + sg.length() + 10);
                     mEditorPane.scrollRectToVisible(mEditorPane.modelToView(
-                    searchOffsets.get(lastIndex)));
-                }
-                catch (BadLocationException e) {
+                            searchOffsets.get(lastIndex)));
+                } catch (BadLocationException e) {
                     System.out.println("" + e);
                 }
             }
-           
+
         }
-        if(event instanceof TreeEntrySelectedEvent)
-        {
-            if(((TreeEntrySelectedEvent)event).getmEntry().getText().contains("Scenes"))
-            {
-               mTabPane.setSelectedComponent(mScrollPane);
-            }
-            else if(  ((TreeEntrySelectedEvent)event).getmEntry().getText().contains("Functions"))
-            {
+        if (event instanceof TreeEntrySelectedEvent) {
+            if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Scenes")) {
+                mTabPane.setSelectedComponent(mScrollPane);
+            } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Functions")) {
                 mTabPane.setSelectedComponent(mFunctionEditor);
-            }
-            else if(  ((TreeEntrySelectedEvent)event).getmEntry().getText().contains("Dialog"))
-            {
+            } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Dialog")) {
                 mTabPane.setSelectedComponent(mDialogActEditor);
             }
         }
     }
-        
+
     public void advanceToNextSearchOffset() {
-        if(lastIndex == searchOffsets.size()-1) {
+        if (lastIndex == searchOffsets.size() - 1) {
             lastIndex = 0;
-        }
-        else {
+        } else {
             lastIndex++;
         }
     }
-    
-    
+
     /* Search for a scene name and give the position of the selected text */
     public void search(String word, String language, JTextComponent comp, Highlighter.HighlightPainter painter) {
         this.lastIndex = 0;
-        this.lastSearchedScene = "scene_" + language + " "+ word;
+        this.lastSearchedScene = "scene_" + language + " " + word;
         this.searchOffsets = new ArrayIndexList<Integer>();
         Highlighter highlighter = comp.getHighlighter();
         // Remove any existing highlights for last word
         Highlighter.Highlight[] highlights = highlighter.getHighlights();
-        
+
         for (int i = 0; i < highlights.length; i++) {
             Highlighter.Highlight h = highlights[i];
             if (h.getPainter() instanceof DefaultHighlighter.DefaultHighlightPainter) {
                 highlighter.removeHighlight(h);
             }
         }
-       
+
         String content = null;
         try {
             Document d = comp.getDocument();
@@ -385,25 +374,24 @@ public final class ScriptEditorPanel extends JPanel
         } catch (BadLocationException e) {
             // Cannot happen
         }
-        
+
         word = word.toLowerCase();
         int lastLocalIndex = 0;
         int wordSize = word.length();
-        
+
         while ((lastLocalIndex = content.indexOf("scene_" + language + " " + word, lastLocalIndex)) != -1) {
             lastLocalIndex += 9;
             int endIndex = lastLocalIndex + wordSize;
-            int limiterIndex = content.indexOf(':',lastLocalIndex);
+            int limiterIndex = content.indexOf(':', lastLocalIndex);
             try {
-                if((lastLocalIndex + endIndex) == (lastLocalIndex + limiterIndex)) {
+                if ((lastLocalIndex + endIndex) == (lastLocalIndex + limiterIndex)) {
                     highlighter.addHighlight(lastLocalIndex, endIndex, painter);
                     searchOffsets.add(lastLocalIndex);
-                }   
+                }
+            } catch (BadLocationException e) {
+                // Nothing to do
             }
-            catch (BadLocationException e) {
-            // Nothing to do
-            }
-        lastLocalIndex = endIndex;
+            lastLocalIndex = endIndex;
         }
     }
 
@@ -500,9 +488,9 @@ public final class ScriptEditorPanel extends JPanel
                     if (dot == mark) {
                         try {
                             Rectangle caretCoords = mEditorPane.modelToView(dot);
-                            if(caretCoords!=null){
+                            if (caretCoords != null) {
                                 setText(dot + " : [" + caretCoords.x + ", " + caretCoords.y + "]" + "\r\n");
-                            }                         
+                            }
                         } catch (BadLocationException ble) {
                             setText(dot + "\r\n");
                         }

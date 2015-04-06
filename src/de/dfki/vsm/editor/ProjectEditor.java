@@ -174,6 +174,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     private void initComponents() {
         //
         setBorder(BorderFactory.createEmptyBorder());
+        setBackground(Color.WHITE);
         setResizeWeight(Float.valueOf(Preferences.getProperty("sceneflow_sceneeditor_ratio")));
         setOneTouchExpandable(true);
 
