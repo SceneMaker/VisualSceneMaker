@@ -65,27 +65,27 @@ public final class ToolBarItem extends JButton implements Transferable{
 
             @Override
             public void dragEnter(DragSourceDragEvent dsde) {
-                System.out.println("drag enter");
+//                System.out.println("drag enter");
             }
 
             @Override
             public void dragOver(DragSourceDragEvent dsde) {
-                System.out.println("drag over");
+//                System.out.println("drag over");
             }
 
             @Override
             public void dropActionChanged(DragSourceDragEvent dsde) {
-                System.out.println("drag action changed");
+//                System.out.println("drag action changed");
             }
 
             @Override
             public void dragExit(DragSourceEvent dse) {
-                System.out.println("drag exit");
+//                System.out.println("drag exit");
             }
 
             @Override
             public void dragDropEnd(DragSourceDropEvent dsde) {
-                System.out.println("drag drop end");
+//                System.out.println("drag drop end");
             }
         };
         mDragGestureListener = new DragGestureListener() {
@@ -93,8 +93,8 @@ public final class ToolBarItem extends JButton implements Transferable{
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
                 Image cursorIcon = ResourceLoader.loadImageIcon(iconsPath + icon + "_SMALL.png").getImage();
-                Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(25, 25), mText);
-                source.startDrag(event, cur, (ToolBarItem)event.getComponent(), mDragSourceListener);
+                //Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(25, 25), mText);
+                source.startDrag(event, null, (ToolBarItem)event.getComponent(), mDragSourceListener);
             }
         };
         //The Drag will copy the DnDButton rather than moving it
