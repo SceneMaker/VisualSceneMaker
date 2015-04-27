@@ -3,6 +3,7 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.action.AddCommandAction;
+import de.dfki.vsm.editor.action.AddVariableAction;
 import de.dfki.vsm.editor.action.ChangeNodeTypeAction;
 import de.dfki.vsm.editor.action.CopyNodesAction;
 import de.dfki.vsm.editor.action.CreateCommentAction;
@@ -1158,6 +1159,21 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         }
     }
+    
+    
+    /**
+     * 
+     *
+     */
+    public void gobalAddVariableMenu(MouseEvent event) {
+        JPopupMenu       pop         = new JPopupMenu();
+        JMenuItem        item        = new JMenuItem("Add Variable");
+        AddVariableAction addVariableAction = new AddVariableAction(this);
+
+        item.addActionListener(addVariableAction.getActionListener());
+        pop.add(item);
+        pop.show(this, event.getX(), event.getY());
+    }
 
     /**
      * 
@@ -1691,6 +1707,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         // enable global context menu for clipbaord actions
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
+            
+            gobalAddVariableMenu(event);          
+        
             if (mClipboard.size() > 0) {
                 gobalContextMenu(event);
             }
@@ -1926,6 +1945,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         // enable global context menu for clipbaord actions
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
+            
+            gobalAddVariableMenu(event);   
+             
             if (mClipboard.size() > 0) {
                 gobalContextMenu(event);
             }
