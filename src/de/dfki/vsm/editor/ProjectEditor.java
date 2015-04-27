@@ -3,6 +3,7 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
+import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.ProjectData;
@@ -110,6 +111,13 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         mObservable.addObserver(mSceneDocEditor);
 
         mEventCaster.append(this);
+        
+        NodeSelectedEvent e = new NodeSelectedEvent(this, mProject.getSceneFlow());
+        EventCaster.getInstance().convey(e);
+        
+        WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
+        EventCaster.getInstance().convey(ev);  
+        
 
         initComponents();
     }

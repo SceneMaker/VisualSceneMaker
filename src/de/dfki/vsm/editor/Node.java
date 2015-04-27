@@ -6,6 +6,7 @@ import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeStartedEvent;
 import de.dfki.vsm.editor.event.NodeTerminatedEvent;
+import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.DockingManager;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.configs.ProjectPreferences;
@@ -346,7 +347,11 @@ public final class Node extends JComponent implements EventListener, Observer {
     @Override
     public void update(EventObject event) {
         if (mPreferences.sVISUALISATION) {
-            if (event instanceof NodeStartedEvent) {
+            
+            if (event instanceof SceneStoppedEvent) {
+                    mVisualisationTask = null;
+                    repaint();             
+            } else if (event instanceof NodeStartedEvent) {
                 if ((((NodeStartedEvent) event).getNode().equals(mDataNode))
                         || ((NodeStartedEvent) event).getNode().isSubNodeOf(mDataNode)) {
 
