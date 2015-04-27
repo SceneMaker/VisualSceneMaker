@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.project.ProjectData;
@@ -11,16 +12,12 @@ import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
@@ -441,6 +438,10 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
 
         // Update The Buttons
         changeRuntimeButtonState();
+        
+        // un select nodes and edges
+        SceneStoppedEvent ev = new SceneStoppedEvent(this);
+        mEventCaster.convey(ev);    
     }
 
     ////////////////////////////////////////////////////////////////////////////

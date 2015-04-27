@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.action.AddCommandAction;
 import de.dfki.vsm.editor.action.ChangeNodeTypeAction;
 import de.dfki.vsm.editor.action.CopyNodesAction;
 import de.dfki.vsm.editor.action.CreateCommentAction;
@@ -20,6 +21,7 @@ import de.dfki.vsm.editor.action.RemoveNodesAction;
 import de.dfki.vsm.editor.action.ShortestEdgeAction;
 import de.dfki.vsm.editor.action.StraightenEdgeAction;
 import de.dfki.vsm.editor.action.ToggleStartNodeAction;
+import de.dfki.vsm.editor.dialog.CmdDialog;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
@@ -1037,7 +1039,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 pop.add(new JSeparator());
             }
             
-             if (node.getDataNode().getCmdList().size()>0) {
+            if (node.getDataNode().getCmdList().size()>0) {
                 item = new JMenuItem("Edit Command");
 
                 EditCommandAction editCommandAction = new EditCommandAction(this, mCmdBadgeMap.get(node));
@@ -1046,6 +1048,26 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 item.addActionListener(editCommandAction.getActionListener());
                 pop.add(item);
                 pop.add(new JSeparator());
+            } else{
+                item = new JMenuItem("Add Command Execution");
+                
+                AddCommandAction addCommandAction = new AddCommandAction(this, node);
+               
+                item.addActionListener(addCommandAction.getActionListener());
+                pop.add(item);
+                pop.add(new JSeparator());
+                
+                
+              /*
+               // mListModel.addElement(cmd);
+
+                EditCommandAction editCommandAction = new EditCommandAction(this, mCmdBadgeMap.get(node));
+                mSelectedCmdBadge = mCmdBadgeMap.get(node);
+
+                item.addActionListener(editCommandAction.getActionListener());
+                pop.add(item);
+                pop.add(new JSeparator());
+                */
             }
 
             item = new JMenuItem("Copy");
