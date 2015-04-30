@@ -331,8 +331,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         // The Show Variables Button
          mShowVarButton = add(new AbstractAction("ACTION_SHOW_VARIABLES",
                 Boolean.valueOf(Preferences.getProperty("showVariables"))
-                ? ResourceLoader.loadImageIcon("/res/img/new/varButton.png")
-                : ResourceLoader.loadImageIcon("/res/img/new/varButton.png")) {
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden.png")) {
             public void actionPerformed(ActionEvent evt) {
                 mEditor.getWorkSpace().showVariablesOnWorkspace();
                 changeShowVariablesButtonState();
@@ -340,6 +340,12 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
                 repaint();
             }
         });
+        mShowVarButton.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showVariables"))
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_blue.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden_blue.png"));
+        mShowVarButton.setToolTipText(Boolean.valueOf(Preferences.getProperty("showVariables"))
+                ? "Show Variables"
+                : "Hide Variables");
         // Format The Button As Tiny
         sanitizeTinyButton(mShowVarButton);
         // Add Some Horizontal Space
@@ -510,11 +516,20 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     }
     
     private void changeShowVariablesButtonState() {
-        if (mEditor.getWorkSpace().isVarBadgeVisible()) {
-            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varButton.png"));
-        } else {
-            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/new/varButton.png"));
-        }
+//        if (mEditor.getWorkSpace().isVarBadgeVisible()) {
+//            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var.png"));
+//        } else {
+//            mShowVarButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden.png"));
+//        }
+        mShowVarButton.setIcon(mEditor.getWorkSpace().isVarBadgeVisible()
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var.png"));
+        mShowVarButton.setRolloverIcon(mEditor.getWorkSpace().isVarBadgeVisible()
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden_blue.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_blue.png"));
+        mShowVarButton.setToolTipText(mEditor.getWorkSpace().isVarBadgeVisible()
+                ? "Hide Variables"
+                : "Show Variables");
     }
 
     private void initPathDisplay() {

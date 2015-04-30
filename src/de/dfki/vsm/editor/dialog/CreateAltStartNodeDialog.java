@@ -1,6 +1,8 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.Node;
 import java.awt.event.ActionEvent;
@@ -22,8 +24,8 @@ public class CreateAltStartNodeDialog extends Dialog {
     private JLabel mAltStartNodeLabel;
     private JComboBox mStartNodeComboBox;
     private JComboBox mAltStartNodeComboBox;
-    private JButton mOkButton;
-    private JButton mCancelButton;
+    private OKButton mOkButton;
+    private CancelButton mCancelButton;
 
     public CreateAltStartNodeDialog(AltStartNodeManager manager) {
         super(Editor.getInstance(), "Create alternative Startnode", true);
@@ -44,27 +46,29 @@ public class CreateAltStartNodeDialog extends Dialog {
 
         mAltStartNodeLabel = new JLabel("Alternative:");
         mAltStartNodeComboBox = new JComboBox(new DefaultComboBoxModel());
-        mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
+        // Ok button
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-        mCancelButton = new JButton("Cancel");
-        mCancelButton.addActionListener(new ActionListener() {
+        // Cancel button
+        mCancelButton = new CancelButton();
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
-        addCompoment(mStartNodeLabel, 10, 10, 100, 20);
-        addCompoment(mStartNodeComboBox, 120, 10, 200, 20);
-        addCompoment(mAltStartNodeLabel, 10, 35, 100, 20);
-        addCompoment(mAltStartNodeComboBox, 120, 35, 200, 20);
-        addCompoment(mOkButton, 130, 125, 90, 20);
-        addCompoment(mCancelButton, 220, 125, 90, 20);
-        packComponents(320, 160);
+        addCompoment(mStartNodeLabel, 10, 20, 100, 30);
+        addCompoment(mStartNodeComboBox, 120, 20, 200, 30);
+        addCompoment(mAltStartNodeLabel, 10, 60, 100, 30);
+        addCompoment(mAltStartNodeComboBox, 120, 60, 200, 30);
+        addCompoment(mOkButton, 175, 150, 125, 30);
+        addCompoment(mCancelButton, 30, 150, 125, 30);
+        packComponents(340, 200);
     }
 
     public Object run() {

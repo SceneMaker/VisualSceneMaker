@@ -1,6 +1,8 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
@@ -33,8 +35,8 @@ public class MonitorDialog extends JDialog {
 
     private JPanel mMainPanel;
     private JPanel mButtonsPanel;
-    private JButton mCancelButton;
-    private JButton mOkButton;
+    private CancelButton mCancelButton;
+    private OKButton mOkButton;
     private JPanel mWorkPanel;
     private JList mVariableList;
     private JTextField mInputTextField;
@@ -66,9 +68,9 @@ public class MonitorDialog extends JDialog {
         mWorkPanel.setBorder(BorderFactory.createLoweredBevelBorder());
         mVariableList = new JList(new DefaultListModel());
         mVariableScrollPane = new JScrollPane(mVariableList);
-        mVariableScrollPane.setBounds(10, 10, 300, 300);
+        mVariableScrollPane.setBounds(20, 10, 360, 300);
         mInputTextField = new JTextField();
-        mInputTextField.setBounds(10, 320, 300, 25);
+        mInputTextField.setBounds(20, 320, 360, 30);
         mWorkPanel.add(mVariableScrollPane);
         mWorkPanel.add(mInputTextField);
     }
@@ -113,21 +115,21 @@ public class MonitorDialog extends JDialog {
         initWorkPanel();
         mButtonsPanel = new JPanel(null);
         mButtonsPanel.setBounds(0, 400, 400, 40);
-        mOkButton = new JButton("Ok");
-        mOkButton.setBounds(200, 10, 90, 20);
-        mOkButton.addActionListener(new ActionListener() {
+        mOkButton = new OKButton();
+        mOkButton.setBounds(205, 0, 125, 30);
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent evt) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (process()) {
                     dispose();
                 }
             }
         });
-        mCancelButton = new JButton("Cancel");
-        mCancelButton.setBounds(290, 10, 90, 20);
-        mCancelButton.addActionListener(new ActionListener() {
+        mCancelButton = new CancelButton();
+        mCancelButton.setBounds(50, 0, 125, 30);
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent evt) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 dispose();
             }
         });

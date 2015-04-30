@@ -1,12 +1,15 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
+import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
@@ -31,8 +34,8 @@ public class VarDefDialog extends Dialog {
     private JButton mAddExpButton;
     private JComboBox mTypeDefComboBox;
     private DefaultComboBoxModel mTypeDefComboBoxModel;
-    private JButton mOkButton;
-    private JButton mCancelButton;
+    private OKButton mOkButton;
+    private CancelButton mCancelButton;
 
     public VarDefDialog(Node node, VarDef varDef) {
         super(Editor.getInstance(), "Create/Modify Variable Definition", true);
@@ -59,7 +62,11 @@ public class VarDefDialog extends Dialog {
         mTypeDefComboBoxModel = new DefaultComboBoxModel();
         mTypeDefComboBox = new JComboBox(mTypeDefComboBoxModel);
         //
-        mAddExpButton = new JButton("...");
+        mAddExpButton = new JButton(ResourceLoader.loadImageIcon("/res/img/search_icon.png"));
+        mAddExpButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/search_icon_blue.png"));
+        mAddExpButton.setOpaque(false);
+        mAddExpButton.setContentAreaFilled(false);
+        mAddExpButton.setFocusable(false);
         mAddExpButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -67,32 +74,32 @@ public class VarDefDialog extends Dialog {
             }
         });
         //
-        mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
         //
-        mCancelButton = new JButton("Cancel");
-        mCancelButton.addActionListener(new ActionListener() {
+        mCancelButton = new CancelButton();
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
         //
-        addCompoment(mNameLabel, 10, 10, 70, 20);
-        addCompoment(mNameTextField, 90, 10, 200, 20);
-        addCompoment(mTypeDefLabel, 10, 35, 70, 20);
-        addCompoment(mTypeDefComboBox, 90, 35, 200, 20);
-        addCompoment(mExpLabel, 10, 60, 70, 20);
-        addCompoment(mExpTextField, 90, 60, 180, 20);
-        addCompoment(mAddExpButton, 270, 60, 20, 20);
-        addCompoment(mOkButton, 130, 185, 80, 20);
-        addCompoment(mCancelButton, 210, 185, 80, 20);
-        packComponents(300, 210);
+        addCompoment(mNameLabel, 10, 20, 70, 30);
+        addCompoment(mNameTextField, 90, 20, 260, 30);
+        addCompoment(mTypeDefLabel, 10, 85, 70, 30);
+        addCompoment(mTypeDefComboBox, 90, 85, 260, 30);
+        addCompoment(mExpLabel, 10, 150, 70, 30);
+        addCompoment(mExpTextField, 90, 150, 230, 30);
+        addCompoment(mAddExpButton, 320, 150, 30, 30);
+        addCompoment(mCancelButton, 75, 250, 125, 30);
+        addCompoment(mOkButton, 225, 250, 125, 30);
+        packComponents(400, 300);
     }
 
     private void fillComponents() {

@@ -22,6 +22,14 @@
     </Declare>
     <Commands>
     </Commands>
+    <PEdge target="S2" start="" probability="100">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="281" y-pos="210" control-x-pos="372" control-y-pos="367"/>
+          <Point x-pos="499" y-pos="480" control-x-pos="408" control-y-pos="322"/>
+        </Arrow>
+      </Graphics>
+    </PEdge>
     <Graphics>
       <Position x-pos="210" y-pos="120"/>
     </Graphics>
@@ -95,7 +103,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position x-pos="210" y-pos="210"/>
+      <Position x-pos="480" y-pos="480"/>
     </Graphics>
     <LocalVariableBadge>
       <Position x-pos="10" y-pos="10"/>

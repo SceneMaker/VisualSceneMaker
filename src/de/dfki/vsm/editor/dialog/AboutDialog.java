@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.dialog;
 
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
 import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
 import static de.dfki.vsm.editor.util.Preferences.sABOUT_FILE;
 import static de.dfki.vsm.editor.util.Preferences.sSCENEMAKER_LOGO;
@@ -49,7 +50,7 @@ public class AboutDialog extends JDialog {
     private Font mFont = new Font("SansSerif", Font.PLAIN, 11);
     private JPanel mContentPanel = null;
     private JScrollPane mAboutTextScrollPane = null;
-    private JButton mOkButton;
+    private OKButton mOkButton;
     private MyEditorPane mAboutPane = null;
     private JViewport mViewPort = null;
     private Timer mScrollTimer = null;
@@ -108,10 +109,11 @@ public class AboutDialog extends JDialog {
         mAboutTextScrollPane.setViewportBorder(new EmptyBorder(0, 0, 0, 0));
         mAboutTextScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         // Init the button
-        mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
+        // Ok button
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 setVisible(false);
                 mScrollTimer.cancel();
                 dispose();

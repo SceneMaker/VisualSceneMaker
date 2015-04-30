@@ -1,6 +1,11 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.AddButton;
+import de.dfki.vsm.editor.CancelButton;
+import de.dfki.vsm.editor.EditButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.Node;
@@ -41,15 +46,15 @@ public class ModifyCEdgeDialog extends Dialog {
     private JLabel mInputLabel;
     private JPanel mButtonPanel;
     private JTextField mInputTextField;
-    private JButton mOkButton;
-    private JButton mCancelButton;
+    private OKButton mOkButton;
+    private CancelButton mCancelButton;
     private JPanel mAltStartNodePanel;
     private JLabel mAltStartNodeLabel;
     private JList mAltStartNodeList;
     private JScrollPane mAltStartNodeScrollPane;
-    private JButton mAddAltStartNodeButton;
-    private JButton mRemoveAltStartNodeButton;
-    private JButton mEditAltStartNodeButton;
+    private AddButton mAddAltStartNodeButton;
+    private RemoveButton mRemoveAltStartNodeButton;
+    private EditButton mEditAltStartNodeButton;
 
     public ModifyCEdgeDialog(CEdge cedge) {
         super(Editor.getInstance(), "Modify Conditional Edge", true);
@@ -78,8 +83,19 @@ public class ModifyCEdgeDialog extends Dialog {
         addCompoment(mAltStartNodePanel, 230, 85);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10))); 
         addCompoment(mButtonPanel, 230, 20);
-             
-        packComponents(230, 180);
+        
+//        addCompoment(mInputLabel, 10, 10, 70, 30);
+//        addCompoment(mInputTextField, 120, 10, 230, 30);
+//        //
+//        addCompoment(mAltStartNodeLabel, 10, 75, 70, 30);
+//        addCompoment(mAltStartNodeScrollPane, 120, 75, 230, 110);
+//        addCompoment(mAddAltStartNodeButton, 355, 85, 20, 20);
+//        addCompoment(mRemoveAltStartNodeButton, 355, 115, 20, 20);
+//        addCompoment(mEditAltStartNodeButton, 355, 145, 20, 20);
+//        //
+//        addCompoment(mCancelButton, 75, 210, 125, 30);
+//        addCompoment(mOkButton, 225, 210, 125, 30);
+        packComponents(400, 250);
 
     }
 
@@ -87,6 +103,7 @@ public class ModifyCEdgeDialog extends Dialog {
         JPanel panelContainer;
         // Input panel
         mInputPanel = new JPanel();
+        mInputPanel.setOpaque(false);
         
         // Input label
         mInputLabel = new JLabel("Conditional Expression:");
@@ -94,6 +111,7 @@ public class ModifyCEdgeDialog extends Dialog {
         mInputTextField = new JTextField();
         
         panelContainer = new JPanel(null);
+        panelContainer.setOpaque(false);
         panelContainer.setLayout(new BoxLayout(panelContainer, BoxLayout.Y_AXIS));
         panelContainer.add(mInputLabel);
         panelContainer.add(mInputTextField);
@@ -107,23 +125,26 @@ public class ModifyCEdgeDialog extends Dialog {
     private void initButtonPanel() {
         
         // Ok button
-        mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        // Ok button
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-        
         // Cancel button
-        mCancelButton = new JButton("Cancel");    
-        mCancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        mCancelButton = new CancelButton();
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
         
         // Button panel
-        mButtonPanel = new JPanel(null);        
+        mButtonPanel = new JPanel(null);     
+        mButtonPanel.setOpaque(false);
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
         mButtonPanel.setAlignmentX(CENTER_ALIGNMENT);
         mButtonPanel.add(Box.createRigidArea(new Dimension(45, 20)));
@@ -147,43 +168,40 @@ public class ModifyCEdgeDialog extends Dialog {
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
         
         // Init alternative start node buttons300
-        mAddAltStartNodeButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/plus.png"));  
-        mAddAltStartNodeButton.setMaximumSize(new Dimension(20, 20));
-        mAddAltStartNodeButton.setPreferredSize(new Dimension(20, 20));
-	mAddAltStartNodeButton.setMinimumSize(new Dimension(20, 20)); 
-        mAddAltStartNodeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        //ADD BUTTON
+        mAddAltStartNodeButton = new AddButton();
+        mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 addAltStartNode();
             }
         });
-        
-        mRemoveAltStartNodeButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/minus.png"));
-        mRemoveAltStartNodeButton.setMaximumSize(new Dimension(20, 20));
-        mRemoveAltStartNodeButton.setPreferredSize(new Dimension(20, 20));
-	mRemoveAltStartNodeButton.setMinimumSize(new Dimension(20, 20));  
-        mRemoveAltStartNodeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        //REMOVE BUTTON
+        mRemoveAltStartNodeButton = new RemoveButton();
+        mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 removeAltStartNode();
             }
         });
-        
-        mEditAltStartNodeButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/edit.png"));
-        mEditAltStartNodeButton.setMaximumSize(new Dimension(20, 20));
-        mEditAltStartNodeButton.setPreferredSize(new Dimension(20, 20));
-	mEditAltStartNodeButton.setMinimumSize(new Dimension(20, 20)); 
-        mEditAltStartNodeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        //EDIT BUTTON
+        mEditAltStartNodeButton = new EditButton();
+        mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 editAltStartNode();
             }
-        });      
+        });
         
         titleContainer = new JPanel(null);
+        titleContainer.setOpaque(false);
         titleContainer.setLayout(new BoxLayout(titleContainer, BoxLayout.X_AXIS));
         titleContainer.setAlignmentX(LEFT_ALIGNMENT);
         titleContainer.add(mAltStartNodeLabel);
         titleContainer.add(Box.createRigidArea(new Dimension(1000, 20)));        
         
         buttonsContainer = new JPanel(null);
+        buttonsContainer.setOpaque(false);
         buttonsContainer.setLayout(new BoxLayout(buttonsContainer, BoxLayout.Y_AXIS));   
         buttonsContainer.setMaximumSize(new Dimension(20, 60));
         buttonsContainer.add(mAddAltStartNodeButton);
@@ -191,6 +209,7 @@ public class ModifyCEdgeDialog extends Dialog {
         buttonsContainer.add(mEditAltStartNodeButton);
         
         startNodeContainer = new JPanel(null);
+        startNodeContainer.setOpaque(false);
         startNodeContainer.setLayout(new BoxLayout(startNodeContainer, BoxLayout.X_AXIS));
         startNodeContainer.add(Box.createRigidArea(new Dimension(3, 20)));
         startNodeContainer.add(mAltStartNodeScrollPane);        
@@ -199,6 +218,7 @@ public class ModifyCEdgeDialog extends Dialog {
         
         // Init alternative start node panel
         mAltStartNodePanel = new JPanel(null);        
+        mAltStartNodePanel.setOpaque(false);
         mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.PAGE_AXIS));
         mAltStartNodePanel.setAlignmentX(CENTER_ALIGNMENT);
         mAltStartNodePanel.add(titleContainer);   
@@ -234,7 +254,7 @@ public class ModifyCEdgeDialog extends Dialog {
 
     public CEdge run() {
         setVisible(true);
-        if (mPressedButton == Button.OK) {
+        if (mPressedButton == Dialog.Button.OK) {
             return mCEdge;
         } else {
             return null;
@@ -244,13 +264,13 @@ public class ModifyCEdgeDialog extends Dialog {
     @Override
     protected void okActionPerformed() {
         if (process()) {
-            dispose(Button.OK);
+            dispose(Dialog.Button.OK);
         }
     }
 
     @Override
     protected void cancelActionPerformed() {
-        dispose(Button.CANCEL);
+        dispose(Dialog.Button.CANCEL);
     }
 
     private boolean process() {

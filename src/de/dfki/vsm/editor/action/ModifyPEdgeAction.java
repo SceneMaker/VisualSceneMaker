@@ -28,7 +28,7 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
             //System.out.println("Old Probability " + pedge.getProbability());
         }
         ModifyPEdgeDialog dialog = new ModifyPEdgeDialog((PEdge) mDataEdge);
-        dialog.run();
+        PEdge pedg = dialog.run();
         for (PEdge pedge : mSourceGUINode.getDataNode().getPEdgeList()) {
             mNewProbList.add(pedge.getProbability());
             //System.out.println("New Probability " + pedge.getProbability());

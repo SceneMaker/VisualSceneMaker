@@ -1,5 +1,7 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.CancelButton;
+import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,8 +25,8 @@ public class MemberDefDialog extends Dialog {
     private JTextField mNameTextField;
     private JLabel mTypeLabel;
     private JComboBox mTypeComboBox;
-    private JButton mOkButton;
-    private JButton mCancelButton;
+    private OKButton mOkButton;
+    private CancelButton mCancelButton;
 
     public MemberDefDialog(JDialog parent, MemberDef memberDef) {
         super(parent, "Member Definition", true);
@@ -42,27 +44,27 @@ public class MemberDefDialog extends Dialog {
         mTypeLabel = new JLabel("Type:");
         mNameTextField = new JTextField();
         mTypeComboBox = new JComboBox(new Object[]{"Bool", "Int", "Float", "String"});
-        mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-        mCancelButton = new JButton("Cancel");
-        mCancelButton.addActionListener(new ActionListener() {
+        mCancelButton = new CancelButton();
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
-        addCompoment(mNameLabel, 10, 10, 70, 20);
-        addCompoment(mNameTextField, 90, 10, 200, 20);
-        addCompoment(mTypeLabel, 10, 35, 70, 20);
-        addCompoment(mTypeComboBox, 90, 35, 200, 20);
-        addCompoment(mOkButton, 130, 60, 80, 20);
-        addCompoment(mCancelButton, 210, 60, 80, 20);
-        packComponents(300, 85);
+        addCompoment(mNameLabel, 10, 20, 70, 30);
+        addCompoment(mNameTextField, 90, 20, 200, 30);
+        addCompoment(mTypeLabel, 10, 65, 70, 30);
+        addCompoment(mTypeComboBox, 90, 65, 200, 30);
+        addCompoment(mOkButton, 175, 120, 125, 30);
+        addCompoment(mCancelButton, 30, 120, 125, 30);
+        packComponents(320, 170);
     }
 
     private void fillComponents() {
