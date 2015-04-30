@@ -1,6 +1,8 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import java.awt.event.ActionEvent;
@@ -18,8 +20,8 @@ public class CmdDialog extends Dialog {
     private Command mCommand;
     // GUI-Components
     private JTextField mInputTextField;
-    private JButton mOkButton;
-    private JButton mCancelButton;
+    private OKButton mOkButton;
+    private CancelButton mCancelButton;
 
     public CmdDialog(Command command) {
         super(Editor.getInstance(), "Specify Command", true);
@@ -33,26 +35,25 @@ public class CmdDialog extends Dialog {
     private void initComponents() {
         mInputTextField = new JTextField();
         mInputTextField.setBounds(10, 10, 300, 20);
-        mOkButton = new JButton("Ok");
-        mOkButton.setBounds(10, 35, 90, 20);
-        mOkButton.addActionListener(new ActionListener() {
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-        mCancelButton = new JButton("Cancel");
+        mCancelButton = new CancelButton();
         mCancelButton.setBounds(100, 35, 90, 20);
-        mCancelButton.addActionListener(new ActionListener() {
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
-        addCompoment(mInputTextField, 10, 10, 300, 20);
-        addCompoment(mOkButton, 10, 35, 90, 20);
-        addCompoment(mCancelButton, 100, 35, 90, 20);
-        packComponents(320, 60);
+        addCompoment(mInputTextField, 10, 20, 300, 30);
+        addCompoment(mOkButton, 175, 75, 125, 30);
+        addCompoment(mCancelButton, 30, 75, 125, 30);
+        packComponents(320, 120);
     }
 
     public Command run() {

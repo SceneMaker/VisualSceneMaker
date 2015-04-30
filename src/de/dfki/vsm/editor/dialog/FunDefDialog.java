@@ -1,6 +1,8 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 import java.awt.Color;
@@ -11,15 +13,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
@@ -29,7 +25,6 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -70,8 +65,8 @@ public class FunDefDialog extends Dialog {
     private JLabel mArgLabel;
     private JList mArgList;
     private JScrollPane mArgScrollPane;
-    private JButton mOkButton;
-    private JButton mCancelButton;
+    private OKButton mOkButton;
+    private CancelButton mCancelButton;
     private JLabel mMessageLabel;
     private JPanel mFunDefContent;
     private JPanel nameContainer;
@@ -154,20 +149,20 @@ public class FunDefDialog extends Dialog {
             }
         });
         
-        //
-        mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        //ok button
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
         
-        //
-        mCancelButton = new JButton("Cancel");
-        mCancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        //cancel button
+        mCancelButton = new CancelButton();
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
@@ -176,18 +171,18 @@ public class FunDefDialog extends Dialog {
         mMessageLabel = new JLabel();
         
         //  
-        addCompoment(mNameLabel, 10, 10, 70, 20);
-        addCompoment(mNameTextField, 90, 10, 200, 20);
-        addCompoment(mClassNameLabel, 10, 35, 70, 20);
-        addCompoment(mClassNameTextField, 90, 35, 200, 20);
-        addCompoment(mMethodLabel, 10, 60, 70, 20);
-        addCompoment(mMethodComboBox, 90, 60, 200, 20);
-        addCompoment(mArgLabel, 10, 85, 70, 20);
-        addCompoment(mArgScrollPane, 90, 85, 200, 80);
-        addCompoment(mOkButton, 130, 175, 80, 20);
-        addCompoment(mCancelButton, 210, 175, 80, 20);
-        addCompoment(mMessageLabel, 10, 200, 280, 20);
-        packComponents(300, 230);
+        addCompoment(mNameLabel, 10, 10, 100, 30);
+        addCompoment(mNameTextField, 110, 10, 260, 30);
+        addCompoment(mClassNameLabel, 10, 45, 100, 30);
+        addCompoment(mClassNameTextField, 110, 45, 260, 30);
+        addCompoment(mMethodLabel, 10, 80, 100, 30);
+        addCompoment(mMethodComboBox, 110, 80, 260, 30);
+        addCompoment(mArgLabel, 10, 115, 100, 30);
+        addCompoment(mArgScrollPane, 110, 115, 260, 80);
+        addCompoment(mCancelButton, 75, 240, 125, 30);
+        addCompoment(mOkButton, 225, 240, 125, 30);
+        addCompoment(mMessageLabel, 10, 290, 400, 30);
+        packComponents(400, 320);
 
         mDefaultColor = getBackground();
     }

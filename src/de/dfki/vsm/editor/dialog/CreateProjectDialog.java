@@ -1,7 +1,9 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.acticon.ActiconObject;
 import de.dfki.vsm.model.configs.ConfigEntry;
 import de.dfki.vsm.model.configs.PlayerConfig;
@@ -17,13 +19,9 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseTools;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.awt.Color;
-import java.awt.ComponentOrientation;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
@@ -46,7 +44,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.event.MouseInputListener;
 
 /**
@@ -60,8 +57,8 @@ public class CreateProjectDialog extends JDialog {
     private JPanel mButtonsPanel = null;
 
     // buttons
-    private JLabel mOkButton = null;
-    private JLabel mCancelButton = null;
+    private OKButton mOkButton = null;
+    private CancelButton mCancelButton = null;
     private JButton mLocationButton;
     // text fields
     private JTextField mLocationTextField = null;
@@ -371,33 +368,11 @@ public class CreateProjectDialog extends JDialog {
         });
 
         // create buttons
-        mOkButton = new JLabel("OK", SwingConstants.RIGHT);
-        mOkButton.setIcon(ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png"));
-        mOkButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        mOkButton.setIconTextGap(20);
-        mOkButton.setToolTipText("Create Project");
-        mOkButton.setFont(new Font("Helvetica", Font.PLAIN, 24));
-        mOkButton.setOpaque(true);
-        mOkButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-        mOkButton.setBackground(new Color(255, 255, 255));
-        mOkButton.setFocusable(false);
-        mOkButton.setPreferredSize(buttonSize);
-        mOkButton.setMinimumSize(buttonSize);
+        mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
-            }
-
-            public void mouseEntered(MouseEvent me) {
-                ((JLabel) me.getComponent()).setIcon(ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png"));
-                me.getComponent().setBackground(new Color(82, 127, 255));
-            }
-
-            public void mouseExited(MouseEvent me) {
-                ((JLabel) me.getComponent()).setIcon(ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png"));
-                me.getComponent().setBackground(new Color(255, 255, 255));
-
             }
         });
 //        mOkButton.addActionListener(new ActionListener() {
@@ -407,34 +382,11 @@ public class CreateProjectDialog extends JDialog {
 //            }
 //        });
         //mOkButton.setSelected(true);
-        mCancelButton = new JLabel("Cancel", SwingConstants.RIGHT);
-        mCancelButton.setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png"));
-        mCancelButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        mCancelButton.setToolTipText("Cancel");
-        mCancelButton.setIconTextGap(10);
-        mCancelButton.setFont(new Font("Helvetica", Font.PLAIN, 24));
-        mCancelButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        mCancelButton.setBackground(new Color(255, 255, 255));
-        mCancelButton.setPreferredSize(buttonSize);
-        mCancelButton.setMinimumSize(buttonSize);
-        mCancelButton.setOpaque(true);
+        mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
-            }
-
-            public void mouseEntered(MouseEvent me) {
-                //((JLabel) me.getComponent()).setOpaque(true);
-                ((JLabel) me.getComponent()).setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png"));
-                me.getComponent().setBackground(new Color(82, 127, 255));
-            }
-
-            public void mouseExited(MouseEvent me) {
-                //((JLabel) me.getComponent()).setOpaque(false);
-                ((JLabel) me.getComponent()).setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png"));
-                me.getComponent().setBackground(new Color(255, 255, 255));
-
             }
         });
 //        mCancelButton.addActionListener(new ActionListener() {

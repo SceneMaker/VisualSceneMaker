@@ -62,7 +62,7 @@ import javax.swing.ScrollPaneConstants;
  *******************************************************************************
  */
 abstract class AttributeEditor extends JPanel implements EventListener {
-    
+
     private class StripedCellRenderer extends JLabel implements ListCellRenderer {
 
         public StripedCellRenderer() {
@@ -71,44 +71,44 @@ abstract class AttributeEditor extends JPanel implements EventListener {
 
         @Override
         public Component getListCellRendererComponent(
-            JList list, Object value, int index,
-            boolean isSelected, boolean cellHasFocus) {
+                JList list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
 
-                setText(value.toString());
-                Color background;
-                Color foreground;
+            setText(value.toString());
+            Color background;
+            Color foreground;
 
-                // check if this cell represents the current DnD drop location
-                JList.DropLocation dropLocation = list.getDropLocation();
-                if (dropLocation != null && !dropLocation.isInsert() && dropLocation.getIndex() == index) {
+            // check if this cell represents the current DnD drop location
+            JList.DropLocation dropLocation = list.getDropLocation();
+            if (dropLocation != null && !dropLocation.isInsert() && dropLocation.getIndex() == index) {
 
-                    background = Color.BLUE;
-                    foreground = Color.WHITE;
+                background = Color.BLUE;
+                foreground = Color.WHITE;
 
-                    // check if this cell is selected
-                } else if (isSelected) {
-                    //background = Color.ORANGE;
-                    background = new Color(25, 33, 243, 200);
-                    foreground = Color.WHITE;
+                // check if this cell is selected
+            } else if (isSelected) {
+                //background = Color.ORANGE;
+                background = new Color(25, 33, 243, 200);
+                foreground = Color.WHITE;
 
-                    // unselected, and not the DnD drop location
+                // unselected, and not the DnD drop location
+            } else {
+                if (index % 2 == 0) {
+                    //background = new Color(255, 240, 240);
+                    background = Color.WHITE;
+                    foreground = Color.BLACK;
                 } else {
-                    if (index % 2 == 0) {
-                        //background = new Color(255, 240, 240);
-                        background = Color.WHITE;
-                        foreground = Color.BLACK;
-                    } else {
-                        background = new Color(235, 235, 235, 127);
-                        //background = new Color(240, 240, 255);
-                        foreground = Color.BLACK;
-                    }
+                    background = new Color(235, 235, 235, 127);
+                    //background = new Color(240, 240, 255);
+                    foreground = Color.BLACK;
                 }
-                setBackground(background);
-                setForeground(foreground);
-                return this;
             }
+            setBackground(background);
+            setForeground(foreground);
+            return this;
+        }
     }
-    
+
     // The maintained data model node
     protected Node mDataNode;
     // GUI Components
@@ -134,11 +134,14 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mScrollPane.setPreferredSize(new Dimension(200, 100));
         mScrollPane.setMinimumSize(new Dimension(200, 100));
         // Init the button panel
-        mAddButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/plus.png"));
-        mAddButton.setMaximumSize(new Dimension(20, 20));
-        mAddButton.setPreferredSize(new Dimension(20, 20));
-	mAddButton.setMinimumSize(new Dimension(20, 20));        
+        mAddButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
+        mAddButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
+        mAddButton.setMaximumSize(new Dimension(22, 22));
+        mAddButton.setPreferredSize(new Dimension(22, 22));
+        mAddButton.setMinimumSize(new Dimension(22, 22));
         mAddButton.setOpaque(false);
+        mAddButton.setContentAreaFilled(false);
+        mAddButton.setFocusable(false);
         mAddButton.setBorder(BorderFactory.createEmptyBorder());
         mAddButton.addActionListener(new ActionListener() {
 
@@ -149,11 +152,14 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             }
         });
         //
-        mRemoveButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/minus.png"));
-        mRemoveButton.setMinimumSize(new Dimension(20, 20));
-        mRemoveButton.setMaximumSize(new Dimension(20, 20));
-        mRemoveButton.setPreferredSize(new Dimension(20, 20));
+        mRemoveButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove.png"));
+        mRemoveButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_blue.png"));
+        mRemoveButton.setMinimumSize(new Dimension(22, 22));
+        mRemoveButton.setMaximumSize(new Dimension(22, 22));
+        mRemoveButton.setPreferredSize(new Dimension(22, 22));
         mRemoveButton.setOpaque(false);
+        mRemoveButton.setContentAreaFilled(false);
+        mRemoveButton.setFocusable(false);
         mRemoveButton.setBorder(BorderFactory.createEmptyBorder());
         mRemoveButton.addActionListener(new ActionListener() {
 
@@ -164,11 +170,14 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             }
         });
         //
-        mEditButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/edit.png"));
-        mEditButton.setMinimumSize(new Dimension(20, 20));
-        mEditButton.setMaximumSize(new Dimension(20, 20));
-        mEditButton.setPreferredSize(new Dimension(20, 20));
+        mEditButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png"));
+        mEditButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit_blue.png"));
+        mEditButton.setMinimumSize(new Dimension(22, 22));
+        mEditButton.setMaximumSize(new Dimension(22, 22));
+        mEditButton.setPreferredSize(new Dimension(22, 22));
         mEditButton.setOpaque(false);
+        mEditButton.setContentAreaFilled(false);
+        mEditButton.setFocusable(false);
         mEditButton.setBorder(BorderFactory.createEmptyBorder());
         mEditButton.addActionListener(new ActionListener() {
 
@@ -179,11 +188,14 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             }
         });
         //
-        mUpButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/up.png"));
+        mUpButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20.png"));
+        mUpButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_blue.png"));
         mUpButton.setMinimumSize(new Dimension(20, 20));
         mUpButton.setMaximumSize(new Dimension(20, 20));
         mUpButton.setPreferredSize(new Dimension(20, 20));
         mUpButton.setOpaque(false);
+        mUpButton.setContentAreaFilled(false);
+        mUpButton.setFocusable(false);
         mUpButton.setBorder(BorderFactory.createEmptyBorder());
         mUpButton.addActionListener(new ActionListener() {
 
@@ -194,11 +206,14 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             }
         });
         //
-        mDownButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/down.png"));
-        mDownButton.setMinimumSize(new Dimension(20, 20));
-        mDownButton.setMaximumSize(new Dimension(20, 20));
-        mDownButton.setPreferredSize(new Dimension(20, 20));
+        mDownButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_20.png"));
+        mDownButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_20_blue.png"));
+        mDownButton.setMinimumSize(new Dimension(22, 22));
+        mDownButton.setMaximumSize(new Dimension(22, 22));
+        mDownButton.setPreferredSize(new Dimension(22, 22));
         mDownButton.setOpaque(false);
+        mDownButton.setContentAreaFilled(false);
+        mDownButton.setFocusable(false);
         mDownButton.setBorder(BorderFactory.createEmptyBorder());
         mDownButton.addActionListener(new ActionListener() {
 
@@ -210,6 +225,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
         //
         mButtonPanel = new JPanel();
+        mButtonPanel.setOpaque(false);
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.Y_AXIS));
         mButtonPanel.setBorder(BorderFactory.createEmptyBorder());
         mButtonPanel.add(mAddButton);
@@ -219,11 +235,13 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mButtonPanel.add(mDownButton);
         // Init the editor panel
         mEditorPanel = new JPanel();
+        mEditorPanel.setOpaque(false);
         mEditorPanel.setLayout(new BoxLayout(mEditorPanel, BoxLayout.X_AXIS));
         mEditorPanel.add(mScrollPane);
         mEditorPanel.add(mButtonPanel);
         // Init the attribute editor
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        setOpaque(false);
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), title));
         add(mEditorPanel);
         add(Box.createRigidArea(new Dimension(20, 100)));
@@ -516,7 +534,6 @@ class CmdEditor extends AttributeEditor {
  *
  *****************************************************************************
  */
-
 class FunDefEditor extends AttributeEditor {
 
     public FunDefEditor() {
@@ -636,7 +653,6 @@ class StartNodeEditor extends AttributeEditor {
         // Reload the current start node list of the supernode
     }
 
-    
     @Override
     protected void edit() {
     }
@@ -671,7 +687,7 @@ class NameEditor extends JPanel implements EventListener {
         // Init the node name text field
         mNameField = new JTextField();
         mNameField.setMinimumSize(new Dimension(200, 20));
-        
+
         mNameField.setMaximumSize(new Dimension(1000, 20));
         mNameField.setPreferredSize(new Dimension(200, 20));
         mNameField.addKeyListener(new KeyAdapter() {
@@ -685,7 +701,7 @@ class NameEditor extends JPanel implements EventListener {
 
         // Init the node name panel
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        
+        setOpaque(false);
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), "Edit Node Name:"));
         add(mNameField);
         add(Box.createRigidArea(new Dimension(40, 20)));
@@ -731,11 +747,11 @@ class NodeEditor extends JPanel implements EventListener {
         mTypeDefEditor = new TypeDefEditor();
         //mFunDefEditor = new FunDefEditor();
         mVarDefEditor = new VarDefEditor();
-        mCmdEditor = new CmdEditor();        
-        
+        mCmdEditor = new CmdEditor();
+
         // Init components        
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-     
+        setBackground(Color.white);
         setBorder(BorderFactory.createEmptyBorder());
         add(mNameEditor);
         add(mStartNodeEditor);
@@ -747,10 +763,10 @@ class NodeEditor extends JPanel implements EventListener {
         // Add the element editor to the event multicaster
         EventCaster.getInstance().append(this);
     }
-           
-    @Override   
-    public void update(EventObject event) {                       
-        if (event instanceof NodeSelectedEvent) {            
+
+    @Override
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
             // Get the selected node
             Node node = ((NodeSelectedEvent) event).getNode();
             // Show or hide the start node editor
@@ -778,58 +794,58 @@ class NodeEditor extends JPanel implements EventListener {
  *
  *****************************************************************************
  */
-
 class EdgeEditor extends JPanel implements EventListener {
 
     private final TimeOutEditor mTimeOutEditor;
     private final ConditionEditor mConditionEditor;
-    private final ProbabilityEditor mProbabilityEditor;    
+    private final ProbabilityEditor mProbabilityEditor;
     private final InterruptEditor mInterruptEditor;
 
-    public EdgeEditor() {        
+    public EdgeEditor() {
         // Init the child editors 
         mTimeOutEditor = new TimeOutEditor();
         mConditionEditor = new ConditionEditor();
-        mProbabilityEditor = new ProbabilityEditor();    
+        mProbabilityEditor = new ProbabilityEditor();
         mInterruptEditor = new InterruptEditor();
-               
+
         // Init components
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBackground(Color.white);
         setBorder(BorderFactory.createEmptyBorder());
         add(mTimeOutEditor);
         add(mConditionEditor);
         add(mProbabilityEditor);
         add(mInterruptEditor);
-        
-        EventCaster.getInstance().append(this);      
+
+        EventCaster.getInstance().append(this);
     }
 
-    @Override  
+    @Override
     public void update(EventObject event) {
         if (event instanceof EdgeSelectedEvent) {
             // Get the selected node
             Edge edge = ((EdgeSelectedEvent) event).getEdge();
-            
+
             if (edge instanceof TEdge) {
                 mTimeOutEditor.setVisible(true);
             } else {
                 mTimeOutEditor.setVisible(false);
             }
-            
+
             if (edge instanceof CEdge) {
                 mConditionEditor.setVisible(true);
             } else {
                 mConditionEditor.setVisible(false);
             }
-            
+
             if (edge instanceof IEdge) {
                 mInterruptEditor.setVisible(true);
             } else {
                 mInterruptEditor.setVisible(false);
             }
-            
+
             if (edge instanceof PEdge) {
-                mProbabilityEditor.setVisible(true);                
+                mProbabilityEditor.setVisible(true);
             } else {
                 mProbabilityEditor.setVisible(false);
             }
@@ -851,56 +867,57 @@ class TimeOutEditor extends JPanel implements EventListener {
 
     private TEdge mDataTEdge;
     private ModifyTEdgeDialog mTEdgeDialog;
-    
+
     public TimeOutEditor() {
         initComponents();
         EventCaster.getInstance().append(this);
     }
 
-    private void initComponents() {        
+    private void initComponents() {
+        setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setAlignmentX(RIGHT_ALIGNMENT);
     }
 
-    @Override  
+    @Override
     public void update(EventObject event) {
-        if (event instanceof EdgeSelectedEvent) {   
-            if(((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.TEdge)){
-                
-                mDataTEdge = (TEdge) ((EdgeSelectedEvent) event).getEdge();                
+        if (event instanceof EdgeSelectedEvent) {
+            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.TEdge)) {
+
+                mDataTEdge = (TEdge) ((EdgeSelectedEvent) event).getEdge();
                 mTEdgeDialog = new ModifyTEdgeDialog(mDataTEdge);
-                
+
                 removeAll();
-                
-                mTEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));        
+
+                mTEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
                 mTEdgeDialog.getInputPanel().setMaximumSize(new Dimension(1000, 40));
                 mTEdgeDialog.getInputPanel().setPreferredSize(new Dimension(200, 40));
                 mTEdgeDialog.getInputPanel().setAlignmentX(RIGHT_ALIGNMENT);
-                
-                mTEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 90));        
-                mTEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 90));
-                mTEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 90));
+
+                mTEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 150));
+                mTEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 150));
+                mTEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 150));
                 mTEdgeDialog.getAltStartNodePanel().setAlignmentX(RIGHT_ALIGNMENT);
-                
-                add(mTEdgeDialog.getInputPanel());                
+
+                add(mTEdgeDialog.getInputPanel());
                 add(mTEdgeDialog.getAltStartNodePanel());
-                               
-                mTEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {        
+
+                mTEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {
                     @Override
-                    public void keyReleased(KeyEvent event) {               
+                    public void keyReleased(KeyEvent event) {
                         save();
                         Editor.getInstance().update();
                     }
                 });
-                
+
             }
         } else {
             // Do nothing
         }
     }
 
-    private void save() {       
-        mDataTEdge.setTimeout(Integer.parseInt(mTEdgeDialog.getInputTextField().getText()));               
+    private void save() {
+        mDataTEdge.setTimeout(Integer.parseInt(mTEdgeDialog.getInputTextField().getText()));
     }
 }
 
@@ -921,52 +938,52 @@ class InterruptEditor extends JPanel implements EventListener {
         EventCaster.getInstance().append(this);
     }
 
-    private void initComponents() {        
+    private void initComponents() {
+        setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     @Override
     public void update(EventObject event) {
         if (event instanceof EdgeSelectedEvent) {
-            if (event instanceof EdgeSelectedEvent) {   
-                if(((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.IEdge)){
-                    
-                    mDataIEdge = (IEdge) ((EdgeSelectedEvent) event).getEdge();                
+            if (event instanceof EdgeSelectedEvent) {
+                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.IEdge)) {
+
+                    mDataIEdge = (IEdge) ((EdgeSelectedEvent) event).getEdge();
                     mIEdgeDialog = new ModifyIEdgeDialog(mDataIEdge);
-                    
+
                     removeAll();
-                
-                    mIEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));        
+
+                    mIEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
                     mIEdgeDialog.getInputPanel().setMaximumSize(new Dimension(1000, 40));
                     mIEdgeDialog.getInputPanel().setPreferredSize(new Dimension(200, 40));
                     mIEdgeDialog.getInputPanel().setAlignmentX(RIGHT_ALIGNMENT);
 
-                    mIEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 90));        
-                    mIEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 90));
-                    mIEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 90));
+                    mIEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 150));
+                    mIEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 150));
+                    mIEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 150));
                     mIEdgeDialog.getAltStartNodePanel().setAlignmentX(RIGHT_ALIGNMENT);
 
                     add(mIEdgeDialog.getInputPanel());
                     add(mIEdgeDialog.getAltStartNodePanel());
-                
-                    
-                    mIEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {        
-                    @Override
-                    public void keyReleased(KeyEvent event) {               
-                        save();
-                        Editor.getInstance().update();
-                    }
-                });
-                
+
+                    mIEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyReleased(KeyEvent event) {
+                            save();
+                            Editor.getInstance().update();
+                        }
+                    });
+
                 }
-            }   
+            }
         } else {
             // Do nothing
         }
     }
 
-    private void save() {   
-        String inputString =  mIEdgeDialog.getInputTextField().getText().trim();
+    private void save() {
+        String inputString = mIEdgeDialog.getInputTextField().getText().trim();
         try {
             _SFSLParser_.parseResultType = _SFSLParser_.LOG;
             _SFSLParser_.run(inputString);
@@ -977,11 +994,10 @@ class InterruptEditor extends JPanel implements EventListener {
                 // Do nothing
             }
         } catch (Exception e) {
-         
-        }        
+
+        }
     }
 }
-
 
 /**
  * *****************************************************************************
@@ -1000,52 +1016,52 @@ class ConditionEditor extends JPanel implements EventListener {
         EventCaster.getInstance().append(this);
     }
 
-    private void initComponents() {        
+    private void initComponents() {
+        setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     @Override
     public void update(EventObject event) {
         if (event instanceof EdgeSelectedEvent) {
-            if (event instanceof EdgeSelectedEvent) {   
-                if(((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.CEdge)){
-                    
-                    mDataCEdge = (CEdge) ((EdgeSelectedEvent) event).getEdge();                
+            if (event instanceof EdgeSelectedEvent) {
+                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.CEdge)) {
+
+                    mDataCEdge = (CEdge) ((EdgeSelectedEvent) event).getEdge();
                     mCEdgeDialog = new ModifyCEdgeDialog(mDataCEdge);
-                    
+
                     removeAll();
-                
-                    mCEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));        
+
+                    mCEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
                     mCEdgeDialog.getInputPanel().setMaximumSize(new Dimension(1000, 40));
                     mCEdgeDialog.getInputPanel().setPreferredSize(new Dimension(200, 40));
                     mCEdgeDialog.getInputPanel().setAlignmentX(RIGHT_ALIGNMENT);
 
-                    mCEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 90));        
-                    mCEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 90));
-                    mCEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 90));
+                    mCEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 150));
+                    mCEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 150));
+                    mCEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 150));
                     mCEdgeDialog.getAltStartNodePanel().setAlignmentX(RIGHT_ALIGNMENT);
 
                     add(mCEdgeDialog.getInputPanel());
                     add(mCEdgeDialog.getAltStartNodePanel());
-                
-                    
-                    mCEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {        
-                    @Override
-                    public void keyReleased(KeyEvent event) {               
-                        save();
-                        Editor.getInstance().update();
-                    }
-                });
-                
+
+                    mCEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyReleased(KeyEvent event) {
+                            save();
+                            Editor.getInstance().update();
+                        }
+                    });
+
                 }
-            }   
+            }
         } else {
             // Do nothing
         }
     }
 
-    private void save() {   
-        String inputString =  mCEdgeDialog.getInputTextField().getText().trim();
+    private void save() {
+        String inputString = mCEdgeDialog.getInputTextField().getText().trim();
         try {
             _SFSLParser_.parseResultType = _SFSLParser_.LOG;
             _SFSLParser_.run(inputString);
@@ -1056,8 +1072,8 @@ class ConditionEditor extends JPanel implements EventListener {
                 // Do nothing
             }
         } catch (Exception e) {
-         
-        }        
+
+        }
     }
 }
 
@@ -1073,90 +1089,91 @@ class ProbabilityEditor extends JPanel implements EventListener {
     private PEdge mDataPEdge;
     private ModifyPEdgeDialog mPEdgeDialog;
     private JPanel mButtonPanel;
-    
+
     private final HashMap<PEdge, JTextField> mPEdgeMap
             = new HashMap<PEdge, JTextField>();
-    
+
     public ProbabilityEditor() {
         initComponents();
         EventCaster.getInstance().append(this);
     }
 
-    private void initComponents() {        
+    private void initComponents() {
+        setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setAlignmentY(CENTER_ALIGNMENT);
         setAlignmentX(CENTER_ALIGNMENT);
     }
 
     @Override
-    public void update(EventObject event) {   
-        
-        if (event instanceof EdgeSelectedEvent) {             
-            if(((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.PEdge)){                              
-                mDataPEdge = (PEdge) ((EdgeSelectedEvent) event).getEdge();                
+    public void update(EventObject event) {
+
+        if (event instanceof EdgeSelectedEvent) {
+            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.PEdge)) {
+                mDataPEdge = (PEdge) ((EdgeSelectedEvent) event).getEdge();
                 mPEdgeDialog = new ModifyPEdgeDialog(mDataPEdge);
-                removeAll();              
-                
-                mPEdgeDialog.getEdgeProbPanel().setMinimumSize(new Dimension(200, 140));        
+                removeAll();
+
+                mPEdgeDialog.getEdgeProbPanel().setMinimumSize(new Dimension(200, 140));
                 mPEdgeDialog.getEdgeProbPanel().setMaximumSize(new Dimension(1000, 140));
-                mPEdgeDialog.getEdgeProbPanel().setPreferredSize(new Dimension(200, 140));                            
+                mPEdgeDialog.getEdgeProbPanel().setPreferredSize(new Dimension(200, 140));
                 add(mPEdgeDialog.getEdgeProbPanel());
-                
-                mPEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 90));        
-                mPEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 90));
-                mPEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 90));                 
+
+                mPEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 150));
+                mPEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 150));
+                mPEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 150));
                 add(mPEdgeDialog.getAltStartNodePanel());
-                              
+
                 for (JTextField textField : mPEdgeDialog.getPEdgeMap().values()) {
-                    textField.addKeyListener(new KeyAdapter() {        
+                    textField.addKeyListener(new KeyAdapter() {
                         @Override
-                        public void keyReleased(KeyEvent event) {               
+                        public void keyReleased(KeyEvent event) {
                             save();
                         }
-                    }); 
+                    });
                 }
-                
-                mPEdgeDialog.getNormButton().addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
+
+                mPEdgeDialog.getNormButton().addMouseListener(new java.awt.event.MouseAdapter() {
+
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
                         mPEdgeDialog.normalizeActionPerformed();
                         save();
                     }
-                });   
-                
-                mPEdgeDialog.getUniButton().addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
+                });
+
+                mPEdgeDialog.getUniButton().addMouseListener(new java.awt.event.MouseAdapter() {
+
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
                         mPEdgeDialog.uniformActionPerformed();
                         save();
-                       
+
                     }
-                });           
-                
-                mButtonPanel = new JPanel();                
-                mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));  
+                });
+
+                mButtonPanel = new JPanel();
+                mButtonPanel.setOpaque(false);
+                mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
                 mButtonPanel.add(Box.createRigidArea(new Dimension(20, 10)));
                 mButtonPanel.add(mPEdgeDialog.getUniButton());
                 mButtonPanel.add(Box.createRigidArea(new Dimension(20, 10)));
-                mButtonPanel.add(mPEdgeDialog.getNormButton());                            
+                mButtonPanel.add(mPEdgeDialog.getNormButton());
                 mButtonPanel.add(Box.createRigidArea(new Dimension(20, 10)));
-                
+
                 add(Box.createRigidArea(new Dimension(20, 20)));
                 add(mButtonPanel);
-                        
+
             }
         } else {
             // Do nothing
         }
     }
 
-    private void save() {        
+    private void save() {
         mPEdgeDialog.okActionPerformed();
         Editor.getInstance().update();
         //System.out.println("save");
-    }    
+    }
 }
-
 
 /**
  * *****************************************************************************
@@ -1171,28 +1188,28 @@ public class ElementEditor extends JScrollPane implements EventListener, Observe
     private final EdgeEditor mEdgeEditor;
 
     public ElementEditor() {
-      
+
         // Init node editor and edge editor
         mNodeEditor = new NodeEditor();
-        mEdgeEditor = new EdgeEditor();        
-       
+        mEdgeEditor = new EdgeEditor();
+
         //
         //mObservable.addObserver(mNodeEditor);
         //mObservable.addObserver(mEdgeEditor);
-        
         // Init the scrollpane attributes
         setPreferredSize(new Dimension(260, 500));
         setMinimumSize(new Dimension(260, 500));
         setBorder(BorderFactory.createEtchedBorder());
         setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
+        getViewport().setOpaque(false);
+        setOpaque(false);
         // Set the initial viewport to null
         setViewportView(null);
 
         // Add the element editor to the event multicaster
-        EventCaster.getInstance().append(this);              
+        EventCaster.getInstance().append(this);
     }
-	
+
     private final Observable mObservable = new Observable();
 
     private class Observable extends java.util.Observable {

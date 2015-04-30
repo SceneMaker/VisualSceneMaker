@@ -93,8 +93,8 @@ public final class ToolBarItem extends JButton implements Transferable{
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
                 Image cursorIcon = ResourceLoader.loadImageIcon(iconsPath + icon + "_SMALL.png").getImage();
-                //Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(25, 25), mText);
-                source.startDrag(event, null, (ToolBarItem)event.getComponent(), mDragSourceListener);
+                Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(0, 0), mText);
+                source.startDrag(event, cur, (ToolBarItem)event.getComponent(), mDragSourceListener);
             }
         };
         //The Drag will copy the DnDButton rather than moving it

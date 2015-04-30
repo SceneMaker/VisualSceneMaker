@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.dialog;
 
 import de.dfki.vsm.util.ios.ResourceLoader;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -64,6 +65,8 @@ public abstract class Dialog extends JDialog {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         // Pack components
+        mMainPanel.setBackground(Color.white);
+        setBackground(Color.white);
         add(mMainPanel);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setIconImage(mIcon.getImage());
@@ -96,6 +99,7 @@ public abstract class Dialog extends JDialog {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         // Pack components
+        mMainPanel.setBackground(Color.white);
         add(mMainPanel);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setIconImage(mIcon.getImage());

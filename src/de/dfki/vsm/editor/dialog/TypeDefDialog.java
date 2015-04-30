@@ -1,6 +1,11 @@
 package de.dfki.vsm.editor.dialog;
 
+import de.dfki.vsm.editor.AddButton;
+import de.dfki.vsm.editor.CancelButton;
+import de.dfki.vsm.editor.EditButton;
 import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
 import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
@@ -10,7 +15,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -44,11 +48,11 @@ public class TypeDefDialog extends Dialog {
     private JList mMemberDefList;
     private DefaultListModel mMemberDefListModel;
     private JScrollPane mMemberDefScrollPane;
-    private JButton mAddMemberDefButton;
-    private JButton mRemoveMemberDefButton;
-    private JButton mEditMemberDefButton;
-    private JButton mOkButton;
-    private JButton mCancelButton;
+    private AddButton mAddMemberDefButton;
+    private RemoveButton mRemoveMemberDefButton;
+    private EditButton mEditMemberDefButton;
+    private OKButton mOkButton;
+    private CancelButton mCancelButton;
 
     public TypeDefDialog(TypeDef typeDef) {
         super(Editor.getInstance(), "Create/Modify Type Definition", true);
@@ -117,61 +121,66 @@ public class TypeDefDialog extends Dialog {
         mMemberDefListModel = new DefaultListModel();
         mMemberDefList = new JList(mMemberDefListModel);
         mMemberDefScrollPane = new JScrollPane(mMemberDefList);
-        mAddMemberDefButton = new JButton("Add");
-        mAddMemberDefButton.addActionListener(new ActionListener() {
+        mAddMemberDefButton = new AddButton();
+        mAddMemberDefButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 addMemberDef();
             }
         });
         //
-        mRemoveMemberDefButton = new JButton("Remove");
-        mRemoveMemberDefButton.addActionListener(new ActionListener() {
+        mRemoveMemberDefButton = new RemoveButton();
+        mRemoveMemberDefButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 removeMemberDef();
             }
         });
         //
-        mEditMemberDefButton = new JButton("Edit");
-        mEditMemberDefButton.addActionListener(new ActionListener() {
+        mEditMemberDefButton = new EditButton();
+        mEditMemberDefButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 editMemberDef();
             }
         });
         //
-        mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
+        mOkButton = new OKButton();
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
         //
-        mCancelButton = new JButton("Cancel");
-        mCancelButton.addActionListener(new ActionListener() {
+        mCancelButton = new CancelButton();
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
         //
-        addCompoment(mFlavourLabel, 10, 10, 70, 20);
-        addCompoment(mFlavourComboBox, 90, 10, 200, 20);
-        addCompoment(mNameLabel, 10, 35, 70, 20);
-        addCompoment(mNameTextField, 90, 35, 200, 20);
-        addCompoment(mSeperator, 5, 70, 290, 10);
-        addCompoment(mListTypeLabel, 10, 90, 70, 20);
-        addCompoment(mListTypeComboBox, 90, 90, 200, 20);
-        addCompoment(mMemberDefLabel, 10, 90, 70, 20);
-        addCompoment(mMemberDefScrollPane, 90, 90, 200, 90);
-        addCompoment(mAddMemberDefButton, 10, 120, 75, 20);
-        addCompoment(mRemoveMemberDefButton, 10, 140, 75, 20);
-        addCompoment(mEditMemberDefButton, 10, 160, 75, 20);
-        addCompoment(mOkButton, 130, 185, 80, 20);
-        addCompoment(mCancelButton, 210, 185, 80, 20);
-        packComponents(300, 210);
+        addCompoment(mFlavourLabel, 10, 10, 70, 30);
+        addCompoment(mFlavourComboBox, 90, 10, 260, 30);
+        //
+        addCompoment(mNameLabel, 10, 55, 70, 30);
+        addCompoment(mNameTextField, 90, 55, 260, 30);
+        //
+        addCompoment(mSeperator, 5, 100, 290, 10);
+        //
+        addCompoment(mListTypeLabel, 10, 120, 70, 30);
+        addCompoment(mListTypeComboBox, 90, 120, 260, 30);
+        addCompoment(mMemberDefLabel, 10, 120, 70, 30);
+        addCompoment(mMemberDefScrollPane, 90, 120, 260, 110);
+        addCompoment(mAddMemberDefButton, 355, 140, 20, 20);
+        addCompoment(mRemoveMemberDefButton, 355, 170, 20, 20);
+        addCompoment(mEditMemberDefButton, 355, 200, 20, 20);
+        //
+        addCompoment(mCancelButton, 75, 250, 125, 30);
+        addCompoment(mOkButton, 225, 250, 125, 30);
+        
+        packComponents(400, 300);
         setListTypeComponentsVisible(false);
         setStructTypeComponentsVisible(true);
     }
