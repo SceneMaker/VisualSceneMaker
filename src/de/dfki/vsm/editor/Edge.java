@@ -6,7 +6,14 @@ import de.dfki.vsm.editor.action.ModifyEdgeAction;
 import de.dfki.vsm.editor.event.EdgeExecutedEvent;
 import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.EdgeGraphics;
+import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sEEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.CEdge;
@@ -19,16 +26,6 @@ import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sEEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -46,13 +43,11 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
-
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Timer;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -375,10 +370,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private void initEditBox() {
         setLayout(null);
         mValueEditor = new JTextArea();
-        mValueEditor.setOpaque(false);
+        mValueEditor.setOpaque(true);
         mValueEditor.setPreferredSize(new Dimension(100, 20));
-        mValueEditor.setFont(new Font(Font.SANS_SERIF, 1, 11));
-        mValueEditor.setForeground(mColor);
+        mValueEditor.setFont(new Font(Font.SANS_SERIF, 1, 16));
+        mValueEditor.setBackground(Color.WHITE);
+        mValueEditor.setForeground(Color.GRAY);
 
         if (mDataEdge != null) {
             if (mType.equals(TYPE.TEDGE)) {
@@ -763,6 +759,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         // draw activity cue
         if (mVisualisationTask != null) {
+            
             if (mVisualisationTask.getActivityTime() <= 20) {
 
                 // fade out
@@ -840,6 +837,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      */
     @Override
     public void update(EventObject event) {
+        
+        if (event instanceof SceneStoppedEvent) {
+            mVisualisationTask = null;
+            repaint();             
+        }
+         
         if (mPreferences.sVISUALISATION) {
             if (event instanceof EdgeExecutedEvent) {
                 de.dfki.vsm.model.sceneflow.Edge edge = ((EdgeExecutedEvent) event).getEdge();
