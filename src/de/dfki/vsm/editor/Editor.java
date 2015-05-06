@@ -15,7 +15,9 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -31,6 +33,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -95,6 +98,61 @@ public class Editor extends JFrame implements EventListener {
         }
     };
 
+    private void setUIFonts() {
+        String defaultFont = "Helvetica"; //DEFAULT FONT FOR ALL COMPONENTS
+
+        UIManager.put("Button.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("ToggleButton.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("RadioButton.font", new Font(defaultFont, Font.PLAIN, 20));
+        
+        UIManager.put("CheckBox.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("ColorChooser.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("ComboBox.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("Label.font", new Font(defaultFont, Font.PLAIN, 16));
+        
+        UIManager.put("List.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("MenuBar.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("MenuItem.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("RadioButtonMenuItem.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("CheckBoxMenuItem.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("Menu.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("PopupMenu.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("OptionPane.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("Panel.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("ProgressBar.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("ScrollPane.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("Viewport.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("TabbedPane.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("Table.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("TableHeader.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("TextField.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("PasswordField.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("TextArea.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("TextPane.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("EditorPane.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("TitledBorder.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("ToolBar.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("ToolTip.font", new Font(defaultFont, Font.PLAIN, 20));
+        UIManager.put("Tree.font", new Font(defaultFont, Font.PLAIN, 10));
+    }
+
+    private void setUIBackgrounds() {
+        UIManager.put("Frame.background", Color.white);
+        UIManager.put("Panel.background", Color.white);
+        UIManager.put("MenuBar.opaque", true);
+        UIManager.put("MenuBar.background", Color.white);
+        UIManager.put("Menu.opaque", true);
+        UIManager.put("Menu.background", Color.white);
+        UIManager.put("MenuItem.opaque", true);
+        UIManager.put("MenuItem.background", Color.white);
+        UIManager.put("ToolBar.background", Color.white);
+        UIManager.put("TabbedPane.background", Color.white);
+        UIManager.put("EditorPane.background", Color.white);
+        UIManager.put("ScrollPane.background", Color.white);
+        UIManager.put("Viewport.background", Color.white);
+        
+    }
+
     /**
      * *************************************************************************
      *
@@ -127,6 +185,13 @@ public class Editor extends JFrame implements EventListener {
         Preferences.configure();
         // Load the preferences
         Preferences.load();
+
+        //SET FONTS 
+        setUIFonts();
+        //SET BACKGROUNDS
+        setUIBackgrounds();
+        
+        getContentPane().setBackground(Color.white);
         //Preferences.info();
         // Init the menu bar
         mMenuBar = new MenuBar(this);
@@ -188,8 +253,8 @@ public class Editor extends JFrame implements EventListener {
         }
         this.update(this.getGraphics());
     }
-    public void clearRecentProjects()
-    {
+
+    public void clearRecentProjects() {
         mWelcomePanel.updateWelcomePanel();
     }
 
@@ -456,7 +521,7 @@ public class Editor extends JFrame implements EventListener {
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
             String pDir = Preferences.getProperty("recentprojectdir" + i);
             if (pDir != null) {
-                if (pDir.startsWith("res"+System.getProperty("file.separator")+"prj")) {
+                if (pDir.startsWith("res" + System.getProperty("file.separator") + "prj")) {
                     continue;
                 }
                 recentProjectDirs.add(Preferences.getProperty("recentprojectdir" + i));

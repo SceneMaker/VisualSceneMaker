@@ -184,7 +184,7 @@ public class FunDefDialog extends Dialog {
         addCompoment(mMessageLabel, 10, 290, 400, 30);
         packComponents(400, 320);
 
-        mDefaultColor = getBackground();
+        mDefaultColor = Color.white;
     }
 
     private void fillComponents() {

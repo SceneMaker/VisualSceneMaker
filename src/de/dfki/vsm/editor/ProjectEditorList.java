@@ -10,6 +10,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import de.dfki.vsm.model.sceneflow.Node;
+import java.awt.Color;
 
 /**
  * @author Gregor Mehlmann
@@ -82,7 +83,7 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
      *************************************************************************
      */
     public ProjectEditorList() {
-        super(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
+        super(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);    
         addChangeListener(this);
         mEventMulticaster.append(this);
     }
