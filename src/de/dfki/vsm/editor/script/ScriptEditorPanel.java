@@ -8,7 +8,6 @@ import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;

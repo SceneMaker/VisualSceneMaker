@@ -149,7 +149,7 @@ public class CreatePEdgeDialog extends Dialog {
         mNormButton.setBackground(Color.white);
         mNormButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mNormButton.setToolTipText("Normalize");
-        mNormButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize.png"));
+        mNormButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize_gray.png"));
         mNormButton.setIconTextGap(20);
         mNormButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
         mNormButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -166,7 +166,7 @@ public class CreatePEdgeDialog extends Dialog {
             }
 
             public void mouseExited(MouseEvent me) {
-                mNormButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize.png"));
+                mNormButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize_gray.png"));
                 mNormButton.setBackground(new Color(255, 255, 255));
 
             }
@@ -179,7 +179,7 @@ public class CreatePEdgeDialog extends Dialog {
         mUniButton.setBackground(Color.white);
         mUniButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mUniButton.setToolTipText("Uniform");
-        mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize.png"));
+        mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/uniform_gray.png"));
         mUniButton.setIconTextGap(20);
         mUniButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
         mUniButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -191,12 +191,12 @@ public class CreatePEdgeDialog extends Dialog {
                 uniformActionPerformed();
             }
             public void mouseEntered(MouseEvent me) {
-                mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize_blue.png"));
+                mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/uniform_blue.png"));
                 mUniButton.setBackground(new Color(82, 127, 255));
             }
 
             public void mouseExited(MouseEvent me) {
-                mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize.png"));
+                mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/uniform_gray.png"));
                 mUniButton.setBackground(new Color(255, 255, 255));
 
             }

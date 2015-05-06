@@ -4,6 +4,9 @@ import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.ProjectData;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,6 +58,15 @@ public class MenuBar extends JMenuBar {
         mEditor = editor;
         initComponents();
     }
+    @Override
+    protected void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
+
+    }
 
 //  public void setRunMenuEnabled(boolean flag) {
 //    mRunMenuItem.setEnabled(flag);
@@ -104,6 +116,7 @@ public class MenuBar extends JMenuBar {
         initFileMenu();
         initEditMenu();
         initHelpMenu();
+        setBackground(Color.white);
     }
 
     public void refreshRecentFileMenu() {
