@@ -1,5 +1,7 @@
 package de.dfki.vsm.model.script;
 
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -8,14 +10,17 @@ import java.util.Random;
  */
 public class SceneGroup implements Comparable {
 
-    // The Scene Group Name
-    private final String mName;
     // The Current White List
     private final ArrayList<SceneObject> mWhiteList = new ArrayList();
+
     // The Current Black List
     private final ArrayList<SceneObject> mBlackList = new ArrayList();
+
     // Some Random Object
     private final Random mRandom = new Random();
+
+    // The Scene Group Name
+    private final String mName;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -64,17 +69,22 @@ public class SceneGroup implements Comparable {
     ////////////////////////////////////////////////////////////////////////////
     public final SceneObject select() {
         if (mWhiteList.isEmpty()) {
+
             // Add All Black Members To
             // The Empty White List Now
             mWhiteList.addAll(mBlackList);
+
             // And Clear The Black List
             mBlackList.clear();
         }
-        // Otherwise Get The Next 
+
+        // Otherwise Get The Next
         // Scene From The White List
-        final int index = mRandom.nextInt(mWhiteList.size());
+        final int         index = mRandom.nextInt(mWhiteList.size());
         final SceneObject scene = mWhiteList.remove(index);
+
         mBlackList.add(scene);
+
         // Return The Chosen Scene
         return scene;
     }

@@ -1,23 +1,27 @@
 package de.dfki.vsm.runtime;
 
+//~--- non-JDK imports --------------------------------------------------------
+
+import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.error.RunTimeException;
 import de.dfki.vsm.util.ios.IndentWriter;
-import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.xml.XMLParseError;
+
+import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Vector;
-import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class Configuration {
-
-    private final HashMap<Node, LinkedList<State>> mConfiguration
-            = new HashMap<Node, LinkedList<State>>();
+    private final HashMap<Node, LinkedList<State>> mConfiguration = new HashMap<Node, LinkedList<State>>();
 
     public void clear() {
         mConfiguration.clear();
@@ -27,16 +31,18 @@ public class Configuration {
         if (mConfiguration.get(state.getNode()) == null) {
             mConfiguration.put(state.getNode(), new LinkedList<State>());
         }
+
         mConfiguration.get(state.getNode()).addLast(state);
     }
 
     public void exitState(Node state, Process thread) throws RunTimeException {
         if (mConfiguration.get(state) == null) {
             throw new RunTimeException(this,
-                    "Configuration Error: There is no thread currently executing node " + state);
+                                       "Configuration Error: There is no thread currently executing node " + state);
         }
 
         Vector<State> removableStateList = new Vector<State>();
+
         for (State configState : mConfiguration.get(state)) {
             if (configState.getThread().equals(thread)) {
                 removableStateList.add(configState);
@@ -45,13 +51,14 @@ public class Configuration {
 
         if (removableStateList.isEmpty()) {
             throw new RunTimeException(this,
-                    "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
-                    + ") is not currently executing node " + state);
+                                       "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
+                                       + ") is not currently executing node " + state);
         }
+
         if (removableStateList.size() > 1) {
             throw new RunTimeException(this,
-                    "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
-                    + ") cannot be executing node " + state + " more than once at one time");
+                                       "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
+                                       + ") cannot be executing node " + state + " more than once at one time");
         }
 
         for (State configState : removableStateList) {
@@ -66,13 +73,16 @@ public class Configuration {
     public State getState(Node node) throws RunTimeException {
         if (mConfiguration.get(node) == null) {
             throw new RunTimeException(this,
-                    "Configuration Error: Node " + node.getId() + " is currently not executed by any thread");
+                                       "Configuration Error: Node " + node.getId()
+                                       + " is currently not executed by any thread");
         }
 
         if (mConfiguration.get(node).isEmpty()) {
             throw new RunTimeException(this,
-                    "Configuration Error: Node " + node.getId() + " is currently not executed by any thread");
+                                       "Configuration Error: Node " + node.getId()
+                                       + " is currently not executed by any thread");
         }
+
         return mConfiguration.get(node).getLast();
     }
 
@@ -82,15 +92,18 @@ public class Configuration {
                 return getState(node);
             }
         }
+
         throw new RunTimeException(this,
-                "Configuration Error: Node " + id + " is currently not executed by any thread");
+                                   "Configuration Error: Node " + id + " is currently not executed by any thread");
     }
 
     // TODO: Get only one configuration state for each node, no double states
     // TODO: Get only supernodes
     public Object[] getOrderedStates() {
+
         // Make a list with all config states
         Vector<State> configStateList = new Vector<State>();
+
         for (LinkedList<State> stateVec : mConfiguration.values()) {
             for (State state : stateVec) {
                 configStateList.add(state);
@@ -99,6 +112,7 @@ public class Configuration {
 
         // Make a sorted list of config states
         Object[] sortedConfigStateArray = configStateList.toArray();
+
         Arrays.sort(sortedConfigStateArray);
 
         // Return the sorted array
@@ -115,18 +129,16 @@ public class Configuration {
                 }
             }
         }
+
         return false;
     }
 
     public static class State implements Comparable, ModelObject {
-
-        private final transient Node mNode;
+        private final transient Node    mNode;
         private final transient Process mThread;
 
-        public State(
-                Node node,
-                Process thread) {
-            mNode = node;
+        public State(Node node, Process thread) {
+            mNode   = node;
             mThread = thread;
         }
 
@@ -141,6 +153,7 @@ public class Configuration {
         @Override
         public int compareTo(Object obj) {
             State configState = (State) obj;
+
             if (mThread.getLevel() > configState.mThread.getLevel()) {
                 return 1;
             } else if (mThread.getLevel() < configState.mThread.getLevel()) {
@@ -156,12 +169,12 @@ public class Configuration {
         }
 
         @Override
-        public void parseXML(Element element) throws XMLParseError {
-        }
+        public void parseXML(Element element) throws XMLParseError {}
 
         @Override
         public void writeXML(IndentWriter out) {
-            out.println("<ConfigState node=\"" + mNode.getId() + "\" thread= \"" + mThread.toString() + "\" level=\"" + mThread.getLevel() + "\"/>");
+            out.println("<ConfigState node=\"" + mNode.getId() + "\" thread= \"" + mThread.toString() + "\" level=\""
+                        + mThread.getLevel() + "\"/>");
         }
     }
 }

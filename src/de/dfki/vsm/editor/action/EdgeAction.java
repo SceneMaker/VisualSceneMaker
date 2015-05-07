@@ -352,8 +352,7 @@ public abstract class EdgeAction extends EditorAction {
             }
         }
 
-        //  System.out.println("Sum Weight is :" + sumWeight);
-
+        // System.out.println("Sum Weight is :" + sumWeight);
         return sumWeight;
     }
 
@@ -381,6 +380,7 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint = mSourceGUINode.disconnectEdge(mGUIEdge);
             mTargetGUINodeDockPoint = mTargetGUINode.disconnectEdge(mGUIEdge);
         }
+
         cleanUpData();
     }
 
@@ -402,10 +402,6 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINode.getDataNode().removeCEdge((CEdge) mDataEdge);
 
             break;
-//~ Formatted by Jindent --- http://www.jindent.com
-
-//~ Formatted by Jindent --- http://www.jindent.com
-
 
         case PEDGE :
             mSourceGUINode.getDataNode().removePEdge((PEdge) mDataEdge);
@@ -467,6 +463,3 @@ public abstract class EdgeAction extends EditorAction {
         mWorkSpace.repaint();
     }
 }
-//~ Formatted by Jindent --- http://www.jindent.com
-
-//~ Formatted by Jindent --- http://www.jindent.com

@@ -1,19 +1,20 @@
 package de.dfki.vsm.model.sceneflow.command;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.Command.CmdType;
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class HistorySetDepth extends Command {
-
     private String mState;
-    private int mDepth;
+    private int    mDepth;
 
-    public HistorySetDepth() {
-    }
+    public HistorySetDepth() {}
 
     public HistorySetDepth(String state, int depth) {
         mState = state;
@@ -50,7 +51,6 @@ public class HistorySetDepth extends Command {
 
     public void writeXML(IndentWriter out) {
         out.println("<HistorySetDepth state=\"" + mState + "\" depth=\"" + mDepth + "\"/>");
-
     }
 
     public void parseXML(Element element) {

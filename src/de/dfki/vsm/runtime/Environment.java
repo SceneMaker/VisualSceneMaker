@@ -1,16 +1,20 @@
 package de.dfki.vsm.runtime;
 
-import de.dfki.vsm.runtime.symbol.SymbolTable;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.runtime.error.RunTimeException;
+import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.LinkedList;
 
 /**
  * @author Gregor Mehlmann
  */
 public class Environment implements Copyable {
-
     private final LinkedList<SymbolTable> mSymbolTableList;
 
     public Environment() {
@@ -23,9 +27,11 @@ public class Environment implements Copyable {
 
     public LinkedList<SymbolTable> getCopyOfSymbolTableList() {
         LinkedList<SymbolTable> copy = new LinkedList<SymbolTable>();
+
         for (SymbolTable table : mSymbolTableList) {
             copy.add(table);
         }
+
         return copy;
     }
 
@@ -47,15 +53,15 @@ public class Environment implements Copyable {
 
     public void create(String symbol, AbstractValue value) throws RunTimeException {
         if (mSymbolTableList.isEmpty()) {
-            throw new RunTimeException(symbol,
-                    "Runtime Error: Variable '" + symbol + "' cannot be declared.");
+            throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' cannot be declared.");
         }
+
         for (SymbolTable symbolTable : mSymbolTableList) {
             if (symbolTable.contains(symbol)) {
-                throw new RunTimeException(symbol,
-                        "Runtime Error: Variable '" + symbol + "' is already defined.");
+                throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' is already defined.");
             }
         }
+
         mSymbolTableList.getFirst().create(symbol, value);
     }
 
@@ -69,8 +75,8 @@ public class Environment implements Copyable {
                 return table.read(symbol);
             }
         }
-        throw new RunTimeException(symbol,
-                "Runtime Error: Variable '" + symbol + "' is not defined.");
+
+        throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
     public AbstractValue read(String symbol, int index) throws RunTimeException {
@@ -79,8 +85,8 @@ public class Environment implements Copyable {
                 return table.read(symbol, index);
             }
         }
-        throw new RunTimeException(symbol,
-                "Runtime Error: Variable '" + symbol + "' is not defined.");
+
+        throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
     public AbstractValue read(String symbol, String member) throws RunTimeException {
@@ -89,8 +95,8 @@ public class Environment implements Copyable {
                 return table.read(symbol, member);
             }
         }
-        throw new RunTimeException(symbol,
-                "Runtime Error: Variable '" + symbol + "' is not defined.");
+
+        throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
     public AbstractValue write(String symbol, AbstractValue value) throws RunTimeException {
@@ -99,8 +105,8 @@ public class Environment implements Copyable {
                 return table.write(symbol, value);
             }
         }
-        throw new RunTimeException(symbol,
-                "Runtime Error: Variable '" + symbol + "' is not defined.");
+
+        throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
     public AbstractValue write(String symbol, int index, AbstractValue value) throws RunTimeException {
@@ -109,8 +115,8 @@ public class Environment implements Copyable {
                 return table.write(symbol, index, value);
             }
         }
-        throw new RunTimeException(symbol,
-                "Runtime Error: Variable '" + symbol + "' is not defined.");
+
+        throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
     public AbstractValue write(String symbol, String member, AbstractValue value) throws RunTimeException {
@@ -119,7 +125,7 @@ public class Environment implements Copyable {
                 return table.write(symbol, member, value);
             }
         }
-        throw new RunTimeException(symbol,
-                "Runtime Error: Variable '" + symbol + "' is not defined.");
+
+        throw new RunTimeException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 }

@@ -1,10 +1,13 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -13,7 +16,6 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class DefaultCond extends LogicalCond {
-
     private Condition mCondition;
 
     public DefaultCond() {
@@ -33,11 +35,15 @@ public class DefaultCond extends LogicalCond {
     }
 
     public String getAbstractSyntax() {
-        return "Default(" + (mCondition != null ? mCondition.getAbstractSyntax() : "") + ")";
+        return "Default(" + ((mCondition != null)
+                             ? mCondition.getAbstractSyntax()
+                             : "") + ")";
     }
 
     public String getConcreteSyntax() {
-        return "Default(" + (mCondition != null ? mCondition.getConcreteSyntax() : "") + ")";
+        return "Default(" + ((mCondition != null)
+                             ? mCondition.getConcreteSyntax()
+                             : "") + ")";
     }
 
     public String getFormattedSyntax() {
@@ -50,15 +56,16 @@ public class DefaultCond extends LogicalCond {
 
     public void writeXML(IndentWriter out) throws XMLWriteError {
         out.println("<DefaultCondition>").push();
+
         if (mCondition != null) {
             mCondition.writeXML(out);
         }
+
         out.pop().println("</DefaultCondition>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 mCondition = Condition.parse(element);
             }

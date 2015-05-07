@@ -1,12 +1,13 @@
 package de.dfki.vsm.runtime.value;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.TextFormat;
 
 /**
  * @author Gregor Mehlmann
  */
 public class StringValue extends AbstractValue {
-
     private final String mValue;
 
     public StringValue(String value) {
@@ -41,6 +42,7 @@ public class StringValue extends AbstractValue {
         if (value.getType() == Type.STRING) {
             return mValue.equals(((StringValue) value).mValue);
         }
+
         return false;
     }
 }

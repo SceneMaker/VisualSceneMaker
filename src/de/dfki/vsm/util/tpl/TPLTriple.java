@@ -4,7 +4,6 @@ package de.dfki.vsm.util.tpl;
  * @author Gregor Mehlmann
  */
 public class TPLTriple<F, S, T> {
-
     private F mFirst;
     private S mSecond;
     private T mThird;
@@ -13,9 +12,9 @@ public class TPLTriple<F, S, T> {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public TPLTriple(final F first, final S second, final T third) {
-        mFirst = first;
+        mFirst  = first;
         mSecond = second;
-        mThird = third;
+        mThird  = third;
     }
 
     ////////////////////////////////////////////////////////////////////////////

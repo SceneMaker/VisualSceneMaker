@@ -1,6 +1,11 @@
 package de.dfki.vsm.api;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.io.Closeable;
 
 /**
@@ -8,40 +13,42 @@ import java.io.Closeable;
  */
 public abstract class VSMAgentClient extends Thread {
 
+    // The System logger
+    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+
+    // Termination Flag
+    protected volatile boolean mDone = false;
+
     // The Scene Player
     protected final VSMScenePlayer mPlayer;
-    // The System logger
-    protected final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+
     // The Agent Features
     protected final String mAgentName;
     protected final String mAgentUaid;
     protected final String mRemoteHost;
-    protected final int mRemotePort;
-    // Termination Flag
-    protected volatile boolean mDone = false;
+    protected final int    mRemotePort;
+
     // The Closeable
     protected Closeable mClosable;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public VSMAgentClient(
-            final VSMScenePlayer player,
-            final String name,
-            final String uaid,
-            final String host,
-            final int port) {
+    public VSMAgentClient(final VSMScenePlayer player, final String name, final String uaid, final String host,
+                          final int port) {
+
         // Initialize The Client
         mPlayer = player;
+
         // Initialize The Fields
-        mAgentName = name;
-        mAgentUaid = uaid;
+        mAgentName  = name;
+        mAgentUaid  = uaid;
         mRemoteHost = host;
         mRemotePort = port;
+
         // Debug Some Information
-        mLogger.message("Creating VSM Agent Client For '"
-                + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
+        mLogger.message("Creating VSM Agent Client For '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port
+                        + "'");
     }
 
     ////////////////////////////////////////////////////////////////////////////

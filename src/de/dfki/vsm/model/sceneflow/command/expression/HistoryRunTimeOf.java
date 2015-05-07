@@ -1,27 +1,28 @@
 package de.dfki.vsm.model.sceneflow.command.expression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class HistoryRunTimeOf extends Expression {
-
     private String mNode;
-    private int mDepth;
+    private int    mDepth;
 
-    public HistoryRunTimeOf() {
-    }
+    public HistoryRunTimeOf() {}
 
     public HistoryRunTimeOf(String node) {
-        mNode = node;
+        mNode  = node;
         mDepth = 0;
     }
 
     public HistoryRunTimeOf(String node, int depth) {
-        mNode = node;
+        mNode  = node;
         mDepth = depth;
     }
 
@@ -58,7 +59,7 @@ public class HistoryRunTimeOf extends Expression {
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        mNode = element.getAttribute("node");
+        mNode  = element.getAttribute("node");
         mDepth = Integer.valueOf(element.getAttribute("depth"));
     }
 }

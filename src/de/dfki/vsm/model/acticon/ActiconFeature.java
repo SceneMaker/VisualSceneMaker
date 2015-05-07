@@ -1,9 +1,12 @@
 package de.dfki.vsm.model.acticon;
 
-import de.dfki.vsm.util.ios.IndentWriter;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -13,6 +16,7 @@ public final class ActiconFeature implements ModelObject {
 
     // The Key Of The Feature
     private String mKey;
+
     // The Value Of The Feature
     private String mValue;
 
@@ -20,19 +24,19 @@ public final class ActiconFeature implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ActiconFeature() {
+
         // Initialize The Members
-        mKey = null;
+        mKey   = null;
         mValue = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ActiconFeature(
-            final String key,
-            final String value) {
+    public ActiconFeature(final String key, final String value) {
+
         // Initialize The Members
-        mKey = key;
+        mKey   = key;
         mValue = value;
     }
 
@@ -71,7 +75,7 @@ public final class ActiconFeature implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
-        mKey = element.getAttribute("key");
+        mKey   = element.getAttribute("key");
         mValue = element.getAttribute("value");
     }
 
@@ -90,5 +94,4 @@ public final class ActiconFeature implements ModelObject {
     public final ActiconFeature getCopy() {
         return new ActiconFeature(mKey, mValue);
     }
-
 }

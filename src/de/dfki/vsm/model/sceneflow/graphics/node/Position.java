@@ -1,7 +1,10 @@
 package de.dfki.vsm.model.sceneflow.graphics.node;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -10,18 +13,17 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class Position extends Object {
-
     private int mXPos;
     private int mYPos;
-
-    public Position(int xPos, int yPos) {
-        mXPos = xPos;
-        mYPos = yPos;
-    }
 
     public Position() {
         mXPos = Integer.MIN_VALUE;
         mYPos = Integer.MIN_VALUE;
+    }
+
+    public Position(int xPos, int yPos) {
+        mXPos = xPos;
+        mYPos = yPos;
     }
 
     public void setXPos(int value) {

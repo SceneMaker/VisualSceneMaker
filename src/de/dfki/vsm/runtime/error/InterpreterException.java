@@ -9,9 +9,7 @@ package de.dfki.vsm.runtime.error;
  * @author Gregor Mehlmann
  */
 public abstract class InterpreterException extends Exception {
-
     public InterpreterException(Object obj, String msg) {
         super(msg);
     }
-
 }

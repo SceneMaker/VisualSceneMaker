@@ -1,28 +1,30 @@
 package de.dfki.vsm.model.sceneflow.graphics.node;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class Graphics extends Object {
-
     private Position mPosition;
 
     public Graphics() {
         mPosition = new Position();
     }
 
-    public Graphics(int xPos, int yPos) {
-        mPosition = new Position(xPos, yPos);
-    }
-
     public Graphics(Position position) {
         mPosition = position;
+    }
+
+    public Graphics(int xPos, int yPos) {
+        mPosition = new Position(xPos, yPos);
     }
 
     public Position getPosition() {
@@ -39,11 +41,15 @@ public class Graphics extends Object {
     }
 
     public String getAbstractSyntax() {
-        return "Graphics(" + (mPosition != null ? mPosition.getAbstractSyntax() : "") + ")";
+        return "Graphics(" + ((mPosition != null)
+                              ? mPosition.getAbstractSyntax()
+                              : "") + ")";
     }
 
     public String getConcreteSyntax() {
-        return (mPosition != null ? mPosition.getConcreteSyntax() : "");
+        return ((mPosition != null)
+                ? mPosition.getConcreteSyntax()
+                : "");
     }
 
     public String getFormattedSyntax() {
@@ -62,7 +68,6 @@ public class Graphics extends Object {
 
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, "Position", new XMLParseAction() {
-
             public void run(Element element) {
                 mPosition.parseXML(element);
             }

@@ -4,7 +4,6 @@ package de.dfki.vsm.runtime.value;
  * @author Gregor Mehlmann
  */
 public class DoubleValue extends AbstractValue {
-
     private final double mValue;
 
     public DoubleValue(double value) {
@@ -45,6 +44,7 @@ public class DoubleValue extends AbstractValue {
         if (value.getType() == Type.DOUBLE) {
             return (mValue == ((DoubleValue) value).mValue);
         }
+
         return false;
     }
 }

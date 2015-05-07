@@ -39,11 +39,11 @@ public interface DialogActInterface {
     abstract String getUtterances(String dialogueAct, Map<String, String> map);
 
     /**
-     * Returns list[string] containing all text of all utterances Map entries of 
+     * Returns list[string] containing all text of all utterances Map entries of
      * attribute, value pairs, reparse with fml-apml.dtd
      */
     abstract List<String> getFMLCommands(String dialogueAct, Map<String, String> map);
-    
+
     /**
      * Returns list containing all intention classes for FML
      */
@@ -65,4 +65,3 @@ public interface DialogActInterface {
      */
     abstract String sendFMLCommands(String dialogueAct, String FML, Map<String, String> map);
 }
-

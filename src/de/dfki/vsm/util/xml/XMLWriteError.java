@@ -4,9 +4,8 @@ package de.dfki.vsm.util.xml;
  * @author Gregor Mehlmann
  */
 public class XMLWriteError extends Exception {
-
     private final XMLWriteable mObj;
-    private final String mMsg;
+    private final String       mMsg;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

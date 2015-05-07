@@ -1,36 +1,39 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.Vector;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Vector;
 
 /**
  * @author Gregor Mehlmann
  */
 public class BinaryCond extends LogicalCond {
-
-    public enum Operator {
-
-        And, Or
-    }
     private Condition mLeftCond;
     private Condition mRightCond;
-    private Operator mOperator;
+    private Operator  mOperator;
+
+    public enum Operator { And, Or }
 
     public BinaryCond() {
-        mLeftCond = null;
+        mLeftCond  = null;
         mRightCond = null;
-        mOperator = null;
+        mOperator  = null;
     }
 
     public BinaryCond(Condition leftCond, Condition rightCond, Operator operator) {
-        mLeftCond = leftCond;
+        mLeftCond  = leftCond;
         mRightCond = rightCond;
-        mOperator = operator;
+        mOperator  = operator;
     }
 
     public Condition getLeftCond() {
@@ -50,33 +53,50 @@ public class BinaryCond extends LogicalCond {
     }
 
     public String getAbstractSyntax() {
-        return (mOperator != null ? mOperator.name() : "") + "("
-                + (mLeftCond != null ? mLeftCond.getAbstractSyntax() : "") + ","
-                + (mRightCond != null ? mRightCond.getAbstractSyntax() : "") + ")";
+        return ((mOperator != null)
+                ? mOperator.name()
+                : "") + "(" + ((mLeftCond != null)
+                               ? mLeftCond.getAbstractSyntax()
+                               : "") + "," + ((mRightCond != null)
+                ? mRightCond.getAbstractSyntax()
+                : "") + ")";
     }
 
     public String getConcreteSyntax() {
-        return (mLeftCond != null ? mLeftCond.getConcreteSyntax() : "")
-                + (mOperator != null ? (mOperator.name().equals("And") ? " && " : " || ") : "")
-                + (mRightCond != null ? mRightCond.getConcreteSyntax() : "");
+        return ((mLeftCond != null)
+                ? mLeftCond.getConcreteSyntax()
+                : "") + ((mOperator != null)
+                         ? (mOperator.name().equals("And")
+                            ? " && "
+                            : " || ")
+                         : "") + ((mRightCond != null)
+                                  ? mRightCond.getConcreteSyntax()
+                                  : "");
     }
 
     public String getFormattedSyntax() {
         String opString = "";
-        String left = (mLeftCond != null) ? mLeftCond.getFormattedSyntax() : "";
-        String right = (mRightCond != null) ? mRightCond.getFormattedSyntax() : "";
+        String left     = (mLeftCond != null)
+                          ? mLeftCond.getFormattedSyntax()
+                          : "";
+        String right    = (mRightCond != null)
+                          ? mRightCond.getFormattedSyntax()
+                          : "";
 
         if (mOperator == null) {
             return "";
         }
 
         switch (mOperator) {
-            case And:
-                opString = left + " && " + right;
-                break;
-            case Or:
-                opString = left + " || " + right;
-                break;
+        case And :
+            opString = left + " && " + right;
+
+            break;
+
+        case Or :
+            opString = left + " || " + right;
+
+            break;
         }
 
         return opString;
@@ -95,14 +115,15 @@ public class BinaryCond extends LogicalCond {
 
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
-        final Vector<Condition> condList = new Vector<Condition>();
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
 
+        final Vector<Condition> condList = new Vector<Condition>();
+
+        XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
                 condList.add(Condition.parse(element));
             }
         });
-        mLeftCond = condList.firstElement();
+        mLeftCond  = condList.firstElement();
         mRightCond = condList.lastElement();
     }
 }

@@ -1,10 +1,16 @@
 package de.dfki.vsm.model.script;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.HashMap;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
@@ -14,17 +20,13 @@ public final class ActionParam extends ActionFeature {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ActionParam() {
-    }
+    public ActionParam() {}
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ActionParam(
-            final int lower,
-            final int upper,
-            final String key,
-            final String val) {
+    public ActionParam(final int lower, final int upper, final String key, final String val) {
+
         // TODO: Get Text and Param
         super(Type.VARIABLE, lower, upper, key, val);
     }
@@ -58,12 +60,8 @@ public final class ActionParam extends ActionFeature {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IndentWriter stream) throws XMLWriteError {
-        stream.print("<ActionParam "
-                + "lower=\"" + mLower + "\" "
-                + "upper=\"" + mUpper + "\" "
-                + "typ=\"" + mTyp + "\" "
-                + "key=\"" + mKey + "\" "
-                + "val=\"" + mVal + "\"/>");
+        stream.print("<ActionParam " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "typ=\"" + mTyp
+                     + "\" " + "key=\"" + mKey + "\" " + "val=\"" + mVal + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,11 +69,14 @@ public final class ActionParam extends ActionFeature {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
+
         // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
+
         // Parse The Members
         mTyp = Type.valueOf(element.getAttribute("typ"));
+
         // Parse The Members
         mKey = element.getAttribute("key");
         mVal = element.getAttribute("val");

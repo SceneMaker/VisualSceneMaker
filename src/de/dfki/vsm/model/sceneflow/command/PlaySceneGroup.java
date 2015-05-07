@@ -1,33 +1,38 @@
 package de.dfki.vsm.model.sceneflow.command;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.Vector;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Vector;
 
 /**
  * @author Gregor Mehlmann
  */
 public class PlaySceneGroup extends Command {
-
-    private Expression mArg;
+    private Expression         mArg;
     private Vector<Expression> mArgList;
 
     public PlaySceneGroup() {
-        mArg = null;
+        mArg     = null;
         mArgList = new Vector<Expression>();
     }
 
     public PlaySceneGroup(Expression arg) {
-        mArg = arg;
+        mArg     = arg;
         mArgList = new Vector<Expression>();
     }
 
     public PlaySceneGroup(Expression arg, Vector<Expression> argList) {
-        mArg = arg;
+        mArg     = arg;
         mArgList = argList;
     }
 
@@ -65,9 +70,11 @@ public class PlaySceneGroup extends Command {
 
     public Vector<Expression> getCopyOfArgList() {
         Vector<Expression> copy = new Vector<Expression>();
+
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
         }
+
         return copy;
     }
 
@@ -77,28 +84,43 @@ public class PlaySceneGroup extends Command {
 
     public String getAbstractSyntax() {
         String desc = "PlaySceneGroup" + " ( ";
-        desc += (mArg != null ? mArg.getAbstractSyntax() : "");
+
+        desc += ((mArg != null)
+                 ? mArg.getAbstractSyntax()
+                 : "");
+
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getAbstractSyntax();
         }
+
         return desc + " ) ";
     }
 
     public String getConcreteSyntax() {
         String desc = "PlaySceneGroup" + " ( ";
-        desc += (mArg != null ? mArg.getConcreteSyntax() : "");
+
+        desc += ((mArg != null)
+                 ? mArg.getConcreteSyntax()
+                 : "");
+
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getConcreteSyntax();
         }
+
         return desc + " ) ";
     }
 
     public String getFormattedSyntax() {
         String desc = "#p#PlaySceneGroup" + " ( ";
-        desc += (mArg != null ? mArg.getFormattedSyntax() : "");
+
+        desc += ((mArg != null)
+                 ? mArg.getFormattedSyntax()
+                 : "");
+
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getFormattedSyntax();
         }
+
         return desc + " ) ";
     }
 
@@ -108,24 +130,27 @@ public class PlaySceneGroup extends Command {
 
     public void writeXML(IndentWriter out) throws XMLWriteError {
         out.println("<PlaySceneGroup>").push();
+
         if (mArg != null) {
             mArg.writeXML(out);
         }
+
         for (int i = 0; i < mArgList.size(); i++) {
             mArgList.get(i).writeXML(out);
         }
+
         out.pop().println("</PlaySceneGroup>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
         final Vector<Expression> expList = new Vector<Expression>();
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
 
+        XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
                 expList.add(Expression.parse(element));
             }
         });
-        mArg = expList.remove(0);
+        mArg     = expList.remove(0);
         mArgList = expList;
     }
 }

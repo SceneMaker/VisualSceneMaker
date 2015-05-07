@@ -1,5 +1,7 @@
 package de.dfki.vsm.runtime;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -10,6 +12,9 @@ import de.dfki.vsm.runtime.player.SceneGroupPlayer;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,47 +22,48 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Gregor Mehlmann
  */
 public class Interpreter {
-
-    private final LOGDefaultLogger mLogger;
-    private final EventCaster mEventMulticaster;
-    private final SceneFlow mSceneFlow;
-    private final EventObserver mEventObserver;
-    private final Configuration mConfiguration;
-    private final SystemHistory mSystemHistory;
-    private final Evaluator mEvaluator;
-    private final TimeoutManager mTimeoutManager;
-    private final ReentrantLock mLock;
-    private final Condition mPauseCondition;
-    private final SceneGroupPlayer mSceneGroupPlayer;
+    private final LOGDefaultLogger  mLogger;
+    private final EventCaster       mEventMulticaster;
+    private final SceneFlow         mSceneFlow;
+    private final EventObserver     mEventObserver;
+    private final Configuration     mConfiguration;
+    private final SystemHistory     mSystemHistory;
+    private final Evaluator         mEvaluator;
+    private final TimeoutManager    mTimeoutManager;
+    private final ReentrantLock     mLock;
+    private final Condition         mPauseCondition;
+    private final SceneGroupPlayer  mSceneGroupPlayer;
     private final DialogueActPlayer mDialogueActPlayer;
-    private Process mSceneFlowThread;
+    private Process                 mSceneFlowThread;
 
-    public Interpreter(final SceneFlow sceneFlow,
-            final SceneGroupPlayer sceneGroupPlayer,
-            final DialogueActPlayer dialogueActPlayer) {
-        mSceneFlow = sceneFlow;
-        mSceneGroupPlayer = sceneGroupPlayer;
+    public Interpreter(final SceneFlow sceneFlow, final SceneGroupPlayer sceneGroupPlayer,
+                       final DialogueActPlayer dialogueActPlayer) {
+        mSceneFlow         = sceneFlow;
+        mSceneGroupPlayer  = sceneGroupPlayer;
         mDialogueActPlayer = dialogueActPlayer;
-        mLogger = LOGDefaultLogger.getInstance();
-        mEventMulticaster = EventCaster.getInstance();
-        mLock = new ReentrantLock(true);
-        mPauseCondition = mLock.newCondition();
-        mConfiguration = new Configuration();
-        mSystemHistory = new SystemHistory();
-        mTimeoutManager = new TimeoutManager(this);
-        mEventObserver = new EventObserver(this);
-        mEvaluator = new Evaluator(this);
+        mLogger            = LOGDefaultLogger.getInstance();
+        mEventMulticaster  = EventCaster.getInstance();
+        mLock              = new ReentrantLock(true);
+        mPauseCondition    = mLock.newCondition();
+        mConfiguration     = new Configuration();
+        mSystemHistory     = new SystemHistory();
+        mTimeoutManager    = new TimeoutManager(this);
+        mEventObserver     = new EventObserver(this);
+        mEvaluator         = new Evaluator(this);
     }
 
     public void lock() {
-        //mLogger.message("REQUEST (" + Thread.currentThread() + ")");
+
+        // mLogger.message("REQUEST (" + Thread.currentThread() + ")");
         mLock.lock();
-        //mLogger.message("AQUIRE (" + Thread.currentThread() + ")");
+
+        // mLogger.message("AQUIRE (" + Thread.currentThread() + ")");
     }
 
     public void unlock() {
         mLock.unlock();
-        //mLogger.message("RELEASE (" + Thread.currentThread() + ")");
+
+        // mLogger.message("RELEASE (" + Thread.currentThread() + ")");
     }
 
     public void await() {
@@ -71,16 +77,17 @@ public class Interpreter {
     public SceneFlow getSceneFlow() {
         try {
             lock();
+
             return mSceneFlow;
         } finally {
             unlock();
         }
-
     }
 
     public Evaluator getEvaluator() {
         try {
             lock();
+
             return mEvaluator;
         } finally {
             unlock();
@@ -90,6 +97,7 @@ public class Interpreter {
     public SceneGroupPlayer getScenePlayer() {
         try {
             lock();
+
             return mSceneGroupPlayer;
         } finally {
             unlock();
@@ -99,6 +107,7 @@ public class Interpreter {
     public DialogueActPlayer getDialoguePlayer() {
         try {
             lock();
+
             return mDialogueActPlayer;
         } finally {
             unlock();
@@ -108,6 +117,7 @@ public class Interpreter {
     public Configuration getConfiguration() {
         try {
             lock();
+
             return mConfiguration;
         } finally {
             unlock();
@@ -117,6 +127,7 @@ public class Interpreter {
     public TimeoutManager getTimeoutManager() {
         try {
             lock();
+
             return mTimeoutManager;
         } finally {
             unlock();
@@ -126,6 +137,7 @@ public class Interpreter {
     public EventObserver getEventObserver() {
         try {
             lock();
+
             return mEventObserver;
         } finally {
             unlock();
@@ -135,6 +147,7 @@ public class Interpreter {
     public SystemHistory getSystemHistory() {
         try {
             lock();
+
             return mSystemHistory;
         } finally {
             unlock();
@@ -142,28 +155,27 @@ public class Interpreter {
     }
 
     public void start() {
-        //TODO: This is insecure, cause the thread could die in the meantime
-        // alive is not the right condition
 
-        //PathLogger.startLogging();  
-        if ((mSceneFlowThread == null)
-                || (!mSceneFlowThread.isAlive())) {
+        // TODO: This is insecure, cause the thread could die in the meantime
+        // alive is not the right condition
+        // PathLogger.startLogging();
+        if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
+
             // Create a new thread
-            mSceneFlowThread = new Process(
-                    mSceneFlow.getId(),
-                    null, // TODO: choose an adquate thread group and check if this group has died before
-                    mSceneFlow,
-                    new Environment(),
-                    0, null, this);
+            mSceneFlowThread = new Process(mSceneFlow.getId(), null,    // TODO: choose an adquate thread group and check if this group has died before
+                                           mSceneFlow, new Environment(), 0, null, this);
+
             // Lock the interpreter
             try {
                 lock();
+
                 try {
                     mSceneFlowThread.handleStart();
                     mEventObserver.update();
                 } catch (RunTimeException e) {
                     mEventMulticaster.convey(new AbortEvent(this, e));
                     mSceneFlowThread.requestTermination();
+
                     // Wait here until terminated and clear data structures
                 }
             } finally {
@@ -173,21 +185,22 @@ public class Interpreter {
     }
 
     public void stop() {
-        if ((mSceneFlowThread != null)
-                && (mSceneFlowThread.isAlive())) { //TODO: This is insecure, cause the thread could start in the meantime
-
+        if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {    // TODO: This is insecure, cause the thread could start in the meantime
             try {
                 lock();
+
                 // mLogger.warning("Stopping execution of interpreter");
                 mSceneFlowThread.requestTermination();
             } finally {
                 unlock();
             }
-            // Wait here until terminated and clear data structures 
-            //            /** Clean up the data structures of the interpreter */
-            //            mSystemHistory.clear();
-            //            mConfiguration.clear();
-            //            mTimeoutManager.clear();
+
+            // Wait here until terminated and clear data structures
+            // /** Clean up the data structures of the interpreter */
+            // mSystemHistory.clear();
+            // mConfiguration.clear();
+            // mTimeoutManager.clear();
+
             /**
              * Notification
              */
@@ -195,32 +208,37 @@ public class Interpreter {
             mLogger.warning("Interpreter cannot stop the execution of '" + mSceneFlow.getId() + "'");
         }
 
-        //mLogger.message("Stopping EventCaster and TimeoutManager");
+        // mLogger.message("Stopping EventCaster and TimeoutManager");
         mTimeoutManager.cancel();
         mEventMulticaster.cancel();
 
-        //PathLogger.stopLogging();  
+        // PathLogger.stopLogging();
     }
 
     public void pause() {
         lock();
+
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {
             mSceneFlowThread.requestPause();
         }
+
         unlock();
     }
 
     public void proceed() {
         lock();
+
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {
             mSceneFlowThread.requestProceed();
         }
+
         unlock();
     }
 
     public boolean isPaused() {
         try {
             lock();
+
             return mSceneFlowThread.isPauseRequested();
         } finally {
             unlock();
@@ -230,6 +248,7 @@ public class Interpreter {
     public boolean isRunning() {
         try {
             lock();
+
             return mSceneFlowThread.isRunning();
         } finally {
             unlock();
@@ -243,6 +262,7 @@ public class Interpreter {
         try {
             lock();
             mEvaluator.execute(cmd, mConfiguration.getState(nodeId).getThread().getEnvironment());
+
             return true;
         } catch (RunTimeException e) {
             return false;
@@ -254,6 +274,7 @@ public class Interpreter {
     public AbstractValue evaluate(String nodeId, Expression exp) {
         try {
             lock();
+
             return mEvaluator.evaluate(exp, mConfiguration.getState(nodeId).getThread().getEnvironment());
         } catch (RunTimeException e) {
             return null;
@@ -265,8 +286,12 @@ public class Interpreter {
     public boolean setVariable(String nodeId, String varName, Expression exp) {
         try {
             lock();
-            AbstractValue value = mEvaluator.evaluate(exp, mConfiguration.getState(nodeId).getThread().getEnvironment());
+
+            AbstractValue value = mEvaluator.evaluate(exp,
+                                      mConfiguration.getState(nodeId).getThread().getEnvironment());
+
             setVariable(varName, value);
+
             return true;
         } catch (RunTimeException e) {
             return false;
@@ -280,9 +305,11 @@ public class Interpreter {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
             mEventObserver.update();
+
             return true;
         } catch (RunTimeException e) {
             e.printStackTrace();
+
             return false;
         } finally {
             unlock();
@@ -294,6 +321,7 @@ public class Interpreter {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, index, value);
             mEventObserver.update();
+
             return true;
         } catch (RunTimeException e) {
             return false;
@@ -307,6 +335,7 @@ public class Interpreter {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, member, value);
             mEventObserver.update();
+
             return true;
         } catch (RunTimeException e) {
             return false;
@@ -318,7 +347,9 @@ public class Interpreter {
     public boolean hasLocalVariable(String nodeId, String varName) {
         try {
             lock();
-            return mConfiguration.getState(nodeId).getThread().getEnvironment().getActiveSymbolTable().contains(varName);
+
+            return mConfiguration.getState(nodeId).getThread().getEnvironment().getActiveSymbolTable().contains(
+                varName);
         } catch (RunTimeException e) {
             return false;
         } finally {
@@ -330,19 +361,20 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(nodeId).getThread().getEnvironment().write(varName, value);
+
             return true;
         } catch (RunTimeException e) {
             return false;
         } finally {
             unlock();
         }
-
     }
 
     public boolean hasVariable(String varName) {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName);
+
             return true;
         } catch (RunTimeException e) {
             return false;
@@ -355,6 +387,7 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, index);
+
             return true;
         } catch (RunTimeException e) {
             return false;
@@ -367,6 +400,7 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, member);
+
             return true;
         } catch (RunTimeException e) {
             return false;
@@ -378,6 +412,7 @@ public class Interpreter {
     public AbstractValue getValueOf(String varName) {
         try {
             lock();
+
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName);
         } catch (RunTimeException e) {
             return null;
@@ -390,6 +425,7 @@ public class Interpreter {
     public AbstractValue getValueOf(String varName, int index) {
         try {
             lock();
+
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, index);
         } catch (RunTimeException e) {
             return null;
@@ -401,6 +437,7 @@ public class Interpreter {
     public AbstractValue getValueOf(String varName, String member) {
         try {
             lock();
+
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, member);
         } catch (RunTimeException e) {
             return null;

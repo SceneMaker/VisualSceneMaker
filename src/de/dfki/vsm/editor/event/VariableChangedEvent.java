@@ -1,5 +1,7 @@
 package de.dfki.vsm.editor.event;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -7,7 +9,6 @@ import de.dfki.vsm.util.tpl.TPLTuple;
  * @author Gregor Mehlmann
  */
 public class VariableChangedEvent extends EventObject {
-
     private TPLTuple<String, String> mVariableValuePair;
 
     public VariableChangedEvent(Object source, TPLTuple<String, String> variableValuePair) {

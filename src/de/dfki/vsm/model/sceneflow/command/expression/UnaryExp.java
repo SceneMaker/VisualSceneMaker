@@ -1,31 +1,32 @@
 package de.dfki.vsm.model.sceneflow.command.expression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class UnaryExp extends Expression {
-
     private Expression mExp;
-    private Operator mOperator;
+    private Operator   mOperator;
 
     public enum Operator {
-
         Random, RemoveFirst, RemoveLast, First, Last, Clear, Size, Neg
     }
 
     public UnaryExp() {
-        mExp = null;
+        mExp      = null;
         mOperator = null;
     }
 
     public UnaryExp(Expression exp, Operator operator) {
-        mExp = exp;
+        mExp      = exp;
         mOperator = operator;
     }
 
@@ -50,43 +51,63 @@ public class UnaryExp extends Expression {
     }
 
     public String getAbstractSyntax() {
-        return "UnaryExp( " + (mOperator != null ? mOperator.name() : "") + " , "
-                + (mExp != null ? mExp.getAbstractSyntax() : "") + " )";
+        return "UnaryExp( " + ((mOperator != null)
+                               ? mOperator.name()
+                               : "") + " , " + ((mExp != null)
+                ? mExp.getAbstractSyntax()
+                : "") + " )";
     }
 
     public String getConcreteSyntax() {
         String opString = "";
-        String exp = (mExp != null) ? mExp.getConcreteSyntax() : "";
+        String exp      = (mExp != null)
+                          ? mExp.getConcreteSyntax()
+                          : "";
 
         if (mOperator == null) {
             return "";
         }
 
         switch (mOperator) {
-            case Random:
-                opString = "Random( " + exp + " )";
-                break;
-            case RemoveFirst:
-                opString = "RemoveFirst( " + exp + " )";
-                break;
-            case RemoveLast:
-                opString = "RemoveLast( " + exp + " )";
-                break;
-            case First:
-                opString = "First( " + exp + " )";
-                break;
-            case Last:
-                opString = "Last( " + exp + " )";
-                break;
-            case Clear:
-                opString = "Clear( " + exp + " )";
-                break;
-            case Size:
-                opString = "Size( " + exp + " )";
-                break;
-            case Neg:
-                opString = "- " + exp;
-                break;
+        case Random :
+            opString = "Random( " + exp + " )";
+
+            break;
+
+        case RemoveFirst :
+            opString = "RemoveFirst( " + exp + " )";
+
+            break;
+
+        case RemoveLast :
+            opString = "RemoveLast( " + exp + " )";
+
+            break;
+
+        case First :
+            opString = "First( " + exp + " )";
+
+            break;
+
+        case Last :
+            opString = "Last( " + exp + " )";
+
+            break;
+
+        case Clear :
+            opString = "Clear( " + exp + " )";
+
+            break;
+
+        case Size :
+            opString = "Size( " + exp + " )";
+
+            break;
+
+        case Neg :
+            opString = "- " + exp;
+
+            break;
         }
 
         return opString;
@@ -94,37 +115,54 @@ public class UnaryExp extends Expression {
 
     public String getFormattedSyntax() {
         String opString = "";
-        String exp = (mExp != null) ? mExp.getFormattedSyntax() : "";
+        String exp      = (mExp != null)
+                          ? mExp.getFormattedSyntax()
+                          : "";
 
         if (mOperator == null) {
             return "";
         }
 
         switch (mOperator) {
-            case Random:
-                opString = "#p#Random( " + exp + " )";
-                break;
-            case RemoveFirst:
-                opString = "#p#RemoveFirst( " + exp + " )";
-                break;
-            case RemoveLast:
-                opString = "#p#RemoveLast( " + exp + " )";
-                break;
-            case First:
-                opString = "#p#First( " + exp + " )";
-                break;
-            case Last:
-                opString = "#p#Last( " + exp + " )";
-                break;
-            case Clear:
-                opString = "#p#Clear( " + exp + " )";
-                break;
-            case Size:
-                opString = "#p#Size( " + exp + " )";
-                break;
-            case Neg:
-                opString = "#p#- " + exp;
-                break;
+        case Random :
+            opString = "#p#Random( " + exp + " )";
+
+            break;
+
+        case RemoveFirst :
+            opString = "#p#RemoveFirst( " + exp + " )";
+
+            break;
+
+        case RemoveLast :
+            opString = "#p#RemoveLast( " + exp + " )";
+
+            break;
+
+        case First :
+            opString = "#p#First( " + exp + " )";
+
+            break;
+
+        case Last :
+            opString = "#p#Last( " + exp + " )";
+
+            break;
+
+        case Clear :
+            opString = "#p#Clear( " + exp + " )";
+
+            break;
+
+        case Size :
+            opString = "#p#Size( " + exp + " )";
+
+            break;
+
+        case Neg :
+            opString = "#p#- " + exp;
+
+            break;
         }
 
         return opString;
@@ -143,7 +181,6 @@ public class UnaryExp extends Expression {
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 mExp = Expression.parse(element);
             }

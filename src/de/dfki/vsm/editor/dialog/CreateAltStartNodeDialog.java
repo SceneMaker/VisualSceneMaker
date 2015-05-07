@@ -1,13 +1,20 @@
 package de.dfki.vsm.editor.dialog;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.Node;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.util.Vector;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -17,14 +24,14 @@ import javax.swing.JLabel;
  * @author Gregor Mehlmann
  */
 public class CreateAltStartNodeDialog extends Dialog {
-
     final private AltStartNodeManager mAltStartNodeManager;
+
     // GUI-Components
-    private JLabel mStartNodeLabel;
-    private JLabel mAltStartNodeLabel;
-    private JComboBox mStartNodeComboBox;
-    private JComboBox mAltStartNodeComboBox;
-    private OKButton mOkButton;
+    private JLabel       mStartNodeLabel;
+    private JLabel       mAltStartNodeLabel;
+    private JComboBox    mStartNodeComboBox;
+    private JComboBox    mAltStartNodeComboBox;
+    private OKButton     mOkButton;
     private CancelButton mCancelButton;
 
     public CreateAltStartNodeDialog(AltStartNodeManager manager) {
@@ -35,29 +42,27 @@ public class CreateAltStartNodeDialog extends Dialog {
     }
 
     private void initComponents() {
-        mStartNodeLabel = new JLabel("Start Node:");
+        mStartNodeLabel    = new JLabel("Start Node:");
         mStartNodeComboBox = new JComboBox(new DefaultComboBoxModel());
         mStartNodeComboBox.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 select();
             }
         });
-
-        mAltStartNodeLabel = new JLabel("Alternative:");
+        mAltStartNodeLabel    = new JLabel("Alternative:");
         mAltStartNodeComboBox = new JComboBox(new DefaultComboBoxModel());
+
         // Ok button
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
+
         // Cancel button
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
@@ -73,6 +78,7 @@ public class CreateAltStartNodeDialog extends Dialog {
 
     public Object run() {
         setVisible(true);
+
         if (mPressedButton == Button.OK) {
             return null;
         } else {
@@ -95,6 +101,7 @@ public class CreateAltStartNodeDialog extends Dialog {
     private boolean process() {
         String s = (String) mStartNodeComboBox.getSelectedItem();
         String a = (String) mAltStartNodeComboBox.getSelectedItem();
+
         if (a != null) {
             mAltStartNodeManager.createAltStartNode(s, a);
         }
@@ -103,9 +110,12 @@ public class CreateAltStartNodeDialog extends Dialog {
     }
 
     private void loadSubstitutableStartNodes() {
+
         // Create the nodes to select as  start nodes
         Vector<Node> substitutableStartNodeList = mAltStartNodeManager.getSubstitutableStartNodes();
+
         ((DefaultComboBoxModel) mStartNodeComboBox.getModel()).addElement("none");
+
         for (Node node : substitutableStartNodeList) {
             ((DefaultComboBoxModel) mStartNodeComboBox.getModel()).addElement(node.getId());
         }
@@ -113,9 +123,10 @@ public class CreateAltStartNodeDialog extends Dialog {
 
     private void select() {
         String id = (String) mStartNodeComboBox.getSelectedItem();
-        System.err.println("Selected id=" + id);
 
+        System.err.println("Selected id=" + id);
         mAltStartNodeComboBox.removeAllItems();
+
         for (Node node : mAltStartNodeManager.getValidAltStartNodesFor(id)) {
             ((DefaultComboBoxModel) mAltStartNodeComboBox.getModel()).addElement(node.getId());
         }

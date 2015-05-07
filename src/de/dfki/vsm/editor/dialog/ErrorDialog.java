@@ -1,11 +1,17 @@
 package de.dfki.vsm.editor.dialog;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.runtime.event.AbortEvent;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -23,44 +29,48 @@ import javax.swing.WindowConstants;
  * @author Patrick Gebhard
  */
 public class ErrorDialog extends JDialog {
-
-    private JPanel mMainPanel;
-    private JPanel mErrorPanel;
-    private JPanel mButtonsPanel;
-    private JList mList;
-    private JScrollPane mScrollPane;
-    private JButton mOkButton;
-    private JButton mClearButton;
-    private int mNum;
     private static ErrorDialog sSingeltonInstance = null;
-
-    public static ErrorDialog getInstance() {
-        if (sSingeltonInstance == null) {
-            sSingeltonInstance = new ErrorDialog();
-        }
-        return sSingeltonInstance;
-    }
+    private JPanel             mMainPanel;
+    private JPanel             mErrorPanel;
+    private JPanel             mButtonsPanel;
+    private JList              mList;
+    private JScrollPane        mScrollPane;
+    private JButton            mOkButton;
+    private JButton            mClearButton;
+    private int                mNum;
 
     private ErrorDialog() {
         super(Editor.getInstance(), "Error Console", false);
         initComponents();
     }
 
+    public static ErrorDialog getInstance() {
+        if (sSingeltonInstance == null) {
+            sSingeltonInstance = new ErrorDialog();
+        }
+
+        return sSingeltonInstance;
+    }
+
     public void addError(AbortEvent event) {
+
         //
-        //TODO: clear old error list
+        // TODO: clear old error list
         //
         JTextArea textArea = new JTextArea();
+
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         textArea.setText(event.getEventDescription());
         textArea.setBorder(BorderFactory.createEtchedBorder());
         textArea.getRows();
+
         if (mNum % 2 == 0) {
             textArea.setBackground(Color.cyan);
         } else {
             textArea.setBackground(Color.cyan.darker());
         }
+
         ((DefaultListModel) mList.getModel()).addElement(textArea.getText());
         mNum++;
     }
@@ -70,17 +80,14 @@ public class ErrorDialog extends JDialog {
         mButtonsPanel.setLayout(new BoxLayout(mButtonsPanel, BoxLayout.X_AXIS));
         mOkButton = new JButton("Ok");
         mOkButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent evt) {
                 dispose();
             }
         });
         mClearButton = new JButton("Clear");
         mClearButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent evt) {
                 ((DefaultListModel) mList.getModel()).clear();
-
             }
         });
         mButtonsPanel.add(Box.createHorizontalGlue());
@@ -91,11 +98,10 @@ public class ErrorDialog extends JDialog {
         // Do the layout
         mErrorPanel = new JPanel();
         mErrorPanel.setLayout(new BoxLayout(mErrorPanel, BoxLayout.Y_AXIS));
-        mList = new JList(new DefaultListModel());
+        mList       = new JList(new DefaultListModel());
         mScrollPane = new JScrollPane(mList);
         mScrollPane.setPreferredSize(new Dimension(600, 300));
         mErrorPanel.add(mScrollPane);
-
         mMainPanel = new JPanel();
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
         mMainPanel.add(mErrorPanel);
@@ -104,8 +110,7 @@ public class ErrorDialog extends JDialog {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
         pack();
-        setLocation(
-                getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
-                getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
+        setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
+                    getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
     }
 }

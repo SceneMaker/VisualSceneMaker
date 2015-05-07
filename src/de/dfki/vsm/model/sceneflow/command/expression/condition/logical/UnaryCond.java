@@ -1,10 +1,13 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -13,23 +16,19 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class UnaryCond extends LogicalCond {
-
     private Condition mCondition;
-    private Operator mOperator;
+    private Operator  mOperator;
 
-    public enum Operator {
-
-        Not
-    }
+    public enum Operator { Not }
 
     public UnaryCond() {
         mCondition = null;
-        mOperator = null;
+        mOperator  = null;
     }
 
     public UnaryCond(Condition condition, Operator operator) {
         mCondition = condition;
-        mOperator = operator;
+        mOperator  = operator;
     }
 
     public Condition getCondition() {
@@ -45,13 +44,19 @@ public class UnaryCond extends LogicalCond {
     }
 
     public String getAbstractSyntax() {
-        return (mOperator != null ? mOperator.name() : "") + "("
-                + (mCondition != null ? mCondition.getAbstractSyntax() : "") + ")";
+        return ((mOperator != null)
+                ? mOperator.name()
+                : "") + "(" + ((mCondition != null)
+                               ? mCondition.getAbstractSyntax()
+                               : "") + ")";
     }
 
     public String getConcreteSyntax() {
-        return (mOperator != null ? "!" : "")
-                + (mCondition != null ? mCondition.getConcreteSyntax() : "");
+        return ((mOperator != null)
+                ? "!"
+                : "") + ((mCondition != null)
+                         ? mCondition.getConcreteSyntax()
+                         : "");
     }
 
     public String getFormattedSyntax() {
@@ -71,7 +76,6 @@ public class UnaryCond extends LogicalCond {
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 mCondition = Condition.parse(element);
             }

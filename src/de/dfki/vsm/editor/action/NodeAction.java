@@ -69,7 +69,6 @@ public abstract class NodeAction extends EditorAction {
 
             // System.out.println("Removing node " + mDataNode.getId() + " from start node list");
             // System.out.println("Startnode Map is " + startNodeMap);
-
             if (startNodeMap.isEmpty()) {
                 if (mParentDataNode.getNodeList().isEmpty()) {
                     if (mParentDataNode.getSuperNodeList().isEmpty()) {
@@ -103,7 +102,6 @@ public abstract class NodeAction extends EditorAction {
         ////////PROBLEM:
         // mDataNode.setParentNode(null);
         ////////////////////////////////
-
         // Remove the GUI node from the workspace, which means that we
         // free the grid position of the node, if the node was a startnode,
         // then we remove the start sign from workspace, if commands have been
@@ -145,7 +143,6 @@ public abstract class NodeAction extends EditorAction {
         }
 
         // TODO: Take the grid position!!!!!!!!!!!
-
         // Add the GUI-Node
         mWorkSpace.addNode(mGUINode);
         mWorkSpace.addCmdBadge(mGUINode, mCmdBadge);

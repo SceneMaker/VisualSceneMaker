@@ -1,34 +1,37 @@
 package de.dfki.vsm.runtime;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.runtime.player.DialogueActPlayer;
 import de.dfki.vsm.runtime.player.SceneGroupPlayer;
+import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.BooleanValue;
 import de.dfki.vsm.runtime.value.FloatValue;
 import de.dfki.vsm.runtime.value.IntValue;
 import de.dfki.vsm.runtime.value.StringValue;
-import de.dfki.vsm.runtime.value.AbstractValue;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
  */
 public class RunTime {
+    private static RunTime                  sInstance     = null;
+    private HashMap<SceneFlow, Interpreter> mSceneFlowMap = new HashMap<SceneFlow, Interpreter>();
 
-    private static RunTime sInstance = null;
-    private HashMap<SceneFlow, Interpreter> mSceneFlowMap
-            = new HashMap<SceneFlow, Interpreter>();
-
-    private RunTime() {
-    }
+    private RunTime() {}
 
     public static synchronized RunTime getInstance() {
         if (sInstance == null) {
             sInstance = new RunTime();
         }
+
         return sInstance;
     }
 
@@ -36,23 +39,31 @@ public class RunTime {
     // REGISTER & UNREGISTER
     ////////////////////////////////////////////////////////////////////////////
     public synchronized void register(ProjectData project) {
+
         // Load the sceneplayer
         project.loadScenePlayer();
+
         // Load the dialogue act player
         project.loadDialogueActPlayer();
+
         // Load the service list
         project.loadServiceList();
+
         // Load the request list
         project.loadRequestList();
+
         // Load the plugin list
         project.loadPluginList();
+
         // Get the sceneflow and the scenepayer of that
         // project and Create a new interpreter for them
-        final SceneFlow sceneFlow = project.getSceneFlow();
-        final SceneGroupPlayer sceneGroupPlayer = project.getScenePlayer();
+        final SceneFlow         sceneFlow         = project.getSceneFlow();
+        final SceneGroupPlayer  sceneGroupPlayer  = project.getScenePlayer();
         final DialogueActPlayer dialogueActPlayer = project.getDialogueActPlayer();
+
         // Construct the Interpreter
         Interpreter interpreter = new Interpreter(sceneFlow, sceneGroupPlayer, dialogueActPlayer);
+
         // If this sceneflow is not yet registered then register it
         if (!mSceneFlowMap.containsKey(sceneFlow)) {
             mSceneFlowMap.put(sceneFlow, interpreter);
@@ -61,14 +72,19 @@ public class RunTime {
 
     public synchronized void unregister(ProjectData project) {
         SceneFlow sceneFlow = project.getSceneFlow();
+
         if (mSceneFlowMap.containsKey(sceneFlow)) {
             mSceneFlowMap.remove(sceneFlow);
+
             // Unload the sceneplayer
             project.unloadScenePlayer();
+
             // Unload the service list
             project.unloadServiceList();
+
             // Unload the request list
             project.unloadRequestList();
+
             // Unload the plugin list
             project.unloadPluginList();
         }
@@ -93,6 +109,7 @@ public class RunTime {
         if (mSceneFlowMap.containsKey(sceneflow)) {
             return mSceneFlowMap.get(sceneflow).isRunning();
         }
+
         return false;
     }
 
@@ -106,6 +123,7 @@ public class RunTime {
         if (mSceneFlowMap.containsKey(sceneflow)) {
             return mSceneFlowMap.get(sceneflow).isPaused();
         }
+
         return false;
     }
 
@@ -123,8 +141,8 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).execute(nodeId, cmd);
             }
-
         }
+
         return false;
     }
 
@@ -133,8 +151,8 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).evaluate(nodeId, exp);
             }
-
         }
+
         return null;
     }
 
@@ -144,6 +162,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(nodeId, varName, exp);
             }
         }
+
         return false;
     }
 
@@ -156,6 +175,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new IntValue(value));
             }
         }
+
         return false;
     }
 
@@ -165,6 +185,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new IntValue(value));
             }
         }
+
         return false;
     }
 
@@ -174,6 +195,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new IntValue(value));
             }
         }
+
         return false;
     }
 
@@ -183,6 +205,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new FloatValue(value));
             }
         }
+
         return false;
     }
 
@@ -192,6 +215,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new FloatValue(value));
             }
         }
+
         return false;
     }
 
@@ -201,6 +225,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new FloatValue(value));
             }
         }
+
         return false;
     }
 
@@ -210,6 +235,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new BooleanValue(value));
             }
         }
+
         return false;
     }
 
@@ -219,6 +245,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new BooleanValue(value));
             }
         }
+
         return false;
     }
 
@@ -228,6 +255,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new BooleanValue(value));
             }
         }
+
         return false;
     }
 
@@ -237,6 +265,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, new StringValue(value));
             }
         }
+
         return false;
     }
 
@@ -246,6 +275,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new StringValue(value));
             }
         }
+
         return false;
     }
 
@@ -255,6 +285,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new StringValue(value));
             }
         }
+
         return false;
     }
 
@@ -264,6 +295,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, value);
             }
         }
+
         return false;
     }
 
@@ -273,6 +305,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, value);
             }
         }
+
         return false;
     }
 
@@ -282,24 +315,26 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, value);
             }
         }
+
         return false;
     }
 
-//    public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, Object[] value) {
-//        if (sceneFlow != null) {
-//            if (mSceneFlowMap.containsKey(sceneFlow)) {
-//                return mSceneFlowMap.get(sceneFlow).setVariable(varName, value);
-//            }
+//  public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, Object[] value) {
+//      if (sceneFlow != null) {
+//          if (mSceneFlowMap.containsKey(sceneFlow)) {
+//              return mSceneFlowMap.get(sceneFlow).setVariable(varName, value);
+//          }
 //
-//        }
-//        return false;
-//    }
+//      }
+//      return false;
+//  }
     public synchronized boolean setLocalVariable(SceneFlow sceneFlow, String nodeId, String varName, int value) {
         if (sceneFlow != null) {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new IntValue(value));
             }
         }
+
         return false;
     }
 
@@ -309,6 +344,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new StringValue(value));
             }
         }
+
         return false;
     }
 
@@ -318,8 +354,8 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new BooleanValue(value));
             }
         }
-        return false;
 
+        return false;
     }
 
     public synchronized boolean hasLocaleVariable(SceneFlow sceneFlow, String nodeId, String varName) {
@@ -328,6 +364,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).hasLocalVariable(nodeId, varName);
             }
         }
+
         return false;
     }
 
@@ -337,6 +374,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).hasVariable(varName);
             }
         }
+
         return false;
     }
 
@@ -346,6 +384,7 @@ public class RunTime {
                 return mSceneFlowMap.get(sceneFlow).hasVariable(varName, index);
             }
         }
+
         return false;
     }
 
@@ -354,8 +393,8 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).hasVariable(varName, member);
             }
-
         }
+
         return false;
     }
 
@@ -364,8 +403,8 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).getValueOf(varName);
             }
-
         }
+
         return null;
     }
 
@@ -374,8 +413,8 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).getValueOf(varName, index);
             }
-
         }
+
         return null;
     }
 
@@ -384,8 +423,8 @@ public class RunTime {
             if (mSceneFlowMap.containsKey(sceneFlow)) {
                 return mSceneFlowMap.get(sceneFlow).getValueOf(varName, member);
             }
-
         }
+
         return null;
     }
 }

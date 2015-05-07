@@ -1,7 +1,12 @@
 package de.dfki.vsm;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.model.project.ProjectData;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import javax.swing.SwingUtilities;
 
 /**
@@ -19,6 +24,7 @@ public class DefaultEditor {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public final void run() {
+
                 // Show Singelton Editor Instance
                 show();
             }
@@ -29,6 +35,7 @@ public class DefaultEditor {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public static void show() {
+
         // Show Singelton Editor Instance
         if (sVSMEditor != null) {
             sVSMEditor.setVisible(true);
@@ -39,6 +46,7 @@ public class DefaultEditor {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public static void show(final ProjectData data) {
+
         // Show Singelton Editor Instance
         if (sVSMEditor != null) {
             sVSMEditor.setVisible(true);

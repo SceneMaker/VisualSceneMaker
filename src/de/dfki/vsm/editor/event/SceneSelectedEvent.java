@@ -1,5 +1,7 @@
 package de.dfki.vsm.editor.event;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.script.SceneGroup;
 import de.dfki.vsm.util.evt.EventObject;
 
@@ -7,9 +9,8 @@ import de.dfki.vsm.util.evt.EventObject;
  * @author Gregor Mehlmann
  */
 public class SceneSelectedEvent extends EventObject {
-
     private SceneGroup mGroup;
-    private String mLanguage;
+    private String     mLanguage;
 
     public SceneSelectedEvent(Object source, SceneGroup group) {
         super(source);
@@ -23,7 +24,7 @@ public class SceneSelectedEvent extends EventObject {
     public String getEventDescription() {
         return "SceneEvent(" + mGroup + ")";
     }
-    
+
     public void setLanguage(String language) {
         mLanguage = language;
     }

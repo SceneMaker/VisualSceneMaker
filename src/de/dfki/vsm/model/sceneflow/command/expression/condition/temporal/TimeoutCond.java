@@ -1,10 +1,13 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.temporal;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -14,11 +17,10 @@ import org.w3c.dom.Element;
  */
 public class TimeoutCond extends TemporalCond {
 
-    //private long mTimeout;
+    // private long mTimeout;
     private Expression mTimeoutExp;
 
-    public TimeoutCond() {
-    }
+    public TimeoutCond() {}
 
     public TimeoutCond(Expression exp) {
         mTimeoutExp = exp;
@@ -56,7 +58,6 @@ public class TimeoutCond extends TemporalCond {
 
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 mTimeoutExp = Expression.parse(element);
             }

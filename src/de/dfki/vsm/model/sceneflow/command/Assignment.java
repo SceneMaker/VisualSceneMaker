@@ -1,29 +1,31 @@
 package de.dfki.vsm.model.sceneflow.command;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class Assignment extends Command {
-
     private LExpression mLExp;
-    private Expression mExp;
+    private Expression  mExp;
 
     public Assignment() {
         mLExp = null;
-        mExp = null;
+        mExp  = null;
     }
 
     public Assignment(LExpression lExp, Expression exp) {
         mLExp = lExp;
-        mExp = exp;
+        mExp  = exp;
     }
 
     public LExpression getLExp() {
@@ -47,18 +49,27 @@ public class Assignment extends Command {
     }
 
     public String getAbstractSyntax() {
-        return "Assignment(" + (mLExp != null ? mLExp.getAbstractSyntax() : "")
-                + " = " + (mExp != null ? mExp.getAbstractSyntax() : "") + ")";
+        return "Assignment(" + ((mLExp != null)
+                                ? mLExp.getAbstractSyntax()
+                                : "") + " = " + ((mExp != null)
+                ? mExp.getAbstractSyntax()
+                : "") + ")";
     }
 
     public String getConcreteSyntax() {
-        return (mLExp != null ? mLExp.getConcreteSyntax() : "")
-                + " = " + (mExp != null ? mExp.getConcreteSyntax() : "");
+        return ((mLExp != null)
+                ? mLExp.getConcreteSyntax()
+                : "") + " = " + ((mExp != null)
+                                 ? mExp.getConcreteSyntax()
+                                 : "");
     }
 
     public String getFormattedSyntax() {
-        return (mLExp != null ? mLExp.getFormattedSyntax() : "")
-                + " = " + (mExp != null ? mExp.getFormattedSyntax() : "");
+        return ((mLExp != null)
+                ? mLExp.getFormattedSyntax()
+                : "") + " = " + ((mExp != null)
+                                 ? mExp.getFormattedSyntax()
+                                 : "");
     }
 
     public Assignment getCopy() {
@@ -76,11 +87,9 @@ public class Assignment extends Command {
 
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 if (element.getTagName().equals("Expression")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
                         public void run(Element element) throws XMLParseError {
                             mExp = Expression.parse(element);
                         }
