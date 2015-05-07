@@ -1,20 +1,27 @@
 package de.dfki.vsm.model.gesticon;
 
-import de.dfki.vsm.util.ios.IndentWriter;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.io.ByteArrayOutputStream;
+
+import java.util.ArrayList;
 
 /**
  * * @author Gregor Mehlmann
  */
-public class GesticonObject implements ModelObject{
+public class GesticonObject implements ModelObject {
 
-    // The Agent Entry List   
+    // The Agent Entry List
     private final ArrayList<GesticonAgent> mAgentList;
 
     public GesticonObject() {
@@ -38,13 +45,16 @@ public class GesticonObject implements ModelObject{
     }
 
     public final ArrayList<GesticonAgent> copyAgentList() {
-        // Construct A List Copy      
+
+        // Construct A List Copy
         final ArrayList<GesticonAgent> copy = new ArrayList<>();
-        // Copy Each Single Member      
+
+        // Copy Each Single Member
         for (final GesticonAgent entry : mAgentList) {
             copy.add(entry.getCopy());
         }
-        // Return The Final Clone     
+
+        // Return The Final Clone
         return copy;
     }
 
@@ -53,10 +63,12 @@ public class GesticonObject implements ModelObject{
         stream.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         stream.println("<Gesticon>");
         stream.push();
+
         for (final GesticonAgent agent : mAgentList) {
             agent.writeXML(stream);
             stream.endl();
         }
+
         stream.pop();
         stream.println("</Gesticon>");
         stream.flush();
@@ -68,8 +80,10 @@ public class GesticonObject implements ModelObject{
             @Override
             public void run(final Element element) throws XMLParseError {
                 final String tag = element.getTagName();
+
                 if (tag.equalsIgnoreCase("Agent")) {
                     final GesticonAgent agent = new GesticonAgent();
+
                     agent.parseXML(element);
                     mAgentList.add(agent);
                 }
@@ -82,19 +96,26 @@ public class GesticonObject implements ModelObject{
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String toString() {
+
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
         // Initialize The Indent Writer
         final IndentWriter stream = new IndentWriter(buffer);
+
         try {
+
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {
-            //mLogger.failure(exc.toString());
+
+            // mLogger.failure(exc.toString());
         }
+
         // Cleanup Stream and Writer
         stream.flush();
         stream.close();
+
         // Return String Representation
         try {
             return buffer.toString("UTF-8");

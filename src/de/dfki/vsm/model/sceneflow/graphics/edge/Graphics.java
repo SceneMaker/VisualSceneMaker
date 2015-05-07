@@ -1,9 +1,12 @@
 package de.dfki.vsm.model.sceneflow.graphics.edge;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -12,7 +15,6 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class Graphics extends Object {
-
     private Arrow mArrow;
 
     public Graphics() {
@@ -32,11 +34,15 @@ public class Graphics extends Object {
     }
 
     public String getAbstractSyntax() {
-        return "Graphics(" + (mArrow != null ? mArrow.getAbstractSyntax() : "") + ")";
+        return "Graphics(" + ((mArrow != null)
+                              ? mArrow.getAbstractSyntax()
+                              : "") + ")";
     }
 
     public String getConcreteSyntax() {
-        return (mArrow != null ? mArrow.getConcreteSyntax() : "");
+        return ((mArrow != null)
+                ? mArrow.getConcreteSyntax()
+                : "");
     }
 
     public String getFormattedSyntax() {
@@ -55,19 +61,20 @@ public class Graphics extends Object {
 
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, "Arrow", new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 mArrow.parseXML(element);
             }
         });
     }
-    
+
     public int getHashCode() {
         int hashCode = 0;
-        for(Point a: mArrow.getPointList()){
+
+        for (Point a : mArrow.getPointList()) {
             hashCode += a.getCtrlXPos();
             hashCode += a.getCtrlYPos();
         }
+
         return hashCode;
     }
 }

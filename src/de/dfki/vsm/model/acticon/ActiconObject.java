@@ -1,18 +1,25 @@
 package de.dfki.vsm.model.acticon;
 
-import de.dfki.vsm.util.ios.IndentWriter;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.io.ByteArrayOutputStream;
+
+import java.util.ArrayList;
 
 /**
  * @author Gregor Mehlmann
  */
-public class ActiconObject implements ModelObject{
+public class ActiconObject implements ModelObject {
 
     // The Action Entry List
     private final ArrayList<ActiconAction> mActionList;
@@ -56,13 +63,15 @@ public class ActiconObject implements ModelObject{
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final ArrayList<ActiconAction> copyActionList() {
+
         // Construct A List Copy
-        final ArrayList<ActiconAction> copy
-                = new ArrayList<>();
+        final ArrayList<ActiconAction> copy = new ArrayList<>();
+
         // Copy Each Single Member
         for (final ActiconAction entry : mActionList) {
             copy.add(entry.getCopy());
         }
+
         // Return The Final Clone
         return copy;
     }
@@ -73,15 +82,18 @@ public class ActiconObject implements ModelObject{
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             @Override
             public void run(final Element element) throws XMLParseError {
                 final String tag = element.getTagName();
+
                 if (tag.equals("Action")) {
+
                     // Construct New
                     final ActiconAction action = new ActiconAction();
+
                     // Parse The Entry
                     action.parseXML(element);
+
                     // Append The Entry
                     append(action);
                 }
@@ -97,10 +109,12 @@ public class ActiconObject implements ModelObject{
         stream.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         stream.println("<Acticon>");
         stream.push();
+
         for (ActiconAction action : mActionList) {
             action.writeXML(stream);
             stream.endl();
         }
+
         stream.pop();
         stream.print("</Acticon>");
         stream.flush();
@@ -111,19 +125,26 @@ public class ActiconObject implements ModelObject{
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String toString() {
+
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
         // Initialize The Indent Writer
         final IndentWriter stream = new IndentWriter(buffer);
+
         try {
+
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {
+
             // mLogger.failure(exc.toString());
         }
+
         // Cleanup Stream and Writer
         stream.flush();
         stream.close();
+
         // Return String Representation
         try {
             return buffer.toString("UTF-8");

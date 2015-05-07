@@ -1,10 +1,16 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.SceneFlowEditor;
 import de.dfki.vsm.editor.WorkSpace;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -13,27 +19,27 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class CopyNodesAction extends EditorAction {
-
-    Set<Node> mNodes = new HashSet<Node>();
+    Set<Node>             mNodes             = new HashSet<Node>();
     Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<RemoveNodeAction>();
-    WorkSpace mWorkSpace = null;
-    SceneFlowEditor mSceneFlowEditor;
-
-    public CopyNodesAction(WorkSpace workSpace, Set<Node> nodes) {
-        mWorkSpace = workSpace;
-        mNodes = nodes;
-        mSceneFlowEditor = mWorkSpace.getSceneFlowEditor();
-    }
+    WorkSpace             mWorkSpace         = null;
+    SceneFlowEditor       mSceneFlowEditor;
 
     public CopyNodesAction(WorkSpace workSpace, Node node) {
         mWorkSpace = workSpace;
         mNodes.add(node);
     }
 
+    public CopyNodesAction(WorkSpace workSpace, Set<Node> nodes) {
+        mWorkSpace       = workSpace;
+        mNodes           = nodes;
+        mSceneFlowEditor = mWorkSpace.getSceneFlowEditor();
+    }
+
     protected void copyNodes() {
         mWorkSpace.clearClipBoard();
 
         for (Node node : mNodes) {
+
             // store a copy of each selected node
             de.dfki.vsm.model.sceneflow.Node nodeCopy = node.getDataNode().getCopy();
 
@@ -52,7 +58,6 @@ public class CopyNodesAction extends EditorAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             uncopyNodes();

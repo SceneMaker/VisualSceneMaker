@@ -1,6 +1,9 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -9,7 +12,6 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class Bool extends Constant {
-
     private boolean mValue;
 
     public Bool() {

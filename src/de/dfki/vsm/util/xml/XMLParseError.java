@@ -4,9 +4,8 @@ package de.dfki.vsm.util.xml;
  * @author Gregor Mehlmann
  */
 public class XMLParseError extends Exception {
-
     private final XMLParseable mObj;
-    private final String mMsg;
+    private final String       mMsg;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

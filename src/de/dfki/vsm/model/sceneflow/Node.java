@@ -1,5 +1,7 @@
 package de.dfki.vsm.model.sceneflow;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
@@ -9,43 +11,46 @@ import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.Vector;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Vector;
 
 /**
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class Node extends Object {
+    protected String          mId            = new String();
+    protected String          mName          = new String();
+    protected String          mComment       = new String();
+    protected boolean         mExhaustive    = Boolean.FALSE;
+    protected boolean         mPreserving    = Boolean.FALSE;
+    protected Vector<TypeDef> mTypeDefList   = new Vector<TypeDef>();
+    protected Vector<VarDef>  mVarDefList    = new Vector<VarDef>();
+    protected Vector<Command> mCmdList       = new Vector<Command>();
+    protected Vector<CEdge>   mCEdgeList     = new Vector<CEdge>();
+    protected Vector<PEdge>   mPEdgeList     = new Vector<PEdge>();
+    protected Vector<IEdge>   mIEdgeList     = new Vector<IEdge>();
+    protected Vector<FEdge>   mFEdgeList     = new Vector<FEdge>();
+    protected Edge            mDEdge         = null;
+    protected Graphics        mGraphics      = null;
+    protected SuperNode       mParentNode    = null;
+    protected boolean         mIsHistoryNode = false;
 
     public enum FLAVOUR {
-
         NONE, ENODE, TNODE, CNODE, PNODE, INODE, FNODE
-    };
-    
-    protected String mId = new String();
-    protected String mName = new String();
-    protected String mComment = new String();
-    protected boolean mExhaustive = Boolean.FALSE;
-    protected boolean mPreserving = Boolean.FALSE;
-    protected Vector<TypeDef> mTypeDefList = new Vector<TypeDef>();
-    protected Vector<VarDef> mVarDefList = new Vector<VarDef>();
-    protected Vector<Command> mCmdList = new Vector<Command>();
-    protected Vector<CEdge> mCEdgeList = new Vector<CEdge>();
-    protected Vector<PEdge> mPEdgeList = new Vector<PEdge>();
-    protected Vector<IEdge> mIEdgeList = new Vector<IEdge>();
-    protected Vector<FEdge> mFEdgeList = new Vector<FEdge>();
-    protected Edge mDEdge = null;
-    protected Graphics mGraphics = null;
-    protected SuperNode mParentNode = null;
-    protected boolean mIsHistoryNode = false;
-
-    public Node() {
     }
+
+    ;
+    public Node() {}
 
     public boolean isSubNodeOf(Node node) {
         if (node instanceof SuperNode) {
             SuperNode parentNode = mParentNode;
+
             while (parentNode != null) {
                 if (parentNode.equals(node)) {
                     return true;
@@ -54,6 +59,7 @@ public class Node extends Object {
                 }
             }
         }
+
         return false;
     }
 
@@ -82,7 +88,7 @@ public class Node extends Object {
     }
 
     public void setNameAndId(String value) {
-        mId = value;
+        mId   = value;
         mName = value;
     }
 
@@ -114,9 +120,11 @@ public class Node extends Object {
         if (mComment == null) {
             return false;
         }
+
         if (mComment.length() == 0) {
             return false;
         }
+
         return true;
     }
 
@@ -182,7 +190,9 @@ public class Node extends Object {
         }
 
         if (mDEdge != null) {
-            return (mDEdge instanceof TEdge) ? FLAVOUR.TNODE : FLAVOUR.ENODE;
+            return (mDEdge instanceof TEdge)
+                   ? FLAVOUR.TNODE
+                   : FLAVOUR.ENODE;
         }
 
         return FLAVOUR.NONE;
@@ -242,9 +252,11 @@ public class Node extends Object {
 
     public Vector<VarDef> getCopyOfVarDefList() {
         Vector<VarDef> copy = new Vector<VarDef>();
+
         for (VarDef varDef : mVarDefList) {
             copy.add(varDef.getCopy());
         }
+
         return copy;
     }
 
@@ -278,9 +290,11 @@ public class Node extends Object {
 
     public Vector<Command> getCopyOfCmdList() {
         Vector<Command> copy = new Vector<Command>();
+
         for (Command cmd : mCmdList) {
             copy.add(cmd.getCopy());
         }
+
         return copy;
     }
 
@@ -314,9 +328,11 @@ public class Node extends Object {
 
     public Vector<TypeDef> getCopyOfTypeDefList() {
         Vector<TypeDef> copy = new Vector<TypeDef>();
+
         for (TypeDef def : mTypeDefList) {
             copy.add(def.getCopy());
         }
+
         return copy;
     }
 
@@ -346,9 +362,11 @@ public class Node extends Object {
 
     public Vector<CEdge> getCopyOfCEdgeList() {
         Vector<CEdge> copy = new Vector<CEdge>();
+
         for (CEdge edge : mCEdgeList) {
             copy.add(edge.getCopy());
         }
+
         return copy;
     }
 
@@ -394,9 +412,11 @@ public class Node extends Object {
 
     public Vector<PEdge> getCopyOfPEdgeList() {
         Vector<PEdge> copy = new Vector<PEdge>();
+
         for (PEdge edge : mPEdgeList) {
             copy.add(edge.getCopy());
         }
+
         return copy;
     }
 
@@ -426,29 +446,37 @@ public class Node extends Object {
 
     public Vector<IEdge> getCopyOfIEdgeList() {
         Vector<IEdge> copy = new Vector<IEdge>();
+
         for (IEdge edge : mIEdgeList) {
             copy.add(edge.getCopy());
         }
+
         return copy;
     }
 
     public Vector<Edge> getEdgeList() {
         Vector<Edge> edgeList = new Vector<Edge>();
+
         for (CEdge edge : mCEdgeList) {
             edgeList.add(edge);
         }
+
         for (IEdge edge : mIEdgeList) {
             edgeList.add(edge);
         }
+
         for (PEdge edge : mPEdgeList) {
             edgeList.add(edge);
         }
+
         for (FEdge edge : mFEdgeList) {
             edgeList.add(edge);
         }
+
         if (mDEdge != null) {
             edgeList.add(mDEdge);
         }
+
         return edgeList;
     }
 
@@ -460,14 +488,17 @@ public class Node extends Object {
 
     public Vector<Node> getReachableNodeList() {
         Vector<Node> reachableNodeList = new Vector<Node>();
+
         reachableNodeList.add(this);
         fillReachableNodeList(reachableNodeList);
+
         return reachableNodeList;
     }
 
     private void fillReachableNodeList(Vector<Node> fromSourceReachableNodeList) {
         for (Edge edge : getEdgeList()) {
             Node targetNode = edge.getTargetNode();
+
             if (!fromSourceReachableNodeList.contains(targetNode)) {
                 fromSourceReachableNodeList.add(targetNode);
                 targetNode.fillReachableNodeList(fromSourceReachableNodeList);
@@ -492,30 +523,31 @@ public class Node extends Object {
     }
 
     public void writeXML(IndentWriter out) throws XMLWriteError {
-        out.println(
-                "<Node id=\"" + mId
-                + "\" name=\"" + mName
-                + "\" exhaustive=\"" + mExhaustive
-                + "\" preserving=\"" + mPreserving
-                + "\" history=\"" + mIsHistoryNode + "\">").push();
+        out.println("<Node id=\"" + mId + "\" name=\"" + mName + "\" exhaustive=\"" + mExhaustive + "\" preserving=\""
+                    + mPreserving + "\" history=\"" + mIsHistoryNode + "\">").push();
+
         int i = 0;
 
         out.println("<Define>").push();
+
         for (i = 0; i < mTypeDefList.size(); i++) {
             mTypeDefList.get(i).writeXML(out);
         }
-        out.pop().println("</Define>");
 
+        out.pop().println("</Define>");
         out.println("<Declare>").push();
+
         for (i = 0; i < mVarDefList.size(); i++) {
             mVarDefList.get(i).writeXML(out);
         }
-        out.pop().println("</Declare>");
 
+        out.pop().println("</Declare>");
         out.println("<Commands>").push();
+
         for (i = 0; i < mCmdList.size(); i++) {
             mCmdList.get(i).writeXML(out);
         }
+
         out.pop().println("</Commands>");
 
         for (i = 0; i < mCEdgeList.size(); i++) {
@@ -541,40 +573,40 @@ public class Node extends Object {
         if (mGraphics != null) {
             mGraphics.writeXML(out);
         }
+
         out.pop().println("</Node>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        mId = element.getAttribute("id");
-        mName = element.getAttribute("name");
-        mExhaustive = Boolean.valueOf(element.getAttribute("exhaustive"));
-        mPreserving = Boolean.valueOf(element.getAttribute("preserving"));
+        mId            = element.getAttribute("id");
+        mName          = element.getAttribute("name");
+        mExhaustive    = Boolean.valueOf(element.getAttribute("exhaustive"));
+        mPreserving    = Boolean.valueOf(element.getAttribute("preserving"));
         mIsHistoryNode = Boolean.valueOf(element.getAttribute("history"));
 
         final Node node = this;
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
 
+        XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
                 String tag = element.getTagName();
+
                 if (tag.equals("Define")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
                         public void run(Element element) throws XMLParseError {
                             mTypeDefList.add(TypeDef.parse(element));
                         }
                     });
                 } else if (tag.equals("Declare")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
                         public void run(Element element) throws XMLParseError {
                             VarDef def = new VarDef();
+
                             def.parseXML(element);
                             mVarDefList.add(def);
                         }
                     });
                 } else if (tag.equals("Commands")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
                         public void run(Element element) throws XMLParseError {
                             mCmdList.add(Command.parse(element));
                         }
@@ -584,55 +616,65 @@ public class Node extends Object {
                     mGraphics.parseXML(element);
                 } else if (tag.equals("CEdge")) {
                     CEdge edge = new CEdge();
+
                     edge.parseXML(element);
                     edge.setSourceNode(node);
                     edge.setSource(node.getId());
                     mCEdgeList.add(edge);
                 } else if (tag.equals("PEdge")) {
                     PEdge edge = new PEdge();
+
                     edge.parseXML(element);
                     edge.setSourceNode(node);
                     edge.setSource(node.getId());
                     mPEdgeList.add(edge);
                 } else if (tag.equals("FEdge")) {
                     FEdge edge = new FEdge();
+
                     edge.parseXML(element);
                     edge.setSourceNode(node);
                     edge.setSource(node.getId());
                     mFEdgeList.add(edge);
                 } else if (tag.equals("IEdge")) {
                     IEdge edge = new IEdge();
+
                     edge.parseXML(element);
                     edge.setSourceNode(node);
                     edge.setSource(node.getId());
                     mIEdgeList.add(edge);
                 } else if (tag.equals("EEdge")) {
                     EEdge edge = new EEdge();
+
                     edge.parseXML(element);
                     edge.setSourceNode(node);
                     edge.setSource(node.getId());
                     mDEdge = edge;
                 } else if (tag.equals("TEdge")) {
                     TEdge edge = new TEdge();
+
                     edge.parseXML(element);
                     edge.setSourceNode(node);
                     edge.setSource(node.getId());
                     mDEdge = edge;
                 } else {
                     throw new XMLParseError(null,
-                            "Cannot parse the element with the tag \"" + tag + "\" into a node child!");
+                                            "Cannot parse the element with the tag \"" + tag + "\" into a node child!");
                 }
             }
         });
     }
-    
+
     public int getHashCode() {
-      
-        // Add hash of General Attributes 
-        int hashCode = ((mName == null) ? 0 : mName.hashCode()) 
-                    + ((mComment == null) ? 0 : mComment.hashCode()) 
-                    + ((mGraphics == null) ? 0 : mGraphics.getPosition().hashCode()); 
-                   
+
+        // Add hash of General Attributes
+        int hashCode = ((mName == null)
+                        ? 0
+                        : mName.hashCode()) + ((mComment == null)
+                ? 0
+                : mComment.hashCode()) + ((mGraphics == null)
+                                          ? 0
+                                          : mGraphics.getPosition().hashCode());
+
         // Add hash of all commands inside Node
         for (int cntCommand = 0; cntCommand < mCmdList.size(); cntCommand++) {
             hashCode += mCmdList.get(cntCommand).hashCode();
@@ -640,51 +682,48 @@ public class Node extends Object {
 
         // Add hash of all TypeDef inside Node
         for (int cntType = 0; cntType < mTypeDefList.size(); cntType++) {
-            hashCode += mTypeDefList.get(cntType).hashCode()
-                        + mTypeDefList.get(cntType).getName().hashCode()
+            hashCode += mTypeDefList.get(cntType).hashCode() + mTypeDefList.get(cntType).getName().hashCode()
                         + mTypeDefList.get(cntType).toString().hashCode();
         }
 
         // Add hash of all Vars inside Node
         for (int cntVar = 0; cntVar < mVarDefList.size(); cntVar++) {
-            hashCode += ((mVarDefList.get(cntVar).getName() == null) ? 0 : mVarDefList.get(cntVar).getName().hashCode()) 
-                        + ((mVarDefList.get(cntVar).getType() == null) ? 0 : mVarDefList.get(cntVar).getType().hashCode()) 
-                     + ((mVarDefList.get(cntVar).toString() == null) ? 0 : mVarDefList.get(cntVar).toString().hashCode());
-                }
+            hashCode += ((mVarDefList.get(cntVar).getName() == null)
+                         ? 0
+                         : mVarDefList.get(cntVar).getName().hashCode()) + ((mVarDefList.get(cntVar).getType() == null)
+                    ? 0
+                    : mVarDefList.get(cntVar).getType().hashCode()) + ((mVarDefList.get(cntVar).toString() == null)
+                    ? 0
+                    : mVarDefList.get(cntVar).toString().hashCode());
+        }
 
-        // Epsilon and Time Edges 
+        // Epsilon and Time Edges
         for (int cntEdge = 0; cntEdge < getEdgeList().size(); cntEdge++) {
-            hashCode += getEdgeList().get(cntEdge).hashCode()
-                        + getEdgeList().get(cntEdge).mGraphics.getHashCode();
-            // TODO: find a way to parse the TEDGE mDEGE to take timeout into accout           
+            hashCode += getEdgeList().get(cntEdge).hashCode() + getEdgeList().get(cntEdge).mGraphics.getHashCode();
+
+            // TODO: find a way to parse the TEDGE mDEGE to take timeout into accout
         }
 
         // Add hash of all Conditional Edges
-        for (int cntEdge=  0; cntEdge < getSizeOfCEdgeList(); cntEdge++) {
-            hashCode += mCEdgeList.get(cntEdge).hashCode()
-                        + mCEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mCEdgeList.get(cntEdge).mCondition.hashCode()
-                        + mCEdgeList.get(cntEdge).mSource.hashCode()
-                        + mCEdgeList.get(cntEdge).mTarget.hashCode();           
+        for (int cntEdge = 0; cntEdge < getSizeOfCEdgeList(); cntEdge++) {
+            hashCode += mCEdgeList.get(cntEdge).hashCode() + mCEdgeList.get(cntEdge).mGraphics.getHashCode()
+                        + mCEdgeList.get(cntEdge).mCondition.hashCode() + mCEdgeList.get(cntEdge).mSource.hashCode()
+                        + mCEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Add hash of all Probability Edges
         for (int cntEdge = 0; cntEdge < getSizeOfPEdgeList(); cntEdge++) {
-            hashCode += mPEdgeList.get(cntEdge).hashCode()
-                        + mPEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mPEdgeList.get(cntEdge).getProbability()
-                        + mPEdgeList.get(cntEdge).mSource.hashCode()
-                        + mPEdgeList.get(cntEdge).mTarget.hashCode(); 
+            hashCode += mPEdgeList.get(cntEdge).hashCode() + mPEdgeList.get(cntEdge).mGraphics.getHashCode()
+                        + mPEdgeList.get(cntEdge).getProbability() + mPEdgeList.get(cntEdge).mSource.hashCode()
+                        + mPEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Add hash of all Fork Edges
         for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
-            hashCode += mFEdgeList.get(cntEdge).hashCode()
-                        + mFEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mFEdgeList.get(cntEdge).mSource.hashCode()
-                        + mFEdgeList.get(cntEdge).mTarget.hashCode(); 
+            hashCode += mFEdgeList.get(cntEdge).hashCode() + mFEdgeList.get(cntEdge).mGraphics.getHashCode()
+                        + mFEdgeList.get(cntEdge).mSource.hashCode() + mFEdgeList.get(cntEdge).mTarget.hashCode();
         }
-        
+
         return hashCode;
     }
 }

@@ -1,5 +1,7 @@
 package de.dfki.vsm.util.net;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
@@ -8,8 +10,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 public abstract class NETProcess extends Thread {
 
     // The System File Logger
-    protected final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // Cancel The NET Process
     public abstract void abort();

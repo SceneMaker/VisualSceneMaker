@@ -30,7 +30,7 @@ import java.util.HashSet;
 /*
 * @author Patrick
 * This class manages the node placement on the workspace.
-* Additional methods are provided for an intelligent placement 
+* Additional methods are provided for an intelligent placement
 * of nodes
  */
 public class GridManager {
@@ -38,22 +38,22 @@ public class GridManager {
     private int            mNodesinRow  = 0;
 
     // Subgrid for A* algorithm
-    private GridRectangle[][]    mTransitionArea      = null;
-    private GridRectangle[][]    mTempTransitions     = null;
-    private boolean              isSubgridEstablished = false;
-    private int                  height               = 0;
-    private int                  width                = 0;
-    private final WorkSpace      mWorkSpace;
-    private final ProjectPreferences   mPreferences;
-    private ArrayList<Rectangle> mNodeAreas;
-    private boolean              isDebug;
-    private boolean              isDockingView;
-    private ArrayList<Point2D>   dockingPoints        = new ArrayList<Point2D>();
+    private GridRectangle[][]        mTransitionArea      = null;
+    private GridRectangle[][]        mTempTransitions     = null;
+    private boolean                  isSubgridEstablished = false;
+    private int                      height               = 0;
+    private int                      width                = 0;
+    private ArrayList<Point2D>       dockingPoints        = new ArrayList<Point2D>();
+    private final WorkSpace          mWorkSpace;
+    private final ProjectPreferences mPreferences;
+    private ArrayList<Rectangle>     mNodeAreas;
+    private boolean                  isDebug;
+    private boolean                  isDockingView;
 
     public GridManager(WorkSpace ws) {
-        mWorkSpace   = ws;
-        mPreferences = ws.getPreferences();
-        isDebug      = mPreferences.sSHOW_SMART_PATH_DEBUG;
+        mWorkSpace    = ws;
+        mPreferences  = ws.getPreferences();
+        isDebug       = mPreferences.sSHOW_SMART_PATH_DEBUG;
         isDockingView = false;
         compute();
     }
@@ -61,8 +61,8 @@ public class GridManager {
     public final void compute() {
         Dimension area = obtainWorkAreaSize();
         int       w    = area.width;
-        int       h    = area.height; // <- 
-        
+        int       h    = area.height;    // <-
+
         mNodesinRow = w / mPreferences.sGRID_XSPACE;
         mNodeAreas  = new ArrayList<>();
 
@@ -301,41 +301,41 @@ public class GridManager {
                 }
             }
         }
-        
-        if(isDockingView) {
-            for(int i=0; i < this.dockingPoints.size(); i++) {
+
+        if (isDockingView) {
+            for (int i = 0; i < this.dockingPoints.size(); i++) {
                 g2d.setColor(new Color(0, 0, 255, 255));
                 g2d.setBackground(new Color(0, 0, 255, 255));
-                g2d.drawOval((int)Math.round(this.dockingPoints.get(i).getX()-10), 
-                        (int)Math.round(this.dockingPoints.get(i).getY()-10), 20, 20);
+                g2d.drawOval((int) Math.round(this.dockingPoints.get(i).getX() - 10),
+                             (int) Math.round(this.dockingPoints.get(i).getY() - 10), 20, 20);
             }
         }
     }
 
-    
     public void setDebugMode(boolean status) {
         this.isDebug = status;
         update();
     }
-    
+
     public void setDockingView(boolean status) {
         this.isDockingView = status;
         update();
     }
-    
+
     public void addDockingPoints(Point2D point) {
         this.dockingPoints.add(point);
     }
-    
+
     public void deleteDockingPoints(Point2D point) {
-        for(int i = 0; i < this.dockingPoints.size(); i++) {
-            if(this.dockingPoints.get(i).getX() == point.getX() &&
-                    this.dockingPoints.get(i).getY() == point.getY()) {
+        for (int i = 0; i < this.dockingPoints.size(); i++) {
+            if ((this.dockingPoints.get(i).getX() == point.getX())
+                    && (this.dockingPoints.get(i).getY() == point.getY())) {
                 this.dockingPoints.remove(i);
+
                 break;
             }
         }
-  }
+    }
 
     public Point getNodeLocation(Point inputPoint) {
         Point p = new Point(inputPoint.x + mPreferences.sGRID_NODEWIDTH / 2,
@@ -455,7 +455,7 @@ public class GridManager {
                 if (isGridInteresected == false) {
                     gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
                 }
-                
+
                 if (gridRectangle.isaStarPath()) {
                     gridRectangle.setaStarPath(false);
                 }

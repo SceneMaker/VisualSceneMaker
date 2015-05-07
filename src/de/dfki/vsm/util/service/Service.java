@@ -1,5 +1,7 @@
 package de.dfki.vsm.util.service;
 
+//~--- JDK imports ------------------------------------------------------------
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,11 +10,7 @@ import java.io.OutputStream;
  * @author Gregor Mehlmann
  */
 public interface Service {
-
-    enum Protocol {
-
-        UDP, TCP
-    }
+    enum Protocol { UDP, TCP }
 
     public Protocol getProtocol();
 

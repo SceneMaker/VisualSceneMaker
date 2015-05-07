@@ -1,32 +1,37 @@
 package de.dfki.vsm.model.sceneflow.command.expression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.Vector;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Vector;
 
 /**
  * @author Gregor Mehlmann
  */
 public class UsrCmd extends Expression {
-
-    private String mName;
+    private String             mName;
     private Vector<Expression> mArgList;
 
     public UsrCmd() {
-        mName = new String();
+        mName    = new String();
         mArgList = new Vector<Expression>();
     }
 
     public UsrCmd(String name) {
-        mName = name;
+        mName    = name;
         mArgList = new Vector<Expression>();
     }
 
     public UsrCmd(String name, Vector<Expression> argList) {
-        mName = name;
+        mName    = name;
         mArgList = argList;
     }
 
@@ -52,9 +57,11 @@ public class UsrCmd extends Expression {
 
     public Vector<Expression> getCopyOfArgList() {
         Vector<Expression> copy = new Vector<Expression>();
+
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
         }
+
         return copy;
     }
 
@@ -72,34 +79,43 @@ public class UsrCmd extends Expression {
 
     public String getAbstractSyntax() {
         String desc = "Command( " + mName + "( ";
+
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getAbstractSyntax();
+
             if (i != mArgList.size() - 1) {
                 desc += " , ";
             }
         }
+
         return desc + " ) )";
     }
 
     public String getConcreteSyntax() {
         String desc = mName + " ( ";
+
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getConcreteSyntax();
+
             if (i != mArgList.size() - 1) {
                 desc += " , ";
             }
         }
+
         return desc + " )";
     }
 
     public String getFormattedSyntax() {
         String desc = "#b#" + mName + " ( ";
+
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getFormattedSyntax();
+
             if (i != mArgList.size() - 1) {
                 desc += " , ";
             }
         }
+
         return desc + " ) ";
     }
 
@@ -109,18 +125,20 @@ public class UsrCmd extends Expression {
 
     public void writeXML(IndentWriter out) throws XMLWriteError {
         out.println("<UserCommand name=\"" + mName + "\">").push();
+
         for (int i = 0; i < mArgList.size(); i++) {
             mArgList.get(i).writeXML(out);
         }
+
         out.pop().println("</UserCommand>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 Expression exp = Expression.parse(element);
+
                 mArgList.add(exp);
             }
         });

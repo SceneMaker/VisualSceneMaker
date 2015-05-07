@@ -1,13 +1,20 @@
 package de.dfki.vsm.util.syn;
 
+//~--- non-JDK imports --------------------------------------------------------
+
+import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.awt.Color;
-import java.io.ByteArrayOutputStream;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.awt.Color;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * @author Gregor Mehlmann
@@ -15,15 +22,13 @@ import org.w3c.dom.Element;
 public final class SyntaxTokenStyle implements Comparable, ModelObject {
 
     // The System Logger
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
-
-    private String mName = null;
-    private Color mBCol = null;
-    private Color mFCol = null;
-    private boolean mBold = false;
-    private boolean mEmph = false;
-    private boolean mUndl = false;
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private String                 mName   = null;
+    private Color                  mBCol   = null;
+    private Color                  mFCol   = null;
+    private boolean                mBold   = false;
+    private boolean                mEmph   = false;
+    private boolean                mUndl   = false;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -52,13 +57,8 @@ public final class SyntaxTokenStyle implements Comparable, ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SyntaxTokenStyle(
-            final String name,
-            final Color bcol,
-            final Color fcol,
-            final boolean bold,
-            final boolean emph,
-            final boolean undl) {
+    public SyntaxTokenStyle(final String name, final Color bcol, final Color fcol, final boolean bold,
+                            final boolean emph, final boolean undl) {
         mName = name;
         mBCol = bcol;
         mFCol = fcol;
@@ -173,6 +173,7 @@ public final class SyntaxTokenStyle implements Comparable, ModelObject {
         if (object instanceof SyntaxTokenStyle) {
             return mName.compareTo(((SyntaxTokenStyle) object).mName);
         }
+
         return 0;
     }
 
@@ -181,13 +182,9 @@ public final class SyntaxTokenStyle implements Comparable, ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IndentWriter stream) throws XMLWriteError {
-        stream.print("<TokenStyle "
-                + "name=\"" + mName + "\" "
-                + "fcol=\"#" + getFHex() + "\" "
-                + "bcol=\"#" + getBHex() + "\" "
-                + "bold=\"" + mBold + "\" "
-                + "emph=\"" + mEmph + "\" "
-                + "undl=\"" + mUndl + "\"/>");
+        stream.print("<TokenStyle " + "name=\"" + mName + "\" " + "fcol=\"#" + getFHex() + "\" " + "bcol=\"#"
+                     + getBHex() + "\" " + "bold=\"" + mBold + "\" " + "emph=\"" + mEmph + "\" " + "undl=\"" + mUndl
+                     + "\"/>");
         stream.flush();
     }
 
@@ -217,19 +214,25 @@ public final class SyntaxTokenStyle implements Comparable, ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String toString() {
+
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
         // Initialize The Indent Writer
         final IndentWriter stream = new IndentWriter(buffer);
+
         try {
+
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {
             mLogger.failure(exc.toString());
         }
+
         // Cleanup Stream and Writer
         stream.flush();
         stream.close();
+
         // Return String Representation
         try {
             return buffer.toString("UTF-8");

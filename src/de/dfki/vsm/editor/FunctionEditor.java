@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
@@ -14,6 +15,7 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 
 //~--- JDK imports ------------------------------------------------------------
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -25,9 +27,11 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observer;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -50,28 +54,28 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
  *
  */
 public class FunctionEditor extends JPanel implements EventListener, Observer {
-
-    private final Observable mObservable = new Observable();
-    private final EventCaster mEventCaster = EventCaster.getInstance();
-    private JSplitPane mSplitPane;
-    private JScrollPane mLeftScrollPanel;
-    private JScrollPane mRightScrollPanel;
-    private JPanel mFunctionsPanel;
-    private JPanel mButtonPanel;
-    private RemoveButton mRemoveButton;
-    private AddButton mAddFunctionButton;
+    private final Observable              mObservable  = new Observable();
+    private final EventCaster             mEventCaster = EventCaster.getInstance();
+    private JSplitPane                    mSplitPane;
+    private JScrollPane                   mLeftScrollPanel;
+    private JScrollPane                   mRightScrollPanel;
+    private JPanel                        mFunctionsPanel;
+    private JPanel                        mButtonPanel;
+    private RemoveButton                  mRemoveButton;
+    private AddButton                     mAddFunctionButton;
     private final ArrayList<FunDefDialog> mFunDefDialogList;
-    private final SceneFlow mSceneFlow;
+    private final SceneFlow               mSceneFlow;
 
     /**
      *
      */
     public FunctionEditor(SceneFlow sceneflow) {
-        mSceneFlow = sceneflow;
+        mSceneFlow        = sceneflow;
         mFunDefDialogList = new ArrayList<>();
         setLayout(new GridLayout(1, 0));
         setOpaque(false);
         initComponents();
+
         // Add the element editor to the event multicaster
         EventCaster.getInstance().append(this);
     }
@@ -100,12 +104,12 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mSplitPane.setBorder(BorderFactory.createEmptyBorder());
         mSplitPane.setLeftComponent(mRightScrollPanel);
         mSplitPane.setRightComponent(mLeftScrollPanel);
-//        flattenSplitPane(mSplitPane);
-//        mSplitPane.setResizeWeight(0.10d);
+
+//      flattenSplitPane(mSplitPane);
+//      mSplitPane.setResizeWeight(0.10d);
         mSplitPane.setDividerLocation(0.20d);
         mSplitPane.setDividerSize(1);
         mSplitPane.setBorder(null);
-        
         add(mSplitPane);
     }
 
@@ -115,8 +119,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             public BasicSplitPaneDivider createDefaultDivider() {
                 return new BasicSplitPaneDivider(this) {
                     @Override
-                    public void setBorder(Border b) {
-                    }
+                    public void setBorder(Border b) {}
                 };
             }
         });
@@ -141,17 +144,18 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
 
             // Add content of the function container
             JPanel functionContent = funDefPanel.createPanel();
+
             functionContent.setOpaque(false);
+
             JPanel functionContainer = new JPanel();
+
             functionContainer.setOpaque(false);
             functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
-            
 
             // add remove button to the far right
-            //REMOVE BUTTON
+            // REMOVE BUTTON
             mRemoveButton = new RemoveButton();
             mRemoveButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
                 public synchronized void mouseClicked(java.awt.event.MouseEvent evt) {
                     removeFunction(funDef);
                 }
@@ -166,13 +170,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
              *   content to highlight the functionContainer being edited
              *   nd save edited changes
              */
+
             // Function Name
             funDefPanel.getNameInput().addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
                 }
-
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
@@ -202,63 +206,61 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 }
             });
 
-             // Function Class Name
+            // Function Class Name
             funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent evt) {
                     updateFunDef(funDef, funDefPanel);
                 }
             });
-
             funDefPanel.getClassNameInput().addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
                 }
-
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
                 }
             });
 
-            // Function Method    
+            // Function Method
             funDefPanel.getMethodBox().addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
                 }
-
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
                 }
             });
-
             funDefPanel.getMethodBox().addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
-
                     if (funDefPanel.getIsValidClass()) {
-
                         if (funDefPanel.getMethodBox().getSelectedItem() != null) {
-                            funDefPanel.setSelectedMethod(funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
+                            funDefPanel.setSelectedMethod(
+                                funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
                         }
+
                         if (funDefPanel.getSelectedMethod() != null) {
 
-                            //updateFunDef(funDef, funDefPanel);
+                            // updateFunDef(funDef, funDefPanel);
                             String newSelectedMethodName = funDefPanel.getSelectedMethod().getName().trim();
 
                             funDef.setMethod(newSelectedMethodName);
                             funDefPanel.getFunDef().setMethod(newSelectedMethodName);
                             funDefPanel.methodComboBoxActionPerformed(evt);
                             funDef.getParamList().clear();
+
                             Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
+
                             while (args.hasMoreElements()) {
                                 String argString = (String) args.nextElement();
 
-                                funDef.addParam(
-                                        new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
+                                funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
+                                                             funDefPanel.getTypeMap().get(argString)));
                             }
 
                             Editor.getInstance().update();
@@ -281,7 +283,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
                 }
-
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
@@ -293,7 +294,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                     if (funDefPanel.getIsValidClass()) {
                         if (funDefPanel.getMethodBox().getSelectedItem() != null) {
                             funDefPanel.setSelectedMethod(
-                                    funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
+                                funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
                         }
 
                         if (funDefPanel.getSelectedMethod() != null) {
@@ -312,7 +313,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                                 String argString = (String) args.nextElement();
 
                                 funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
-                                        funDefPanel.getTypeMap().get(argString)));
+                                                             funDefPanel.getTypeMap().get(argString)));
                             }
 
                             Editor.getInstance().update();
@@ -327,7 +328,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
                 }
-
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
@@ -345,7 +345,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                         String argString = (String) args.nextElement();
 
                         funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
-                                funDefPanel.getTypeMap().get(argString)));
+                                                     funDefPanel.getTypeMap().get(argString)));
                     }
 
                     Editor.getInstance().update();
@@ -363,13 +363,12 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
 
         // Create Button
         mAddFunctionButton = new AddButton();
-        
         updateAddButton();
         mAddFunctionButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 addNewFunction();
-//                updateAddButton();
+
+//              updateAddButton();
             }
         });
 
@@ -392,7 +391,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         // manually register the accelerator in the button's component input map
         mAddFunctionButton.getActionMap().put("myAction", action);
         mAddFunctionButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-                (KeyStroke) action.getValue(Action.ACCELERATOR_KEY), "myAction");
+            (KeyStroke) action.getValue(Action.ACCELERATOR_KEY), "myAction");
     }
 
     /**
@@ -418,7 +417,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             Editor.getInstance().update();
         }
 
-       // Editor.getInstance().update();
+        // Editor.getInstance().update();
     }
 
     public AddButton getAddFunctionButton() {
@@ -443,7 +442,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 }
             }
 
-//            updateAddButton();
+//          updateAddButton();
         } else if (event instanceof FunctionCreatedEvent) {
             displayFunctionPanels();
 
@@ -468,7 +467,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 }
             }
 
-//            updateAddButton();
+//          updateAddButton();
         } else if (event instanceof FunctionModifiedEvent) {
             displayFunctionPanels();
 
@@ -495,7 +494,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
     }
 
     private void updateFunDef(FunDef funDef, FunDefDialog funDefDialog) {
-
         boolean isClass = true;
 
         funDef.setName(funDefDialog.getNameInput().getText().trim());
@@ -519,9 +517,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 String argString = (String) args.nextElement();
 
                 funDef.addParam(new ParamDef(funDefDialog.getNameMap().get(argString),
-                        funDefDialog.getTypeMap().get(argString)));
+                                             funDefDialog.getTypeMap().get(argString)));
             }
-
         }
 
         Editor.getInstance().update();
@@ -537,10 +534,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             public void mouseEntered(MouseEvent me) {
                 mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big_blue.png"));
             }
-
             public void mouseExited(MouseEvent me) {
                 mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big.png"));
-
             }
         });
     }
@@ -559,7 +554,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             String argString = (String) args.nextElement();
 
             funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
-                    funDefPanel.getTypeMap().get(argString)));
+                                         funDefPanel.getTypeMap().get(argString)));
         }
 
         Editor.getInstance().update();
@@ -577,6 +572,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
      */
     private void launchFunctionCreatedEvent(FunDef funDef) {
         FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
+
         mEventCaster.convey(ev);
     }
 
@@ -584,7 +580,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
      *
      */
     private class Observable extends java.util.Observable {
-
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);

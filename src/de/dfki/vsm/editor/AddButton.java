@@ -1,16 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.editor;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.ResourceLoader;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
+
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
@@ -20,7 +21,7 @@ import javax.swing.SwingConstants;
  */
 public class AddButton extends JLabel {
     private final Dimension buttonSize = new Dimension(125, 30);
-    
+
     public AddButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(false);
@@ -35,19 +36,15 @@ public class AddButton extends JLabel {
         setMinimumSize(buttonSize);
         addMouseListener(new java.awt.event.MouseAdapter() {
 
-//            public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                //savePreferences(true);
-//            }
-
+//          public void mouseClicked(java.awt.event.MouseEvent evt) {
+//              //savePreferences(true);
+//          }
             public void mouseEntered(MouseEvent me) {
                 setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
             }
-
             public void mouseExited(MouseEvent me) {
                 setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
-
             }
         });
-
     }
 }

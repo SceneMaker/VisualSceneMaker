@@ -1,12 +1,18 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.Vector;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Vector;
 
 /**
  * An empty condition
@@ -14,17 +20,16 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class ContainsCond extends Condition {
-
     private Expression mLeftExp;
     private Expression mRightExp;
 
     public ContainsCond() {
-        mLeftExp = null;
+        mLeftExp  = null;
         mRightExp = null;
     }
 
     public ContainsCond(Expression lexp, Expression rexp) {
-        mLeftExp = lexp;
+        mLeftExp  = lexp;
         mRightExp = rexp;
     }
 
@@ -49,18 +54,27 @@ public class ContainsCond extends Condition {
     }
 
     public String getAbstractSyntax() {
-        return "Contains ( " + (mLeftExp != null ? mLeftExp.getAbstractSyntax() : "")
-                + " , " + (mRightExp != null ? mRightExp.getAbstractSyntax() : "") + " ) ";
+        return "Contains ( " + ((mLeftExp != null)
+                                ? mLeftExp.getAbstractSyntax()
+                                : "") + " , " + ((mRightExp != null)
+                ? mRightExp.getAbstractSyntax()
+                : "") + " ) ";
     }
 
     public String getConcreteSyntax() {
-        return "Contains ( " + (mLeftExp != null ? mLeftExp.getConcreteSyntax() : "")
-                + " , " + (mRightExp != null ? mRightExp.getConcreteSyntax() : "") + " ) ";
+        return "Contains ( " + ((mLeftExp != null)
+                                ? mLeftExp.getConcreteSyntax()
+                                : "") + " , " + ((mRightExp != null)
+                ? mRightExp.getConcreteSyntax()
+                : "") + " ) ";
     }
 
     public String getFormattedSyntax() {
-        return "Contains ( " + (mLeftExp != null ? mLeftExp.getFormattedSyntax() : "")
-                + " , " + (mRightExp != null ? mRightExp.getFormattedSyntax() : "") + " ) ";
+        return "Contains ( " + ((mLeftExp != null)
+                                ? mLeftExp.getFormattedSyntax()
+                                : "") + " , " + ((mRightExp != null)
+                ? mRightExp.getFormattedSyntax()
+                : "") + " ) ";
     }
 
     public ContainsCond getCopy() {
@@ -76,13 +90,13 @@ public class ContainsCond extends Condition {
 
     public void parseXML(Element element) throws XMLParseError {
         final Vector<Expression> expList = new Vector<Expression>();
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
 
+        XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
                 expList.add(Expression.parse(element));
             }
         });
-        mLeftExp = expList.firstElement();
+        mLeftExp  = expList.firstElement();
         mRightExp = expList.lastElement();
     }
 }

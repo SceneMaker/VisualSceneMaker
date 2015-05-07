@@ -1,10 +1,15 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -22,6 +27,7 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
      * The old condition of the conditional edge
      */
     private LogicalCond mOldCondition;
+
     /**
      * The new condition of the conditional edge
      */
@@ -41,13 +47,16 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
      */
     @Override
     public void run() {
+
         // Remember the old condition
         mOldCondition = ((CEdge) mDataEdge).getCondition();
+
         // Show a dialog to modify the condition
         ModifyCEdgeDialog dialog = new ModifyCEdgeDialog(((CEdge) mDataEdge));
-        CEdge cedge = dialog.run();
-    // If the condition was successfully modified then 
-        // remember the new condition and update the undomanager 
+        CEdge             cedge  = dialog.run();
+
+        // If the condition was successfully modified then
+        // remember the new condition and update the undomanager
         if (cedge != null) {
             mNewCondition = cedge.getCondition();
             mUndoManager.addEdit(new Edit());
@@ -57,18 +66,19 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             ((CEdge) mDataEdge).setCondition(mOldCondition);
-            //mGUIEdge.update();
+
+            // mGUIEdge.update();
             mGUIEdge.repaint();
         }
 
         @Override
         public void redo() throws CannotRedoException {
             ((CEdge) mDataEdge).setCondition(mNewCondition);
-            //mGUIEdge.update();
+
+            // mGUIEdge.update();
             mGUIEdge.repaint();
         }
 

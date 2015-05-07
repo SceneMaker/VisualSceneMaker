@@ -1,9 +1,12 @@
 package de.dfki.vsm.model.visicon;
 
-import de.dfki.vsm.util.ios.IndentWriter;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -13,6 +16,7 @@ public final class VisiconViseme implements ModelObject {
 
     // The Key Of The Feature
     private String mKey;
+
     // The Value Of The Feature
     private String mValue;
 
@@ -20,19 +24,19 @@ public final class VisiconViseme implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public VisiconViseme() {
+
         // Initialize The Members
-        mKey = null;
+        mKey   = null;
         mValue = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public VisiconViseme(
-            final String key,
-            final String value) {
+    public VisiconViseme(final String key, final String value) {
+
         // Initialize The Members
-        mKey = key;
+        mKey   = key;
         mValue = value;
     }
 
@@ -64,7 +68,7 @@ public final class VisiconViseme implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
-        mKey = element.getAttribute("key");
+        mKey   = element.getAttribute("key");
         mValue = element.getAttribute("value");
     }
 

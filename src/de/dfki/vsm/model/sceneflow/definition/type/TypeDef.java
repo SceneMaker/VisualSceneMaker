@@ -1,7 +1,10 @@
 package de.dfki.vsm.model.sceneflow.definition.type;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -10,12 +13,9 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public abstract class TypeDef extends Object {
-
-    public enum Flavour {
-
-        List, Struct
-    }
     protected String mName;
+
+    public enum Flavour { List, Struct }
 
     public TypeDef() {
         mName = new String();
@@ -39,7 +39,8 @@ public abstract class TypeDef extends Object {
 
     public static TypeDef parse(Element element) throws XMLParseError {
         TypeDef type = null;
-        String tag = element.getTagName();
+        String  tag  = element.getTagName();
+
         if (tag.equals("ListType")) {
             type = new ListTypeDef();
         } else if (tag.equals("StructType")) {
@@ -47,7 +48,9 @@ public abstract class TypeDef extends Object {
         } else {
             throw new XMLParseError(null, "Hilfe!");
         }
+
         type.parseXML(element);
+
         return type;
     }
 }

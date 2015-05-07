@@ -1,7 +1,10 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -10,17 +13,16 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class MemVarExp extends LExpression {
-
     private String mName;
     private String mMember;
 
     public MemVarExp() {
-        mName = new String();
+        mName   = new String();
         mMember = new String();
     }
 
     public MemVarExp(String name, String member) {
-        mName = name;
+        mName   = name;
         mMember = member;
     }
 
@@ -58,15 +60,16 @@ public class MemVarExp extends LExpression {
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        mName = element.getAttribute("name");
+        mName   = element.getAttribute("name");
         mMember = element.getAttribute("member");
-        /*
-         ParseAction.processChildNodes(element, new ParseAction() {
 
-         public void run(Element element) throws ParseException {
-         mMember = Expression.parse(element);
-         }
-         });
+        /*
+         * ParseAction.processChildNodes(element, new ParseAction() {
+         *
+         * public void run(Element element) throws ParseException {
+         * mMember = Expression.parse(element);
+         * }
+         * });
          */
     }
 }
