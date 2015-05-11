@@ -17,6 +17,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalC
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.tpl.TPLTuple;
+import java.awt.Color;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -284,6 +285,10 @@ public class ModifyIEdgeDialog extends Dialog {
     protected void okActionPerformed() {
         if (process()) {
             dispose(Button.OK);
+        }
+        else{
+            mInputTextField.setForeground(Color.red);
+            Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
         }
     }
 

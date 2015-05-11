@@ -23,7 +23,7 @@ public class EventObserver {
         for (Object obj : array) {
             Configuration.State state = (Configuration.State) obj;
 
-            if (state.getNode() instanceof SuperNode) {
+            //if (state.getNode() instanceof SuperNode) {
                 for (IEdge iedge : state.getNode().getIEdgeList()) {
                     try {
                         if (((BooleanValue) mInterpreter.getEvaluator().evaluate(iedge.getCondition(),
@@ -56,7 +56,7 @@ public class EventObserver {
                         return;
                     }
                 }
-            }
+            //}
         }
     }
 }
