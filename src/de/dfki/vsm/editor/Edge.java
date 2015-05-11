@@ -354,7 +354,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             }
         }
 
-        if (mType.equals(TYPE.CEDGE)) {
+        else if (mType.equals(TYPE.CEDGE)) {
             try {
                 _SFSLParser_.parseResultType = _SFSLParser_.LOG;
                 _SFSLParser_.run(input);
@@ -364,10 +364,30 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((CEdge) mDataEdge).setCondition(log);
                 } else {
-
+                    Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+   
                     // Do nothing
                 }
             } catch (Exception e) {}
+        }
+        
+       
+        else if (mType.equals(TYPE.IEDGE)){
+             try {
+                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
+                _SFSLParser_.run(input);
+
+                LogicalCond log = _SFSLParser_.logResult;
+
+                if ((log != null) &&!_SFSLParser_.errorFlag) {
+                    ((IEdge) mDataEdge).setCondition(log);
+                    
+                } else {
+
+                }
+            } catch (Exception e) {
+
+            }
         }
 
         Editor.getInstance().update();
@@ -488,9 +508,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             }
 
             if (mType.equals(TYPE.TEDGE) || mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {
+               // mValueEditor.setText(getDescription());
                 add(mValueEditor);
                 mEditMode = true;
             }
+            
+            
         }
     }
 
