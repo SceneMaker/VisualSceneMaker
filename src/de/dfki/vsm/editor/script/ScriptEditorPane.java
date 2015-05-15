@@ -57,6 +57,7 @@ public class ScriptEditorPane extends JEditorPane
     public ScriptEditorPane(ProjectPreferences preferences) {
         mPreferences = preferences;
         mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);
+        
         setFont(mFont);
         // Set Lexxer And Editor
         setEditorKit(new ScriptEditorKit());

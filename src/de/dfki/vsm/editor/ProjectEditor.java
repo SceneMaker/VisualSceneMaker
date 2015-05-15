@@ -12,11 +12,6 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
@@ -24,8 +19,6 @@ import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
@@ -44,13 +37,9 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     private final Observable mObservable = new Observable();
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventCaster = EventCaster.getInstance();
-    
-    
-    private final double topElement = 0.6;
-    private long previousTime;
-    private boolean firstEntrance = false;
-    
-    
+
+    private final double topElementRatio = 0.6;
+
     /**
      * *************************************************************************
      *
@@ -87,8 +76,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
                 showSceneDocEditor();
             }
         }
-        if(evt instanceof NodeSelectedEvent && !mSceneDocEditor.isPinPricked())
-        {
+        if (evt instanceof NodeSelectedEvent && !mSceneDocEditor.isPinPricked()) {
             hideSceneDocEditor();
         }
     }
@@ -103,7 +91,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     public ProjectEditor(ProjectData project) {
         super(JSplitPane.VERTICAL_SPLIT, true);
 
-        mProject = project;        
+        mProject = project;
         mSceneDocEditor = new ScriptEditorPanel(mProject.getSceneScript(), mProject.getSceneFlow(), mProject.getPreferences(), mProject.getPreferencesFileName(), this);
         mSceneFlowEditor = new SceneFlowEditor(mProject.getSceneFlow(), mProject, mSceneDocEditor);
 
@@ -111,13 +99,12 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         mObservable.addObserver(mSceneDocEditor);
 
         mEventCaster.append(this);
-        
+
         NodeSelectedEvent e = new NodeSelectedEvent(this, mProject.getSceneFlow());
         EventCaster.getInstance().convey(e);
-        
+
         WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
-        EventCaster.getInstance().convey(ev);  
-        
+        EventCaster.getInstance().convey(ev);
 
         initComponents();
     }
@@ -186,15 +173,15 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         setResizeWeight(Float.valueOf(Preferences.getProperty("sceneflow_sceneeditor_ratio")));
         setOneTouchExpandable(true);
 
-        final Polygon pUp = new Polygon();
-        pUp.addPoint(1, 4);
-        pUp.addPoint(5, 0);
-        pUp.addPoint(9, 4);
-
-        final Polygon pDown = new Polygon();
-        pDown.addPoint(13, 0);
-        pDown.addPoint(17, 4);
-        pDown.addPoint(21, 0);
+//        final Polygon pUp = new Polygon();
+//        pUp.addPoint(1, 4);
+//        pUp.addPoint(5, 0);
+//        pUp.addPoint(9, 4);
+//
+//        final Polygon pDown = new Polygon();
+//        pDown.addPoint(13, 0);
+//        pDown.addPoint(17, 4);
+//        pDown.addPoint(21, 0);
         //ProjectEditor thisPE = this;
         setUI(new BasicSplitPaneUI() {
 
@@ -202,125 +189,125 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             public BasicSplitPaneDivider createDefaultDivider() {
                 return new BasicSplitPaneDivider(this) {
 
-                    @Override
-                    public void setBorder(Border b) {
-                    }
-
-                    @Override
-                    public void paint(Graphics g) {
-                        Graphics2D graphics = (Graphics2D) g;
-                        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        Rectangle r = getBounds();
-                        graphics.setColor(UIManager.getColor("Panel.background"));
-                        graphics.fillRect(0, 0, r.width - 1, r.height);
-                        graphics.setColor(new Color(100, 100, 100));
-                        graphics.fillRect((r.width / 2 - 25), 0, 50, r.height);
-                        graphics.drawPolygon(pUp);
-                        graphics.fillPolygon(pUp);
-                        graphics.drawPolygon(pDown);
-                        graphics.fillPolygon(pDown);
-                    }
+//                    @Override
+//                    public void setBorder(Border b) {
+//                    }
+//
+//                    @Override
+//                    public void paint(Graphics g) {
+//                        Graphics2D graphics = (Graphics2D) g;
+//                        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//                        Rectangle r = getBounds();
+//                        graphics.setColor(UIManager.getColor("Panel.background"));
+//                        graphics.fillRect(0, 0, r.width - 1, r.height);
+//                        graphics.setColor(new Color(100, 100, 100));
+//                        graphics.fillRect((r.width / 2 - 25), 0, 50, r.height);
+//                        graphics.drawPolygon(pUp);
+//                        graphics.fillPolygon(pUp);
+//                        graphics.drawPolygon(pDown);
+//                        graphics.fillPolygon(pDown);
+//                    }
                     /**
-                     * Shows the bottom part of the editor when mouse goes over the border
+                     * Shows the bottom part of the editor when mouse goes over
+                     * the border
+                     *
                      * @param me
                      */
-                    @Override 
-                    protected void processMouseMotionEvent(MouseEvent me) {
-                        super.processMouseMotionEvent(me);
+                    @Override
+                    protected void processMouseEvent(MouseEvent me) {
+                        super.processMouseEvent(me);
                         switch (me.getID()) {
-                            case MouseEvent.MOUSE_MOVED:
-                                showSceneDocEditor();                                   
+
+                            case MouseEvent.MOUSE_ENTERED:
+                                if (!mSceneDocEditor.isPinPricked()) {
+                                    showSceneDocEditor();
+                                }
+                                break;
+                            case MouseEvent.MOUSE_RELEASED:
+                                mSceneDocEditor.prickPin();
+                                break;
                         }
                     }
+
                 };
-                
+
             }
+
         });
-//        Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
-//            public void eventDispatched(AWTEvent event) {
-//                if(event instanceof MouseEvent){
-//                    MouseEvent evt = (MouseEvent)event;
-//                    /*System.out.println(evt.getID()+"    "+topElement*java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight()+ "     "+ Editor.getInstance().getHeight() 
-//                    + "     " + evt.getComponent() + "        " + evt.getXOnScreen() );*/
-//                    System.out.println(evt.getComponent());
-//                    if(evt.getComponent() instanceof de.dfki.vsm.editor.ElementEditor || 
-//                       evt.getComponent() instanceof de.dfki.vsm.editor.WorkSpace) {
-//                        if(firstEntrance){
-//                            firstEntrance = false;
-//                            previousTime = System.currentTimeMillis();
-//                        }
-//                        double waiting = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-previousTime);
-//                        //System.out.println(waiting);
-//                        if(waiting >= 2){
-//                            hideSceneDocEditor();
-//                        }
-//                    }
-//                }
-//            }
-//        }, AWTEvent.MOUSE_EVENT_MASK);
-        
+
         setDividerSize(10);
+
         setContinuousLayout(true);
 
         setTopComponent(mSceneFlowEditor);
+
         setBottomComponent(mSceneDocEditor);
         // setting size
         boolean showSceneFlowEditor = Boolean.valueOf(Preferences.getProperty("showscenefloweditor"));
         boolean showSceneDocEditor = Boolean.valueOf(Preferences.getProperty("showsceneeditor"));
 
         if (!showSceneFlowEditor) {
-            setDividerLocation(0);
+            setDividerLocation(1d);
         }
 
-        if (!showSceneDocEditor && showSceneFlowEditor) {
-            setDividerLocation(Editor.getInstance().getHeight());
+        if (showSceneDocEditor && showSceneFlowEditor) {
+            setDividerLocation((int) (topElementRatio * Integer.parseInt(Preferences.getProperty("frame_height"))));
         }
 
-        mSceneDocEditor.addComponentListener(new ComponentListener() {
+        mSceneDocEditor.addComponentListener(
+                new ComponentListener() {
 
-            @Override
-            public void componentResized(ComponentEvent e) {
-                if (mSceneFlowEditor.getSize().height == 0) {
-                    Preferences.setProperty("showscenefloweditor", "false");
-                    Preferences.setProperty("showsceneeditor", "true");
-                } else {
-                    Preferences.setProperty("showscenefloweditor", "true");
+                    @Override
+                    public void componentResized(ComponentEvent e
+                    ) {
+                        if (mSceneFlowEditor.getSize().height == 0) {
+                            Preferences.setProperty("showscenefloweditor", "false");
+                            Preferences.setProperty("showsceneeditor", "true");
+                        } else {
+                            Preferences.setProperty("showscenefloweditor", "true");
+                        }
+                        if (mSceneDocEditor.getSize().height == 0) {
+                            Preferences.setProperty("showscenefloweditor", "true");
+                            Preferences.setProperty("showsceneeditor", "false");
+                        } else {
+                            Preferences.setProperty("showsceneeditor", "true");
+                        }
+                        Preferences.save();
+                    }
+
+                    @Override
+                    public void componentMoved(ComponentEvent e
+                    ) {
+                    }
+
+                    @Override
+                    public void componentShown(ComponentEvent e
+                    ) {
+                    }
+
+                    @Override
+                    public void componentHidden(ComponentEvent e
+                    ) {
+                    }
                 }
-                if (mSceneDocEditor.getSize().height == 0) {
-                    Preferences.setProperty("showscenefloweditor", "true");
-                    Preferences.setProperty("showsceneeditor", "false");
-                } else {
-                    Preferences.setProperty("showsceneeditor", "true");
-                }
-                Preferences.save();
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent e) {
-            }
-
-            @Override
-            public void componentShown(ComponentEvent e) {
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-            }
-        });
+        );
     }
+
     /**
      * Shows the bottom part of the project editor
      */
-    public void showSceneDocEditor(){
-        int originalPos = (int)(topElement*getHeight());
-        this.setDividerLocation(originalPos);
-        firstEntrance = true;
+    public void showSceneDocEditor() {
+        System.out.println(getDividerLocation());
+        System.out.println((int) (topElementRatio * Integer.parseInt(Preferences.getProperty("frame_height"))));
+
+        this.setDividerLocation((int) (topElementRatio * Integer.parseInt(Preferences.getProperty("frame_height"))));
     }
     /*
-    * Hides the bottom part of the project editor
-    */
-    public void hideSceneDocEditor(){
-        this.setDividerLocation(this.getHeight());
+     * Hides the bottom part of the project editor
+     */
+
+    public void hideSceneDocEditor() {
+        this.setDividerLocation(1d);
     }
-    
+
 }

@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.script;
 
+import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.FunctionEditor;
 import de.dfki.vsm.editor.ProjectEditor;
@@ -17,11 +18,13 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -113,6 +116,20 @@ public final class ScriptEditorPanel extends JPanel
         mEditorPane = new ScriptEditorPane(mPreferences);
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);
+        
+        // Create a JButton for adding the tabs
+        AddButton mAddButton = new AddButton();
+        mAddButton.setText("HOLA");
+        mAddButton.setMinimumSize(new java.awt.Dimension(50, 50));
+        mAddButton.setPreferredSize(new java.awt.Dimension(50, 50));
+        mAddButton.setMaximumSize(new java.awt.Dimension(50, 50));
+        mAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                System.out.println("Plus being clicked");
+            }
+        });
+        
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
         mScrollPane.setBorder(BorderFactory.createEtchedBorder());
@@ -122,9 +139,22 @@ public final class ScriptEditorPanel extends JPanel
         mDialogActEditor = new DialogActEditor(mParentPE.getProject());
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane();
+
+
+        // Make a small JPanel with the layout and make it non-opaque
+        FlowLayout f = new FlowLayout(FlowLayout.CENTER, 5, 0);
+
+        JPanel pnlTab = new JPanel(f);
+        pnlTab.setOpaque(false);
+        
+
+        pnlTab.add(mAddButton);
         mTabPane.add("Script", mScrollPane);
         mTabPane.add("Functions", mFunctionEditor);
         mTabPane.add("DialogAct [Experimental]", mDialogActEditor);
+        mTabPane.add("sss", new JPanel());
+        mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnlTab);
+        mTabPane.getComponentAt(mTabPane.getTabCount()-1).setEnabled(false);
         // Initialize the Toolbar
         mScenesToolbar = new ScriptToolBar(this);
         // Initialize The Scroll Pane
@@ -166,6 +196,15 @@ public final class ScriptEditorPanel extends JPanel
      */
     public boolean isPinPricked() {
         return mScenesToolbar.isPinPricked();
+    }
+
+    /**
+     * Fixes the pin
+     *
+     * @return
+     */
+    public void prickPin() {
+        mScenesToolbar.prickPin();
     }
 
     public JTabbedPane getTabPane() {

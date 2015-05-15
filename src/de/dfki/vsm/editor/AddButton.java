@@ -19,7 +19,7 @@ import javax.swing.SwingConstants;
  * @author mfallas
  */
 public class AddButton extends JLabel {
-    private final Dimension buttonSize = new Dimension(125, 30);
+    private final Dimension buttonSize = new Dimension(20, 20);
     
     public AddButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);

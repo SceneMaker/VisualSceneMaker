@@ -19,7 +19,7 @@ import javax.swing.SwingConstants;
  * @author mfallas
  */
 public class EditButton extends JLabel {
-    private final Dimension buttonSize = new Dimension(125, 30);
+    private final Dimension buttonSize = new Dimension(20, 20);
     
     public EditButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);
