@@ -295,7 +295,7 @@ public class FunDefDialog extends Dialog {
         mFunDefContent = new JPanel();
         mFunDefContent.setLayout(new BoxLayout(mFunDefContent, BoxLayout.Y_AXIS));
         //mFunDefContent.setLayout(new GridLayout(0,1)); 
-        mFunDefContent.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        mFunDefContent.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.GRAY));
 
         nameContainer = new JPanel();
         nameContainer.setLayout(new BoxLayout(nameContainer, BoxLayout.X_AXIS));

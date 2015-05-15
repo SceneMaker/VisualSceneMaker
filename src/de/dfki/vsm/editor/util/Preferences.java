@@ -177,7 +177,7 @@ public class Preferences {
     public static boolean sSHOW_VARIABLE_BADGE_ON_WORKSPACE = true;
     public static boolean sSHOW_SMART_PATH_DEBUG = false;
     public static boolean sSHOWIDSOFNODES = true;
-    private static int sPROPERTIES_PANE_SIZE;   
+    private static double sPROPERTIES_PANE_SIZE;   
     /**
      *
      */
@@ -197,7 +197,7 @@ public class Preferences {
         // load visual appearance settings
         sSHOW_ELEMENTS = Boolean.valueOf(sPROPERTIES.getProperty("showelements"));
         sSHOW_ELEMENT_PROPERTIES = Boolean.valueOf(sPROPERTIES.getProperty("showelementproperties"));
-        sPROPERTIES_PANE_SIZE = Integer.valueOf(sPROPERTIES.getProperty("propertiesdividerlocation"));
+        sPROPERTIES_PANE_SIZE = Double.valueOf(sPROPERTIES.getProperty("propertiesdividerlocation"));
         sSHOW_SCENEEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showsceneeditor"));
         sSHOW_SCENEFLOWEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showscenefloweditor"));
         sSCENEFLOW_SCENE_EDITOR_RATIO = Float.valueOf(sPROPERTIES.getProperty("sceneflow_sceneeditor_ratio"));

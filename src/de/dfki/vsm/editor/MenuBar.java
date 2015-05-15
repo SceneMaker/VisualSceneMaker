@@ -317,7 +317,7 @@ public class MenuBar extends JMenuBar {
                 mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
         });
-        mStraightenAllEdgesMenuItem = new JMenuItem("Straighen all Edges");
+        mStraightenAllEdgesMenuItem = new JMenuItem("Straighten all Edges");
         mStraightenAllEdgesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mStraightenAllEdgesMenuItem.addActionListener(new ActionListener() {
 
