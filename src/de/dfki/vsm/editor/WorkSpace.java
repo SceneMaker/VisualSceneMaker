@@ -22,9 +22,16 @@ import de.dfki.vsm.editor.action.RemoveNodesAction;
 import de.dfki.vsm.editor.action.ShortestEdgeAction;
 import de.dfki.vsm.editor.action.StraightenEdgeAction;
 import de.dfki.vsm.editor.action.ToggleStartNodeAction;
+import de.dfki.vsm.editor.event.EdgeEditEvent;
+import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
+import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.configs.ProjectPreferences;
@@ -49,15 +56,6 @@ import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -80,11 +78,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
-
 import java.io.IOException;
-
 import java.text.AttributedString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -92,7 +87,6 @@ import java.util.LinkedList;
 import java.util.Observer;
 import java.util.Set;
 import java.util.Vector;
-
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -137,6 +131,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     private Point              mLastMousePosition           = new Point(0, 0);
     private boolean            mDoAreaSelection             = false;
     private boolean            mDoAreaAction                = false;
+    private boolean            mEditMode                    = false;
     private Set<Node>          mSelectedNodes               = new HashSet<>();
 
     // Variables for edge creation
@@ -244,7 +239,10 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     @Override
     public void update(EventObject event) {
+        
+        mEditMode = event instanceof EdgeEditEvent;        
         checkChangesOnWorkspace();
+        
     }
 
     private void checkChangesOnWorkspace() {
@@ -2575,7 +2573,13 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         } else {
             setBackground(Color.WHITE);
         }
-
+        
+if(mSelectedEdge!=null){
+if(mSelectedEdge.isInEditMode()){
+  setBackground(Color.LIGHT_GRAY);
+}
+}
+ 
         super.paintComponent(g);
         mGridManager.drawGrid(g2d);
 
@@ -2619,7 +2623,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
             break;
         }
-
+            
         g2d.setColor(indicator);
         g2d.setStroke(new BasicStroke(3.0f));
         g2d.drawRect(1, 1, getSize().width - 3, getSize().height - 4);
@@ -2660,6 +2664,8 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public boolean isVarBadgeVisible() {
         return mLocalVarDisplay.isVisible();
     }
+
+
 
     /**
      *
