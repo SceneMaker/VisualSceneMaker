@@ -521,6 +521,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
                 modifyAction.run();
                 Editor.getInstance().update();
+                
+                
+            } else if (mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {
+                mValueEditor.setText(this.getDescription());
             }
 
             if (mType.equals(TYPE.TEDGE) || mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {
@@ -531,7 +535,8 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 mEditMode = true;
                 EventCaster.getInstance().convey(new EdgeEditEvent(this, this.getDataEdge()));
                 add(mTextPanel);
-                mValueEditor.setText(mValueEditor.getText());
+                
+                mValueEditor.setText(mValueEditor.getText()); // hack to make mValueEditor visible
             }
         }
     }
@@ -736,7 +741,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
             int x      = (int) mEg.mLeftCurve.x2 - (mValueEditor.getText().length() * 7);
             int y      = (int) mEg.mLeftCurve.y2 - 20;
-            int width  = 20 + 8*mValueEditor.getText().length();
+            int width  = 20 + 10*mValueEditor.getText().length();
             int height = 40;
 
             mTextPanel.setBounds(x, y, width, height);
