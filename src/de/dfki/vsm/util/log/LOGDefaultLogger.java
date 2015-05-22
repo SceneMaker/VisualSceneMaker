@@ -1,6 +1,11 @@
 package de.dfki.vsm.util.log;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.sys.SYSUtilities;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,9 +17,34 @@ public class LOGDefaultLogger {
 
     // The Singelton Console Logger Instance
     private static LOGDefaultLogger sInstance = null;
+
     // Construct The Java Console Logger
-    private static final Logger sLogger
-            = Logger.getLogger(LOGDefaultLogger.class.getName());
+    private static final Logger sLogger = Logger.getLogger(LOGDefaultLogger.class.getName());
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // Construct The Default Logger
+    private LOGDefaultLogger() {
+
+        // Log The Messages From All Levels
+        sLogger.setLevel(Level.ALL);
+
+        // Do Not Propagate The Messages
+        sLogger.setUseParentHandlers(false);
+
+        try {
+
+            // Install The Console Handler
+            install(new LOGConsoleHandler());
+
+            // Install The Logfile Handler
+            install(new LOGLogFileHandler(SYSUtilities.sLOGFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
+        } catch (Exception exc) {
+            exc.printStackTrace();
+            sLogger.severe(exc.toString());
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -24,29 +54,8 @@ public class LOGDefaultLogger {
         if (sInstance == null) {
             sInstance = new LOGDefaultLogger();
         }
-        return sInstance;
-    }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    // Construct The Default Logger
-    private LOGDefaultLogger() {
-        // Log The Messages From All Levels
-        sLogger.setLevel(Level.ALL);
-        // Do Not Propagate The Messages
-        sLogger.setUseParentHandlers(false);
-        try {
-            // Install The Console Handler
-            install(new LOGConsoleHandler());
-            // Install The Logfile Handler
-            install(new LOGLogFileHandler(
-                    SYSUtilities.sLOGFILE_FILE_NAME,
-                    10485760, 1, true)); // 10 MB Size
-        } catch (Exception exc) {
-            exc.printStackTrace();
-            sLogger.severe(exc.toString());
-        }
+        return sInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////

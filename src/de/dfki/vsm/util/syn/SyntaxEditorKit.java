@@ -1,5 +1,7 @@
 package de.dfki.vsm.util.syn;
 
+//~--- JDK imports ------------------------------------------------------------
+
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -18,21 +20,23 @@ public class SyntaxEditorKit extends DefaultEditorKit implements ViewFactory {
     public SyntaxEditorKit(final SyntaxDocLexxer lexxer) {
         mLexxer = lexxer;
     }
-    
+
     @Override
     public ViewFactory getViewFactory() {
         return this;
     }
-    
+
     @Override
     public View create(final Element element) {
-         System.err.println("Creating View");
+        System.err.println("Creating View");
+
         return new SyntaxEditorView(element);
     }
 
     @Override
     public Document createDefaultDocument() {
-         System.err.println("Creating Document");
+        System.err.println("Creating Document");
+
         return new SyntaxDocument(mLexxer);
     }
 
@@ -40,5 +44,4 @@ public class SyntaxEditorKit extends DefaultEditorKit implements ViewFactory {
     public String getContentType() {
         return "text/script";
     }
-
 }

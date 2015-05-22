@@ -1,5 +1,7 @@
 package de.dfki.vsm.editor.event;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.util.evt.EventObject;
 
@@ -7,7 +9,6 @@ import de.dfki.vsm.util.evt.EventObject;
  * @author Gregor Mehlmann
  */
 public class NodeExecutedEvent extends EventObject {
-
     private Node mNode;
 
     public NodeExecutedEvent(Object source, Node node) {

@@ -1,6 +1,11 @@
 package de.dfki.vsm.util.log;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.sys.SYSUtilities;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,9 +17,30 @@ public class LOGNovaFileLogger {
 
     // The Singelton Console Logger Instance
     private static LOGNovaFileLogger sInstance = null;
+
     // Construct The Java Console Logger
-    private static final Logger sLogger
-            = Logger.getLogger(LOGNovaFileLogger.class.getName());
+    private static final Logger sLogger = Logger.getLogger(LOGNovaFileLogger.class.getName());
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // Construct The Default Logger
+    private LOGNovaFileLogger() {
+
+        // Log The Messages From All Levels
+        sLogger.setLevel(Level.ALL);
+
+        // Do Not Propagate The Messages
+        sLogger.setUseParentHandlers(false);
+
+        try {
+
+            // Install The Nova File Handler
+            install(new LOGNovaFileHandler(SYSUtilities.sNOVAFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
+        } catch (Exception exc) {
+            sLogger.severe(exc.toString());
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -24,26 +50,8 @@ public class LOGNovaFileLogger {
         if (sInstance == null) {
             sInstance = new LOGNovaFileLogger();
         }
-        return sInstance;
-    }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    // Construct The Default Logger
-    private LOGNovaFileLogger() {
-        // Log The Messages From All Levels
-        sLogger.setLevel(Level.ALL);
-        // Do Not Propagate The Messages
-        sLogger.setUseParentHandlers(false);
-        try {
-            // Install The Nova File Handler
-            install(new LOGNovaFileHandler(
-                    SYSUtilities.sNOVAFILE_FILE_NAME,
-                    10485760, 1, true)); // 10 MB Size            
-        } catch (Exception exc) {
-            sLogger.severe(exc.toString());
-        }
+        return sInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////

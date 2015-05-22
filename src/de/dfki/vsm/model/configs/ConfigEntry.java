@@ -1,9 +1,12 @@
 package de.dfki.vsm.model.configs;
 
-import de.dfki.vsm.util.ios.IndentWriter;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -13,6 +16,7 @@ public final class ConfigEntry implements ModelObject, Comparable {
 
     // The Key Of The Feature
     private String mKey;
+
     // The Value Of The Feature
     private String mVal;
 
@@ -20,6 +24,7 @@ public final class ConfigEntry implements ModelObject, Comparable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ConfigEntry() {
+
         // Initialize The Members
         mKey = null;
         mVal = null;
@@ -28,9 +33,8 @@ public final class ConfigEntry implements ModelObject, Comparable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ConfigEntry(
-            final String key,
-            final String val) {
+    public ConfigEntry(final String key, final String val) {
+
         // Initialize The Members
         mKey = key;
         mVal = val;

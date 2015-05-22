@@ -1,10 +1,16 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -13,19 +19,19 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class RemoveNodesAction extends EditorAction {
-
-    Set<Node> mNodes = new HashSet<Node>();
+    Set<Node>             mNodes             = new HashSet<Node>();
     Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<RemoveNodeAction>();
-    WorkSpace mWorkSpace = null;
+    WorkSpace             mWorkSpace         = null;
 
     public RemoveNodesAction(WorkSpace workSpace, Set<Node> nodes) {
         mWorkSpace = workSpace;
-        mNodes = nodes;
+        mNodes     = nodes;
     }
 
     protected void deleteNodes() {
         for (Node node : mNodes) {
             RemoveNodeAction rma = new RemoveNodeAction(mWorkSpace, node);
+
             mRemoveNodeActions.add(rma);
             rma.run();
         }

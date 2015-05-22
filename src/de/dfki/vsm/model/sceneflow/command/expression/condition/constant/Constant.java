@@ -1,8 +1,11 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition.CondType;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -11,9 +14,7 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmannn
  */
 public abstract class Constant extends Condition {
-
     public enum ConstType {
-
         BOOL, INT, STRING, FLOAT, LIST, STRUCT, OBJECT
     }
 
@@ -26,8 +27,9 @@ public abstract class Constant extends Condition {
     public abstract Constant getCopy();
 
     public static Constant parse(Element element) throws XMLParseError {
-        Constant cons = null;
-        java.lang.String tag = element.getTagName();
+        Constant         cons = null;
+        java.lang.String tag  = element.getTagName();
+
         if (tag.equals("Int")) {
             cons = new Int();
         } else if (tag.equals("Float")) {
@@ -42,8 +44,11 @@ public abstract class Constant extends Condition {
             cons = new Struct();
         } else if (tag.equals("Object")) {
             cons = new Object();
-        } else { /* Error */ }
+        } else {    /* Error */
+        }
+
         cons.parseXML(element);
+
         return cons;
     }
 }

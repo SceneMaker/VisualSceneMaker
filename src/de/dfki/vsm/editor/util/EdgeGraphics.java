@@ -1,3 +1,4 @@
+
 /*
 * To change this template, choose Tools | Templates
 * and open the template in the editor.
@@ -19,9 +20,6 @@ import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.CubicCurve2D;
-
-
-//~--- JDK imports ------------------------------------------------------------
 
 import java.util.Vector;
 

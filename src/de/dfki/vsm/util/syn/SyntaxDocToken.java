@@ -1,12 +1,18 @@
 package de.dfki.vsm.util.syn;
 
+//~--- non-JDK imports --------------------------------------------------------
+
+import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.io.ByteArrayOutputStream;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * @author Gregor Mehlmann
@@ -14,17 +20,16 @@ import org.w3c.dom.Element;
 public class SyntaxDocToken implements ModelObject {
 
     // The System Logger
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Token Attributes
-    private final int mIndex;
-    private final int mState;
-    private final int mToken;
-    private final int mLower;
-    private final int mUpper;
-    private final int mLine;
-    private final int mColumn;
+    private final int    mIndex;
+    private final int    mState;
+    private final int    mToken;
+    private final int    mLower;
+    private final int    mUpper;
+    private final int    mLine;
+    private final int    mColumn;
     private final String mField;
     private final String mLexic;
     private final String mValue;
@@ -33,28 +38,21 @@ public class SyntaxDocToken implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Construct The Token Object
-    public SyntaxDocToken(
-            final int index,
-            final int state,
-            final int token,
-            final int lower,
-            final int upper,
-            final int line,
-            final int column,
-            final String value,
-            final String field,
-            final String lexic) {
+    public SyntaxDocToken(final int index, final int state, final int token, final int lower, final int upper,
+                          final int line, final int column, final String value, final String field,
+                          final String lexic) {
+
         // Initialize The Attributes
-        mIndex = index;
-        mState = state;
-        mToken = token;
-        mLower = lower;
-        mUpper = upper;
-        mLine = line;
+        mIndex  = index;
+        mState  = state;
+        mToken  = token;
+        mLower  = lower;
+        mUpper  = upper;
+        mLine   = line;
         mColumn = column;
-        mValue = value;
-        mField = field;
-        mLexic = lexic;
+        mValue  = value;
+        mField  = field;
+        mLexic  = lexic;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -125,16 +123,10 @@ public class SyntaxDocToken implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void writeXML(final IndentWriter stream) throws XMLWriteError {
-        stream.println("<SyntaxDocToken "
-                + "field=\"" + mField + "\" "
-                + "lexic=\"" + mLexic + "\" "
-                + "token=\"" + mToken + "\" "
-                + "index=\"" + mIndex + "\" "
-                + "state=\"" + mState + "\" "
-                + "lower=\"" + mLower + "\" "
-                + "upper=\"" + mUpper + "\" "
-                + "line=\"" + mLine + "\" "
-                + "column=\"" + mColumn + "\">").push();
+        stream.println("<SyntaxDocToken " + "field=\"" + mField + "\" " + "lexic=\"" + mLexic + "\" " + "token=\""
+                       + mToken + "\" " + "index=\"" + mIndex + "\" " + "state=\"" + mState + "\" " + "lower=\""
+                       + mLower + "\" " + "upper=\"" + mUpper + "\" " + "line=\"" + mLine + "\" " + "column=\""
+                       + mColumn + "\">").push();
         stream.println(mValue).pop();
         stream.print("</SyntaxDocToken>");
     }
@@ -144,6 +136,7 @@ public class SyntaxDocToken implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void parseXML(Element element) throws XMLParseError {
+
         // TODO
     }
 
@@ -152,10 +145,7 @@ public class SyntaxDocToken implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public SyntaxDocToken getCopy() {
-        return new SyntaxDocToken(
-                mIndex, mState, mToken, mLower,
-                mUpper, mLine, mColumn, mValue,
-                mField, mLexic);
+        return new SyntaxDocToken(mIndex, mState, mToken, mLower, mUpper, mLine, mColumn, mValue, mField, mLexic);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -163,19 +153,25 @@ public class SyntaxDocToken implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String toString() {
+
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
         // Initialize The Indent Writer
         final IndentWriter stream = new IndentWriter(buffer);
+
         try {
+
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {
             mLogger.failure(exc.toString());
         }
+
         // Cleanup Stream and Writer
         stream.flush();
         stream.close();
+
         // Return String Representation
         try {
             return buffer.toString("UTF-8");
@@ -183,5 +179,4 @@ public class SyntaxDocToken implements ModelObject {
             return buffer.toString();
         }
     }
-
 }

@@ -1,14 +1,18 @@
+
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* To change this template, choose Tools | Templates
+* and open the template in the editor.
  */
 package de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression;
+
+//~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -16,17 +20,16 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class ArrVarExp extends LExpression {
-
-    private String mName;
+    private String     mName;
     private Expression mIndex;
 
     public ArrVarExp() {
-        mName = new String();
+        mName  = new String();
         mIndex = null;
     }
 
     public ArrVarExp(String name, Expression index) {
-        mName = name;
+        mName  = name;
         mIndex = index;
     }
 
@@ -66,7 +69,6 @@ public class ArrVarExp extends LExpression {
     public void parseXML(Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 mIndex = Expression.parse(element);
             }

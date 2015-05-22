@@ -3,17 +3,12 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.action.ModifyEdgeAction;
+import de.dfki.vsm.editor.event.EdgeEditEvent;
 import de.dfki.vsm.editor.event.EdgeExecutedEvent;
 import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.EdgeGraphics;
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sEEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.CEdge;
@@ -26,6 +21,16 @@ import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
+import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sEEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
+import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -43,16 +48,24 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
+
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Timer;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JTextArea;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 /**
  * @author Patrick Gebhard
@@ -99,7 +112,8 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private final EventCaster      mEventMulticaster  = EventCaster.getInstance();
 
     // edit panel
-    private JTextArea mValueEditor = null;
+    private JPanel    mTextPanel   = null;
+    private JTextPane mValueEditor = null;
     private boolean   mEditMode    = false;
 
     //
@@ -330,52 +344,29 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mFontHeightCorrection = (mFM.getAscent() - mFM.getDescent()) / 2;
     }
 
-    public void updateFromTextEditor() {
-        String input = mValueEditor.getText();
-
-        if (mType.equals(TYPE.TEDGE)) {
-            String timeout;
-
-            timeout = input.replace("m", "");
-            timeout = input.replace("s", "");
-            timeout = input.replace(" ", "");
-            timeout = input.replace("\n", "");
-
-            try {
-                ((TEdge) mDataEdge).setTimeout(Long.valueOf(input));
-            } catch (NumberFormatException e) {
-                mLogger.warning("Invalid Number Format");
-            }
-        }
-
-        if (mType.equals(TYPE.CEDGE)) {
-            try {
-                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-                _SFSLParser_.run(input);
-
-                LogicalCond log = _SFSLParser_.logResult;
-
-                if ((log != null) &&!_SFSLParser_.errorFlag) {
-                    ((CEdge) mDataEdge).setCondition(log);
-                } else {
-
-                    // Do nothing
-                }
-            } catch (Exception e) {}
-        }
-
-        Editor.getInstance().update();
-    }
-
+    /* 
+    * Initialize mTextPane and mValueEditor
+    */
     private void initEditBox() {
+        
         setLayout(null);
-        mValueEditor = new JTextArea();
-        mValueEditor.setOpaque(true);
-        mValueEditor.setPreferredSize(new Dimension(100, 20));
-        mValueEditor.setFont(new Font(Font.SANS_SERIF, 1, 16));
-        mValueEditor.setBackground(Color.WHITE);
-        mValueEditor.setForeground(Color.GRAY);
-
+         
+        mTextPanel = new JPanel();
+        mTextPanel.setLayout(new BoxLayout(mTextPanel, BoxLayout.Y_AXIS));        
+        mTextPanel.setBackground(Color.WHITE);
+        mTextPanel.setBorder(BorderFactory.createLineBorder(Color.red));  
+        
+        mValueEditor = new JTextPane();
+        SimpleAttributeSet attribs = new SimpleAttributeSet();
+        StyleConstants.setAlignment(attribs, StyleConstants.ALIGN_CENTER);
+        StyleConstants.setFontFamily(attribs, Font.SANS_SERIF);
+        StyleConstants.setFontSize(attribs, 16);
+        mValueEditor.setParagraphAttributes(attribs, true);
+        
+        mTextPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+        mTextPanel.add(mValueEditor);
+        mTextPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+         
         if (mDataEdge != null) {
             if (mType.equals(TYPE.TEDGE)) {
                 mValueEditor.setText("" + ((TEdge) mDataEdge).getTimeout());
@@ -398,6 +389,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 updateFromTextEditor();
             }
         };
+        
         Action escapeAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -410,6 +402,54 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mValueEditor.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "escape");
         mValueEditor.getActionMap().put("escape", escapeAction);
     }
+    
+    /*
+    *   Take input value of mValueEditor and set it as value of the edge
+    */
+    public void updateFromTextEditor() {
+        String input = mValueEditor.getText();
+
+        if (mType.equals(TYPE.TEDGE)) {
+            try {
+                ((TEdge) mDataEdge).setTimeout(Long.valueOf(input));
+            } catch (NumberFormatException e) {
+                mLogger.warning("Invalid Number Format");
+            }
+            
+        } else if (mType.equals(TYPE.CEDGE)) {
+            try {
+                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
+                _SFSLParser_.run(input);
+
+                LogicalCond log = _SFSLParser_.logResult;
+
+                if ((log != null) &&!_SFSLParser_.errorFlag) {
+                    ((CEdge) mDataEdge).setCondition(log);
+                } else {
+                    Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                        "Remember to wrap condition in parenthesis");
+
+                    // Do nothing
+                }
+            } catch (Exception e) {}
+            
+        } else if (mType.equals(TYPE.IEDGE)) {
+            try {
+                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
+                _SFSLParser_.run(input);
+
+                LogicalCond log = _SFSLParser_.logResult;
+
+                if ((log != null) &&!_SFSLParser_.errorFlag) {
+                    ((IEdge) mDataEdge).setCondition(log);
+                } else {}
+            } catch (Exception e) {}
+        }
+
+        Editor.getInstance().update();
+    }
+
+    
 
     public void setDeselected() {
         mIsSelected  = false;
@@ -418,7 +458,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mCSPSelected = false;
         mCEPSelected = false;
         mEditMode    = false;
-        remove(mValueEditor);
+        remove(mTextPanel);
         repaint();
     }
 
@@ -465,31 +505,39 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         // show contect menu
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
             mWorkSpace.showContextMenu(event, this);
-        } else if ((event.getClickCount() == 2)) {
-            
-            
+        } 
+        else if ((event.getClickCount() == 2)) {
             
             if (mType.equals(TYPE.TEDGE)) {
                 String timeout = getDescription();
-
                 timeout = timeout.replace("m", "");
                 timeout = timeout.replace("s", "");
                 timeout = timeout.replace(" ", "");
                 timeout = timeout.replace("\n", "");
                 mValueEditor.setText(timeout);
-            }
-            else  if (mType.equals(TYPE.PEDGE)) {
+                
+            } else if (mType.equals(TYPE.PEDGE)) {
                 ModifyEdgeAction modifyAction = new ModifyEdgeAction(this, mWorkSpace);
+
                 modifyAction.run();
                 Editor.getInstance().update();
-
+                
+                
+            } else if (mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {
+                mValueEditor.setText(this.getDescription());
             }
 
-            if (mType.equals(TYPE.TEDGE)||mType.equals(TYPE.CEDGE)) {
-                add(mValueEditor);
+            if (mType.equals(TYPE.TEDGE) || mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {
+
+                // mValueEditor.setText(getDescription());
+             
+                mValueEditor.requestFocus();
                 mEditMode = true;
+                EventCaster.getInstance().convey(new EdgeEditEvent(this, this.getDataEdge()));
+                add(mTextPanel);
+                
+                mValueEditor.setText(mValueEditor.getText()); // hack to make mValueEditor visible
             }
-            
         }
     }
 
@@ -686,9 +734,17 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                                       mDescription);
             }
         } else {
-            Dimension size = mValueEditor.getPreferredSize();
+            
+          //  Dimension size = mValueEditor.getPreferredSize();
 
-            mValueEditor.setBounds((int) mEg.mLeftCurve.x2 - 20, (int) mEg.mLeftCurve.y2 - 22, size.width, size.height);
+            graphics.setColor(mColor);
+
+            int x      = (int) mEg.mLeftCurve.x2 - (mValueEditor.getText().length() * 7);
+            int y      = (int) mEg.mLeftCurve.y2 - 20;
+            int width  = 20 + 10*mValueEditor.getText().length();
+            int height = 40;
+
+            mTextPanel.setBounds(x, y, width, height);
             mValueEditor.requestFocusInWindow();
         }
 
@@ -759,7 +815,6 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         // draw activity cue
         if (mVisualisationTask != null) {
-            
             if (mVisualisationTask.getActivityTime() <= 20) {
 
                 // fade out
@@ -780,6 +835,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
 //      }
 //    }
+    }
+
+    public boolean isInEditMode() {
+        return mEditMode;
     }
 
     public void drawArrow(Graphics2D g2d, int x, int y, float stroke) {    // int xCenter, int yCenter,
@@ -837,12 +896,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      */
     @Override
     public void update(EventObject event) {
-        
         if (event instanceof SceneStoppedEvent) {
             mVisualisationTask = null;
-            repaint();             
+            repaint();
         }
-         
+
         if (mPreferences.sVISUALISATION) {
             if (event instanceof EdgeExecutedEvent) {
                 de.dfki.vsm.model.sceneflow.Edge edge = ((EdgeExecutedEvent) event).getEdge();

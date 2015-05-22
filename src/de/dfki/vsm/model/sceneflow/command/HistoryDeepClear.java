@@ -1,18 +1,19 @@
 package de.dfki.vsm.model.sceneflow.command;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.Command.CmdType;
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class HistoryDeepClear extends Command {
-
     private String mState;
 
-    public HistoryDeepClear() {
-    }
+    public HistoryDeepClear() {}
 
     public HistoryDeepClear(String state) {
         mState = state;
@@ -44,7 +45,6 @@ public class HistoryDeepClear extends Command {
 
     public void writeXML(IndentWriter out) {
         out.println("<HistoryDeepClear state=\"" + mState + "\"/>");
-
     }
 
     public void parseXML(Element element) {

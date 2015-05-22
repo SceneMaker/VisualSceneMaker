@@ -1,13 +1,19 @@
 package de.dfki.vsm.model.script;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
+import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.TreeSet;
-import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
@@ -15,39 +21,37 @@ import org.w3c.dom.Element;
 public final class SceneScript extends SceneEntity {
 
     // The List Of Entities
-    private LinkedList<SceneEntity> mEntityList
-            = new LinkedList<>();
+    private LinkedList<SceneEntity> mEntityList = new LinkedList<>();
+
     // The List Of Comments
-    private LinkedList<SceneComment> mCommentList
-            = new LinkedList<>();
+    private LinkedList<SceneComment> mCommentList = new LinkedList<>();
+
     // The List Of Scenes
-    private LinkedList<SceneObject> mSceneList
-            = new LinkedList<>();
+    private LinkedList<SceneObject> mSceneList = new LinkedList<>();
+
     // Map Of Scene Groups
-    private final HashMap<String, SceneGroup> mGroupMap
-            = new HashMap<>();
+    private final HashMap<String, SceneGroup> mGroupMap = new HashMap<>();
+
     // Map Of Scene Groups
-    private final HashMap<String, HashMap<String, SceneGroup>> mLangMap
-            = new HashMap<>();
+    private final HashMap<String, HashMap<String, SceneGroup>> mLangMap = new HashMap<>();
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneScript() {
-    }
+    public SceneScript() {}
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneScript(
-            final int lower,
-            final int upper,
-            final LinkedList<SceneEntity> list) {
+    public SceneScript(final int lower, final int upper, final LinkedList<SceneEntity> list) {
         super(lower, upper);
+
         // Initialize The List
         mEntityList = list;
+
         // Initialize Object Lists
         initObjectLists();
+
         // Initialize The Groups
         initGroupMap();
         initLangMap();
@@ -57,9 +61,11 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     private void initObjectLists() {
+
         // First Clear The Groups
         mSceneList.clear();
         mCommentList.clear();
+
         //
         for (final SceneEntity entity : mEntityList) {
             if (entity instanceof SceneObject) {
@@ -67,6 +73,7 @@ public final class SceneScript extends SceneEntity {
             } else if (entity instanceof SceneObject) {
                 mCommentList.add((SceneComment) entity);
             } else {
+
                 // This Should Not Happen
             }
         }
@@ -76,20 +83,26 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void initLangMap() {
+
         // First Clear The Groups
         mLangMap.clear();
+
         // Initialize The Groups
         for (final SceneObject scene : mSceneList) {
+
             // Get The Group Name
             final String name = scene.getName();
             final String lang = scene.getLanguage();
+
             // Add Scene To Group
             if (mLangMap.get(lang) == null) {
                 mLangMap.put(lang, new HashMap<String, SceneGroup>());
             }
+
             if (mLangMap.get(lang).get(name) == null) {
                 mLangMap.get(lang).put(name, new SceneGroup(name));
             }
+
             mLangMap.get(lang).get(name).add(scene);
         }
     }
@@ -98,16 +111,21 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void initGroupMap() {
+
         // First Clear The Groups
         mGroupMap.clear();
+
         // Initialize The Groups
         for (final SceneObject scene : mSceneList) {
+
             // Get The Group Name
             final String name = scene.getName();
+
             // Add Scene To Group
             if (mGroupMap.get(name) == null) {
                 mGroupMap.put(name, new SceneGroup(name));
             }
+
             mGroupMap.get(name).add(scene);
         }
     }
@@ -158,13 +176,15 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final LinkedList<SceneObject> copySceneList() {
+
         // Construct A List Copy
-        final LinkedList<SceneObject> copy
-                = new LinkedList<>();
+        final LinkedList<SceneObject> copy = new LinkedList<>();
+
         // Copy Each Single Member
         for (final SceneObject scene : mSceneList) {
             copy.add(scene.getCopy());
         }
+
         // Return The Final Clone
         return copy;
     }
@@ -173,13 +193,15 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final LinkedList<SceneComment> copyCommentList() {
+
         // Construct A List Copy
-        final LinkedList<SceneComment> copy
-                = new LinkedList<>();
+        final LinkedList<SceneComment> copy = new LinkedList<>();
+
         // Copy Each Single Member
         for (final SceneComment comment : mCommentList) {
             copy.add(comment.getCopy());
         }
+
         // Return The Final Clone
         return copy;
     }
@@ -188,13 +210,15 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final LinkedList<SceneEntity> copyEntityList() {
+
         // Construct A List Copy
-        final LinkedList<SceneEntity> copy
-                = new LinkedList<>();
+        final LinkedList<SceneEntity> copy = new LinkedList<>();
+
         // Copy Each Single Member
         for (final SceneEntity entity : mEntityList) {
             copy.add(entity.getCopy());
         }
+
         // Return The Final Clone
         return copy;
     }
@@ -247,12 +271,15 @@ public final class SceneScript extends SceneEntity {
     @Override
     public final String getText() {
         String result = "";
+
         for (int i = 0; i < mEntityList.size(); i++) {
             result += mEntityList.get(i).getText();
+
             if (i < mEntityList.size() - 1) {
                 result += "\n\n";
             }
         }
+
         return result;
     }
 
@@ -262,12 +289,15 @@ public final class SceneScript extends SceneEntity {
     @Override
     public final String getText(final HashMap<String, String> args) {
         String result = "";
+
         for (int i = 0; i < mEntityList.size(); i++) {
             result += mEntityList.get(i).getText(args);
+
             if (i < mEntityList.size() - 1) {
                 result += "\n\n";
             }
         }
+
         return result;
     }
 
@@ -285,17 +315,18 @@ public final class SceneScript extends SceneEntity {
     @Override
     public final void writeXML(final IndentWriter stream) throws XMLWriteError {
         stream.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        stream.println("<SceneScript "
-                + "lower=\"" + mLower + "\" "
-                + "upper=\"" + mUpper + "\" "
-                + "length=\"" + mCommentList.size() + "\">");
+        stream.println("<SceneScript " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "length=\""
+                       + mCommentList.size() + "\">");
         stream.push();
+
         for (final SceneEntity entity : mEntityList) {
             entity.writeXML(stream);
+
             if (!entity.equals(mEntityList.getLast())) {
                 stream.endl();
             }
         }
+
         stream.pop();
         stream.endl();
         stream.print("</SceneScript>");
@@ -307,40 +338,50 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
+
         // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
-        // Process The Child Nodes 
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
 
+        // Process The Child Nodes
+        XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(final Element element) throws XMLParseError {
+
                 // Get The Child Tag Name
                 final String name = element.getTagName();
+
                 // Check The Child Tag Name
                 if (name.equals("SceneObject")) {
-                    // Create A New Token Style 
+
+                    // Create A New Token Style
                     final SceneObject entity = new SceneObject();
+
                     // Parse The New Token Style
                     entity.parseXML(element);
+
                     // Put The New Style To The Map
                     mEntityList.add(entity);
                 } else if (name.equals("SceneComment")) {
-                    // Create A New Token Style 
+
+                    // Create A New Token Style
                     final SceneComment entity = new SceneComment();
+
                     // Parse The New Token Style
                     entity.parseXML(element);
+
                     // Put The New Style To The Map
                     mEntityList.add(entity);
                 } else {
+
                     // This Should Not Happen
                 }
-                // Initialize The Two Lists
-                //initObjectLists();
-                // Initialize The Group Map
-                //initLangMap();
-                //initGroupMap();
 
+                // Initialize The Two Lists
+                // initObjectLists();
+                // Initialize The Group Map
+                // initLangMap();
+                // initGroupMap();
             }
         });
     }
@@ -349,15 +390,19 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void parseTXT(final String text) {
+
         // Parse Content Into Scene Script
-        final SceneScript script = ScriptParser.run(
-                "", text, false, true, false, false);
+        final SceneScript script = ScriptParser.run("", text, false, true, false, false);
+
         // Copy Content If Successfully
         if (script != null) {
+
             // Initialize The Scene List
             mEntityList = script.getEntityList();
+
             // Initialize The Two Lists
             initObjectLists();
+
             // Initialize The Group Map
             initLangMap();
             initGroupMap();

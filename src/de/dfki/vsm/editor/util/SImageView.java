@@ -30,7 +30,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+
+
 package de.dfki.vsm.editor.util;
+
+//~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Color;
 import java.awt.Component;
@@ -46,14 +51,18 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.ImageObserver;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.net.MalformedURLException;
 import java.net.URL;
+
 import java.util.Dictionary;
+
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
@@ -79,52 +88,64 @@ import javax.swing.text.html.StyleSheet;
  *
  */
 public class SImageView extends ImageView implements ImageObserver, MouseListener, MouseMotionListener {
+    private static final String
+        PENDING_IMAGE_SRC              = "icons/image-delayed.gif",    // both from HotJava
+        MISSING_IMAGE_SRC              = "icons/image-failed.gif";
+    private static final boolean DEBUG = false;
+
+    // $ move this someplace public
+    static final String IMAGE_CACHE_PROPERTY = "imageCache";
+
+    // Height/width to use before we know the real size:
+    private static final int
+        DEFAULT_WIDTH  = 32,
+        DEFAULT_HEIGHT = 32,
+
+        // Default value of BORDER param:      //? possibly move into stylesheet?
+        DEFAULT_BORDER = 2;
+
+    // --- Attribute Values ------------------------------------------
+    public static final String
+        TOP       = "top",
+        TEXTTOP   = "texttop",
+        MIDDLE    = "middle",
+        ABSMIDDLE = "absmiddle",
+        CENTER    = "center",
+        BOTTOM    = "bottom";
+
+    /**
+     * Static properties for incremental drawing. Swiped from Component.java
+     *
+     * @see #imageUpdate
+     */
+    private static boolean sIsInc   = true;
+    private static int     sIncRate = 100;
+
+    // --- constants and static stuff --------------------------------
+    private static Icon sPendingImageIcon, sMissingImageIcon;
+
+    // --- Application path ------------------------------------------
+    String applicationImagePath = null;
 
     // --- member variables ------------------------------------------------
     private AttributeSet attr;
-    private Element fElement;
-    private Image fImage;
-    private int fHeight, fWidth;
-    private Container fContainer;
-    private Rectangle fBounds;
-    private Component fComponent;
-    private Point fGrowBase;        // base of drag while growing image
-    private boolean fGrowProportionally;	// should grow be proportional?
+    private Element      fElement;
+    private Image        fImage;
+    private int          fHeight, fWidth;
+    private Container    fContainer;
+    private Rectangle    fBounds;
+    private Component    fComponent;
+    private Point        fGrowBase;              // base of drag while growing image
+    private boolean      fGrowProportionally;    // should grow be proportional?
+
     /**
      * Set to true, while the receiver is locked, to indicate the reciever is
      * loading the image. This is used in imageUpdate.
      */
     private boolean loading;
 
-    // --- constants and static stuff --------------------------------
-    private static Icon sPendingImageIcon,
-            sMissingImageIcon;
-    private static final String PENDING_IMAGE_SRC = "icons/image-delayed.gif", // both from HotJava
-            MISSING_IMAGE_SRC = "icons/image-failed.gif";
-
-    private static final boolean DEBUG = false;
-
-    //$ move this someplace public
-    static final String IMAGE_CACHE_PROPERTY = "imageCache";
-
-    // Height/width to use before we know the real size:
-    private static final int DEFAULT_WIDTH = 32,
-            DEFAULT_HEIGHT = 32,
-            // Default value of BORDER param:      //? possibly move into stylesheet?
-            DEFAULT_BORDER = 2;
-
-    // --- Attribute Values ------------------------------------------
-    public static final String TOP = "top",
-            TEXTTOP = "texttop",
-            MIDDLE = "middle",
-            ABSMIDDLE = "absmiddle",
-            CENTER = "center",
-            BOTTOM = "bottom";
-
-    // --- Application path ------------------------------------------
-    String applicationImagePath = null;
-
     // --- Construction ----------------------------------------------
+
     /**
      * Creates a new view that represents an IMG element.
      *
@@ -133,28 +154,35 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
     public SImageView(Element elem) {
         super(elem);
         initialize(elem);
+
         StyleSheet sheet = getStyleSheet();
+
         attr = sheet.getViewAttributes(this);
     }
 
     private void initialize(Element elem) {
         synchronized (this) {
             loading = true;
-            fWidth = fHeight = 0;
+            fWidth  = fHeight = 0;
         }
-        int width = 0;
-        int height = 0;
-        boolean customWidth = false;
+
+        int     width        = 0;
+        int     height       = 0;
+        boolean customWidth  = false;
         boolean customHeight = false;
 
         try {
             fElement = elem;
+
             // Request image from document's cache:
             AttributeSet attr = elem.getAttributes();
+
             if (isURL()) {
                 URL src = getSourceURL();
+
                 if (src != null) {
                     Dictionary cache = (Dictionary) getDocument().getProperty(IMAGE_CACHE_PROPERTY);
+
                     if (cache != null) {
                         fImage = (Image) cache.get(src);
                     } else {
@@ -164,21 +192,26 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
             } else {
 
                 /**
-                 * ****** Code to load from relative path ************
+                 * ****** Code to load from relative path
                  */
                 String src = (String) fElement.getAttributes().getAttribute(HTML.Attribute.SRC);
-                //System.out.println("before src: " + src);
+
+                // System.out.println("before src: " + src);
                 src = processSrcPath(src);
-                //System.out.println("after src: " + src);
+
+                // System.out.println("after src: " + src);
                 fImage = Toolkit.getDefaultToolkit().createImage(src);
+
                 try {
                     waitForImage();
                 } catch (InterruptedException e) {
                     fImage = null;
                 }
+
                 // if image is null check if image can be found in jar added by PG 240206
                 if (fImage == null) {
                     fImage = Toolkit.getDefaultToolkit().createImage(getClass().getResource("/" + src));
+
                     try {
                         waitForImage();
                     } catch (InterruptedException e) {
@@ -188,20 +221,24 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
             }
 
             // Get height/width from params or image or defaults:
-            height = getIntAttr(HTML.Attribute.HEIGHT, -1);
+            height       = getIntAttr(HTML.Attribute.HEIGHT, -1);
             customHeight = (height > 0);
-            if (!customHeight && fImage != null) {
+
+            if (!customHeight && (fImage != null)) {
                 height = fImage.getHeight(this);
             }
+
             if (height <= 0) {
                 height = DEFAULT_HEIGHT;
             }
 
-            width = getIntAttr(HTML.Attribute.WIDTH, -1);
+            width       = getIntAttr(HTML.Attribute.WIDTH, -1);
             customWidth = (width > 0);
-            if (!customWidth && fImage != null) {
+
+            if (!customWidth && (fImage != null)) {
                 width = fImage.getWidth(this);
             }
+
             if (width <= 0) {
                 width = DEFAULT_WIDTH;
             }
@@ -216,22 +253,24 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
             }
 
             /**
-             * ******************************************************
+             *
              * // Rob took this out. Changed scope of src. if( DEBUG ) { if(
              * fImage != null ) System.out.println("ImageInfo: new on "+src+ "
              * ("+fWidth+"x"+fHeight+")"); else System.out.println("ImageInfo:
              * couldn't get image at "+ src); if(isLink()) System.out.println("
              * It's a link! Border = "+ getBorder());
              * //((AbstractDocument.AbstractElement)elem).dump(System.out,4); }
-         *******************************************************
+             *
              */
         } finally {
             synchronized (this) {
                 loading = false;
-                if (customWidth || fWidth == 0) {
+
+                if (customWidth || (fWidth == 0)) {
                     fWidth = width;
                 }
-                if (customHeight || fHeight == 0) {
+
+                if (customHeight || (fHeight == 0)) {
                     fHeight = height;
                 }
             }
@@ -242,10 +281,9 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * Determines if path is in the form of a URL
      */
     private boolean isURL() {
-        String src
-                = (String) fElement.getAttributes().getAttribute(HTML.Attribute.SRC);
-        return src.toLowerCase().startsWith("file")
-                || src.toLowerCase().startsWith("http");
+        String src = (String) fElement.getAttributes().getAttribute(HTML.Attribute.SRC);
+
+        return src.toLowerCase().startsWith("file") || src.toLowerCase().startsWith("http");
     }
 
     /**
@@ -254,26 +292,28 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * path to the absolute path and returns the String.
      */
     private String processSrcPath(String src) {
-        String val = src;
+        String val       = src;
+        File   imageFile = new File(src);
 
-        File imageFile = new File(src);
         if (imageFile.isAbsolute()) {
             return src;
         }
 
-        //try to get application img path...
+        // try to get application img path...
         if (applicationImagePath != null) {
             String imagePath = applicationImagePath;
+
             val = (new File(imagePath, imageFile.getPath())).toString();
-        } //try to get system img path...
-        else {
+        }    // try to get system img path...
+                else {
             String imagePath = System.getProperty("system.image.path.key");
+
             if (imagePath != null) {
                 val = (new File(imagePath, imageFile.getPath())).toString();
             }
         }
 
-        //System.out.println("src before: " + src + ", src after: " + val);
+        // System.out.println("src before: " + src + ", src after: " + val);
         return val;
     }
 
@@ -284,18 +324,23 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * dont need to know the component its being rendered on. Rob
      */
     private void waitForImage() throws InterruptedException {
-        //AK041014 added null-test for fImage
+
+        // AK041014 added null-test for fImage
         if (fImage != null) {
             int w;
             int h;
+
             try {
                 w = fImage.getWidth(this);
                 h = fImage.getHeight(this);
             } catch (Exception e) {
+
                 // something is wrong - forget the image and return
                 fImage = null;
+
                 return;
             }
+
             while (true) {
                 int flags = Toolkit.getDefaultToolkit().checkImage(fImage, w, h, this);
 
@@ -304,8 +349,10 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
                 } else if ((flags & (ALLBITS | FRAMEBITS)) != 0) {
                     return;
                 }
+
                 Thread.sleep(10);
-                //System.out.println("rise and shine...");
+
+                // System.out.println("rise and shine...");
             }
         }
     }
@@ -322,12 +369,15 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * Is this image within a link?
      */
     boolean isLink() {
-        //! It would be nice to cache this but in an editor it can change
+
+        // ! It would be nice to cache this but in an editor it can change
         // See if I have an HREF attribute courtesy of the enclosing A tag:
         AttributeSet anchorAttr = (AttributeSet) fElement.getAttributes().getAttribute(HTML.Tag.A);
+
         if (anchorAttr != null) {
             return anchorAttr.isDefined(HTML.Attribute.HREF);
         }
+
         return false;
     }
 
@@ -335,15 +385,18 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * Returns the size of the border to use.
      */
     int getBorder() {
-        return getIntAttr(HTML.Attribute.BORDER, isLink() ? DEFAULT_BORDER : 0);
+        return getIntAttr(HTML.Attribute.BORDER, isLink()
+                ? DEFAULT_BORDER
+                : 0);
     }
 
     /**
      * Returns the amount of extra space to add along an axis.
      */
     int getSpace(int axis) {
-        return getIntAttr(axis == X_AXIS ? HTML.Attribute.HSPACE : HTML.Attribute.VSPACE,
-                0);
+        return getIntAttr((axis == X_AXIS)
+                          ? HTML.Attribute.HSPACE
+                          : HTML.Attribute.VSPACE, 0);
     }
 
     /**
@@ -351,6 +404,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     Color getBorderColor() {
         StyledDocument doc = (StyledDocument) getDocument();
+
         return doc.getForeground(getAttributes());
     }
 
@@ -359,38 +413,42 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     float getVerticalAlignment() {
         String align = (String) fElement.getAttributes().getAttribute(HTML.Attribute.ALIGN);
+
         if (align != null) {
             align = align.toLowerCase();
+
             if (align.equals(TOP) || align.equals(TEXTTOP)) {
                 return 0.0f;
-            } else if (align.equals(this.CENTER) || align.equals(MIDDLE)
-                    || align.equals(ABSMIDDLE)) {
+            } else if (align.equals(this.CENTER) || align.equals(MIDDLE) || align.equals(ABSMIDDLE)) {
                 return 0.5f;
             }
         }
-        return 1.0f;		// default alignment is bottom
+
+        return 1.0f;    // default alignment is bottom
     }
 
     boolean hasPixels(ImageObserver obs) {
-        return fImage != null && fImage.getHeight(obs) > 0
-                && fImage.getWidth(obs) > 0;
+        return (fImage != null) && (fImage.getHeight(obs) > 0) && (fImage.getWidth(obs) > 0);
     }
 
     /**
      * Return a URL for the image source, or null if it could not be determined.
      */
     private URL getSourceURL() {
-        //System.out.println("felement " + fElement);
-        //System.out.println("attributes " + fElement.getAttributes());
 
+        // System.out.println("felement " + fElement);
+        // System.out.println("attributes " + fElement.getAttributes());
         String src = (String) fElement.getAttributes().getAttribute(HTML.Attribute.SRC);
+
         if (src == null) {
             return null;
         }
 
         URL reference = ((HTMLDocument) getDocument()).getBase();
+
         try {
             URL u = new URL(reference, src);
+
             return u;
         } catch (MalformedURLException e) {
             return null;
@@ -402,9 +460,11 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     private int getIntAttr(HTML.Attribute name, int deflt) {
         AttributeSet attr = fElement.getAttributes();
-        if (attr.isDefined(name)) {		// does not check parents!
-            int i;
+
+        if (attr.isDefined(name)) {    // does not check parents!
+            int    i;
             String val = (String) attr.getAttribute(name);
+
             if (val == null) {
                 i = deflt;
             } else {
@@ -414,6 +474,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
                     i = deflt;
                 }
             }
+
             return i;
         } else {
             return deflt;
@@ -426,8 +487,11 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public void setParent(View parent) {
         super.setParent(parent);
-        fContainer = parent != null ? getContainer() : null;
-        if (parent == null && fComponent != null) {
+        fContainer = (parent != null)
+                     ? getContainer()
+                     : null;
+
+        if ((parent == null) && (fComponent != null)) {
             fComponent.getParent().remove(fComponent);
             fComponent = null;
         }
@@ -438,30 +502,38 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public void changedUpdate(DocumentEvent e, Shape a, ViewFactory f) {
         if (DEBUG) {
-            //System.out.println("ImageView: changedUpdate begin...");
-        }
-        super.changedUpdate(e, a, f);
-        float align = getVerticalAlignment();
 
-        int height = fHeight;
-        int width = fWidth;
+            // System.out.println("ImageView: changedUpdate begin...");
+        }
+
+        super.changedUpdate(e, a, f);
+
+        float align  = getVerticalAlignment();
+        int   height = fHeight;
+        int   width  = fWidth;
 
         initialize(getElement());
 
         boolean hChanged = fHeight != height;
         boolean wChanged = fWidth != width;
-        if (hChanged || wChanged || getVerticalAlignment() != align) {
+
+        if (hChanged || wChanged || (getVerticalAlignment() != align)) {
             if (DEBUG) {
-                //System.out.println("ImageView: calling preferenceChanged");
+
+                // System.out.println("ImageView: calling preferenceChanged");
             }
+
             getParent().preferenceChanged(this, hChanged, wChanged);
         }
+
         if (DEBUG) {
-            //System.out.println("ImageView: changedUpdate end; valign=" + getVerticalAlignment());
+
+            // System.out.println("ImageView: changedUpdate end; valign=" + getVerticalAlignment());
         }
     }
 
     // --- Painting --------------------------------------------------------
+
     /**
      * Paints the image.
      *
@@ -471,32 +543,40 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public void paint(Graphics g, Shape a) {
         Color oldColor = g.getColor();
+
         fBounds = a.getBounds();
+
         int border = getBorder();
-        int x = fBounds.x + border + getSpace(X_AXIS);
-        int y = fBounds.y + border + getSpace(Y_AXIS);
-        int width = fWidth;
+        int x      = fBounds.x + border + getSpace(X_AXIS);
+        int y      = fBounds.y + border + getSpace(Y_AXIS);
+        int width  = fWidth;
         int height = fHeight;
-        int sel = getSelectionState();
+        int sel    = getSelectionState();
 
         // Make sure my Component is in the right place:
+
 /*
-         if( fComponent == null ) {
-         fComponent = new Component() { };
-         fComponent.addMouseListener(this);
-         fComponent.addMouseMotionListener(this);
-         fComponent.setCursor(Cursor.getDefaultCursor());	// use arrow cursor
-         fContainer.add(fComponent);
-         }
-         fComponent.setBounds(x,y,width,height);
+        if( fComponent == null ) {
+        fComponent = new Component() { };
+        fComponent.addMouseListener(this);
+        fComponent.addMouseMotionListener(this);
+        fComponent.setCursor(Cursor.getDefaultCursor());       // use arrow cursor
+        fContainer.add(fComponent);
+        }
+        fComponent.setBounds(x,y,width,height);
          */
+
         // If no pixels yet, draw gray outline and icon:
         if (!hasPixels(this)) {
             g.setColor(Color.lightGray);
             g.drawRect(x, y, width - 1, height - 1);
             g.setColor(oldColor);
             loadIcons();
-            Icon icon = fImage == null ? sMissingImageIcon : sPendingImageIcon;
+
+            Icon icon = (fImage == null)
+                        ? sMissingImageIcon
+                        : sPendingImageIcon;
+
             if (icon != null) {
                 icon.paintIcon(getContainer(), g, x, y);
             }
@@ -505,35 +585,41 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
         // Draw image:
         if (fImage != null) {
             g.drawImage(fImage, x, y, width, height, this);
+
             // Use the following instead of g.drawImage when
             // BufferedImageGraphics2D.setXORMode is fixed (4158822).
+            // Use Xor mode when selected/highlighted.
+            // ! Could darken image instead, but it would be more expensive.
 
-            //  Use Xor mode when selected/highlighted.
-            //! Could darken image instead, but it would be more expensive.
 /*
-             if( sel > 0 )
-             g.setXORMode(Color.white);
-             g.drawImage(fImage,x, y,
-             width,height,this);
-             if( sel > 0 )
-             g.setPaintMode();
+            if( sel > 0 )
+            g.setXORMode(Color.white);
+            g.drawImage(fImage,x, y,
+            width,height,this);
+            if( sel > 0 )
+            g.setPaintMode();
              */
         }
 
         // If selected exactly, we need a black border & grow-box:
         Color bc = getBorderColor();
+
         if (sel == 2) {
+
             // Make sure there's room for a border:
             int delta = 2 - border;
+
             if (delta > 0) {
-                x += delta;
-                y += delta;
-                width -= delta << 1;
+                x      += delta;
+                y      += delta;
+                width  -= delta << 1;
                 height -= delta << 1;
                 border = 2;
             }
+
             bc = null;
             g.setColor(Color.black);
+
             // Draw grow box:
             g.fillRect(x + width - 5, y + height - 5, 5, 5);
         }
@@ -543,10 +629,12 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
             if (bc != null) {
                 g.setColor(bc);
             }
+
             // Draw a thick rectangle:
             for (int i = 1; i <= border; i++) {
                 g.drawRect(x - i, y - i, width - 1 + i + i, height - 1 + i + i);
             }
+
             g.setColor(oldColor);
         }
     }
@@ -556,9 +644,8 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * last-drawn location.
      */
     protected void repaint(long delay) {
-        if (fContainer != null && fBounds != null) {
-            fContainer.repaint(delay,
-                    fBounds.x, fBounds.y, fBounds.width, fBounds.height);
+        if ((fContainer != null) && (fBounds != null)) {
+            fContainer.repaint(delay, fBounds.x, fBounds.y, fBounds.width, fBounds.height);
         }
     }
 
@@ -572,24 +659,26 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
     protected int getSelectionState() {
         int p0 = fElement.getStartOffset();
         int p1 = fElement.getEndOffset();
+
         if (fContainer instanceof JTextComponent) {
             JTextComponent textComp = (JTextComponent) fContainer;
-            int start = textComp.getSelectionStart();
-            int end = textComp.getSelectionEnd();
-            if (start <= p0 && end >= p1) {
-                if (start == p0 && end == p1 && isEditable()) {
+            int            start    = textComp.getSelectionStart();
+            int            end      = textComp.getSelectionEnd();
+
+            if ((start <= p0) && (end >= p1)) {
+                if ((start == p0) && (end == p1) && isEditable()) {
                     return 2;
                 } else {
                     return 1;
                 }
             }
         }
+
         return 0;
     }
 
     protected boolean isEditable() {
-        return fContainer instanceof JEditorPane
-                && ((JEditorPane) fContainer).isEditable();
+        return (fContainer instanceof JEditorPane) && ((JEditorPane) fContainer).isEditable();
     }
 
     /**
@@ -597,6 +686,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     protected Color getHighlightColor() {
         JTextComponent textComp = (JTextComponent) fContainer;
+
         return textComp.getSelectionColor();
     }
 
@@ -606,9 +696,8 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
     // preference changed, or repaint, we just reset the fWidth/fHeight as
     // necessary and return. This is ok as we know when loading finishes
     // it will pick up the new height/width, if necessary.
-    public boolean imageUpdate(Image img, int flags, int x, int y,
-            int width, int height) {
-        if (fImage == null || fImage != img) {
+    public boolean imageUpdate(Image img, int flags, int x, int y, int width, int height) {
+        if ((fImage == null) || (fImage != img)) {
             return false;
         }
 
@@ -616,45 +705,56 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
         if ((flags & (ABORT | ERROR)) != 0) {
             fImage = null;
             repaint(0);
+
             return false;
         }
 
         // Resize image if necessary:
         short changed = 0;
+
         if ((flags & ImageObserver.HEIGHT) != 0) {
             if (!getElement().getAttributes().isDefined(HTML.Attribute.HEIGHT)) {
                 changed |= 1;
             }
         }
+
         if ((flags & ImageObserver.WIDTH) != 0) {
             if (!getElement().getAttributes().isDefined(HTML.Attribute.WIDTH)) {
                 changed |= 2;
             }
         }
+
         synchronized (this) {
             if ((changed & 1) == 1) {
                 fWidth = width;
             }
+
             if ((changed & 2) == 2) {
                 fHeight = height;
             }
+
             if (loading) {
+
                 // No need to resize or repaint, still in the process of
                 // loading.
                 return true;
             }
         }
+
         if (changed != 0) {
+
             // May need to resize myself, asynchronously:
             if (DEBUG) {
                 System.out.println("ImageView: resized to " + fWidth + "x" + fHeight);
             }
 
             Document doc = getDocument();
+
             try {
                 if (doc instanceof AbstractDocument) {
                     ((AbstractDocument) doc).readLock();
                 }
+
                 preferenceChanged(this, true, true);
             } finally {
                 if (doc instanceof AbstractDocument) {
@@ -677,15 +777,8 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
         return ((flags & ALLBITS) == 0);
     }
 
-    /**
-     * Static properties for incremental drawing. Swiped from Component.java
-     *
-     * @see #imageUpdate
-     */
-    private static boolean sIsInc = true;
-    private static int sIncRate = 100;
-
     // --- Layout ----------------------------------------------------------
+
     /**
      * Determines the preferred span for this view along an axis.
      *
@@ -695,15 +788,19 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * no guarantee. The parent may choose to resize or break the view.
      */
     public float getPreferredSpan(int axis) {
-        //if(DEBUG)System.out.println("ImageView: getPreferredSpan");
+
+        // if(DEBUG)System.out.println("ImageView: getPreferredSpan");
         int extra = 2 * (getBorder() + getSpace(axis));
+
         switch (axis) {
-            case View.X_AXIS:
-                return fWidth + extra;
-            case View.Y_AXIS:
-                return fHeight + extra;
-            default:
-                throw new IllegalArgumentException("Invalid axis: " + axis);
+        case View.X_AXIS :
+            return fWidth + extra;
+
+        case View.Y_AXIS :
+            return fHeight + extra;
+
+        default :
+            throw new IllegalArgumentException("Invalid axis: " + axis);
         }
     }
 
@@ -720,10 +817,11 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public float getAlignment(int axis) {
         switch (axis) {
-            case View.Y_AXIS:
-                return getVerticalAlignment();
-            default:
-                return super.getAlignment(axis);
+        case View.Y_AXIS :
+            return getVerticalAlignment();
+
+        default :
+            return super.getAlignment(axis);
         }
     }
 
@@ -741,14 +839,19 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
     public Shape modelToView(int pos, Shape a, Position.Bias b) throws BadLocationException {
         int p0 = getStartOffset();
         int p1 = getEndOffset();
+
         if ((pos >= p0) && (pos <= p1)) {
             Rectangle r = a.getBounds();
+
             if (pos == p1) {
                 r.x += r.width;
             }
+
             r.width = 0;
+
             return r;
         }
+
         return null;
     }
 
@@ -765,11 +868,15 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public int viewToModel(float x, float y, Shape a, Position.Bias[] bias) {
         Rectangle alloc = (Rectangle) a;
+
         if (x < alloc.x + alloc.width) {
             bias[0] = Position.Bias.Forward;
+
             return getStartOffset();
         }
+
         bias[0] = Position.Bias.Backward;
+
         return getEndOffset();
     }
 
@@ -780,6 +887,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * @param height the height
      */
     public void setSize(float width, float height) {
+
         // Ignore this -- image size is determined by the tag attrs and
         // the image itself, not the surrounding layout!
     }
@@ -789,48 +897,54 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * attributes of the Element and causes a re-layout.
      */
     protected void resize(int width, int height) {
-        if (width == fWidth && height == fHeight) {
+        if ((width == fWidth) && (height == fHeight)) {
             return;
         }
 
-        fWidth = width;
+        fWidth  = width;
         fHeight = height;
 
         // Replace attributes in document:
         MutableAttributeSet attr = new SimpleAttributeSet();
+
         attr.addAttribute(HTML.Attribute.WIDTH, Integer.toString(width));
         attr.addAttribute(HTML.Attribute.HEIGHT, Integer.toString(height));
-        ((StyledDocument) getDocument()).setCharacterAttributes(
-                fElement.getStartOffset(),
-                fElement.getEndOffset(),
+        ((StyledDocument) getDocument()).setCharacterAttributes(fElement.getStartOffset(), fElement.getEndOffset(),
                 attr, false);
     }
 
     // --- Mouse event handling --------------------------------------------
+
     /**
      * Select or grow image when clicked.
      */
     public void mousePressed(MouseEvent e) {
         Dimension size = fComponent.getSize();
-        if (e.getX() >= size.width - 7 && e.getY() >= size.height - 7
-                && getSelectionState() == 2) {
+
+        if ((e.getX() >= size.width - 7) && (e.getY() >= size.height - 7) && (getSelectionState() == 2)) {
+
             // Click in selected grow-box:
             if (DEBUG) {
                 System.out.println("ImageView: grow!!! Size=" + fWidth + "x" + fHeight);
             }
+
             Point loc = fComponent.getLocationOnScreen();
-            fGrowBase = new Point(loc.x + e.getX() - fWidth,
-                    loc.y + e.getY() - fHeight);
+
+            fGrowBase           = new Point(loc.x + e.getX() - fWidth, loc.y + e.getY() - fHeight);
             fGrowProportionally = e.isShiftDown();
         } else {
+
             // Else select image:
             fGrowBase = null;
-            JTextComponent comp = (JTextComponent) fContainer;
-            int start = fElement.getStartOffset();
-            int end = fElement.getEndOffset();
-            int mark = comp.getCaret().getMark();
-            int dot = comp.getCaret().getDot();
+
+            JTextComponent comp  = (JTextComponent) fContainer;
+            int            start = fElement.getStartOffset();
+            int            end   = fElement.getEndOffset();
+            int            mark  = comp.getCaret().getMark();
+            int            dot   = comp.getCaret().getDot();
+
             if (e.isShiftDown()) {
+
                 // extend selection if shift key down:
                 if (mark <= start) {
                     comp.moveCaretPosition(end);
@@ -838,10 +952,12 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
                     comp.moveCaretPosition(start);
                 }
             } else {
+
                 // just select image, without shift:
                 if (mark != start) {
                     comp.setCaretPosition(start);
                 }
+
                 if (dot != end) {
                     comp.moveCaretPosition(end);
                 }
@@ -854,18 +970,21 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public void mouseDragged(MouseEvent e) {
         if (fGrowBase != null) {
-            Point loc = fComponent.getLocationOnScreen();
-            int width = Math.max(2, loc.x + e.getX() - fGrowBase.x);
-            int height = Math.max(2, loc.y + e.getY() - fGrowBase.y);
+            Point loc    = fComponent.getLocationOnScreen();
+            int   width  = Math.max(2, loc.x + e.getX() - fGrowBase.x);
+            int   height = Math.max(2, loc.y + e.getY() - fGrowBase.y);
 
-            if (e.isShiftDown() && fImage != null) {
+            if (e.isShiftDown() && (fImage != null)) {
+
                 // Make sure size is proportional to actual image size:
-                float imgWidth = fImage.getWidth(this);
+                float imgWidth  = fImage.getWidth(this);
                 float imgHeight = fImage.getHeight(this);
-                if (imgWidth > 0 && imgHeight > 0) {
-                    float prop = imgHeight / imgWidth;
-                    float pwidth = height / prop;
+
+                if ((imgWidth > 0) && (imgHeight > 0)) {
+                    float prop    = imgHeight / imgWidth;
+                    float pwidth  = height / prop;
                     float pheight = width * prop;
+
                     if (pwidth > width) {
                         width = (int) pwidth;
                     } else {
@@ -880,7 +999,8 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
 
     public void mouseReleased(MouseEvent e) {
         fGrowBase = null;
-        //! Should post some command to make the action undo-able
+
+        // ! Should post some command to make the action undo-able
     }
 
     /**
@@ -888,22 +1008,22 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      */
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) {
-            //$ IMPLEMENT
+
+            // $ IMPLEMENT
         }
     }
 
-    public void mouseEntered(MouseEvent e) {
-    }
+    public void mouseEntered(MouseEvent e) {}
 
-    public void mouseMoved(MouseEvent e) {
-    }
+    public void mouseMoved(MouseEvent e) {}
 
-    public void mouseExited(MouseEvent e) {
-    }
+    public void mouseExited(MouseEvent e) {}
 
     // --- Static icon accessors -------------------------------------------
     private Icon makeIcon(final String gifFile) throws IOException {
-        /* Copy resource into a byte array.  This is
+
+        /*
+         *  Copy resource into a byte array.  This is
          * necessary because several browsers consider
          * Class.getResource a security risk because it
          * can be used to load additional classes.
@@ -913,28 +1033,30 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
         InputStream resource = SImageView.class.getResourceAsStream(gifFile);
 
         if (resource == null) {
-            System.err.println(SImageView.class.getName() + "/"
-                    + gifFile + " not found.");
+            System.err.println(SImageView.class.getName() + "/" + gifFile + " not found.");
+
             return null;
         }
-        BufferedInputStream in
-                = new BufferedInputStream(resource);
-        ByteArrayOutputStream out
-                = new ByteArrayOutputStream(1024);
-        byte[] buffer = new byte[1024];
-        int n;
+
+        BufferedInputStream   in     = new BufferedInputStream(resource);
+        ByteArrayOutputStream out    = new ByteArrayOutputStream(1024);
+        byte[]                buffer = new byte[1024];
+        int                   n;
+
         while ((n = in.read(buffer)) > 0) {
             out.write(buffer, 0, n);
         }
+
         in.close();
         out.flush();
-
         buffer = out.toByteArray();
+
         if (buffer.length == 0) {
-            System.err.println("warning: " + gifFile
-                    + " is zero-length");
+            System.err.println("warning: " + gifFile + " is zero-length");
+
             return null;
         }
+
         return new ImageIcon(buffer);
     }
 
@@ -943,6 +1065,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
             if (sPendingImageIcon == null) {
                 sPendingImageIcon = makeIcon(PENDING_IMAGE_SRC);
             }
+
             if (sMissingImageIcon == null) {
                 sMissingImageIcon = makeIcon(MISSING_IMAGE_SRC);
             }
@@ -953,6 +1076,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
 
     protected StyleSheet getStyleSheet() {
         HTMLDocument doc = (HTMLDocument) getDocument();
+
         return doc.getStyleSheet();
     }
 }

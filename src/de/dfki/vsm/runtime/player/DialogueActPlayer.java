@@ -1,13 +1,21 @@
 package de.dfki.vsm.runtime.player;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.util.plugin.Plugin;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.LinkedList;
 
 /**
  * @author Gregor Mehlmann
  */
 public interface DialogueActPlayer extends Plugin {
+
+    // Play A Scene With Given Arguments
+    public void play(final String name, final LinkedList<AbstractValue> args);
 
     // A Single Task Of The Scene Player
     public static class Task extends Thread {
@@ -20,7 +28,4 @@ public interface DialogueActPlayer extends Plugin {
             super(name);
         }
     }
-
-    // Play A Scene With Given Arguments
-    public void play(final String name, final LinkedList<AbstractValue> args);
 }

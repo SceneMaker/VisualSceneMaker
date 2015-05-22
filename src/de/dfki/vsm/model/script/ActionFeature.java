@@ -1,49 +1,48 @@
 package de.dfki.vsm.model.script;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.HashMap;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
  */
 public class ActionFeature extends SceneEntity {
 
-    public enum Type {
-
-        STRING,
-        BOOLEAN,
-        INTEGER,
-        FLOATING,
-        IDENTIFIER,
-        VARIABLE
-    };
-
     // The Type Of The Feature
     protected Type mTyp;
+
     // The Key Of The Member
     protected String mKey;
+
     // The Value Of The Member
     protected String mVal;
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public ActionFeature() {
+    public enum Type {
+        STRING, BOOLEAN, INTEGER, FLOATING, IDENTIFIER, VARIABLE
     }
+
+    ;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ActionFeature(
-            final Type typ,
-            final int lower,
-            final int upper,
-            final String key,
-            final String val) {
+    public ActionFeature() {}
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public ActionFeature(final Type typ, final int lower, final int upper, final String key, final String val) {
         super(lower, upper);
+
         // Initialize The Members
         mTyp = typ;
         mKey = key;
@@ -104,7 +103,7 @@ public class ActionFeature extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public String getVal(final HashMap<String, String> args) {
-        return mVal; 
+        return mVal;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -120,12 +119,8 @@ public class ActionFeature extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void writeXML(final IndentWriter stream) throws XMLWriteError {
-        stream.print("<ActionFeature "
-                + "lower=\"" + mLower + "\" "
-                + "upper=\"" + mUpper + "\" "
-                + "typ=\"" + mTyp + "\" "
-                + "key=\"" + mKey + "\" "
-                + "val=\"" + mVal + "\"/>");
+        stream.print("<ActionFeature " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "typ=\"" + mTyp
+                     + "\" " + "key=\"" + mKey + "\" " + "val=\"" + mVal + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -133,11 +128,14 @@ public class ActionFeature extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void parseXML(final Element element) throws XMLParseError {
+
         // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
+
         // Parse The Members
         mTyp = Type.valueOf(element.getAttribute("typ"));
+
         //
         mKey = element.getAttribute("key");
         mVal = element.getAttribute("val");

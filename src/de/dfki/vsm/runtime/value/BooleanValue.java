@@ -4,7 +4,6 @@ package de.dfki.vsm.runtime.value;
  * @author Gregor Mehlmann
  */
 public class BooleanValue extends AbstractValue {
-
     private final boolean mValue;
 
     public BooleanValue(boolean value) {
@@ -43,6 +42,7 @@ public class BooleanValue extends AbstractValue {
         if (value.getType() == Type.BOOLEAN) {
             return (mValue == ((BooleanValue) value).mValue);
         }
+
         return false;
     }
 }

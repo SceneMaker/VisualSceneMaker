@@ -4,7 +4,6 @@ package de.dfki.vsm.runtime.value;
  * @author Gregor Mehlmann
  */
 public class ObjectValue extends AbstractValue {
-
     private java.lang.Object mValue;
 
     public ObjectValue() {
@@ -26,17 +25,23 @@ public class ObjectValue extends AbstractValue {
 
     @Override
     public String getAbstractSyntax() {
-        return "ObjectValue(" + (mValue == null ? "" : mValue.toString()) + ")";
+        return "ObjectValue(" + ((mValue == null)
+                                 ? ""
+                                 : mValue.toString()) + ")";
     }
 
     @Override
     public String getConcreteSyntax() {
-        return "ObjectValue(" + (mValue == null ? "" : mValue.toString()) + ")";
+        return "ObjectValue(" + ((mValue == null)
+                                 ? ""
+                                 : mValue.toString()) + ")";
     }
 
     @Override
     public String getFormattedSyntax() {
-        return "ObjectValue(" + (mValue == null ? "" : mValue.toString()) + ")";
+        return "ObjectValue(" + ((mValue == null)
+                                 ? ""
+                                 : mValue.toString()) + ")";
     }
 
     @Override
@@ -54,6 +59,7 @@ public class ObjectValue extends AbstractValue {
         if (value.getType() == Type.OBJECT) {
             return mValue.equals(((ObjectValue) value).mValue);
         }
+
         return false;
     }
 }

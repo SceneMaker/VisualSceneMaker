@@ -1,6 +1,9 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -8,11 +11,9 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class InStateCond extends LogicalCond {
-
     String mState;
 
-    public InStateCond() {
-    }
+    public InStateCond() {}
 
     public InStateCond(String state) {
         mState = state;
@@ -44,7 +45,6 @@ public class InStateCond extends LogicalCond {
 
     public void writeXML(IndentWriter out) {
         out.println("<StateCondition state=\"" + mState + "\"/>");
-
     }
 
     public void parseXML(Element element) {

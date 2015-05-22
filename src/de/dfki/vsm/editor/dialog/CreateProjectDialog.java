@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
@@ -18,9 +19,10 @@ import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseTools;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.awt.Color;
 
 //~--- JDK imports ------------------------------------------------------------
+
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -33,8 +35,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import java.util.ArrayList;
-import javax.swing.BorderFactory;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -52,32 +54,27 @@ import javax.swing.event.MouseInputListener;
 public class CreateProjectDialog extends JDialog {
 
     // panels
-    private JPanel mMainPanel = null;
-    private JPanel mConfigPanel = null;
+    private JPanel mMainPanel    = null;
+    private JPanel mConfigPanel  = null;
     private JPanel mButtonsPanel = null;
 
     // buttons
-    private OKButton mOkButton = null;
+    private OKButton     mOkButton     = null;
     private CancelButton mCancelButton = null;
-    private JButton mLocationButton;
-    // text fields
-    private JTextField mLocationTextField = null;
-    private JTextField mNameTextField = null;
-    private JTextField mSceneFlowTextField = null;
-    private JLabel mSceneFlowMessage = new JLabel(" ");
-    private JTextField mScenesTextField = null;
-    private JLabel mSceneMessage = new JLabel(" ");
-    private JTextField mGesticonTextField = null;
-    private JTextField mVisiconTextField = null;
-    private JTextField mDefaultScenePlayerTextField = null;
-    private JTextField mDefaultScenePlayerConfigTextField = null;
-    private ArrayList<JTextField> mScenePlayerTextFields = null;
-    private ArrayList<JTextField> mScenePlayerConfigTextFields = null;
 
-    //Labels
-    private JLabel errorMsg;
-    private JLabel lblName;
-    private JLabel lblPath;
+    // text fields
+    private JTextField            mLocationTextField                 = null;
+    private JTextField            mNameTextField                     = null;
+    private JTextField            mSceneFlowTextField                = null;
+    private JLabel                mSceneFlowMessage                  = new JLabel(" ");
+    private JTextField            mScenesTextField                   = null;
+    private JLabel                mSceneMessage                      = new JLabel(" ");
+    private JTextField            mGesticonTextField                 = null;
+    private JTextField            mVisiconTextField                  = null;
+    private JTextField            mDefaultScenePlayerTextField       = null;
+    private JTextField            mDefaultScenePlayerConfigTextField = null;
+    private ArrayList<JTextField> mScenePlayerTextFields             = null;
+    private ArrayList<JTextField> mScenePlayerConfigTextFields       = null;
 
     // flags
     private boolean mLocationDialog = false;
@@ -87,19 +84,25 @@ public class CreateProjectDialog extends JDialog {
 
     // content representation
     private ArrayList<ConfigEntry> mProperties = new ArrayList<ConfigEntry>();
+    private JButton                mLocationButton;
+
+    // Labels
+    private JLabel errorMsg;
+    private JLabel lblName;
+    private JLabel lblPath;
 
     // files
-    public File mProjectDir;
-    public File mConfigFile;
-    public File mSceneFlowFile;
-    public File mScenesFile;
-    public File mGesticonFile;
-    public File mVisiconFile;
-    public File mActiconFile;
+    public File    mProjectDir;
+    public File    mConfigFile;
+    public File    mSceneFlowFile;
+    public File    mScenesFile;
+    public File    mGesticonFile;
+    public File    mVisiconFile;
+    public File    mActiconFile;
     private String mPreferencesFilePath;
 
     // essential strings
-    public String mProjectName;
+    public String         mProjectName;
     private ProjectConfig mProjectConfig;
 
     public CreateProjectDialog() {
@@ -111,13 +114,11 @@ public class CreateProjectDialog extends JDialog {
         mProperties.add(new ConfigEntry("project.data.gesticon", "gesticon.xml"));
         mProperties.add(new ConfigEntry("project.data.sceneflow", "sceneflow.xml"));
         mProperties.add(new ConfigEntry("project.data.preferences", "preferences.xml"));
-
         mProperties.add(new ConfigEntry("project.dialogact.class", "de.dfki.vsm.runtime.dialogact.DummyDialogAct"));
-        mProperties.add(new ConfigEntry("project.dialogact.player", "de.dfki.vsm.runtime.player.DefaultDialogueActPlayer"));
-
+        mProperties.add(new ConfigEntry("project.dialogact.player",
+                                        "de.dfki.vsm.runtime.player.DefaultDialogueActPlayer"));
         mProperties.add(new ConfigEntry("project.player.config", "player.xml"));
         mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer"));
-
         mProjectConfig = new ProjectConfig(mProperties);
         initComponents();
         setVisible(true);
@@ -126,43 +127,31 @@ public class CreateProjectDialog extends JDialog {
     private void initComponents() {
 
         // create contentfields and set inital content
-        Dimension tSize = new Dimension(250, 30);
-        Dimension labelSize = new Dimension(100, 30);
+        Dimension tSize      = new Dimension(250, 30);
+        Dimension labelSize  = new Dimension(100, 30);
         Dimension buttonSize = new Dimension(125, 30);
+
         setBackground(Color.white);
         mNameTextField = new JTextField(mProjectConfig.property("project.basic.name"));
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
         mNameTextField.addMouseListener(new MouseInputListener() {
-
             @Override
             public void mouseClicked(MouseEvent me) {
                 mNameTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
             }
-
             @Override
-            public void mousePressed(MouseEvent me) {
-            }
-
+            public void mousePressed(MouseEvent me) {}
             @Override
-            public void mouseReleased(MouseEvent me) {
-            }
-
+            public void mouseReleased(MouseEvent me) {}
             @Override
-            public void mouseEntered(MouseEvent me) {
-            }
-
+            public void mouseEntered(MouseEvent me) {}
             @Override
-            public void mouseExited(MouseEvent me) {
-            }
-
+            public void mouseExited(MouseEvent me) {}
             @Override
-            public void mouseDragged(MouseEvent me) {
-            }
-
+            public void mouseDragged(MouseEvent me) {}
             @Override
-            public void mouseMoved(MouseEvent me) {
-            }
+            public void mouseMoved(MouseEvent me) {}
         });
         mSceneFlowTextField = new JTextField(mProjectConfig.property("project.data.sceneflow"));
         mSceneFlowTextField.setMinimumSize(tSize);
@@ -179,22 +168,14 @@ public class CreateProjectDialog extends JDialog {
                     mSceneFlowTextField.setText(file.getSelectedFile().getPath());
                 }
             }
-
             @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
+            public void mousePressed(MouseEvent e) {}
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
+            public void mouseReleased(MouseEvent e) {}
             @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
+            public void mouseEntered(MouseEvent e) {}
             @Override
-            public void mouseExited(MouseEvent e) {
-            }
+            public void mouseExited(MouseEvent e) {}
         });
         mScenesTextField = new JTextField(mProjectConfig.property("project.data.scenes"));
         mScenesTextField.setMinimumSize(tSize);
@@ -211,22 +192,14 @@ public class CreateProjectDialog extends JDialog {
                     mScenesTextField.setText(file.getSelectedFile().getPath());
                 }
             }
-
             @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
+            public void mousePressed(MouseEvent e) {}
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
+            public void mouseReleased(MouseEvent e) {}
             @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
+            public void mouseEntered(MouseEvent e) {}
             @Override
-            public void mouseExited(MouseEvent e) {
-            }
+            public void mouseExited(MouseEvent e) {}
         });
         mGesticonTextField = new JTextField(mProjectConfig.property("project.data.gesticon"));
         mGesticonTextField.setMinimumSize(tSize);
@@ -243,22 +216,14 @@ public class CreateProjectDialog extends JDialog {
                     mGesticonTextField.setText(file.getSelectedFile().getPath());
                 }
             }
-
             @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
+            public void mousePressed(MouseEvent e) {}
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
+            public void mouseReleased(MouseEvent e) {}
             @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
+            public void mouseEntered(MouseEvent e) {}
             @Override
-            public void mouseExited(MouseEvent e) {
-            }
+            public void mouseExited(MouseEvent e) {}
         });
         mVisiconTextField = new JTextField(mProjectConfig.property("project.data.visicon"));
         mVisiconTextField.setMinimumSize(tSize);
@@ -275,22 +240,14 @@ public class CreateProjectDialog extends JDialog {
                     mVisiconTextField.setText(file.getSelectedFile().getPath());
                 }
             }
-
             @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
+            public void mousePressed(MouseEvent e) {}
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
+            public void mouseReleased(MouseEvent e) {}
             @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
+            public void mouseEntered(MouseEvent e) {}
             @Override
-            public void mouseExited(MouseEvent e) {
-            }
+            public void mouseExited(MouseEvent e) {}
         });
         mDefaultScenePlayerTextField = new JTextField(mProjectConfig.property("project.player.class"));
         mDefaultScenePlayerTextField.setEditable(false);
@@ -318,10 +275,8 @@ public class CreateProjectDialog extends JDialog {
                     checkFileConsistency();
                 }
             }
-
             @Override
-            public void focusLost(FocusEvent e) {
-            }
+            public void focusLost(FocusEvent e) {}
         });
         mLocationButton = new JButton(ResourceLoader.loadImageIcon("/res/img/search_icon.png"));
         mLocationButton.setOpaque(false);
@@ -335,7 +290,6 @@ public class CreateProjectDialog extends JDialog {
             public void mouseClicked(MouseEvent e) {
                 mLocationTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
             }
-
             @Override
             public void mousePressed(MouseEvent e) {
                 locationDialogShown();
@@ -353,48 +307,42 @@ public class CreateProjectDialog extends JDialog {
 
                 checkFileConsistency();
             }
-
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
+            public void mouseReleased(MouseEvent e) {}
             @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
+            public void mouseEntered(MouseEvent e) {}
             @Override
-            public void mouseExited(MouseEvent e) {
-            }
+            public void mouseExited(MouseEvent e) {}
         });
 
         // create buttons
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-//        mOkButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent evt) {
-//                okActionPerformed();
-//            }
-//        });
-        //mOkButton.setSelected(true);
+
+//      mOkButton.addActionListener(new ActionListener() {
+//          @Override
+//          public void actionPerformed(ActionEvent evt) {
+//              okActionPerformed();
+//          }
+//      });
+        // mOkButton.setSelected(true);
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
-//        mCancelButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent evt) {
-//                cancelActionPerformed();
-//            }
-//        });
+
+//      mCancelButton.addActionListener(new ActionListener() {
+//          @Override
+//          public void actionPerformed(ActionEvent evt) {
+//              cancelActionPerformed();
+//          }
+//      });
         // create config panel
         mConfigPanel = new JPanel();
         mConfigPanel.setOpaque(false);
@@ -501,6 +449,7 @@ public class CreateProjectDialog extends JDialog {
 //      mConfigPanel.add(defaultScenePlayerConfigPanel);
         mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         mConfigPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+
         // compose panels
         mButtonsPanel = new JPanel();
         mButtonsPanel.setOpaque(false);
@@ -551,7 +500,7 @@ public class CreateProjectDialog extends JDialog {
 
         // setSize(400, 300);
         setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
-                getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
+                    getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
     }
 
     protected void locationDialogShown() {
@@ -571,7 +520,7 @@ public class CreateProjectDialog extends JDialog {
 
     protected void checkFileConsistency() {
         File sceneFlowFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                + mSceneFlowTextField.getText());
+                                      + mSceneFlowTextField.getText());
 
         if (sceneFlowFile.exists()) {
             mSceneFlowMessage.setText("Using existing file at given location!");
@@ -580,7 +529,7 @@ public class CreateProjectDialog extends JDialog {
         }
 
         File scenesFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                + mScenesTextField.getText());
+                                   + mScenesTextField.getText());
 
         if (scenesFile.exists()) {
             mSceneMessage.setText("Using existing file at given location!");
@@ -608,7 +557,7 @@ public class CreateProjectDialog extends JDialog {
 
             if (mSceneFlowTextField.getText().equalsIgnoreCase(mProjectConfig.property("project.data.sceneflow"))) {
                 mSceneFlowFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mSceneFlowTextField.getText());
+                                          + mSceneFlowTextField.getText());
 
                 if (!mSceneFlowFile.exists()) {
                     mLogger.message("creating file " + mSceneFlowFile);
@@ -628,22 +577,22 @@ public class CreateProjectDialog extends JDialog {
                 File source = new File(mSceneFlowTextField.getText());
 
                 mSceneFlowFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mProjectConfig.property("project.data.sceneflow"));
+                                          + mProjectConfig.property("project.data.sceneflow"));
                 mLogger.message("copying file " + source + " to " + mSceneFlowFile);
                 copyFile(source, mSceneFlowFile);
             }
 
             if (mScenesTextField.getText().equalsIgnoreCase(mProjectConfig.property("project.data.scenes"))) {
                 mScenesFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mScenesTextField.getText());
+                                       + mScenesTextField.getText());
 
                 if (!mScenesFile.exists()) {
                     mScenesFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                            + mScenesTextField.getText());
+                                           + mScenesTextField.getText());
                     mLogger.message("creating file " + mScenesFile);
 
-                    SceneScript dummyScene = new SceneScript();
-                    IndentWriter out = new IndentWriter(mScenesFile);
+                    SceneScript  dummyScene = new SceneScript();
+                    IndentWriter out        = new IndentWriter(mScenesFile);
 
                     dummyScene.writeXML(out);
                     out.close();
@@ -654,18 +603,18 @@ public class CreateProjectDialog extends JDialog {
                 File source = new File(mScenesTextField.getText());
 
                 mScenesFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mProjectConfig.property("project.scenes"));
+                                       + mProjectConfig.property("project.scenes"));
                 mLogger.message("copying file " + source + " to " + mScenesFile);
                 copyFile(source, mScenesFile);
             }
 
             if (mGesticonTextField.getText().equalsIgnoreCase(mProjectConfig.property("project.data.gesticon"))) {
                 mGesticonFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mGesticonTextField.getText());
+                                         + mGesticonTextField.getText());
                 mLogger.message("creating file " + mGesticonFile);
 
                 GesticonObject dummyGesticon = new GesticonObject();
-                IndentWriter out = new IndentWriter(mGesticonFile);
+                IndentWriter   out           = new IndentWriter(mGesticonFile);
 
                 dummyGesticon.writeXML(out);
                 out.close();
@@ -675,18 +624,18 @@ public class CreateProjectDialog extends JDialog {
                 File source = new File(mGesticonTextField.getText());
 
                 mGesticonFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mProjectConfig.property("project.gesticon"));
+                                         + mProjectConfig.property("project.gesticon"));
                 mLogger.message("copying file " + source + " to " + mGesticonFile);
                 copyFile(source, mGesticonFile);
             }
 
             if (mVisiconTextField.getText().equalsIgnoreCase(mProjectConfig.property("project.data.visicon"))) {
                 mVisiconFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mVisiconTextField.getText());
+                                        + mVisiconTextField.getText());
                 mLogger.message("creating file " + mVisiconFile);
 
                 VisiconObject dummyVisicon = new VisiconObject();
-                IndentWriter out = new IndentWriter(mVisiconFile);
+                IndentWriter  out          = new IndentWriter(mVisiconFile);
 
                 dummyVisicon.writeXML(out);
                 out.close();
@@ -696,30 +645,30 @@ public class CreateProjectDialog extends JDialog {
                 File source = new File(mVisiconTextField.getText());
 
                 mVisiconFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                        + mProjectConfig.property("project.data.visicon"));
+                                        + mProjectConfig.property("project.data.visicon"));
                 mLogger.message("copying file " + source + " to " + mVisiconFile);
                 copyFile(source, mVisiconFile);
             }
 
             // TODO: add acticon file
             mActiconFile = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                    + mProjectConfig.property("project.data.acticon"));
+                                    + mProjectConfig.property("project.data.acticon"));
             mLogger.message("creating file " + mActiconFile);
 
             ActiconObject dummyActicon = new ActiconObject();
-            IndentWriter out = new IndentWriter(mActiconFile);
+            IndentWriter  out          = new IndentWriter(mActiconFile);
 
             dummyActicon.writeXML(out);
             out.close();
 
             // create scene player config file
             File scenePlayerConfig = new File(mLocationTextField.getText() + System.getProperty("file.separator")
-                    + mDefaultScenePlayerConfigTextField.getText());
+                                              + mDefaultScenePlayerConfigTextField.getText());
 
             mLogger.message("creating file " + scenePlayerConfig);
 
             PlayerConfig dummyPlayerConfig = new PlayerConfig();
-            IndentWriter fileOut = new IndentWriter(scenePlayerConfig);
+            IndentWriter fileOut           = new IndentWriter(scenePlayerConfig);
 
             dummyPlayerConfig.writeXML(fileOut);
             fileOut.close();
@@ -736,9 +685,10 @@ public class CreateProjectDialog extends JDialog {
              * dspProp.store(fileOut, "Default Scene Player Configuration");
              * fileOut.close();
              */
+
             // Create Preferences File
             mPreferencesFilePath = (mLocationTextField.getText() + System.getProperty("file.separator")
-                    + mProjectConfig.property("project.data.preferences"));
+                                    + mProjectConfig.property("project.data.preferences"));
             mLogger.message("creating file " + mPreferencesFilePath);
 
             ProjectPreferences dummyPreferences = new ProjectPreferences();
@@ -760,15 +710,19 @@ public class CreateProjectDialog extends JDialog {
         if (mNameTextField.getText().length() == 0) {
             mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
+
             return false;
         }
 
         if (mLocationTextField.getText().length() == 0) {
             mLocationTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
+
             return false;
         }
+
         errorMsg.setForeground(Color.white);
+
         // TODO!
         // check exisiting files
         return true;
@@ -776,9 +730,9 @@ public class CreateProjectDialog extends JDialog {
 
     public static void copyFile(File input, File output) {
         try {
-            FileReader in = new FileReader(input);
+            FileReader in  = new FileReader(input);
             FileWriter out = new FileWriter(output);
-            int c;
+            int        c;
 
             while ((c = in.read()) != -1) {
                 out.write(c);

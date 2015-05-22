@@ -1,6 +1,9 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -9,15 +12,14 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class VarExp extends LExpression {
-
     private String mName;
-
-    public VarExp(String name) {
-        mName = name;
-    }
 
     public VarExp() {
         mName = new String();
+    }
+
+    public VarExp(String name) {
+        mName = name;
     }
 
     public String getName() {

@@ -1,7 +1,13 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.WorkSpace;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.geom.Point2D;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -10,25 +16,26 @@ import javax.swing.undo.CannotUndoException;
  * @author Gregor Mehlmann
  */
 public class RemoveEdgeAction extends EdgeAction {
-
     public RemoveEdgeAction(WorkSpace workSpace, de.dfki.vsm.editor.Edge edge) {
-        mWorkSpace = workSpace;
-        mGUIEdge = edge;
-        mDataEdge = edge.getDataEdge();
+        mWorkSpace     = workSpace;
+        mGUIEdge       = edge;
+        mDataEdge      = edge.getDataEdge();
         mSourceGUINode = edge.getSourceNode();
         mTargetGUINode = edge.getTargetNode();
 
         // store the dockpoints
         mSourceGUINodeDockPoint = mSourceGUINode.getEdgeDockPoint(edge);
-        mTargetGUINodeDockPoint = (mSourceGUINode.equals(mTargetGUINode)) ? mSourceGUINode.getSelfPointingEdgeDockPoint(edge) : mTargetGUINode.getEdgeDockPoint(edge);
-
-        mGUIEdgeType = edge.getType();
-        mSceneFlowPane = mWorkSpace.getSceneFlowEditor();
-        mUndoManager = mSceneFlowPane.getUndoManager();
+        mTargetGUINodeDockPoint = (mSourceGUINode.equals(mTargetGUINode))
+                                  ? mSourceGUINode.getSelfPointingEdgeDockPoint(edge)
+                                  : mTargetGUINode.getEdgeDockPoint(edge);
+        mGUIEdgeType            = edge.getType();
+        mSceneFlowPane          = mWorkSpace.getSceneFlowEditor();
+        mUndoManager            = mSceneFlowPane.getUndoManager();
     }
 
     public void run() {
         delete();
+
         // Update Redo/Undo state
         mUndoManager.addEdit(new Edit());
         UndoAction.getInstance().refreshUndoState();
@@ -38,7 +45,6 @@ public class RemoveEdgeAction extends EdgeAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             create();

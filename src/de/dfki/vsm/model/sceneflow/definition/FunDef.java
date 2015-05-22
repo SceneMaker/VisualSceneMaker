@@ -1,13 +1,20 @@
 package de.dfki.vsm.model.sceneflow.definition;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
-import java.util.Vector;
+
+import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import org.w3c.dom.Element;
+
+import java.util.Vector;
 
 /**
  * A user command definition.
@@ -15,30 +22,29 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class FunDef extends Object implements Comparable<FunDef> {
-
-    private String mName;
-    private String mClassName;
-    private String mMethod;
+    private String           mName;
+    private String           mClassName;
+    private String           mMethod;
     private Vector<ParamDef> mParamList;
 
     public FunDef() {
-        mName = new String();
+        mName      = new String();
         mClassName = new String();
-        mMethod = new String();
+        mMethod    = new String();
         mParamList = new Vector<ParamDef>();
     }
-    
+
     public FunDef(String name, String className, String method) {
-        mName = name;
+        mName      = name;
         mClassName = className;
-        mMethod = method;
+        mMethod    = method;
         mParamList = new Vector<ParamDef>();
     }
 
     public FunDef(String name, String className, String method, Vector<ParamDef> paramList) {
-        mName = name;
+        mName      = name;
         mClassName = className;
-        mMethod = method;
+        mMethod    = method;
         mParamList = paramList;
     }
 
@@ -80,9 +86,11 @@ public class FunDef extends Object implements Comparable<FunDef> {
 
     public Vector<ParamDef> getCopyOfParamList() {
         Vector<ParamDef> copy = new Vector<ParamDef>();
+
         for (ParamDef param : mParamList) {
             copy.add(param.getCopy());
         }
+
         return copy;
     }
 
@@ -96,23 +104,29 @@ public class FunDef extends Object implements Comparable<FunDef> {
 
     public String getAbstractSyntax() {
         String desc = "";
+
         for (int i = 0; i < mParamList.size(); i++) {
             desc += mParamList.get(i).getAbstractSyntax();
+
             if (i != mParamList.size() - 1) {
                 desc += ",";
             }
         }
+
         return "UsrCmdDef(" + mName + "(" + desc + "):" + mClassName + "." + mMethod + ")";
     }
 
     public String getConcreteSyntax() {
         String desc = "";
+
         for (int i = 0; i < mParamList.size(); i++) {
             desc += mParamList.get(i).getConcreteSyntax();
+
             if (i != mParamList.size() - 1) {
                 desc += ",";
             }
         }
+
         return mName + "( " + desc + " ):" + mClassName + "." + mMethod;
     }
 
@@ -125,29 +139,33 @@ public class FunDef extends Object implements Comparable<FunDef> {
     }
 
     public void writeXML(IndentWriter out) {
-        out.println("<UserCommand name=\"" + mName + "\" classname =\"" + mClassName + "\" method=\"" + mMethod + "\">").push();
+        out.println("<UserCommand name=\"" + mName + "\" classname =\"" + mClassName + "\" method=\"" + mMethod
+                    + "\">").push();
+
         for (int i = 0; i < mParamList.size(); i++) {
             mParamList.get(i).writeXML(out);
         }
+
         out.pop().println("</UserCommand>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        mName = element.getAttribute("name");
-        mMethod = element.getAttribute("method");
+        mName      = element.getAttribute("name");
+        mMethod    = element.getAttribute("method");
         mClassName = element.getAttribute("classname");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 ParamDef var = new ParamDef();
+
                 var.parseXML(element);
                 mParamList.add(var);
             }
         });
     }
-    
+
     public String getParamPrettyPrint() {
         String desc = "(";
+
         for (int i = 0; i < mParamList.size(); i++) {
             desc += mParamList.get(i).getPrettyType();
 
@@ -155,44 +173,44 @@ public class FunDef extends Object implements Comparable<FunDef> {
                 desc += ", ";
             }
         }
+
         return desc + ")";
     }
 
-    public final boolean isValidClass () {
-      boolean isClass = true;
-      boolean isObject = true;
+    public final boolean isValidClass() {
+        boolean isClass  = true;
+        boolean isObject = true;
 
-      try {
-        final Class javaClass = Class.forName(mClassName);
-      } catch (ClassNotFoundException ex) {
-        isClass = false;
-      }
+        try {
+            final Class javaClass = Class.forName(mClassName);
+        } catch (ClassNotFoundException ex) {
+            isClass = false;
+        }
 
-      try {
-        int dotIndex = mClassName.lastIndexOf('.');
-        String parentName = mClassName.substring(0, dotIndex);
-        String memberName = mClassName.substring(dotIndex + 1);
+        try {
+            int    dotIndex    = mClassName.lastIndexOf('.');
+            String parentName  = mClassName.substring(0, dotIndex);
+            String memberName  = mClassName.substring(dotIndex + 1);
+            Class  parentClass = Class.forName(parentName);
+            Field  javaField   = parentClass.getField(memberName);
+            Class  javaClass   = javaField.getType();
+        } catch (ClassNotFoundException ex) {
+            isObject = false;
+        } catch (NoSuchFieldException ex) {
+            isObject = false;
+        } catch (StringIndexOutOfBoundsException ex) {
+            isObject = false;
+        }
 
-        Class parentClass = Class.forName(parentName);
-        Field javaField = parentClass.getField(memberName);
-        Class javaClass = javaField.getType();
-      } catch (ClassNotFoundException ex) {
-          isObject = false;
-      } catch (NoSuchFieldException ex) {
-          isObject = false;
-      } catch (StringIndexOutOfBoundsException ex) {
-          isObject = false;
-      }
-
-      if (isClass || isObject) {
-        return true;
-      } else {
-        return false;
-      }
+        if (isClass || isObject) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    
+
     @Override
     public int compareTo(FunDef def) {
-      return this.getName().compareTo(def.getName());
+        return this.getName().compareTo(def.getName());
     }
 }

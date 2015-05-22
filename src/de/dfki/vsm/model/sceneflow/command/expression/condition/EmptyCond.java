@@ -1,10 +1,13 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -13,7 +16,6 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class EmptyCond extends Condition {
-
     private Expression mExp;
 
     public EmptyCond() {
@@ -37,11 +39,15 @@ public class EmptyCond extends Condition {
     }
 
     public String getAbstractSyntax() {
-        return "Empty ( " + (mExp != null ? mExp.getAbstractSyntax() : "") + " ) ";
+        return "Empty ( " + ((mExp != null)
+                             ? mExp.getAbstractSyntax()
+                             : "") + " ) ";
     }
 
     public String getConcreteSyntax() {
-        return "Empty ( " + (mExp != null ? mExp.getConcreteSyntax() : "") + " ) ";
+        return "Empty ( " + ((mExp != null)
+                             ? mExp.getConcreteSyntax()
+                             : "") + " ) ";
     }
 
     public String getFormattedSyntax() {
@@ -60,7 +66,6 @@ public class EmptyCond extends Condition {
 
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             public void run(Element element) throws XMLParseError {
                 mExp = Expression.parse(element);
             }

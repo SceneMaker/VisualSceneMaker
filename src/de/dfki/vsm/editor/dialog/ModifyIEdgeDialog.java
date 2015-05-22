@@ -1,5 +1,7 @@
 package de.dfki.vsm.editor.dialog;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
@@ -39,17 +41,17 @@ public class ModifyIEdgeDialog extends Dialog {
     // GUI-Components
     private final AltStartNodeManager mAltStartNodeManager;
     // GUI-Components
-    private JPanel mInputPanel;
-    private JLabel mInputLabel;
-    private JPanel mButtonPanel;
-    private JTextField mInputTextField;
-    private OKButton mOkButton;
+    private JPanel       mInputPanel;
+    private JLabel       mInputLabel;
+    private JPanel       mButtonPanel;
+    private JTextField   mInputTextField;
+    private OKButton     mOkButton;
     private CancelButton mCancelButton;
-    private JPanel mAltStartNodePanel;
-    private JLabel mAltStartNodeLabel;
-    private JList mAltStartNodeList;
-    private JScrollPane mAltStartNodeScrollPane;
-    private AddButton mAddAltStartNodeButton;
+    private JPanel       mAltStartNodePanel;
+    private JLabel       mAltStartNodeLabel;
+    private JList        mAltStartNodeList;
+    private JScrollPane  mAltStartNodeScrollPane;
+    private AddButton    mAddAltStartNodeButton;
     private RemoveButton mRemoveAltStartNodeButton;
     private EditButton mEditAltStartNodeButton;
     private Dimension labelSize = new Dimension(200, 30);
@@ -132,7 +134,6 @@ public class ModifyIEdgeDialog extends Dialog {
         // Ok button
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
@@ -140,7 +141,6 @@ public class ModifyIEdgeDialog extends Dialog {
         // Cancel button
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
@@ -162,7 +162,7 @@ public class ModifyIEdgeDialog extends Dialog {
         mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
         sanitizeLabel(mAltStartNodeLabel);
         // Init alternative start node list
-        mAltStartNodeList = new JList(new DefaultListModel());
+        mAltStartNodeList       = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
         Dimension tfSize = new Dimension(200, 110);
         mAltStartNodeScrollPane.setPreferredSize(tfSize);
@@ -172,7 +172,6 @@ public class ModifyIEdgeDialog extends Dialog {
         //add button
         mAddAltStartNodeButton = new AddButton();
         mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 addAltStartNode();
             }
@@ -180,7 +179,6 @@ public class ModifyIEdgeDialog extends Dialog {
         //remove button
         mRemoveAltStartNodeButton = new RemoveButton();
         mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 removeAltStartNode();
             }
@@ -188,7 +186,6 @@ public class ModifyIEdgeDialog extends Dialog {
         //edit button
         mEditAltStartNodeButton = new EditButton();
         mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 editAltStartNode();
             }
@@ -224,6 +221,10 @@ public class ModifyIEdgeDialog extends Dialog {
         if (process()) {
             dispose(Button.OK);
         }
+        else{
+            mInputTextField.setForeground(Color.red);
+            Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+        }
     }
 
     @Override
@@ -237,9 +238,11 @@ public class ModifyIEdgeDialog extends Dialog {
             _SFSLParser_.parseResultType = _SFSLParser_.LOG;
             _SFSLParser_.run(inputString);
             LogicalCond log = _SFSLParser_.logResult;
-            if (log != null && !_SFSLParser_.errorFlag) {
+
+            if ((log != null) &&!_SFSLParser_.errorFlag) {
                 mIEdge.setCondition(log);
-                ///
+
+                // /
                 mAltStartNodeManager.saveAltStartNodeMap();
                 ////
                 return true;
@@ -257,8 +260,8 @@ public class ModifyIEdgeDialog extends Dialog {
         if (mIEdge.getTargetNode() instanceof SuperNode) {
             Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry pairs = (Map.Entry) it.next();
-                TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
+                Map.Entry              pairs            = (Map.Entry) it.next();
+                TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
                 TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
                         startNodePair.getFirst() + "/" + altStartNodePair.getFirst());
@@ -281,32 +284,34 @@ public class ModifyIEdgeDialog extends Dialog {
     private void addAltStartNode() {
         CreateAltStartNodeDialog dialog = new CreateAltStartNodeDialog(mAltStartNodeManager);
         dialog.run();
-        ///
+
+        // /
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
         Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
+            Map.Entry              pairs            = (Map.Entry) it.next();
+            TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
             TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
-            ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
-                    startNodePair.getFirst() + "/" + altStartNodePair.getFirst());
+
+            ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
+                    + altStartNodePair.getFirst());
         }
     }
 
     private void removeAltStartNode() {
         String selectedValue = (String) mAltStartNodeList.getSelectedValue();
         if (selectedValue != null) {
-            String[] idPair = selectedValue.split("/");
-            String startNodeId = idPair[0];
-            //String altStartNodeId = idPair[1];
+            String[] idPair      = selectedValue.split("/");
+            String   startNodeId = idPair[0];
+
+            // String altStartNodeId = idPair[1];
             System.err.println("remove alt start node" + startNodeId);
             mAltStartNodeManager.removeAltStartNode(startNodeId);
             ((DefaultListModel) mAltStartNodeList.getModel()).removeElement(selectedValue);
         }
     }
 
-    private void editAltStartNode() {
-    }
+    private void editAltStartNode() {}
 
     public JPanel getInputPanel() {
 

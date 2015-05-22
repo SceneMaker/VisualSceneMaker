@@ -6,7 +6,6 @@ package de.dfki.vsm.runtime.error;
  * @author Gregor Mehlmann
  */
 public class RunTimeException extends InterpreterException {
-
     public RunTimeException(Object obj, String msg) {
         super(obj, msg);
     }

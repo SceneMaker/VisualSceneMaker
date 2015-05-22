@@ -1,10 +1,16 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 import de.dfki.vsm.model.sceneflow.PEdge;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.Vector;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -13,7 +19,6 @@ import javax.swing.undo.CannotUndoException;
  * @author Gregor Mehlmann
  */
 public class ModifyPEdgeAction extends ModifyEdgeAction {
-
     private Vector<Integer> mOldProbList = new Vector<Integer>();
     private Vector<Integer> mNewProbList = new Vector<Integer>();
 
@@ -25,14 +30,19 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
     public void run() {
         for (PEdge pedge : mSourceGUINode.getDataNode().getPEdgeList()) {
             mOldProbList.add(pedge.getProbability());
-            //System.out.println("Old Probability " + pedge.getProbability());
+
+            // System.out.println("Old Probability " + pedge.getProbability());
         }
+
         ModifyPEdgeDialog dialog = new ModifyPEdgeDialog((PEdge) mDataEdge);
-        PEdge pedg = dialog.run();
+        PEdge             pedg   = dialog.run();
+
         for (PEdge pedge : mSourceGUINode.getDataNode().getPEdgeList()) {
             mNewProbList.add(pedge.getProbability());
-            //System.out.println("New Probability " + pedge.getProbability());
+
+            // System.out.println("New Probability " + pedge.getProbability());
         }
+
         // Update Redo/Undo state
         mUndoManager.addEdit(new Edit());
         UndoAction.getInstance().refreshUndoState();
@@ -40,13 +50,13 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             for (int i = 0; i < mSourceGUINode.getDataNode().getPEdgeList().size(); i++) {
                 mSourceGUINode.getDataNode().getPEdgeList().get(i).setProbability(mOldProbList.get(i));
             }
-            //mGUIEdge.update();
+
+            // mGUIEdge.update();
             mWorkSpace.revalidate();
             mWorkSpace.repaint();
         }
@@ -56,7 +66,8 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
             for (int i = 0; i < mSourceGUINode.getDataNode().getPEdgeList().size(); i++) {
                 mSourceGUINode.getDataNode().getPEdgeList().get(i).setProbability(mNewProbList.get(i));
             }
-            //mGUIEdge.update();
+
+            // mGUIEdge.update();
             mWorkSpace.revalidate();
             mWorkSpace.repaint();
         }

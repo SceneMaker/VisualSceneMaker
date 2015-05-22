@@ -1,6 +1,11 @@
 package de.dfki.vsm.util.log;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.sys.SYSUtilities;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,48 +17,53 @@ public class LOGSSISockLogger {
 
     // The Singelton Console Logger Instance
     private static LOGSSISockLogger sInstance = null;
+
     // Construct The Java Console Logger
-    private static final Logger sLogger
-            = Logger.getLogger(LOGSSISockLogger.class.getName());
+    private static final Logger sLogger = Logger.getLogger(LOGSSISockLogger.class.getName());
+
     // Connection Information
     private final String mHost;
-    private final int mPort;
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    // Get The Singelton Logger Instance
-    public static synchronized LOGSSISockLogger getInstance(
-            final String host, final int port) {
-        if (sInstance == null) {
-            sInstance = new LOGSSISockLogger(host, port);
-        }
-        // TODO: Remove Old Handlers And Install New Ones
-        return sInstance;
-    }
+    private final int    mPort;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Construct The Default Logger
     private LOGSSISockLogger(final String host, final int port) {
+
         // Initialize Connection Information
         mHost = host;
         mPort = port;
+
         // Log The Messages From All Levels
         sLogger.setLevel(Level.ALL);
+
         // Do Not Propagate The Messages
         sLogger.setUseParentHandlers(false);
+
         try {
+
             // Install The Console Handler
             install(new LOGSSISockHandler(mHost, mPort));
+
             // Install The Logfile Handler
-            install(new LOGLogFileHandler(
-                    SYSUtilities.sSOCKFILE_FILE_NAME,
-                    10485760, 1, true)); // 10 MB Size
+            install(new LOGLogFileHandler(SYSUtilities.sSOCKFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
         } catch (Exception exc) {
             sLogger.severe(exc.toString());
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // Get The Singelton Logger Instance
+    public static synchronized LOGSSISockLogger getInstance(final String host, final int port) {
+        if (sInstance == null) {
+            sInstance = new LOGSSISockLogger(host, port);
+        }
+
+        // TODO: Remove Old Handlers And Install New Ones
+        return sInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////

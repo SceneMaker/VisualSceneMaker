@@ -1,7 +1,10 @@
 package de.dfki.vsm.model.sceneflow.definition;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -10,7 +13,6 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class ParamDef extends Object {
-
     private String mName;
     private String mType;
 
@@ -45,27 +47,27 @@ public class ParamDef extends Object {
 
         // for every leading '[' append '[]' to the pretty string
         while (pretty.startsWith("[")) {
-          pretty = pretty.substring(1);
-          pretty += "[]";
+            pretty = pretty.substring(1);
+            pretty += "[]";
         }
 
         // remove the leading 'L' and first appearance of ';'
-        if ((pretty.startsWith("L"))&&(!pretty.equals("Locale"))) {
-          pretty = pretty.substring(1);
+        if ((pretty.startsWith("L")) && (!pretty.equals("Locale"))) {
+            pretty = pretty.substring(1);
 
-          int semicolonIndex = pretty.indexOf(';');
-          pretty = pretty.substring(0, semicolonIndex) +
-                   pretty.substring(semicolonIndex + 1);
+            int semicolonIndex = pretty.indexOf(';');
+
+            pretty = pretty.substring(0, semicolonIndex) + pretty.substring(semicolonIndex + 1);
         }
 
         // remove the 'java.lang' package if present
         if (pretty.startsWith("java.lang.")) {
-          pretty = pretty.substring("java.lang.".length());
+            pretty = pretty.substring("java.lang.".length());
         }
 
         return pretty;
     }
-    
+
     public String getAbstractSyntax() {
         return "ParamDef(" + mType + " " + mName + ")";
     }

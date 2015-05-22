@@ -1,34 +1,38 @@
 package de.dfki.vsm.model.sceneflow.command.expression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.Vector;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.Vector;
 
 /**
  * @author Gregor Mehlmann
  */
 public class BinaryExp extends Expression {
-
     private Expression mLeftExp;
     private Expression mRightExp;
-    private Operator mOperator;
+    private Operator   mOperator;
 
     public enum Operator {
-
         Add, Div, Mul, Sub, Get, Remove, AddFirst, AddLast
     }
 
     public BinaryExp() {
-        mLeftExp = null;
+        mLeftExp  = null;
         mRightExp = null;
         mOperator = null;
     }
 
     public BinaryExp(Expression left, Operator op, Expression right) {
-        mLeftExp = left;
+        mLeftExp  = left;
         mOperator = op;
         mRightExp = right;
     }
@@ -62,45 +66,68 @@ public class BinaryExp extends Expression {
     }
 
     public String getAbstractSyntax() {
-        return "BinaryExp(" + (mOperator != null ? mOperator.name() : "")
-                + "(" + (mLeftExp != null ? mLeftExp.getAbstractSyntax() : "")
-                + "," + (mRightExp != null ? mRightExp.getAbstractSyntax() : "") + "))";
+        return "BinaryExp(" + ((mOperator != null)
+                               ? mOperator.name()
+                               : "") + "(" + ((mLeftExp != null)
+                ? mLeftExp.getAbstractSyntax()
+                : "") + "," + ((mRightExp != null)
+                               ? mRightExp.getAbstractSyntax()
+                               : "") + "))";
     }
 
     public String getConcreteSyntax() {
         String opString = "";
-        String left = (mLeftExp != null) ? mLeftExp.getConcreteSyntax() : "";
-        String right = (mRightExp != null) ? mRightExp.getConcreteSyntax() : "";
+        String left     = (mLeftExp != null)
+                          ? mLeftExp.getConcreteSyntax()
+                          : "";
+        String right    = (mRightExp != null)
+                          ? mRightExp.getConcreteSyntax()
+                          : "";
 
         if (mOperator == null) {
             return "";
         }
 
         switch (mOperator) {
-            case Add:
-                opString = left + " + " + right;
-                break;
-            case Div:
-                opString = left + " / " + right;
-                break;
-            case Mul:
-                opString = left + " * " + right;
-                break;
-            case Sub:
-                opString = left + " - " + right;
-                break;
-            case Get:
-                opString = "Get(" + left + " , " + right + ")";
-                break;
-            case Remove:
-                opString = "Remove(" + left + " , " + right + ")";
-                break;
-            case AddFirst:
-                opString = "AddFirst(" + left + " , " + right + ")";
-                break;
-            case AddLast:
-                opString = "AddLast(" + left + " , " + right + ")";
-                break;
+        case Add :
+            opString = left + " + " + right;
+
+            break;
+
+        case Div :
+            opString = left + " / " + right;
+
+            break;
+
+        case Mul :
+            opString = left + " * " + right;
+
+            break;
+
+        case Sub :
+            opString = left + " - " + right;
+
+            break;
+
+        case Get :
+            opString = "Get(" + left + " , " + right + ")";
+
+            break;
+
+        case Remove :
+            opString = "Remove(" + left + " , " + right + ")";
+
+            break;
+
+        case AddFirst :
+            opString = "AddFirst(" + left + " , " + right + ")";
+
+            break;
+
+        case AddLast :
+            opString = "AddLast(" + left + " , " + right + ")";
+
+            break;
         }
 
         return opString;
@@ -108,38 +135,57 @@ public class BinaryExp extends Expression {
 
     public String getFormattedSyntax() {
         String opString = "";
-        String left = (mLeftExp != null) ? mLeftExp.getFormattedSyntax() : "";
-        String right = (mRightExp != null) ? mRightExp.getFormattedSyntax() : "";
+        String left     = (mLeftExp != null)
+                          ? mLeftExp.getFormattedSyntax()
+                          : "";
+        String right    = (mRightExp != null)
+                          ? mRightExp.getFormattedSyntax()
+                          : "";
 
         if (mOperator == null) {
             return "";
         }
 
         switch (mOperator) {
-            case Add:
-                opString = left + " + " + right;
-                break;
-            case Div:
-                opString = left + " / " + right;
-                break;
-            case Mul:
-                opString = left + " * " + right;
-                break;
-            case Sub:
-                opString = left + " - " + right;
-                break;
-            case Get:
-                opString = "Get( " + left + " , " + right + " )";
-                break;
-            case Remove:
-                opString = "Remove( " + left + " , " + right + " )";
-                break;
-            case AddFirst:
-                opString = "AddFirst( " + left + " , " + right + " )";
-                break;
-            case AddLast:
-                opString = "AddLast( " + left + " , " + right + " )";
-                break;
+        case Add :
+            opString = left + " + " + right;
+
+            break;
+
+        case Div :
+            opString = left + " / " + right;
+
+            break;
+
+        case Mul :
+            opString = left + " * " + right;
+
+            break;
+
+        case Sub :
+            opString = left + " - " + right;
+
+            break;
+
+        case Get :
+            opString = "Get( " + left + " , " + right + " )";
+
+            break;
+
+        case Remove :
+            opString = "Remove( " + left + " , " + right + " )";
+
+            break;
+
+        case AddFirst :
+            opString = "AddFirst( " + left + " , " + right + " )";
+
+            break;
+
+        case AddLast :
+            opString = "AddLast( " + left + " , " + right + " )";
+
+            break;
         }
 
         return opString;
@@ -150,6 +196,7 @@ public class BinaryExp extends Expression {
     }
 
     public void writeXML(IndentWriter out) throws XMLWriteError {
+
         // TODO: Check if operand or expression are null
         out.println("<" + mOperator.name() + ">").push();
         mLeftExp.writeXML(out);
@@ -159,14 +206,15 @@ public class BinaryExp extends Expression {
 
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
-        final Vector<Expression> expList = new Vector<Expression>();
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
 
+        final Vector<Expression> expList = new Vector<Expression>();
+
+        XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
                 expList.add(Expression.parse(element));
             }
         });
-        mLeftExp = expList.firstElement();
+        mLeftExp  = expList.firstElement();
         mRightExp = expList.lastElement();
     }
 }

@@ -1,6 +1,11 @@
 package de.dfki.vsm.util.service;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.project.ProjectData;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,11 +15,9 @@ import java.io.PrintWriter;
  * @author Gregor Mehlmann
  */
 public class UniqueID implements Service {
-
     public volatile int id = 0;
 
-    public UniqueID(ProjectData project) {
-    }
+    public UniqueID(ProjectData project) {}
 
     public synchronized int nextId() {
         return id++;
@@ -30,6 +33,7 @@ public class UniqueID implements Service {
 
     public void serve(InputStream i, OutputStream o) throws IOException {
         PrintWriter out = new PrintWriter(o);
+
         out.print("You are client #: " + nextId() + "\n");
         out.close();
         i.close();

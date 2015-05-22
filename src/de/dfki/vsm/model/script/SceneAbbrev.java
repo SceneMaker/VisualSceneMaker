@@ -1,10 +1,16 @@
 package de.dfki.vsm.model.script;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.HashMap;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
@@ -13,26 +19,23 @@ public final class SceneAbbrev extends AbstractWord {
 
     // The First Part
     private String mFirst;
+
     // The Second Part
     private String mSecond;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneAbbrev() {
-    }
+    public SceneAbbrev() {}
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneAbbrev(
-            final int lower,
-            final int upper,
-            final String first,
-            final String second) {
+    public SceneAbbrev(final int lower, final int upper, final String first, final String second) {
         super(lower, upper);
+
         // Initialize Members
-        mFirst = first;
+        mFirst  = first;
         mSecond = second;
     }
 
@@ -85,11 +88,8 @@ public final class SceneAbbrev extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IndentWriter stream) throws XMLWriteError {
-        stream.print("<SceneAbbrev "
-                + "lower=\"" + mLower + "\" "
-                + "upper=\"" + mUpper + "\" "
-                + "first=\"" + mFirst + "\" "
-                + "second=\"" + mSecond + "\"/>");
+        stream.print("<SceneAbbrev " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "first=\"" + mFirst
+                     + "\" " + "second=\"" + mSecond + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -97,11 +97,13 @@ public final class SceneAbbrev extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
+
         // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
+
         // Parse The Members
-        mFirst = element.getAttribute("first");
+        mFirst  = element.getAttribute("first");
         mSecond = element.getAttribute("second");
     }
 

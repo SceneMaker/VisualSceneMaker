@@ -1,5 +1,7 @@
 package de.dfki.vsm.runtime;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
@@ -21,11 +23,14 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCon
 import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.error.RunTimeException;
+import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.IntValue;
 import de.dfki.vsm.runtime.value.StringValue;
-import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,10 +39,10 @@ import java.util.TimerTask;
  * @author Gregor Mehlmann
  */
 public class TimeoutManager {
-
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList
-            = new HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>>();
+    private final LOGDefaultLogger                                   mLogger          = LOGDefaultLogger.getInstance();
+    private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCond,
+                                                                                            TPLTuple<Boolean,
+                                                                                                TimerTask>>();
     private final Timer mTimer = new Timer("Timeout-Manager-Timer");
     private Interpreter mInterpreter;
 
@@ -58,6 +63,7 @@ public class TimeoutManager {
             pair.setFirst(false);
             pair.getSecond().cancel();
         }
+
         mTimeoutCondList.clear();
         mLogger.message("Clearing timeout manager");
     }
@@ -67,7 +73,8 @@ public class TimeoutManager {
     }
 
     public void remove(final TimeoutCond cond) {
-        //mTimeoutCondList.get(cond).
+
+        // mTimeoutCondList.get(cond).
         mTimeoutCondList.get(cond).getSecond().cancel();
         mTimeoutCondList.remove(cond);
         mLogger.message("removing " + cond.getConcreteSyntax() + " ");
@@ -76,28 +83,27 @@ public class TimeoutManager {
     public void start(final TimeoutCond cond, int timeout) {
         if (contains(cond)) {
             mLogger.message("Already contained " + cond.getConcreteSyntax() + " -> restart");
-
             remove(cond);
         }
 
         final TimerTask task = new TimerTask() {
-
             public void run() {
                 mInterpreter.lock();
+
                 if (contains(cond)) {
                     mTimeoutCondList.get(cond).setFirst(true);
                     mLogger.message("Setting true " + cond.getConcreteSyntax());
-
                 }
 
-                //if (mEventObserver != null) {
+                // if (mEventObserver != null) {
                 mInterpreter.getEventObserver().update();
-                // }
 
+                // }
                 cancel();
                 mInterpreter.unlock();
             }
         };
+
         mTimeoutCondList.put(cond, new TPLTuple<Boolean, TimerTask>(false, task));
         mTimer.schedule(task, timeout);
     }
@@ -110,11 +116,13 @@ public class TimeoutManager {
     public void startTimeoutHandler(Command cmd, Environment env) throws RunTimeException {
         if (cmd instanceof PlaySceneGroup) {
             startTimeoutHandler(((PlaySceneGroup) cmd).getArg(), env);
+
             for (Expression arg : ((PlaySceneGroup) cmd).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
         } else if (cmd instanceof PlayDialogueAct) {
             startTimeoutHandler(((PlayDialogueAct) cmd).getArg(), env);
+
             for (Expression arg : ((PlayDialogueAct) cmd).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
@@ -159,11 +167,14 @@ public class TimeoutManager {
         } else if (exp instanceof EmptyCond) {
             startTimeoutHandler(((EmptyCond) exp).getExp(), env);
         } else if (exp instanceof TimeoutCond) {
+
             /**
              * START TIMEOUT CONDITION TIMER
              */
             startTimeoutHandler(((TimeoutCond) exp).getTimeout(), env);
+
             AbstractValue value = mInterpreter.getEvaluator().evaluate(((TimeoutCond) exp).getTimeout(), env);
+
             if (value.getType() == AbstractValue.Type.INT) {
                 start((TimeoutCond) exp, ((IntValue) value).getValue());
             } else if (value.getType() == AbstractValue.Type.STRING) {
