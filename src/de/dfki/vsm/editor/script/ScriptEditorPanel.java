@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.FunctionEditor;
 import de.dfki.vsm.editor.ProjectEditor;

@@ -179,17 +179,17 @@ public class FunDefDialog extends Dialog {
         mMessageLabel = new JLabel();
 
         //
-        addCompoment(mNameLabel, 10, 10, 100, 30);
-        addCompoment(mNameTextField, 110, 10, 260, 30);
-        addCompoment(mClassNameLabel, 10, 45, 100, 30);
-        addCompoment(mClassNameTextField, 110, 45, 260, 30);
-        addCompoment(mMethodLabel, 10, 80, 100, 30);
-        addCompoment(mMethodComboBox, 110, 80, 260, 30);
-        addCompoment(mArgLabel, 10, 115, 100, 30);
-        addCompoment(mArgScrollPane, 110, 115, 260, 80);
-        addCompoment(mCancelButton, 75, 240, 125, 30);
-        addCompoment(mOkButton, 225, 240, 125, 30);
-        addCompoment(mMessageLabel, 10, 290, 400, 30);
+        addComponent(mNameLabel, 10, 10, 100, 30);
+        addComponent(mNameTextField, 110, 10, 260, 30);
+        addComponent(mClassNameLabel, 10, 45, 100, 30);
+        addComponent(mClassNameTextField, 110, 45, 260, 30);
+        addComponent(mMethodLabel, 10, 80, 100, 30);
+        addComponent(mMethodComboBox, 110, 80, 260, 30);
+        addComponent(mArgLabel, 10, 115, 100, 30);
+        addComponent(mArgScrollPane, 110, 115, 260, 80);
+        addComponent(mCancelButton, 75, 240, 125, 30);
+        addComponent(mOkButton, 225, 240, 125, 30);
+        addComponent(mMessageLabel, 10, 290, 400, 30);
         packComponents(400, 320);
         mDefaultColor = Color.white;
     }

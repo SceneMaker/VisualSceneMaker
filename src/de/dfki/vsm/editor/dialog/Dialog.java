@@ -41,12 +41,12 @@ public abstract class Dialog extends JDialog {
     //
     public Dialog(JDialog parent, String title, boolean modal) {
         super(parent, title, modal);
-        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
+//        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
     }
 
     public Dialog(JFrame parent, String title, boolean modal) {
         super(parent, title, modal);
-        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
+//        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
     }
 
     protected void packComponents() {
@@ -130,11 +130,9 @@ public abstract class Dialog extends JDialog {
     }
 
     protected void dispose(Button button) {
-
-        // System.err.println("disposing on button " + mPressedButton);
+        //System.err.println("disposing on button " + mPressedButton);
         mPressedButton = button;
-
-        // System.err.println("disposing on button " + mPressedButton);
+        //System.err.println("disposing on button " + mPressedButton);
         setVisible(false);
         dispose();
     }

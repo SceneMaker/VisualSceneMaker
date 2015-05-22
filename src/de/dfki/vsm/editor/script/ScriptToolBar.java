@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
 
@@ -31,6 +32,7 @@ public class ScriptToolBar extends JToolBar {
 
     // Button to keep the script toolbar visible
     private JButton mPinScriptToolbar;
+    private AddButton mAddButton;
 
     public ScriptToolBar(ScriptEditorPanel parent) {
         super("Scenes Tool Bar", JToolBar.HORIZONTAL);

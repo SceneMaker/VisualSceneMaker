@@ -63,6 +63,19 @@ public class ModifyCEdgeDialog extends Dialog {
     private RemoveButton mRemoveAltStartNodeButton;
     private EditButton   mEditAltStartNodeButton;
 
+    
+    public ModifyCEdgeDialog(Node sourceNode, Node targetNode) {
+        super(Editor.getInstance(), "Create Conditional Edge", true);
+        // Set the edge data
+        mCEdge = new CEdge();
+        mCEdge.setTarget(targetNode.getId());
+        mCEdge.setSourceNode(sourceNode);
+        mCEdge.setTargetNode(targetNode);
+        // TODO: move to EdgeDialog
+        mAltStartNodeManager = new AltStartNodeManager(mCEdge);
+        // Init GUI-Components
+        initComponents();
+    }
     public ModifyCEdgeDialog(CEdge cedge) {
         super(Editor.getInstance(), "Modify Conditional Edge", true);
         mCEdge = cedge;
@@ -90,11 +103,11 @@ public class ModifyCEdgeDialog extends Dialog {
         // Init main panel
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-        addCompoment(mInputPanel, 230, 40);
+        addComponent(mInputPanel, 230, 40);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-        addCompoment(mAltStartNodePanel, 230, 85);
+        addComponent(mAltStartNodePanel, 230, 85);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-        addCompoment(mButtonPanel, 230, 20);
+        addComponent(mButtonPanel, 230, 20);
 
 //      addCompoment(mInputLabel, 10, 10, 70, 30);
 //      addCompoment(mInputTextField, 120, 10, 230, 30);
@@ -196,16 +209,19 @@ public class ModifyCEdgeDialog extends Dialog {
         // EDIT BUTTON
         mEditAltStartNodeButton = new EditButton();
         mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 editAltStartNode();
             }
         });
+        
         titleContainer = new JPanel(null);
         titleContainer.setOpaque(false);
         titleContainer.setLayout(new BoxLayout(titleContainer, BoxLayout.X_AXIS));
         titleContainer.setAlignmentX(LEFT_ALIGNMENT);
         titleContainer.add(mAltStartNodeLabel);
         titleContainer.add(Box.createRigidArea(new Dimension(1000, 20)));
+        
         buttonsContainer = new JPanel(null);
         buttonsContainer.setOpaque(false);
         buttonsContainer.setLayout(new BoxLayout(buttonsContainer, BoxLayout.Y_AXIS));
@@ -213,6 +229,7 @@ public class ModifyCEdgeDialog extends Dialog {
         buttonsContainer.add(mAddAltStartNodeButton);
         buttonsContainer.add(mRemoveAltStartNodeButton);
         buttonsContainer.add(mEditAltStartNodeButton);
+        
         startNodeContainer = new JPanel(null);
         startNodeContainer.setOpaque(false);
         startNodeContainer.setLayout(new BoxLayout(startNodeContainer, BoxLayout.X_AXIS));

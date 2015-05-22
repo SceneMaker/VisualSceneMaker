@@ -137,13 +137,10 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mProject          = project;
         mUndoManager      = new UndoManager();
         mSceneFlowManager = new SceneFlowManager(mSceneFlow);
-
         // The center component is the workspace
         mWorkSpace = new WorkSpace(this, mProject);
         mWorkSpace.setTransferHandler(new SceneFlowImage());
-
         JScrollPane mWorkSpaceScrollPane = new JScrollPane(mWorkSpace);
-
         mWorkSpaceScrollPane.setBorder(BorderFactory.createEtchedBorder());
 
         // TODO - second workspace for visualisation
@@ -156,14 +153,12 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mElementEditor  = new ElementEditor();
         mToolBar        = new SceneFlowToolBar(this, mProject);
         mToolBar.addPathComponent(mSceneFlow);
-
         //
         mObservable.addObserver(mToolBar);
         mObservable.addObserver(mProjectToolBar);
         mObservable.addObserver(mElementDisplay);
         mObservable.addObserver(mWorkSpace);
         mObservable.addObserver(mElementEditor);
-
         // mObservable.addObserver(mFooterLabel);
         //
         // TODO - a panel wraps first and second workspaces - better a jsplitpane?
@@ -205,16 +200,18 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
                 // solve issue here
                 if (Preferences.getProperty("showelementproperties").equals("true")) {
-                    Preferences.setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
-                    Preferences.save();
+                    mProject.getPreferences().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
+                    mProject.getPreferences().save(mScriptEditorPanel.getPreferencesFileName());
+//                    Preferences.save();
                 }
             }
         });
 
         if (Preferences.getProperty("showelementproperties").equals("true")) {
-            mSplitPane.setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
+
+            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getPreferences().getProperty("propertiesdividerlocation")));
         } else {
-            mSplitPane.setDividerLocation(10000);
+            mSplitPane.setDividerLocation(1d);
         }
 
         add(mFooterLabel, BorderLayout.SOUTH);
@@ -258,7 +255,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             mElementEditor.setVisible(true);
             Preferences.setProperty("showelementproperties", "true");
             Preferences.save();
-            mSplitPane.setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
+            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getPreferences().getProperty("propertiesdividerlocation")));
         }
     }
 

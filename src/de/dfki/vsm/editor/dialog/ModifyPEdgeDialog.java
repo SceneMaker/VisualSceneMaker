@@ -204,11 +204,11 @@ public class ModifyPEdgeDialog extends Dialog {
 
 //      mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
 //      //
-//      addCompoment(mEdgeProbPanel, 240, 70 + 25 * mPEdgeMap.size());
-//      addCompoment(mAltStartNodePanel, 240, 100);
-//      addCompoment(mButtonPanel, 240, 40);
+//      addComponent(mEdgeProbPanel, 240, 70 + 25 * mPEdgeMap.size());
+//      addComponent(mAltStartNodePanel, 240, 100);
+//      addComponent(mButtonPanel, 240, 40);
 //      packComponents(240, 140 + 70 + 25 * mPEdgeMap.size());
-        addCompoment(mEdgeProbPanel, 0, 0, 400, 110);
+        addComponent(mEdgeProbPanel, 0, 0, 400, 110);
 
         //
         addComponent(mAltStartNodePanel, 75, 125, 400, 135);
