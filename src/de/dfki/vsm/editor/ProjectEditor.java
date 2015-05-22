@@ -224,6 +224,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
                                 }
                                 break;
                             case MouseEvent.MOUSE_RELEASED:
+                                Preferences.setProperty("propertiesdividerlocation", String.valueOf(((ProjectEditor)this.getParent()).getDividerLocation()));
                                 mSceneDocEditor.prickPin();
                                 break;
                         }
@@ -251,7 +252,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         }
 
         if (showSceneDocEditor && showSceneFlowEditor) {
-            setDividerLocation((int) (topElementRatio * Integer.parseInt(Preferences.getProperty("frame_height"))));
+            setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
         }
 
         mSceneDocEditor.addComponentListener(
@@ -297,10 +298,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      * Shows the bottom part of the project editor
      */
     public void showSceneDocEditor() {
-        System.out.println(getDividerLocation());
-        System.out.println((int) (topElementRatio * Integer.parseInt(Preferences.getProperty("frame_height"))));
-
-        this.setDividerLocation((int) (topElementRatio * Integer.parseInt(Preferences.getProperty("frame_height"))));
+        setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
     }
     /*
      * Hides the bottom part of the project editor

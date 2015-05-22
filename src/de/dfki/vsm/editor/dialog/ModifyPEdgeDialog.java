@@ -187,26 +187,26 @@ public class ModifyPEdgeDialog extends Dialog {
         
 //        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
 //        //
-//        addCompoment(mEdgeProbPanel, 240, 70 + 25 * mPEdgeMap.size());
-//        addCompoment(mAltStartNodePanel, 240, 100);
-//        addCompoment(mButtonPanel, 240, 40);
+//        addComponent(mEdgeProbPanel, 240, 70 + 25 * mPEdgeMap.size());
+//        addComponent(mAltStartNodePanel, 240, 100);
+//        addComponent(mButtonPanel, 240, 40);
         
         
 //        packComponents(240, 140 + 70 + 25 * mPEdgeMap.size());
-        addCompoment(mEdgeProbPanel, 0, 0, 400, 110);
+        addComponent(mEdgeProbPanel, 0, 0, 400, 110);
         //
-        addCompoment(mAltStartNodePanel, 75, 125, 400, 135);
-//        addCompoment(mAltStartNodeScrollPane, 90, 125, 260, 110);
-//        addCompoment(mAddAltStartNodeButton, 355, 125, 20, 20);
-//        addCompoment(mRemoveAltStartNodeButton, 355, 155, 20, 20);
-//        addCompoment(mEditAltStartNodeButton, 355, 185, 20, 20);
+        addComponent(mAltStartNodePanel, 75, 125, 400, 135);
+//        addComponent(mAltStartNodeScrollPane, 90, 125, 260, 110);
+//        addComponent(mAddAltStartNodeButton, 355, 125, 20, 20);
+//        addComponent(mRemoveAltStartNodeButton, 355, 155, 20, 20);
+//        addComponent(mEditAltStartNodeButton, 355, 185, 20, 20);
         //
-        addCompoment(mNormButton, 75, 285, 125, 30);
-        addCompoment(mUniButton, 225, 285, 125, 30);
-        addCompoment(mCancelButton, 75, 335, 125, 30);
-        addCompoment(mOkButton, 225, 335, 125, 30);
-//        addCompoment(mAltStartNodePanel, 320, 100);
-//        addCompoment(mButtonPanel, 320, 40);
+        addComponent(mNormButton, 75, 285, 125, 30);
+        addComponent(mUniButton, 225, 285, 125, 30);
+        addComponent(mCancelButton, 75, 335, 125, 30);
+        addComponent(mOkButton, 225, 335, 125, 30);
+//        addComponent(mAltStartNodePanel, 320, 100);
+//        addComponent(mButtonPanel, 320, 40);
         packComponents(400, 400);
     }
 

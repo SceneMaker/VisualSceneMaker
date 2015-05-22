@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -37,10 +38,12 @@ public abstract class Dialog extends JDialog {
     //
     public Dialog(JDialog parent, String title, boolean modal) {
         super(parent, title, modal);
+        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
     }
 
     public Dialog(JFrame parent, String title, boolean modal) {
         super(parent, title, modal);
+        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
     }
 
     protected void packComponents() {
@@ -113,15 +116,18 @@ public abstract class Dialog extends JDialog {
                 getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
     }
 
-    protected void addCompoment(JComponent comp, int x, int y, int width, int height) {
+    protected void addComponent(JComponent comp, int x, int y, int width, int height) {
         comp.setBounds(x, y, width, height);
         mMainPanel.add(comp);
     }
 
-    protected void addCompoment(JComponent comp, int width, int height) {
+    protected void addComponent(JComponent comp, int width, int height) {
         comp.setMinimumSize(new Dimension(width, height));
         comp.setPreferredSize(new Dimension(width, height));
         comp.setMaximumSize(new Dimension(width, height));
+        mMainPanel.add(comp);
+    }
+    protected void addComponent(JComponent comp){
         mMainPanel.add(comp);
     }
 

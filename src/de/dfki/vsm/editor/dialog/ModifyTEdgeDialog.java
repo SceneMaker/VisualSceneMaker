@@ -73,11 +73,11 @@ public class ModifyTEdgeDialog extends Dialog {
         // Init main panel
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));                 
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));        
-        addCompoment(mInputPanel, 230, 40);
+        addComponent(mInputPanel, 230, 40);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10))); 
-        addCompoment(mAltStartNodePanel, 230, 85);
+        addComponent(mAltStartNodePanel, 230, 85);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10))); 
-        addCompoment(mButtonPanel, 230, 20);
+        addComponent(mButtonPanel, 230, 20);
              
         packComponents(230, 180);
               
@@ -126,14 +126,14 @@ public class ModifyTEdgeDialog extends Dialog {
 //        editAltStartNode();
 //      }
 //    });
-//    addCompoment(mInputTextField, 10, 10, 300, 20);
-//    addCompoment(mAltStartNodeLabel, 10, 35, 130, 25);
-//    addCompoment(mAltStartNodeScrollPane, 140, 35, 170, 80);
-//    addCompoment(mAddAltStartNodeButton, 10, 60, 100, 20);
-//    addCompoment(mRemoveAltStartNodeButton, 10, 80, 100, 20);
-//    addCompoment(mEditAltStartNodeButton, 10, 100, 100, 20);
-//    addCompoment(mOkButton, 130, 125, 90, 20);
-//    addCompoment(mCancelButton, 220, 125, 90, 20);
+//    addComponent(mInputTextField, 10, 10, 300, 20);
+//    addComponent(mAltStartNodeLabel, 10, 35, 130, 25);
+//    addComponent(mAltStartNodeScrollPane, 140, 35, 170, 80);
+//    addComponent(mAddAltStartNodeButton, 10, 60, 100, 20);
+//    addComponent(mRemoveAltStartNodeButton, 10, 80, 100, 20);
+//    addComponent(mEditAltStartNodeButton, 10, 100, 100, 20);
+//    addComponent(mOkButton, 130, 125, 90, 20);
+//    addComponent(mCancelButton, 220, 125, 90, 20);
 //    packComponents(320, 160);
 //  }
     
