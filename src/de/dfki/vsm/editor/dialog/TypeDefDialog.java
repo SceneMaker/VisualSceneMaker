@@ -190,28 +190,28 @@ public class TypeDefDialog extends Dialog {
         });
 
         //
-        addCompoment(mFlavourLabel, 10, 10, 70, 30);
-        addCompoment(mFlavourComboBox, 90, 10, 260, 30);
+        addComponent(mFlavourLabel, 10, 10, 70, 30);
+        addComponent(mFlavourComboBox, 90, 10, 260, 30);
 
         //
-        addCompoment(mNameLabel, 10, 55, 70, 30);
-        addCompoment(mNameTextField, 90, 55, 260, 30);
+        addComponent(mNameLabel, 10, 55, 70, 30);
+        addComponent(mNameTextField, 90, 55, 260, 30);
 
         //
-        addCompoment(mSeperator, 5, 100, 290, 10);
+        addComponent(mSeperator, 5, 100, 290, 10);
 
         //
-        addCompoment(mListTypeLabel, 10, 120, 70, 30);
-        addCompoment(mListTypeComboBox, 90, 120, 260, 30);
-        addCompoment(mMemberDefLabel, 10, 120, 70, 30);
-        addCompoment(mMemberDefScrollPane, 90, 120, 260, 110);
-        addCompoment(mAddMemberDefButton, 355, 140, 20, 20);
-        addCompoment(mRemoveMemberDefButton, 355, 170, 20, 20);
-        addCompoment(mEditMemberDefButton, 355, 200, 20, 20);
+        addComponent(mListTypeLabel, 10, 120, 70, 30);
+        addComponent(mListTypeComboBox, 90, 120, 260, 30);
+        addComponent(mMemberDefLabel, 10, 120, 70, 30);
+        addComponent(mMemberDefScrollPane, 90, 120, 260, 110);
+        addComponent(mAddMemberDefButton, 355, 140, 20, 20);
+        addComponent(mRemoveMemberDefButton, 355, 170, 20, 20);
+        addComponent(mEditMemberDefButton, 355, 200, 20, 20);
 
         //
-        addCompoment(mCancelButton, 75, 250, 125, 30);
-        addCompoment(mOkButton, 225, 250, 125, 30);
+        addComponent(mCancelButton, 75, 250, 125, 30);
+        addComponent(mOkButton, 225, 250, 125, 30);
         packComponents(400, 300);
         setListTypeComponentsVisible(false);
         setStructTypeComponentsVisible(true);

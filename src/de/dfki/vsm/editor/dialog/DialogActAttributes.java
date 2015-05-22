@@ -74,7 +74,7 @@ public class DialogActAttributes extends Dialog {
 
         for (String attribute : mDialogAct.getNLGAttributes()) {
             createAttributePanel(attribute);
-            addCompoment(mAttributePanel, 10, initial + offset, 390, 30);
+            addComponent(mAttributePanel, 10, initial + offset, 390, 30);
             initial = initial + offset;
 
 //          mMainPanel.add(mAttributePanel);
@@ -89,12 +89,12 @@ public class DialogActAttributes extends Dialog {
 
         // Init button panel
         initButtonPanel();
-        addCompoment(mNameLabel, 10, 10, 100, 30);
-        addCompoment(mNameText, 110, 10, 260, 30);
-        addCompoment(mCancelButton, 75, buttonPos, 125, 30);
-        addCompoment(mOkButton, 225, buttonPos, 125, 30);
+        addComponent(mNameLabel, 10, 10, 100, 30);
+        addComponent(mNameText, 110, 10, 260, 30);
+        addComponent(mCancelButton, 75, buttonPos, 125, 30);
+        addComponent(mOkButton, 225, buttonPos, 125, 30);
 
-//      addCompoment(mButtonPanel, 200, 100);
+//      addComponent(mButtonPanel, 200, 100);
 //      mMainPanel.add(mButtonPanel);
 //      mMainPanel.add(Box.createRigidArea(new Dimension(15, 10)));
         packComponents(400, finalHeight);

@@ -92,11 +92,12 @@ public class ModifyTEdgeDialog extends Dialog {
         // Init main panel
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-        addCompoment(mInputPanel, 230, 40);
+        addComponent(mInputPanel, 230, 40);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-        addCompoment(mAltStartNodePanel, 230, 85);
+        addComponent(mAltStartNodePanel, 230, 85);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-        addCompoment(mButtonPanel, 230, 20);
+        addComponent(mButtonPanel, 230, 20);
+             
         packComponents(230, 180);
     }
 

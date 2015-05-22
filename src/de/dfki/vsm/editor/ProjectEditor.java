@@ -56,45 +56,15 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      */
     private class Observable extends java.util.Observable {
 
-    //
-    private final ProjectData mProject;
-
-    //
-    private final SceneFlowEditor   mSceneFlowEditor;
-    private final ScriptEditorPanel mSceneDocEditor;
-    private long                    previousTime;
-
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
-    public ProjectEditor(ProjectData project) {
-        super(JSplitPane.VERTICAL_SPLIT, true);
-        mProject        = project;
-        mSceneDocEditor = new ScriptEditorPanel(mProject.getSceneScript(), mProject.getSceneFlow(),
-                mProject.getPreferences(), mProject.getPreferencesFileName(), this);
-        mSceneFlowEditor = new SceneFlowEditor(mProject.getSceneFlow(), mProject, mSceneDocEditor);
-        mObservable.addObserver(mSceneFlowEditor);
-        mObservable.addObserver(mSceneDocEditor);
-        mEventCaster.append(this);
-
-        NodeSelectedEvent e = new NodeSelectedEvent(this, mProject.getSceneFlow());
-
-        EventCaster.getInstance().convey(e);
-
-        WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
-
-        EventCaster.getInstance().convey(ev);
-        initComponents();
+        public void update(Object obj) {
+            setChanged();
+            notifyObservers(obj);
+    }
     }
 
     @Override
     public void update(java.util.Observable obs, Object obj) {
-
-        // mLogger.message("ProjectEditor.update(" + obj + ")");
+        //mLogger.message("ProjectEditor.update(" + obj + ")");
         mObservable.update(obj);
     }
 
@@ -107,9 +77,8 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      */
     @Override
     public void update(EventObject evt) {
-
-        // System.out.println(evt.getClass());
-        if ((evt instanceof FunctionSelectedEvent) || (evt instanceof TreeEntrySelectedEvent)) {
+        //System.out.println(evt.getClass());
+        if (evt instanceof FunctionSelectedEvent || evt instanceof TreeEntrySelectedEvent) {
             {
                 showSceneDocEditor();
             }
@@ -168,20 +137,19 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      */
     public void close() {
         if (mProject.hasChanged()) {
-            int response = JOptionPane.showConfirmDialog(this,
-                               "The project \"" + mProject.getProjectName() + "\" has changed.  Save it?",
-                               "Save before quitting?", JOptionPane.YES_NO_OPTION);
-
+            int response = JOptionPane.showConfirmDialog(
+                    this, "The project \"" + mProject.getProjectName() + "\" has changed.  Save it?",
+                    "Save before quitting?",
+                    JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.YES_OPTION) {
                 save();
-            } else if (response == JOptionPane.CANCEL_OPTION) {}
-            else if (response == JOptionPane.NO_OPTION) {}
-            else {}
+            } else if (response == JOptionPane.CANCEL_OPTION) {
+            } else if (response == JOptionPane.NO_OPTION) {
+            } else {
         }
-
+        }
         // Delete all observers
         mObservable.deleteObservers();
-
         // Close / Cleanup
         mSceneFlowEditor.close();
         mSceneDocEditor.close();
@@ -190,9 +158,10 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     ////////////////////////////////////////////////////////////////////////////
     public void save() {
         if (!mProject.save()) {
-
             // TODO: Failure Handling
-            JOptionPane.showMessageDialog(this, "Wrong Scene Script Syntax.", "Cannot Format Scene Script.",
+            JOptionPane.showMessageDialog(this,
+                    "Wrong Scene Script Syntax.",
+                    "Cannot Format Scene Script.",
                                           JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -205,7 +174,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      *
      */
     private void initComponents() {
-
         //
         setBorder(BorderFactory.createEmptyBorder());
         setBackground(Color.WHITE);
@@ -224,8 +192,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         //ProjectEditor thisPE = this;
         setUI(new BasicSplitPaneUI() {
 
-        // ProjectEditor thisPE = this;
-        setUI(new BasicSplitPaneUI() {
             @Override
             public BasicSplitPaneDivider createDefaultDivider() {
                 return new BasicSplitPaneDivider(this) {

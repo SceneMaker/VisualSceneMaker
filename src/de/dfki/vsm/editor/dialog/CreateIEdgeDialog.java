@@ -83,15 +83,15 @@ public class CreateIEdgeDialog extends Dialog {
         initAltStartNodePanel();
 
         //
-        addCompoment(mInputLabel, 10, 10, 100, 30);
-        addCompoment(mInputTextField, 120, 10, 230, 30);
+        addComponent(mInputLabel, 10, 10, 100, 30);
+        addComponent(mInputTextField, 120, 10, 230, 30);
 
         //
-        addCompoment(mAltStartNodeLabel, 10, 75, 100, 30);
-        addCompoment(mAltStartNodeScrollPane, 120, 75, 230, 110);
-        addCompoment(mAddAltStartNodeButton, 355, 85, 20, 20);
-        addCompoment(mRemoveAltStartNodeButton, 355, 115, 20, 20);
-        addCompoment(mEditAltStartNodeButton, 355, 145, 20, 20);
+        addComponent(mAltStartNodeLabel, 10, 75, 100, 30);
+        addComponent(mAltStartNodeScrollPane, 120, 75, 230, 110);
+        addComponent(mAddAltStartNodeButton, 355, 85, 20, 20);
+        addComponent(mRemoveAltStartNodeButton, 355, 115, 20, 20);
+        addComponent(mEditAltStartNodeButton, 355, 145, 20, 20);
 
         //
         addComponent(mCancelButton, 75, 210, 125, 30);

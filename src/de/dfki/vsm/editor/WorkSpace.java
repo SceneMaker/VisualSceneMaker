@@ -237,8 +237,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     @Override
     public void update(EventObject event) {
-        
-        mEditMode = event instanceof EdgeEditEvent;        
         checkChangesOnWorkspace();
         
     }
