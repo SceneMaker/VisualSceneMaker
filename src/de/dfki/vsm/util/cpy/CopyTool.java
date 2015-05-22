@@ -1,6 +1,11 @@
 package de.dfki.vsm.util.cpy;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -18,19 +23,25 @@ public class CopyTool {
     // Make A Deep Copy Of An Object Which Has To Be Serializable.
     public final static Serializable copy(final Serializable obj) {
         try {
+
             // Write Out The Object
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            final ObjectOutputStream oos = new ObjectOutputStream(bos);
+            final ObjectOutputStream    oos = new ObjectOutputStream(bos);
+
             oos.writeObject(obj);
+
             // Read In The Object
-            final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-            final ObjectInputStream ois = new ObjectInputStream(bis);
-            final Serializable copy = (Serializable) ois.readObject();
+            final ByteArrayInputStream bis  = new ByteArrayInputStream(bos.toByteArray());
+            final ObjectInputStream    ois  = new ObjectInputStream(bis);
+            final Serializable         copy = (Serializable) ois.readObject();
+
             return copy;
         } catch (Exception exc) {
+
             // Print Some Information
             sLogger.failure(exc.toString());
             System.out.println("ex:" + exc);
+
             // Return The Null Object
             return null;
         }

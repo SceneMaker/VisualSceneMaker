@@ -1,8 +1,11 @@
+
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* To change this template, choose Tools | Templates
+* and open the template in the editor.
  */
 package de.dfki.vsm.editor.event;
+
+//~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.script.AbstractWord;
 import de.dfki.vsm.util.evt.EventObject;
@@ -11,7 +14,6 @@ import de.dfki.vsm.util.evt.EventObject;
  * @author Gregor Mehlmann
  */
 public class WordExecutedEvent extends EventObject {
-
     private AbstractWord mTurn;
 
     public WordExecutedEvent(Object source, AbstractWord turn) {
@@ -24,6 +26,7 @@ public class WordExecutedEvent extends EventObject {
     }
 
     public String getEventDescription() {
+
         // TODO: is getText right?
         return "WordEvent(" + mTurn.getText() + ")";
     }

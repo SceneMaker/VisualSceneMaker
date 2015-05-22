@@ -1,13 +1,15 @@
 package de.dfki.vsm.model.sceneflow.command;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class UnblockAllSceneGroups extends Command {
-
     private boolean mNonAbstract;
 
     public UnblockAllSceneGroups() {

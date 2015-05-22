@@ -1,31 +1,32 @@
 package de.dfki.vsm.model.sceneflow.command.expression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class HistoryValueOf extends Expression {
-
     private String mNode;
     private String mVariable;
-    private int mDepth;
+    private int    mDepth;
 
-    public HistoryValueOf() {
-    }
+    public HistoryValueOf() {}
 
     public HistoryValueOf(String node, String variable) {
-        mNode = node;
+        mNode     = node;
         mVariable = variable;
-        mDepth = 0;
+        mDepth    = 0;
     }
 
     public HistoryValueOf(String node, String variable, int depth) {
-        mNode = node;
+        mNode     = node;
         mVariable = variable;
-        mDepth = depth;
+        mDepth    = depth;
     }
 
     public String getNode() {
@@ -61,12 +62,13 @@ public class HistoryValueOf extends Expression {
     }
 
     public void writeXML(IndentWriter out) {
-        out.println("<HistoryValueOf node=\"" + mNode + "\" var=\"" + mVariable + "\" depth=\"" + mDepth + "\"/>").push();
+        out.println("<HistoryValueOf node=\"" + mNode + "\" var=\"" + mVariable + "\" depth=\"" + mDepth
+                    + "\"/>").push();
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        mNode = element.getAttribute("node");
+        mNode     = element.getAttribute("node");
         mVariable = element.getAttribute("var");
-        mDepth = Integer.valueOf(element.getAttribute("depth"));
+        mDepth    = Integer.valueOf(element.getAttribute("depth"));
     }
 }

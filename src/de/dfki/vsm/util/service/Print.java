@@ -1,6 +1,11 @@
 package de.dfki.vsm.util.service;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.project.ProjectData;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -14,9 +19,7 @@ import java.io.PrintWriter;
  * @author Gregor Mehlmann
  */
 public class Print implements Service {
-
-    public Print(ProjectData project) {
-    }
+    public Print(ProjectData project) {}
 
     public Protocol getProtocol() {
         return Protocol.TCP;
@@ -27,15 +30,18 @@ public class Print implements Service {
     }
 
     public void serve(InputStream i, OutputStream o) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(i));
-        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(o)));
-        String line;
+        BufferedReader in  = new BufferedReader(new InputStreamReader(i));
+        PrintWriter    out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(o)));
+        String         line;
+
         while ((line = in.readLine()) != null) {
             if (line.length() == 0) {
                 break;
             }
+
             System.out.println(line);
         }
+
         out.close();
         in.close();
     }

@@ -1,7 +1,12 @@
 package de.dfki.vsm.api;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.runtime.value.AbstractValue;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.LinkedList;
 
 /**
@@ -9,8 +14,20 @@ import java.util.LinkedList;
  */
 public class VSMDefaultPlayer extends VSMScenePlayer {
 
-    // The Default Scene Player 
+    // The Default Scene Player
     public static VSMDefaultPlayer sInstance;
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    private VSMDefaultPlayer(final ProjectData project) {
+
+        // Initialize The Scene Player
+        super(project);
+
+        // Print Some Debug Information
+        mVSM3Log.message("Creating Default Scene Player");
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -19,17 +36,8 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
         if (sInstance == null) {
             sInstance = new VSMDefaultPlayer(project);
         }
-        return sInstance;
-    }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    private VSMDefaultPlayer(final ProjectData project) {
-        // Initialize The Scene Player
-        super(project);
-        // Print Some Debug Information
-        mVSM3Log.message("Creating Default Scene Player");
+        return sInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -37,8 +45,10 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void launch() {
+
         //
         super.launch();
+
         //
         mVSM3Log.message("Launching Default Scene Player");
     }
@@ -48,8 +58,10 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void unload() {
+
         //
         mVSM3Log.message("Unloading Default Scene Player");
+
         //
         super.unload();
     }
@@ -58,15 +70,11 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void handle(final VSMAgentClient client) {
-
-    }
+    public void handle(final VSMAgentClient client) {}
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void play(final String name, final LinkedList<AbstractValue> args) {
-
-    }
+    public void play(final String name, final LinkedList<AbstractValue> args) {}
 }

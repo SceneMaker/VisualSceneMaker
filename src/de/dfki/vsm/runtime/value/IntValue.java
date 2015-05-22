@@ -4,7 +4,6 @@ package de.dfki.vsm.runtime.value;
  * @author Gregor Mehlmann
  */
 public class IntValue extends AbstractValue {
-
     private final int mValue;
 
     public IntValue(int value) {
@@ -43,6 +42,7 @@ public class IntValue extends AbstractValue {
         if (value.getType() == Type.INT) {
             return (mValue == ((IntValue) value).mValue);
         }
+
         return false;
     }
 }

@@ -1,16 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.editor;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.ResourceLoader;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -21,7 +22,7 @@ import javax.swing.SwingConstants;
  */
 public class CancelButton extends JLabel {
     private final Dimension buttonSize = new Dimension(125, 30);
-    
+
     public CancelButton() {
         setText("Cancel");
         setHorizontalAlignment(SwingConstants.RIGHT);
@@ -37,21 +38,17 @@ public class CancelButton extends JLabel {
         setMinimumSize(buttonSize);
         addMouseListener(new java.awt.event.MouseAdapter() {
 
-//            public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                //savePreferences(true);
-//            }
-
+//          public void mouseClicked(java.awt.event.MouseEvent evt) {
+//              //savePreferences(true);
+//          }
             public void mouseEntered(MouseEvent me) {
                 setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png"));
                 setBackground(new Color(82, 127, 255));
             }
-
             public void mouseExited(MouseEvent me) {
                 setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png"));
                 setBackground(new Color(255, 255, 255));
-
             }
         });
-
     }
 }

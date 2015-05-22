@@ -1,6 +1,9 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -8,24 +11,22 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class HistoryContainsState extends LogicalCond {
-
     String mState;
     String mSubState;
-    int mDepth;
+    int    mDepth;
 
-    public HistoryContainsState() {
-    }
+    public HistoryContainsState() {}
 
     public HistoryContainsState(String state, String subState) {
-        mState = state;
+        mState    = state;
         mSubState = subState;
-        mDepth = 0;
+        mDepth    = 0;
     }
 
     public HistoryContainsState(String state, String subState, int depth) {
-        mState = state;
+        mState    = state;
         mSubState = subState;
-        mDepth = depth;
+        mDepth    = depth;
     }
 
     public String getState() {
@@ -61,13 +62,13 @@ public class HistoryContainsState extends LogicalCond {
     }
 
     public void writeXML(IndentWriter out) {
-        out.println("<HistoryContainsState state=\"" + mState + "\" substate=\"" + mSubState + "\" depth=\"" + mDepth + "\"/>");
-
+        out.println("<HistoryContainsState state=\"" + mState + "\" substate=\"" + mSubState + "\" depth=\"" + mDepth
+                    + "\"/>");
     }
 
     public void parseXML(Element element) {
-        mState = element.getAttribute("state");
+        mState    = element.getAttribute("state");
         mSubState = element.getAttribute("substate");
-        mDepth = Integer.valueOf(element.getAttribute("depth"));
+        mDepth    = Integer.valueOf(element.getAttribute("depth"));
     }
 }

@@ -1,5 +1,7 @@
 package de.dfki.vsm.util.xml;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import org.w3c.dom.Element;
 
 /**

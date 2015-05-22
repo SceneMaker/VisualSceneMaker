@@ -1,8 +1,13 @@
 package de.dfki.vsm.runtime.symbol;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.runtime.error.RunTimeException;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -39,14 +44,16 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final HashMap<String, SymbolEntry> copySymbolTable() {
+
         // Create A Copy Of The Table
-        final HashMap<String, SymbolEntry> copy
-                = new HashMap<>();
+        final HashMap<String, SymbolEntry> copy = new HashMap<>();
+
         // Copy Each Single Table Entry
         for (Entry<String, SymbolEntry> entry : mSymbolTable.entrySet()) {
             copy.put(entry.getKey(), entry.getValue().getCopy());
         }
-        // Return Copy Of The Table 
+
+        // Return Copy Of The Table
         return copy;
     }
 
@@ -67,30 +74,21 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void create(
-            final String symbol,
-            final AbstractValue value)
-            throws RunTimeException {
+    public final void create(final String symbol, final AbstractValue value) throws RunTimeException {
         mSymbolTable.put(symbol, new SymbolEntry(symbol, value));
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue write(
-            final String symbol,
-            final AbstractValue value)
-            throws RunTimeException {
+    public final AbstractValue write(final String symbol, final AbstractValue value) throws RunTimeException {
         return mSymbolTable.get(symbol).write(value);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue write(
-            final String symbol,
-            final int index,
-            final AbstractValue value)
+    public final AbstractValue write(final String symbol, final int index, final AbstractValue value)
             throws RunTimeException {
         return mSymbolTable.get(symbol).write(value, index);
     }
@@ -98,10 +96,7 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue write(
-            final String symbol,
-            final String member,
-            final AbstractValue value)
+    public final AbstractValue write(final String symbol, final String member, final AbstractValue value)
             throws RunTimeException {
         return mSymbolTable.get(symbol).write(value, member);
     }
@@ -109,28 +104,21 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue read(
-            final String symbol) {
+    public final AbstractValue read(final String symbol) {
         return mSymbolTable.get(symbol).read();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue read(
-            final String symbol,
-            final int index)
-            throws RunTimeException {
+    public final AbstractValue read(final String symbol, final int index) throws RunTimeException {
         return mSymbolTable.get(symbol).read(index);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue read(
-            final String symbol,
-            final String member)
-            throws RunTimeException {
+    public final AbstractValue read(final String symbol, final String member) throws RunTimeException {
         return mSymbolTable.get(symbol).read(member);
     }
 

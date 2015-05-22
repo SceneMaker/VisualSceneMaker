@@ -4,7 +4,6 @@ package de.dfki.vsm.runtime.value;
  * @author Gregor Mehlmann
  */
 public class FloatValue extends AbstractValue {
-
     private final float mValue;
 
     public FloatValue(float value) {
@@ -45,6 +44,7 @@ public class FloatValue extends AbstractValue {
         if (value.getType() == Type.FLOAT) {
             return (mValue == ((FloatValue) value).mValue);
         }
+
         return false;
     }
 }

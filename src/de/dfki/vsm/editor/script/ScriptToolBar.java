@@ -1,13 +1,18 @@
 package de.dfki.vsm.editor.script;
 
-import de.dfki.vsm.editor.AddButton;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -19,15 +24,25 @@ import javax.swing.JToolBar;
  * @author Patrick Gebhard
  */
 public class ScriptToolBar extends JToolBar {
-
-    private JButton mGesticonButton;
-    private ScriptEditorPanel mParent;
+    private boolean            pinPricked = false;
+    private JButton            mGesticonButton;
+    private ScriptEditorPanel  mParent;
     private ProjectPreferences mPreferences;
-    //Button to keep the script toolbar visible
+
+    // Button to keep the script toolbar visible
     private JButton mPinScriptToolbar;
-    private boolean pinPricked = false;
-    //GENERAL ADD BUTTON
-    private AddButton mAddButton;
+
+    public ScriptToolBar(ScriptEditorPanel parent) {
+        super("Scenes Tool Bar", JToolBar.HORIZONTAL);
+        mParent      = parent;
+        mPreferences = mParent.getPreferences();
+        setFloatable(false);
+        setRollover(true);
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        // setBorder(BorderFactory.createLineBorder(Color.yellow));
+        initComponents();
+    }
 
     /**
      * Function to know if the script editor panel is fixed or can be hidden
@@ -46,38 +61,25 @@ public class ScriptToolBar extends JToolBar {
         pinPricked = true;
     }
 
-    public ScriptToolBar(ScriptEditorPanel parent) {
-        super("Scenes Tool Bar", JToolBar.HORIZONTAL);
-        mParent = parent;
-        mPreferences = mParent.getPreferences();
-        setFloatable(false);
-        setRollover(true);
-
-        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        //setBorder(BorderFactory.createLineBorder(Color.yellow));
-        initComponents();
-
-    }
-
     private void initComponents() {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setOpaque(false);
         add(Box.createHorizontalStrut(2));
         mGesticonButton = add(new AbstractAction("ACTION_SHOW_ELEMENTS",
                 Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
-                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png")) {
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png")) {
+            public void actionPerformed(ActionEvent evt) {
+                boolean state = mParent.showElementDisplay();
 
-                    public void actionPerformed(ActionEvent evt) {
-                        boolean state = mParent.showElementDisplay();
-                        changeGesticonDisplayButtonState(state);
-                        revalidate();
-                        repaint();
-                    }
-                });
+                changeGesticonDisplayButtonState(state);
+                revalidate();
+                repaint();
+            }
+        });
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
-                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
+                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
         mGesticonButton.setContentAreaFilled(false);
         mGesticonButton.setFocusable(false);
 
@@ -100,7 +102,6 @@ public class ScriptToolBar extends JToolBar {
         mPinScriptToolbar.setMargin(new Insets(20, 10, 20, 10));
         mPinScriptToolbar.setFocusable(false);
         mPinScriptToolbar.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!pinPricked) {
@@ -125,12 +126,14 @@ public class ScriptToolBar extends JToolBar {
 
     private void sanitizeTinyButton(JButton b) {
         Dimension bDim = new Dimension(30, 30);
+
         b.setMinimumSize(bDim);
         b.setMaximumSize(bDim);
         b.setPreferredSize(bDim);
         b.setOpaque(false);
-//        b.setContentAreaFilled(false);
-//        b.setFocusable(false);
+
+//      b.setContentAreaFilled(false);
+//      b.setFocusable(false);
         b.setBorder(BorderFactory.createEmptyBorder());
     }
 
@@ -139,14 +142,14 @@ public class ScriptToolBar extends JToolBar {
             mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png"));
             mPreferences.setProperty("showsceneelements", "true");
             mPreferences.save(mParent.getPreferencesFileName());
-
         } else {
             mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
             mPreferences.setProperty("showsceneelements", "false");
             mPreferences.save(mParent.getPreferencesFileName());
         }
+
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
-                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
+                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
     }
 }

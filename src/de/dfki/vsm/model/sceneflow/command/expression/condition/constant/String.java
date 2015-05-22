@@ -1,7 +1,10 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -10,15 +13,14 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class String extends Constant {
-
     private java.lang.String mValue;
-
-    public String(java.lang.String value) {
-        mValue = value;
-    }
 
     public String() {
         mValue = null;
+    }
+
+    public String(java.lang.String value) {
+        mValue = value;
     }
 
     public java.lang.String getValue() {

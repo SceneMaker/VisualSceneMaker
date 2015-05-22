@@ -84,7 +84,7 @@ public class ProjectPreferences {
         sSHOW_SMART_PATH_DEBUG            = Boolean.valueOf(sPROPERTIES.getProperty("showsmartpathcalculations"));
         sSCRIPT_FONT_TYPE                 = String.valueOf(sPROPERTIES.getProperty("scriptfonttype"));
         sSCRIPT_FONT_SIZE                 = Integer.valueOf(sPROPERTIES.getProperty("scriptfonsize"));
-          sSHOWSCENE_ELEMENTS             =  Boolean.valueOf(sPROPERTIES.getProperty("showsceneelements"));
+        sSHOWSCENE_ELEMENTS               = Boolean.valueOf(sPROPERTIES.getProperty("showsceneelements"));
         sSUPERNODEWIDTH                   = sNODEWIDTH;
         sSUPERNODEHEIGHT                  = sNODEWIDTH;
         sGRID_NODEWIDTH                   = sNODEWIDTH;
@@ -95,16 +95,15 @@ public class ProjectPreferences {
         sGRID_YSPACE                      = sNODEHEIGHT * sGRID_YSCALE;
         sXOFFSET                          = sGRID_NODEWIDTH / 3;
         sYOFFSET                          = sGRID_NODEHEIGHT / 3;
-      
     }
 
     ////////////////////////////////////////////////////////////////////////////
     //
     ////////////////////////////////////////////////////////////////////////////
     public synchronized void save(String preferencesFile) {
-        try {            
+        try {
             FileOutputStream fileOutputStream = new FileOutputStream(preferencesFile);
-          
+
             sPROPERTIES.storeToXML(fileOutputStream, "Preferences for the Sceneflow Editor", "ISO8859_1");
             fileOutputStream.close();
         } catch (IOException e) {
@@ -140,10 +139,8 @@ public class ProjectPreferences {
     }
 
     private synchronized void parseConfigFile(String preferencesFile) {
-      
         String fileName = preferencesFile;
-     
-        
+
         if ((new File(fileName)).canRead()) {
             try {
                 FileInputStream in = new FileInputStream(preferencesFile);
@@ -218,8 +215,7 @@ public class ProjectPreferences {
         if (!sPROPERTIES.containsKey("showsmartpathcalculations")) {
             sPROPERTIES.setProperty("showsmartpathcalculations", "false");
         }
-        
-                
+
         if (!sPROPERTIES.containsKey("showsceneelements")) {
             sPROPERTIES.setProperty("showsceneelements", "true");
         }

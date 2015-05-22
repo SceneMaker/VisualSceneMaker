@@ -1,10 +1,16 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.SceneFlowEditor;
 import de.dfki.vsm.editor.WorkSpace;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -13,26 +19,25 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class CutNodesAction extends EditorAction {
-
-    Set<Node> mNodes = new HashSet<Node>();
-
+    Set<Node>             mNodes             = new HashSet<Node>();
     Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<RemoveNodeAction>();
-    CopyNodesAction mCopyNodesAction = null;
-    WorkSpace mWorkSpace = null;
-    SceneFlowEditor mSceneFlowEditor;
-
-    public CutNodesAction(WorkSpace workSpace, Set<Node> nodes) {
-        mWorkSpace = workSpace;
-        mNodes = nodes;
-        mSceneFlowEditor = mWorkSpace.getSceneFlowEditor();
-    }
+    CopyNodesAction       mCopyNodesAction   = null;
+    WorkSpace             mWorkSpace         = null;
+    SceneFlowEditor       mSceneFlowEditor;
 
     public CutNodesAction(WorkSpace workSpace, Node node) {
         mWorkSpace = workSpace;
         mNodes.add(node);
     }
 
+    public CutNodesAction(WorkSpace workSpace, Set<Node> nodes) {
+        mWorkSpace       = workSpace;
+        mNodes           = nodes;
+        mSceneFlowEditor = mWorkSpace.getSceneFlowEditor();
+    }
+
     protected void deleteNodes() {
+
         // first copy nodes
         mCopyNodesAction = new CopyNodesAction(mWorkSpace, mNodes);
         mCopyNodesAction.run();
@@ -41,6 +46,7 @@ public class CutNodesAction extends EditorAction {
         for (Node node : mNodes) {
             if (!node.getDataNode().isHistoryNode()) {
                 RemoveNodeAction rma = new RemoveNodeAction(mWorkSpace, node);
+
                 mRemoveNodeActions.add(rma);
                 rma.run();
             } else {
@@ -50,6 +56,7 @@ public class CutNodesAction extends EditorAction {
     }
 
     protected void createNodes() {
+
         // first recreate nodes
         for (RemoveNodeAction action : mRemoveNodeActions) {
             action.create();
@@ -67,7 +74,6 @@ public class CutNodesAction extends EditorAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             createNodes();

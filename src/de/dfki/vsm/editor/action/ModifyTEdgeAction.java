@@ -1,9 +1,14 @@
 package de.dfki.vsm.editor.action;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
 import de.dfki.vsm.model.sceneflow.TEdge;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -12,7 +17,6 @@ import javax.swing.undo.CannotUndoException;
  * @author Gregor Mehlmann
  */
 public class ModifyTEdgeAction extends ModifyEdgeAction {
-
     private long mOldTimeout;
     private long mNewTimeout;
 
@@ -22,13 +26,16 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
 
     @Override
     public void run() {
+
         // Remember the old condition
         mOldTimeout = ((TEdge) mDataEdge).getTimeout();
+
         // Show a dialog to modify the condition
         ModifyTEdgeDialog dialog = new ModifyTEdgeDialog(((TEdge) mDataEdge));
-        TEdge tedge = dialog.run();
-    // If the condition was successfully modified then 
-        // remember the new condition and update the undomanager 
+        TEdge             tedge  = dialog.run();
+
+        // If the condition was successfully modified then
+        // remember the new condition and update the undomanager
         if (tedge != null) {
             mNewTimeout = tedge.getTimeout();
             mUndoManager.addEdit(new Edit());
@@ -38,18 +45,19 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
     }
 
     private class Edit extends AbstractUndoableEdit {
-
         @Override
         public void undo() throws CannotUndoException {
             ((TEdge) mDataEdge).setTimeout(mOldTimeout);
-            //mGUIEdge.update();
+
+            // mGUIEdge.update();
             mGUIEdge.repaint();
         }
 
         @Override
         public void redo() throws CannotRedoException {
             ((TEdge) mDataEdge).setTimeout(mNewTimeout);
-            //mGUIEdge.update();
+
+            // mGUIEdge.update();
             mGUIEdge.repaint();
         }
 

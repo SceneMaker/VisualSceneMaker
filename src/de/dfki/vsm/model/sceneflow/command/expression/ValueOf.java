@@ -1,25 +1,27 @@
 package de.dfki.vsm.model.sceneflow.command.expression;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression.ExpType;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public class ValueOf extends Expression {
-
     private String mNode;
     private String mVariable;
 
     public ValueOf() {
-        mNode = null;
+        mNode     = null;
         mVariable = null;
     }
 
     public ValueOf(String node, String variable) {
-        mNode = node;
+        mNode     = node;
         mVariable = variable;
     }
 
@@ -52,12 +54,14 @@ public class ValueOf extends Expression {
     }
 
     public void writeXML(IndentWriter out) {
-        out.println("<ValueOf node=\"" + mNode + "\" var=\"" + mVariable /*+ "\" depth=\"" + mDepth */ + "\"/>").push();
+        out.println("<ValueOf node=\"" + mNode + "\" var=\"" + mVariable    /* + "\" depth=\"" + mDepth */
+                    + "\"/>").push();
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        mNode = element.getAttribute("node");
+        mNode     = element.getAttribute("node");
         mVariable = element.getAttribute("var");
-        //mDepth = Integer.valueOf(element.getAttribute("depth"));
+
+        // mDepth = Integer.valueOf(element.getAttribute("depth"));
     }
 }

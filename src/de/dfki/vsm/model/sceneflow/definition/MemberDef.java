@@ -1,8 +1,11 @@
 package de.dfki.vsm.model.sceneflow.definition;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
@@ -11,7 +14,6 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class MemberDef extends Object {
-
     private String mType;
     private String mName;
 

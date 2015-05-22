@@ -1,13 +1,20 @@
 package de.dfki.vsm.model.visicon;
 
-import de.dfki.vsm.util.ios.IndentWriter;
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.io.ByteArrayOutputStream;
+
+import java.util.ArrayList;
 
 /**
  * @author Gregor Mehlmann
@@ -17,6 +24,7 @@ public class VisiconAgent implements ModelObject {
     // The Action Entry Name
     private String mAgentName;
     private String mAgentIcon;
+
     // The Key Value Pairs
     private final ArrayList<VisiconViseme> mVisemeList;
 
@@ -24,8 +32,8 @@ public class VisiconAgent implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public VisiconAgent() {
-        mAgentName = null;
-        mAgentIcon = null;
+        mAgentName  = null;
+        mAgentIcon  = null;
         mVisemeList = new ArrayList<>();
     }
 
@@ -33,8 +41,8 @@ public class VisiconAgent implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public VisiconAgent(final String name, final String icon, final ArrayList<VisiconViseme> list) {
-        mAgentName = name;
-        mAgentIcon = icon;
+        mAgentName  = name;
+        mAgentIcon  = icon;
         mVisemeList = list;
     }
 
@@ -77,13 +85,15 @@ public class VisiconAgent implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final ArrayList<VisiconViseme> copyVisemeList() {
+
         // Construct A List Copy
-        final ArrayList<VisiconViseme> copy
-                = new ArrayList<>();
+        final ArrayList<VisiconViseme> copy = new ArrayList<>();
+
         // Copy Each Single Member
         for (final VisiconViseme entry : mVisemeList) {
             copy.add(entry.getCopy());
         }
+
         // Return The Final Clone
         return copy;
     }
@@ -95,10 +105,12 @@ public class VisiconAgent implements ModelObject {
     public final void writeXML(final IndentWriter stream) throws XMLWriteError {
         stream.println("<Agent name=\"" + mAgentName + "\" icon=\"" + mAgentIcon + "\">");
         stream.push();
+
         for (final VisiconViseme viseme : mVisemeList) {
             viseme.writeXML(stream);
             stream.endl();
         }
+
         stream.pop();
         stream.print("</Agent>");
         stream.flush();
@@ -109,21 +121,27 @@ public class VisiconAgent implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
+
         // Parse The Name
         mAgentName = element.getAttribute("name");
+
         // Parse The Icon
         mAgentIcon = element.getAttribute("icon");
+
         // Parse The Features
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-
             @Override
             public void run(final Element element) throws XMLParseError {
                 final String tag = element.getTagName();
+
                 if (tag.equals("Gesture")) {
+
                     // Construct New
                     final VisiconViseme viseme = new VisiconViseme();
+
                     // Parse The Feature
                     viseme.parseXML(element);
+
                     // Append The Feature
                     append(viseme);
                 }
@@ -136,19 +154,26 @@ public class VisiconAgent implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String toString() {
+
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
         // Initialize The Indent Writer
         final IndentWriter stream = new IndentWriter(buffer);
+
         try {
+
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {
-            //mLogger.failure(exc.toString());
+
+            // mLogger.failure(exc.toString());
         }
+
         // Cleanup Stream and Writer
         stream.flush();
         stream.close();
+
         // Return String Representation
         try {
             return buffer.toString("UTF-8");

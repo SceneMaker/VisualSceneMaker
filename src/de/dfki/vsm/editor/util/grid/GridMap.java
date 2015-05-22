@@ -1,13 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
+/*
+* To change this license header, choose License Headers in Project Properties.
+* To change this template file, choose Tools | Templates
+* and open the template in the editor.
+ */
 package de.dfki.vsm.editor.util.grid;
+
+//~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.util.grid.pathfinding.PathFindingContext;
 import de.dfki.vsm.editor.util.grid.pathfinding.TileBasedMap;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.Graphics2D;
 
 /**
@@ -15,16 +20,16 @@ import java.awt.Graphics2D;
  * @author Souza Putra
  */
 public class GridMap implements TileBasedMap {
-    private int gridWidth;
-    private int gridHeight;
+    private int               gridWidth;
+    private int               gridHeight;
     private GridRectangle[][] gridWeights;
 
     public GridMap(GridRectangle[][] gridMap) {
-        gridWidth = gridMap[0].length;
-        gridHeight = gridMap.length;
+        gridWidth   = gridMap[0].length;
+        gridHeight  = gridMap.length;
         gridWeights = gridMap;
     }
-    
+
     public int getWidthInTiles() {
         return gridWidth;
     }
@@ -34,7 +39,8 @@ public class GridMap implements TileBasedMap {
     }
 
     public void pathFinderVisited(int x, int y) {
-        //System.out.println("Visited grid(" + x + " , " + y + ")");
+
+        // System.out.println("Visited grid(" + x + " , " + y + ")");
     }
 
     public boolean blocked(PathFindingContext context, int tx, int ty) {

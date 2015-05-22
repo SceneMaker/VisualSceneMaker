@@ -1,6 +1,9 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
+
 import org.w3c.dom.Element;
 
 /**
@@ -9,7 +12,6 @@ import org.w3c.dom.Element;
  * @author Gregor Mehlmann
  */
 public class Object extends Constant {
-
     private java.lang.Object mValue;
 
     public Object() {
@@ -43,6 +45,7 @@ public class Object extends Constant {
         if (mValue != null) {
             return mValue.toString();
         }
+
         return "null";
     }
 
@@ -63,7 +66,7 @@ public class Object extends Constant {
 
     @Override
     public void parseXML(Element element) {
-       // mValue = element.getAttribute("value");
 
+        // mValue = element.getAttribute("value");
     }
 }

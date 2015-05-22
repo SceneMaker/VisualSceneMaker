@@ -1,17 +1,18 @@
 package de.dfki.vsm.model.sceneflow.command;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.Object;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.xml.XMLParseError;
+
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
 public abstract class Command extends Object {
-
     public enum CmdType {
-
         PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD
     }
 
@@ -22,7 +23,8 @@ public abstract class Command extends Object {
 
     public static Command parse(Element element) throws XMLParseError {
         Command cmd = null;
-        String tag = element.getTagName();
+        String  tag = element.getTagName();
+
         if (tag.equals("PlaySceneGroup")) {
             cmd = new PlaySceneGroup();
             cmd.parseXML(element);
@@ -50,6 +52,7 @@ public abstract class Command extends Object {
         } else {
             cmd = Expression.parse(element);
         }
+
         return cmd;
     }
 }

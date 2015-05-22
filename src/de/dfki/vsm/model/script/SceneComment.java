@@ -1,10 +1,16 @@
 package de.dfki.vsm.model.script;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.HashMap;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
@@ -17,17 +23,14 @@ public final class SceneComment extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneComment() {
-    }
+    public SceneComment() {}
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneComment(
-            final int lower,
-            final int upper,
-            final String comment) {
+    public SceneComment(final int lower, final int upper, final String comment) {
         super(lower, upper);
+
         // Initialize Members
         mComment = comment;
     }
@@ -53,10 +56,8 @@ public final class SceneComment extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IndentWriter stream) throws XMLWriteError {
-        stream.print("<SceneComment "
-                + "lower=\"" + mLower + "\" "
-                + "upper=\"" + mUpper + "\" "
-                + "comment=\"" + mComment + "\"/>");
+        stream.print("<SceneComment " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "comment=\""
+                     + mComment + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -64,9 +65,11 @@ public final class SceneComment extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
+
         // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
+
         // Parse The Text Content
         mComment = element.getAttribute("comment");
     }

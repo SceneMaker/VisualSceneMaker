@@ -1,6 +1,11 @@
 package de.dfki.vsm.util.evt;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -12,25 +17,26 @@ public class EventCaster {
 
     // The Singelton Instance
     private static EventCaster sInstance = null;
+
     // The Logger Instance
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+
     // The Listener List
-    private final LinkedList<EventListener> mListenerList
-            = new LinkedList<EventListener>();
+    private final LinkedList<EventListener> mListenerList = new LinkedList<EventListener>();
+
     // The Timer Thread
     private final Timer mTimer = new Timer("EventCasterTimer");
+
+    // Construct The Instance
+    private EventCaster() {}
 
     // Get The Singelton Instance
     public final static synchronized EventCaster getInstance() {
         if (sInstance == null) {
             sInstance = new EventCaster();
         }
-        return sInstance;
-    }
 
-    // Construct The Instance
-    private EventCaster() {
+        return sInstance;
     }
 
     // Cancel The Timer Thread
@@ -54,14 +60,15 @@ public class EventCaster {
     }
 
     public final synchronized void schedule(final EventObject event, final long timeout) {
+
         // Create The Timer Task
         final TimerTask timer = new TimerTask() {
-
             @Override
             public void run() {
                 convey(event);
             }
         };
+
         // Schedule The Event
         mTimer.schedule(timer, timeout);
     }

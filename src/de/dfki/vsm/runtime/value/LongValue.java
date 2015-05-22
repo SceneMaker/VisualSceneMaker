@@ -5,7 +5,6 @@ package de.dfki.vsm.runtime.value;
  * @author Gregor Mehlmann
  */
 public class LongValue extends AbstractValue {
-
     private final long mValue;
 
     public LongValue(long value) {
@@ -44,6 +43,7 @@ public class LongValue extends AbstractValue {
         if (value.getType() == Type.LONG) {
             return (mValue == ((LongValue) value).mValue);
         }
+
         return false;
     }
 }

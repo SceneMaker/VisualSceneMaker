@@ -56,7 +56,6 @@ import javax.swing.JComponent;
  * @author Patrick Gebhard
  */
 public final class Node extends JComponent implements EventListener, Observer {
-
     private Flavour mFlavour = Flavour.None;
 
     // TODO: move this condition to the data node
@@ -103,7 +102,6 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     public enum Type { BasicNode, SuperNode }
-
 
     /**
      *
@@ -199,11 +197,12 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     @Override
     public void update(Observable o, Object obj) {
+
         // mLogger.message("Node.update(" + obj + ")");
         update();
     }
@@ -341,16 +340,15 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     /**
-     * 
-     * 
+     *
+     *
      */
     @Override
     public void update(EventObject event) {
         if (mPreferences.sVISUALISATION) {
-            
             if (event instanceof SceneStoppedEvent) {
-                    mVisualisationTask = null;
-                    repaint();             
+                mVisualisationTask = null;
+                repaint();
             } else if (event instanceof NodeStartedEvent) {
                 if ((((NodeStartedEvent) event).getNode().equals(mDataNode))
                         || ((NodeStartedEvent) event).getNode().isSubNodeOf(mDataNode)) {
@@ -395,7 +393,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     /**
-     * 
+     *
      *
      */
     public void resetLocation(Point newLocation) {
@@ -420,9 +418,10 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     /**
-     * 
+     *
      *
      */
+
     // TODO - move to controler class - sceneflowManager!
     private void updateDataModel() {
 
@@ -434,9 +433,10 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     /**
-     * 
+     *
      *
      */
+
     // TODO: move to workspace
     public void removeStartSign() {
         if (mStartSign != null) {
@@ -469,7 +469,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         mWorkSpace.add(mAltStartSign);
         mWorkSpace.mObservable.addObserver(mAltStartSign);
     }
-    
+
     // Tells the node that an edge connects and that node is sourcenode
     public Point connectEdgeAtSourceNode(Edge edge, Point point) {
         mIsEndNode = false;
@@ -662,11 +662,12 @@ public final class Node extends JComponent implements EventListener, Observer {
         boolean allowed = false;
 
         switch (mFlavour) {
-        case None :     // if node working type is unclear, allow all (except iedge for nodes)
-            allowed = ((mType == Type.BasicNode) && (eType == Edge.TYPE.IEDGE))
-                      ? false
-                      : true;
+        case None :    // if node working type is unclear, allow all (except iedge for nodes)
+            allowed = (mType == Type.BasicNode)
+                      ? true
+                      : false;
 
+            // allowed = true;
             break;
 
         case ENode :    // only one eegde is allowed
@@ -675,7 +676,9 @@ public final class Node extends JComponent implements EventListener, Observer {
             break;
 
         case TNode :    // only one tegde is allowed
-            allowed = false;
+            allowed = (eType == Edge.TYPE.CEDGE)
+                      ? true
+                      : false;
 
             break;
 
@@ -736,7 +739,6 @@ public final class Node extends JComponent implements EventListener, Observer {
         repaint();
 
 //      enter supernode, if it has been double clicked
-
         // TODO: move to workspace
         if ((event.getButton() == MouseEvent.BUTTON1) && (event.getClickCount() == 2)) {
             if (mType == Type.SuperNode) {
@@ -808,7 +810,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     /**
-     * 
+     *
      *
      */
     @Override

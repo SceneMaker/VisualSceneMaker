@@ -1,10 +1,16 @@
 package de.dfki.vsm.editor.dialog;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
+
+//~--- JDK imports ------------------------------------------------------------
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -20,40 +26,41 @@ public class MemberDefDialog extends Dialog {
 
     // The member definition created or modified by this dialog
     private MemberDef mMemberDef;
+
     // GUI Components
-    private JLabel mNameLabel;
-    private JTextField mNameTextField;
-    private JLabel mTypeLabel;
-    private JComboBox mTypeComboBox;
-    private OKButton mOkButton;
+    private JLabel       mNameLabel;
+    private JTextField   mNameTextField;
+    private JLabel       mTypeLabel;
+    private JComboBox    mTypeComboBox;
+    private OKButton     mOkButton;
     private CancelButton mCancelButton;
 
     public MemberDefDialog(JDialog parent, MemberDef memberDef) {
         super(parent, "Member Definition", true);
+
         if (memberDef != null) {
             mMemberDef = memberDef.getCopy();
         } else {
             mMemberDef = new MemberDef("newMember", "Bool");
         }
+
         initComponents();
         fillComponents();
     }
 
     protected void initComponents() {
-        mNameLabel = new JLabel("Name:");
-        mTypeLabel = new JLabel("Type:");
+        mNameLabel     = new JLabel("Name:");
+        mTypeLabel     = new JLabel("Type:");
         mNameTextField = new JTextField();
-        mTypeComboBox = new JComboBox(new Object[]{"Bool", "Int", "Float", "String"});
-        mOkButton = new OKButton();
+        mTypeComboBox  = new JComboBox(new Object[] { "Bool", "Int", "Float", "String" });
+        mOkButton      = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
@@ -74,6 +81,7 @@ public class MemberDefDialog extends Dialog {
 
     public MemberDef run() {
         setVisible(true);
+
         if (mPressedButton == Button.OK) {
             return mMemberDef;
         } else {
@@ -96,6 +104,7 @@ public class MemberDefDialog extends Dialog {
     private boolean process() {
         mMemberDef.setName(mNameTextField.getText().trim());
         mMemberDef.setType((String) mTypeComboBox.getSelectedItem());
+
         return true;
     }
 }

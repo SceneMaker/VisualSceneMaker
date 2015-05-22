@@ -140,7 +140,6 @@ public class DeflectEdgeAction extends EdgeAction {
 //        //mSourceGUINodeDockPoint = mSourceGUINode.connectEdgeAtSourceNode(mGUIEdge, mSourceGUINodeDockPoint);
 //        mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, mTargetGUINodeDockPoint);
 //      }
-
         // mSourceGUINode.update();
         Editor.getInstance().update();
         mWorkSpace.add(mGUIEdge);

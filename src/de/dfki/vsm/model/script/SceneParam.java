@@ -1,10 +1,16 @@
 package de.dfki.vsm.model.script;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.HashMap;
+
 import org.w3c.dom.Element;
+
+//~--- JDK imports ------------------------------------------------------------
+
+import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
@@ -17,17 +23,14 @@ public final class SceneParam extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneParam() {
-    }
+    public SceneParam() {}
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneParam(
-            final int lower,
-            final int upper,
-            final String name) {
+    public SceneParam(final int lower, final int upper, final String name) {
         super(lower, upper);
+
         // Initialize Members
         mName = name;
     }
@@ -67,10 +70,8 @@ public final class SceneParam extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IndentWriter stream) throws XMLWriteError {
-        stream.print("<SceneParam "
-                + "lower=\"" + mLower + "\" "
-                + "upper=\"" + mUpper + "\" "
-                + "name=\"" + mName + "\"/>");
+        stream.print("<SceneParam " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "name=\"" + mName
+                     + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -78,9 +79,11 @@ public final class SceneParam extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
+
         // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
+
         // Parse The Members
         mName = element.getAttribute("name");
     }

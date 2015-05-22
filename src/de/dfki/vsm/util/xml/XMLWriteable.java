@@ -1,5 +1,7 @@
 package de.dfki.vsm.util.xml;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.util.ios.IndentWriter;
 
 /**
