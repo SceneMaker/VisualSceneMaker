@@ -62,12 +62,12 @@ public class CreateAltStartNodeDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        addCompoment(mStartNodeLabel, 10, 20, 100, 30);
-        addCompoment(mStartNodeComboBox, 120, 20, 200, 30);
-        addCompoment(mAltStartNodeLabel, 10, 60, 100, 30);
-        addCompoment(mAltStartNodeComboBox, 120, 60, 200, 30);
-        addCompoment(mOkButton, 175, 150, 125, 30);
-        addCompoment(mCancelButton, 30, 150, 125, 30);
+        addComponent(mStartNodeLabel, 10, 20, 100, 30);
+        addComponent(mStartNodeComboBox, 120, 20, 200, 30);
+        addComponent(mAltStartNodeLabel, 10, 60, 100, 30);
+        addComponent(mAltStartNodeComboBox, 120, 60, 200, 30);
+        addComponent(mOkButton, 175, 150, 125, 30);
+        addComponent(mCancelButton, 30, 150, 125, 30);
         packComponents(340, 200);
     }
 

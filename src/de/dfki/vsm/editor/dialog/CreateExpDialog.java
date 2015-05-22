@@ -49,9 +49,9 @@ public class CreateExpDialog extends Dialog {
             }
         });
         setBackground(Color.WHITE);
-        addCompoment(mInputTextField, 10, 30, 300, 30);
-        addCompoment(mOkButton, 175, 100, 125, 30);
-        addCompoment(mCancelButton, 30, 100, 125, 30);
+        addComponent(mInputTextField, 10, 30, 300, 30);
+        addComponent(mOkButton, 175, 100, 125, 30);
+        addComponent(mCancelButton, 30, 100, 125, 30);
         packComponents(320, 150);
     }
 

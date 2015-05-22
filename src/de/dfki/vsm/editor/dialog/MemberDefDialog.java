@@ -58,12 +58,12 @@ public class MemberDefDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        addCompoment(mNameLabel, 10, 20, 70, 30);
-        addCompoment(mNameTextField, 90, 20, 200, 30);
-        addCompoment(mTypeLabel, 10, 65, 70, 30);
-        addCompoment(mTypeComboBox, 90, 65, 200, 30);
-        addCompoment(mOkButton, 175, 120, 125, 30);
-        addCompoment(mCancelButton, 30, 120, 125, 30);
+        addComponent(mNameLabel, 10, 20, 70, 30);
+        addComponent(mNameTextField, 90, 20, 200, 30);
+        addComponent(mTypeLabel, 10, 65, 70, 30);
+        addComponent(mTypeComboBox, 90, 65, 200, 30);
+        addComponent(mOkButton, 175, 120, 125, 30);
+        addComponent(mCancelButton, 30, 120, 125, 30);
         packComponents(320, 170);
     }
 

@@ -50,9 +50,9 @@ public class CmdDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        addCompoment(mInputTextField, 10, 20, 300, 30);
-        addCompoment(mOkButton, 175, 75, 125, 30);
-        addCompoment(mCancelButton, 30, 75, 125, 30);
+        addComponent(mInputTextField, 10, 20, 300, 30);
+        addComponent(mOkButton, 175, 75, 125, 30);
+        addComponent(mCancelButton, 30, 75, 125, 30);
         packComponents(320, 120);
     }
 

@@ -51,7 +51,20 @@ public class ModifyCEdgeDialog extends Dialog {
     private AddButton mAddAltStartNodeButton;
     private RemoveButton mRemoveAltStartNodeButton;
     private EditButton mEditAltStartNodeButton;
-
+    
+    
+    public ModifyCEdgeDialog(Node sourceNode, Node targetNode) {
+        super(Editor.getInstance(), "Create Conditional Edge", true);
+        // Set the edge data
+        mCEdge = new CEdge();
+        mCEdge.setTarget(targetNode.getId());
+        mCEdge.setSourceNode(sourceNode);
+        mCEdge.setTargetNode(targetNode);
+        // TODO: move to EdgeDialog
+        mAltStartNodeManager = new AltStartNodeManager(mCEdge);
+        // Init GUI-Components
+        initComponents();
+    }
     public ModifyCEdgeDialog(CEdge cedge) {
         super(Editor.getInstance(), "Modify Conditional Edge", true);
         mCEdge = cedge;
@@ -74,23 +87,23 @@ public class ModifyCEdgeDialog extends Dialog {
         // Init main panel
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));       
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));   
-        addCompoment(mInputPanel, 230, 40);
+        addComponent(mInputPanel, 230, 40);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10))); 
-        addCompoment(mAltStartNodePanel, 230, 85);
+        addComponent(mAltStartNodePanel, 230, 85);
         mMainPanel.add(Box.createRigidArea(new Dimension(5, 10))); 
-        addCompoment(mButtonPanel, 230, 20);
+        addComponent(mButtonPanel, 230, 20);
         
-//        addCompoment(mInputLabel, 10, 10, 70, 30);
-//        addCompoment(mInputTextField, 120, 10, 230, 30);
+//        addComponent(mInputLabel, 10, 10, 70, 30);
+//        addComponent(mInputTextField, 120, 10, 230, 30);
 //        //
-//        addCompoment(mAltStartNodeLabel, 10, 75, 70, 30);
-//        addCompoment(mAltStartNodeScrollPane, 120, 75, 230, 110);
-//        addCompoment(mAddAltStartNodeButton, 355, 85, 20, 20);
-//        addCompoment(mRemoveAltStartNodeButton, 355, 115, 20, 20);
-//        addCompoment(mEditAltStartNodeButton, 355, 145, 20, 20);
+//        addComponent(mAltStartNodeLabel, 10, 75, 70, 30);
+//        addComponent(mAltStartNodeScrollPane, 120, 75, 230, 110);
+//        addComponent(mAddAltStartNodeButton, 355, 85, 20, 20);
+//        addComponent(mRemoveAltStartNodeButton, 355, 115, 20, 20);
+//        addComponent(mEditAltStartNodeButton, 355, 145, 20, 20);
 //        //
-//        addCompoment(mCancelButton, 75, 210, 125, 30);
-//        addCompoment(mOkButton, 225, 210, 125, 30);
+//        addComponent(mCancelButton, 75, 210, 125, 30);
+//        addComponent(mOkButton, 225, 210, 125, 30);
         packComponents(400, 250);
 
     }
@@ -242,9 +255,9 @@ public class ModifyCEdgeDialog extends Dialog {
 //                cancelActionPerformed();
 //            }
 //        });
-//        addCompoment(mInputTextField, 10, 10, 300, 20);
-//        addCompoment(mOkButton, 10, 35, 90, 20);
-//        addCompoment(mCancelButton, 100, 35, 90, 20);
+//        addComponent(mInputTextField, 10, 10, 300, 20);
+//        addComponent(mOkButton, 10, 35, 90, 20);
+//        addComponent(mCancelButton, 100, 35, 90, 20);
 //        packComponents(320, 60);
 //    }
 

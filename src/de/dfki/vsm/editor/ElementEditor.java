@@ -940,6 +940,7 @@ class InterruptEditor extends JPanel implements EventListener {
 
     private void initComponents() {
         setBackground(Color.white);
+        setPreferredSize(new Dimension(500, 270));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
@@ -954,19 +955,9 @@ class InterruptEditor extends JPanel implements EventListener {
 
                     removeAll();
 
-                    mIEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
-                    mIEdgeDialog.getInputPanel().setMaximumSize(new Dimension(1000, 40));
-                    mIEdgeDialog.getInputPanel().setPreferredSize(new Dimension(200, 40));
-                    mIEdgeDialog.getInputPanel().setAlignmentX(RIGHT_ALIGNMENT);
-
-                    mIEdgeDialog.getAltStartNodePanel().setMinimumSize(new Dimension(200, 150));
-                    mIEdgeDialog.getAltStartNodePanel().setMaximumSize(new Dimension(1000, 150));
-                    mIEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 150));
-                    mIEdgeDialog.getAltStartNodePanel().setAlignmentX(RIGHT_ALIGNMENT);
-
                     add(mIEdgeDialog.getInputPanel());
                     add(mIEdgeDialog.getAltStartNodePanel());
-
+                    add(Box.createVerticalGlue());
                     mIEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyReleased(KeyEvent event) {

@@ -7,6 +7,7 @@ import de.dfki.vsm.editor.dialog.CreateCEdgeDialog;
 import de.dfki.vsm.editor.dialog.CreateIEdgeDialog;
 import de.dfki.vsm.editor.dialog.CreatePEdgeDialog;
 import de.dfki.vsm.editor.dialog.CreateTEdgeDialog;
+import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
 import de.dfki.vsm.model.sceneflow.EEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 import javax.swing.undo.AbstractUndoableEdit;
@@ -73,7 +74,7 @@ public class CreateEdgeAction extends EdgeAction {
                     mDataEdge = pedgeDialog.run();
                     break;
                 case IEDGE:
-                    CreateIEdgeDialog iedgeDialog = new CreateIEdgeDialog(
+                    ModifyIEdgeDialog iedgeDialog = new ModifyIEdgeDialog(
                             mSourceGUINode.getDataNode(),
                             mTargetGUINode.getDataNode());
                     mDataEdge = iedgeDialog.run();

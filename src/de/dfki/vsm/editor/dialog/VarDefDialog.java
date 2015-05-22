@@ -90,15 +90,15 @@ public class VarDefDialog extends Dialog {
             }
         });
         //
-        addCompoment(mNameLabel, 10, 20, 70, 30);
-        addCompoment(mNameTextField, 90, 20, 260, 30);
-        addCompoment(mTypeDefLabel, 10, 85, 70, 30);
-        addCompoment(mTypeDefComboBox, 90, 85, 260, 30);
-        addCompoment(mExpLabel, 10, 150, 70, 30);
-        addCompoment(mExpTextField, 90, 150, 230, 30);
-        addCompoment(mAddExpButton, 320, 150, 30, 30);
-        addCompoment(mCancelButton, 75, 250, 125, 30);
-        addCompoment(mOkButton, 225, 250, 125, 30);
+        addComponent(mNameLabel, 10, 20, 70, 30);
+        addComponent(mNameTextField, 90, 20, 260, 30);
+        addComponent(mTypeDefLabel, 10, 85, 70, 30);
+        addComponent(mTypeDefComboBox, 90, 85, 260, 30);
+        addComponent(mExpLabel, 10, 150, 70, 30);
+        addComponent(mExpTextField, 90, 150, 230, 30);
+        addComponent(mAddExpButton, 320, 150, 30, 30);
+        addComponent(mCancelButton, 75, 250, 125, 30);
+        addComponent(mOkButton, 225, 250, 125, 30);
         packComponents(400, 300);
     }
 

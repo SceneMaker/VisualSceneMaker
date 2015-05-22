@@ -13,19 +13,15 @@ import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
-import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.tpl.TPLTuple;
-import static java.awt.Component.CENTER_ALIGNMENT;
-import static java.awt.Component.LEFT_ALIGNMENT;
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -56,6 +52,8 @@ public class ModifyIEdgeDialog extends Dialog {
     private AddButton mAddAltStartNodeButton;
     private RemoveButton mRemoveAltStartNodeButton;
     private EditButton mEditAltStartNodeButton;
+    private Dimension labelSize = new Dimension(200, 30);
+    private Dimension textFielSize = new Dimension(230, 30);
 
     public ModifyIEdgeDialog(IEdge iedge) {
         super(Editor.getInstance(), "Modify Interruptive Edge", true);
@@ -68,30 +66,19 @@ public class ModifyIEdgeDialog extends Dialog {
         loadAltStartNodeMap();
     }
 
-//  private void initComponents() {
-//    mInputTextField = new JTextField();
-//    mInputTextField.setBounds(10, 10, 300, 20);
-//    mOkButton = new JButton("Ok");
-//    mOkButton.setBounds(10, 35, 90, 20);
-//    mOkButton.addActionListener(new ActionListener() {
-//
-//      public void actionPerformed(ActionEvent e) {
-//        okActionPerformed();
-//      }
-//    });
-//    mCancelButton = new JButton("Cancel");
-//    mCancelButton.setBounds(100, 35, 90, 20);
-//    mCancelButton.addActionListener(new ActionListener() {
-//
-//      public void actionPerformed(ActionEvent e) {
-//        cancelActionPerformed();
-//      }
-//    });
-//    addCompoment(mInputTextField, 10, 10, 300, 20);
-//    addCompoment(mOkButton, 10, 35, 90, 20);
-//    addCompoment(mCancelButton, 100, 35, 90, 20);
-//    packComponents(320, 60);
-//  }
+    public ModifyIEdgeDialog(Node sourceNode, Node targetNode) {
+        super(Editor.getInstance(), "Create Interruptive Edge", true);
+        // Init edge data
+        mIEdge = new IEdge();
+        mIEdge.setTarget(targetNode.getId());
+        mIEdge.setSourceNode(sourceNode);
+        mIEdge.setTargetNode(targetNode);
+        // TODO: move to EdgeDialog
+        mAltStartNodeManager = new AltStartNodeManager(mIEdge);
+        // Init the GUI-Components
+        initComponents();
+    }
+
     private void initComponents() {
         // Init input panel
         initInputPanel();
@@ -99,41 +86,46 @@ public class ModifyIEdgeDialog extends Dialog {
         initButtonPanel();
         // Init alternative start node panel
         initAltStartNodePanel();
-        // Init main panel
-        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
         //
-       // Init main panel
-        mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));       
-        mMainPanel.add(Box.createRigidArea(new Dimension(5, 10)));   
-        addCompoment(mInputPanel, 230, 40);
-        mMainPanel.add(Box.createRigidArea(new Dimension(5, 10))); 
-        addCompoment(mAltStartNodePanel, 230, 85);
-        mMainPanel.add(Box.createRigidArea(new Dimension(5, 10))); 
-        addCompoment(mButtonPanel, 230, 20);
-             
-        packComponents(230, 180);
+//        addComponent(mInputPanel, 10, 10, 360, 30);
+        Box finalBox = Box.createVerticalBox();
+        finalBox.setAlignmentX(CENTER_ALIGNMENT);
+        finalBox.add(mInputPanel);
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(mAltStartNodePanel);
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(mButtonPanel);
+
+        addComponent(finalBox, 10, 10, 480, 230);
+
+        packComponents(500, 270);
     }
 
     private void initInputPanel() {
-        JPanel panelContainer;
-        // Input panel
-        mInputPanel = new JPanel();
-        mInputPanel.setOpaque(false);
         // Input label
         mInputLabel = new JLabel("Conditional Expression:");
+        sanitizeLabel(mInputLabel);
         // Input text field
         mInputTextField = new JTextField();
-        
-        panelContainer = new JPanel(null);
-        panelContainer.setOpaque(false);
-        panelContainer.setLayout(new BoxLayout(panelContainer, BoxLayout.Y_AXIS));
-        panelContainer.add(mInputLabel);
-        panelContainer.add(mInputTextField);
+        sanitizTextField(mInputTextField);
+        // Input panel
+        mInputPanel = new JPanel();
+        mInputPanel.setLayout(new BoxLayout(mInputPanel, BoxLayout.X_AXIS));
+        mInputPanel.add(mInputLabel);
+        mInputPanel.add(Box.createHorizontalStrut(10));
+        mInputPanel.add(mInputTextField);
+    }
 
-        mInputPanel.setLayout(new BoxLayout(mInputPanel, BoxLayout.X_AXIS));       
-        mInputPanel.add(Box.createRigidArea(new Dimension(3, 3)));
-        mInputPanel.add(panelContainer);
-        mInputPanel.add(Box.createRigidArea(new Dimension(3, 3)));
+    private void sanitizeLabel(JLabel jb) {
+        jb.setPreferredSize(labelSize);
+        jb.setMinimumSize(labelSize);
+        jb.setMaximumSize(labelSize);
+    }
+
+    private void sanitizTextField(JTextField jt) {
+        jt.setPreferredSize(textFielSize);
+        jt.setMinimumSize(textFielSize);
+        jt.setMaximumSize(textFielSize);
     }
 
     private void initButtonPanel() {
@@ -154,25 +146,29 @@ public class ModifyIEdgeDialog extends Dialog {
             }
         });
         // Button panel
-        mButtonPanel = new JPanel(null);
-        mButtonPanel.setOpaque(false);
-        mButtonPanel.add(mOkButton);
+        mButtonPanel = new JPanel();
+        mButtonPanel.setMinimumSize(new Dimension(440, 40));
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.add(Box.createHorizontalGlue());
         mButtonPanel.add(mCancelButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
+        mButtonPanel.add(mOkButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
+
     }
-    
+
     protected void initAltStartNodePanel() {
-        JPanel titleContainer; 
-        JPanel buttonsContainer; 
-        JPanel startNodeContainer; 
-        
         // Init alternative start node label
-        mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");        
-        
+        mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
+        sanitizeLabel(mAltStartNodeLabel);
         // Init alternative start node list
         mAltStartNodeList = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
-        
-        // Init alternative start node buttons300
+        Dimension tfSize = new Dimension(200, 110);
+        mAltStartNodeScrollPane.setPreferredSize(tfSize);
+        mAltStartNodeScrollPane.setMinimumSize(tfSize);
+        mAltStartNodeScrollPane.setMaximumSize(tfSize);
+        // Init alternative start node buttons
         //add button
         mAddAltStartNodeButton = new AddButton();
         mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -196,66 +192,23 @@ public class ModifyIEdgeDialog extends Dialog {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 editAltStartNode();
             }
-        });    
-        
-        titleContainer = new JPanel(null);
-        titleContainer.setOpaque(false);
-        titleContainer.setLayout(new BoxLayout(titleContainer, BoxLayout.X_AXIS));
-        titleContainer.setAlignmentX(LEFT_ALIGNMENT);
-        titleContainer.add(mAltStartNodeLabel);
-        titleContainer.add(Box.createRigidArea(new Dimension(1000, 20)));        
-        
-        buttonsContainer = new JPanel(null);
-        buttonsContainer.setOpaque(false);
-        buttonsContainer.setLayout(new BoxLayout(buttonsContainer, BoxLayout.Y_AXIS));   
-        buttonsContainer.setMaximumSize(new Dimension(20, 60));
-        buttonsContainer.add(mAddAltStartNodeButton);
-        buttonsContainer.add(mRemoveAltStartNodeButton);
-        buttonsContainer.add(mEditAltStartNodeButton);
-        
-        startNodeContainer = new JPanel(null);
-        startNodeContainer.setOpaque(false);
-        startNodeContainer.setLayout(new BoxLayout(startNodeContainer, BoxLayout.X_AXIS));
-        startNodeContainer.add(Box.createRigidArea(new Dimension(3, 20)));
-        startNodeContainer.add(mAltStartNodeScrollPane);        
-        startNodeContainer.add(buttonsContainer);        
-        startNodeContainer.add(Box.createRigidArea(new Dimension(3, 20)));
-        
+        });
         // Init alternative start node panel
-        mAltStartNodePanel = new JPanel(null);      
-        mAltStartNodePanel.setOpaque(false);
-        mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.PAGE_AXIS));
-        mAltStartNodePanel.setAlignmentX(CENTER_ALIGNMENT);
-        mAltStartNodePanel.add(titleContainer);   
-        //cmAltStartNodePanel.add(Box.createRigidArea(new Dimension(5, 5)));
-        mAltStartNodePanel.add(startNodeContainer);
+        Box buttonsBox = Box.createVerticalBox();
+        buttonsBox.setMaximumSize(new Dimension(20, 100));
+        buttonsBox.add(mAddAltStartNodeButton);
+        buttonsBox.add(Box.createVerticalStrut(10));
+        buttonsBox.add(mRemoveAltStartNodeButton);
+        buttonsBox.add(Box.createVerticalStrut(10));
+        buttonsBox.add(mEditAltStartNodeButton);
+        mAltStartNodePanel = new JPanel();
+        mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.X_AXIS));
+        mAltStartNodePanel.add(mAltStartNodeLabel);
+        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
+        mAltStartNodePanel.add(mAltStartNodeScrollPane);
+        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
+        mAltStartNodePanel.add(buttonsBox);
     }
-    
-    
-//    private void initComponents() {
-//        mInputTextField = new JTextField();
-//        mInputTextField.setBounds(10, 10, 300, 20);
-//        mOkButton = new JButton("Ok");
-//        mOkButton.setBounds(10, 35, 90, 20);
-//        mOkButton.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                okActionPerformed();
-//            }
-//        });
-//        mCancelButton = new JButton("Cancel");
-//        mCancelButton.setBounds(100, 35, 90, 20);
-//        mCancelButton.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                cancelActionPerformed();
-//            }
-//        });
-//        addCompoment(mInputTextField, 10, 10, 300, 20);
-//        addCompoment(mOkButton, 10, 35, 90, 20);
-//        addCompoment(mCancelButton, 100, 35, 90, 20);
-//        packComponents(320, 60);
-//    }
 
     public IEdge run() {
         setVisible(true);
@@ -355,19 +308,21 @@ public class ModifyIEdgeDialog extends Dialog {
     private void editAltStartNode() {
     }
 
-    public JPanel getInputPanel(){
+    public JPanel getInputPanel() {
+
         return mInputPanel;
     }
-    
-    public JPanel getAltStartNodePanel(){
+
+    public JPanel getAltStartNodePanel() {
+
         return mAltStartNodePanel;
     }
-    
-    public JPanel getButtonPanel(){
+
+    public JPanel getButtonPanel() {
         return mButtonPanel;
-    }    
-    
-    public JTextField getInputTextField(){
+    }
+
+    public JTextField getInputTextField() {
         return mInputTextField;
     }
 }

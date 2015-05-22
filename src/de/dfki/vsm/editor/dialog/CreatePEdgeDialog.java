@@ -124,20 +124,20 @@ public class CreatePEdgeDialog extends Dialog {
         // Init alternative start node panel
         initAltStartNodePanel();
         //
-        addCompoment(mEdgeProbPanel, 0, 0, 400, 110);
+        addComponent(mEdgeProbPanel, 0, 0, 400, 110);
         //
-        addCompoment(mAltStartNodeLabel, 10, 125, 70, 30);
-        addCompoment(mAltStartNodeScrollPane, 90, 125, 260, 110);
-        addCompoment(mAddAltStartNodeButton, 355, 125, 20, 20);
-        addCompoment(mRemoveAltStartNodeButton, 355, 155, 20, 20);
-        addCompoment(mEditAltStartNodeButton, 355, 185, 20, 20);
+        addComponent(mAltStartNodeLabel, 10, 125, 70, 30);
+        addComponent(mAltStartNodeScrollPane, 90, 125, 260, 110);
+        addComponent(mAddAltStartNodeButton, 355, 125, 20, 20);
+        addComponent(mRemoveAltStartNodeButton, 355, 155, 20, 20);
+        addComponent(mEditAltStartNodeButton, 355, 185, 20, 20);
         //
-        addCompoment(mNormButton, 75, 285, 125, 30);
-        addCompoment(mUniButton, 225, 285, 125, 30);
-        addCompoment(mCancelButton, 75, 335, 125, 30);
-        addCompoment(mOkButton, 225, 335, 125, 30);
-//        addCompoment(mAltStartNodePanel, 320, 100);
-//        addCompoment(mButtonPanel, 320, 40);
+        addComponent(mNormButton, 75, 285, 125, 30);
+        addComponent(mUniButton, 225, 285, 125, 30);
+        addComponent(mCancelButton, 75, 335, 125, 30);
+        addComponent(mOkButton, 225, 335, 125, 30);
+//        addComponent(mAltStartNodePanel, 320, 100);
+//        addComponent(mButtonPanel, 320, 40);
         packComponents(400, 400);
     }
 

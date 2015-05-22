@@ -36,7 +36,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
@@ -166,15 +165,15 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
      */
     public void showElementEditor() {
         if (mElementEditor.isVisible()) {
-            mElementEditor.setVisible(false);            
+            mElementEditor.setVisible(false);
             Preferences.setProperty("showelementproperties", "false");
             Preferences.save();
-            mSplitPane.setDividerLocation(10000);
+            mSplitPane.setDividerLocation(1d);
         } else {
             mElementEditor.setVisible(true);
             Preferences.setProperty("showelementproperties", "true");
             Preferences.save();
-            mSplitPane.setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));   
+            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getPreferences().getProperty("propertiesdividerlocation")));
         }
     }
 
@@ -204,9 +203,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     }
 
     public SceneFlowEditor(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
-        
+
         mScriptEditorPanel = scriptEditor;
-        
+
         final Polygon pUp = new Polygon();
         pUp.addPoint(1, 4);
         pUp.addPoint(5, 0);
@@ -216,12 +215,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         pDown.addPoint(13, 0);
         pDown.addPoint(17, 4);
         pDown.addPoint(21, 0);
-        
-        mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,true);     
+
+        mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
         mSplitPane.setBorder(BorderFactory.createEmptyBorder());
         mSplitPane.setOneTouchExpandable(true);
-        
-        
+
         mSplitPane.setUI(new BasicSplitPaneUI() {
 
             @Override
@@ -239,7 +237,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
                         Rectangle r = getBounds();
                         graphics.setColor(UIManager.getColor("Panel.background"));
                         graphics.fillRect(0, 0, r.width - 1, r.height);
-                       // graphics.setColor(new Color(100, 100, 100));
+                        // graphics.setColor(new Color(100, 100, 100));
                         graphics.fillRect((r.width / 2 - 25), 0, 50, r.height);
                         graphics.drawPolygon(pUp);
                         graphics.fillPolygon(pUp);
@@ -250,7 +248,6 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             }
         });
 
-        
         mSceneFlow = sceneFlow;
         mProject = project;
         mUndoManager = new UndoManager();
@@ -288,7 +285,6 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 //
 //        // TODO - second workspace is disabled
 //        wssp.setVisible(false);
-        
         setLayout(new BorderLayout());
         add(mToolBar, BorderLayout.NORTH);
 
@@ -297,39 +293,40 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mNewElementDisplay.add(mProjectToolBar);
         //mNewElementDisplay.add(new JSeparator(JSeparator.HORIZONTAL));
         mNewElementDisplay.add(mElementDisplay);
-                
+
         //PG 17.12.13 - FUTURE FEATURE! mNewElementDisplay.add(new EdgeTypeSelection(), BorderLayout.NORTH);
         add(mNewElementDisplay, BorderLayout.WEST);
         mNewElementDisplay.setVisible(Boolean.valueOf(Preferences.getProperty("showelements")) ? true : false);
         mElementEditor.setVisible(Boolean.valueOf(Preferences.getProperty("showelementproperties")) ? true : false);
-        
-        JPanel editorPanel = new JPanel(new GridLayout()); 
+
+        JPanel editorPanel = new JPanel(new GridLayout());
         editorPanel.add(mElementEditor);
-        
+
         mSplitPane.setLeftComponent(mWorkSpaceScrollPane);
         mSplitPane.setRightComponent(editorPanel);
-        mSplitPane.setResizeWeight(1);  
+        mSplitPane.setResizeWeight(1);
         add(mSplitPane, BorderLayout.CENTER);
-        
-                       mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
+
+        mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
                 // solve issue here 
-                
-                if(Preferences.getProperty("showelementproperties").equals("true")){
-                    Preferences.setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
-                    Preferences.save();
-                }  
+
+                if (Preferences.getProperty("showelementproperties").equals("true")) {
+                    mProject.getPreferences().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
+                    mProject.getPreferences().save(mScriptEditorPanel.getPreferencesFileName());
+//                    Preferences.save();
+                }
             }
         });
-        
-        if(Preferences.getProperty("showelementproperties").equals("true")){
-             mSplitPane.setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));                  
-        } 
-        else {
-             mSplitPane.setDividerLocation(10000);      
+
+        if (Preferences.getProperty("showelementproperties").equals("true")) {
+
+            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getPreferences().getProperty("propertiesdividerlocation")));
+        } else {
+            mSplitPane.setDividerLocation(1d);
         }
-        
+
         add(mFooterLabel, BorderLayout.SOUTH);
     }
 
@@ -397,9 +394,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             // mVisuTimer = null;
         }
     }
-    
-    public JSplitPane getSplitPane(){        
-        return mSplitPane;    
+
+    public JSplitPane getSplitPane() {
+        return mSplitPane;
     }
 
     class SceneFlowImage extends TransferHandler implements Transferable {
