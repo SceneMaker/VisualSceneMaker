@@ -21,7 +21,15 @@ import javax.swing.SwingConstants;
  */
 public class AddButton extends JLabel {
     private final Dimension buttonSize = new Dimension(20, 20);
-    
+    private int TabPos; //ONLY NECESSARY TO WORK WITH THE PLUS BUTTONS ON TABBEDPANES
+
+    public int getTabPos() {
+        return TabPos;
+    }
+
+    public void setTabPos(int TabPos) {
+        this.TabPos = TabPos;
+    }
     public AddButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(false);
@@ -35,11 +43,8 @@ public class AddButton extends JLabel {
         setPreferredSize(buttonSize);
         setMinimumSize(buttonSize);
         addMouseListener(new java.awt.event.MouseAdapter() {
-
-//          public void mouseClicked(java.awt.event.MouseEvent evt) {
-//              //savePreferences(true);
-//          }
             public void mouseEntered(MouseEvent me) {
+                System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"     );
                 setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
             }
             public void mouseExited(MouseEvent me) {

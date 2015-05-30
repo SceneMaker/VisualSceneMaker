@@ -60,7 +60,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
     private JPanel                        mFunctionsPanel;
     private JPanel                        mButtonPanel;
     private RemoveButton                  mRemoveButton;
-    private AddButton                     mAddFunctionButton;
     private final ArrayList<FunDefDialog> mFunDefDialogList;
     private final SceneFlow               mSceneFlow;
 
@@ -384,21 +383,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
      *
      */
     private void initButtonPanel() {
-
-        // Create Button
-        mAddFunctionButton = new AddButton();
-        mAddFunctionButton.setMinimumSize(new Dimension(20, 50));
-        mAddFunctionButton.setPreferredSize(new Dimension(20, 50));
-        mAddFunctionButton.setMaximumSize(new Dimension(20, 50));
-//        updateAddButton();
-        mAddFunctionButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                addNewFunction();
-
-//              updateAddButton();
-            }
-        });
         
         Action action = new AbstractAction("AddFunction") {
             @Override
@@ -416,18 +400,14 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mButtonPanel.setOpaque(false);
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
         mButtonPanel.add(Box.createRigidArea(new Dimension(5, 5)));
-        mButtonPanel.add(mAddFunctionButton);
 
         // manually register the accelerator in the button's component input map
-        mAddFunctionButton.getActionMap().put("myAction", action);
-        mAddFunctionButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            (KeyStroke) action.getValue(Action.ACCELERATOR_KEY), "myAction");
+//        mAddFunctionButton.getActionMap().put("myAction", action);
+//        mAddFunctionButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+//            (KeyStroke) action.getValue(Action.ACCELERATOR_KEY), "myAction");
     }
 
-    /**
-     *
-     */
-    private void addNewFunction() {
+    public void addNewFunction() {
         FunDef usrCmdDef = new FunDef("newCommand", "java.lang.System.out", "println");
         
         usrCmdDef.addParam(new ParamDef("text", "String"));
@@ -450,10 +430,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         // Editor.getInstance().update();
     }
     
-    public AddButton getAddFunctionButton() {
-        return mAddFunctionButton;
-    }
-
     /**
      *
      */

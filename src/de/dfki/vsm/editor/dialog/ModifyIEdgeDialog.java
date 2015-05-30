@@ -95,12 +95,12 @@ public class ModifyIEdgeDialog extends Dialog {
         finalBox.add(mInputPanel);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mAltStartNodePanel);
-        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(Box.createVerticalStrut(40));
         finalBox.add(mButtonPanel);
 
-        addComponent(finalBox, 10, 10, 480, 230);
+        addComponent(finalBox, 10, 30, 480, 230);
 
-        packComponents(500, 270);
+        packComponents(520, 300);
     }
 
     private void initInputPanel() {

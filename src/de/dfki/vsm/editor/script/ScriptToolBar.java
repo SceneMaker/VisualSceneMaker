@@ -32,7 +32,6 @@ public class ScriptToolBar extends JToolBar {
 
     // Button to keep the script toolbar visible
     private JButton mPinScriptToolbar;
-    private AddButton mAddButton;
 
     public ScriptToolBar(ScriptEditorPanel parent) {
         super("Scenes Tool Bar", JToolBar.HORIZONTAL);
@@ -85,19 +84,6 @@ public class ScriptToolBar extends JToolBar {
         mGesticonButton.setContentAreaFilled(false);
         mGesticonButton.setFocusable(false);
 
-        // Create Button
-        mAddButton = new AddButton();
-        mAddButton.setMinimumSize(new Dimension(20, 50));
-        mAddButton.setPreferredSize(new Dimension(20, 50));
-        mAddButton.setMaximumSize(new Dimension(20, 50));
-//        updateAddButton();
-        mAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                updateAddButton();
-            }
-        });
-
         //Create the pin button
         mPinScriptToolbar = new JButton(ResourceLoader.loadImageIcon("/res/img/pin.png"));
         mPinScriptToolbar.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/pin_blue.png"));
@@ -118,8 +104,6 @@ public class ScriptToolBar extends JToolBar {
         sanitizeTinyButton(mGesticonButton);
         sanitizeTinyButton(mPinScriptToolbar);
         add(mGesticonButton, BorderLayout.WEST);
-        add(Box.createRigidArea(new Dimension(300, 1)));
-        add(mAddButton);
         add(Box.createHorizontalGlue());
         add(mPinScriptToolbar);
         mPinScriptToolbar.setBounds(TOP, TOP, TOP, TOP);

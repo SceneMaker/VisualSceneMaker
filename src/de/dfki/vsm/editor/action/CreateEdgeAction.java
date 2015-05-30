@@ -5,11 +5,10 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
-import de.dfki.vsm.editor.dialog.CreateCEdgeDialog;
-import de.dfki.vsm.editor.dialog.CreateIEdgeDialog;
-import de.dfki.vsm.editor.dialog.CreatePEdgeDialog;
-import de.dfki.vsm.editor.dialog.CreateTEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
+import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
+import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
+import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
 import de.dfki.vsm.model.sceneflow.EEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 
@@ -63,7 +62,7 @@ public class CreateEdgeAction extends EdgeAction {
                 break;
 
             case TEDGE :
-                CreateTEdgeDialog tedgeDialog = new CreateTEdgeDialog(mSourceGUINode.getDataNode(),
+                ModifyTEdgeDialog tedgeDialog = new ModifyTEdgeDialog(mSourceGUINode.getDataNode(),
                                                     mTargetGUINode.getDataNode());
 
                 mDataEdge = tedgeDialog.run();
@@ -71,7 +70,7 @@ public class CreateEdgeAction extends EdgeAction {
                 break;
 
             case CEDGE :
-                CreateCEdgeDialog cedgeDialog = new CreateCEdgeDialog(mSourceGUINode.getDataNode(),
+                ModifyCEdgeDialog cedgeDialog = new ModifyCEdgeDialog(mSourceGUINode.getDataNode(),
                                                     mTargetGUINode.getDataNode());
 
                 mDataEdge = cedgeDialog.run();
@@ -79,7 +78,7 @@ public class CreateEdgeAction extends EdgeAction {
                 break;
 
             case PEDGE :
-                CreatePEdgeDialog pedgeDialog = new CreatePEdgeDialog(mSourceGUINode.getDataNode(),
+                ModifyPEdgeDialog pedgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode(),
                                                     mTargetGUINode.getDataNode());
 
                 mDataEdge = pedgeDialog.run();
@@ -87,7 +86,7 @@ public class CreateEdgeAction extends EdgeAction {
                 break;
 
             case IEDGE :
-                CreateIEdgeDialog iedgeDialog = new CreateIEdgeDialog(mSourceGUINode.getDataNode(),
+                ModifyIEdgeDialog iedgeDialog = new ModifyIEdgeDialog(mSourceGUINode.getDataNode(),
                                                     mTargetGUINode.getDataNode());
 
                 mDataEdge = iedgeDialog.run();

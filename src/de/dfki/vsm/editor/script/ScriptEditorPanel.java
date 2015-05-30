@@ -16,6 +16,7 @@ import de.dfki.vsm.model.script.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 
@@ -27,6 +28,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Observable;
@@ -34,6 +38,8 @@ import java.util.Observer;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -41,6 +47,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -80,6 +88,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     private String                    lastSearchedScene;
     private int                       lastIndex;
     Highlighter.HighlightPainter      painter;
+    private int tabCounter = 1;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -105,18 +114,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);
         
-        // Create a JButton for adding the tabs
-        AddButton mAddButton = new AddButton();
-        mAddButton.setText("HOLA");
-        mAddButton.setMinimumSize(new java.awt.Dimension(50, 50));
-        mAddButton.setPreferredSize(new java.awt.Dimension(50, 50));
-        mAddButton.setMaximumSize(new java.awt.Dimension(50, 50));
-        mAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
-
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                System.out.println("Plus being clicked");
-            }
-        });
+        
         
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
@@ -131,21 +129,11 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane();
 
+        addTab("Script        ", mScrollPane);
+        addTab("Functions     ", mFunctionEditor);
+        addTab("DialogAct [Experimental]", mDialogActEditor);
 
-        // Make a small JPanel with the layout and make it non-opaque
-        FlowLayout f = new FlowLayout(FlowLayout.CENTER, 5, 0);
-
-        JPanel pnlTab = new JPanel(f);
-        pnlTab.setOpaque(false);
         
-
-        pnlTab.add(mAddButton);
-        mTabPane.add("Script", mScrollPane);
-        mTabPane.add("Functions", mFunctionEditor);
-        mTabPane.add("DialogAct [Experimental]", mDialogActEditor);
-        mTabPane.add("sss", new JPanel());
-        mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnlTab);
-        mTabPane.getComponentAt(mTabPane.getTabCount()-1).setEnabled(false);
         // Initialize the Toolbar
         mScenesToolbar = new ScriptToolBar(this);
 
@@ -182,8 +170,59 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
 
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
+        
     }
+    
+    void addTab(String tabName, JComponent content) {
+        JEditorPane ep = new JEditorPane();
+        ep.setEditable(false);
+        mTabPane.addTab(null, new JScrollPane(ep));
+        JLabel tabLabel = new JLabel(tabName);
+       // Create an AddButton
+        AddButton mAddButton = new AddButton();
+        mAddButton.setTabPos(tabCounter-1);
+        mAddButton.removeMouseListener(mAddButton.getMouseListeners()[1]);
+        mAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(MouseEvent me) {
+                if (mTabPane.getSelectedIndex()==mAddButton.getTabPos()) {
+                    mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
+                }             
+            }
+            public void mouseExited(MouseEvent me) {
+                mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
+            }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (mTabPane.getSelectedIndex()==mAddButton.getTabPos()) {
+                    if (content instanceof FunctionEditor)
+                    {
+                        ((FunctionEditor)content).addNewFunction();
+                    }
+                    if (content instanceof JScrollPane)
+                    {
+                        //PLUS ACTION FOR SCRIPT EDITOR
+                    }
+                    if (content instanceof DialogActEditor)
+                    {
+                        //PLUS ACTION FOR DIALGOACTEDITOR
+                    }
+                    
+                }
+            }
+        });
+        if (tabCounter != 0) {
+          JPanel pnl = new JPanel();
+          pnl.setOpaque(false);
+          pnl.add(tabLabel);
+          pnl.add(mAddButton);
+          
+          mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnl);
+          mTabPane.setComponentAt(mTabPane.getTabCount() - 1, content);
+          mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
+        }
 
+        tabCounter++;
+      }
+    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

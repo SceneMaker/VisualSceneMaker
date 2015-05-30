@@ -947,12 +947,12 @@ class ProbabilityEditor extends JPanel implements EventListener {
                 });
                 mButtonPanel = new JPanel();
                 mButtonPanel.setOpaque(false);
+                mButtonPanel.setMinimumSize(new Dimension(440, 40));
                 mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
                 mButtonPanel.add(Box.createRigidArea(new Dimension(20, 10)));
                 mButtonPanel.add(mPEdgeDialog.getUniButton());
                 mButtonPanel.add(Box.createRigidArea(new Dimension(20, 10)));
                 mButtonPanel.add(mPEdgeDialog.getNormButton());
-                mButtonPanel.add(Box.createRigidArea(new Dimension(20, 10)));
                 add(Box.createRigidArea(new Dimension(20, 20)));
                 add(mButtonPanel);
             }
