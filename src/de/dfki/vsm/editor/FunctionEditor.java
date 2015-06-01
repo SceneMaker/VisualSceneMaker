@@ -132,7 +132,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         // Create a FunDefDialog object for every existing function
         // in order to reuse components
         for (final FunDef funDef : mSceneFlow.getUsrCmdDefMap().values()) {
-            final FunDefDialog funDefPanel = new FunDefDialog(funDef);
+            FunDefDialog funDefPanel = new FunDefDialog(funDef);
             
             mFunDefDialogList.add(funDefPanel);
 

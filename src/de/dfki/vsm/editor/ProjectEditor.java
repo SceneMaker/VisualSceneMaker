@@ -17,6 +17,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
@@ -195,25 +196,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             @Override
             public BasicSplitPaneDivider createDefaultDivider() {
                 return new BasicSplitPaneDivider(this) {
-
-//                    @Override
-//                    public void setBorder(Border b) {
-//                    }
-//
-//                    @Override
-//                    public void paint(Graphics g) {
-//                        Graphics2D graphics = (Graphics2D) g;
-//                        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//                        Rectangle r = getBounds();
-//                        graphics.setColor(UIManager.getColor("Panel.background"));
-//                        graphics.fillRect(0, 0, r.width - 1, r.height);
-//                        graphics.setColor(new Color(100, 100, 100));
-//                        graphics.fillRect((r.width / 2 - 25), 0, 50, r.height);
-//                        graphics.drawPolygon(pUp);
-//                        graphics.fillPolygon(pUp);
-//                        graphics.drawPolygon(pDown);
-//                        graphics.fillPolygon(pDown);
-//                    }
                     /**
                      * Shows the bottom part of the editor when mouse goes over
                      * the border
@@ -233,7 +215,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
                             case MouseEvent.MOUSE_RELEASED:
                                 Preferences.setProperty("propertiesdividerlocation", String.valueOf(((ProjectEditor)this.getParent()).getDividerLocation()));
                                 mSceneDocEditor.prickPin();
-                                break;
+                                break;                                
                         }
                     }
 
@@ -242,18 +224,21 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             }
 
         });
-
+        
         setDividerSize(10);
 
         setContinuousLayout(true);
+        mSceneFlowEditor.setMinimumSize(new Dimension(10, 10));
+        mSceneFlowEditor.setMaximumSize(new Dimension(10000, 3000));
         setTopComponent(mSceneFlowEditor);
-
+        mSceneDocEditor.setMinimumSize(new Dimension(10, 10));
+        mSceneDocEditor.setMaximumSize(new Dimension(10000, 3000));
         setBottomComponent(mSceneDocEditor);
 
         // setting size
         boolean showSceneFlowEditor = Boolean.valueOf(Preferences.getProperty("showscenefloweditor"));
         boolean showSceneDocEditor  = Boolean.valueOf(Preferences.getProperty("showsceneeditor"));
-
+        
         if (!showSceneFlowEditor) {
             setDividerLocation(1d);
         }
