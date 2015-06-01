@@ -173,13 +173,13 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         
     }
     
-    void addTab(String tabName, JComponent content) {
+    void addTab(String tabName, final JComponent content) {
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
         mTabPane.addTab(null, new JScrollPane(ep));
         JLabel tabLabel = new JLabel(tabName);
        // Create an AddButton
-        AddButton mAddButton = new AddButton();
+        final AddButton mAddButton = new AddButton();
         mAddButton.setTabPos(tabCounter-1);
         mAddButton.removeMouseListener(mAddButton.getMouseListeners()[1]);
         mAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
