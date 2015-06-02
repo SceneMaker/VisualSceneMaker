@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.DefaultEditor;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.SImageView;
@@ -65,6 +66,7 @@ public class AboutDialog extends JDialog {
     private MyEditorPane       mAboutPane           = null;
     private JViewport          mViewPort            = null;
     private Timer              mScrollTimer         = null;
+    
     protected HTMLEditorKit    editorKit            = new HTMLEditorKit() {
         @Override
         public ViewFactory getViewFactory() {
@@ -121,8 +123,7 @@ public class AboutDialog extends JDialog {
         mAboutPane.setBackground(new Color(224, 223, 227));
 
         try {
-            URL pageURL = sABOUT_FILE;
-
+            URL pageURL = sABOUT_FILE;           
             mAboutPane.setPage(pageURL);
         } catch (Exception e) {
             mAboutPane.setText("<html><body><font color=\"red\">No about available!<br>Unable to locate " + sABOUT_FILE

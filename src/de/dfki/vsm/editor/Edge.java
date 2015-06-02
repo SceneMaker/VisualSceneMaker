@@ -64,6 +64,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
@@ -115,6 +118,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private JPanel    mTextPanel   = null;
     private JTextPane mValueEditor = null;
     private boolean   mEditMode    = false;
+    SimpleAttributeSet attribs;
 
     //
     // other stuff
@@ -344,6 +348,57 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mFontHeightCorrection = (mFM.getAscent() - mFM.getDescent()) / 2;
     }
 
+    class MyDocumentListener implements DocumentListener {
+         
+        @Override
+        // character added
+        public void insertUpdate(DocumentEvent e) {            
+            if(mType == TYPE.CEDGE){
+                
+                if(!validate(mValueEditor.getText())){
+                   // wrong condition
+                }
+                else{
+                    // correct condition
+                }  
+            }
+        }
+        
+        @Override
+        // character removed
+        public void removeUpdate(DocumentEvent e) {
+            if(mType == TYPE.CEDGE){
+                
+                if(!validate(mValueEditor.getText())){
+                    // wrong condition
+                }
+                else{
+                    // correct condition
+                } 
+            }
+        }
+        @Override
+        public void changedUpdate(DocumentEvent e) {         
+            //Plain text components do not fire these events
+        }        
+    }
+    
+    private boolean validate(String condition) {
+                  
+        String inputString = condition;
+
+        try {
+            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
+            _SFSLParser_.run(inputString);
+
+            LogicalCond log = _SFSLParser_.logResult;
+
+            return (log != null) &&!_SFSLParser_.errorFlag;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
     /* 
     * Initialize mTextPane and mValueEditor
     */
@@ -357,7 +412,9 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mTextPanel.setBorder(BorderFactory.createLineBorder(Color.red));  
         
         mValueEditor = new JTextPane();
-        SimpleAttributeSet attribs = new SimpleAttributeSet();
+        mValueEditor.getDocument().addDocumentListener(new MyDocumentListener());
+        
+        attribs = new SimpleAttributeSet();
         StyleConstants.setAlignment(attribs, StyleConstants.ALIGN_CENTER);
         StyleConstants.setFontFamily(attribs, Font.SANS_SERIF);
         StyleConstants.setFontSize(attribs, 16);
@@ -541,6 +598,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         }
     }
 
+    
     /*
      * Handles the mouse pressed event
      */
