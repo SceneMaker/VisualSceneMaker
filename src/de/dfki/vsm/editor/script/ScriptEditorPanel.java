@@ -56,6 +56,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 
 /**
  * @author Gregor Mehlmann
@@ -199,7 +200,9 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
                     }
                     if (content instanceof JScrollPane)
                     {
-                        //PLUS ACTION FOR SCRIPT EDITOR
+                        mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n"); 
+                        mEditorPane.requestFocusInWindow();
+                      
                     }
                     if (content instanceof DialogActEditor)
                     {

@@ -255,11 +255,7 @@ public class ModifyCEdgeDialog extends Dialog {
 
             if ((log != null) &&!_SFSLParser_.errorFlag) {
                 mCEdge.setCondition(log);
-
-                // /
                 mAltStartNodeManager.saveAltStartNodeMap();
-
-                ////
                 return true;
             } else {
                 return false;
