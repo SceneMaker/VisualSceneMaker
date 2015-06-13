@@ -55,6 +55,7 @@ public final class ToolBarItem extends JButton implements Transferable {
         setContentAreaFilled(false);
         setFocusable(false);
         setOpaque(false);
+        setBorder(null);
 
         // to be transferred in the Drag
         t = new TransferHandler(text);

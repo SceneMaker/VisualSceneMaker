@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
+import com.sun.java.swing.plaf.windows.WindowsToolBarUI;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
@@ -16,6 +17,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -30,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
@@ -37,6 +40,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.plaf.basic.BasicToolBarUI;
+import javax.swing.plaf.metal.MetalToolBarUI;
 
 /**
  * @author Gregor Mehlmann
@@ -92,7 +97,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
 
         // Initialize The SceneFlow
         mSceneFlow = mEditor.getSceneFlow();
-        setBackground(Color.white);
         setFloatable(false);
         setRollover(true);
         setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));

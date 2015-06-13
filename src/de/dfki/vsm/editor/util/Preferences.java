@@ -58,18 +58,25 @@ public class Preferences {
     //////////////////////////////////////////////////////////////////////////////
     public static final Color sBASIC_NODE_COLOR    = new Color(128, 128, 128);
     public static final Color sHISTORY_NODE_COLOR  = new Color(255, 255, 255);
-    public static final Color sSUPER_NODE_COLOR    = new Color(111, 111, 111);
+    public static final Color sSUPER_NODE_COLOR    = new Color(200, 200, 200);
     public static final Color sSELECTED_NODE_COLOR = new Color(211, 211, 211);
 
     //////////////////////////////////////////////////////////////////////////////
     // EDGE COLORS
     //////////////////////////////////////////////////////////////////////////////
-    public static final Color sFEDGE_COLOR = new Color(82, 51, 161);
-    public static final Color sEEDGE_COLOR = new Color(128, 128, 128);
-    public static final Color sTEDGE_COLOR = new Color(128, 70, 24);
-    public static final Color sCEDGE_COLOR = new Color(207, 175, 0);
-    public static final Color sPEDGE_COLOR = new Color(97, 140, 30);
-    public static final Color sIEDGE_COLOR = new Color(181, 45, 13);
+//    public static final Color sFEDGE_COLOR = new Color(82, 51, 161);
+//    public static final Color sEEDGE_COLOR = new Color(128, 128, 128);
+//    public static final Color sTEDGE_COLOR = new Color(128, 70, 24);
+//    public static final Color sCEDGE_COLOR = new Color(207, 175, 0);
+//    public static final Color sPEDGE_COLOR = new Color(97, 140, 30);
+//    public static final Color sIEDGE_COLOR = new Color(181, 45, 13);
+//    
+    public static final Color sFEDGE_COLOR = new Color(150, 192, 206);
+    public static final Color sEEDGE_COLOR = new Color(190, 185, 181);
+    public static final Color sTEDGE_COLOR = new Color(200, 171, 101);
+    public static final Color sCEDGE_COLOR = new Color(249, 229, 89);
+    public static final Color sPEDGE_COLOR = new Color(113, 196, 43);
+    public static final Color sIEDGE_COLOR = new Color(197, 25, 19);
 
     //////////////////////////////////////////////////////////////////////////////
     // VISUALIZATION COLORS

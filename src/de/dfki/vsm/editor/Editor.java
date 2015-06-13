@@ -34,14 +34,17 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -126,13 +129,18 @@ public class Editor extends JFrame implements EventListener {
 
         // Load the preferences
         Preferences.load();
-
+        getContentPane().setBackground(Color.WHITE);
+        try {
+            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+        } catch (Exception e) {
+            // If Nimbus is not available, you can set the GUI to another look and feel.
+        }
         // SET FONTS
         setUIFonts();
 
         // SET BACKGROUNDS
         setUIBackgrounds();
-        getContentPane().setBackground(Color.white);
+        
 
         // Preferences.info();
         // Init the menu bar
@@ -222,19 +230,20 @@ public class Editor extends JFrame implements EventListener {
     }
 
     private void setUIBackgrounds() {
-        UIManager.put("Frame.background", Color.white);
-        UIManager.put("Panel.background", Color.white);
+        UIManager.put("Frame.background", Color.WHITE);
+        UIManager.put("Panel.background", Color.WHITE);
         UIManager.put("MenuBar.opaque", true);
-        UIManager.put("MenuBar.background", Color.white);
+        UIManager.put("MenuBar.background", Color.WHITE);
         UIManager.put("Menu.opaque", true);
-        UIManager.put("Menu.background", Color.white);
+        UIManager.put("Menu.background", Color.WHITE);
         UIManager.put("MenuItem.opaque", true);
-        UIManager.put("MenuItem.background", Color.white);
-        UIManager.put("ToolBar.background", Color.white);
-        UIManager.put("TabbedPane.background", Color.white);
-        UIManager.put("EditorPane.background", Color.white);
-        UIManager.put("ScrollPane.background", Color.white);
-        UIManager.put("Viewport.background", Color.white);
+        UIManager.put("MenuItem.background", Color.WHITE);
+        UIManager.put("ToolBar.opaque", true);       
+        UIManager.put("ToolBar.background", Color.WHITE);
+        UIManager.put("TabbedPane.background", Color.WHITE);
+        UIManager.put("EditorPane.background", Color.WHITE);
+        UIManager.put("ScrollPane.background", Color.WHITE);
+        UIManager.put("Viewport.background", Color.WHITE);
     }
 
     public void update() {
@@ -575,6 +584,7 @@ public class Editor extends JFrame implements EventListener {
                 int index = recentProjectDirs.indexOf(projectDir);
 
                 Preferences.setProperty("recentprojectname" + index, projectName);
+                Preferences.setProperty("recentprojectdate" + index, new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
                 recentProjectNames.remove(index);
                 recentProjectNames.add(index, projectName);
             }
@@ -599,6 +609,7 @@ public class Editor extends JFrame implements EventListener {
             if ((dir != null) && (name != null)) {
                 Preferences.setProperty("recentprojectdir" + i, dir);
                 Preferences.setProperty("recentprojectname" + i, name);
+                Preferences.setProperty("recentprojectdate" + i, new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
             } else {
                 break;
             }

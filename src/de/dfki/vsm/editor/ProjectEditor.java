@@ -113,7 +113,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
 
         WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
         EventCaster.getInstance().convey(ev);
-
+        
         initComponents();
     }
 

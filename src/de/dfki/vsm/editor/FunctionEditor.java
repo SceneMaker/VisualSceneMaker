@@ -55,8 +55,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
     private final Observable              mObservable  = new Observable();
     private final EventCaster             mEventCaster = EventCaster.getInstance();
     private JSplitPane                    mSplitPane;
-    private JScrollPane                   mLeftScrollPanel;
-    private JScrollPane                   mRightScrollPanel;
+    private JScrollPane                   mFunctionsScrollPanel;
     private JPanel                        mFunctionsPanel;
     private JPanel                        mButtonPanel;
     private RemoveButton                  mRemoveButton;
@@ -70,7 +69,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mSceneFlow        = sceneflow;
         mFunDefDialogList = new ArrayList<>();
         setLayout(new GridLayout(1, 0));
-        setOpaque(false);
         initComponents();
 
         // Add the element editor to the event multicaster
@@ -85,26 +83,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mFunctionsPanel.setOpaque(false);
         mFunctionsPanel.setLayout(new BoxLayout(mFunctionsPanel, BoxLayout.Y_AXIS));
         displayFunctionPanels();
-        mLeftScrollPanel = new JScrollPane(mFunctionsPanel);
-        mLeftScrollPanel.setOpaque(false);
-        mLeftScrollPanel.getViewport().setOpaque(false);
-        mLeftScrollPanel.setMinimumSize(new Dimension(2000, 200));
-        mLeftScrollPanel.setBorder(null);
-        mLeftScrollPanel.getVerticalScrollBar().setValue(0);
-        initButtonPanel();
-        mRightScrollPanel = new JScrollPane(mButtonPanel);
-        mRightScrollPanel.setOpaque(false);
-        mRightScrollPanel.setMinimumSize(new Dimension(50, 50));
-        mRightScrollPanel.getViewport().setOpaque(false);
-        mRightScrollPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
-        mSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
-        mSplitPane.setOpaque(false);
-        mSplitPane.setBorder(BorderFactory.createEmptyBorder());
-        mSplitPane.setLeftComponent(mRightScrollPanel);
-        mSplitPane.setRightComponent(mLeftScrollPanel);
-        mSplitPane.setDividerSize(0);
-        mSplitPane.setBorder(null);
-        add(mSplitPane);
+        mFunctionsScrollPanel = new JScrollPane(mFunctionsPanel);
+        mFunctionsScrollPanel.setOpaque(false);
+        mFunctionsScrollPanel.getViewport().setOpaque(false);
+        mFunctionsScrollPanel.setMinimumSize(new Dimension(2000, 200));
+        mFunctionsScrollPanel.setBorder(null);
+        mFunctionsScrollPanel.getVerticalScrollBar().setValue(0);
+        add(mFunctionsScrollPanel);
     }
     
     public static void flattenSplitPane(JSplitPane jSplitPane) {
@@ -441,7 +426,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             for (FunDefDialog currentPanel : mFunDefDialogList) {
                 if (functionData.getName().equals(currentPanel.getFunDef().getName())) {
                     currentPanel.setSelectedBackground(true);
-                    mLeftScrollPanel.getVerticalScrollBar().setValue(mFunDefDialogList.indexOf(currentPanel) * 75);
+                    mFunctionsScrollPanel.getVerticalScrollBar().setValue(mFunDefDialogList.indexOf(currentPanel) * 75);
                     currentPanel.getNameInput().requestFocusInWindow();
                 } else {
                     currentPanel.setSelectedBackground(false);
@@ -457,7 +442,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             
             for (FunDefDialog currentPanel : mFunDefDialogList) {
                 if (functionData.getName().equals(currentPanel.getFunDef().getName())) {
-                    mLeftScrollPanel.getVerticalScrollBar().setValue(mFunDefDialogList.indexOf(currentPanel) * 75);
+                    mFunctionsScrollPanel.getVerticalScrollBar().setValue(mFunDefDialogList.indexOf(currentPanel) * 75);
                 } else {
                     currentPanel.setSelectedBackground(false);
                 }
