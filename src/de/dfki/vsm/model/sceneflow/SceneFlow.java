@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.IOException;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,6 +60,7 @@ public class SceneFlow extends SuperNode {
     protected String                  mContextCode       = new String();
     protected Vector<String>          mClassPathList     = new Vector<String>();
     protected HashMap<String, FunDef> mUserCmdDefMap     = new HashMap<String, FunDef>();
+    protected String                  mModifDate         = new String();
 
     public SceneFlow() {}
 
@@ -164,7 +167,7 @@ public class SceneFlow extends SuperNode {
         out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         out.println("<SceneFlow " + "id=\"" + mId + "\" " + "name=\"" + mName + "\" " + "comment=\"" + mComment
                     + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
-                    + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "start=\""
+                    + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "modifDate=\"" + new SimpleDateFormat("dd.MM.yyyy").format(new Date()) + "\" "+ "start=\""
                     + start + "\" "
 
         // + "context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "
@@ -445,7 +448,7 @@ public class SceneFlow extends SuperNode {
         mXMLSchemeInstance  = element.getAttribute("xmlns:xsi");
         mHideLocalVarBadge  = Boolean.valueOf(element.getAttribute("hideLocalVar"));
         mHideGlobalVarBadge = Boolean.valueOf(element.getAttribute("hideGlobalVar"));
-
+        mModifDate          = element.getAttribute("modifDate");
         // mSceneFileName = element.getAttribute("scenefile");
         // mSceneInfoFileName = element.getAttribute("sceneinfo");
 

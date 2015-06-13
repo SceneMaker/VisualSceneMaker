@@ -14,6 +14,8 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -21,6 +23,8 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -29,6 +33,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -117,6 +123,29 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // first put it in the editor, then back in the label
         mTextEditor.setText(mDataComment.getHTMLText());
         mTextLabel.setText(mTextEditor.getText());
+        JButton colourPicker = new JButton();
+        colourPicker.setHorizontalAlignment(SwingConstants.RIGHT);
+        colourPicker.setOpaque(false);
+        colourPicker.setContentAreaFilled(false);
+        colourPicker.setBorder(null);
+        colourPicker.setIcon(ResourceLoader.loadImageIcon("/res/img/colour_picker_small.png"));
+        colourPicker.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        colourPicker.setToolTipText("Select Font Color");
+        colourPicker.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        colourPicker.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Color color = JColorChooser.showDialog(mWorkSpace, "Colours", Color.yellow);
+                mTextEditor.selectAll();
+                mTextEditor.setForeground(color); // color of selected text
+                mTextLabel.setForeground(color);
+//                mTextEditor.setSelectionColor(color); // background of selected text
+                mTextEditor.requestFocusInWindow();
+            }
+        });
+        colourPicker.setMaximumSize(new Dimension(30, 20));
+        colourPicker.setPreferredSize(new Dimension(30, 20));
+        colourPicker.setMinimumSize(new Dimension(30, 20));
+        add(colourPicker, BorderLayout.PAGE_END);
         add(mTextLabel, BorderLayout.CENTER);
     }
 

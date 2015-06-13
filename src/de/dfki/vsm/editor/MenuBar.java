@@ -129,7 +129,6 @@ public class MenuBar extends JMenuBar {
         initFileMenu();
         initEditMenu();
         initHelpMenu();
-        setBackground(Color.white);
     }
 
     public void refreshRecentFileMenu() {

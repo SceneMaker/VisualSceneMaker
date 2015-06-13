@@ -55,7 +55,7 @@ public class WelcomePanel extends JPanel implements Observer {
     private final Dimension screenDimension;
     private final Dimension buttonSize;
     private final Dimension halfScreenDimension;
-
+    
     public WelcomePanel(final Editor mParent) {
         try {
 
@@ -263,9 +263,13 @@ public class WelcomePanel extends JPanel implements Observer {
                     if (projectDirName.startsWith("res" + System.getProperty("file.separator") + "prj")) {
                         continue;
                     }
-
+                    String modified = Preferences.getProperty("recentprojectdate" + i);
+                    if(modified == null)
+                    {
+                        modified = "Not saved yet";
+                    }
                     projectList[i] = new JLabel(projectName + ", last edited: "
-                                                + sdf.format(projectDir.lastModified()));
+                                                + modified);
                     projectList[i].setLayout(new BoxLayout(projectList[i], BoxLayout.X_AXIS));
                     projectList[i].setOpaque(false);
                     projectList[i].setMaximumSize(new Dimension(buttonSize));
@@ -327,7 +331,7 @@ public class WelcomePanel extends JPanel implements Observer {
      * Creates a list of sample projects
      */
     private void listOfSampleProjects() {
-
+        
         // *****************************************************************************************************************************************************
         // LIST OF SAMPLE PROJECTS******************************************************************************************************************************
         // *****************************************************************************************************************************************************
