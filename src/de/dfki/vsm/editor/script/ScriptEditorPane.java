@@ -37,6 +37,7 @@ import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 /**
  * @author Gregor Mehlmann
@@ -306,6 +307,14 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
         mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);
         setFont(mFont);
     }
+    
+    public void append(String s) {
+        try {
+           Document doc = this.getDocument();
+           doc.insertString(doc.getLength(), s, null);
+        } catch(BadLocationException exc) {
+        }
+    }   
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

@@ -124,8 +124,8 @@ public class Preferences {
     //////////////////////////////////////////////////////////////////////////////
     // FILE RESSOURCES
     //////////////////////////////////////////////////////////////////////////////
-    public static final URL sABOUT_FILE = sSCENEMAKER_CLASS.getResource("/doc/about.html");
-    public static final URL sHELP_FILE  = sSCENEMAKER_CLASS.getResource("/doc/index.html");
+    public static final URL sABOUT_FILE = sSCENEMAKER_CLASS.getResource("/res/doc/about.html");
+    public static final URL sHELP_FILE  = sSCENEMAKER_CLASS.getResource("/res/doc/index.html");
 
     //////////////////////////////////////////////////////////////////////////////
     // FONT DATA
