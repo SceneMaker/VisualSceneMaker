@@ -71,10 +71,13 @@ public class DialogActAttributes extends Dialog {
 //      mMainPanel.add(mNamePanel);
         int offset  = 45;
         int initial = 20;
-
+        JPanel attributesPanel = new JPanel();
+        attributesPanel.setLayout(new BoxLayout(attributesPanel, BoxLayout.Y_AXIS));
         for (String attribute : mDialogAct.getNLGAttributes()) {
             createAttributePanel(attribute);
-            addComponent(mAttributePanel, 10, initial + offset, 390, 30);
+            attributesPanel.add(mAttributePanel);
+            attributesPanel.add(Box.createVerticalStrut(30));
+//            addComponent(mAttributePanel, 10, initial + offset, 390, 30);
             initial = initial + offset;
 
 //          mMainPanel.add(mAttributePanel);
@@ -89,15 +92,23 @@ public class DialogActAttributes extends Dialog {
 
         // Init button panel
         initButtonPanel();
-        addComponent(mNameLabel, 10, 10, 100, 30);
-        addComponent(mNameText, 110, 10, 260, 30);
-        addComponent(mCancelButton, 75, buttonPos, 125, 30);
-        addComponent(mOkButton, 225, buttonPos, 125, 30);
-
-//      addComponent(mButtonPanel, 200, 100);
-//      mMainPanel.add(mButtonPanel);
-//      mMainPanel.add(Box.createRigidArea(new Dimension(15, 10)));
-        packComponents(400, finalHeight);
+        // Input panel
+        JPanel mInputPanel = new JPanel();
+        mInputPanel.setLayout(new BoxLayout(mInputPanel, BoxLayout.X_AXIS));
+        mInputPanel.add(mNameLabel);
+        mInputPanel.add(Box.createHorizontalStrut(10));
+        mInputPanel.add(mNameText);
+        
+        Box finalBox = Box.createVerticalBox();
+        finalBox.add(mInputPanel);
+        finalBox.add(Box.createVerticalStrut(30));
+        finalBox.add(attributesPanel);       
+        finalBox.add(mButtonPanel);
+        
+        addComponent(finalBox, 10, 10, 380, finalHeight-20);
+        
+        
+        packComponents(420, finalHeight);
     }
 
     private void createAttributePanel(String attribute) {
@@ -142,9 +153,11 @@ public class DialogActAttributes extends Dialog {
         });
 
         // Button panel
-        mButtonPanel = new JPanel(null);
-        mButtonPanel.setOpaque(false);
+        mButtonPanel = new JPanel();
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.add(Box.createHorizontalGlue());
         mButtonPanel.add(mCancelButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
         mButtonPanel.add(mOkButton);
     }
 

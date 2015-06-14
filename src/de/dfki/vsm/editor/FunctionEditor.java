@@ -96,7 +96,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mRightScrollPanel.setOpaque(false);
         mRightScrollPanel.setMinimumSize(new Dimension(50, 50));
         mRightScrollPanel.getViewport().setOpaque(false);
-        mRightScrollPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
         mSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
         mSplitPane.setOpaque(false);
         mSplitPane.setBorder(BorderFactory.createEmptyBorder());
@@ -119,7 +118,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         });
         jSplitPane.setBorder(null);
     }
-
     /**
      *
      */
@@ -531,24 +529,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         
         Editor.getInstance().update();
     }
-
-    /**
-     *
-     */
-//    private void updateAddButton() {
-//        mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big.png"));
-//        mAddFunctionButton.setMaximumSize(new Dimension(50, 50));
-//        mAddFunctionButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//            public void mouseEntered(MouseEvent me) {
-//                mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big_blue.png"));
-//            }
-//
-//            public void mouseExited(MouseEvent me) {
-//                mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big.png"));
-//
-//            }
-//        });
-//    }
+    
     /**
      *
      */
@@ -581,10 +562,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
      */
     private void launchFunctionCreatedEvent(FunDef funDef) {
         FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
-
         mEventCaster.convey(ev);
     }
-
     /**
      *
      */

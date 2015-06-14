@@ -14,11 +14,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.util.Vector;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * @author Gregor Mehlmann
@@ -67,12 +69,38 @@ public class CreateAltStartNodeDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        addComponent(mStartNodeLabel, 10, 20, 100, 30);
-        addComponent(mStartNodeComboBox, 120, 20, 200, 30);
-        addComponent(mAltStartNodeLabel, 10, 60, 100, 30);
-        addComponent(mAltStartNodeComboBox, 120, 60, 200, 30);
-        addComponent(mOkButton, 175, 150, 125, 30);
-        addComponent(mCancelButton, 30, 150, 125, 30);
+        
+        // Button panel
+        JPanel mButtonPanel = new JPanel();
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.add(Box.createHorizontalGlue());
+        mButtonPanel.add(mCancelButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
+        mButtonPanel.add(mOkButton);
+        mButtonPanel.add(Box.createHorizontalStrut(10));
+        
+        // Start Node panel
+        JPanel mStartNodePanel = new JPanel();
+        mStartNodePanel.setLayout(new BoxLayout(mStartNodePanel, BoxLayout.X_AXIS));
+        mStartNodePanel.add(mStartNodeLabel);
+        mStartNodePanel.add(Box.createHorizontalStrut(10));
+        mStartNodePanel.add(mStartNodeComboBox);
+        
+        // Alternative Start Node panel
+        JPanel mAltStartNodePanel = new JPanel();
+        mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.X_AXIS));
+        mAltStartNodePanel.add(mAltStartNodeLabel);
+        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
+        mAltStartNodePanel.add(mAltStartNodeComboBox);
+        
+        Box finalBox = Box.createVerticalBox();
+        finalBox.add(mStartNodePanel);
+        finalBox.add(Box.createVerticalStrut(30));
+        finalBox.add(mAltStartNodePanel);
+        finalBox.add(Box.createVerticalStrut(30));
+        finalBox.add(mButtonPanel);
+        
+        addComponent(finalBox, 10, 10, 320, 180);
         packComponents(340, 200);
     }
 
