@@ -20,8 +20,6 @@ import de.dfki.vsm.sfsl.parser._SFSLParser_;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import java.util.Vector;
 

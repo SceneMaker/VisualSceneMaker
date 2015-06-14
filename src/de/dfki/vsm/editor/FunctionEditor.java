@@ -83,13 +83,25 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mFunctionsPanel.setOpaque(false);
         mFunctionsPanel.setLayout(new BoxLayout(mFunctionsPanel, BoxLayout.Y_AXIS));
         displayFunctionPanels();
-        mFunctionsScrollPanel = new JScrollPane(mFunctionsPanel);
-        mFunctionsScrollPanel.setOpaque(false);
-        mFunctionsScrollPanel.getViewport().setOpaque(false);
-        mFunctionsScrollPanel.setMinimumSize(new Dimension(2000, 200));
-        mFunctionsScrollPanel.setBorder(null);
-        mFunctionsScrollPanel.getVerticalScrollBar().setValue(0);
-        add(mFunctionsScrollPanel);
+        mLeftScrollPanel = new JScrollPane(mFunctionsPanel);
+        mLeftScrollPanel.setOpaque(false);
+        mLeftScrollPanel.getViewport().setOpaque(false);
+        mLeftScrollPanel.setMinimumSize(new Dimension(2000, 200));
+        mLeftScrollPanel.setBorder(null);
+        mLeftScrollPanel.getVerticalScrollBar().setValue(0);
+        initButtonPanel();
+        mRightScrollPanel = new JScrollPane(mButtonPanel);
+        mRightScrollPanel.setOpaque(false);
+        mRightScrollPanel.setMinimumSize(new Dimension(50, 50));
+        mRightScrollPanel.getViewport().setOpaque(false);
+        mSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
+        mSplitPane.setOpaque(false);
+        mSplitPane.setBorder(BorderFactory.createEmptyBorder());
+        mSplitPane.setLeftComponent(mRightScrollPanel);
+        mSplitPane.setRightComponent(mLeftScrollPanel);
+        mSplitPane.setDividerSize(0);
+        mSplitPane.setBorder(null);
+        add(mSplitPane);
     }
     
     public static void flattenSplitPane(JSplitPane jSplitPane) {
@@ -104,7 +116,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         });
         jSplitPane.setBorder(null);
     }
-
     /**
      *
      */
@@ -516,24 +527,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         
         Editor.getInstance().update();
     }
-
-    /**
-     *
-     */
-//    private void updateAddButton() {
-//        mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big.png"));
-//        mAddFunctionButton.setMaximumSize(new Dimension(50, 50));
-//        mAddFunctionButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//            public void mouseEntered(MouseEvent me) {
-//                mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big_blue.png"));
-//            }
-//
-//            public void mouseExited(MouseEvent me) {
-//                mAddFunctionButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_big.png"));
-//
-//            }
-//        });
-//    }
+    
     /**
      *
      */
@@ -566,10 +560,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
      */
     private void launchFunctionCreatedEvent(FunDef funDef) {
         FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
-
         mEventCaster.convey(ev);
     }
-
     /**
      *
      */

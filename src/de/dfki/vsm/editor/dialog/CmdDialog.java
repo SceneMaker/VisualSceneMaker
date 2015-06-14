@@ -7,13 +7,12 @@ import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
 import javax.swing.JTextField;
 
 /**
@@ -56,10 +55,22 @@ public class CmdDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        addComponent(mInputTextField, 10, 20, 300, 30);
-        addComponent(mOkButton, 175, 75, 125, 30);
-        addComponent(mCancelButton, 30, 75, 125, 30);
-        packComponents(320, 120);
+        // Button panel
+        JPanel mButtonPanel = new JPanel();
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.add(Box.createHorizontalGlue());
+        mButtonPanel.add(mCancelButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
+        mButtonPanel.add(mOkButton);
+        mButtonPanel.add(Box.createHorizontalStrut(10));
+        
+        Box finalBox = Box.createVerticalBox();
+        finalBox.add(mInputTextField);
+        finalBox.add(Box.createVerticalStrut(30));
+        finalBox.add(mButtonPanel);
+        
+        addComponent(finalBox, 10, 10, 300, 130);
+        packComponents(320, 150);
     }
 
     public Command run() {
