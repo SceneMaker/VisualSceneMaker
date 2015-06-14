@@ -425,7 +425,7 @@ public class CreateProjectDialog extends JDialog {
         // compose config panel
         mConfigPanel.add(namePanel);
         mConfigPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        mConfigPanel.add(Box.createRigidArea(new Dimension(0, 30)));
         mConfigPanel.add(locationPanel);
         mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         errorMsg = new JLabel("Information Required");
@@ -447,8 +447,6 @@ public class CreateProjectDialog extends JDialog {
 //      mConfigPanel.add(defaultScenePlayerPanel);
 //      mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 //      mConfigPanel.add(defaultScenePlayerConfigPanel);
-        mConfigPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        mConfigPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
         // compose panels
         mButtonsPanel = new JPanel();
@@ -492,9 +490,9 @@ public class CreateProjectDialog extends JDialog {
         mMainPanel.add(mConfigPanel);
         mMainPanel.add(Box.createVerticalGlue());
         mMainPanel.add(mButtonsPanel);
-        mMainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        mMainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         add(mMainPanel);
-        getContentPane().setBackground(Color.white);
+//        getContentPane().setBackground(Color.white);
         setResizable(false);
         pack();
 
