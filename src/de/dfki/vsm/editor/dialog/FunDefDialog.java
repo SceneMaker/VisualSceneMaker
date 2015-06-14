@@ -125,7 +125,11 @@ public class FunDefDialog extends Dialog {
         mNameLabel     = new JLabel("Name:");
         mNameTextField = new JTextField();
         mNameTextField.setDocument(mNameDocument);
-
+        //Name box
+        Box nameBox = Box.createHorizontalBox();
+        nameBox.add(mNameLabel);
+        nameBox.add(Box.createHorizontalStrut(10));
+        nameBox.add(mNameTextField);        
         //
         mClassNameLabel     = new JLabel("Class:");
         mClassNameTextField = new JTextField();
@@ -135,7 +139,11 @@ public class FunDefDialog extends Dialog {
                 classTextFieldKeyTyped(evt);
             }
         });
-
+        //Class name box
+        Box classNameBox = Box.createHorizontalBox();
+        classNameBox.add(mClassNameLabel);
+        classNameBox.add(Box.createHorizontalStrut(10));
+        classNameBox.add(mClassNameTextField);
         //
         mMethodLabel    = new JLabel("Method:");
         mMethodComboBox = new JComboBox();
@@ -146,7 +154,11 @@ public class FunDefDialog extends Dialog {
                 methodComboBoxActionPerformed(evt);
             }
         });
-
+        //Method box
+        Box methodBox = Box.createHorizontalBox();
+        methodBox.add(mMethodLabel);
+        methodBox.add(Box.createHorizontalStrut(10));
+        methodBox.add(mMethodComboBox);
         //
         mArgLabel = new JLabel("Arguments:");
         mArgList  = new JList();
@@ -158,7 +170,11 @@ public class FunDefDialog extends Dialog {
                 argumentListMouseClicked(evt);
             }
         });
-
+        //Argument box
+        Box argBox = Box.createHorizontalBox();
+        argBox.add(mArgLabel);
+        argBox.add(Box.createHorizontalStrut(10));
+        argBox.add(mArgScrollPane);
         // ok button
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -166,7 +182,6 @@ public class FunDefDialog extends Dialog {
                 okActionPerformed();
             }
         });
-
         // cancel button
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -174,23 +189,32 @@ public class FunDefDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-
+        //Button box
+        Box buttonBox = Box.createHorizontalBox();
+        buttonBox.add(Box.createHorizontalGlue());
+        buttonBox.add(mCancelButton);
+        buttonBox.add(Box.createHorizontalStrut(10));
+        buttonBox.add(mOkButton);
         //
         mMessageLabel = new JLabel();
-
-        //
-        addComponent(mNameLabel, 10, 10, 100, 30);
-        addComponent(mNameTextField, 110, 10, 260, 30);
-        addComponent(mClassNameLabel, 10, 45, 100, 30);
-        addComponent(mClassNameTextField, 110, 45, 260, 30);
-        addComponent(mMethodLabel, 10, 80, 100, 30);
-        addComponent(mMethodComboBox, 110, 80, 260, 30);
-        addComponent(mArgLabel, 10, 115, 100, 30);
-        addComponent(mArgScrollPane, 110, 115, 260, 80);
-        addComponent(mCancelButton, 75, 240, 125, 30);
-        addComponent(mOkButton, 225, 240, 125, 30);
-        addComponent(mMessageLabel, 10, 290, 400, 30);
-        packComponents(400, 320);
+        
+        Box finalBox = Box.createVerticalBox();
+        finalBox.add(nameBox);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(classNameBox);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(methodBox);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(buttonBox);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(classNameBox);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(buttonBox);
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(mMessageLabel);
+        
+        addComponent(finalBox, 10, 20, 380, 300);
+        packComponents(420, 320);
         mDefaultColor = Color.white;
     }
 

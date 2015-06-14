@@ -5,13 +5,10 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
+import javax.swing.Box;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -53,6 +50,19 @@ public class MemberDefDialog extends Dialog {
         mTypeLabel     = new JLabel("Type:");
         mNameTextField = new JTextField();
         mTypeComboBox  = new JComboBox(new Object[] { "Bool", "Int", "Float", "String" });
+        
+        //Name box
+        Box nameBox = Box.createHorizontalBox();
+        nameBox.add(mNameLabel);
+        nameBox.add(Box.createHorizontalStrut(10));
+        nameBox.add(mNameTextField);        
+        
+        //Type box
+        Box typeBox = Box.createHorizontalBox();
+        typeBox.add(mTypeLabel);
+        typeBox.add(Box.createHorizontalStrut(10));
+        typeBox.add(mTypeComboBox);        
+        
         mOkButton      = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -65,13 +75,21 @@ public class MemberDefDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        addComponent(mNameLabel, 10, 20, 70, 30);
-        addComponent(mNameTextField, 90, 20, 200, 30);
-        addComponent(mTypeLabel, 10, 65, 70, 30);
-        addComponent(mTypeComboBox, 90, 65, 200, 30);
-        addComponent(mOkButton, 175, 120, 125, 30);
-        addComponent(mCancelButton, 30, 120, 125, 30);
-        packComponents(320, 170);
+        //Button box
+        Box buttonBox = Box.createHorizontalBox();
+        buttonBox.add(Box.createHorizontalGlue());
+        buttonBox.add(mCancelButton);
+        buttonBox.add(Box.createHorizontalStrut(10));
+        buttonBox.add(mOkButton);
+        
+        Box finalBox = Box.createVerticalBox();
+        finalBox.add(nameBox);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(typeBox);
+        finalBox.add(Box.createVerticalStrut(25));
+        finalBox.add(buttonBox);
+        addComponent(finalBox, 10, 20, 300, 150);
+        packComponents(340, 180);
     }
 
     private void fillComponents() {
