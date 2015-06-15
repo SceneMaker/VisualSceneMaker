@@ -663,11 +663,12 @@ public final class Node extends JComponent implements EventListener, Observer {
 
         switch (mFlavour) {
         case None :    // if node working type is unclear, allow all (except iedge for nodes)
-            allowed = (mType == Type.BasicNode)
+         /*   allowed = ((mType == Type.BasicNode) && (eType == Edge.TYPE.IEDGE))
                       ? true
                       : false;
+            */
 
-            // allowed = true;
+             allowed = true;
             break;
 
         case ENode :    // only one eegde is allowed
@@ -707,13 +708,12 @@ public final class Node extends JComponent implements EventListener, Observer {
 
             break;
 
-        case INode :    // only iedges are allowed
+        case INode :    // allow TEdges and IEdges
             allowed = ((eType == Edge.TYPE.IEDGE)
                      || ((mDataNode.getDedge() == null)
                            && (((eType == Edge.TYPE.TEDGE) || (eType == Edge.TYPE.EEDGE)))))
                       ? true
                       : false;
-
             break;
         }
 
