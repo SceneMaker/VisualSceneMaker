@@ -34,6 +34,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -100,6 +101,8 @@ public class FunDefDialog extends Dialog {
     private JPanel       mLowerPanel;
     private Color        mDefaultColor;
     private Boolean      mIsValidClass;
+    private Dimension labelSize = new Dimension(100, 30);
+    private Dimension textFielSize = new Dimension(250, 30);
 
     public FunDefDialog(FunDef funDef) {
         super(Editor.getInstance(), "Function Definition", true);
@@ -125,6 +128,9 @@ public class FunDefDialog extends Dialog {
         mNameLabel     = new JLabel("Name:");
         mNameTextField = new JTextField();
         mNameTextField.setDocument(mNameDocument);
+        sanitizeComponent(mNameLabel, labelSize);
+        sanitizeComponent(mNameTextField, textFielSize);
+        
         //Name box
         Box nameBox = Box.createHorizontalBox();
         nameBox.add(mNameLabel);
@@ -133,6 +139,9 @@ public class FunDefDialog extends Dialog {
         //
         mClassNameLabel     = new JLabel("Class:");
         mClassNameTextField = new JTextField();
+        sanitizeComponent(mClassNameLabel, labelSize);
+        sanitizeComponent(mClassNameTextField, textFielSize);
+        
         mClassNameTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent evt) {
@@ -147,6 +156,8 @@ public class FunDefDialog extends Dialog {
         //
         mMethodLabel    = new JLabel("Method:");
         mMethodComboBox = new JComboBox();
+        sanitizeComponent(mMethodLabel, labelSize);
+        sanitizeComponent(mMethodComboBox, textFielSize);
         mMethodComboBox.setModel(new DefaultComboBoxModel());
         mMethodComboBox.addActionListener(new ActionListener() {
             @Override
@@ -164,6 +175,9 @@ public class FunDefDialog extends Dialog {
         mArgList  = new JList();
         mArgList.setModel(new DefaultListModel());
         mArgScrollPane = new JScrollPane(mArgList);
+        sanitizeComponent(mArgLabel, labelSize);
+        sanitizeComponent(mArgScrollPane, new Dimension(220, 110));
+        
         mArgList.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -189,14 +203,19 @@ public class FunDefDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        //Button box
-        Box buttonBox = Box.createHorizontalBox();
-        buttonBox.add(Box.createHorizontalGlue());
-        buttonBox.add(mCancelButton);
-        buttonBox.add(Box.createHorizontalStrut(10));
-        buttonBox.add(mOkButton);
+        // Button panel
+        JPanel mButtonPanel = new JPanel();
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.add(Box.createHorizontalGlue());
+        mButtonPanel.add(mCancelButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
+        mButtonPanel.add(mOkButton);
+        mButtonPanel.add(Box.createHorizontalStrut(10));
         //
         mMessageLabel = new JLabel();
+        Box messageBox = Box.createHorizontalBox();
+        messageBox.add(mMessageLabel);
+//        mMessageLabel.setMinimumSize(new DimensioXn(300, 30));
         
         Box finalBox = Box.createVerticalBox();
         finalBox.add(nameBox);
@@ -205,19 +224,27 @@ public class FunDefDialog extends Dialog {
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(methodBox);
         finalBox.add(Box.createVerticalStrut(15));
-        finalBox.add(buttonBox);
-        finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(classNameBox);
         finalBox.add(Box.createVerticalStrut(15));
-        finalBox.add(buttonBox);
-        finalBox.add(Box.createVerticalStrut(20));
-        finalBox.add(mMessageLabel);
+        finalBox.add(messageBox);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(mButtonPanel);
         
-        addComponent(finalBox, 10, 20, 380, 300);
+        
+        addComponent(finalBox, 20, 20, 380, 300);
         packComponents(420, 320);
         mDefaultColor = Color.white;
     }
-
+    /**
+     * Set the correct size of the components
+     * @param jb
+     * @param dim 
+     */
+    private void sanitizeComponent(JComponent jb, Dimension dim) {
+        jb.setPreferredSize(dim);
+        jb.setMinimumSize(dim);
+        jb.setMaximumSize(dim);
+    }
     private void fillComponents() {
 
         //
@@ -521,12 +548,23 @@ public class FunDefDialog extends Dialog {
 
     @Override
     public void okActionPerformed() {
+        if(mNameTextField.getText().length() == 0 ){
+            mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            mMessageLabel.setText("Function name is not valid");
+            mMessageLabel.setForeground(Color.red);
+            return;
+        }
+        if(mClassNameTextField.getText().length() == 0 ){
+            mClassNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            mMessageLabel.setText("Class name is not valid");
+            mMessageLabel.setForeground(Color.red);
+            return;
+        }
         if (mSelectedMethod == null) {
             dispose(Button.CANCEL);
 
             return;
         }
-
         // Set the name, class name and method name of the user command definition
         mFunDef.setName(mNameTextField.getText().trim());
         mFunDef.setClassName(mClassNameTextField.getText().trim());
@@ -542,7 +580,6 @@ public class FunDefDialog extends Dialog {
 
             mFunDef.addParam(new ParamDef(mNameMap.get(argString), mTypeMap.get(argString)));
         }
-
         //
         dispose(Button.OK);
     }

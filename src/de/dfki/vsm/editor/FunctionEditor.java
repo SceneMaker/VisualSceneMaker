@@ -83,25 +83,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mFunctionsPanel.setOpaque(false);
         mFunctionsPanel.setLayout(new BoxLayout(mFunctionsPanel, BoxLayout.Y_AXIS));
         displayFunctionPanels();
-        mLeftScrollPanel = new JScrollPane(mFunctionsPanel);
-        mLeftScrollPanel.setOpaque(false);
-        mLeftScrollPanel.getViewport().setOpaque(false);
-        mLeftScrollPanel.setMinimumSize(new Dimension(2000, 200));
-        mLeftScrollPanel.setBorder(null);
-        mLeftScrollPanel.getVerticalScrollBar().setValue(0);
-        initButtonPanel();
-        mRightScrollPanel = new JScrollPane(mButtonPanel);
-        mRightScrollPanel.setOpaque(false);
-        mRightScrollPanel.setMinimumSize(new Dimension(50, 50));
-        mRightScrollPanel.getViewport().setOpaque(false);
-        mSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
-        mSplitPane.setOpaque(false);
-        mSplitPane.setBorder(BorderFactory.createEmptyBorder());
-        mSplitPane.setLeftComponent(mRightScrollPanel);
-        mSplitPane.setRightComponent(mLeftScrollPanel);
-        mSplitPane.setDividerSize(0);
-        mSplitPane.setBorder(null);
-        add(mSplitPane);
+        mFunctionsScrollPanel = new JScrollPane(mFunctionsPanel);
+        mFunctionsScrollPanel.setOpaque(false);
+        mFunctionsScrollPanel.getViewport().setOpaque(false);
+        mFunctionsScrollPanel.setMinimumSize(new Dimension(2000, 200));
+        mFunctionsScrollPanel.setBorder(null);
+        mFunctionsScrollPanel.getVerticalScrollBar().setValue(0);
+        add(mFunctionsScrollPanel);
     }
     
     public static void flattenSplitPane(JSplitPane jSplitPane) {

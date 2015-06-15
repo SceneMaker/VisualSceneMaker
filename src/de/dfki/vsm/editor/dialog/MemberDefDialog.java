@@ -5,11 +5,15 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
+import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -31,7 +35,10 @@ public class MemberDefDialog extends Dialog {
     private JComboBox    mTypeComboBox;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
-
+    private Dimension labelSize = new Dimension(75, 30);
+    private Dimension textFielSize = new Dimension(175, 30);
+    private JLabel errorMsg;
+    
     public MemberDefDialog(JDialog parent, MemberDef memberDef) {
         super(parent, "Member Definition", true);
 
@@ -48,8 +55,12 @@ public class MemberDefDialog extends Dialog {
     protected void initComponents() {
         mNameLabel     = new JLabel("Name:");
         mTypeLabel     = new JLabel("Type:");
+        sanitizeComponent(mNameLabel, labelSize);
+        sanitizeComponent(mTypeLabel, labelSize);
         mNameTextField = new JTextField();
         mTypeComboBox  = new JComboBox(new Object[] { "Bool", "Int", "Float", "String" });
+        sanitizeComponent(mNameTextField, textFielSize);
+        sanitizeComponent(mTypeComboBox, textFielSize);
         
         //Name box
         Box nameBox = Box.createHorizontalBox();
@@ -81,22 +92,37 @@ public class MemberDefDialog extends Dialog {
         buttonBox.add(mCancelButton);
         buttonBox.add(Box.createHorizontalStrut(10));
         buttonBox.add(mOkButton);
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(labelSize);
         
         Box finalBox = Box.createVerticalBox();
         finalBox.add(nameBox);
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(typeBox);
-        finalBox.add(Box.createVerticalStrut(25));
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(buttonBox);
-        addComponent(finalBox, 10, 20, 300, 150);
-        packComponents(340, 180);
+        addComponent(finalBox, 10, 20, 300, 170);
+        packComponents(340, 190);
     }
 
     private void fillComponents() {
         mNameTextField.setText(mMemberDef.getName());
         mTypeComboBox.setSelectedItem(mMemberDef.getType());
     }
-
+    /**
+     * Set the correct size of the components
+     * @param jb
+     * @param dim 
+     */
+    private void sanitizeComponent(JComponent jb, Dimension dim) {
+        jb.setPreferredSize(dim);
+        jb.setMinimumSize(dim);
+        jb.setMaximumSize(dim);
+    }
     public MemberDef run() {
         setVisible(true);
 
@@ -120,6 +146,12 @@ public class MemberDefDialog extends Dialog {
     }
 
     private boolean process() {
+        if(mNameTextField.getText().length() == 0){
+            mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
+
+            return false;
+        }
         mMemberDef.setName(mNameTextField.getText().trim());
         mMemberDef.setType((String) mTypeComboBox.getSelectedItem());
 
