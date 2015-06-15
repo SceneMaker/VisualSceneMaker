@@ -13,6 +13,8 @@ import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef.Flavour;
+import java.awt.Color;
+import java.awt.Dimension;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -20,11 +22,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.util.Vector;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
@@ -61,7 +68,10 @@ public class TypeDefDialog extends Dialog {
     private EditButton       mEditMemberDefButton;
     private OKButton         mOkButton;
     private CancelButton     mCancelButton;
-
+    private JLabel errorMsg;
+    private Dimension            labelSize = new Dimension(75, 30);
+    private Dimension            textFielSize = new Dimension(250, 30);
+    
     public TypeDefDialog(TypeDef typeDef) {
         super(Editor.getInstance(), "Create/Modify Type Definition", true);
 
@@ -133,18 +143,36 @@ public class TypeDefDialog extends Dialog {
                 }
             }
         });
-
+        sanitizeComponent(mFlavourLabel, labelSize);
+        sanitizeComponent(mFlavourComboBox, textFielSize);
+        //flavour box
+        Box flavourBox = Box.createHorizontalBox();
+        flavourBox.add(mFlavourLabel);
+        flavourBox.add(Box.createHorizontalStrut(10));
+        flavourBox.add(mFlavourComboBox);
         //
         mNameLabel     = new JLabel("Name:");
         mNameTextField = new JTextField();
-
+        sanitizeComponent(mNameLabel, labelSize);
+        sanitizeComponent(mNameTextField, textFielSize);
+        //Name box
+        Box nameBox = Box.createHorizontalBox();
+        nameBox.add(mNameLabel);
+        nameBox.add(Box.createHorizontalStrut(10));
+        nameBox.add(mNameTextField);
         //
         mSeperator = new JSeparator(JSeparator.HORIZONTAL);
 
         //
         mListTypeLabel    = new JLabel("Type:");
         mListTypeComboBox = new JComboBox(new Object[] { "Bool", "Int", "Float", "String", "Object" });
-
+        sanitizeComponent(mListTypeLabel, labelSize);
+        sanitizeComponent(mListTypeComboBox, textFielSize);
+        //type box
+        Box typeBox = Box.createHorizontalBox();
+        typeBox.add(mListTypeLabel);
+        typeBox.add(Box.createHorizontalStrut(10));
+        typeBox.add(mListTypeComboBox);
         //
         mMemberDefLabel      = new JLabel("Members:");
         mMemberDefListModel  = new DefaultListModel();
@@ -156,7 +184,8 @@ public class TypeDefDialog extends Dialog {
                 addMemberDef();
             }
         });
-
+        sanitizeComponent(mMemberDefLabel, labelSize);
+        sanitizeComponent(mMemberDefScrollPane, new Dimension(220, 110));
         //
         mRemoveMemberDefButton = new RemoveButton();
         mRemoveMemberDefButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -172,7 +201,21 @@ public class TypeDefDialog extends Dialog {
                 editMemberDef();
             }
         });
-
+        // Init alternative start node panel
+        Box buttonsBox = Box.createVerticalBox();
+        buttonsBox.setMaximumSize(new Dimension(20, 100));
+        buttonsBox.add(mAddMemberDefButton);
+        buttonsBox.add(Box.createVerticalStrut(10));
+        buttonsBox.add(mRemoveMemberDefButton);
+        buttonsBox.add(Box.createVerticalStrut(10));
+        buttonsBox.add(mEditMemberDefButton);
+        JPanel mMemberDefPanel = new JPanel();
+        mMemberDefPanel.setLayout(new BoxLayout(mMemberDefPanel, BoxLayout.X_AXIS));
+        mMemberDefPanel.add(mMemberDefLabel);
+        mMemberDefPanel.add(Box.createHorizontalStrut(10));
+        mMemberDefPanel.add(mMemberDefScrollPane);
+        mMemberDefPanel.add(Box.createHorizontalStrut(10));
+        mMemberDefPanel.add(buttonsBox);
         //
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -188,35 +231,50 @@ public class TypeDefDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
+        
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(labelSize);
+        
+        // Button panel
+        JPanel mButtonPanel = new JPanel();
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.add(Box.createHorizontalGlue());
+        mButtonPanel.add(mCancelButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
+        mButtonPanel.add(mOkButton);
+        mButtonPanel.add(Box.createHorizontalStrut(10));
+        
+        // Init main panel
+        Box finalBox = Box.createVerticalBox();
+        finalBox.setAlignmentX(CENTER_ALIGNMENT);
+        finalBox.add(flavourBox);
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(nameBox);
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(mMemberDefPanel);
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(mButtonPanel);
 
-        //
-        addComponent(mFlavourLabel, 10, 10, 70, 30);
-        addComponent(mFlavourComboBox, 90, 10, 260, 30);
-
-        //
-        addComponent(mNameLabel, 10, 55, 70, 30);
-        addComponent(mNameTextField, 90, 55, 260, 30);
-
-        //
-        addComponent(mSeperator, 5, 100, 290, 10);
-
-        //
-        addComponent(mListTypeLabel, 10, 120, 70, 30);
-        addComponent(mListTypeComboBox, 90, 120, 260, 30);
-        addComponent(mMemberDefLabel, 10, 120, 70, 30);
-        addComponent(mMemberDefScrollPane, 90, 120, 260, 110);
-        addComponent(mAddMemberDefButton, 355, 140, 20, 20);
-        addComponent(mRemoveMemberDefButton, 355, 170, 20, 20);
-        addComponent(mEditMemberDefButton, 355, 200, 20, 20);
-
-        //
-        addComponent(mCancelButton, 75, 250, 125, 30);
-        addComponent(mOkButton, 225, 250, 125, 30);
-        packComponents(400, 300);
+        addComponent(finalBox, 10, 30, 380, 320);
+        
+        packComponents(400, 350);
         setListTypeComponentsVisible(false);
         setStructTypeComponentsVisible(true);
     }
-
+    /**
+     * Set the correct size of the components
+     * @param jb
+     * @param dim 
+     */
+    private void sanitizeComponent(JComponent jb, Dimension dim) {
+        jb.setPreferredSize(dim);
+        jb.setMinimumSize(dim);
+        jb.setMaximumSize(dim);
+    }
     private void fillComponents() {
         mFlavourComboBox.setSelectedItem(mTypeDef.getFlavour().name());
         mNameTextField.setText(mTypeDef.getName());
@@ -308,20 +366,24 @@ public class TypeDefDialog extends Dialog {
 
     @Override
     protected void okActionPerformed() {
-
-        // Get the flavour
-        Flavour flavour = Flavour.valueOf((String) mFlavourComboBox.getSelectedItem());
-
-        //
-        if (flavour == Flavour.List) {
-            ((ListTypeDef) mTypeDef).setName(mNameTextField.getText().trim());
-            ((ListTypeDef) mTypeDef).setType((String) mListTypeComboBox.getSelectedItem());
-        } else {
-            ((StructTypeDef) mTypeDef).setName(mNameTextField.getText().trim());
+        if(mNameTextField.getText().length() == 0){
+            mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
         }
-
-        //
-        dispose(Button.OK);
+        else
+        {
+            // Get the flavour
+            Flavour flavour = Flavour.valueOf((String) mFlavourComboBox.getSelectedItem());
+            //
+            if (flavour == Flavour.List) {
+                ((ListTypeDef) mTypeDef).setName(mNameTextField.getText().trim());
+                ((ListTypeDef) mTypeDef).setType((String) mListTypeComboBox.getSelectedItem());
+            } else {
+                ((StructTypeDef) mTypeDef).setName(mNameTextField.getText().trim());
+            }
+            //
+            dispose(Button.OK);
+        }
     }
 
     @Override

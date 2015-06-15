@@ -11,8 +11,11 @@ import de.dfki.vsm.sfsl.parser._SFSLParser_;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import javax.swing.JTextField;
@@ -30,6 +33,7 @@ public class CreateExpDialog extends Dialog {
     private JTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
+    private JLabel errorMsg;
 
     public CreateExpDialog(Expression expression) {
         super(Editor.getInstance(), "Specify Command", true);
@@ -66,15 +70,20 @@ public class CreateExpDialog extends Dialog {
         mButtonPanel.add(Box.createHorizontalStrut(30));
         mButtonPanel.add(mOkButton);
         mButtonPanel.add(Box.createHorizontalStrut(10));
-        
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(new Dimension(300, 30));
         
         Box finalBox = Box.createVerticalBox();
         finalBox.add(mInputTextField);
         finalBox.add(Box.createVerticalStrut(30));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(10));
         finalBox.add(mButtonPanel);
         
-        addComponent(finalBox, 10, 10, 300, 130);
-        packComponents(320, 150);
+        addComponent(finalBox, 10, 10, 300, 160);
+        packComponents(320, 180);
     }
 
     public Expression run() {
@@ -100,6 +109,12 @@ public class CreateExpDialog extends Dialog {
     }
 
     private boolean process() {
+        if(mInputTextField.getText().length() == 0){
+            mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
+
+            return false;
+        }
         String inputString = mInputTextField.getText().trim();
 
         try {

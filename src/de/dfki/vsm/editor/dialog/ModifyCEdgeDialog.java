@@ -35,6 +35,8 @@ import javax.swing.JTextField;
 
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 
 /**
  *
@@ -64,6 +66,7 @@ public class ModifyCEdgeDialog extends Dialog {
     private EditButton   mEditAltStartNodeButton;
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
+    private JLabel errorMsg;
 
     public ModifyCEdgeDialog(Node sourceNode, Node targetNode) {
         super(Editor.getInstance(), "Create Conditional Edge", true);
@@ -100,17 +103,22 @@ public class ModifyCEdgeDialog extends Dialog {
 
         // Init alternative start node panel
         initAltStartNodePanel();
-
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(labelSize);
         // Init main panel
         Box finalBox = Box.createVerticalBox();
         finalBox.setAlignmentX(CENTER_ALIGNMENT);
         finalBox.add(mInputPanel);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mAltStartNodePanel);
-        finalBox.add(Box.createVerticalStrut(40));
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mButtonPanel);
 
-        addComponent(finalBox, 10, 30, 480, 230);
+        addComponent(finalBox, 10, 30, 480, 280);
 
         packComponents(520, 300);
     }
@@ -118,10 +126,10 @@ public class ModifyCEdgeDialog extends Dialog {
     private void initInputPanel() {
         // Input label
         mInputLabel = new JLabel("Conditional Expression:");
-        sanitizeLabel(mInputLabel);
+        sanitizeComponent(mInputLabel, labelSize);
         // Input text field
         mInputTextField = new JTextField();
-        sanitizTextField(mInputTextField);
+        sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
         mInputPanel = new JPanel();
         mInputPanel.setLayout(new BoxLayout(mInputPanel, BoxLayout.X_AXIS));
@@ -129,16 +137,15 @@ public class ModifyCEdgeDialog extends Dialog {
         mInputPanel.add(Box.createHorizontalStrut(10));
         mInputPanel.add(mInputTextField);
     }
-    private void sanitizeLabel(JLabel jb) {
-        jb.setPreferredSize(labelSize);
-        jb.setMinimumSize(labelSize);
-        jb.setMaximumSize(labelSize);
-    }
-
-    private void sanitizTextField(JTextField jt) {
-        jt.setPreferredSize(textFielSize);
-        jt.setMinimumSize(textFielSize);
-        jt.setMaximumSize(textFielSize);
+    /**
+     * Set the correct size of the components
+     * @param jb
+     * @param dim 
+     */
+    private void sanitizeComponent(JComponent jb, Dimension dim) {
+        jb.setPreferredSize(dim);
+        jb.setMinimumSize(dim);
+        jb.setMaximumSize(dim);
     }
 
     private void initButtonPanel() {
@@ -171,7 +178,7 @@ public class ModifyCEdgeDialog extends Dialog {
     protected void initAltStartNodePanel() {
         // Init alternative start node label
         mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
-        sanitizeLabel(mAltStartNodeLabel);
+        sanitizeComponent(mAltStartNodeLabel, labelSize);
         // Init alternative start node list
         mAltStartNodeList       = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
@@ -245,6 +252,11 @@ public class ModifyCEdgeDialog extends Dialog {
     }
 
     private boolean process() {
+        if(mInputTextField.getText().length() == 0){
+            mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
+            return false;
+        }
         String inputString = mInputTextField.getText().trim();
 
         try {

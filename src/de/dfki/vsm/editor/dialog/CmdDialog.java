@@ -7,8 +7,12 @@ import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -28,6 +32,7 @@ public class CmdDialog extends Dialog {
     private JTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
+    private JLabel errorMsg;
 
     public CmdDialog(Command command) {
         super(Editor.getInstance(), "Specify Command", true);
@@ -63,14 +68,22 @@ public class CmdDialog extends Dialog {
         mButtonPanel.add(Box.createHorizontalStrut(30));
         mButtonPanel.add(mOkButton);
         mButtonPanel.add(Box.createHorizontalStrut(10));
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(new Dimension(300, 30));
+        
         
         Box finalBox = Box.createVerticalBox();
+        finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(mInputTextField);
         finalBox.add(Box.createVerticalStrut(30));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(10));
         finalBox.add(mButtonPanel);
         
-        addComponent(finalBox, 10, 10, 300, 130);
-        packComponents(320, 150);
+        addComponent(finalBox, 10, 10, 300, 160);
+        packComponents(320, 180);
     }
 
     public Command run() {
@@ -96,6 +109,12 @@ public class CmdDialog extends Dialog {
     }
 
     private boolean process() {
+        if(mInputTextField.getText().length() == 0){
+            mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
+
+            return false;
+        }
         String inputString = mInputTextField.getText().trim();
 
         try {

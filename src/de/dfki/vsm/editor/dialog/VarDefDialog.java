@@ -12,19 +12,23 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.util.ios.ResourceLoader;
+import java.awt.Color;
 import java.awt.Dimension;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
@@ -47,6 +51,7 @@ public class VarDefDialog extends Dialog {
     private CancelButton         mCancelButton;
     private Dimension            labelSize = new Dimension(75, 30);
     private Dimension            textFielSize = new Dimension(250, 30);
+    private JLabel errorMsg;
     public VarDefDialog(Node node, VarDef varDef) {
         super(Editor.getInstance(), "Create/Modify Variable Definition", true);
         mNode = node;
@@ -92,6 +97,7 @@ public class VarDefDialog extends Dialog {
         mExpTextField.setEditable(false);
         mAddExpButton = new JButton(ResourceLoader.loadImageIcon("/res/img/search_icon.png"));
         mAddExpButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/search_icon_blue.png"));
+        mAddExpButton.setBorder(null);
         mAddExpButton.setOpaque(false);
         mAddExpButton.setContentAreaFilled(false);
         mAddExpButton.setFocusable(false);
@@ -107,7 +113,7 @@ public class VarDefDialog extends Dialog {
         expBox.add(mExpLabel);
         expBox.add(Box.createHorizontalStrut(10));
         expBox.add(mExpTextField);
-//        expBox.add(Box.createHorizontalStrut(10));
+        expBox.add(Box.createHorizontalStrut(20));
         expBox.add(mAddExpButton);
         
         //
@@ -117,7 +123,6 @@ public class VarDefDialog extends Dialog {
                 okActionPerformed();
             }
         });
-
         //
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -125,26 +130,38 @@ public class VarDefDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-        //Button box
-        Box buttonBox = Box.createHorizontalBox();
-        buttonBox.add(Box.createHorizontalGlue());
-        buttonBox.add(mCancelButton);
-        buttonBox.add(Box.createHorizontalStrut(10));
-        buttonBox.add(mOkButton);
+        // Button panel
+        JPanel mButtonPanel = new JPanel();
+        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.add(Box.createHorizontalGlue());
+        mButtonPanel.add(mCancelButton);
+        mButtonPanel.add(Box.createHorizontalStrut(30));
+        mButtonPanel.add(mOkButton);
+        mButtonPanel.add(Box.createHorizontalStrut(10));
         
-        
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(labelSize);
+        //FINAL BOX
         Box finalBox = Box.createVerticalBox();
         finalBox.add(nameBox);
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(typeDefBox);
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(expBox);
-        finalBox.add(Box.createVerticalStrut(25));
-        finalBox.add(buttonBox);
-        addComponent(finalBox, 10, 20, 400, 280);
-        packComponents(420, 320);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(15));
+        finalBox.add(mButtonPanel);
+        addComponent(finalBox, 10, 20, 400, 290);
+        packComponents(420, 300);
     }
-
+    /**
+     * Set the correct size of the components
+     * @param jb
+     * @param dim 
+     */
     private void sanitizeComponent(JComponent jb, Dimension dim) {
         jb.setPreferredSize(dim);
         jb.setMinimumSize(dim);
@@ -205,9 +222,16 @@ public class VarDefDialog extends Dialog {
 
     @Override
     protected void okActionPerformed() {
-        mVarDef.setName(mNameTextField.getText().trim());
-        mVarDef.setType((String) mTypeDefComboBoxModel.getSelectedItem());
-        dispose(Button.OK);
+        if(mNameTextField.getText().length() == 0){
+            mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
+        }
+        else
+        {
+            mVarDef.setName(mNameTextField.getText().trim());
+            mVarDef.setType((String) mTypeDefComboBoxModel.getSelectedItem());
+            dispose(Button.OK);
+        }
     }
 
     @Override

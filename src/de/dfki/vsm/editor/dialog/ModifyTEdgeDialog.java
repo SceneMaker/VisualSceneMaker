@@ -13,6 +13,7 @@ import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.util.tpl.TPLTuple;
+import java.awt.Color;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -20,10 +21,12 @@ import java.awt.Dimension;
 
 import java.util.Iterator;
 import java.util.Map;
+import javax.swing.BorderFactory;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -59,6 +62,7 @@ public class ModifyTEdgeDialog extends Dialog {
     private EditButton   mEditAltStartNodeButton;
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
+    private JLabel errorMsg;
 
     public ModifyTEdgeDialog(Node sourceNode, Node targetNode) {
         super(Editor.getInstance(), "Create Timeout Edge", true);
@@ -102,6 +106,12 @@ public class ModifyTEdgeDialog extends Dialog {
         // Init input panel
         initInputPanel();
         mInputTextField.setText("1000");
+        
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(labelSize);
+        
         // Init alternative start node panel
         initAltStartNodePanel();
 
@@ -114,10 +124,12 @@ public class ModifyTEdgeDialog extends Dialog {
         finalBox.add(mInputPanel);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mAltStartNodePanel);
-        finalBox.add(Box.createVerticalStrut(40));
+        finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mButtonPanel);
 
-        addComponent(finalBox, 10, 30, 480, 230);
+        addComponent(finalBox, 10, 30, 480, 280);
 
         packComponents(520, 300);
     }
@@ -145,10 +157,10 @@ public class ModifyTEdgeDialog extends Dialog {
     private void initInputPanel() {
         // Input label
         mInputLabel = new JLabel("Timeout Value: ");
-        sanitizeLabel(mInputLabel);
+        sanitizeComponent(mInputLabel, labelSize);
         // Input text field
         mInputTextField = new JTextField();
-        sanitizTextField(mInputTextField);
+        sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
         mInputPanel = new JPanel();
         mInputPanel.setLayout(new BoxLayout(mInputPanel, BoxLayout.X_AXIS));
@@ -156,16 +168,15 @@ public class ModifyTEdgeDialog extends Dialog {
         mInputPanel.add(Box.createHorizontalStrut(10));
         mInputPanel.add(mInputTextField);
     }
-    private void sanitizeLabel(JLabel jb) {
-        jb.setPreferredSize(labelSize);
-        jb.setMinimumSize(labelSize);
-        jb.setMaximumSize(labelSize);
-    }
-
-    private void sanitizTextField(JTextField jt) {
-        jt.setPreferredSize(textFielSize);
-        jt.setMinimumSize(textFielSize);
-        jt.setMaximumSize(textFielSize);
+    /**
+     * Set the correct size of the components
+     * @param jb
+     * @param dim 
+     */
+    private void sanitizeComponent(JComponent jb, Dimension dim) {
+        jb.setPreferredSize(dim);
+        jb.setMinimumSize(dim);
+        jb.setMaximumSize(dim);
     }
     private void initButtonPanel() {
 
@@ -197,7 +208,7 @@ public class ModifyTEdgeDialog extends Dialog {
     protected void initAltStartNodePanel() {
         // Init alternative start node label
         mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
-        sanitizeLabel(mAltStartNodeLabel);
+        sanitizeComponent(mAltStartNodeLabel, labelSize);
         // Init alternative start node list
         mAltStartNodeList       = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
@@ -267,6 +278,12 @@ public class ModifyTEdgeDialog extends Dialog {
     }
 
     private boolean process() {
+        if(mInputTextField.getText().length() == 0){
+            mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
+
+            return false;
+        }
         String inputString = mInputTextField.getText().trim();
 
         try {

@@ -30,6 +30,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -89,6 +90,7 @@ public class ModifyPEdgeDialog extends Dialog {
     private JTextField mRestField;
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
+    private JLabel errorMsg;
 
     public ModifyPEdgeDialog(Node sourceNode, Node targetNode) {
         super(Editor.getInstance(), "Create Probability Edge", true);
@@ -141,16 +143,15 @@ public class ModifyPEdgeDialog extends Dialog {
         loadAltStartNodeMap();
     }
 
-    private void sanitizeLabel(JLabel jb) {
-        jb.setPreferredSize(labelSize);
-        jb.setMinimumSize(labelSize);
-        jb.setMaximumSize(labelSize);
-    }
-
-    private void sanitizTextField(JTextField jt) {
-        jt.setPreferredSize(textFielSize);
-        jt.setMinimumSize(textFielSize);
-        jt.setMaximumSize(textFielSize);
+    /**
+     * Set the correct size of the components
+     * @param jb
+     * @param dim 
+     */
+    private void sanitizeComponent(JComponent jb, Dimension dim) {
+        jb.setPreferredSize(dim);
+        jb.setMinimumSize(dim);
+        jb.setMaximumSize(dim);
     }
 
     private void initComponents() {
@@ -163,17 +164,23 @@ public class ModifyPEdgeDialog extends Dialog {
 
         // Init alternative start node panel
         initAltStartNodePanel();
-
+        //Error message
+        errorMsg = new JLabel("Information Required");
+        errorMsg.setForeground(Color.white);
+        errorMsg.setMinimumSize(labelSize);
+        //FINAL 
         Box finalBox = Box.createVerticalBox();
         finalBox.add(mEdgeProbPanel);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mAltStartNodePanel);
         finalBox.add(Box.createVerticalStrut(20));
+        finalBox.add(errorMsg);
+        finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mButtonPanel);
 
-        addComponent(finalBox, 20, 20, 480, 380);
+        addComponent(finalBox, 20, 20, 480, 430);
 
-        packComponents(510, 410);
+        packComponents(510, 450);
     }
 
     private void initButtonPanel() {
@@ -282,7 +289,7 @@ public class ModifyPEdgeDialog extends Dialog {
 
         // Init header label
         mHeaderLabel = new JLabel("Edge Probabilities:");
-        sanitizeLabel(mHeaderLabel);
+        sanitizeComponent(mHeaderLabel, labelSize);
 
         // Init edge probability panel
         mEdgeProbPanel = new JPanel();
@@ -299,7 +306,7 @@ public class ModifyPEdgeDialog extends Dialog {
                     + " \u2192  " + pedge.getTargetNode().getName() + " ( "
                     + pedge.getTargetNode().getId() + " ) ");
 
-            sanitizeLabel(pedgeDescription);
+            sanitizeComponent(pedgeDescription, labelSize);
             // Compute initial probability
             int prob = pedge.getProbability();
 
@@ -355,7 +362,7 @@ public class ModifyPEdgeDialog extends Dialog {
 
         //
         mRestLabel = new JLabel("Rest:");
-        sanitizeLabel(mRestLabel);
+        sanitizeComponent(mRestLabel, labelSize);
 
         //
         mRestField = new JTextField(3);
@@ -388,7 +395,7 @@ public class ModifyPEdgeDialog extends Dialog {
 
         // Init alternative start node label
         mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
-        sanitizeLabel(mAltStartNodeLabel);
+        sanitizeComponent(mAltStartNodeLabel, labelSize);
         // Init alternative start node list
         mAltStartNodeList = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
@@ -462,6 +469,11 @@ public class ModifyPEdgeDialog extends Dialog {
 
         for (JTextField textField : mPEdgeMap.values()) {
             try {
+                if(textField.getText().length() == 0){
+                    textField.setBorder(BorderFactory.createLineBorder(Color.red));
+                    errorMsg.setForeground(Color.red);
+                    return false;
+                }
                 sum += Integer.valueOf(textField.getText().trim()).intValue();
             } catch (NumberFormatException e) {
                 return false;
