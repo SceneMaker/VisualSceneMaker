@@ -44,7 +44,6 @@ public class AddButton extends JLabel {
         setMinimumSize(buttonSize);
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(MouseEvent me) {
-                System.out.println("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"     );
                 setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
             }
             public void mouseExited(MouseEvent me) {

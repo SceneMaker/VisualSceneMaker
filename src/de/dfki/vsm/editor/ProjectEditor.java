@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
@@ -15,7 +14,6 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
@@ -25,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
@@ -47,6 +46,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     private final EventCaster mEventCaster = EventCaster.getInstance();
 
     private final double topElementRatio = 0.6;
+    private JDialog quitDialog;
 
     /**
      * *************************************************************************
@@ -60,7 +60,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);
-    }
+        }
     }
 
     @Override
@@ -113,7 +113,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
 
         WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
         EventCaster.getInstance().convey(ev);
-        
+
         initComponents();
     }
 
@@ -138,24 +138,58 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      */
     public void close() {
         if (mProject.hasChanged()) {
-            int response = JOptionPane.showConfirmDialog(
-                    this, "The project \"" + mProject.getProjectName() + "\" has changed.  Save it?",
-                    "Save before quitting?",
-                    JOptionPane.YES_NO_OPTION);
-            if (response == JOptionPane.YES_OPTION) {
-                save();
-            } else if (response == JOptionPane.CANCEL_OPTION) {
-            } else if (response == JOptionPane.NO_OPTION) {
-            } else {
+            OKButton mYesButton = new OKButton();
+            mYesButton.setText(" Yes     ");
+            mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    save();
+                    disposeAfterDialog();
+                }
+            });
+            //NO BUTTON
+            CancelButton mNoButton = new CancelButton();
+            mNoButton.setText("  No       ");
+            mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                       disposeAfterDialog();
+                }
+            });
+            //CANCEL BUTTON
+//            CancelButton mCancelButton = new CancelButton();
+//            mCancelButton.setText("Cancel   ");
+//            mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
+//                public void mouseClicked(java.awt.event.MouseEvent evt) {
+//                    quitDialog.;
+//                }
+//            });
+//            int response = JOptionPane.showConfirmDialog(
+//                    this, "The project \"" + mProject.getProjectName() + "\" has changed.  Save it?",
+//                    "Save before quitting?",
+//                    JOptionPane.YES_NO_OPTION);
+            JOptionPane optionPane = new JOptionPane();
+            optionPane.setBackground(Color.white);
+            optionPane.setMessage("The project " + mProject.getProjectName() + " has changed.  Save it?");
+            optionPane.setMessageType(JOptionPane.INFORMATION_MESSAGE);
+            optionPane.setOptions(new Object[]{mYesButton, mNoButton});
+            quitDialog = optionPane.createDialog("Save before quitting?");
+            quitDialog.setVisible(true);
+//            if (response == JOptionPane.YES_OPTION) {
+//                save();
+//            } else if (response == JOptionPane.CANCEL_OPTION) {
+//            } else if (response == JOptionPane.NO_OPTION) {
+//            } else {
+//            }
         }
-        }
+        
+    }
+    private void disposeAfterDialog(){
         // Delete all observers
         mObservable.deleteObservers();
         // Close / Cleanup
         mSceneFlowEditor.close();
         mSceneDocEditor.close();
+        quitDialog.dispose();
     }
-
     ////////////////////////////////////////////////////////////////////////////
     public void save() {
         if (!mProject.save()) {
@@ -163,7 +197,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             JOptionPane.showMessageDialog(this,
                     "Wrong Scene Script Syntax.",
                     "Cannot Format Scene Script.",
-                                          JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -213,9 +247,9 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
                                 }
                                 break;
                             case MouseEvent.MOUSE_RELEASED:
-                                Preferences.setProperty("propertiesdividerlocation", String.valueOf(((ProjectEditor)this.getParent()).getDividerLocation()));
+                                Preferences.setProperty("propertiesdividerlocation", String.valueOf(((ProjectEditor) this.getParent()).getDividerLocation()));
                                 mSceneDocEditor.prickPin();
-                                break;                                
+                                break;
                         }
                     }
 
@@ -224,7 +258,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             }
 
         });
-        
+
         setDividerSize(10);
 
         setContinuousLayout(true);
@@ -237,8 +271,8 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
 
         // setting size
         boolean showSceneFlowEditor = Boolean.valueOf(Preferences.getProperty("showscenefloweditor"));
-        boolean showSceneDocEditor  = Boolean.valueOf(Preferences.getProperty("showsceneeditor"));
-        
+        boolean showSceneDocEditor = Boolean.valueOf(Preferences.getProperty("showsceneeditor"));
+
         if (!showSceneFlowEditor) {
             setDividerLocation(1d);
         }
@@ -296,7 +330,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     /*
      * Hides the bottom part of the project editor
      */
-
     public void hideSceneDocEditor() {
         this.setDividerLocation(1d);
     }

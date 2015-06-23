@@ -56,7 +56,7 @@ public class Preferences {
     //////////////////////////////////////////////////////////////////////////////
     // NODE COLORS
     //////////////////////////////////////////////////////////////////////////////
-    public static final Color sBASIC_NODE_COLOR    = new Color(128, 128, 128);
+    public static final Color sBASIC_NODE_COLOR    = new Color(200, 200, 200);
     public static final Color sHISTORY_NODE_COLOR  = new Color(255, 255, 255);
     public static final Color sSUPER_NODE_COLOR    = new Color(200, 200, 200);
     public static final Color sSELECTED_NODE_COLOR = new Color(211, 211, 211);
@@ -71,12 +71,12 @@ public class Preferences {
 //    public static final Color sPEDGE_COLOR = new Color(97, 140, 30);
 //    public static final Color sIEDGE_COLOR = new Color(181, 45, 13);
 //    
-    public static final Color sFEDGE_COLOR = new Color(150, 192, 206);
-    public static final Color sEEDGE_COLOR = new Color(190, 185, 181);
-    public static final Color sTEDGE_COLOR = new Color(200, 171, 101);
-    public static final Color sCEDGE_COLOR = new Color(249, 229, 89);
-    public static final Color sPEDGE_COLOR = new Color(113, 196, 43);
-    public static final Color sIEDGE_COLOR = new Color(197, 25, 19);
+    public static final Color sFEDGE_COLOR = new Color(150, 192, 206);  //BLUE
+    public static final Color sEEDGE_COLOR = new Color(190, 185, 181);  //GRAY
+    public static final Color sTEDGE_COLOR = new Color(200, 171, 101);  //BROWN
+    public static final Color sCEDGE_COLOR = new Color(238, 230, 11);   //YELLOW
+    public static final Color sPEDGE_COLOR = new Color(113, 178, 56);   //GREEN
+    public static final Color sIEDGE_COLOR = new Color(229, 61, 60);    //RED
 
     //////////////////////////////////////////////////////////////////////////////
     // VISUALIZATION COLORS

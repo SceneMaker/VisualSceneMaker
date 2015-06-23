@@ -11,7 +11,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.Color;
 
 import java.util.Observer;
 

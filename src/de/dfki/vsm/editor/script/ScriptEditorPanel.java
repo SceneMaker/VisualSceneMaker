@@ -26,29 +26,29 @@ import org.ujmp.core.collections.ArrayIndexList;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
+import javax.swing.AbstractAction;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -56,7 +56,6 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 
 /**
  * @author Gregor Mehlmann
@@ -89,8 +88,9 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     private String                    lastSearchedScene;
     private int                       lastIndex;
     Highlighter.HighlightPainter      painter;
-    private int tabCounter = 1;
-
+    private int                       tabCounter = 1;
+    private JButton                   mGesticonButton;
+    private final JSplitPane          scriptSplitPane;
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -115,12 +115,9 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);
         
-        
-        
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
-        mScrollPane.setBorder(BorderFactory.createEtchedBorder());
-
+        mScrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         // Initialize The Function Definition Panel
         mFunctionEditor = new FunctionEditor(sceneflow);
 
@@ -129,27 +126,60 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
 
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane();
-
-        addTab("Script        ", mScrollPane);
+        // Initialize The Scroll Pane
+        mElementPane = new SceneElementDisplay();
+        mNoticeable.addObserver(mElementPane);
+        mNoticeable.addObserver(mEditorPane);
+        mGesticonButton = new JButton(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
+                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
+                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
+        mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
+                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
+                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+        mGesticonButton.addMouseListener(new java.awt.event.MouseAdapter() {
+               public void mouseClicked(MouseEvent me) {
+                   showElementDisplay();
+            }
+        });
+        mGesticonButton.setContentAreaFilled(false);
+        mGesticonButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        mGesticonButton.setFocusable(false);
+        //
+        Box bxTop = Box.createHorizontalBox();
+        bxTop.add(mGesticonButton);
+        bxTop.add(Box.createHorizontalGlue());
+        //
+        scriptSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        scriptSplitPane.setDividerSize(2);
+        scriptSplitPane.setLeftComponent(mElementPane);
+        scriptSplitPane.setRightComponent(mScrollPane);
+        
+        if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
+            scriptSplitPane.setDividerLocation(250);
+        }
+        if (!Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
+            scriptSplitPane.setDividerLocation(0);
+        }
+        Box bxBottom = Box.createHorizontalBox();
+        bxBottom.add(scriptSplitPane);
+        //Script Panel
+        JPanel scriptTabPanel = new JPanel();
+        scriptTabPanel.setLayout(new BoxLayout(scriptTabPanel, BoxLayout.Y_AXIS));
+        scriptTabPanel.add(bxTop);
+        scriptTabPanel.add(bxBottom);
+        
+        addTab("Script        ", scriptTabPanel);
         addTab("Functions     ", mFunctionEditor);
         addTab("DialogAct [Experimental]", mDialogActEditor);
 
-        
         // Initialize the Toolbar
         mScenesToolbar = new ScriptToolBar(this);
-
-        // Initialize The Scroll Pane
-        mElementPane = new SceneElementDisplay();
-        mElementPane.setVisible(Boolean.valueOf(mPreferences.getProperty("showsceneelements")));
-        mNoticeable.addObserver(mElementPane);
-        mNoticeable.addObserver(mEditorPane);
-
+        
         // Initialize The Components
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
         setBackground(Color.WHITE);
         add(mScenesToolbar, BorderLayout.NORTH);
-        add(mElementPane, BorderLayout.WEST);
         add(mTabPane, BorderLayout.CENTER);
         add(mStatusLabel, BorderLayout.SOUTH);
 
@@ -545,16 +575,22 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public boolean showElementDisplay() {
-        if (mElementPane.isVisible()) {
-            mElementPane.setVisible(false);
-
-            return false;
+    public void showElementDisplay() {
+        
+        if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
+            mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
+            mPreferences.setProperty("showsceneelements", "false");
+            mPreferences.save(getPreferencesFileName());
+            scriptSplitPane.setDividerLocation(0);
         } else {
-            mElementPane.setVisible(true);
-
-            return true;
+            mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png"));
+            mPreferences.setProperty("showsceneelements", "true");
+            mPreferences.save(getPreferencesFileName());
+            scriptSplitPane.setDividerLocation(250);
         }
+        mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
+                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
+                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
     }
 
     ////////////////////////////////////////////////////////////////////////////
