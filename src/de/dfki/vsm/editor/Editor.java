@@ -126,7 +126,7 @@ public class Editor extends JFrame implements EventListener {
      */
     private Editor() {
         Preferences.configure();
-
+        
         // Load the preferences
         Preferences.load();
         getContentPane().setBackground(Color.WHITE);
@@ -180,7 +180,6 @@ public class Editor extends JFrame implements EventListener {
         setTitle(Preferences.getProperty("frame_title"));
         setName(Preferences.getProperty("frame_name"));
         setJMenuBar(mMenuBar);
-
         // setContentPane(jsWelcome);
         // add(mProjectEditorList); // COMMENTED BY M.FALLAS
         pack();
@@ -195,37 +194,37 @@ public class Editor extends JFrame implements EventListener {
     private void setUIFonts() {
         String defaultFont = "Helvetica";    // DEFAULT FONT FOR ALL COMPONENTS
 
-        UIManager.put("Button.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("ToggleButton.font", new Font(defaultFont, Font.PLAIN, 20));
-        UIManager.put("RadioButton.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("Button.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("ToggleButton.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("RadioButton.font", new Font(defaultFont, Font.PLAIN, 14));
             
-        UIManager.put("CheckBox.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("ColorChooser.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("ComboBox.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("Label.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("List.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("MenuBar.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("MenuItem.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("RadioButtonMenuItem.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("CheckBoxMenuItem.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("Menu.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("PopupMenu.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("OptionPane.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("Panel.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("ProgressBar.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("ScrollPane.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("Viewport.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("TabbedPane.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("Table.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("TableHeader.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("TextField.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("PasswordField.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("TextArea.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("TextPane.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("EditorPane.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("TitledBorder.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("ToolBar.font", new Font(defaultFont, Font.PLAIN, 16));
-        UIManager.put("ToolTip.font", new Font(defaultFont, Font.PLAIN, 16));
+        UIManager.put("CheckBox.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("ColorChooser.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("ComboBox.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("Label.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("List.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("MenuBar.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("MenuItem.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("RadioButtonMenuItem.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("CheckBoxMenuItem.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("Menu.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("PopupMenu.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("OptionPane.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("Panel.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("ProgressBar.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("ScrollPane.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("Viewport.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("TabbedPane.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("Table.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("TableHeader.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("TextField.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("PasswordField.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("TextArea.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("TextPane.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("EditorPane.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("TitledBorder.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("ToolBar.font", new Font(defaultFont, Font.PLAIN, 14));
+        UIManager.put("ToolTip.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("Tree.font", new Font(defaultFont, Font.PLAIN, 10));
     }
 

@@ -100,7 +100,7 @@ public abstract class Dialog extends JDialog {
         setResizable(false);
         pack();
         setSize(new Dimension(width + getInsets().left + getInsets().right,
-                              height + getInsets().top + getInsets().bottom));
+                              height + getInsets().top + getInsets().bottom+20));
         setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2,
                     getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
     }

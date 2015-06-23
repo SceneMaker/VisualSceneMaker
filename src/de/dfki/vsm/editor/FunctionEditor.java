@@ -37,7 +37,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -126,15 +125,15 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             functionContent.setOpaque(false);
             //
             JPanel functionContainer = new JPanel();
-            functionContainer.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent me) {
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
-                }
-                
-                public void mouseExited(MouseEvent me) {
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
-                }
-            });
+//            functionContainer.addMouseListener(new MouseAdapter() {
+//                public void mouseEntered(MouseEvent me) {
+//                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+//                }
+//                
+//                public void mouseExited(MouseEvent me) {
+//                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+//                }
+//            });
             functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
             functionContainer.setOpaque(false);
             functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
@@ -174,6 +173,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
                 }
                 
                 @Override
@@ -181,6 +181,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                     funDefPanel.setSelectedBackground(false);
                     funDefPanel.getNameInput().setText(funDef.getName());
                     funDefPanel.getNameInput().setForeground(Color.black);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                    
                 }
             });
             funDefPanel.getNameInput().addKeyListener(new KeyAdapter() {
@@ -217,11 +219,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
                 }
             });
 
@@ -230,11 +234,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
                 }
             });
             
@@ -287,11 +293,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
                 }
             });
             funDefPanel.getMethodBox().addActionListener(new ActionListener() {
@@ -333,11 +341,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
+                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
                 }
             });
             funDefPanel.getArgList().addMouseListener(new MouseInputAdapter() {
