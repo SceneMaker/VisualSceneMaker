@@ -231,8 +231,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
                     if (content instanceof JPanel)
                     {
                         mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n"); 
-                        mEditorPane.requestFocusInWindow();
-                      
+                        mEditorPane.requestFocusInWindow();                      
                     }
                     if (content instanceof DialogActEditor)
                     {
