@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="hcm.handler.local.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.local.port" val="565"/>
+  <Entry key="hcm.handler.remote.flag" val="false"/>
+  <Entry key="hcm.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.remote.port" val="656"/>
+  <Entry key="swi.handler.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.handler.local.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.local.port" val="878"/>
+  <Entry key="swi.handler.remote.flag" val="false"/>
+  <Entry key="swi.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.remote.port" val="787"/>
+  <Entry key="vsm.agent.0.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.local.port" val="1111"/>
+  <Entry key="vsm.agent.0.name" val="Gabi"/>
+  <Entry key="vsm.agent.0.remote.flag" val="true"/>
+  <Entry key="vsm.agent.0.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.remote.port" val="2222"/>
+  <Entry key="vsm.agent.0.type" val="tcp"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.local.port" val="333"/>
+  <Entry key="vsm.agent.1.name" val="Karl"/>
+  <Entry key="vsm.agent.1.remote.flag" val="true"/>
+  <Entry key="vsm.agent.1.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.remote.port" val="4444"/>
+  <Entry key="vsm.agent.1.type" val="udp"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agent.number" val="2"/>
+</PlayerConfig>

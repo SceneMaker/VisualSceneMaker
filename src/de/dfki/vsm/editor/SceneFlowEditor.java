@@ -222,7 +222,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         // mLogger.message("SceneFlowEditor.update(" + obj + ")");
         mObservable.update(obj);
     }
-
+    
     /**
      *
      *
@@ -358,6 +358,10 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
     public JSplitPane getSplitPane() {
         return mSplitPane;
+    }
+    
+    public JLabel getFooterLabel(){    
+            return mFooterLabel;
     }
 
     /**
@@ -506,4 +510,6 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             }
         }
     }
+      
+    
 }

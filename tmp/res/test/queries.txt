@@ -1,0 +1,4 @@
+<query type="jpl">write('Hello World').</query>
+<query type="jpl">statistics.</query>
+<query type="jpl">now(Time).</query>
+<query type="sm3">set(Message, 'Hello World').</query>

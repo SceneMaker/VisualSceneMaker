@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<StylePolicy>
+    <!-- -->
+    <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <!-- -->
+    <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+    <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+    <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+    <!-- -->
+    <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <!-- -->
+    <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <!-- -->
+    <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <!-- -->
+    <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+    <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+    <!-- -->
+    <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+    <!-- -->
+    <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>    
+    <!-- -->
+    <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+    <!-- -->
+    <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <!-- -->
+    <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>   
+</StylePolicy>
