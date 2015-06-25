@@ -228,7 +228,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
                     {
                         ((FunctionEditor)content).addNewFunction();
                     }
-                    if (content instanceof JScrollPane)
+                    if (content instanceof JPanel)
                     {
                         mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n"); 
                         mEditorPane.requestFocusInWindow();
