@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EditorConfig>
+<Entry key="xmlns" val="xml.sceneflow.dfki.de"/>
+<Entry key="num_magnets" val="8"/>
+<Entry key="grid" val="true"/>
+<Entry key="node_width" val="90"/>
+<Entry key="showvariables" val="true"/>
+<Entry key="frame_posy" val="1"/>
+<Entry key="frame_posx" val="1941"/>
+<Entry key="shownodeid" val="true"/>
+<Entry key="showsceneeditor" val="true"/>
+<Entry key="visualization" val="true"/>
+<Entry key="frame_height" val="1105"/>
+<Entry key="xsi_schemeLocation" val="res/xsd/sceneflow.xsd"/>
+<Entry key="showgestures" val="true"/>
+<Entry key="recentprojectdir0" val="E:\SubVersion\Gregor\Research\Dissertation\Workspace\res\prj\nao\RobotPuzzle\RobotPuzzle.xsc"/>
+<Entry key="frame_name" val="SceneFlowEditor"/>
+<Entry key="showelementproperties" val="true"/>
+<Entry key="node_height" val="90"/>
+<Entry key="sceneflow_sceneeditor_ratio" val="0.75"/>
+<Entry key="xmlns_xsi" val="http://www.w3.org/2001/XMLSchema-instance"/>
+<Entry key="frame_width" val="1640"/>
+<Entry key="visualizationtrace" val="false"/>
+<Entry key="grid_y" val="1"/>
+<Entry key="grid_x" val="1"/>
+<Entry key="icon_file" val="res/img/icon.png"/>
+<Entry key="showelements" val="true"/>
+<Entry key="recentprojectname0" val="RobotPuzzle"/>
+<Entry key="frame_title" val="Visual SceneMaker"/>
+<Entry key="workspace_fontsize" val="12"/>
+<Entry key="showscenefloweditor" val="true"/>
+</EditorConfig>

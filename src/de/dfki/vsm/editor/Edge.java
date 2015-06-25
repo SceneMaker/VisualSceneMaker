@@ -9,6 +9,7 @@ import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.EdgeGraphics;
+import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.CEdge;
@@ -356,7 +357,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             if(mType == TYPE.CEDGE){
                 
                 if(!validate(mValueEditor.getText())){
-                   // wrong condition
+                   // wrong condition                   
                 }
                 else{
                     // correct condition
@@ -395,6 +396,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
             return (log != null) &&!_SFSLParser_.errorFlag;
         } catch (Exception e) {
+            
             return false;
         }
     }
@@ -409,7 +411,29 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mTextPanel = new JPanel();
         mTextPanel.setLayout(new BoxLayout(mTextPanel, BoxLayout.Y_AXIS));        
         mTextPanel.setBackground(Color.WHITE);
-        mTextPanel.setBorder(BorderFactory.createLineBorder(Color.red));  
+        
+        Color borderColor = Preferences.sTEDGE_COLOR;
+        
+        switch (mType) {
+          
+            case TEDGE :
+                borderColor = Preferences.sTEDGE_COLOR;
+                break;
+
+            case CEDGE :
+                borderColor = Preferences.sCEDGE_COLOR;
+                break;
+
+            case PEDGE :
+                borderColor = Preferences.sPEDGE_COLOR;
+                break;
+
+            case IEDGE :
+                borderColor = Preferences.sIEDGE_COLOR;
+                break;
+            }
+        
+        mTextPanel.setBorder(BorderFactory.createLineBorder(borderColor));  
         
         mValueEditor = new JTextPane();
         mValueEditor.getDocument().addDocumentListener(new MyDocumentListener());
@@ -423,6 +447,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mTextPanel.add(Box.createRigidArea(new Dimension(5, 5)));
         mTextPanel.add(mValueEditor);
         mTextPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+        
          
         if (mDataEdge != null) {
             if (mType.equals(TYPE.TEDGE)) {
@@ -444,6 +469,17 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
                 EventCaster.getInstance().convey(evt);
                 updateFromTextEditor();
+                
+                 if(!validate(mValueEditor.getText())){
+                    Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
+                       Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                        "Invalid Condition");
+                    Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
+                    // wrong condition
+                }
+                else{
+                    // correct condition
+                } 
             }
         };
         
@@ -485,7 +521,6 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 } else {
                     Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Remember to wrap condition in parenthesis");
-
                     // Do nothing
                 }
             } catch (Exception e) {}

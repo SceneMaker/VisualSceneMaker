@@ -56,6 +56,7 @@ public class ProjectPreferences {
     public int       sYOFFSET                          = sGRID_NODEHEIGHT / 3;
     public int       sWORKSPACEFONTSIZE                = 16;
     public float     sEDITORFONTSIZE                   = 11;
+    public boolean   sLAUNCHPLAYER                     = false;
     public boolean   sSHOWGRID                         = true;
     public boolean   sVISUALISATION                    = true;
     public boolean   sACTIVITYTRACE                    = true;
@@ -76,6 +77,7 @@ public class ProjectPreferences {
         sGRID_XSCALE                      = Integer.valueOf(sPROPERTIES.getProperty("grid_x"));
         sGRID_YSCALE                      = Integer.valueOf(sPROPERTIES.getProperty("grid_y"));
         sWORKSPACEFONTSIZE                = Integer.valueOf(sPROPERTIES.getProperty("workspace_fontsize"));
+        sLAUNCHPLAYER                     = Boolean.valueOf(sPROPERTIES.getProperty("launchPlayer"));
         sSHOWGRID                         = Boolean.valueOf(sPROPERTIES.getProperty("grid"));
         sVISUALISATION                    = Boolean.valueOf(sPROPERTIES.getProperty("visualization"));
         sACTIVITYTRACE                    = Boolean.valueOf(sPROPERTIES.getProperty("visualizationtrace"));
@@ -281,5 +283,10 @@ public class ProjectPreferences {
         if (!sPROPERTIES.containsKey("scriptfonttype")) {
             sPROPERTIES.setProperty("scriptfonttype", "Arial");
         }
+        
+        if (!sPROPERTIES.containsKey("launchPlayer")) {
+            sPROPERTIES.setProperty("launchPlayer", "false");
+        }
+
     }
 }
