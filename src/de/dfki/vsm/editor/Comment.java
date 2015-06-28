@@ -33,6 +33,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
@@ -123,29 +124,71 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // first put it in the editor, then back in the label
         mTextEditor.setText(mDataComment.getHTMLText());
         mTextLabel.setText(mTextEditor.getText());
-        JButton colourPicker = new JButton();
-        colourPicker.setHorizontalAlignment(SwingConstants.RIGHT);
-        colourPicker.setOpaque(false);
-        colourPicker.setContentAreaFilled(false);
-        colourPicker.setBorder(null);
-        colourPicker.setIcon(ResourceLoader.loadImageIcon("/res/img/colour_picker_small.png"));
-        colourPicker.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        colourPicker.setToolTipText("Select Font Color");
-        colourPicker.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        colourPicker.addActionListener(new ActionListener() {
+        //
+        JButton red = new JButton();
+        red.setHorizontalAlignment(SwingConstants.RIGHT);
+        red.setBackground(Color.red);
+        red.setBorder(null);
+        red.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        red.setToolTipText("Select Font Color");
+        red.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        red.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Color color = JColorChooser.showDialog(mWorkSpace, "Colours", Color.yellow);
                 mTextEditor.selectAll();
-                mTextEditor.setForeground(color); // color of selected text
-                mTextLabel.setForeground(color);
+                mTextEditor.setForeground(Color.red); // color of selected text
+                mTextLabel.setForeground(Color.red);
 //                mTextEditor.setSelectionColor(color); // background of selected text
                 mTextEditor.requestFocusInWindow();
             }
         });
-        colourPicker.setMaximumSize(new Dimension(30, 20));
-        colourPicker.setPreferredSize(new Dimension(30, 20));
-        colourPicker.setMinimumSize(new Dimension(30, 20));
-        add(colourPicker, BorderLayout.PAGE_END);
+        red.setMaximumSize(new Dimension(10, 15));
+        red.setPreferredSize(new Dimension(10, 15));
+        red.setMinimumSize(new Dimension(10, 15));
+        //
+        JButton green = new JButton();
+        green.setHorizontalAlignment(SwingConstants.RIGHT);
+        green.setBackground(Color.green);
+        green.setBorder(null);
+        green.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        green.setToolTipText("Select Font Color");
+        green.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        green.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                mTextEditor.selectAll();
+                mTextEditor.setForeground(Color.green); // color of selected text
+                mTextLabel.setForeground(Color.green);
+//                mTextEditor.setSelectionColor(color); // background of selected text
+                mTextEditor.requestFocusInWindow();
+            }
+        });
+        green.setMaximumSize(new Dimension(10, 15));
+        green.setPreferredSize(new Dimension(10, 15));
+        green.setMinimumSize(new Dimension(10, 15));
+        JButton blue = new JButton();
+        blue.setHorizontalAlignment(SwingConstants.RIGHT);
+        blue.setBackground(Color.blue);
+        blue.setBorder(null);
+        blue.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        blue.setToolTipText("Select Font Color");
+        blue.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        blue.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                mTextEditor.selectAll();
+                mTextEditor.setForeground(Color.blue); // color of selected text
+                mTextLabel.setForeground(Color.blue);
+//                mTextEditor.setSelectionColor(color); // background of selected text
+                mTextEditor.requestFocusInWindow();
+            }
+        });
+        blue.setMaximumSize(new Dimension(10, 15));
+        blue.setPreferredSize(new Dimension(10, 15));
+        blue.setMinimumSize(new Dimension(10, 15));
+        
+        Box bx = Box.createHorizontalBox();
+        bx.add(red);
+        bx.add(green);
+        bx.add(blue);
+        add(bx, BorderLayout.PAGE_END);
         add(mTextLabel, BorderLayout.CENTER);
     }
 

@@ -24,15 +24,12 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Observer;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -40,7 +37,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
@@ -53,10 +49,10 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 public class FunctionEditor extends JPanel implements EventListener, Observer {
     private final Observable              mObservable  = new Observable();
     private final EventCaster             mEventCaster = EventCaster.getInstance();
-    private JSplitPane                    mSplitPane;
+//    private JSplitPane                    mSplitPane;
     private JScrollPane                   mFunctionsScrollPanel;
     private JPanel                        mFunctionsPanel;
-    private JPanel                        mButtonPanel;
+//    private JPanel                        mButtonPanel;
     private RemoveButton                  mRemoveButton;
     private final ArrayList<FunDefDialog> mFunDefDialogList;
     private final SceneFlow               mSceneFlow;
@@ -122,7 +118,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             // Add content of the function container
             JPanel functionContent = funDefPanel.createPanel();
 
-            functionContent.setOpaque(false);
+            functionContent.setOpaque(true);
             //
             JPanel functionContainer = new JPanel();
 //            functionContainer.addMouseListener(new MouseAdapter() {
@@ -135,7 +131,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
 //                }
 //            });
             functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
-            functionContainer.setOpaque(false);
+            functionContainer.setOpaque(true);
+            functionContainer.setBackground(Color.white);
             functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
 
             // add remove button to the far right
@@ -173,7 +170,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+                    functionContent.setBackground(Color.LIGHT_GRAY);
                 }
                 
                 @Override
@@ -181,7 +178,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                     funDefPanel.setSelectedBackground(false);
                     funDefPanel.getNameInput().setText(funDef.getName());
                     funDefPanel.getNameInput().setForeground(Color.black);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                    functionContent.setBackground(Color.white);
                     
                 }
             });
@@ -219,13 +216,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+                    functionContent.setBackground(Color.LIGHT_GRAY);
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                    functionContent.setBackground(Color.white);
                 }
             });
 
@@ -234,13 +231,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+                    functionContent.setBackground(Color.LIGHT_GRAY);
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                    functionContent.setBackground(Color.white);
                 }
             });
             
@@ -293,13 +290,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+                    functionContent.setBackground(Color.LIGHT_GRAY);
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                    functionContent.setBackground(Color.white);
                 }
             });
             funDefPanel.getMethodBox().addActionListener(new ActionListener() {
@@ -341,13 +338,13 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                 @Override
                 public void focusGained(FocusEvent e) {
                     funDefPanel.setSelectedBackground(true);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+                    functionContent.setBackground(Color.LIGHT_GRAY);
                 }
                 
                 @Override
                 public void focusLost(FocusEvent e) {
                     funDefPanel.setSelectedBackground(false);
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                    functionContent.setBackground(Color.white);
                 }
             });
             funDefPanel.getArgList().addMouseListener(new MouseInputAdapter() {
@@ -373,34 +370,6 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mFunctionsPanel.add(Box.createRigidArea(new Dimension(5, 5)));
     }
 
-    /**
-     *
-     */
-    private void initButtonPanel() {
-        
-        Action action = new AbstractAction("AddFunction") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addNewFunction();
-            }
-        };
-
-        // configure the Action with the accelerator (aka: short cut)
-        action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control F"));
-
-        // Button panel
-        mButtonPanel = new JPanel(null);
-        mButtonPanel.setBorder(null);
-        mButtonPanel.setOpaque(false);
-        mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
-        mButtonPanel.add(Box.createRigidArea(new Dimension(5, 5)));
-
-        // manually register the accelerator in the button's component input map
-//        mAddFunctionButton.getActionMap().put("myAction", action);
-//        mAddFunctionButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-//            (KeyStroke) action.getValue(Action.ACCELERATOR_KEY), "myAction");
-    }
-
     public void addNewFunction() {
         FunDef usrCmdDef = new FunDef("newCommand", "java.lang.System.out", "println");
         
@@ -419,6 +388,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             mSceneFlow.removeUsrCmdDef(funDef.getName());
             launchFunctionCreatedEvent(funDef);
             Editor.getInstance().update();
+            mFunctionsScrollPanel.repaint();
         }
 
         // Editor.getInstance().update();

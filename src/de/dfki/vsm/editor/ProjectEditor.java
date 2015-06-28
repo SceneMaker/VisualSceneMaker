@@ -45,7 +45,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventCaster = EventCaster.getInstance();
 
-    private final double topElementRatio = 0.6;
     private JDialog quitDialog;
 
     /**
@@ -154,18 +153,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
                        disposeAfterDialog();
                 }
             });
-            //CANCEL BUTTON
-//            CancelButton mCancelButton = new CancelButton();
-//            mCancelButton.setText("Cancel   ");
-//            mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//                public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                    quitDialog.;
-//                }
-//            });
-//            int response = JOptionPane.showConfirmDialog(
-//                    this, "The project \"" + mProject.getProjectName() + "\" has changed.  Save it?",
-//                    "Save before quitting?",
-//                    JOptionPane.YES_NO_OPTION);
             JOptionPane optionPane = new JOptionPane();
             optionPane.setBackground(Color.white);
             optionPane.setMessage("The project " + mProject.getProjectName() + " has changed.  Save it?");
@@ -173,12 +160,6 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             optionPane.setOptions(new Object[]{mYesButton, mNoButton});
             quitDialog = optionPane.createDialog("Save before quitting?");
             quitDialog.setVisible(true);
-//            if (response == JOptionPane.YES_OPTION) {
-//                save();
-//            } else if (response == JOptionPane.CANCEL_OPTION) {
-//            } else if (response == JOptionPane.NO_OPTION) {
-//            } else {
-//            }
         }
         
     }

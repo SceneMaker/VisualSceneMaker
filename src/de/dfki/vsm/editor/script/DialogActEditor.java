@@ -122,15 +122,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
     }
 
     private void initTitlePanel() {
-        AddButton addButton;
-
-        addButton = new AddButton();
-        addButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-
-                // Add new phase
-            }
-        });
+        
         mDATitleLabel = new JLabel("DialogueActs & Phases");
         mDATitleLabel.setBackground(Color.DARK_GRAY);
         mDATitleLabel.setForeground(Color.WHITE);
@@ -142,7 +134,6 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         mDATitlePanel.setForeground(Color.WHITE);
         mDATitlePanel.add(mDATitleLabel);
         mDATitlePanel.add(Box.createHorizontalGlue());
-        mDATitlePanel.add(addButton);
     }
 
     private void loadDialogActs() {
@@ -171,7 +162,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
     private JPanel loadPhase(final String phase) {
         JPanel phaseContainer = new JPanel();
 
-        phaseContainer.setOpaque(false);
+//        phaseContainer.setOpaque(false);
         phaseContainer.setLayout(new BoxLayout(phaseContainer, BoxLayout.X_AXIS));
         phaseContainer.setBorder(BorderFactory.createRaisedBevelBorder());
 
@@ -179,9 +170,10 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
 
         phaseLabel.setText("  " + phase);
         phaseLabel.setForeground(Color.black);
+//        phaseLabel.setBackground(Color.WHITE);
         phaseLabel.setBorder(null);
         phaseLabel.setEditable(false);
-        phaseLabel.setOpaque(true);
+//        phaseLabel.setOpaque(true);
         phaseLabel.setMaximumSize(phaseLabel.getPreferredSize());
         phaseLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -192,20 +184,20 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
                 }
             }
         });
-        phaseLabel.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {}
-            @Override
-            public void focusLost(FocusEvent e) {
-                phaseLabel.setEditable(false);
-
-                if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2) == 0) {
-                    phaseLabel.setBackground(Color.LIGHT_GRAY);
-                } else {
-                    phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));
-                }
-            }
-        });
+//        phaseLabel.addFocusListener(new FocusListener() {
+//            @Override
+//            public void focusGained(FocusEvent e) {}
+//            @Override
+//            public void focusLost(FocusEvent e) {
+//                phaseLabel.setEditable(false);
+//
+//                if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2) == 0) {
+//                    phaseLabel.setBackground(Color.LIGHT_GRAY);
+//                } else {
+//                    phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));
+//                }
+//            }
+//        });
 
         // Fill list with all dialog acts from this phase
         DefaultListModel dialogActListModel = new DefaultListModel();
@@ -241,6 +233,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         AddButton addButton;
 
         addButton = new AddButton();
+        addButton.setOpaque(true);
         addButton.setBackground(Color.white);
         addButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -249,20 +242,20 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
             }
         });
 
-//      if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==0){
-//          phaseContainer.setBackground(Color.LIGHT_GRAY);
-//          dialogActList.setBackground(Color.LIGHT_GRAY); 
-//          phaseLabel.setBackground(Color.LIGHT_GRAY); 
-//          addButton.setBackground(Color.LIGHT_GRAY.darker()); 
-//      }
-//      else{
-//          phaseContainer.setBackground(UIManager.getColor("TableHeader.background"));
-//          dialogActList.setBackground(UIManager.getColor("TableHeader.background"));
-//          phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));       
-//          addButton.setBackground(UIManager.getColor("TableHeader.background"));  
-//          addButton.setBackground(UIManager.getColor("TableHeader.background").darker()); 
-//      }
-        // phasePanel.setMaximumSize(new Dimension(20, 50));
+        if ((mDialogAct.getDialogueActPhases().indexOf(phase) % 2)==1){
+//            phaseContainer.setBackground(Color.LIGHT_GRAY);
+            dialogActList.setBackground(Color.LIGHT_GRAY); 
+//            phaseLabel.setBackground(Color.LIGHT_GRAY); 
+//            addButton.setBackground(Color.LIGHT_GRAY.darker()); 
+        }
+        else{
+//            phaseContainer.setBackground(Color.WHITE);
+            dialogActList.setBackground(Color.WHITE);
+//            phaseLabel.setBackground(UIManager.getColor("TableHeader.background"));       
+//            addButton.setBackground(UIManager.getColor("TableHeader.background"));  
+//            addButton.setBackground(UIManager.getColor("TableHeader.background").darker()); 
+        }
+//         phasePanel.setMaximumSize(new Dimension(20, 50));
         phaseContainer.add(listScrollPane);
         phaseContainer.add(addButton);
 
