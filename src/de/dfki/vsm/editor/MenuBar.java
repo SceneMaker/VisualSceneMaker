@@ -99,11 +99,12 @@ public class MenuBar extends JMenuBar {
 
     public void setFileSaveMenuEnabled(boolean flag) {
         mSaveFileMenuItem.setEnabled(flag);
-
-//      mSaveFileAsMenuItem.setEnabled(flag);
+        mSaveFileAsMenuItem.setEnabled(flag);
         mSaveAllMenuItem.setEnabled(flag);
     }
-
+    public void setEditMenuEnabled(boolean flag) {
+        mEditMenu.setEnabled(flag);
+    }
 //
 //  public void setMonitorMenuEnabled(boolean flag) {
 //    mMonitorMenuItem.setEnabled(flag);
@@ -205,6 +206,7 @@ public class MenuBar extends JMenuBar {
 
                     if (projectDirName != null) {
                         Preferences.removeProperty("recentprojectdir" + i);
+                        Preferences.removeProperty("recentprojectdate" + i);
                         Preferences.removeProperty("recentprojectname" + i);
                     }
                 }
@@ -303,6 +305,7 @@ public class MenuBar extends JMenuBar {
 
     private void initEditMenu() {
         mEditMenu     = new JMenu("Edit");
+        
         mCopyMenuItem = new JMenuItem("Copy");
 
 //      mCopyMenuItem.setIcon(new ImageIcon("data/img/copy.png"));
@@ -384,7 +387,7 @@ public class MenuBar extends JMenuBar {
 
 //      mEditMenu.add(mFormatSceneDocument);
         mEditMenu.add(new JSeparator());
-        mEditMenu.add(mOptionsMenuItem);
+        mEditMenu.add(mOptionsMenuItem);        
         add(mEditMenu);
     }
 

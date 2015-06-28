@@ -1,7 +1,8 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-import com.sun.java.swing.plaf.windows.WindowsToolBarUI;
+import de.dfki.vsm.editor.action.RedoAction;
+import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
@@ -12,12 +13,12 @@ import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.awt.BorderLayout;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -32,16 +33,15 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
-import javax.swing.plaf.basic.BasicToolBarUI;
-import javax.swing.plaf.metal.MetalToolBarUI;
 
 /**
  * @author Gregor Mehlmann
@@ -77,6 +77,9 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private JButton mShowVarButton;
     private JButton mStraighten;
     private JButton mNormalize;
+    private JButton mSaveProject;
+    private JButton mUndo;
+    private JButton mRedo;
 
     // Path Display GUI Components
     private JPanel      mPathDisplay;
@@ -86,7 +89,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     //
     private final ProjectData mProject;
     private final ProjectPreferences mPreferences;
-
+    Action undoAction = UndoAction.getInstance();
+    Action redoAction = RedoAction.getInstance();
     public SceneFlowToolBar(final SceneFlowEditor sceneFlowEditor, ProjectData project) {
         super("Navigation Bar", JToolBar.HORIZONTAL);
 
@@ -256,12 +260,22 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         b.setText(null);
         b.setBorder(BorderFactory.createEmptyBorder());
     }
-
+    
+    private JSeparator createSeparator()
+    {
+        JSeparator js = new JSeparator(SwingConstants.VERTICAL);
+        js.setPreferredSize(new Dimension(10, 30));
+        js.setMinimumSize(new Dimension(10, 30));
+        js.setMaximumSize(new Dimension(10, 30));
+        return js;
+    }
     /**
      *
      */
     private void initComponents() {
 
+        //menu separator
+        
         // 3 Layout sections in toolbar
         // | Element Space |  Sceneflow Space | Property Space
         //
@@ -285,8 +299,47 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
         sanitizeTinyButton(mElementButton);
-        add(Box.createHorizontalGlue());
-
+        add(Box.createHorizontalStrut(30));
+        
+        
+        //******************************************************************************************************
+        //EDIT PROJECT SECTION
+        //Save project
+        mSaveProject = add(new AbstractAction("ACTION_SAVEPROJECT", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/save_icon.png")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mSMEditor.saveCurrentProject();
+            }
+        });
+        mSaveProject.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/save_icon_blue.png"));
+        mSaveProject.setToolTipText("Save current project");
+        sanitizeTinyButton(mSaveProject);
+        
+        //Undo last action
+        mUndo = add(new AbstractAction("ACTION_UNDO", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/undo_icon.png")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                undoAction.actionPerformed(e);
+            }
+        });
+        mUndo.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/undo_icon_blue.png"));
+        mUndo.setToolTipText("Undo last action");
+        sanitizeTinyButton(mUndo);
+        
+        //Redo last action
+        mRedo = add(new AbstractAction("ACTION_REDO", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/redo_icon.png")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                redoAction.actionPerformed(e);
+            }
+        });
+        mRedo.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/redo_icon_blue.png"));
+        mRedo.setToolTipText("Redo last action");
+        sanitizeTinyButton(mRedo);
+        add(Box.createHorizontalStrut(10));
+        add(createSeparator());
+        //******************************************************************************************************
+        //PROJECT EDITION SECTION 
         // Button to straighten all edeges
         mNormalize = add(new AbstractAction("ACTION_NORMALIZE", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/normalize_edges_gray.png")) {
             @Override
@@ -297,7 +350,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mNormalize.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/normalize_edges_blue.png"));
         mNormalize.setToolTipText("Normalize all edges");
         sanitizeTinyButton(mNormalize);
-        add(Box.createHorizontalStrut(3));
         // Button to straighten all edeges
         mStraighten = add(new AbstractAction("ACTION_STRAIGHTEN", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/straighten_gray.png")) {
             @Override
@@ -308,49 +360,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mStraighten.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/straighten_blue.png"));
         mStraighten.setToolTipText("Straighten all edges");
         sanitizeTinyButton(mStraighten);
-
-        add(Box.createHorizontalStrut(30));
-        addSeparator();
-        add(Box.createHorizontalStrut(30));
-        // The Play SceneFlow Button
-        mPlayButton = add(new AbstractAction("ACTION_PLAY", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png")) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                actionStartSceneFlow();
-            }
-        });
-        mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
-        mPlayButton.setToolTipText("Play Scene");
-        sanitizeTinyButton(mPlayButton);
-
-        add(Box.createHorizontalStrut(3));
-
-        // The Stop SceneFlow Button
-        mStopButton = add(new AbstractAction("ACTION_STOP", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop.png")) {
-            @Override
-            public final void actionPerformed(ActionEvent e) {
-                actionStopSceneFlow();
-            }
-        });
-        mStopButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop_blue.png"));
-        mStopButton.setToolTipText("Stop Scene");
-        // Format The Button As Tiny
-        sanitizeTinyButton(mStopButton);
-
-        // Add Some Horizontal Space
-        add(Box.createHorizontalStrut(3));
-
-        JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/window.png")) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Editor.getInstance().showMonitor();
-            }
-        });
-        b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/window_blue.png"));
-        b.setToolTipText("Settings");
-        sanitizeTinyButton(b);
-        addSeparator();
-
         // The Show Variables Button
         mShowVarButton = add(new AbstractAction("ACTION_SHOW_VARIABLES",
                 Boolean.valueOf(Preferences.getProperty("showVariables"))
@@ -371,14 +380,54 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
                                       : "Hide Variables");
         // Format The Button As Tiny
         sanitizeTinyButton(mShowVarButton);
-        // Add Some Horizontal Space
-        add(Box.createHorizontalStrut(3));
+        add(Box.createHorizontalStrut(10));
+        add(createSeparator());
+        
+//        add(Box.createHorizontalGlue());
+        
+        
+        //******************************************************************************************************
+        // PLAYER CONTROL SECTION
+        // The Play SceneFlow Button
+        mPlayButton = add(new AbstractAction("ACTION_PLAY", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionStartSceneFlow();
+            }
+        });
+        mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
+        mPlayButton.setToolTipText("Play Scene");
+        sanitizeTinyButton(mPlayButton);
+        // The Stop SceneFlow Button
+        mStopButton = add(new AbstractAction("ACTION_STOP", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop.png")) {
+            @Override
+            public final void actionPerformed(ActionEvent e) {
+                actionStopSceneFlow();
+            }
+        });
+        mStopButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop_blue.png"));
+        mStopButton.setToolTipText("Stop Scene");
+        // Format The Button As Tiny
+        sanitizeTinyButton(mStopButton);
 
-        addSeparator();
+        JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/monitor_icon.png")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Editor.getInstance().showMonitor();
+            }
+        });
+        b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/monitor_icon_blue.png"));
+        b.setToolTipText("Settings");
+        sanitizeTinyButton(b);
+        add(Box.createHorizontalStrut(10));
+        add(createSeparator());
+
+        //******************************************************************************************************
+        // CONTROL OF NODES
+        // Add Some Horizontal Space
         initPathDisplay();
         add(mPathScrollPane);
-
-        add(Box.createHorizontalStrut(3));
+        //UP TO PARENT NODE 
         b = add(new AbstractAction("ACTION_LEVEL_UP", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -387,10 +436,12 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         });
         b.setToolTipText("Up to parent node");
         b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_blue.png"));
-
         sanitizeTinyButton(b);
-        addSeparator();
-
+        add(Box.createHorizontalStrut(10));
+        add(createSeparator());
+        //******************************************************************************************************
+        // SCREEN CONTROL
+        //SCREENSHOT BUTTON
         Action action = new AbstractAction("ACTION_SCREEN_SHOT",
                 ResourceLoader.loadImageIcon("/res/img/toolbar_icons/screenshot.png")) {
                     @Override
@@ -407,9 +458,9 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         action.putValue(Action.SHORT_DESCRIPTION, "Add/Remove window");
         b = add(action);
         b.setToolTipText("Take a screenshot");
+        //ZOOM OUT BUTTON
         b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/screenshot_blue.png"));
         sanitizeSmallButton(b);
-        add(Box.createHorizontalStrut(3));
         b = add(new AbstractAction("ACTION_ZOOM_IN", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/zoomin.png")) {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -420,9 +471,9 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
             }
         });
         b.setToolTipText("Zoom In");
+        //ZOOM IN BUTTON
         b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/zoomin_blue.png"));
         sanitizeSmallButton(b);
-        add(Box.createHorizontalStrut(3));
         b = add(new AbstractAction("ACTION_ZOOM_OUT", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/zoomout.png")) {
             @Override
             public void actionPerformed(ActionEvent evt) {

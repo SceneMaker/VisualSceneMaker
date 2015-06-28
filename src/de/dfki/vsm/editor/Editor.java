@@ -44,7 +44,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -146,8 +145,9 @@ public class Editor extends JFrame implements EventListener {
         // Init the menu bar
         mMenuBar = new MenuBar(this);
         mMenuBar.setFileSaveMenuEnabled(false);
+        mMenuBar.setEditMenuEnabled(false);
         mMenuBar.setCloseMenuEnabled(false);
-
+        
         // Init the project editor list
         mProjectEditorList = new ProjectEditorList();
         mObservable.addObserver(mProjectEditorList);
@@ -511,7 +511,7 @@ public class Editor extends JFrame implements EventListener {
         if (mProjectEditorList.getTabCount() == 0) {
             mMenuBar.setFileSaveMenuEnabled(true);
             mMenuBar.setCloseMenuEnabled(true);
-
+            mMenuBar.setEditMenuEnabled(true);
             // mMenuBar.setRunMenuEnabled(true);
             // mMenuBar.setMonitorMenuEnabled(false);
             // setContentPane(mProjectEditorList);
@@ -532,6 +532,7 @@ public class Editor extends JFrame implements EventListener {
         if (mProjectEditorList.getTabCount() == 0) {
             mMenuBar.setFileSaveMenuEnabled(false);
             mMenuBar.setCloseMenuEnabled(false);
+            mMenuBar.setEditMenuEnabled(false);
             toggleProjectEditorList(false);
 
             // mMenuBar.setRunMenuEnabled(false);
@@ -548,27 +549,20 @@ public class Editor extends JFrame implements EventListener {
 
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
             String pDir = Preferences.getProperty("recentprojectdir" + i);
-
             if (pDir != null) {
                 if (pDir.startsWith("res" + System.getProperty("file.separator") + "prj")) {
                     continue;
                 }
-
                 recentProjectDirs.add(Preferences.getProperty("recentprojectdir" + i));
             }
-
             String pName = Preferences.getProperty("recentprojectname" + i);
-
             if (pName != null) {
                 recentProjectNames.add(Preferences.getProperty("recentprojectname" + i));
             }
         }
-
         if (recentProjectDirs.contains(projectDir)) {
-
             // case: project in recent list
             if (recentProjectNames.contains(projectName)) {
-
                 // case: project is on list - has now to be at first pos
                 int index = recentProjectDirs.indexOf(projectDir);
 
@@ -578,20 +572,21 @@ public class Editor extends JFrame implements EventListener {
                     recentProjectNames.remove(index + 1);
                 }
             } else {
-
                 // dir is the same, but name changed
                 int index = recentProjectDirs.indexOf(projectDir);
 
                 Preferences.setProperty("recentprojectname" + index, projectName);
-                Preferences.setProperty("recentprojectdate" + index, new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
+                Preferences.setProperty("recentprojectdate" + index, new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(new Date()));
                 recentProjectNames.remove(index);
                 recentProjectNames.add(index, projectName);
             }
         } else {
-
-            // case: project not in recent list
-            recentProjectDirs.add(0, projectDir);
-            recentProjectNames.add(0, projectName);
+            if(!projectDir.contains("res\\prj\\"))
+            {
+                // case: project not in recent list
+                recentProjectDirs.add(0, projectDir);
+                recentProjectNames.add(0, projectName);
+            }
         }
 
         // set properties

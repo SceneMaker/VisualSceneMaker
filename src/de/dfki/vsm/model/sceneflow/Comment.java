@@ -10,7 +10,6 @@ import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
 
-import static de.dfki.vsm.editor.util.Preferences.sWORKSPACEFONTSIZE;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -116,7 +115,7 @@ public class Comment extends Object {
             mGraphics.writeXML(out);
         }
 
-        out.println("<Text>").push();
+        out.println("<Text style=\"color:blue\">").push();
         formatHTML();
         out.println(mHTMLText.trim());
         out.pop().println("</Text>");
