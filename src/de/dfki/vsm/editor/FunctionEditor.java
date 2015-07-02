@@ -115,7 +115,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         // Create a FunDefDialog object for every existing function
         // in order to reuse components
         for (final FunDef funDef : mSceneFlow.getUsrCmdDefMap().values()) {
-            FunDefDialog funDefPanel = new FunDefDialog(funDef);
+            final FunDefDialog funDefPanel = new FunDefDialog(funDef);
             
             mFunDefDialogList.add(funDefPanel);
 
@@ -124,7 +124,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
 
             functionContent.setOpaque(false);
             //
-            JPanel functionContainer = new JPanel();
+            final JPanel functionContainer = new JPanel();
 //            functionContainer.addMouseListener(new MouseAdapter() {
 //                public void mouseEntered(MouseEvent me) {
 //                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
