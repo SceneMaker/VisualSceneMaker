@@ -353,7 +353,7 @@ public class WelcomePanel extends JPanel implements Observer {
         File listDirs[] = SampleProjFolder.listFiles();
 
         for (final File sampleDir : listDirs) {
-            File sampleProj = new File(sampleDir.getPath() + "/vsm");
+            final File sampleProj = new File(sampleDir.getPath() + "/vsm");
 
             if (sampleProj.exists()) {
                 File        configFile    = new File(sampleDir.getPath() + "/vsm/" + "config.xml");
