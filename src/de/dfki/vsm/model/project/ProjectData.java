@@ -3,9 +3,8 @@ package de.dfki.vsm.model.project;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.acticon.ActiconObject;
+import de.dfki.vsm.model.configs.ConfigData;
 import de.dfki.vsm.model.configs.ConfigEntry;
-import de.dfki.vsm.model.configs.PlayerConfig;
-import de.dfki.vsm.model.configs.ProjectConfig;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.gesticon.GesticonObject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
@@ -92,10 +91,10 @@ public class ProjectData implements Serializable {
     // ScenePlayer Content
     private String             mScenePlayerClassName;
     private String             mScenePlayerConfigFile;
-    private final PlayerConfig mPlayerConfig;
+    private final ConfigData mPlayerConfig;
 
     // According Properties
-    private final ProjectConfig mProjectConfig;
+    private final ConfigData mProjectConfig;
 
     // Maintained Structures
     private final SceneFlow      mSceneFlow;
@@ -128,8 +127,8 @@ public class ProjectData implements Serializable {
         mProjectPathName = mProjectDirPath + System.getProperty("file.separator");
 
         // Create Project and Player Property
-        mProjectConfig = new ProjectConfig();
-        mPlayerConfig  = new PlayerConfig();
+        mProjectConfig = new ConfigData("ProjectConfig");
+        mPlayerConfig  = new ConfigData("PlayerConfig");
 
         // Load And Sort Project Properties
         loadProjectConfig();
@@ -991,7 +990,7 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized ProjectConfig getProjectConfig() {
+    public final synchronized ConfigData getProjectConfig() {
         return mProjectConfig;
     }
 
@@ -1068,14 +1067,14 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized PlayerConfig getScenePlayerProperties() {
+    public final synchronized ConfigData getScenePlayerProperties() {
         return mPlayerConfig;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized ProjectConfig getProjectProperties() {
+    public final synchronized ConfigData getProjectProperties() {
         return mProjectConfig;
     }
 

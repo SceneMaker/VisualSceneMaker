@@ -6,9 +6,8 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.acticon.ActiconObject;
+import de.dfki.vsm.model.configs.ConfigData;
 import de.dfki.vsm.model.configs.ConfigEntry;
-import de.dfki.vsm.model.configs.PlayerConfig;
-import de.dfki.vsm.model.configs.ProjectConfig;
 import de.dfki.vsm.model.configs.ProjectPreferences;
 import de.dfki.vsm.model.gesticon.GesticonObject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
@@ -44,7 +43,6 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.MouseInputListener;
 
@@ -103,7 +101,7 @@ public class CreateProjectDialog extends JDialog {
 
     // essential strings
     public String         mProjectName;
-    private ProjectConfig mProjectConfig;
+    private ConfigData mProjectConfig;
 
     public CreateProjectDialog() {
         super(Editor.getInstance(), "New Project", true);
@@ -119,7 +117,7 @@ public class CreateProjectDialog extends JDialog {
                                         "de.dfki.vsm.runtime.player.DefaultDialogueActPlayer"));
         mProperties.add(new ConfigEntry("project.player.config", "player.xml"));
         mProperties.add(new ConfigEntry("project.player.class", "de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer"));
-        mProjectConfig = new ProjectConfig(mProperties);
+        mProjectConfig = new ConfigData("ProjectConfig", mProperties);
         initComponents();
         setVisible(true);
     }
@@ -665,7 +663,7 @@ public class CreateProjectDialog extends JDialog {
 
             mLogger.message("creating file " + scenePlayerConfig);
 
-            PlayerConfig dummyPlayerConfig = new PlayerConfig();
+            ConfigData dummyPlayerConfig = new ConfigData("PlayerConfig");
             IndentWriter fileOut           = new IndentWriter(scenePlayerConfig);
 
             dummyPlayerConfig.writeXML(fileOut);

@@ -1,8 +1,6 @@
 package de.dfki.vsm.api;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import de.dfki.vsm.model.configs.PlayerConfig;
+import de.dfki.vsm.model.configs.ConfigData;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.Environment;
@@ -16,8 +14,6 @@ import de.dfki.vsm.util.jpl.JPLUtility;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.log.LOGNovaFileLogger;
 import de.dfki.vsm.util.log.LOGSSISockLogger;
-
-//~--- JDK imports ------------------------------------------------------------
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +42,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     protected HashMap<String, VSMAgentClient> mAgentClientMap = new HashMap<>();
 
     // The ScenePlayer Config
-    protected final PlayerConfig mPlayerConfig;
+    protected final ConfigData mPlayerConfig;
 
     // The SceneMaker Project
     protected final ProjectData mProjectData;
