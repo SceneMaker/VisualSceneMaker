@@ -5,7 +5,7 @@ package de.dfki.vsm.runtime.player;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
-import de.dfki.vsm.model.configs.PlayerConfig;
+import de.dfki.vsm.model.configs.ConfigData;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.script.AbstractWord;
 import de.dfki.vsm.model.script.ActionObject;
@@ -40,7 +40,7 @@ public class DefaultSceneGroupPlayer implements SceneGroupPlayer {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Player Properties
-    private final PlayerConfig mProperties;
+    private final ConfigData mProperties;
 
     // The Current Project
     private final ProjectData mProject;
