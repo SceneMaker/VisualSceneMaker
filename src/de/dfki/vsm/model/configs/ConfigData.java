@@ -17,7 +17,7 @@ public class ConfigData implements ModelObject {
 
     // A Configuration Type 
     private final String mType;
-    // The Agent Entry List
+    // The Config Entry List
     private final ArrayList<ConfigEntry> mEntryList;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ public class ConfigData implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     public final boolean containsKey(final String key) {
         for (final ConfigEntry entry : mEntryList) {
-            if (entry.getKey().equals(entry)) {
+            if (entry.getKey().equals(key)) {
                 return true;
             }
         }
@@ -118,15 +118,12 @@ public class ConfigData implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final ArrayList<ConfigEntry> copyEntryList() {
-
         // Construct A List Copy
         final ArrayList<ConfigEntry> copy = new ArrayList<>();
-
         // Copy Each Single Member
         for (final ConfigEntry entry : mEntryList) {
             copy.add(entry.getCopy());
         }
-
         // Return The Final Clone
         return copy;
     }
