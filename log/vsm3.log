@@ -51937,3 +51937,459 @@ Loading SceneScript
   </SceneObject>
 </SceneScript>
 
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:228)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="HelloWorld"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.hcm.HCMScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:275)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="hcm.handler.local.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.local.port" val="565"/>
+  <Entry key="hcm.handler.remote.flag" val="false"/>
+  <Entry key="hcm.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.remote.port" val="656"/>
+  <Entry key="swi.handler.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.handler.local.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.local.port" val="878"/>
+  <Entry key="swi.handler.remote.flag" val="false"/>
+  <Entry key="swi.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.remote.port" val="787"/>
+  <Entry key="vsm.agent.0.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.local.port" val="1111"/>
+  <Entry key="vsm.agent.0.name" val="Gabi"/>
+  <Entry key="vsm.agent.0.remote.flag" val="true"/>
+  <Entry key="vsm.agent.0.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.remote.port" val="2222"/>
+  <Entry key="vsm.agent.0.type" val="tcp"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.local.port" val="333"/>
+  <Entry key="vsm.agent.1.name" val="Karl"/>
+  <Entry key="vsm.agent.1.remote.flag" val="true"/>
+  <Entry key="vsm.agent.1.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.remote.port" val="4444"/>
+  <Entry key="vsm.agent.1.type" val="udp"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agent.number" val="2"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:430)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:530)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:480)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:330)
+Loading Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:380)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:228)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="HelloWorld"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMDefaultPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:275)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="swi.socket.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.socket.local.host" val="127.0.0.1"/>
+  <Entry key="swi.socket.local.port" val="878"/>
+  <Entry key="swi.socket.remote.flag" val="false"/>
+  <Entry key="swi.socket.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.socket.remote.port" val="787"/>
+  <Entry key="vsm.agent.number" val="0"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:430)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:530)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:480)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:330)
+Loading Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Fri Jul 03 14:49:51 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[main,5,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:380)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:228)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="HelloWorld"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.hcm.HCMScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:275)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="hcm.handler.local.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.local.port" val="565"/>
+  <Entry key="hcm.handler.remote.flag" val="false"/>
+  <Entry key="hcm.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.remote.port" val="656"/>
+  <Entry key="swi.handler.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.handler.local.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.local.port" val="878"/>
+  <Entry key="swi.handler.remote.flag" val="false"/>
+  <Entry key="swi.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.remote.port" val="787"/>
+  <Entry key="vsm.agent.0.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.local.port" val="1111"/>
+  <Entry key="vsm.agent.0.name" val="Gabi"/>
+  <Entry key="vsm.agent.0.remote.flag" val="true"/>
+  <Entry key="vsm.agent.0.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.remote.port" val="2222"/>
+  <Entry key="vsm.agent.0.type" val="tcp"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.local.port" val="333"/>
+  <Entry key="vsm.agent.1.name" val="Karl"/>
+  <Entry key="vsm.agent.1.remote.flag" val="true"/>
+  <Entry key="vsm.agent.1.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.remote.port" val="4444"/>
+  <Entry key="vsm.agent.1.type" val="udp"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agent.number" val="2"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:430)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:530)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:480)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:330)
+Loading Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:380)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:62)
+Loading Style Policy:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:228)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="HelloWorld"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.hcm.HCMScenePlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:275)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="hcm.handler.local.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.local.port" val="565"/>
+  <Entry key="hcm.handler.remote.flag" val="false"/>
+  <Entry key="hcm.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="hcm.handler.remote.port" val="656"/>
+  <Entry key="swi.handler.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.handler.local.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.local.port" val="878"/>
+  <Entry key="swi.handler.remote.flag" val="false"/>
+  <Entry key="swi.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.remote.port" val="787"/>
+  <Entry key="vsm.agent.0.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.local.port" val="1111"/>
+  <Entry key="vsm.agent.0.name" val="Gabi"/>
+  <Entry key="vsm.agent.0.remote.flag" val="true"/>
+  <Entry key="vsm.agent.0.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.0.remote.port" val="2222"/>
+  <Entry key="vsm.agent.0.type" val="tcp"/>
+  <Entry key="vsm.agent.0.uaid" val="1"/>
+  <Entry key="vsm.agent.1.local.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.local.port" val="333"/>
+  <Entry key="vsm.agent.1.name" val="Karl"/>
+  <Entry key="vsm.agent.1.remote.flag" val="true"/>
+  <Entry key="vsm.agent.1.remote.host" val="127.0.0.1"/>
+  <Entry key="vsm.agent.1.remote.port" val="4444"/>
+  <Entry key="vsm.agent.1.type" val="udp"/>
+  <Entry key="vsm.agent.1.uaid" val="2"/>
+  <Entry key="vsm.agent.number" val="2"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:430)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:530)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:480)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:330)
+Loading Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:380)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadProjectConfig(ProjectData.java:228)
+Loading Project Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectConfig>
+  <Entry key="project.basic.name" val="HelloWorld"/>
+  <Entry key="project.data.acticon" val="acticon.xml"/>
+  <Entry key="project.data.gesticon" val="gesticon.xml"/>
+  <Entry key="project.data.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.data.scenes" val="scenes.xml"/>
+  <Entry key="project.data.visicon" val="visicon.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMDefaultPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</ProjectConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadPlayerConfig(ProjectData.java:275)
+Loading Player Configuration
+<?xml version="1.0" encoding="UTF-8"?>
+<PlayerConfig>
+  <Entry key="swi.socket.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.socket.local.host" val="127.0.0.1"/>
+  <Entry key="swi.socket.local.port" val="878"/>
+  <Entry key="swi.socket.remote.flag" val="false"/>
+  <Entry key="swi.socket.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.socket.remote.port" val="787"/>
+  <Entry key="vsm.agent.number" val="0"/>
+</PlayerConfig>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadActicon(ProjectData.java:430)
+Loading Acticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadVisicon(ProjectData.java:530)
+Loading Visicon
+<?xml version="1.0" encoding="UTF-8"?>
+<Visicon>
+</Visicon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadGesticon(ProjectData.java:480)
+Loading Gesticon
+<?xml version="1.0" encoding="UTF-8"?>
+<Gesticon>
+</Gesticon>
+
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneFlow(ProjectData.java:330)
+Loading Sceneflow
+HelloWorld
+
+INFO to LOGFILE on Fri Jul 03 14:49:53 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.ProjectData.loadSceneScript(ProjectData.java:380)
+Loading SceneScript
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0" length="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="gloria">
+      <SceneUttr lower="29" upper="40" punct=".">
+        <SceneWord lower="29" upper="34" text="Hallo"/>
+        <SceneWord lower="35" upper="39" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="41" upper="60" speaker="curtis">
+      <SceneUttr lower="49" upper="60" punct=".">
+        <SceneWord lower="49" upper="54" text="Hallo"/>
+        <SceneWord lower="55" upper="59" text="Welt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+

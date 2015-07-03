@@ -44,13 +44,7 @@ public class RunTime {
         project.loadScenePlayer();
 
         // Load the dialogue act player
-        project.loadDialogueActPlayer();
-
-        // Load the service list
-        project.loadServiceList();
-
-        // Load the request list
-        project.loadRequestList();
+        project.loadDialogueActPlayer();       
 
         // Load the plugin list
         project.loadPluginList();
@@ -78,12 +72,6 @@ public class RunTime {
 
             // Unload the sceneplayer
             project.unloadScenePlayer();
-
-            // Unload the service list
-            project.unloadServiceList();
-
-            // Unload the request list
-            project.unloadRequestList();
 
             // Unload the plugin list
             project.unloadPluginList();
