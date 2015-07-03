@@ -192,6 +192,8 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     }
     ////////////////////////////////////////////////////////////////////////////
     public void save() {
+        mProject.save();
+        /*
         if (!mProject.save()) {
             // TODO: Failure Handling
             JOptionPane.showMessageDialog(this,
@@ -199,6 +201,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
                     "Cannot Format Scene Script.",
                     JOptionPane.ERROR_MESSAGE);
         }
+        */
     }
 
     /**

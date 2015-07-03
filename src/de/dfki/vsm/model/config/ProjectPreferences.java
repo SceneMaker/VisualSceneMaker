@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.configs;
+package de.dfki.vsm.model.config;
 
 //~--- non-JDK imports --------------------------------------------------------
 

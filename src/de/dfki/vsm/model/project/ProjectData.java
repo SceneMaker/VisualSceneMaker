@@ -1,10 +1,9 @@
 package de.dfki.vsm.model.project;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.acticon.ActiconObject;
-import de.dfki.vsm.model.configs.ConfigData;
-import de.dfki.vsm.model.configs.ConfigEntry;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ConfigData;
+import de.dfki.vsm.model.config.ConfigEntry;
+import de.dfki.vsm.model.config.ProjectPreferences;
 import de.dfki.vsm.model.gesticon.GesticonObject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
@@ -13,553 +12,499 @@ import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.runtime.dialogact.DummyDialogAct;
 import de.dfki.vsm.runtime.player.DefaultDialogueActPlayer;
 import de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer;
-import de.dfki.vsm.runtime.player.DialogueActPlayer;
-import de.dfki.vsm.runtime.player.SceneGroupPlayer;
+import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.plugin.Plugin;
-import de.dfki.vsm.util.xml.XMLParseTools;
-
-//~--- JDK imports ------------------------------------------------------------
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
+import de.dfki.vsm.runtime.plugin.Plugin;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.Serializable;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * @author Gregor Mehlmann
  */
 public class ProjectData implements Serializable {
 
-    // The System Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-
-    // Flag if project is freshly created
-    private boolean mIsPending = false;
-
-    // Maintained Plugins
-    private final HashMap<String, Plugin> mPluginList = new HashMap<>();
-
+    // The Logger Instance
+    private final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
     // Project Information
-    private final File mProjectBaseFile;
-    private final File mProjectDirFile;
-    private String mProjectFileName;
-    private String mProjectDirPath;
-    private String mProjectPathName;
-    private String mProjectFullFileName;
-
-    // Project Content
+    private String mConfigFileName;
+    private String mConfigPathName;
+    // Project File Names
     private String mProjectName;
-    private String mSceneFlowFileName;
-    private String mSceneScriptFileName;
+    private String mPluginsFileName;
+    private String mPlayersFileName;
     private String mGesticonFileName;
     private String mVisiconFileName;
     private String mActiconFileName;
+    private String mSceneFlowFileName;
+    private String mSceneScriptFileName;
     private String mPreferencesFileName;
+
+    // Maintained Structures
+    private final SceneFlow mSceneFlow = new SceneFlow();
+    private final SceneScript mSceneScript = new SceneScript();
+    private final ActiconObject mActicon = new ActiconObject();
+    private final GesticonObject mGesticon = new GesticonObject();
+    private final VisiconObject mVisicon = new VisiconObject();
+    // Project Configurations
+    private final ConfigData mProjectConfig = new ConfigData("Project");
+    private final ConfigData mPlayersConfig = new ConfigData("Players");
+    private final ConfigData mPluginsConfig = new ConfigData("Plugins");
+    private final ConfigData mDPlayerConfig = new ConfigData("Player");
+    // Maintained Plugins
+    private final HashMap<String, Plugin> mPluginList = new HashMap<>();
+    // Maintained Players
+    private final HashMap<String, Player> mPlayerList = new HashMap<>();
 
     // DialogueAct Content
     private String mDialogueActClassName;
     private String mDialogueActPlayerClassName;
-
     // ScenePlayer Content
     private String mScenePlayerClassName;
     private String mScenePlayerConfigFile;
-    private final ConfigData mPlayerConfig;
-
-    // According Properties
-    private final ConfigData mProjectConfig;
-
-    // Maintained Structures
-    private final SceneFlow mSceneFlow;
-    private final SceneScript mSceneScript;
-    private final ActiconObject mActicon;
-    private final GesticonObject mGesticon;
-    private final VisiconObject mVisicon;
-
     // Maintained ScenePlayer
-    private SceneGroupPlayer mScenePlayer;
+    private Player mScenePlayer;
     protected int mProjectInitialHash;
     private ProjectPreferences mProjectPreferences;
-
     // DialogueActInterface
     private DialogActInterface mDialogueAct;
-
     // The Dialogue Act Player
-    private DialogueActPlayer mDialogueActPlayer;
+    private Player mDialogueActPlayer;
+    // Freshly Created Flag
+    private boolean mIsPending = false;
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ProjectData(final File file) {
 
-        // Initialize The File And Name Members
-        mProjectBaseFile = file;
-        mProjectFileName = file.getName();
-        mProjectDirFile = mProjectBaseFile.getParentFile();
-        mProjectDirPath = mProjectDirFile.getPath();
-        mProjectPathName = mProjectDirPath + System.getProperty("file.separator");
+        // Init File And Path  
+        mConfigFileName = file.getAbsolutePath();
+        mConfigPathName = file.getParentFile().getAbsolutePath();
 
-        // Create Project and Player Property
-        mProjectConfig = new ConfigData("ProjectConfig");
-        mPlayerConfig = new ConfigData("PlayerConfig");
+        // Print Some Information
+        mLogger.message("Creating Project '" + mConfigFileName + "'");
 
-        // Load And Sort Project Properties
-        loadProjectConfig();
-        mProjectConfig.sort();
+        // Load The Project Content
+        load();
 
-        // Read Project Properties
-        mProjectName = mProjectConfig.property("project.basic.name");
-        mProjectFullFileName = mProjectPathName + mProjectFileName;
-        mSceneFlowFileName = mProjectPathName + mProjectConfig.property("project.data.sceneflow");
-        mSceneScriptFileName = mProjectPathName + mProjectConfig.property("project.data.scenes");
-        mGesticonFileName = mProjectPathName + mProjectConfig.property("project.data.gesticon");
-        mVisiconFileName = mProjectPathName + mProjectConfig.property("project.data.visicon");
-        mActiconFileName = mProjectPathName + mProjectConfig.property("project.data.acticon");
-        mDialogueActClassName = mProjectConfig.property("project.dialogact.class");
-        mDialogueActPlayerClassName = mProjectConfig.property("project.dialogact.player");
-
-        // Added condition for legacy support for project independent preferences
-        if (mProjectConfig.property("project.data.preferences") == null) {
-            mPreferencesFileName = mProjectPathName + "preferences.xml";
-        } else {
-            mPreferencesFileName = mProjectPathName + mProjectConfig.property("project.data.preferences");
-        }
-
-        // Read Player Propertiesy
-        mScenePlayerClassName = mProjectConfig.property("project.player.class");
-        mScenePlayerConfigFile = mProjectPathName + mProjectConfig.property("project.player.config");
-
-        // Load And Sort Player Properties
-        loadPlayerConfig();
-        mPlayerConfig.sort();
-
-        // Load The Project Plugin Properties
-        for (ConfigEntry entry : mProjectConfig.getEntryList()) {
-            if (((String) entry.getKey()).startsWith("project.plugin.static.")) {
-                String value = ((String) entry.getVal());
-
-                mPluginList.put(value, null);
-            }
-        }
-
-        // Finally Initialize The Project By
-        // Create The Internal Data Structures
-        mSceneFlow = new SceneFlow();
-        mActicon = new ActiconObject();
-        mVisicon = new VisiconObject();
-        mGesticon = new GesticonObject();
-        mSceneScript = new SceneScript();
-
-        // Load The Internal Data Structures
-        loadDataStructures();
-
-        //
-        loadDialogueAct();
-
+        // TODO: Clean
         // Load Project Preferences
         mProjectPreferences = new ProjectPreferences();
         mProjectPreferences.load(mPreferencesFileName);
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public ProjectData(final String name) {
-        this(new File(name));
+    public final synchronized void load() {
+        loadConfig();
+        loadPlayers();
+        loadPlugins();
+        loadActicon();
+        loadVisicon();
+        loadGesticon();
+        loadSceneFlow();
+        loadSceneScript();
+        // TODO: Clean
+        loadDefaultScenePlayer();
+        loadDialogueAct();
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean save() {
-
-        // Save Data Structures
-        return (saveActicon() && saveVisicon() && saveGesticon() && saveSceneFlow() && saveSceneScript()
-                && saveProjectConfig() && savePlayerConfig());
+    public final synchronized void save() {
+        saveConfig();
+        savePlayers();
+        savePlugins();
+        saveActicon();
+        saveVisicon();
+        saveGesticon();
+        saveSceneFlow();
+        saveSceneScript();
+        // TODO: Clean
+        saveDefaultScenePlayer();
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadDataStructures() {
-
-        // Load Data Structures
-        return (loadActicon() && loadVisicon() && loadGesticon() && loadSceneFlow() && loadSceneScript());
-    }
-
-    public final synchronized boolean createProject() {
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void setPending(final boolean state) {
-        mIsPending = state;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadProjectConfig() {
-
-        // Check The Acticon File
-        if (mProjectBaseFile.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.parseFromXMLFile(mProjectConfig, mProjectBaseFile);
-
-            // Print Some Debug Information
+    public final synchronized void loadConfig() {
+        // Create The File
+        final File file = new File(mConfigFileName);
+        // Check The File
+        if (file.exists()) {
+            // Parse The File
+            XMLUtilities.parseFromXMLFile(mProjectConfig, file);
+            // Print Information
             mLogger.message("Loading Project Configuration\n" + mProjectConfig.toString());
+            // Get Project Path
+            final String path = mConfigPathName + System.getProperty("file.separator");
+            // Get Project Name
+            mProjectName = mProjectConfig.property("project.name");
+            // Get Project Data            
+            mPluginsFileName = path + mProjectConfig.property("project.plugins");
+            mPlayersFileName = path + mProjectConfig.property("project.players");
+            mActiconFileName = path + mProjectConfig.property("project.acticon");
+            mVisiconFileName = path + mProjectConfig.property("project.visicon");
+            mGesticonFileName = path + mProjectConfig.property("project.gesticon");
+            mSceneFlowFileName = path + mProjectConfig.property("project.sceneflow");
+            mSceneScriptFileName = path + mProjectConfig.property("project.scenescript");
 
-            // Return At Parse Success
-            return true;
+            // TODO: Clean
+            // Added condition for legacy support for project independent preferences
+            if (mProjectConfig.property("project.data.preferences") == null) {
+                mPreferencesFileName = path + "preferences.xml";
+            } else {
+                mPreferencesFileName = path + mProjectConfig.property("project.data.preferences");
+            }
+
+            // Read Player Propertiesy   // TODO: Clean
+            mScenePlayerClassName = mProjectConfig.property("project.player.class");
+            mScenePlayerConfigFile = path + mProjectConfig.property("project.player.config");
+            // Get Project ...   // TODO: Clean
+            mDialogueActClassName = mProjectConfig.property("project.dialogact.class");
+            mDialogueActPlayerClassName = mProjectConfig.property("project.dialogact.player");
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean saveProjectConfig() {
-
-        // Check The Acticon File
-        if (mProjectBaseFile.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.writeToXMLFile(mProjectConfig, mProjectBaseFile);
-
-            // Print Some Debug Information
+    public final synchronized void saveConfig() {
+        // Create The File
+        final File file = new File(mConfigFileName);
+        // Check The File
+        if (file.exists()) {
+            // Write The File
+            XMLUtilities.writeToXMLFile(mProjectConfig, file);
+            // Print Information
             mLogger.message("Saving Project Configuration\n" + mProjectConfig.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadPlayerConfig() {
-
-        // Create The Acticon File
+    public final synchronized void loadDefaultScenePlayer() {
+        // Create The File
         final File file = new File(mScenePlayerConfigFile);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.parseFromXMLFile(mPlayerConfig, file);
-
-            // Print Some Debug Information
-            mLogger.message("Loading Player Configuration\n" + mPlayerConfig.toString());
-
-            // Return At Parse Success
-            return true;
+            // Parse The File
+            XMLUtilities.parseFromXMLFile(mDPlayerConfig, file);
+            // Print Information 
+            mLogger.message("Loading Default Scene Player Configuration\n" + mDPlayerConfig.toString());
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean savePlayerConfig() {
-
-        // Create The Acticon File
+    public final synchronized void saveDefaultScenePlayer() {
+        // Create The File
         final File file = new File(mScenePlayerConfigFile);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.writeToXMLFile(mPlayerConfig, file);
-
-            // Print Some Debug Information
-            mLogger.message("Saving Player Configuration\n" + mPlayerConfig.toString());
-
-            // Return At Parse Success
-            return true;
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mDPlayerConfig, file);
+            // Print Information
+            mLogger.message("Saving Default Scene Player Configuration\n" + mDPlayerConfig.toString());
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadSceneFlow() {
+    public final synchronized void loadPlayers() {
+        // Create The Config File
+        final File file = new File(mPlayersFileName);
+        // Check The Config File
+        if (file.exists()) {
+            // Parse The Config File
+            XMLUtilities.parseFromXMLFile(mPlayersConfig, file);
+            // Print Some Information 
+            mLogger.message("Loading Players Configuration\n" + mPlayersConfig.toString());
+            // Get Individual Plugins
+            for (final ConfigEntry entry : mPlayersConfig.getEntryList()) {
+                // Get Name And File
+                final String key = ((String) entry.getKey());
+                final String val = ((String) entry.getVal());
+                // Get The Config File
+                final File base = new File(val);
+                // Check The Config File
+                if (base.exists()) {
+                    // Get Plugin Config File
+                    final ConfigData data = new ConfigData("Player");
+                    // Parse The Config File
+                    XMLUtilities.parseFromXMLFile(data, base);
+                    // Print Some Information 
+                    mLogger.message("Loading Player Configuration\n" + data.toString());
+                    // Get Plugin Class Name
+                    final String name = data.property("class");
+                    // Check Plugin Class Name
+                    if (name != null) {
+                        // Try To Load Plugin
+                        try {
+                            // Find The Class
+                            final Class clazz = Class.forName(name);
+                            // Call Constructor
+                            final Player player = (Player) clazz.getConstructor(ProjectData.class, ConfigData.class).newInstance(this, data);
+                            // Add The Plugin
+                            mPlayerList.put(key, player);
+                            // Print Some Information 
+                            mLogger.message("Registering Player Name '" + key + "' With Player Object '" + player + "'");
+                        } catch (Exception exc) {
+                            mLogger.warning(exc.toString());
+                        }
+                    }
+                } else {
+                    // Print Some Information 
+                    mLogger.warning("Missing Player Configuration\n" + base.getAbsolutePath());
+                }
+            }
+        } else {
+            // Print Some Information 
+            mLogger.warning("Missing Players Configuration\n" + file.getAbsolutePath());
+        }
+    }
 
-        // Create The Acticon File
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final synchronized void savePlayers() {
+        // Create The File
+        final File file = new File(mPlayersFileName);
+        // Check The File
+        if (file.exists()) {
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mPlayersConfig, file);
+            // Print Information
+            mLogger.message("Saving Players Configuration\n" + mPlayersConfig.toString());
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final synchronized void loadPlugins() {
+        // Create The Config File
+        final File file = new File(mPluginsFileName);
+        // Check The Config File
+        if (file.exists()) {
+            // Parse The Config File
+            XMLUtilities.parseFromXMLFile(mPluginsConfig, file);
+            // Print Some Information 
+            mLogger.message("Loading Plugins Configuration\n" + mPluginsConfig.toString());
+            // Get Individual Plugins
+            for (final ConfigEntry entry : mPluginsConfig.getEntryList()) {
+                // Get Name And File
+                final String key = ((String) entry.getKey());
+                final String val = ((String) entry.getVal());
+                // Get The Config File
+                final File base = new File(val);
+                // Check The Config File
+                if (base.exists()) {
+                    // Get Plugin Config File
+                    final ConfigData data = new ConfigData("Plugin");
+                    // Parse The Config File
+                    XMLUtilities.parseFromXMLFile(data, base);
+                    // Print Some Information 
+                    mLogger.message("Loading Plugin Configuration\n" + data.toString());
+                    // Get Plugin Class Name
+                    final String name = data.property("class");
+                    // Check Plugin Class Name
+                    if (name != null) {
+                        // Try To Load Plugin
+                        try {
+                            // Find The Class
+                            final Class clazz = Class.forName(name);
+                            // Call Constructor
+                            final Plugin plugin = (Plugin) clazz.getConstructor(ProjectData.class, ConfigData.class).newInstance(this, data);
+                            // Add The Plugin
+                            mPluginList.put(key, plugin);
+                            // Print Some Information 
+                            mLogger.message("Registering Plugin Name '" + key + "' With Plugin Object '" + plugin + "'");
+                        } catch (Exception exc) {
+                            mLogger.warning(exc.toString());
+                        }
+                    }
+                } else {
+                    // Print Some Information 
+                    mLogger.warning("Missing Plugin Configuration\n" + base.getAbsolutePath());
+                }
+            }
+        } else {
+            // Print Some Information 
+            mLogger.warning("Missing Plugins Configuration\n" + file.getAbsolutePath());
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final synchronized void savePlugins() {
+        // Create The File
+        final File file = new File(mPluginsFileName);
+        // Check The File
+        if (file.exists()) {
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mPluginsConfig, file);
+            // Print Information
+            mLogger.message("Saving Plugins Configuration\n" + mPluginsConfig.toString());
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final synchronized void loadSceneFlow() {
+        // Create The File
         final File file = new File(mSceneFlowFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.parseFromXMLFile(mSceneFlow, file);
-
-            // Establish Postprocessing
+            // Parse The File
+            XMLUtilities.parseFromXMLFile(mSceneFlow, file);
+            // Postprocessing
             mSceneFlow.establishStartNodes();
             mSceneFlow.establishTargetNodes();
             mSceneFlow.establishAltStartNodes();
-
-            // Print Some Debug Information
+            // Print Information
             mLogger.message("Loading Sceneflow\n" + mSceneFlow.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean saveSceneFlow() {
-
-        // Create The Acticon File
+    public final synchronized void saveSceneFlow() {
+        // Create The File
         final File file = new File(mSceneFlowFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.writeToXMLFile(mSceneFlow, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mSceneFlow, file);
+            // Print Information
             mLogger.message("Saving Sceneflow\n" + mSceneFlow.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Save Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadSceneScript() {
-
-        // Create The Acticon File
+    public final synchronized void loadSceneScript() {
+        // Create The File
         final File file = new File(mSceneScriptFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.parseFromXMLFile(mSceneScript, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.parseFromXMLFile(mSceneScript, file);
+            // Print Information
             mLogger.message("Loading SceneScript\n" + mSceneScript.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean saveSceneScript() {
-
-        // Create The Acticon File
+    public final synchronized void saveSceneScript() {
+        // Create The File
         final File file = new File(mSceneScriptFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.writeToXMLFile(mSceneScript, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mSceneScript, file);
+            // Print Information
             mLogger.message("Saving Scenescript\n" + mSceneScript.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Save Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadActicon() {
-
-        // Create The Acticon File
+    public final synchronized void loadActicon() {
+        // Create The File
         final File file = new File(mActiconFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.parseFromXMLFile(mActicon, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.parseFromXMLFile(mActicon, file);
+            // Print Information
             mLogger.message("Loading Acticon\n" + mActicon.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean saveActicon() {
-
-        // Create The Acticon File
+    public final synchronized void saveActicon() {
+        // Create The File
         final File file = new File(mActiconFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.writeToXMLFile(mActicon, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mActicon, file);
+            // Print Information
             mLogger.message("Saving Acticon\n" + mActicon.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Save Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadGesticon() {
-
-        // Create The Acticon File
+    public final synchronized void loadGesticon() {
+        // Create The File
         final File file = new File(mGesticonFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.parseFromXMLFile(mGesticon, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.parseFromXMLFile(mGesticon, file);
+            // Print Information
             mLogger.message("Loading Gesticon\n" + mGesticon.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean saveGesticon() {
-
-        // Create The Acticon File
+    public final synchronized void saveGesticon() {
+        // Create The File
         final File file = new File(mGesticonFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.writeToXMLFile(mGesticon, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mGesticon, file);
+            // Print Information
             mLogger.message("Saving Gesticon\n" + mGesticon.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Save Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean loadVisicon() {
-
-        // Create The Acticon File
+    public final synchronized void loadVisicon() {
+        // Create The File
         final File file = new File(mVisiconFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.parseFromXMLFile(mVisicon, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.parseFromXMLFile(mVisicon, file);
+            // Print Information
             mLogger.message("Loading Visicon\n" + mVisicon.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Load Failure
-        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized boolean saveVisicon() {
-
-        // Create The Acticon File
+    public final synchronized void saveVisicon() {
+        // Create The File
         final File file = new File(mVisiconFileName);
-
-        // Check The Acticon File
+        // Check The File
         if (file.exists()) {
-
-            // Parse The Acticon File
-            XMLParseTools.writeToXMLFile(mVisicon, file);
-
-            // Print Some Debug Information
+            // Parse The File
+            XMLUtilities.writeToXMLFile(mVisicon, file);
+            // Print Information
             mLogger.message("Saving Visicon\n" + mVisicon.toString());
-
-            // Return At Parse Success
-            return true;
         }
-
-        // Return At Save Failure
-        return false;
     }
 
     // TODO: Does actually not work correct!
@@ -574,33 +519,6 @@ public class ProjectData implements Serializable {
         }
 
         return hasChanged;
-
-        /*
-         * Remove commented code as comparison is now made through project hash
-         *
-         * String currentFileName = mProjectPathName + "~." + mProjectName + ".zip";
-         * // Export the current version
-         * exportZIP(currentFileName);
-         * // Load the current version to a file
-         * File currentFile = new File(currentFileName);
-         * // Load the old version to a file
-         * File zipFile = new File(mZipFileName);
-         * // Compare the two versions
-         * boolean hasChanged = false;
-         * try {
-         * hasChanged = !FileAttributes.compare(currentFile, zipFile);
-         * } catch (IOException e) {
-         * e.printStackTrace();
-         * return true;
-         * } finally {
-         * try {
-         * //currentFile.delete();
-         * } catch (SecurityException e) {
-         * e.printStackTrace();
-         * }
-         * }
-         * return hasChanged;
-         */
     }
 
     public final synchronized void loadDialogueAct() {
@@ -609,7 +527,7 @@ public class ProjectData implements Serializable {
                 Class daClass = Class.forName(mDialogueActClassName);
 
                 mDialogueAct = (DialogActInterface) daClass.getConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
+            } catch (Exception exc) {
 
                 // do nothing
             }
@@ -624,7 +542,7 @@ public class ProjectData implements Serializable {
                 Class daPlayerClass = Class.forName(mDialogueActPlayerClassName);
 
                 mDialogueActPlayer
-                        = (DialogueActPlayer) daPlayerClass.getConstructor(ProjectData.class).newInstance(this);
+                        = (Player) daPlayerClass.getConstructor(ProjectData.class).newInstance(this);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
                 mDialogueActPlayer = new DefaultDialogueActPlayer(this);
             }
@@ -638,16 +556,16 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void loadScenePlayer() {
+    public final synchronized void launchDefaultScenePlayer() {
 
         // Try to load the plugin
-        SceneGroupPlayer player = null;
+        Player player = null;
 
         if (player == null) {
             try {
                 Class playerClass = Class.forName(mScenePlayerClassName);
 
-                player = (SceneGroupPlayer) playerClass.getConstructor(ProjectData.class).newInstance(this);
+                player = (Player) playerClass.getConstructor(ProjectData.class).newInstance(this);
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
             }
@@ -658,7 +576,7 @@ public class ProjectData implements Serializable {
                 Class playerClass = Class.forName(mScenePlayerClassName);
                 Method methodone = playerClass.getMethod("getInstance", ProjectData.class);
 
-                player = (SceneGroupPlayer) methodone.invoke(null, this);
+                player = (Player) methodone.invoke(null, this);
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
             }
@@ -669,7 +587,7 @@ public class ProjectData implements Serializable {
                 Class playerClass = Class.forName(mScenePlayerClassName);
                 Method methodtwo = playerClass.getMethod("getInstance");
 
-                player = (SceneGroupPlayer) methodtwo.invoke(null);
+                player = (Player) methodtwo.invoke(null);
             } catch (Exception exc) {
                 mLogger.warning(exc.toString());
             }
@@ -683,116 +601,70 @@ public class ProjectData implements Serializable {
         //
         mScenePlayer = player;
 
-        //
+        // Launch The Player
         mScenePlayer.launch();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void loadPluginList() {
-        for (ConfigEntry entry : mProjectConfig.getEntryList()) {
-            if (((String) entry.getKey()).startsWith("project.plugin.static.")) {
-                String value = ((String) entry.getVal());
-                int lastDotIndex = value.lastIndexOf('.');
-
-                // Get classname and port of the service
-                String className = value.substring(0, lastDotIndex);
-                int port = Integer.parseInt(value.substring(lastDotIndex + 1));
-
-                // Try to load the plugin
-                Plugin plugin = null;
-
-                try {
-                    Class pluginClass = Class.forName(className);
-                    Method methodone = pluginClass.getMethod("getInstance", ProjectData.class);
-
-                    plugin = (Plugin) methodone.invoke(null, this);
-                } catch (Exception exc) {
-                    System.err.println(exc.toString());
-                }
-
-                try {
-                    Class pluginClass = Class.forName(className);
-                    Method methodtwo = pluginClass.getMethod("getInstance");
-
-                    plugin = (Plugin) methodtwo.invoke(null);
-                } catch (Exception exc) {
-                    System.err.println(exc.toString());
-                }
-
-                // Add the service
-                mPluginList.put(value, plugin);
-
-                // Launch The Plugin
-                plugin.launch();
-            }
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void unloadScenePlayer() {
-
-        // Print Server Info
+    public final synchronized void unloadDefaultScenePlayer() {
+        // Unload The Player
         mScenePlayer.unload();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void unloadPluginList() {
-        for (Entry<String, Plugin> entry : mPluginList.entrySet()) {
-
-            // Get the service
-            Plugin plugin = entry.getValue();
-
-            // If service is running
-            if (plugin != null) {
-
-                // Unload the plugin
-                plugin.unload();
-            }
+    public final synchronized void launchPlayerList() {
+        for (final Player player : mPlayerList.values()) {
+            // Launch The Player
+            player.launch();
         }
-
-        // Clear the list
-        mPluginList.clear();
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized File getProjectBaseFile() {
-        return mProjectBaseFile;
+    public final synchronized void unloadPlayerList() {
+        for (final Player player : mPlayerList.values()) {
+            // Unload The Player
+            player.unload();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized File getProjectDirFile() {
-        return mProjectDirFile;
+    public final synchronized void launchPluginList() {
+        for (final Plugin plugin : mPluginList.values()) {
+            // Launch The Plugin
+            plugin.launch();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final synchronized void unloadPluginList() {
+        for (final Plugin plugin : mPluginList.values()) {
+            // Unload The Plugin
+            plugin.unload();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final synchronized String getProjectFileName() {
-        return mProjectFileName;
+        return mConfigFileName;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final synchronized String getProjectDirPath() {
-        return mProjectDirPath;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized String getProjectPathName() {
-        return mProjectPathName;
+        return mConfigPathName;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -868,14 +740,14 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized SceneGroupPlayer getScenePlayer() {
+    public final synchronized Player getScenePlayer() {
         return mScenePlayer;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final synchronized DialogueActPlayer getDialogueActPlayer() {
+    public final synchronized Player getDialogueActPlayer() {
         return mDialogueActPlayer;
     }
 
@@ -911,7 +783,7 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final synchronized ConfigData getScenePlayerProperties() {
-        return mPlayerConfig;
+        return mDPlayerConfig;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -938,29 +810,35 @@ public class ProjectData implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+    public final synchronized void setPending(final boolean state) {
+        mIsPending = state;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public final synchronized SceneScript getSceneScript() {
         return mSceneScript;
     }
 
-    public void updateFileNames(String ProjectFileName, String ProjectDirPath) {
+    public void setProjectFileName(String ProjectFileName, String ProjectDirPath) {
         Path path = Paths.get(ProjectDirPath);
 
-        mProjectFileName = ProjectFileName;
-        mProjectDirPath = path.getParent().toString();
-        mProjectPathName = mProjectDirPath + System.getProperty("file.separator");
+        mConfigFileName = ProjectFileName;
+        mConfigPathName = path.getParent().toString();
 
         // Read Project Properties
         mProjectName = mProjectConfig.property("project.basic.name");
-        mProjectFullFileName = mProjectPathName + mProjectFileName;
-        mSceneFlowFileName = mProjectPathName + mProjectConfig.property("project.data.sceneflow");
-        mSceneScriptFileName = mProjectPathName + mProjectConfig.property("project.data.scenes");
-        mGesticonFileName = mProjectPathName + mProjectConfig.property("project.data.gesticon");
-        mVisiconFileName = mProjectPathName + mProjectConfig.property("project.data.visicon");
-        mActiconFileName = mProjectPathName + mProjectConfig.property("project.data.acticon");
+
+        mSceneFlowFileName = mConfigPathName + System.getProperty("file.separator") + mProjectConfig.property("project.data.sceneflow");
+        mSceneScriptFileName = mConfigPathName + System.getProperty("file.separator") + mProjectConfig.property("project.data.scenes");
+        mGesticonFileName = mConfigPathName + System.getProperty("file.separator") + mProjectConfig.property("project.data.gesticon");
+        mVisiconFileName = mConfigPathName + System.getProperty("file.separator") + mProjectConfig.property("project.data.visicon");
+        mActiconFileName = mConfigPathName + System.getProperty("file.separator") + mProjectConfig.property("project.data.acticon");
 
         // Read Player Propertiesy
         mScenePlayerClassName = mProjectConfig.property("project.player.class");
-        mScenePlayerConfigFile = mProjectPathName + mProjectConfig.property("project.player.config");
+        mScenePlayerConfigFile = mConfigPathName + System.getProperty("file.separator") + mProjectConfig.property("project.player.config");
 
     }
 

@@ -2,7 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ProjectPreferences;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.tpl.TPLTuple;
 

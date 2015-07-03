@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.configs;
+package de.dfki.vsm.model.config;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IndentWriter;
@@ -103,7 +103,6 @@ public class ConfigData implements ModelObject {
                 return entry.getVal();
             }
         }
-
         return null;
     }
 
@@ -150,15 +149,18 @@ public class ConfigData implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-        XMLParseAction.processChildNodes(element, "Entry", new XMLParseAction() {
-            @Override
-            public void run(final Element element) throws XMLParseError {
-                final ConfigEntry entry = new ConfigEntry();
+        final String tag = element.getTagName();
+        if (tag.equals(mType)) {
+            XMLParseAction.processChildNodes(element, "Entry", new XMLParseAction() {
+                @Override
+                public void run(final Element element) throws XMLParseError {
+                    final ConfigEntry entry = new ConfigEntry();
 
-                entry.parseXML(element);
-                mEntryList.add(entry);
-            }
-        });
+                    entry.parseXML(element);
+                    mEntryList.add(entry);
+                }
+            });
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -70,7 +70,7 @@ public class GesticonObject implements ModelObject {
         }
 
         stream.pop();
-        stream.println("</Gesticon>");
+        stream.print("</Gesticon>");
         stream.flush();
     }
 

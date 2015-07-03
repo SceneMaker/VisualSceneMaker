@@ -28,7 +28,7 @@ import static java.lang.Thread.sleep;
 /**
  * @author Gregor Mehlmann
  */
-public class DefaultDialogueActPlayer implements DialogueActPlayer {
+public class DefaultDialogueActPlayer implements Player {
 
     // The Logger Instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
