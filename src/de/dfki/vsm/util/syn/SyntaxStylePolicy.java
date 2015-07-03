@@ -7,7 +7,7 @@ import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLParseTools;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
 import org.w3c.dom.Element;
@@ -56,7 +56,7 @@ public final class SyntaxStylePolicy implements ModelObject {
         try {
 
             // Parse The Policy From An URL
-            XMLParseTools.parseFromXMLURL(this, mURL);
+            XMLUtilities.parseFromXMLURL(this, mURL);
 
             // Print Some Debug Information
             mLogger.message("Loading Style Policy:\n" + toString());

@@ -1,12 +1,12 @@
 package de.dfki.vsm.api;
 
-import de.dfki.vsm.model.configs.ConfigData;
+import de.dfki.vsm.model.config.ConfigData;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.Environment;
 import de.dfki.vsm.runtime.Process;
 import de.dfki.vsm.runtime.RunTime;
-import de.dfki.vsm.runtime.player.SceneGroupPlayer;
+import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * @author Gregor Mehlmann
  */
-public abstract class VSMScenePlayer implements SceneGroupPlayer {
+public abstract class VSMScenePlayer implements Player {
 
     // The VSM Runtime Environment
     protected final RunTime mVSM3RunTime = RunTime.getInstance();
@@ -51,8 +51,8 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
     protected final SceneFlow mSceneFlow;
 
     // The System Timer Thead
-    protected volatile long  mStartupTime;
-    protected volatile long  mCurrentTime;
+    protected volatile long mStartupTime;
+    protected volatile long mCurrentTime;
     protected VSMSystemTimer mSystemTimer;
 
     // The Query Handler
@@ -91,9 +91,9 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
         for (int i = 0; i < Integer.parseInt(numagent); i++) {
 
             // Get Agent's Initial Data
-            final String name  = mPlayerConfig.property("vsm.agent." + i + ".name");
-            final String uaid  = mPlayerConfig.property("vsm.agent." + i + ".uaid");
-            final String type  = mPlayerConfig.property("vsm.agent." + i + ".type");
+            final String name = mPlayerConfig.property("vsm.agent." + i + ".name");
+            final String uaid = mPlayerConfig.property("vsm.agent." + i + ".uaid");
+            final String type = mPlayerConfig.property("vsm.agent." + i + ".type");
             final String rhost = mPlayerConfig.property("vsm.agent." + i + ".remote.host");
             final String rport = mPlayerConfig.property("vsm.agent." + i + ".remote.port");
             final String rflag = mPlayerConfig.property("vsm.agent." + i + ".remote.flag");
@@ -102,11 +102,11 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
 
             // Print Out The Properties
             mVSM3Log.message("" + "Agent #" + i + " Name        : '" + name + "'" + "\r\n" + "Agent #" + i
-                             + " Uaid        : '" + uaid + "'" + "\r\n" + "Agent #" + i + " Type        : '" + type
-                             + "'" + "\r\n" + "Agent #" + i + " Remote Host : '" + rhost + "'" + "\r\n" + "Agent #" + i
-                             + " Remote Port : '" + rport + "'" + "\r\n" + "Agent #" + i + " Remote Flag : '" + rflag
-                             + "'" + "\r\n" + "Agent #" + i + " Local Host  : '" + lhost + "'" + "\r\n" + "Agent #" + i
-                             + " Local Port  : '" + lport);
+                    + " Uaid        : '" + uaid + "'" + "\r\n" + "Agent #" + i + " Type        : '" + type
+                    + "'" + "\r\n" + "Agent #" + i + " Remote Host : '" + rhost + "'" + "\r\n" + "Agent #" + i
+                    + " Remote Port : '" + rport + "'" + "\r\n" + "Agent #" + i + " Remote Flag : '" + rflag
+                    + "'" + "\r\n" + "Agent #" + i + " Local Host  : '" + lhost + "'" + "\r\n" + "Agent #" + i
+                    + " Local Port  : '" + lport);
 
             // Create A Client For This Agent
             // Check The Type Of This Agent
@@ -120,7 +120,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
                 client.start();
             } else if (type.equals("udp")) {
                 final VSMAgentClient client = new VSMUDPSockClient(this, name, uaid, lhost, Integer.parseInt(lport),
-                                                  rhost, Integer.parseInt(rport), Boolean.parseBoolean(rflag));
+                        rhost, Integer.parseInt(rport), Boolean.parseBoolean(rflag));
 
                 // Add The Client To Map
                 mAgentClientMap.put(name, client);
@@ -143,11 +143,11 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
 
         // Print Out The Properties
         mVSM3Log.message("" + "SWI Query Handler Local Host  : '" + swilhost + "'" + "\r\n"
-                         + "SWI Query Handler Remote Host : '" + swirhost + "'" + "\r\n"
-                         + "SWI Query Handler Local Port  : '" + swilport + "'" + "\r\n"
-                         + "SWI Query Handler Remote Port : '" + swirport + "'" + "\r\n"
-                         + "SWI Query Handler Remote Flag : '" + swirconn + "'" + "\r\n"
-                         + "SWI Query Handler Base Files  : '" + swilbase + "'");
+                + "SWI Query Handler Remote Host : '" + swirhost + "'" + "\r\n"
+                + "SWI Query Handler Local Port  : '" + swilport + "'" + "\r\n"
+                + "SWI Query Handler Remote Port : '" + swirport + "'" + "\r\n"
+                + "SWI Query Handler Remote Flag : '" + swirconn + "'" + "\r\n"
+                + "SWI Query Handler Base Files  : '" + swilbase + "'");
 
         // Initialize the JPL Engine
         JPLEngine.init();
@@ -163,7 +163,7 @@ public abstract class VSMScenePlayer implements SceneGroupPlayer {
 
         // Initialize Query Handler
         mQueryHandler.init(swilhost, Integer.parseInt(swilport), swirhost, Integer.parseInt(swirport),
-                           Boolean.parseBoolean(swirconn));
+                Boolean.parseBoolean(swirconn));
 
         // Now Start The System Timer
         mSystemTimer.start();

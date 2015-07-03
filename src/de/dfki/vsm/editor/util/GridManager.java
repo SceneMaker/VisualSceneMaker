@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.util.grid.GridConstants;
 import de.dfki.vsm.editor.util.grid.GridRectangle;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ProjectPreferences;
 
 //~--- JDK imports ------------------------------------------------------------
 

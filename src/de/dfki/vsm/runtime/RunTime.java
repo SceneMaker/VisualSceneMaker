@@ -1,13 +1,11 @@
 package de.dfki.vsm.runtime;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.runtime.player.DialogueActPlayer;
-import de.dfki.vsm.runtime.player.SceneGroupPlayer;
+import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.BooleanValue;
 import de.dfki.vsm.runtime.value.FloatValue;
@@ -15,17 +13,18 @@ import de.dfki.vsm.runtime.value.IntValue;
 import de.dfki.vsm.runtime.value.StringValue;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
  */
 public class RunTime {
-    private static RunTime                  sInstance     = null;
+
+    private static RunTime sInstance = null;
     private HashMap<SceneFlow, Interpreter> mSceneFlowMap = new HashMap<SceneFlow, Interpreter>();
 
-    private RunTime() {}
+    private RunTime() {
+    }
 
     public static synchronized RunTime getInstance() {
         if (sInstance == null) {
@@ -40,20 +39,24 @@ public class RunTime {
     ////////////////////////////////////////////////////////////////////////////
     public synchronized void register(ProjectData project) {
 
+        // TODO: clean
         // Load the sceneplayer
-        project.loadScenePlayer();
-
+        project.launchDefaultScenePlayer();
+          // TODO: clean
         // Load the dialogue act player
-        project.loadDialogueActPlayer();       
+        project.loadDialogueActPlayer();
 
-        // Load the plugin list
-        project.loadPluginList();
+        // Launch The Player List
+        project.launchPlayerList();
+
+        // Launch The Plugin List
+        project.launchPluginList();
 
         // Get the sceneflow and the scenepayer of that
         // project and Create a new interpreter for them
-        final SceneFlow         sceneFlow         = project.getSceneFlow();
-        final SceneGroupPlayer  sceneGroupPlayer  = project.getScenePlayer();
-        final DialogueActPlayer dialogueActPlayer = project.getDialogueActPlayer();
+        final SceneFlow sceneFlow = project.getSceneFlow();
+        final Player sceneGroupPlayer = project.getScenePlayer();
+        final Player dialogueActPlayer = project.getDialogueActPlayer();
 
         // Construct the Interpreter
         Interpreter interpreter = new Interpreter(sceneFlow, sceneGroupPlayer, dialogueActPlayer);
@@ -71,7 +74,7 @@ public class RunTime {
             mSceneFlowMap.remove(sceneFlow);
 
             // Unload the sceneplayer
-            project.unloadScenePlayer();
+            project.unloadDefaultScenePlayer();
 
             // Unload the plugin list
             project.unloadPluginList();

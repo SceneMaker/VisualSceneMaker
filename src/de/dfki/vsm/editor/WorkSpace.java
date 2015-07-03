@@ -32,7 +32,7 @@ import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
 import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ProjectPreferences;
 import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.CEdge;

@@ -4,7 +4,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.util.VisualisationTask;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.TextFormat;

@@ -5,7 +5,7 @@ package de.dfki.vsm.runtime.player;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
-import de.dfki.vsm.model.configs.ConfigData;
+import de.dfki.vsm.model.config.ConfigData;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.script.AbstractWord;
 import de.dfki.vsm.model.script.ActionObject;
@@ -34,7 +34,7 @@ import java.util.Map.Entry;
 /**
  * @author Gregor Mehlmann
  */
-public class DefaultSceneGroupPlayer implements SceneGroupPlayer {
+public class DefaultSceneGroupPlayer implements Player {
 
     // The Logger Instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();

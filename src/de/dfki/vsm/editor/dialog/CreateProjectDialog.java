@@ -6,9 +6,9 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.acticon.ActiconObject;
-import de.dfki.vsm.model.configs.ConfigData;
-import de.dfki.vsm.model.configs.ConfigEntry;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ConfigData;
+import de.dfki.vsm.model.config.ConfigEntry;
+import de.dfki.vsm.model.config.ProjectPreferences;
 import de.dfki.vsm.model.gesticon.GesticonObject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.script.SceneScript;
@@ -16,7 +16,7 @@ import de.dfki.vsm.model.visicon.VisiconObject;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.xml.XMLParseTools;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -696,7 +696,7 @@ public class CreateProjectDialog extends JDialog {
             mProperties.set(0, new ConfigEntry("project.basic.name", mNameTextField.getText()));
             mConfigFile = new File(mLocationTextField.getText() + System.getProperty("file.separator") + "config.xml");
             mLogger.message("creating file " + mConfigFile);
-            XMLParseTools.writeToXMLFile(mProjectConfig, mConfigFile);
+            XMLUtilities.writeToXMLFile(mProjectConfig, mConfigFile);
         } catch (XMLWriteError | IOException e) {
             e.printStackTrace(System.out);
         }

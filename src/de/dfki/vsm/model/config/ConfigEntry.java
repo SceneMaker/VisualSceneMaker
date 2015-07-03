@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.configs;
+package de.dfki.vsm.model.config;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IndentWriter;

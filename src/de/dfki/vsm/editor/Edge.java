@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.EdgeGraphics;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.VisualisationTask;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ProjectPreferences;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;

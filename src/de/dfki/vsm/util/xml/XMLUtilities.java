@@ -24,7 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 /**
  * @author Gregor Mehlmann
  */
-public class XMLParseTools {
+public class XMLUtilities {
 
     // The Singelton System Logger
     private final static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();

@@ -91,7 +91,7 @@ public class VisiconObject implements ModelObject {
         }
 
         stream.pop();
-        stream.println("</Visicon>");
+        stream.print("</Visicon>");
         stream.flush();
     }
 

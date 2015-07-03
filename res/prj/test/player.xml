@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Player>
+  <Entry key="swi.handler.local.base" val="res/prj/test/swi"/>
+  <Entry key="swi.handler.local.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.local.port" val="878"/>
+  <Entry key="swi.handler.remote.flag" val="false"/>
+  <Entry key="swi.handler.remote.host" val="127.0.0.1"/>
+  <Entry key="swi.handler.remote.port" val="787"/>
+  <Entry key="vsm.agent.number" val="0"/>
+</Player>

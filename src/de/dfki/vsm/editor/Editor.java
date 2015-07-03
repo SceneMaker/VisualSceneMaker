@@ -489,7 +489,7 @@ public class Editor extends JFrame implements EventListener {
         if (createProjectDialog != null) {
             ProjectData currentProject = mProjectEditorList.getSelectedProject();
 
-            currentProject.updateFileNames(createProjectDialog.mConfigFile.getName(),
+            currentProject.setProjectFileName(createProjectDialog.mConfigFile.getName(),
                                            createProjectDialog.mConfigFile.getPath());
             mProjectEditorList.saveCurrent();
             mProjectEditorList.setTitleAt(mProjectEditorList.getSelectedIndex(), createProjectDialog.mProjectName);

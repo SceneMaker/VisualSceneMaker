@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+  <Entry key="project.name" val="HelloWorld"/>
+  <Entry key="project.players" val="players.xml"/>
+  <Entry key="project.plugins" val="plugins.xml"/>
+  <Entry key="project.acticon" val="acticon.xml"/>
+  <Entry key="project.gesticon" val="gesticon.xml"/>
+  <Entry key="project.visicon" val="visicon.xml"/>
+  <Entry key="project.sceneflow" val="sceneflow.xml"/>
+  <Entry key="project.scenescript" val="scenes.xml"/>
+  <Entry key="project.player.class" val="de.dfki.vsm.api.VSMDefaultPlayer"/>
+  <Entry key="project.player.config" val="player.xml"/>
+</Project>

@@ -3,7 +3,7 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.config.ProjectPreferences;
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
