@@ -3,6 +3,7 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.configs.ProjectPreferences;
@@ -11,9 +12,10 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventListener;
+import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.awt.BorderLayout;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -47,7 +49,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
  * @author Gregor Mehlmann
  * @author Patrick Gebahrd
  */
-public class SceneFlowToolBar extends JToolBar implements Observer {
+public class SceneFlowToolBar extends JToolBar implements Observer, EventListener  {
 
     // The VSM Runtime Instance
     private final RunTime mRunTime = RunTime.getInstance();
@@ -98,7 +100,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mEditor      = sceneFlowEditor;
         mProject     = sceneFlowEditor.getWorkSpace().getProject();
         mPreferences = sceneFlowEditor.getWorkSpace().getPreferences();
-
+        
         // Initialize The SceneFlow
         mSceneFlow = mEditor.getSceneFlow();
         setFloatable(false);
@@ -106,17 +108,56 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
         initPreferences();
         initComponents();
+        mEventCaster.append(this);
     }
 
     @Override
     public void update(Observable obs, Object obj) {
-
         // mLogger.message("SceneFlowToolBar.update");
         updatePathDisplay();
         updatePathText();
         initPreferences();
+        checkChangesOnProject();
+        
+    }
+    
+    @Override
+    public void update(EventObject event) {
+        if(event instanceof ProjectChangedEvent)
+        {
+            mSaveProject.setEnabled(true);
+            checkRedoUndo();
+        }
     }
 
+    private void checkChangesOnProject() {
+        if(mProject.hasChanged())
+        {
+            mSaveProject.setEnabled(true);
+        }
+        checkRedoUndo();
+    }
+    private void checkRedoUndo()
+    {
+        System.out.println("undoo  "+undoAction.isEnabled());
+        System.out.println("redoo  "+redoAction.isEnabled());
+        if(undoAction.isEnabled())
+        {
+            mUndo.setEnabled(true);
+        }
+        if(!undoAction.isEnabled())
+        {
+            mUndo.setEnabled(false);
+        }
+        if(redoAction.isEnabled())
+        {
+            mRedo.setEnabled(true);
+        }
+        if(!redoAction.isEnabled())
+        {
+            mRedo.setEnabled(false);
+        }
+    }
     public void updatePathDisplay() {
         mPathComponents.clear();
 
@@ -309,33 +350,42 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mSMEditor.saveCurrentProject();
+                mSaveProject.setEnabled(false);
             }
         });
         mSaveProject.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/save_icon_blue.png"));
+        mSaveProject.setDisabledIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/save_icon_disable.png"));
         mSaveProject.setToolTipText("Save current project");
         sanitizeTinyButton(mSaveProject);
+        mSaveProject.setEnabled(false);
         
         //Undo last action
         mUndo = add(new AbstractAction("ACTION_UNDO", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/undo_icon.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 undoAction.actionPerformed(e);
+                checkRedoUndo();
             }
         });
         mUndo.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/undo_icon_blue.png"));
+        mUndo.setDisabledIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/undo_icon_disabled.png"));
         mUndo.setToolTipText("Undo last action");
         sanitizeTinyButton(mUndo);
+        mUndo.setEnabled(false);
         
         //Redo last action
         mRedo = add(new AbstractAction("ACTION_REDO", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/redo_icon.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 redoAction.actionPerformed(e);
+                checkRedoUndo();
             }
         });
         mRedo.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/redo_icon_blue.png"));
+        mRedo.setDisabledIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/redo_icon_disabled.png"));
         mRedo.setToolTipText("Redo last action");
         sanitizeTinyButton(mRedo);
+        mRedo.setEnabled(false);
         add(Box.createHorizontalStrut(10));
         add(createSeparator());
         //******************************************************************************************************
@@ -410,14 +460,14 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         // Format The Button As Tiny
         sanitizeTinyButton(mStopButton);
 
-        JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/monitor_icon.png")) {
+        JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stack_icon.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Editor.getInstance().showMonitor();
             }
         });
-        b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/monitor_icon_blue.png"));
-        b.setToolTipText("Settings");
+        b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stack_icon_blue.png"));
+        b.setToolTipText("Stack Manager");
         sanitizeTinyButton(b);
         add(Box.createHorizontalStrut(10));
         add(createSeparator());

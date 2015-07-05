@@ -23,6 +23,7 @@ import de.dfki.vsm.editor.action.ShortestEdgeAction;
 import de.dfki.vsm.editor.action.StraightenEdgeAction;
 import de.dfki.vsm.editor.action.ToggleStartNodeAction;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
 import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
@@ -237,6 +238,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     @Override
     public void update(EventObject event) {
+        
         checkChangesOnWorkspace();
         
     }
@@ -252,6 +254,13 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         }
     }
 
+    private void launchProjectChangedEvent()
+    {
+        if (mProject.hasChanged()) {
+            ProjectChangedEvent ev = new ProjectChangedEvent(this);
+            mEventCaster.convey(ev);
+        }
+    }
     public void clearClipBoard() {
         mClipboard.clear();
     }
@@ -1274,7 +1283,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         clearCurrentWorkspace();
 
         NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
-
         mEventCaster.convey(e);
     }
 
@@ -1702,7 +1710,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
     private void launchWorkSpaceSelectedEvent() {
         WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
-
         mEventCaster.convey(ev);
     }
 
@@ -1951,8 +1958,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     @Override
     public void mouseReleased(MouseEvent event) {
+        launchProjectChangedEvent();
         straightenAllOutOfBoundEdges();
-
+        
         if (mDoAreaSelection) {
             mDoAreaSelection = false;
             repaint();
@@ -2061,7 +2069,6 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 // mSelectedComment.setDeselected();
                 mSelectedComment = null;
             }
-
             // finally do a repaint
             repaint();
         }

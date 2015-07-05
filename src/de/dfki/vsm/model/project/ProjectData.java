@@ -2,6 +2,7 @@ package de.dfki.vsm.model.project;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.model.acticon.ActiconObject;
 import de.dfki.vsm.model.configs.ConfigEntry;
 import de.dfki.vsm.model.configs.PlayerConfig;
@@ -17,6 +18,7 @@ import de.dfki.vsm.runtime.player.DefaultDialogueActPlayer;
 import de.dfki.vsm.runtime.player.DefaultSceneGroupPlayer;
 import de.dfki.vsm.runtime.player.DialogueActPlayer;
 import de.dfki.vsm.runtime.player.SceneGroupPlayer;
+import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.plugin.Plugin;
 import de.dfki.vsm.util.request.Crowd;
