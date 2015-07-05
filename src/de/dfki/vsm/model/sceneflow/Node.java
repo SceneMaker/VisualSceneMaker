@@ -227,6 +227,7 @@ public class Node extends Object {
     }
 
     public void addVarDef(VarDef value) {
+        System.out.println("VARIABLE ADDED ******************************************");
         mVarDefList.add(value);
     }
 
@@ -252,11 +253,10 @@ public class Node extends Object {
 
     public Vector<VarDef> getCopyOfVarDefList() {
         Vector<VarDef> copy = new Vector<VarDef>();
-
+        System.out.println(mVarDefList+ " /////////////////////////////////////////////////////////////////////");
         for (VarDef varDef : mVarDefList) {
             copy.add(varDef.getCopy());
         }
-
         return copy;
     }
 
@@ -328,7 +328,7 @@ public class Node extends Object {
 
     public Vector<TypeDef> getCopyOfTypeDefList() {
         Vector<TypeDef> copy = new Vector<TypeDef>();
-
+        
         for (TypeDef def : mTypeDefList) {
             copy.add(def.getCopy());
         }

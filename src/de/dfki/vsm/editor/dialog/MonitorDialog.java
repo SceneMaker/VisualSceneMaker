@@ -16,6 +16,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTime;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.util.ios.ResourceLoader;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -49,17 +50,18 @@ public class MonitorDialog extends JDialog {
     private final SceneFlow      mSceneFlow;
 
     private MonitorDialog() {
-        super(Editor.getInstance(), "Run Monitor", true);
+        super(Editor.getInstance(), "Stack Manager", true);
+        this.setIconImage(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stack_icon.png").getImage());
         mSceneFlow = Editor.getInstance().getProjectEditorList().getSelectedProject().getSceneFlow();
         initComponents();
-        initVariableList();
+        //initVariableList(); Now this init is being called from the button calling the monitor -- by M. Fallas 07 2015 
     }
 
     public static MonitorDialog getInstance() {
         if (sSingeltonInstance == null) {
             sSingeltonInstance = new MonitorDialog();
         }
-
+        
         return sSingeltonInstance;
     }
 
@@ -104,7 +106,6 @@ public class MonitorDialog extends JDialog {
                                 ((String) exp).getValue());
                     } else if (exp instanceof List) {
                         return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
-
                         // Evaluator eval = interpreter.getEvaluator();
                         // Environment env = interpreter.getEnvironment();
                         // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
@@ -130,9 +131,8 @@ public class MonitorDialog extends JDialog {
         mOkButton.setBounds(205, 0, 125, 30);
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (process()) {
-                    dispose();
-                }
+                boolean varAssigned = process();
+                dispose();
             }
         });
         mCancelButton = new CancelButton();
@@ -156,9 +156,9 @@ public class MonitorDialog extends JDialog {
                     getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
     }
 
-    private void initVariableList() {
+    public void initVariableList() {
         mVarDefListData = mSceneFlow.getCopyOfVarDefList();
-
+        ((DefaultListModel) mVariableList.getModel()).removeAllElements();
         for (VarDef varDef : mVarDefListData) {
             ((DefaultListModel) mVariableList.getModel()).addElement(varDef.getType() + " " + varDef.getName());
         }

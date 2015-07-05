@@ -353,7 +353,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         mFMLButton.setBackground(Color.white);
         mFMLButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mFMLButton.setToolTipText("FML Markup Language");
-        mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_gray.png"));
+//        mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_gray.png"));
         mFMLButton.setIconTextGap(20);
         mFMLButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
         mFMLButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -367,11 +367,11 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
                 // Do something
             }
             public void mouseEntered(MouseEvent me) {
-                mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_blue.png"));
+//                mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_blue.png"));
                 mFMLButton.setBackground(new Color(82, 127, 255));
             }
             public void mouseExited(MouseEvent me) {
-                mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_gray.png"));
+//                mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_gray.png"));
                 mFMLButton.setBackground(new Color(255, 255, 255));
             }
         });

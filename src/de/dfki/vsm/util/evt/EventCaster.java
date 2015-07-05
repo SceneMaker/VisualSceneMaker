@@ -68,7 +68,6 @@ public class EventCaster {
                 convey(event);
             }
         };
-
         // Schedule The Event
         mTimer.schedule(timer, timeout);
     }

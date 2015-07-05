@@ -596,7 +596,7 @@ public class Editor extends JFrame implements EventListener {
                         ? recentProjectDirs.size()
                         : Preferences.sMAX_RECENT_PROJECTS;
 
-        for (int i = 0; i < maxCnt; i++) {
+        for (int i = 0; i < recentProjectNames.size(); i++) {
             dir  = recentProjectDirs.get(i);
             name = recentProjectNames.get(i);
 
@@ -630,7 +630,7 @@ public class Editor extends JFrame implements EventListener {
 
     public void showMonitor() {
         MonitorDialog monitorDialog = MonitorDialog.getInstance();
-
+        monitorDialog.initVariableList();
         monitorDialog.setVisible(true);
     }
 
