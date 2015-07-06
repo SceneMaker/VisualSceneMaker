@@ -159,8 +159,8 @@ public class ConfigData implements ModelObject {
                     entry.parseXML(element);
                     mEntryList.add(entry);
                 }
-            });
-        }
+            });         
+        } 
     }
 
     ////////////////////////////////////////////////////////////////////////////

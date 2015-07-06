@@ -86,13 +86,10 @@ public class XMLUtilities {
             // Return True At Success
             return true;
         } catch (Exception exc) {
-
             // Print Some Information
-            sLogger.failure(exc.toString());
-            exc.printStackTrace();
-
+            sLogger.failure(exc.toString());            
             // Return False At Failure
-            return true;
+            return false;
         }
     }
 

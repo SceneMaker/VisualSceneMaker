@@ -70,7 +70,7 @@ public abstract class VSMScenePlayer implements Player {
         mSceneFlow = project.getSceneFlow();
 
         // Init Scene Player Config
-        mPlayerConfig = project.getScenePlayerProperties();
+        mPlayerConfig = project.getPlayerConfig();
 
         // Print Debug Information
         mVSM3Log.message("Creating VSM Scene Player");

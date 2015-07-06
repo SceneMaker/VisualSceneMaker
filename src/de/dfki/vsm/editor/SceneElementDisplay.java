@@ -263,7 +263,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
                 SceneActionDialog.getInstance().setVisible(true);
                 node.removeFromParent();
 
-                ActiconObject asd = Editor.getInstance().getSelectedProjectEditor().getProject().getSceneActions();
+                ActiconObject asd = Editor.getInstance().getSelectedProjectEditor().getProject().getActicon();
 
                 asd.remove(a);
             }
@@ -278,7 +278,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
 
                 node.removeFromParent();
 
-                ActiconObject asd = Editor.getInstance().getSelectedProjectEditor().getProject().getSceneActions();
+                ActiconObject asd = Editor.getInstance().getSelectedProjectEditor().getProject().getActicon();
 
                 asd.remove(aToDel);
                 Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();

@@ -482,7 +482,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     public final void actionStartSceneFlow() {
 
         // Check State Of Execution
-        if (mRunTime.isSceneFlowRunnning(mSceneFlow)) {
+        if (mRunTime.isActive(mSceneFlow)) {
             mWindow.pauseSceneFlow();
         } else {
             mWindow.startSceneFlow();
@@ -500,8 +500,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private void changeRuntimeButtonState() {
 
         //
-        if (mRunTime.isSceneFlowRunnning(mSceneFlow)) {
-            if (mRunTime.isSceneFlowPaused(mSceneFlow)) {
+        if (mRunTime.isActive(mSceneFlow)) {
+            if (mRunTime.isPaused(mSceneFlow)) {
                 mPlayButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png"));
                 mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
                 mPlayButton.setToolTipText("Play Scene");

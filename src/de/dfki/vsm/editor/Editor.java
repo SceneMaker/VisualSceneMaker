@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.dialog.AboutDialog;
 import de.dfki.vsm.editor.dialog.CreateProjectDialog;
 import de.dfki.vsm.editor.dialog.ErrorDialog;
@@ -19,7 +18,6 @@ import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -76,29 +74,33 @@ public class Editor extends JFrame implements EventListener {
      * between the SceneMaker components. The Editor itself implements the
      * interface EventListener.
      */
-
     /**
      * The editor's observable component which is used to propagate events to
      * the editor's observers.
      */
-    private final Observable  mObservable        = new Observable();
+    private final Observable mObservable = new Observable();
     private ComponentListener mComponentListener = new ComponentListener() {
         public void componentResized(ComponentEvent e) {
             Preferences.setProperty("frame_height", Integer.toString(getHeight()));
             Preferences.setProperty("frame_width", Integer.toString(getWidth()));
             Preferences.save();
         }
+
         public void componentMoved(ComponentEvent e) {
             Preferences.setProperty("frame_posx", Integer.toString(getX()));
             Preferences.setProperty("frame_posy", Integer.toString(getY()));
             Preferences.save();
         }
-        public void componentShown(ComponentEvent e) {}
-        public void componentHidden(ComponentEvent e) {}
+
+        public void componentShown(ComponentEvent e) {
+        }
+
+        public void componentHidden(ComponentEvent e) {
+        }
     };
 
     /**
-     * 
+     *
      *
      *
      *
@@ -108,17 +110,17 @@ public class Editor extends JFrame implements EventListener {
     /**
      * The editor's GUI components
      */
-    private final MenuBar           mMenuBar;
+    private final MenuBar mMenuBar;
     private final ProjectEditorList mProjectEditorList;
 
     /*
      *   Welcome screen
      */
     private final WelcomePanel mWelcomePanel;
-    private final JScrollPane  jsWelcome;
+    private final JScrollPane jsWelcome;
 
     /**
-     * 
+     *
      *
      *
      *
@@ -126,7 +128,7 @@ public class Editor extends JFrame implements EventListener {
      */
     private Editor() {
         Preferences.configure();
-        
+
         // Load the preferences
         Preferences.load();
         getContentPane().setBackground(Color.WHITE);
@@ -140,7 +142,6 @@ public class Editor extends JFrame implements EventListener {
 
         // SET BACKGROUNDS
         setUIBackgrounds();
-        
 
         // Preferences.info();
         // Init the menu bar
@@ -154,7 +155,7 @@ public class Editor extends JFrame implements EventListener {
 
         // Init welcome screen
         mWelcomePanel = new WelcomePanel(this);
-        jsWelcome     = new JScrollPane(mWelcomePanel);
+        jsWelcome = new JScrollPane(mWelcomePanel);
         jsWelcome.setMaximumSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
         jsWelcome.setOpaque(false);
         jsWelcome.getViewport().setOpaque(false);
@@ -172,7 +173,7 @@ public class Editor extends JFrame implements EventListener {
         // Init the editor application frame
         // TODO: static property fields
         Dimension editorSize = new Dimension(Integer.valueOf(Preferences.getProperty("frame_width")),
-                                   Integer.valueOf(Preferences.getProperty("frame_height")));
+                Integer.valueOf(Preferences.getProperty("frame_height")));
 
         setPreferredSize(editorSize);
         setSize(editorSize);
@@ -197,7 +198,7 @@ public class Editor extends JFrame implements EventListener {
         UIManager.put("Button.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ToggleButton.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("RadioButton.font", new Font(defaultFont, Font.PLAIN, 14));
-            
+
         UIManager.put("CheckBox.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ColorChooser.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ComboBox.font", new Font(defaultFont, Font.PLAIN, 14));
@@ -237,7 +238,7 @@ public class Editor extends JFrame implements EventListener {
         UIManager.put("Menu.background", Color.WHITE);
         UIManager.put("MenuItem.opaque", true);
         UIManager.put("MenuItem.background", Color.WHITE);
-        UIManager.put("ToolBar.opaque", true);       
+        UIManager.put("ToolBar.opaque", true);
         UIManager.put("ToolBar.background", Color.WHITE);
         UIManager.put("TabbedPane.background", Color.WHITE);
         UIManager.put("EditorPane.background", Color.WHITE);
@@ -292,19 +293,19 @@ public class Editor extends JFrame implements EventListener {
     }
 
     private void checkAndSetLocation() {
-        Point finalPos       = new Point(0, 0);
+        Point finalPos = new Point(0, 0);
         Point editorPosition = new Point(Integer.valueOf(Preferences.getProperty("frame_posx")),
-                                         Integer.valueOf(Preferences.getProperty("frame_posy")));
+                Integer.valueOf(Preferences.getProperty("frame_posy")));
         Dimension editorSize = new Dimension(Integer.valueOf(Preferences.getProperty("frame_width")),
-                                   Integer.valueOf(Preferences.getProperty("frame_height")));
+                Integer.valueOf(Preferences.getProperty("frame_height")));
 
         // check systems monitor setup
-        Rectangle           virtualBounds = new Rectangle();
-        GraphicsEnvironment ge            = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[]    gs            = ge.getScreenDevices();
+        Rectangle virtualBounds = new Rectangle();
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
 
         for (int j = 0; j < gs.length; j++) {
-            GraphicsDevice          gd = gs[j];
+            GraphicsDevice gd = gs[j];
             GraphicsConfiguration[] gc = gd.getConfigurations();
 
             for (int i = 0; i < gc.length; i++) {
@@ -312,7 +313,7 @@ public class Editor extends JFrame implements EventListener {
                 // check position
                 if (((editorPosition.x > gc[i].getBounds().x) && (gc[i].getBounds().width > editorSize.width))
                         && ((editorPosition.y > gc[i].getBounds().y)
-                            && (gc[i].getBounds().height > editorSize.height))) {
+                        && (gc[i].getBounds().height > editorSize.height))) {
 
                     // component can be place there
                     finalPos = new Point(editorPosition.x, editorPosition.y);
@@ -348,7 +349,7 @@ public class Editor extends JFrame implements EventListener {
         if (createProjectDialog != null) {
             try {
                 String path = createProjectDialog.mConfigFile.getPath();
-
+                
                 if (!path.equals("")) {
                     if (mProjectEditorList.getTabCount() == 0) {
                         toggleProjectEditorList(true);
@@ -398,28 +399,29 @@ public class Editor extends JFrame implements EventListener {
 
                 return false;
             }
+
             public String getDescription() {
                 return "SceneMaker Project File Filter";
             }
         });
 
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            if (new File(fc.getSelectedFile() + System.getProperty("file.separator"), "config.xml").exists()) {
+            if (new File(fc.getSelectedFile() + System.getProperty("file.separator")/*, "config.xml"*/).exists()) {
                 if (mProjectEditorList.getTabCount() == 0) {
                     toggleProjectEditorList(true);
                 }
 
-                File        configFile = new File(fc.getSelectedFile() + System.getProperty("file.separator")
-                                                  + "config.xml");
-                ProjectData project    = new ProjectData(configFile);
+                File configFile = new File(fc.getSelectedFile() + System.getProperty("file.separator")
+                        + "config.xml");
+                ProjectData project = new ProjectData(configFile);
 
                 addProject(project);
 
                 // update rectent project list
-                updateRecentProjects(project.getProjectDirPath(), project.getProjectName());
+                updateRecentProjects(project.getProjectDirName(), project.getProjectName());
             } else {
                 JOptionPane.showMessageDialog(this, "Project Not Found.", "Visual Scene Maker.",
-                                              JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.WARNING_MESSAGE);
             }
         }
     }
@@ -430,8 +432,8 @@ public class Editor extends JFrame implements EventListener {
      * @param file the project directory
      */
     public void openProject(File file) {
-        File        configFile = new File(file + System.getProperty("file.separator") + "config.xml");
-        ProjectData project    = new ProjectData(configFile);
+        File configFile = new File(file + System.getProperty("file.separator") /*+ "config.xml"*/);
+        ProjectData project = new ProjectData(configFile);
 
         openProject(project);
     }
@@ -449,12 +451,12 @@ public class Editor extends JFrame implements EventListener {
         addProject(project);
 
         // update recent project list
-        updateRecentProjects(project.getProjectDirPath(), project.getProjectName());
+        updateRecentProjects(project.getProjectDirName(), project.getProjectName());
     }
 
     public void updateHashValue() {
         mProjectEditorList.getSelectedProject().setSceneInitialHash(
-            mProjectEditorList.getSelectedProject().getHashCode());
+                mProjectEditorList.getSelectedProject().getHashCode());
     }
 
     public void closeCurrentProject() {
@@ -473,31 +475,33 @@ public class Editor extends JFrame implements EventListener {
         update();
 
         // update rectent project list
-        updateRecentProjects(mProjectEditorList.getSelectedProject().getProjectDirPath(),
-                             mProjectEditorList.getSelectedProject().getProjectName());
+        updateRecentProjects(mProjectEditorList.getSelectedProject().getProjectDirName(),
+                mProjectEditorList.getSelectedProject().getProjectName());
 
         // TODO: no return - what is pending -let project editor do this!
         mProjectEditorList.getSelectedProject().setSceneInitialHash(
-            mProjectEditorList.getSelectedProject().getHashCode());
+                mProjectEditorList.getSelectedProject().getHashCode());
 
         return mProjectEditorList.getSelectedProject();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     public void saveFileAs() {
-        CreateProjectDialog createProjectDialog = new CreateProjectDialog();
+        // Show A Project Creation Dialog
+        final CreateProjectDialog dialog = new CreateProjectDialog();
+        // Get Currently Selected Project
+        final ProjectData project = mProjectEditorList.getSelectedProject();
+        // Set The New Project Directory
+        
+        project.setProjectDirFile(dialog.mProjectDir);
+                //dialog.mConfigFile.getName(),
+                //dialog.mConfigFile.getPath());
+        mProjectEditorList.saveCurrent();
+        mProjectEditorList.setTitleAt(mProjectEditorList.getSelectedIndex(), dialog.mProjectName);
+        mProjectEditorList.repaint();
 
-        if (createProjectDialog != null) {
-            ProjectData currentProject = mProjectEditorList.getSelectedProject();
-
-            currentProject.setProjectFileName(createProjectDialog.mConfigFile.getName(),
-                                           createProjectDialog.mConfigFile.getPath());
-            mProjectEditorList.saveCurrent();
-            mProjectEditorList.setTitleAt(mProjectEditorList.getSelectedIndex(), createProjectDialog.mProjectName);
-            mProjectEditorList.repaint();
-
-            // update rectent project list
-            updateRecentProjects(createProjectDialog.mProjectDir.getPath(), createProjectDialog.mProjectName);
-        }
+        // update rectent project list
+        updateRecentProjects(dialog.mProjectDir.getPath(), dialog.mProjectName);
     }
 
     public void exit() {
@@ -543,7 +547,7 @@ public class Editor extends JFrame implements EventListener {
     }
 
     public void updateRecentProjects(String projectDir, String projectName) {
-        ArrayList<String> recentProjectDirs  = new ArrayList<String>();
+        ArrayList<String> recentProjectDirs = new ArrayList<String>();
         ArrayList<String> recentProjectNames = new ArrayList<String>();
 
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
@@ -595,14 +599,14 @@ public class Editor extends JFrame implements EventListener {
         }
 
         // set properties
-        String dir    = null;
-        String name   = null;
-        int    maxCnt = (recentProjectDirs.size() <= Preferences.sMAX_RECENT_PROJECTS)
-                        ? recentProjectDirs.size()
-                        : Preferences.sMAX_RECENT_PROJECTS;
+        String dir = null;
+        String name = null;
+        int maxCnt = (recentProjectDirs.size() <= Preferences.sMAX_RECENT_PROJECTS)
+                ? recentProjectDirs.size()
+                : Preferences.sMAX_RECENT_PROJECTS;
 
         for (int i = 0; i < maxCnt; i++) {
-            dir  = recentProjectDirs.get(i);
+            dir = recentProjectDirs.get(i);
             name = recentProjectNames.get(i);
 
             if ((dir != null) && (name != null)) {
@@ -621,7 +625,7 @@ public class Editor extends JFrame implements EventListener {
     }
 
     /**
-     * 
+     *
      *
      *
      *
@@ -663,14 +667,13 @@ public class Editor extends JFrame implements EventListener {
         // Register the sceneflow with the sceneplayer at the runtime
         // Get the sceneplayer that has to be used
         // ScenePlayer scenePlayer = mEditorList.getSelectedProject().loadPluginScenePlayer();
-
         // mRunTime.registerSceneFlow(sceneFlow, scenePlayer);
         // mLogger.message("Registering Sceneflow " + project.getSceneFlow());
-        mRunTime.register(project);
+        mRunTime.launch(project);
 
         // Start the interpreter for that sceneflow
         // mLogger.message("Starting Sceneflow " + project.getSceneFlow());
-        mRunTime.startSceneFlow(project.getSceneFlow());
+        mRunTime.start(project.getSceneFlow());
 
         // Disable the project list
         mProjectEditorList.setEnabled(false);
@@ -694,11 +697,11 @@ public class Editor extends JFrame implements EventListener {
 
         // Stop the interpreter for that sceneflow
         // mRunTime.stopSceneFlow(sceneFlow);
-        mRunTime.stopSceneFlow(project.getSceneFlow());
+        mRunTime.abort(project.getSceneFlow());
 
         // mLogger.message("Stopping Sceneflow " + project.getSceneFlow());
         //
-        mRunTime.unregister(project);
+        mRunTime.unload(project);
 
         // mLogger.message("Unregistering Sceneflow " + project.getSceneFlow());
         // Enable the project list
@@ -720,13 +723,13 @@ public class Editor extends JFrame implements EventListener {
     public void pauseSceneFlow() {
         SceneFlow sceneFlow = mProjectEditorList.getSelectedProject().getSceneFlow();
 
-        if (mRunTime.isSceneFlowPaused(sceneFlow)) {
-            mRunTime.proceedSceneFlow(sceneFlow);
+        if (mRunTime.isPaused(sceneFlow)) {
+            mRunTime.proceed(sceneFlow);
         } else {
-            mRunTime.pauseSceneFlow(sceneFlow);
+            mRunTime.pause(sceneFlow);
         }
 
-        if (mRunTime.isSceneFlowPaused(sceneFlow)) {
+        if (mRunTime.isPaused(sceneFlow)) {
 
             // mMenuBar.setRunMenuEnabled(false);
             // mMenuBar.setStopMenuEnabled(false);
@@ -741,13 +744,14 @@ public class Editor extends JFrame implements EventListener {
     }
 
     /**
-     * 
+     *
      *
      *
      *
      *
      */
     private class Observable extends java.util.Observable {
+
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);
