@@ -1,6 +1,5 @@
 package de.dfki.vsm.runtime;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
@@ -11,40 +10,43 @@ import de.dfki.vsm.runtime.value.BooleanValue;
 import de.dfki.vsm.runtime.value.FloatValue;
 import de.dfki.vsm.runtime.value.IntValue;
 import de.dfki.vsm.runtime.value.StringValue;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
  */
-public class RunTime {
+public final class RunTime {
 
+    // The Singelton RunTime Instance
     private static RunTime sInstance = null;
-    private HashMap<SceneFlow, Interpreter> mSceneFlowMap = new HashMap<SceneFlow, Interpreter>();
 
+    // The Map Of Maintained Projects
+    private final HashMap<SceneFlow, Interpreter> mProjectMap;
+
+    ////////////////////////////////////////////////////////////////////////////
     private RunTime() {
+        // Initialize The Project Map
+        mProjectMap = new HashMap<>();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     public static synchronized RunTime getInstance() {
         if (sInstance == null) {
             sInstance = new RunTime();
         }
-
+        // Return The Singelton Instance
         return sInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // REGISTER & UNREGISTER
-    ////////////////////////////////////////////////////////////////////////////
-    public synchronized void register(ProjectData project) {
+    public final synchronized void launch(final ProjectData project) {
 
         // TODO: clean
         // Load the sceneplayer
-        project.launchDefaultScenePlayer();
-          // TODO: clean
+        project.launchScenePlayer();
+        // TODO: clean
         // Load the dialogue act player
-        project.loadDialogueActPlayer();
+        //project.loadDialogPlayer();
 
         // Launch The Player List
         project.launchPlayerList();
@@ -52,29 +54,27 @@ public class RunTime {
         // Launch The Plugin List
         project.launchPluginList();
 
-        // Get the sceneflow and the scenepayer of that
-        // project and Create a new interpreter for them
-        final SceneFlow sceneFlow = project.getSceneFlow();
-        final Player sceneGroupPlayer = project.getScenePlayer();
-        final Player dialogueActPlayer = project.getDialogueActPlayer();
-
+        // Get The Project Data
+        final SceneFlow sceneflow = project.getSceneFlow();
+        final Player sceneplayer = project.getScenePlayer();
+        final Player dialogplayer = project.getDialogPlayer();
         // Construct the Interpreter
-        Interpreter interpreter = new Interpreter(sceneFlow, sceneGroupPlayer, dialogueActPlayer);
+        Interpreter interpreter = new Interpreter(sceneflow, sceneplayer, dialogplayer);
 
-        // If this sceneflow is not yet registered then register it
-        if (!mSceneFlowMap.containsKey(sceneFlow)) {
-            mSceneFlowMap.put(sceneFlow, interpreter);
+        // Register The Project
+        if (!mProjectMap.containsKey(sceneflow)) {
+            mProjectMap.put(sceneflow, interpreter);
         }
     }
 
-    public synchronized void unregister(ProjectData project) {
+    public final synchronized void unload(final ProjectData project) {
         SceneFlow sceneFlow = project.getSceneFlow();
 
-        if (mSceneFlowMap.containsKey(sceneFlow)) {
-            mSceneFlowMap.remove(sceneFlow);
+        if (mProjectMap.containsKey(sceneFlow)) {
+            mProjectMap.remove(sceneFlow);
 
             // Unload the sceneplayer
-            project.unloadDefaultScenePlayer();
+            project.unloadScenePlayer();
 
             // Unload the plugin list
             project.unloadPluginList();
@@ -82,45 +82,41 @@ public class RunTime {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // START / STOP / PAUSE / PROCEED
-    ////////////////////////////////////////////////////////////////////////////
-    public synchronized void startSceneFlow(SceneFlow sceneflow) {
-        if (mSceneFlowMap.containsKey(sceneflow)) {
-            mSceneFlowMap.get(sceneflow).start();
+    public synchronized void start(final SceneFlow sceneflow) {
+        if (mProjectMap.containsKey(sceneflow)) {
+            mProjectMap.get(sceneflow).start();
         }
     }
 
-    public synchronized void stopSceneFlow(SceneFlow sceneflow) {
-        if (mSceneFlowMap.containsKey(sceneflow)) {
-            mSceneFlowMap.get(sceneflow).stop();
+    public synchronized void abort(final SceneFlow sceneflow) {
+        if (mProjectMap.containsKey(sceneflow)) {
+            mProjectMap.get(sceneflow).stop();
         }
     }
 
-    public synchronized boolean isSceneFlowRunnning(SceneFlow sceneflow) {
-        if (mSceneFlowMap.containsKey(sceneflow)) {
-            return mSceneFlowMap.get(sceneflow).isRunning();
+    public synchronized void pause(final SceneFlow sceneflow) {
+        if (mProjectMap.containsKey(sceneflow)) {
+            mProjectMap.get(sceneflow).pause();
         }
+    }
 
+    public synchronized boolean isActive(final SceneFlow sceneflow) {
+        if (mProjectMap.containsKey(sceneflow)) {
+            return mProjectMap.get(sceneflow).isRunning();
+        }
         return false;
     }
 
-    public synchronized void pauseSceneFlow(SceneFlow sceneflow) {
-        if (mSceneFlowMap.containsKey(sceneflow)) {
-            mSceneFlowMap.get(sceneflow).pause();
+    public synchronized boolean isPaused(final SceneFlow sceneflow) {
+        if (mProjectMap.containsKey(sceneflow)) {
+            return mProjectMap.get(sceneflow).isPaused();
         }
-    }
-
-    public synchronized boolean isSceneFlowPaused(SceneFlow sceneflow) {
-        if (mSceneFlowMap.containsKey(sceneflow)) {
-            return mSceneFlowMap.get(sceneflow).isPaused();
-        }
-
         return false;
     }
 
-    public synchronized void proceedSceneFlow(SceneFlow sceneflow) {
-        if (mSceneFlowMap.containsKey(sceneflow)) {
-            mSceneFlowMap.get(sceneflow).proceed();
+    public synchronized void proceed(final SceneFlow sceneflow) {
+        if (mProjectMap.containsKey(sceneflow)) {
+            mProjectMap.get(sceneflow).proceed();
         }
     }
 
@@ -129,8 +125,8 @@ public class RunTime {
     ////////////////////////////////////////////////////////////////////////////
     public synchronized boolean execute(SceneFlow sceneFlow, String nodeId, Command cmd) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).execute(nodeId, cmd);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).execute(nodeId, cmd);
             }
         }
 
@@ -139,8 +135,8 @@ public class RunTime {
 
     public synchronized AbstractValue evaluate(SceneFlow sceneFlow, String nodeId, Expression exp) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).evaluate(nodeId, exp);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).evaluate(nodeId, exp);
             }
         }
 
@@ -149,8 +145,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String nodeId, String varName, Expression exp) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(nodeId, varName, exp);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(nodeId, varName, exp);
             }
         }
 
@@ -162,8 +158,8 @@ public class RunTime {
     ////////////////////////////////////////////////////////////////////////////
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, int value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, new IntValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, new IntValue(value));
             }
         }
 
@@ -172,8 +168,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, int index, int value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new IntValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, index, new IntValue(value));
             }
         }
 
@@ -182,8 +178,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, String member, int value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new IntValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, member, new IntValue(value));
             }
         }
 
@@ -192,8 +188,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, float value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, new FloatValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, new FloatValue(value));
             }
         }
 
@@ -202,8 +198,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, int index, float value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new FloatValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, index, new FloatValue(value));
             }
         }
 
@@ -212,8 +208,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, String member, float value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new FloatValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, member, new FloatValue(value));
             }
         }
 
@@ -222,8 +218,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, boolean value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, new BooleanValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, new BooleanValue(value));
             }
         }
 
@@ -232,8 +228,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, int index, boolean value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new BooleanValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, index, new BooleanValue(value));
             }
         }
 
@@ -242,8 +238,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, String member, boolean value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new BooleanValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, member, new BooleanValue(value));
             }
         }
 
@@ -252,8 +248,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, String value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, new StringValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, new StringValue(value));
             }
         }
 
@@ -262,8 +258,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, int index, String value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, new StringValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, index, new StringValue(value));
             }
         }
 
@@ -272,8 +268,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, String member, String value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, new StringValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, member, new StringValue(value));
             }
         }
 
@@ -282,8 +278,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, AbstractValue value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, value);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, value);
             }
         }
 
@@ -292,8 +288,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, int index, AbstractValue value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, index, value);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, index, value);
             }
         }
 
@@ -302,8 +298,8 @@ public class RunTime {
 
     public synchronized boolean setVariable(SceneFlow sceneFlow, String varName, String member, AbstractValue value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setVariable(varName, member, value);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setVariable(varName, member, value);
             }
         }
 
@@ -321,8 +317,8 @@ public class RunTime {
 //  }
     public synchronized boolean setLocalVariable(SceneFlow sceneFlow, String nodeId, String varName, int value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new IntValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setLocalVariable(nodeId, varName, new IntValue(value));
             }
         }
 
@@ -331,8 +327,8 @@ public class RunTime {
 
     public synchronized boolean setLocalVariable(SceneFlow sceneFlow, String nodeId, String varName, String value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new StringValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setLocalVariable(nodeId, varName, new StringValue(value));
             }
         }
 
@@ -341,8 +337,8 @@ public class RunTime {
 
     public synchronized boolean setLocalVariable(SceneFlow sceneFlow, String nodeId, String varName, boolean value) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).setLocalVariable(nodeId, varName, new BooleanValue(value));
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).setLocalVariable(nodeId, varName, new BooleanValue(value));
             }
         }
 
@@ -351,8 +347,8 @@ public class RunTime {
 
     public synchronized boolean hasLocaleVariable(SceneFlow sceneFlow, String nodeId, String varName) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).hasLocalVariable(nodeId, varName);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).hasLocalVariable(nodeId, varName);
             }
         }
 
@@ -361,8 +357,8 @@ public class RunTime {
 
     public synchronized boolean hasVariable(SceneFlow sceneFlow, String varName) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).hasVariable(varName);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).hasVariable(varName);
             }
         }
 
@@ -371,8 +367,8 @@ public class RunTime {
 
     public synchronized boolean hasVariable(SceneFlow sceneFlow, String varName, int index) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).hasVariable(varName, index);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).hasVariable(varName, index);
             }
         }
 
@@ -381,8 +377,8 @@ public class RunTime {
 
     public synchronized boolean hasVariable(SceneFlow sceneFlow, String varName, String member) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).hasVariable(varName, member);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).hasVariable(varName, member);
             }
         }
 
@@ -391,8 +387,8 @@ public class RunTime {
 
     public synchronized AbstractValue getValueOf(SceneFlow sceneFlow, String varName) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).getValueOf(varName);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).getValueOf(varName);
             }
         }
 
@@ -401,8 +397,8 @@ public class RunTime {
 
     public synchronized AbstractValue getValueOf(SceneFlow sceneFlow, String varName, int index) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).getValueOf(varName, index);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).getValueOf(varName, index);
             }
         }
 
@@ -411,8 +407,8 @@ public class RunTime {
 
     public synchronized AbstractValue getValueOf(SceneFlow sceneFlow, String varName, String member) {
         if (sceneFlow != null) {
-            if (mSceneFlowMap.containsKey(sceneFlow)) {
-                return mSceneFlowMap.get(sceneFlow).getValueOf(varName, member);
+            if (mProjectMap.containsKey(sceneFlow)) {
+                return mProjectMap.get(sceneFlow).getValueOf(varName, member);
             }
         }
 

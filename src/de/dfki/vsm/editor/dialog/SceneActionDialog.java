@@ -326,7 +326,7 @@ public class SceneActionDialog extends JDialog {
     }
 
     private void saveActions() {
-        ActiconObject            asd  = Editor.getInstance().getSelectedProjectEditor().getProject().getSceneActions();
+        ActiconObject            asd  = Editor.getInstance().getSelectedProjectEditor().getProject().getActicon();
         ArrayList<ActionFeature> args = new ArrayList<ActionFeature>();
 
         for (Object o : mListModel.toArray()) {

@@ -48,7 +48,7 @@ public class DefaultSceneGroupPlayer implements Player {
     // Construct A Default Player
     public DefaultSceneGroupPlayer(final ProjectData project) {
         mProject    = project;
-        mProperties = project.getScenePlayerProperties();
+        mProperties = project.getPlayerConfig();
     }
 
     // Launch The Default Player
