@@ -1,32 +1,23 @@
 package de.dfki.vsm.util.xml;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
 import org.w3c.dom.Document;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-
 import java.net.URL;
-
 import java.util.Properties;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * @author Gregor Mehlmann
  */
-public class XMLUtilities {
+public final class XMLUtilities {
 
-    // The Singelton System Logger
+    // The Singelton Logger
     private final static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
 
     ////////////////////////////////////////////////////////////////////////////
@@ -67,28 +58,23 @@ public class XMLUtilities {
     ////////////////////////////////////////////////////////////////////////////
     public final static boolean parseFromXMLFile(final XMLParseable parsable, final File file) {
         try {
-
-            // Open The Resource URL
+            // Open the file with a file input stream
             final FileInputStream stream = new FileInputStream(file);
-
-            // Construct The Parser
-            final DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-
-            // Parse The Document
+            // Construct the document builder parser
+            final DocumentBuilder parser
+                    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            // Parse The Document from the stream
             final Document document = parser.parse(stream);
-
-            // Parse The Model Object
+            // Let the parsable parse itself now
             parsable.parseXML(document.getDocumentElement());
-
-            // Close The File Stream
+            // Close the file input stream then
             stream.close();
-
             // Return True At Success
             return true;
-        } catch (Exception exc) {
-            // Print Some Information
-            sLogger.failure(exc.toString());            
-            // Return False At Failure
+        } catch (final Exception exc) {
+            // Print an error message in this case
+            sLogger.failure(exc.toString());
+            // Return failure if the parsing failed
             return false;
         }
     }
@@ -101,6 +87,9 @@ public class XMLUtilities {
 
             // Open The Resource URL
             final IndentWriter stream = new IndentWriter(file);
+
+            // Write The XML Header
+            stream.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 
             // Write The Document
             writeable.writeXML(stream);

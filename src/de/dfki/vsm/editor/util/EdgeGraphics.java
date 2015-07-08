@@ -9,7 +9,7 @@ package de.dfki.vsm.editor.util;
 
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -53,7 +53,7 @@ public final class EdgeGraphics {
 
     // general flags
     boolean                          mPointingToSameNode = false;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mPreferences;
     public double                    mArrowDir;
     double                           mArrow1Point;
     double                           mArrow2Point;

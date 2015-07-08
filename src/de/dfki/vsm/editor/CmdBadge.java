@@ -4,7 +4,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.util.VisualisationTask;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.TextFormat;
@@ -62,7 +62,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     // The node to which the badge is connected
     private final Node               mNode;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mPreferences;
     private final Timer              mVisuTimer;
 
     // The maintained list

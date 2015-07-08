@@ -113,7 +113,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 add();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
             }
         });
 
@@ -131,7 +131,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 remove();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
             }
         });
 
@@ -149,7 +149,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 edit();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
             }
         });
 
@@ -167,7 +167,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 up();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
             }
         });
 
@@ -185,7 +185,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 down();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
             }
         });
 
@@ -422,7 +422,7 @@ class ConditionEditor extends JPanel implements EventListener {
                         @Override
                         public void keyReleased(KeyEvent event) {
                             save();
-                            Editor.getInstance().update();
+                            EditorInstance.getInstance().update();
                         }
                     });
                 }
@@ -719,7 +719,7 @@ class InterruptEditor extends JPanel implements EventListener {
                         @Override
                         public void keyReleased(KeyEvent event) {
                             save();
-                            Editor.getInstance().update();
+                            EditorInstance.getInstance().update();
                         }
                     });
                 }
@@ -777,7 +777,7 @@ class NameEditor extends JPanel implements EventListener {
             @Override
             public void keyReleased(KeyEvent event) {
                 save();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
             }
         });
 
@@ -964,7 +964,7 @@ class ProbabilityEditor extends JPanel implements EventListener {
 
     private void save() {
         mPEdgeDialog.okActionPerformed();
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
 
         // System.out.println("save");
     }
@@ -1088,7 +1088,7 @@ class TimeOutEditor extends JPanel implements EventListener {
                     @Override
                     public void keyReleased(KeyEvent event) {
                         save();
-                        Editor.getInstance().update();
+                        EditorInstance.getInstance().update();
                     }
                 });
             }

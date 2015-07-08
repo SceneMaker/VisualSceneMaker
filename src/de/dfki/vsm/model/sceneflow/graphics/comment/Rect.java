@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.graphics.comment;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
+import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public class Rect extends Object {
+public class Rect extends Syntax {
     private int mXPos;
     private int mYPos;
     private int mWidth;

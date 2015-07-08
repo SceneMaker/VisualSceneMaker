@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
@@ -65,7 +65,7 @@ public class ModifyTEdgeDialog extends Dialog {
     private JLabel errorMsg;
 
     public ModifyTEdgeDialog(Node sourceNode, Node targetNode) {
-        super(Editor.getInstance(), "Create Timeout Edge", true);
+        super(EditorInstance.getInstance(), "Create Timeout Edge", true);
 
         // Set the edge data
         mTEdge = new TEdge();
@@ -81,7 +81,7 @@ public class ModifyTEdgeDialog extends Dialog {
     }
     
     public ModifyTEdgeDialog(TEdge tedge) {
-        super(Editor.getInstance(), "Modify Timeout Edge:", true);
+        super(EditorInstance.getInstance(), "Modify Timeout Edge:", true);
         mTEdge = tedge;
 
         // TODO: move to EdgeDialog

@@ -274,7 +274,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                                         new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
                             }
                             
-                            Editor.getInstance().update();
+                            EditorInstance.getInstance().update();
                         }
                     }
                 }
@@ -330,7 +330,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                                                              funDefPanel.getTypeMap().get(argString)));
                             }
                             
-                            Editor.getInstance().update();
+                            EditorInstance.getInstance().update();
                         }
                     }
                 }
@@ -365,7 +365,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                                                      funDefPanel.getTypeMap().get(argString)));
                     }
                     
-                    Editor.getInstance().update();
+                    EditorInstance.getInstance().update();
                 }
             });
         }
@@ -407,7 +407,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         usrCmdDef.addParam(new ParamDef("text", "String"));
         updateArguments(usrCmdDef);
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
         EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
     }
 
@@ -418,7 +418,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         if (funDef != null) {
             mSceneFlow.removeUsrCmdDef(funDef.getName());
             launchFunctionCreatedEvent(funDef);
-            Editor.getInstance().update();
+            EditorInstance.getInstance().update();
         }
 
         // Editor.getInstance().update();
@@ -523,7 +523,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             
         }
         
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
     }
     
     /**
@@ -543,7 +543,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
                                          funDefPanel.getTypeMap().get(argString)));
         }
         
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
     }
 
     /**

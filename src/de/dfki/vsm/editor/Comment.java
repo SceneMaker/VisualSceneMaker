@@ -2,7 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -60,7 +60,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     // edit
     private boolean            mEditMode = false;
     private WorkSpace          mWorkSpace;
-    private ProjectPreferences mPreferences;
+    private EditorConfig mPreferences;
 
     // image
     private Image                               mResizeMarker;

@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -24,7 +24,7 @@ import javax.swing.text.html.HTMLEditorKit;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public class Comment extends Object {
+public class Comment extends Syntax {
     protected SuperNode mParentNode = null;
     protected String    mHTMLText   = "";
     protected Graphics  mGraphics;
@@ -72,7 +72,7 @@ public class Comment extends Object {
 
     private void formatHTML() {
         mFontSize =
-            Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences()
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences()
                 .sWORKSPACEFONTSIZE;
 
         if (mTextEditor == null) {
@@ -123,7 +123,7 @@ public class Comment extends Object {
         out.pop().println("</Comment>");
     }
 
-    public Object getCopy() {
+    public Syntax getCopy() {
         return null;
     }
 }

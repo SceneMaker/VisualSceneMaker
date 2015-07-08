@@ -9,7 +9,7 @@ import de.dfki.vsm.editor.event.NodeTerminatedEvent;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.DockingManager;
 import de.dfki.vsm.editor.util.VisualisationTask;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
@@ -83,7 +83,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     //
     // TODO: move away
     private final WorkSpace          mWorkSpace;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mPreferences;
 
     // The name which will be displayed on the node
     private String mDisplayName;

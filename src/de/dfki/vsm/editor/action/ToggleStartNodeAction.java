@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.model.sceneflow.Node;
 
@@ -49,7 +49,7 @@ public class ToggleStartNodeAction extends NodeAction {
             mGUINode.addStartSign();
         }
 
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
     }

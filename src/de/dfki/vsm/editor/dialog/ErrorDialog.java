@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.runtime.event.AbortEvent;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -40,7 +40,7 @@ public class ErrorDialog extends JDialog {
     private int                mNum;
 
     private ErrorDialog() {
-        super(Editor.getInstance(), "Error Console", false);
+        super(EditorInstance.getInstance(), "Error Console", false);
         initComponents();
     }
 

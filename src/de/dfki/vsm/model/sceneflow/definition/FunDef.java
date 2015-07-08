@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.definition;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
+import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -21,7 +21,7 @@ import java.util.Vector;
  *
  * @author Gregor Mehlmann
  */
-public class FunDef extends Object implements Comparable<FunDef> {
+public class FunDef extends Syntax implements Comparable<FunDef> {
     private String           mName;
     private String           mClassName;
     private String           mMethod;

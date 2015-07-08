@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
@@ -69,7 +69,7 @@ public class ModifyCEdgeDialog extends Dialog {
     private JLabel errorMsg;
 
     public ModifyCEdgeDialog(Node sourceNode, Node targetNode) {
-        super(Editor.getInstance(), "Create Conditional Edge", true);
+        super(EditorInstance.getInstance(), "Create Conditional Edge", true);
         // Set the edge data
         mCEdge = new CEdge();
         mCEdge.setTarget(targetNode.getId());
@@ -81,7 +81,7 @@ public class ModifyCEdgeDialog extends Dialog {
         initComponents();
     }
     public ModifyCEdgeDialog(CEdge cedge) {
-        super(Editor.getInstance(), "Modify Conditional Edge", true);
+        super(EditorInstance.getInstance(), "Modify Conditional Edge", true);
         mCEdge = cedge;
 
         // TODO: move to EdgeDialog
@@ -242,7 +242,7 @@ public class ModifyCEdgeDialog extends Dialog {
         }
         else{
             mInputTextField.setForeground(Color.red);
-            Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
         }
     }
 

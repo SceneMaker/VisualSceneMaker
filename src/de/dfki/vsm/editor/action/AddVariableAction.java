@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.dialog.VarDefDialog;
 import de.dfki.vsm.model.sceneflow.Node;
@@ -27,7 +27,7 @@ public class AddVariableAction extends EditorAction {
             mDataNode.addVarDef(varDef);
 
             // mListModel.addElement(varDef);
-            Editor.getInstance().update();
+            EditorInstance.getInstance().update();
         }
     }
 }

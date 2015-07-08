@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge.TYPE;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Flavour;
 import de.dfki.vsm.editor.SceneFlowEditor;
 import de.dfki.vsm.editor.WorkSpace;
@@ -151,7 +151,7 @@ public abstract class EdgeAction extends EditorAction {
         }
 
         // mSourceGUINode.update();
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
         mWorkSpace.add(mGUIEdge);
         mWorkSpace.revalidate();
         mWorkSpace.repaint();
@@ -457,7 +457,7 @@ public abstract class EdgeAction extends EditorAction {
 
         // Remove the GUI-Edge from the workspace and
         // update the source node appearance
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
         mWorkSpace.remove(mGUIEdge);
         mWorkSpace.revalidate();
         mWorkSpace.repaint();

@@ -1,11 +1,12 @@
 package de.dfki.vsm.api;
 
-import de.dfki.vsm.model.config.ConfigData;
-import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.model.config.ConfigElement;
+import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.Environment;
 import de.dfki.vsm.runtime.Process;
-import de.dfki.vsm.runtime.RunTime;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
@@ -24,7 +25,7 @@ import java.util.Map;
 public abstract class VSMScenePlayer implements Player {
 
     // The VSM Runtime Environment
-    protected final RunTime mVSM3RunTime = RunTime.getInstance();
+    protected final RunTimeInstance mVSM3RunTime = RunTimeInstance.getInstance();
 
     // The System File Logger
     protected final LOGDefaultLogger mVSM3Log = LOGDefaultLogger.getInstance();
@@ -42,10 +43,10 @@ public abstract class VSMScenePlayer implements Player {
     protected HashMap<String, VSMAgentClient> mAgentClientMap = new HashMap<>();
 
     // The ScenePlayer Config
-    protected final ConfigData mPlayerConfig;
+    protected final ConfigElement mPlayerConfig;
 
     // The SceneMaker Project
-    protected final ProjectData mProjectData;
+    protected final RunTimeProject mProjectData;
 
     // The SceneMaker Project
     protected final SceneFlow mSceneFlow;
@@ -61,7 +62,9 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    protected VSMScenePlayer(final ProjectData project) {
+    protected VSMScenePlayer( 
+            final RunTimeProject project,
+            final PlayerConfig config) {
 
         // Init SceneMaker 3 Project
         mProjectData = project;
@@ -70,10 +73,10 @@ public abstract class VSMScenePlayer implements Player {
         mSceneFlow = project.getSceneFlow();
 
         // Init Scene Player Config
-        mPlayerConfig = project.getPlayerConfig();
+        mPlayerConfig = config;
 
         // Print Debug Information
-        mVSM3Log.message("Creating VSM Scene Player");
+        mVSM3Log.message("Creating VSM Abstract Scene Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -86,19 +89,19 @@ public abstract class VSMScenePlayer implements Player {
         mVSM3Log.message("Launching VSM Scene Player");
 
         // Initialize The Properties
-        final String numagent = mPlayerConfig.property("vsm.agent.number");
+        final String numagent = mPlayerConfig.getProperty("vsm.agent.number");
 
         for (int i = 0; i < Integer.parseInt(numagent); i++) {
 
             // Get Agent's Initial Data
-            final String name = mPlayerConfig.property("vsm.agent." + i + ".name");
-            final String uaid = mPlayerConfig.property("vsm.agent." + i + ".uaid");
-            final String type = mPlayerConfig.property("vsm.agent." + i + ".type");
-            final String rhost = mPlayerConfig.property("vsm.agent." + i + ".remote.host");
-            final String rport = mPlayerConfig.property("vsm.agent." + i + ".remote.port");
-            final String rflag = mPlayerConfig.property("vsm.agent." + i + ".remote.flag");
-            final String lhost = mPlayerConfig.property("vsm.agent." + i + ".local.host");
-            final String lport = mPlayerConfig.property("vsm.agent." + i + ".local.port");
+            final String name = mPlayerConfig.getProperty("vsm.agent." + i + ".name");
+            final String uaid = mPlayerConfig.getProperty("vsm.agent." + i + ".uaid");
+            final String type = mPlayerConfig.getProperty("vsm.agent." + i + ".type");
+            final String rhost = mPlayerConfig.getProperty("vsm.agent." + i + ".remote.host");
+            final String rport = mPlayerConfig.getProperty("vsm.agent." + i + ".remote.port");
+            final String rflag = mPlayerConfig.getProperty("vsm.agent." + i + ".remote.flag");
+            final String lhost = mPlayerConfig.getProperty("vsm.agent." + i + ".local.host");
+            final String lport = mPlayerConfig.getProperty("vsm.agent." + i + ".local.port");
 
             // Print Out The Properties
             mVSM3Log.message("" + "Agent #" + i + " Name        : '" + name + "'" + "\r\n" + "Agent #" + i
@@ -134,12 +137,12 @@ public abstract class VSMScenePlayer implements Player {
         }
 
         // Initialize The Properties
-        final String swilhost = mPlayerConfig.property("swi.handler.local.host");
-        final String swilport = mPlayerConfig.property("swi.handler.local.port");
-        final String swirhost = mPlayerConfig.property("swi.handler.remote.host");
-        final String swirport = mPlayerConfig.property("swi.handler.remote.port");
-        final String swirconn = mPlayerConfig.property("swi.handler.remote.flag");
-        final String swilbase = mPlayerConfig.property("swi.handler.local.base");
+        final String swilhost = mPlayerConfig.getProperty("swi.handler.local.host");
+        final String swilport = mPlayerConfig.getProperty("swi.handler.local.port");
+        final String swirhost = mPlayerConfig.getProperty("swi.handler.remote.host");
+        final String swirport = mPlayerConfig.getProperty("swi.handler.remote.port");
+        final String swirconn = mPlayerConfig.getProperty("swi.handler.remote.flag");
+        final String swilbase = mPlayerConfig.getProperty("swi.handler.local.base");
 
         // Print Out The Properties
         mVSM3Log.message("" + "SWI Query Handler Local Host  : '" + swilhost + "'" + "\r\n"
@@ -318,7 +321,7 @@ public abstract class VSMScenePlayer implements Player {
                 // Try To Set The Variables Globally
                 // Because An Extern Thread Is Trying
                 for (Map.Entry<String, String> entry : subst.entrySet()) {
-                    RunTime.getInstance().setVariable(mProjectData.getSceneFlow(), entry.getKey(), entry.getValue());
+                    RunTimeInstance.getInstance().setVariable(mProjectData.getSceneFlow(), entry.getKey(), entry.getValue());
                 }
             }
 

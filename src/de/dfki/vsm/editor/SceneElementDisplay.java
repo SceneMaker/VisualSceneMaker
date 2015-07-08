@@ -1,13 +1,11 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.dialog.SceneActionDialog;
 import de.dfki.vsm.model.acticon.ActiconAction;
-import de.dfki.vsm.model.acticon.ActiconObject;
+import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonAgent;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -16,7 +14,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import static de.dfki.vsm.editor.util.Preferences.sROOT_FOLDER;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -53,10 +50,11 @@ import javax.swing.tree.TreeSelectionModel;
  *
  */
 public class SceneElementDisplay extends JScrollPane implements Observer, EventListener {
-    private final LOGDefaultLogger mLogger           = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventMulticaster = EventCaster.getInstance();
-    private final SceneElementTree mGesticonTree     = new SceneElementTree();
-    private final Observable       mObservable       = new Observable();
+
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventCaster mEventMulticaster = EventCaster.getInstance();
+    private final SceneElementTree mGesticonTree = new SceneElementTree();
+    private final Observable mObservable = new Observable();
 
     public SceneElementDisplay() {
         mObservable.addObserver(mGesticonTree);
@@ -76,16 +74,17 @@ public class SceneElementDisplay extends JScrollPane implements Observer, EventL
     }
 
     @Override
-    public void update(final EventObject event) {}
+    public void update(final EventObject event) {
+    }
 
     private class Observable extends java.util.Observable {
+
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);
         }
     }
 }
-
 
 /**
  *
@@ -94,7 +93,6 @@ public class SceneElementDisplay extends JScrollPane implements Observer, EventL
  *
  *
  */
-
 //class Entry extends DefaultMutableTreeNode implements Transferable {
 //
 //    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
@@ -113,7 +111,6 @@ public class SceneElementDisplay extends JScrollPane implements Observer, EventL
 //        super(userObject);
 //    }
 //}
-
 /**
  *
  *
@@ -124,22 +121,22 @@ public class SceneElementDisplay extends JScrollPane implements Observer, EventL
 class SceneElementTree extends JTree implements Observer, EventListener {
 
     // Elements
-    private final TreeEntry mRootEntry              = new TreeEntry("Scene Elements", sROOT_FOLDER, null);
-    private final TreeEntry mGesticonEntry          = new TreeEntry("Gesticon", null, null);
+    private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", sROOT_FOLDER, null);
+    private final TreeEntry mGesticonEntry = new TreeEntry("Gesticon", null, null);
     private final TreeEntry mActionDefinitionsEntry = new TreeEntry("Acticon", null, null);
 
     //
-    private final Observable       mObservable  = new Observable();
-    private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    private final Observable mObservable = new Observable();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventCaster mEventCaster = EventCaster.getInstance();
 
 //  mActionDefinitionsEntry
 //  private final Entry mTemplatesEntry = new Entry("Templates", null, null);
 //   Drag & Drop support
-    private DragSource          mDragSource;
+    private DragSource mDragSource;
     private DragGestureListener mDragGestureListener;
-    private DragSourceListener  mDragSourceListener;
-    private int                 mAcceptableDnDActions;
+    private DragSourceListener mDragSourceListener;
+    private int mAcceptableDnDActions;
 
     /**
      *
@@ -200,8 +197,8 @@ class SceneElementTree extends JTree implements Observer, EventListener {
     public void update(java.util.Observable obs, Object obj) {
 
         // mLogger.message("SceneElementTree.update(" + obj + ")");
-        if (obj instanceof ProjectData) {
-            ProjectData p = (ProjectData) obj;
+        if (obj instanceof EditorProject) {
+            EditorProject p = (EditorProject) obj;
 
             showGesticon(p);
             showSceneAction(p);
@@ -216,11 +213,12 @@ class SceneElementTree extends JTree implements Observer, EventListener {
      *
      */
     @Override
-    public void update(EventObject event) {}
+    public void update(EventObject event) {
+    }
 
     public void showAddActionMenu(MouseEvent e, ActiconAction entry) {
-        JPopupMenu pop  = new JPopupMenu();
-        JMenuItem  item = new JMenuItem("Add");
+        JPopupMenu pop = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Add");
 
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -233,8 +231,8 @@ class SceneElementTree extends JTree implements Observer, EventListener {
     }
 
     public void showEditActionMenu(MouseEvent e, ActiconAction entry) {
-        JPopupMenu pop  = new JPopupMenu();
-        JMenuItem  item = new JMenuItem("Copy");
+        JPopupMenu pop = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Copy");
 
         item.addActionListener(new ActionListener() {
             @Override
@@ -254,16 +252,16 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                TreeEntry     node = (TreeEntry) getLastSelectedPathComponent();
-                int           pos  = 0;
-                ActiconAction a    = (ActiconAction) node.getData();
+                TreeEntry node = (TreeEntry) getLastSelectedPathComponent();
+                int pos = 0;
+                ActiconAction a = (ActiconAction) node.getData();
 
                 // remove it
                 SceneActionDialog.getInstance().editAction(a, pos);
                 SceneActionDialog.getInstance().setVisible(true);
                 node.removeFromParent();
 
-                ActiconObject asd = Editor.getInstance().getSelectedProjectEditor().getProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
 
                 asd.remove(a);
             }
@@ -273,16 +271,17 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         item = new JMenuItem("Delete");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                TreeEntry     node   = (TreeEntry) getLastSelectedPathComponent();
+                TreeEntry node = (TreeEntry) getLastSelectedPathComponent();
                 ActiconAction aToDel = (ActiconAction) node.getData();
 
                 node.removeFromParent();
 
-                ActiconObject asd = Editor.getInstance().getSelectedProjectEditor().getProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
 
                 asd.remove(aToDel);
-                Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
-                showSceneAction(Editor.getInstance().getSelectedProjectEditor().getProject());
+                // TODO: Why do we save the acticon here, that is bullshit
+                //Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
+                //showSceneAction(Editor.getInstance().getSelectedProjectEditor().getProject());
             }
         });
         pop.add(item);
@@ -305,7 +304,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         ((DefaultTreeModel) getModel()).setRoot(mRootEntry);
     }
 
-    private void showGesticon(ProjectData project) {
+    private void showGesticon(EditorProject project) {
 
         // Construct the tree from the gestion
         // Entry gesticonNode = new Entry("Gesticon", null, project.getGesticon());
@@ -326,7 +325,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         expandAll();
     }
 
-    private void showSceneAction(ProjectData p) {
+    private void showSceneAction(EditorProject p) {
 
         /*
          * mActionDefinitionsEntry.removeAllChildren();
@@ -347,15 +346,24 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         // Install the drag source listener
         mDragSourceListener = new DragSourceListener() {
             @Override
-            public void dragEnter(DragSourceDragEvent dsde) {}
+            public void dragEnter(DragSourceDragEvent dsde) {
+            }
+
             @Override
-            public void dragOver(DragSourceDragEvent dsde) {}
+            public void dragOver(DragSourceDragEvent dsde) {
+            }
+
             @Override
-            public void dropActionChanged(DragSourceDragEvent dsde) {}
+            public void dropActionChanged(DragSourceDragEvent dsde) {
+            }
+
             @Override
-            public void dragExit(DragSourceEvent dse) {}
+            public void dragExit(DragSourceEvent dse) {
+            }
+
             @Override
-            public void dragDropEnd(DragSourceDropEvent dsde) {}
+            public void dragDropEnd(DragSourceDropEvent dsde) {
+            }
         };
 
         // Install the drag gesture listener
@@ -385,6 +393,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
      *
      */
     private class CellRenderer extends DefaultTreeCellRenderer {
+
         public CellRenderer() {
             super();
 
@@ -399,7 +408,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
             // Get the entry information
             Object data = ((TreeEntry) value).getData();
             String text = ((TreeEntry) value).getText();
-            Icon   icon = ((TreeEntry) value).getIcon();
+            Icon icon = ((TreeEntry) value).getIcon();
 
             // Get the user object
             // Object userObject = ((Entry) value).getUserObject();
@@ -431,7 +440,6 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         }
     }
 
-
     /**
      *
      *
@@ -440,6 +448,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
      *
      */
     private class Observable extends java.util.Observable {
+
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);

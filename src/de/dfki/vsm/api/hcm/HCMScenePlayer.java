@@ -1,23 +1,19 @@
 package de.dfki.vsm.api.hcm;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.api.VSMAgentClient;
 import de.dfki.vsm.api.VSMScenePlayer;
-import de.dfki.vsm.model.project.ProjectData;
-import de.dfki.vsm.model.script.AbstractWord;
-import de.dfki.vsm.model.script.SceneGroup;
-import de.dfki.vsm.model.script.SceneObject;
-import de.dfki.vsm.model.script.SceneScript;
-import de.dfki.vsm.model.script.SceneTurn;
-import de.dfki.vsm.model.script.SceneUttr;
+import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.runtime.Process;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -39,10 +35,12 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private HCMScenePlayer(final ProjectData project) {
+    private HCMScenePlayer(
+            final RunTimeProject project,
+            final PlayerConfig config) {
 
         // Initialize The Scene Player
-        super(project);
+        super(project, config);
 
         // Print Some Debug Information
         mVSM3Log.message("Creating HCM Scene Player");
@@ -51,9 +49,11 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public static synchronized HCMScenePlayer getInstance(final ProjectData project) {
+    public static synchronized HCMScenePlayer getInstance(
+            final RunTimeProject project,
+            final PlayerConfig config) {
         if (sInstance == null) {
-            sInstance = new HCMScenePlayer(project);
+            sInstance = new HCMScenePlayer(project, config);
         }
 
         return sInstance;
@@ -72,18 +72,18 @@ public final class HCMScenePlayer extends VSMScenePlayer {
         try {
 
             // Initialize Event Handler
-            final String lhost = mPlayerConfig.property("hcm.handler.local.host");
-            final String rhost = mPlayerConfig.property("hcm.handler.remote.host");
-            final String lport = mPlayerConfig.property("hcm.handler.local.port");
-            final String rport = mPlayerConfig.property("hcm.handler.remote.port");
-            final String rflag = mPlayerConfig.property("hcm.handler.remote.flag");
+            final String lhost = mPlayerConfig.getProperty("hcm.handler.local.host");
+            final String rhost = mPlayerConfig.getProperty("hcm.handler.remote.host");
+            final String lport = mPlayerConfig.getProperty("hcm.handler.local.port");
+            final String rport = mPlayerConfig.getProperty("hcm.handler.remote.port");
+            final String rflag = mPlayerConfig.getProperty("hcm.handler.remote.flag");
 
             // Debug Some Information
             mVSM3Log.message("" + "HCM Event Handler Local Host  : '" + lhost + "'" + "\r\n"
-                             + "HCM Event Handler Local Port  : '" + lport + "'" + "\r\n"
-                             + "HCM Event Handler Remote Host : '" + rhost + "'" + "\r\n"
-                             + "HCM Event Handler Remote Port : '" + rport + "'" + "\r\n"
-                             + "HCM Event Handler Remote Flag : '" + rflag + "'");
+                    + "HCM Event Handler Local Port  : '" + lport + "'" + "\r\n"
+                    + "HCM Event Handler Remote Host : '" + rhost + "'" + "\r\n"
+                    + "HCM Event Handler Remote Port : '" + rport + "'" + "\r\n"
+                    + "HCM Event Handler Remote Flag : '" + rflag + "'");
 
             // Construct Event Handler
             mEventHandler = new HCMEventHandler(this);
@@ -214,8 +214,8 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void request(final String type, final String utid, final String name, final String uaid,
-                              final String text, final long date, final long time, final Thread task,
-                              final VSMAgentClient client) {
+            final String text, final long date, final long time, final Thread task,
+            final VSMAgentClient client) {
 
         // Construct Event Message
         final HCMEventMessage message = HCMEventMessage.newInstance(type, utid, name, uaid, text, date, time);
@@ -263,12 +263,12 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
         // Initialize Parameter Data
         final Process process = (Process) Thread.currentThread();
-        final String  utid    = process.getName() + "::" + sceneName;
+        final String utid = process.getName() + "::" + sceneName;
 
         // And Process Scene Arguments
         final HashMap<String, String> argMap = new HashMap<>();
 
-        if ((sceneArgs != null) &&!sceneArgs.isEmpty()) {
+        if ((sceneArgs != null) && !sceneArgs.isEmpty()) {
             final AbstractValue value = sceneArgs.getFirst();
 
             if (value.getType().equals(AbstractValue.Type.STRUCT)) {
@@ -300,8 +300,8 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
                 // Select A Scene From Group
                 final SceneObject selectedScene = (langGroup != null)
-                                                  ? (langGroup.select())
-                                                  : (sceneGroup.select());
+                        ? (langGroup.select())
+                        : (sceneGroup.select());
 
                 // Infer The Final Scene Language
                 // final String selectedLang = selectedScene.getLanguage();
@@ -414,7 +414,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
                 // Print Information
                 mVSM3Log.warning("Interrupting '" + Thread.currentThread().getName()
-                                 + "' During The Execution Of Scene '" + sceneName + "'");
+                        + "' During The Execution Of Scene '" + sceneName + "'");
 
                 // Terminate The Task
                 task.mIsDone = true;

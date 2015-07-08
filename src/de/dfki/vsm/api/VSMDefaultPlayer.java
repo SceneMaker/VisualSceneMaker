@@ -1,11 +1,8 @@
 package de.dfki.vsm.api;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.value.AbstractValue;
-
-//~--- JDK imports ------------------------------------------------------------
 
 import java.util.LinkedList;
 
@@ -20,23 +17,28 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private VSMDefaultPlayer(final ProjectData project) {
+    private VSMDefaultPlayer(
+            final RunTimeProject project,
+            final PlayerConfig config) {
 
         // Initialize The Scene Player
-        super(project);
+        super(project, config);
 
         // Print Some Debug Information
-        mVSM3Log.message("Creating Default Scene Player");
+        mVSM3Log.message("Creating VSM Default Scene Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public static synchronized VSMDefaultPlayer getInstance(final ProjectData project) {
+    ////////////////////////////////////////////////////////////////////////////
+    public static synchronized VSMDefaultPlayer getInstance(
+            final RunTimeProject project,
+            final PlayerConfig config) {
         if (sInstance == null) {
-            sInstance = new VSMDefaultPlayer(project);
+            sInstance = new VSMDefaultPlayer(project, config);
         }
-
+        // Return The Singelton Instance
         return sInstance;
     }
 
@@ -70,11 +72,13 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void handle(final VSMAgentClient client) {}
+    public void handle(final VSMAgentClient client) {
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void play(final String name, final LinkedList<AbstractValue> args) {}
+    public void play(final String name, final LinkedList<AbstractValue> args) {
+    }
 }

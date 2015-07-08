@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.DefaultEditor;
+import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -41,7 +41,7 @@ public class Preferences {
     //////////////////////////////////////////////////////////////////////////////
     // SCENEMAKER PROPERTIES
     //////////////////////////////////////////////////////////////////////////////
-    private static final Class      sSCENEMAKER_CLASS = DefaultEditor.class;
+    private static final Class      sSCENEMAKER_CLASS = SceneMaker3.class;
     private static final Properties sPROPERTIES       = new Properties();
     private static final String     sCONFIG_FILE      = System.getProperty("user.home")
                                                         + System.getProperty("file.separator") + ".scenefloweditor";

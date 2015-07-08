@@ -5,18 +5,18 @@ package de.dfki.vsm.runtime.player;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
-import de.dfki.vsm.model.config.ConfigData;
-import de.dfki.vsm.model.project.ProjectData;
-import de.dfki.vsm.model.script.AbstractWord;
-import de.dfki.vsm.model.script.ActionObject;
-import de.dfki.vsm.model.script.SceneAbbrev;
-import de.dfki.vsm.model.script.SceneGroup;
-import de.dfki.vsm.model.script.SceneObject;
-import de.dfki.vsm.model.script.SceneParam;
-import de.dfki.vsm.model.script.SceneScript;
-import de.dfki.vsm.model.script.SceneTurn;
-import de.dfki.vsm.model.script.SceneUttr;
-import de.dfki.vsm.model.script.SceneWord;
+import de.dfki.vsm.model.config.ConfigElement;
+import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.ActionObject;
+import de.dfki.vsm.model.scenescript.SceneAbbrev;
+import de.dfki.vsm.model.scenescript.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneParam;
+import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.model.scenescript.SceneWord;
 import de.dfki.vsm.runtime.Process;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.AbstractValue.Type;
@@ -40,13 +40,13 @@ public class DefaultSceneGroupPlayer implements Player {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Player Properties
-    private final ConfigData mProperties;
+    private final ConfigElement mProperties;
 
     // The Current Project
-    private final ProjectData mProject;
+    private final RunTimeProject mProject;
 
     // Construct A Default Player
-    public DefaultSceneGroupPlayer(final ProjectData project) {
+    public DefaultSceneGroupPlayer(final RunTimeProject project) {
         mProject    = project;
         mProperties = project.getPlayerConfig();
     }

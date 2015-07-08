@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.script.ScriptLexxer;
+import de.dfki.vsm.model.scenescript.ScriptLexxer;
 import de.dfki.vsm.util.syn.SyntaxEditorKit;
 
 /**

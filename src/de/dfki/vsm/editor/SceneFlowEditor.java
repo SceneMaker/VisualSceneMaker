@@ -6,7 +6,6 @@ import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.evt.EventCaster;
@@ -73,7 +72,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
     //
     private final SceneFlow   mSceneFlow;
-    private final ProjectData mProject;
+    private final EditorProject mProject;
 
     // TODO: remove sceneflow manager
     private final SceneFlowManager mSceneFlowManager;
@@ -89,7 +88,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     private final JSplitPane        mSplitPane;
     private final ScriptEditorPanel mScriptEditorPanel;
 
-    public SceneFlowEditor(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
+    public SceneFlowEditor(SceneFlow sceneFlow, EditorProject project, ScriptEditorPanel scriptEditor) {
         mScriptEditorPanel = scriptEditor;
 
         final Polygon pUp = new Polygon();
@@ -200,8 +199,8 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
                 // solve issue here
                 if (Preferences.getProperty("showelementproperties").equals("true")) {
-                    mProject.getPreferences().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
-                    mProject.getPreferences().save(mScriptEditorPanel.getPreferencesFileName());
+                    mProject.getEditorConfig().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
+                    //mProject.getEditorConfig().save(/*mScriptEditorPanel.getPreferencesFileName()*/);
 //                    Preferences.save();
                 }
             }
@@ -209,7 +208,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
         if (Preferences.getProperty("showelementproperties").equals("true")) {
 
-            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getPreferences().getProperty("propertiesdividerlocation")));
+            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getEditorConfig().getProperty("propertiesdividerlocation")));
         } else {
             mSplitPane.setDividerLocation(1d);
         }
@@ -255,7 +254,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             mElementEditor.setVisible(true);
             Preferences.setProperty("showelementproperties", "true");
             Preferences.save();
-            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getPreferences().getProperty("propertiesdividerlocation")));
+            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getEditorConfig().getProperty("propertiesdividerlocation")));
         }
     }
 

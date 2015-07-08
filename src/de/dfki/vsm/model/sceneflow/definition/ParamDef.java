@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.definition;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
+import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.util.ios.IndentWriter;
 
 import org.w3c.dom.Element;
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
  *
  * @author Gregor Mehlmann
  */
-public class ParamDef extends Object {
+public class ParamDef extends Syntax {
     private String mName;
     private String mType;
 

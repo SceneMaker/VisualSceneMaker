@@ -1,7 +1,5 @@
 package de.dfki.vsm.util.xml;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.ios.IndentWriter;
 
 /**
@@ -9,8 +7,6 @@ import de.dfki.vsm.util.ios.IndentWriter;
  */
 public interface XMLWriteable {
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Write The Writable To A Stream
     public void writeXML(final IndentWriter stream) throws XMLWriteError;
 }
