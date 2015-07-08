@@ -16,7 +16,7 @@ import java.util.Vector;
 /**
  * @author Gregor Mehlmann
  */
-public abstract class Edge extends Object {
+public abstract class Edge extends Syntax {
     protected String                                                  mTarget          = new String();
     protected String                                                  mSource          = new String();
     protected Node                                                    mTargetNode      = null;

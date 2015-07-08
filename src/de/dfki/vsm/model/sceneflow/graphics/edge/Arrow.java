@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.graphics.edge;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
+import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -18,7 +18,7 @@ import java.util.Vector;
  *
  * @author Gregor Mehlmann
  */
-public class Arrow extends Object {
+public class Arrow extends Syntax {
     private Vector<Point> mPointList;
 
     public Arrow() {

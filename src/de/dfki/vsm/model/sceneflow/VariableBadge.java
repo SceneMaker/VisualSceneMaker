@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 /**
  * @author Patrick Gebhard
  */
-public class VariableBadge extends Object {
+public class VariableBadge extends Syntax {
     protected Position mPosition;
     protected String   mType;
 
@@ -75,7 +75,7 @@ public class VariableBadge extends Object {
         out.pop().println("</" + mType + ">");
     }
 
-    public Object getCopy() {
+    public Syntax getCopy() {
         return null;
     }
 }

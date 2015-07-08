@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
@@ -93,7 +93,7 @@ public class ModifyPEdgeDialog extends Dialog {
     private JLabel errorMsg;
 
     public ModifyPEdgeDialog(Node sourceNode, Node targetNode) {
-        super(Editor.getInstance(), "Create Probability Edge", true);
+        super(EditorInstance.getInstance(), "Create Probability Edge", true);
         mSourceNode = sourceNode;
         mTargetNode = targetNode;
 
@@ -123,7 +123,7 @@ public class ModifyPEdgeDialog extends Dialog {
     }
 
     public ModifyPEdgeDialog(PEdge edge) {
-        super(Editor.getInstance(), "Modify Probability Edge", true);
+        super(EditorInstance.getInstance(), "Modify Probability Edge", true);
         mPEdge = edge;
         mSourceNode = mPEdge.getSourceNode();
         mTargetNode = mPEdge.getTargetNode();

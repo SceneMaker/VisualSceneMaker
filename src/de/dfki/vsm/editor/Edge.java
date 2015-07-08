@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.EdgeGraphics;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.VisualisationTask;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
@@ -126,7 +126,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private String             mName;
     private String             mDescription;
     private Color              mColor;
-    private ProjectPreferences mPreferences;
+    private EditorConfig mPreferences;
     private Timer              mVisualisationTimer;
 
     public enum TYPE {
@@ -190,7 +190,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     public Edge(WorkSpace ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
-                ProjectPreferences preferences) {
+                EditorConfig preferences) {
         mDataEdge           = edge;
         mWorkSpace          = ws;
         mPreferences        = preferences;
@@ -471,10 +471,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 updateFromTextEditor();
                 
                  if(!validate(mValueEditor.getText())){
-                    Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
-                       Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
+                       EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Invalid Condition");
-                    Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
+                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
                     // wrong condition
                 }
                 else{
@@ -519,7 +519,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((CEdge) mDataEdge).setCondition(log);
                 } else {
-                    Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Remember to wrap condition in parenthesis");
                     // Do nothing
                 }
@@ -538,7 +538,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             } catch (Exception e) {}
         }
 
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
     }
 
     
@@ -612,7 +612,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 ModifyEdgeAction modifyAction = new ModifyEdgeAction(this, mWorkSpace);
 
                 modifyAction.run();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
                 
                 
             } else if (mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {

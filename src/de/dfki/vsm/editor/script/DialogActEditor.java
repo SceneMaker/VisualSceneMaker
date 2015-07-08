@@ -2,11 +2,11 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.EditorProject;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.event.DialogActSelectedEvent;
 import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
@@ -78,12 +78,12 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
     private JTextArea   mFMLTextArea;
 
     //
-    private final ProjectData        mProject;
+    private final EditorProject        mProject;
     private final DialogActInterface mDialogAct;
     private final List<JList>        mDAJLists;
     private final List<DialogAct>    mDialogActList;
 
-    public DialogActEditor(ProjectData project) {
+    public DialogActEditor(EditorProject project) {
         mProject   = project;
         mDialogAct = mProject.getDialogAct();
         setBackground(Color.white);

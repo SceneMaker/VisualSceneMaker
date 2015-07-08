@@ -3,16 +3,16 @@ package de.dfki.vsm.editor.script;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.AddButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.FunctionEditor;
 import de.dfki.vsm.editor.ProjectEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.util.Preferences;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.script.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -81,9 +81,9 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     private final SceneScript         mSceneScript;
     private final FunctionEditor      mFunctionEditor;
     private final DialogActEditor     mDialogActEditor;
-    private final ProjectPreferences  mPreferences;
-    private final String              mPreferencesFileName;
-    private ProjectEditor             mParentPE;    // CONTAINER PROJECT EDITOR
+    private final EditorConfig  mPreferences;
+    //private final String              mPreferencesFileName;
+    private ProjectEditor             mProjectEditor;    // CONTAINER PROJECT EDITOR
     private ArrayList<Integer>        searchOffsets;
     private String                    lastSearchedScene;
     private int                       lastIndex;
@@ -94,18 +94,18 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ScriptEditorPanel(final SceneScript script, final SceneFlow sceneflow, final ProjectPreferences preferences,
-                             final String preferencesFileName, final ProjectEditor parentPE) {
+    public ScriptEditorPanel(final SceneScript script, final SceneFlow sceneflow, final EditorConfig preferences,
+                             final ProjectEditor parentPE) {
 
         // Parent project editor
-        mParentPE = parentPE;
+        mProjectEditor = parentPE;
 
         // Initialize The Scene Script
         mSceneScript = script;
 
         // Grab project preferences
         mPreferences         = preferences;
-        mPreferencesFileName = preferencesFileName;
+       // mPreferencesFileName = preferencesFileName;
 
         // Initialize The Status Label
         mStatusLabel = new CaretStatusLabel("");
@@ -122,7 +122,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         mFunctionEditor = new FunctionEditor(sceneflow);
 
         // Initialize The Dialog Act Panel
-        mDialogActEditor = new DialogActEditor(mParentPE.getProject());
+        mDialogActEditor = new DialogActEditor(mProjectEditor.getEditorProject());
 
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane();
@@ -287,22 +287,22 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         return mTabPane;
     }
 
-    public ProjectPreferences getPreferences() {
+    public EditorConfig getPreferences() {
         return mPreferences;
     }
 
-    public String getPreferencesFileName() {
-        return mPreferencesFileName;
-    }
+    //public String getPreferencesFileName() {
+    //    return mPreferencesFileName;
+    //}
 
     // **********************************
     // Get and set parent project editor
     public ProjectEditor getmParentPE() {
-        return mParentPE;
+        return mProjectEditor;
     }
 
     public void setmParentPE(ProjectEditor mParentPE) {
-        this.mParentPE = mParentPE;
+        this.mProjectEditor = mParentPE;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -562,7 +562,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
             mSceneScript.parseTXT(text);
 
             // Update The Editor UI
-            Editor.getInstance().update();
+            EditorInstance.getInstance().update();
         } catch (Exception exc) {
 
             // Catch Error Or Exception
@@ -579,12 +579,12 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
             mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
             mPreferences.setProperty("showsceneelements", "false");
-            mPreferences.save(getPreferencesFileName());
+            //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(0);
         } else {
             mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png"));
             mPreferences.setProperty("showsceneelements", "true");
-            mPreferences.save(getPreferencesFileName());
+            //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(250);
         }
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))

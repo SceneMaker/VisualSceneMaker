@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.Node;
@@ -37,7 +37,7 @@ public class CreateAltStartNodeDialog extends Dialog {
     private CancelButton mCancelButton;
 
     public CreateAltStartNodeDialog(AltStartNodeManager manager) {
-        super(Editor.getInstance(), "Create alternative Startnode", true);
+        super(EditorInstance.getInstance(), "Create alternative Startnode", true);
         mAltStartNodeManager = manager;
         initComponents();
         loadSubstitutableStartNodes();

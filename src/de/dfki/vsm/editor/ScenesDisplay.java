@@ -3,9 +3,8 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
-import de.dfki.vsm.model.project.ProjectData;
-import de.dfki.vsm.model.script.SceneGroup;
-import de.dfki.vsm.model.script.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -68,7 +67,7 @@ public class ScenesDisplay extends JPanel implements Observer {
     /**
      *
      */
-    public void showScenes(ProjectData project) {
+    public void showScenes(EditorProject project) {
         SceneScript sceneScript = project.getSceneScript();
 
         if (sceneScript != null) {
@@ -105,8 +104,8 @@ public class ScenesDisplay extends JPanel implements Observer {
     public void update(Observable obs, java.lang.Object obj) {
         System.err.println("Updating Scenes");
 
-        if (obj instanceof ProjectData) {
-            ProjectData project     = (ProjectData) obj;
+        if (obj instanceof EditorProject) {
+            EditorProject project     = (EditorProject) obj;
             SceneScript sceneScript = project.getSceneScript();
 
             if (sceneScript != null) {

@@ -19,20 +19,20 @@
 <entry key="launchPlayer">false</entry>
 <entry key="frame_name">SceneFlowEditor</entry>
 <entry key="showelementproperties">true</entry>
-<entry key="sceneflow_sceneeditor_ratio">0.75</entry>
 <entry key="node_height">90</entry>
+<entry key="sceneflow_sceneeditor_ratio">0.75</entry>
 <entry key="scriptfonsize">11</entry>
-<entry key="xmlns_xsi">http://www.w3.org/2001/XMLSchema-instance</entry>
 <entry key="frame_width">800</entry>
+<entry key="xmlns_xsi">http://www.w3.org/2001/XMLSchema-instance</entry>
 <entry key="visualizationtrace">false</entry>
 <entry key="grid_y">1</entry>
-<entry key="propertiesdividerlocation">790</entry>
 <entry key="grid_x">1</entry>
+<entry key="propertiesdividerlocation">790</entry>
 <entry key="icon_file">res/img/icon.png</entry>
 <entry key="showsmartpathcalculations">false</entry>
 <entry key="showelements">true</entry>
 <entry key="frame_title">Visual SceneMaker</entry>
-<entry key="workspace_fontsize">11</entry>
 <entry key="showsceneelements">true</entry>
+<entry key="workspace_fontsize">11</entry>
 <entry key="showscenefloweditor">true</entry>
 </properties>

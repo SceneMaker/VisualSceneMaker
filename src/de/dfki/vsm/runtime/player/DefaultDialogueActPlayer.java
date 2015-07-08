@@ -1,14 +1,12 @@
 package de.dfki.vsm.runtime.player;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
-import de.dfki.vsm.editor.event.TurnExecutedEvent;;
-import de.dfki.vsm.model.project.ProjectData;
-import de.dfki.vsm.model.script.SceneGroup;
-import de.dfki.vsm.model.script.SceneObject;
-import de.dfki.vsm.model.script.SceneScript;
-import de.dfki.vsm.model.script.SceneTurn;
+import de.dfki.vsm.editor.event.TurnExecutedEvent;
+import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.model.scenescript.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.runtime.Process;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.AbstractValue.Type;
@@ -16,18 +14,16 @@ import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
-
 import static java.lang.Thread.sleep;
 
 /**
  * @author Gregor Mehlmann
  */
+
+
 public class DefaultDialogueActPlayer implements Player {
 
     // The Logger Instance
@@ -36,10 +32,10 @@ public class DefaultDialogueActPlayer implements Player {
     // The Player Properties
     // private final PlayerConfig mProperties;
     // The Current Project
-    private final ProjectData mProject;
+    private final RunTimeProject mProject;
 
     // Construct A Default Player
-    public DefaultDialogueActPlayer(final ProjectData project) {
+    public DefaultDialogueActPlayer(final RunTimeProject project) {
         mProject = project;
 
         // mProperties = project.getScenePlayerProperties();
@@ -47,19 +43,21 @@ public class DefaultDialogueActPlayer implements Player {
 
     // Launch The Default Player
     @Override
-    public final void launch() {}
+    public final void launch() {
+    }
 
     // Unload The Default Player
     @Override
-    public final void unload() {}
+    public final void unload() {
+    }
 
     @Override
     public final void play(final String name, final LinkedList<AbstractValue> args) {
-        final Process                 process        = ((Process) java.lang.Thread.currentThread());
+        final Process process = ((Process) java.lang.Thread.currentThread());
         final HashMap<String, String> mSceneParamMap = new HashMap<String, String>();
 
         // Process The Arguments
-        if ((args != null) &&!args.isEmpty()) {
+        if ((args != null) && !args.isEmpty()) {
 
             // Get The First Argument
             final AbstractValue value = args.getFirst();
@@ -94,8 +92,8 @@ public class DefaultDialogueActPlayer implements Player {
                 // }
                 // }
                 final SceneScript script = mProject.getSceneScript();
-                final SceneGroup  group  = script.getSceneGroup(name);
-                final SceneObject scene  = group.select();
+                final SceneGroup group = script.getSceneGroup(name);
+                final SceneObject scene = group.select();
 
                 // Scene Visualization
                 mLogger.message("Executing dialogAct:\r\n" + scene.getText());

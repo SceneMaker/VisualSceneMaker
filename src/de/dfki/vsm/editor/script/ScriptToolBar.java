@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.ios.ResourceLoader;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -24,7 +24,7 @@ import javax.swing.JToolBar;
 public class ScriptToolBar extends JToolBar {
     private boolean            pinPricked = false;
     private ScriptEditorPanel  mParent;
-    private ProjectPreferences mPreferences;
+    private EditorConfig mPreferences;
 
     // Button to keep the script toolbar visible
     private JButton mPinScriptToolbar;

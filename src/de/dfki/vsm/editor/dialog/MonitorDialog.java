@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -14,7 +14,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.RunTime;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -49,8 +49,8 @@ public class MonitorDialog extends JDialog {
     private final SceneFlow      mSceneFlow;
 
     private MonitorDialog() {
-        super(Editor.getInstance(), "Run Monitor", true);
-        mSceneFlow = Editor.getInstance().getProjectEditorList().getSelectedProject().getSceneFlow();
+        super(EditorInstance.getInstance(), "Run Monitor", true);
+        mSceneFlow = EditorInstance.getInstance().getProjectEditorList().getSelectedProject().getSceneFlow();
         initComponents();
         initVariableList();
     }
@@ -93,25 +93,25 @@ public class MonitorDialog extends JDialog {
 
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
                     if (exp instanceof Bool) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Bool) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Bool) exp).getValue());
                     } else if (exp instanceof Int) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Int) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Int) exp).getValue());
                     } else if (exp instanceof Float) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(),
                                 ((Float) exp).getValue());
                     } else if (exp instanceof String) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(),
                                 ((String) exp).getValue());
                     } else if (exp instanceof List) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
 
                         // Evaluator eval = interpreter.getEvaluator();
                         // Environment env = interpreter.getEnvironment();
                         // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
                     } else if (exp instanceof Struct) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
                     } else {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
                     }
                 }
             } catch (Exception e) {

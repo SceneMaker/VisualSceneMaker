@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Plugin>
-  <Entry key="class" val="de.dfki.vsm.plugins.TestPlugin"/>
-</Plugin>

@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.Node.Flavour;
 import de.dfki.vsm.editor.WorkSpace;
@@ -141,7 +141,7 @@ public class DeflectEdgeAction extends EdgeAction {
 //        mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, mTargetGUINodeDockPoint);
 //      }
         // mSourceGUINode.update();
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
         mWorkSpace.add(mGUIEdge);
 
         // straighten the edge ...

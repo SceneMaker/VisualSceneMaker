@@ -1,14 +1,11 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.util.Preferences;
-import de.dfki.vsm.model.project.ProjectData;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -24,6 +21,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
@@ -32,10 +30,11 @@ import javax.swing.KeyStroke;
  * @author Parick Gebhard
  */
 public class MenuBar extends JMenuBar {
-    private final Editor mEditor;
+
+    private final EditorInstance mEditorInstance;
 
     // File menu
-    private JMenu     mFileMenu;
+    private JMenu mFileMenu;
     private JMenuItem mCreateFileMenuItem;
     private JMenuItem mOpenFileMenuItem;
     private JMenuItem mOpenSceneflowMenuItem;
@@ -49,7 +48,7 @@ public class MenuBar extends JMenuBar {
     private JMenuItem mExitEditorMenuItem;
 
     // Edit menu
-    private JMenu     mEditMenu;
+    private JMenu mEditMenu;
     private JMenuItem mCutMenuItem;
     private JMenuItem mCopyMenuItem;
     private JMenuItem mPasteMenuItem;
@@ -59,13 +58,13 @@ public class MenuBar extends JMenuBar {
     private JMenuItem mOptionsMenuItem;
 
     // Help menu
-    private JMenu     mHelpMenu;
+    private JMenu mHelpMenu;
     private JMenuItem mQuestionMenuItem;
     private JMenuItem mInfoMenuItem;
     private JMenuItem mSaveFileAsMenuItem;
 
-    public MenuBar(final Editor editor) {
-        mEditor = editor;
+    public MenuBar(final EditorInstance editor) {
+        mEditorInstance = editor;
         initComponents();
     }
 
@@ -108,7 +107,6 @@ public class MenuBar extends JMenuBar {
 //  public void setMonitorMenuEnabled(boolean flag) {
 //    mMonitorMenuItem.setEnabled(flag);
 //  }
-
 //  public void setMonitorMenuEnabled(boolean flag) {
 //     mMonitorMenuItem.setEnabled(flag);
 //    }
@@ -138,7 +136,7 @@ public class MenuBar extends JMenuBar {
 
         for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
             String projectDirName = Preferences.getProperty("recentprojectdir" + i);
-            String projectName    = Preferences.getProperty("recentprojectname" + i);
+            String projectName = Preferences.getProperty("recentprojectname" + i);
 
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
@@ -152,7 +150,7 @@ public class MenuBar extends JMenuBar {
                             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                     recentFileMenuItem.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            mEditor.openProject(projectDir);
+                            mEditorInstance.openProject(projectDir);
                         }
                     });
                     mOpenRecentFileMenu.add(recentFileMenuItem);
@@ -169,7 +167,7 @@ public class MenuBar extends JMenuBar {
     }
 
     private void initFileMenu() {
-        mFileMenu           = new JMenu("File");
+        mFileMenu = new JMenu("File");
         mCreateFileMenuItem = new JMenuItem("New Project...");
 
         // mCreateFileMenuItem.setIcon(new ImageIcon("data/img/new.png"));
@@ -177,7 +175,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mCreateFileMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.newProject();
+                mEditorInstance.newProject();
             }
         });
         mOpenFileMenuItem = new JMenuItem("Open Project...");
@@ -187,7 +185,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mOpenFileMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.openProject();
+                mEditorInstance.openProject();
                 Preferences.save();
                 refreshRecentFileMenu();
             }
@@ -201,7 +199,7 @@ public class MenuBar extends JMenuBar {
             public void actionPerformed(ActionEvent e) {
                 for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
                     String projectDirName = Preferences.getProperty("recentprojectdir" + i);
-                    String projectName    = Preferences.getProperty("recentprojectname" + i);
+                    String projectName = Preferences.getProperty("recentprojectname" + i);
 
                     if (projectDirName != null) {
                         Preferences.removeProperty("recentprojectdir" + i);
@@ -209,7 +207,7 @@ public class MenuBar extends JMenuBar {
                     }
                 }
 
-                mEditor.clearRecentProjects();
+                mEditorInstance.clearRecentProjects();
                 Preferences.save();
                 refreshRecentFileMenu();
             }
@@ -222,7 +220,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mOpenSceneflowMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.openProject();
+                mEditorInstance.openProject();
             }
         });
         mCloseFileMenuItem = new JMenuItem("Close");
@@ -233,22 +231,28 @@ public class MenuBar extends JMenuBar {
         mCloseFileMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditor.closeCurrentProject();
+                mEditorInstance.closeCurrentProject();
             }
         });
-        mSaveFileMenuItem = new JMenuItem("Save");
 
+        ////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////
+        mSaveFileMenuItem = new JMenuItem("Save");
         // mSaveFileMenuItem.setIcon(new ImageIcon("data/img/save.png"));
         mSaveFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mSaveFileMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ProjectData p = mEditor.saveCurrentProject();
-
-                if (p.isPending()) {
-                    p.setPending(false);
-                    refreshRecentFileMenu();
+                // Save the current editor project
+                if (!mEditorInstance.save()) {
+                    // Failure message handling
+                    JOptionPane.showMessageDialog(
+                            mEditorInstance,
+                            "Wrong Scene Script Syntax.",
+                            "Cannot Format Scene Script.",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -258,7 +262,7 @@ public class MenuBar extends JMenuBar {
                 (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         mSaveFileAsMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.saveFileAs();
+                mEditorInstance.saveFileAs();
             }
 
             // TODO Check if Projekt is new Project, then update recent file menu list.
@@ -269,7 +273,7 @@ public class MenuBar extends JMenuBar {
                 (java.awt.event.InputEvent.ALT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         mSaveAllMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.saveAllProjects();
+                mEditorInstance.saveAllProjects();
             }
         });
         mExitEditorMenuItem = new JMenuItem("Quit");
@@ -279,7 +283,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mExitEditorMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.exit();
+                mEditorInstance.exit();
             }
         });
         mFileMenu.add(mCreateFileMenuItem);
@@ -302,7 +306,7 @@ public class MenuBar extends JMenuBar {
     }
 
     private void initEditMenu() {
-        mEditMenu     = new JMenu("Edit");
+        mEditMenu = new JMenu("Edit");
         mCopyMenuItem = new JMenuItem("Copy");
 
 //      mCopyMenuItem.setIcon(new ImageIcon("data/img/copy.png"));
@@ -310,7 +314,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mCopyMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes();
             }
         });
         mCutMenuItem = new JMenuItem("Cut");
@@ -332,7 +336,7 @@ public class MenuBar extends JMenuBar {
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mNormalizeAllEdgesMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
         });
         mStraightenAllEdgesMenuItem = new JMenuItem("Straighen all Edges");
@@ -340,7 +344,7 @@ public class MenuBar extends JMenuBar {
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mStraightenAllEdgesMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
             }
         });
 
@@ -359,7 +363,7 @@ public class MenuBar extends JMenuBar {
                 (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mOptionsMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.showOptions();
+                mEditorInstance.showOptions();
             }
         });
 
@@ -369,7 +373,6 @@ public class MenuBar extends JMenuBar {
         Action redoAction = RedoAction.getInstance();
 
 //      redoAction.putValue(Action.SMALL_ICON, new ImageIcon("data/img/redo.png"));
-
         mEditMenu.add(undoAction);
         mEditMenu.add(redoAction);
         mEditMenu.add(new JSeparator());
@@ -389,7 +392,7 @@ public class MenuBar extends JMenuBar {
     }
 
     private void initHelpMenu() {
-        mHelpMenu         = new JMenu("Help");
+        mHelpMenu = new JMenu("Help");
         mQuestionMenuItem = new JMenuItem("Help");
 
         // mQuestionMenuItem.setIcon(new ImageIcon("data/img/help.png"));
@@ -397,7 +400,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mQuestionMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.showHelp();
+                mEditorInstance.showHelp();
             }
         });
         mInfoMenuItem = new JMenuItem("About");
@@ -407,7 +410,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mInfoMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditor.showAbout();
+                mEditorInstance.showAbout();
             }
         });
         mHelpMenu.add(mQuestionMenuItem);

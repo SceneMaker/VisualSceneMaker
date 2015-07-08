@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.runtime.dialogact.DialogActInterface;
@@ -41,7 +41,7 @@ public class DialogActAttributes extends Dialog {
     String               mName;
 
     public DialogActAttributes(DialogActInterface dialogAct, String name) {
-        super(Editor.getInstance(), "Dialog Act Attributes", true);
+        super(EditorInstance.getInstance(), "Dialog Act Attributes", true);
         mDialogAct = dialogAct;
         mName      = name;
 

@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.dialog.CmdDialog;
@@ -28,7 +28,7 @@ public class AddCommandAction extends EditorAction {
             mNode.getDataNode().addCmd(cmd);
 
             // mListModel.addElement(cmd);
-            Editor.getInstance().update();
+            EditorInstance.getInstance().update();
         }
     }
 }

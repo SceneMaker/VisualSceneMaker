@@ -2,7 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -40,7 +40,7 @@ public class NodeVariableBadge extends JComponent {
     int                                           mPositionOffset    = 10;
     int                                           mBeautyXOffSet     = 0;
     int                                           mBeautyYOffSet     = 0;
-    ProjectPreferences                            mPreferences;
+    EditorConfig                            mPreferences;
 
     static enum LocationType { TOP, BOTTOM, LEFT, RIGHT }
 

@@ -7,7 +7,6 @@ import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.editor.util.Preferences;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -35,8 +34,8 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
  */
 public class ProjectEditor extends JSplitPane implements EventListener, Observer {
 
-    //
-    private final ProjectData mProject;
+    // The editor project managed by this editor
+    private final EditorProject mEditorProject;
     //
     private final SceneFlowEditor mSceneFlowEditor;
     private final ScriptEditorPanel mSceneDocEditor;
@@ -96,19 +95,19 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      *
      *************************************************************************
      */
-    public ProjectEditor(ProjectData project) {
+    public ProjectEditor(EditorProject project) {
         super(JSplitPane.VERTICAL_SPLIT, true);
 
-        mProject = project;
-        mSceneDocEditor = new ScriptEditorPanel(mProject.getSceneScript(), mProject.getSceneFlow(), mProject.getPreferences(), mProject.getPreferencesFileName(), this);
-        mSceneFlowEditor = new SceneFlowEditor(mProject.getSceneFlow(), mProject, mSceneDocEditor);
+        mEditorProject = project;
+        mSceneDocEditor = new ScriptEditorPanel(mEditorProject.getSceneScript(), mEditorProject.getSceneFlow(), mEditorProject.getEditorConfig(), this);
+        mSceneFlowEditor = new SceneFlowEditor(mEditorProject.getSceneFlow(), mEditorProject, mSceneDocEditor);
 
         mObservable.addObserver(mSceneFlowEditor);
         mObservable.addObserver(mSceneDocEditor);
 
         mEventCaster.append(this);
 
-        NodeSelectedEvent e = new NodeSelectedEvent(this, mProject.getSceneFlow());
+        NodeSelectedEvent e = new NodeSelectedEvent(this, mEditorProject.getSceneFlow());
         EventCaster.getInstance().convey(e);
 
         WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
@@ -125,8 +124,8 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         return mSceneDocEditor;
     }
 
-    public ProjectData getProject() {
-        return mProject;
+    public EditorProject getEditorProject() {
+        return mEditorProject;
     }
 
     /**
@@ -137,7 +136,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      *
      */
     public void close() {
-        if (mProject.hasChanged()) {
+        if (mEditorProject.hasChanged()) {
             OKButton mYesButton = new OKButton();
             mYesButton.setText(" Yes     ");
             mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -151,7 +150,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
             mNoButton.setText("  No       ");
             mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
-                       disposeAfterDialog();
+                    disposeAfterDialog();
                 }
             });
             //CANCEL BUTTON
@@ -168,7 +167,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
 //                    JOptionPane.YES_NO_OPTION);
             JOptionPane optionPane = new JOptionPane();
             optionPane.setBackground(Color.white);
-            optionPane.setMessage("The project " + mProject.getProjectName() + " has changed.  Save it?");
+            optionPane.setMessage("The project " + mEditorProject.getProjectName() + " has changed.  Save it?");
             optionPane.setMessageType(JOptionPane.INFORMATION_MESSAGE);
             optionPane.setOptions(new Object[]{mYesButton, mNoButton});
             quitDialog = optionPane.createDialog("Save before quitting?");
@@ -180,9 +179,10 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
 //            } else {
 //            }
         }
-        
+
     }
-    private void disposeAfterDialog(){
+
+    private void disposeAfterDialog() {
         // Delete all observers
         mObservable.deleteObservers();
         // Close / Cleanup
@@ -190,18 +190,10 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         mSceneDocEditor.close();
         quitDialog.dispose();
     }
-    ////////////////////////////////////////////////////////////////////////////
-    public void save() {
-        mProject.save();
-        /*
-        if (!mProject.save()) {
-            // TODO: Failure Handling
-            JOptionPane.showMessageDialog(this,
-                    "Wrong Scene Script Syntax.",
-                    "Cannot Format Scene Script.",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-        */
+
+    // Save the project managed by this editor
+    public final boolean save() {
+        return mEditorProject.save();
     }
 
     /**

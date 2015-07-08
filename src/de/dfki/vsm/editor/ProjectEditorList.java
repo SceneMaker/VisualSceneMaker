@@ -1,8 +1,6 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
@@ -10,8 +8,6 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
-
 import java.util.Observer;
 
 import javax.swing.JTabbedPane;
@@ -22,13 +18,14 @@ import javax.swing.event.ChangeListener;
  * @author Gregor Mehlmann
  */
 public class ProjectEditorList extends JTabbedPane implements EventListener, ChangeListener, Observer {
-    private final Observable       mObservable       = new Observable();
-    private final LOGDefaultLogger mLogger           = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventMulticaster = EventCaster.getInstance();
-    WorkSpace.ClipBoard            previousCB        = null;
+
+    private final Observable mObservable = new Observable();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventCaster mEventMulticaster = EventCaster.getInstance();
+    WorkSpace.ClipBoard previousCB = null;
 
     /**
-     * 
+     *
      *
      *
      *
@@ -88,15 +85,15 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         return (ProjectEditor) getSelectedComponent();
     }
 
-    public ProjectData getSelectedProject() {
+    public EditorProject getSelectedProject() {
         if (getSelectedComponent() != null) {
-            return ((ProjectEditor) getSelectedComponent()).getProject();
+            return ((ProjectEditor) getSelectedComponent()).getEditorProject();
         } else {
             return null;
         }
     }
 
-    public void add(ProjectData project) {
+    public void add(EditorProject project) {
 
         // Create a new project editor from the given project
         ProjectEditor projectEditor = new ProjectEditor(project);
@@ -121,9 +118,15 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
 //      repaint();
     }
 
-    public void saveCurrent() {
-        ((ProjectEditor) getSelectedComponent()).save();
+    // Save the current editor project
+    public final boolean save() {
+        // Get the current project editor
+        final ProjectEditor editor = (ProjectEditor) getSelectedComponent();
+        // TODO: Can we couple this with the pending stuff?
         setTitleAt(getSelectedIndex(), getTitleAt(getSelectedIndex()).replace("*", ""));
+        // Save the current editor project      
+        return editor.save();
+
     }
 
     public void closeCurrent() {
@@ -155,6 +158,7 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     private class Observable extends java.util.Observable {
+
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);

@@ -1,7 +1,5 @@
 package de.dfki.vsm.model.acticon;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -26,7 +24,7 @@ public final class ActiconFeature implements ModelObject {
     public ActiconFeature() {
 
         // Initialize The Members
-        mKey   = null;
+        mKey = null;
         mValue = null;
     }
 
@@ -36,7 +34,7 @@ public final class ActiconFeature implements ModelObject {
     public ActiconFeature(final String key, final String value) {
 
         // Initialize The Members
-        mKey   = key;
+        mKey = key;
         mValue = value;
     }
 
@@ -75,7 +73,7 @@ public final class ActiconFeature implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
-        mKey   = element.getAttribute("key");
+        mKey = element.getAttribute("key");
         mValue = element.getAttribute("value");
     }
 

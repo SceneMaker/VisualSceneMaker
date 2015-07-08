@@ -32,9 +32,8 @@ import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
 import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.EEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
@@ -49,7 +48,7 @@ import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.model.sceneflow.graphics.node.Position;
-import de.dfki.vsm.model.script.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -164,17 +163,17 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
     // The parent SceneFlowEditor (TODO: remove)
     private final SceneFlowEditor    mSceneFlowEditor;
-    private final ProjectData        mProject;
-    private final ProjectPreferences mPreferences;
+    private final EditorProject        mProject;
+    private final EditorConfig mPreferences;
 
     /**
      *
      *
      */
-    public WorkSpace(SceneFlowEditor sceneFlowEditor, ProjectData project) {
+    public WorkSpace(SceneFlowEditor sceneFlowEditor, EditorProject project) {
         mSceneFlowEditor = sceneFlowEditor;
         mProject         = project;
-        mPreferences     = mProject.getPreferences();
+        mPreferences     = mProject.getEditorConfig();
         mGridManager     = new GridManager(this);
 
         // Add the mouse listeners
@@ -244,10 +243,10 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     private void checkChangesOnWorkspace() {
 
         // checkHash
-        if (Editor.getInstance().getProjectEditorList().getSelectedProject() != null) {
+        if (EditorInstance.getInstance().getProjectEditorList().getSelectedProject() != null) {
             if (mProject.hasChanged()) {
-                Editor.getInstance().getProjectEditorList().setTitleAt(
-                    Editor.getInstance().getProjectEditorList().getSelectedIndex(), mProject.getProjectName() + "*");
+                EditorInstance.getInstance().getProjectEditorList().setTitleAt(
+                    EditorInstance.getInstance().getProjectEditorList().getSelectedIndex(), mProject.getProjectName() + "*");
             }
         }
     }
@@ -260,11 +259,11 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         return mClipboard;
     }
 
-    public ProjectData getProject() {
+    public EditorProject getProject() {
         return mProject;
     }
 
-    public ProjectPreferences getPreferences() {
+    public EditorConfig getPreferences() {
         return mPreferences;
     }
 
@@ -466,7 +465,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 }
 
                 // Update whole editor after a drop!!!!
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
             }
         };
         mDropTarget = new DropTarget(this, mDropTargetListener);
@@ -493,7 +492,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             }
         }
 
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
     }
 
     /**
@@ -2513,7 +2512,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             removeNode();
         }
 
-        Editor.getInstance().update();
+        EditorInstance.getInstance().update();
     }
 
     /**

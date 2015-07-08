@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.Dialog.Button;
@@ -60,7 +60,7 @@ public class ModifyIEdgeDialog extends Dialog {
     private JLabel errorMsg;
 
     public ModifyIEdgeDialog(IEdge iedge) {
-        super(Editor.getInstance(), "Modify Interruptive Edge", true);
+        super(EditorInstance.getInstance(), "Modify Interruptive Edge", true);
         mIEdge = iedge;
         // TODO: move to EdgeDialog
         mAltStartNodeManager = new AltStartNodeManager(mIEdge);
@@ -71,7 +71,7 @@ public class ModifyIEdgeDialog extends Dialog {
     }
 
     public ModifyIEdgeDialog(Node sourceNode, Node targetNode) {
-        super(Editor.getInstance(), "Create Interruptive Edge", true);
+        super(EditorInstance.getInstance(), "Create Interruptive Edge", true);
         // Init edge data
         mIEdge = new IEdge();
         mIEdge.setTarget(targetNode.getId());
@@ -231,7 +231,7 @@ public class ModifyIEdgeDialog extends Dialog {
         }
         else{
             mInputTextField.setForeground(Color.red);
-            Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
         }
     }
 

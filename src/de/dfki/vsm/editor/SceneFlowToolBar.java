@@ -3,11 +3,10 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
-import de.dfki.vsm.model.config.ProjectPreferences;
-import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.runtime.RunTime;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.player.processing.LaunchDefaultScenePlayer;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -37,6 +36,12 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.TransferHandler;
+import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
@@ -46,17 +51,17 @@ import javax.swing.plaf.basic.BasicButtonUI;
 public class SceneFlowToolBar extends JToolBar implements Observer {
 
     // The VSM Runtime Instance
-    private final RunTime mRunTime = RunTime.getInstance();
+    private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
 
     // The Parent Editor Window
-    private final Editor mWindow = Editor.getInstance();
+    private final EditorInstance mWindow = EditorInstance.getInstance();
 
     // Clipboard
     final Clipboard                     clipboard       = getToolkit().getSystemClipboard();
     private final LinkedList<SuperNode> mPathComponents = new LinkedList<>();
     private final LOGDefaultLogger      mLogger         = LOGDefaultLogger.getInstance();
     private final EventCaster           mEventCaster    = EventCaster.getInstance();
-    private final Editor                mSMEditor       = Editor.getInstance();
+    private final EditorInstance                mSMEditor       = EditorInstance.getInstance();
 
     // The Parent SceneFlow Editor
     private final SceneFlowEditor mEditor;
@@ -80,10 +85,10 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private JScrollPane mPathScrollPane;
 
     //
-    private final ProjectData mProject;
-    private final ProjectPreferences mPreferences;
+    private final EditorProject mProject;
+    private final EditorConfig mPreferences;
 
-    public SceneFlowToolBar(final SceneFlowEditor sceneFlowEditor, ProjectData project) {
+    public SceneFlowToolBar(final SceneFlowEditor sceneFlowEditor, EditorProject project) {
         super("Navigation Bar", JToolBar.HORIZONTAL);
 
         // Initialize The Editor
@@ -142,8 +147,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private void savePreferences() {
         mPreferences.setProperty("node_width", Integer.toString(mNodeSize));
         mPreferences.setProperty("node_height", Integer.toString(mNodeSize));
-        mPreferences.save(mProject.getPreferencesFileName());
-        Editor.getInstance().update();
+        //mPreferences.save(mProject.getEditorConfigName());
+        EditorInstance.getInstance().update();
     }
 
     public void addPathComponent(SuperNode supernode) {
@@ -344,7 +349,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         JButton b = add(new AbstractAction("ACTION_WINDOW", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/window.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Editor.getInstance().showMonitor();
+                EditorInstance.getInstance().showMonitor();
             }
         });
         b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/window_blue.png"));

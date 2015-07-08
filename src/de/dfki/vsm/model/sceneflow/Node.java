@@ -22,7 +22,7 @@ import java.util.Vector;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public class Node extends Object {
+public class Node extends Syntax {
     protected String          mId            = new String();
     protected String          mName          = new String();
     protected String          mComment       = new String();

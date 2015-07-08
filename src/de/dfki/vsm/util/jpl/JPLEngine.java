@@ -28,9 +28,9 @@ public final class JPLEngine {
     private static volatile boolean sAlive;
 
     // Load Default Source Files
-    public static void load() {
-        load(SYSUtilities.sPROLOG_FILE_BASE);
-    }
+    //public static void load() {
+    //    load(SYSUtilities.sPROLOG_FILE_BASE);
+    //}
 
     // Load A Prolog Source File
     public static void load(final String source) {

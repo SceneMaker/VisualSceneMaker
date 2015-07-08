@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.util.grid.GridConstants;
 import de.dfki.vsm.editor.util.grid.GridRectangle;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -45,7 +45,7 @@ public class GridManager {
     private int                      width                = 0;
     private ArrayList<Point2D>       dockingPoints        = new ArrayList<Point2D>();
     private final WorkSpace          mWorkSpace;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mPreferences;
     private ArrayList<Rectangle>     mNodeAreas;
     private boolean                  isDebug;
     private boolean                  isDockingView;

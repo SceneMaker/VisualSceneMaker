@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.script;
 
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.acticon.ActiconAction;
-import de.dfki.vsm.model.config.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
 import de.dfki.vsm.model.visicon.VisiconViseme;
 import de.dfki.vsm.util.evt.EventCaster;
@@ -57,13 +57,13 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
     private DropTargetListener       mDropListener;
     private DropTarget               mDropTarget;
     private int                      mValidActions;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mPreferences;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Construct The Text Pane
-    public ScriptEditorPane(ProjectPreferences preferences) {
+    public ScriptEditorPane(EditorConfig preferences) {
         mPreferences = preferences;
         mFont        = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);
         setFont(mFont);

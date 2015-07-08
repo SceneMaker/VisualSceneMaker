@@ -2,8 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.config.ProjectPreferences;
-import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -34,7 +33,7 @@ public class StartSign extends JComponent implements Observer {
     private final Color              mColor;
     private final Node               mNode;
     private final boolean            mOutline;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mPreferences;
     private Polygon                  mHead;
     private int                      mHalfHeight;
     private int                      mWidth;

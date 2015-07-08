@@ -2,11 +2,11 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.EditorProject;
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.model.config.ProjectPreferences;
-import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -49,7 +49,7 @@ public class OptionsDialog extends JDialog {
 
     // private JComboBox mScenePlayerComboBox;
     private final LOGDefaultLogger mLogger         = LOGDefaultLogger.getInstance();
-    private final Editor           mEditor         = Editor.getInstance();
+    private final EditorInstance           mEditor         = EditorInstance.getInstance();
     private final Dimension        mLabelDimension = new Dimension(100, 10);
     private final Dimension        buttonSize      = new Dimension(125, 30);
     private final Dimension              textfieldSize   = new Dimension(150, 30);
@@ -94,11 +94,11 @@ public class OptionsDialog extends JDialog {
     private JPanel             mScriptPanel;
     private JButton            mDeleteRecentFileListButton;
     private JButton            mDeleteRecentFileButton;
-    private ProjectPreferences mPreferences;
-    private ProjectData        mProject;
+    private EditorConfig mPreferences;
+    private EditorProject        mProject;
 
     private OptionsDialog() {
-        super(Editor.getInstance(), "Preferences", false);
+        super(EditorInstance.getInstance(), "Preferences", false);
         initComponents();
         initPreferences();
     }
@@ -197,7 +197,7 @@ public class OptionsDialog extends JDialog {
                 JFileChooser file = new JFileChooser(mPreferences.sUSER_DIR);
 
                 file.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                file.showDialog(Editor.getInstance(), "Select Sceneflow XSD");
+                file.showDialog(EditorInstance.getInstance(), "Select Sceneflow XSD");
 
                 if (file.getSelectedFile() != null) {
                     mXSDFileTextField.setText(file.getSelectedFile().getPath());
@@ -312,7 +312,7 @@ public class OptionsDialog extends JDialog {
             }
         });
 
-        ProjectPreferences preferences =
+        EditorConfig preferences =
             mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         // Node size stuff
@@ -423,7 +423,7 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initScriptPanel() {
-        ProjectPreferences preferences =
+        EditorConfig preferences =
             mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         mScriptFontTypeLabel = new JLabel("Font Type:");
@@ -577,7 +577,7 @@ public class OptionsDialog extends JDialog {
 //          Preferences.removeProperty("recentfile" + i);
 //          mLogger.message("  Removing recentfile" + i + " ");
 //      }
-        mPreferences.save(mProject.getPreferencesFileName());
+        //mPreferences.save(mProject.getEditorConfigName());
 
         if (dispose) {
             dispose();
@@ -585,7 +585,7 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initPreferences() {
-        mProject     = mEditor.getSelectedProjectEditor().getProject();
+        mProject     = mEditor.getSelectedProjectEditor().getEditorProject();
         mPreferences = mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
         ((DefaultListModel) mRecentFileList.getModel()).clear();
 

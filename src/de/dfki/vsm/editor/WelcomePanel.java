@@ -1,17 +1,7 @@
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.util.Preferences;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.util.ios.ResourceLoader;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -19,14 +9,10 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
 import java.io.File;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Observable;
 import java.util.Observer;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -36,11 +22,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
 /**
- *
  * @author mfallas Class implements welcome screen with a list of recent
  * projects
  */
-public class WelcomePanel extends JPanel implements Observer {
+public final class WelcomePanel extends JPanel implements Observer {
 
     private final String backgroundImage = "/res/img/icon_big.png";    // Background for the welcome screen
     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
@@ -48,14 +33,14 @@ public class WelcomePanel extends JPanel implements Observer {
 
 //  private final JButton mOpenProjButton;
 //  private final JButton mNewProjButton;
-    private final Editor parentEditor;
+    private final EditorInstance parentEditor;
     private final Box mRecentProjects;
     private final int paddingSize;
     private final Dimension screenDimension;
     private final Dimension buttonSize;
     private final Dimension halfScreenDimension;
 
-    public WelcomePanel(final Editor mParent) {
+    public WelcomePanel(final EditorInstance mParent) {
         try {
 
             // UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -367,7 +352,7 @@ public class WelcomePanel extends JPanel implements Observer {
 
             if (sampleProj.exists()) {
                 File projectPath = new File(sampleDir.getPath() + "/vsm/"/* + "config.xml"*/);
-                ProjectData project = new ProjectData(projectPath);
+                EditorProject project = new EditorProject(projectPath);
                 JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
                         + sdf.format(sampleProj.lastModified()));
 

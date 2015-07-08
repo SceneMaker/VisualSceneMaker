@@ -12,12 +12,11 @@ import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
-import de.dfki.vsm.model.script.SceneGroup;
-import de.dfki.vsm.model.script.SceneObject;
-import de.dfki.vsm.model.script.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.evt.EventListener;
@@ -76,7 +75,7 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
     private final ElementTree       mElementTree;
     private final ScriptEditorPanel mScriptEditor;
 
-    public ElementDisplay(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
+    public ElementDisplay(SceneFlow sceneFlow, EditorProject project, ScriptEditorPanel scriptEditor) {
         mScriptEditor = scriptEditor;
         mElementTree  = new ElementTree(sceneFlow, project, mScriptEditor);
         mObservable.addObserver(mElementTree);
@@ -208,14 +207,14 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     private DragGestureListener      mDragGestureListener;
     private DragSourceListener       mDragSourceListener;
     private int                      mAcceptableDnDActions;
-    private final ProjectData        mProject;
+    private final EditorProject        mProject;
     private final DialogActInterface mDialogAct;
 
     /**
      *
      *
      */
-    public ElementTree(SceneFlow sceneFlow, ProjectData project, ScriptEditorPanel scriptEditor) {
+    public ElementTree(SceneFlow sceneFlow, EditorProject project, ScriptEditorPanel scriptEditor) {
         super(new DefaultTreeModel(null));
 
         //
@@ -255,9 +254,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     public void update(java.util.Observable obs, Object obj) {
 
         // mLogger.message("ElementTree.update(" + obj + ")");
-        if (obj instanceof ProjectData) {
-            updateScenes((ProjectData) obj);
-            updateFunDefs((ProjectData) obj);
+        if (obj instanceof EditorProject) {
+            updateScenes((EditorProject) obj);
+            updateFunDefs((EditorProject) obj);
         }
 
         // Update the visual appearance of the ElementTree
@@ -306,7 +305,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 DialogAct selectedDA = (DialogAct) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchDASelectedEvent(selectedDA);
-            } else if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.script.SceneGroup.class)) {
+            } else if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.scenescript.SceneGroup.class)) {
                 mScriptEditorPanel.getTabPane().setSelectedIndex(0);
 
                 String     sceneLanguageSelect = ((TreeEntry) parentPath.getLastPathComponent()).getText();
@@ -372,7 +371,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    private void updateScenes(ProjectData project) {
+    private void updateScenes(EditorProject project) {
 
         //
         // System.out.println("Updating Scenes");
@@ -476,7 +475,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     /**
      *
      */
-    private void updatDialogueActs(ProjectData project) {
+    private void updatDialogueActs(EditorProject project) {
         mDAEntry.removeAllChildren();
 
         for (String phase : project.getDialogAct().getDialogueActPhases()) {
@@ -604,7 +603,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    private void updateFunDefs(ProjectData project) {
+    private void updateFunDefs(EditorProject project) {
 
         //
         mFunDefEntry.removeAllChildren();
@@ -666,14 +665,14 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             if (usrCmdDef != null) {
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
                 updateFunDefs();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
                 launchFunctionCreatedEvent(usrCmdDef);
             }
         } else if (source == functionModify) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent();
 
             modifyFunctionAction(entry);
-            Editor.getInstance().update();
+            EditorInstance.getInstance().update();
             launchFunctionSelectedEvent((FunDef) entry.getData());
         } else if (source == functionRemove) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent();
@@ -683,7 +682,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 updateFunDefs();
-                Editor.getInstance().update();
+                EditorInstance.getInstance().update();
                 launchFunctionCreatedEvent((FunDef) entry.getData());
             }
         }
