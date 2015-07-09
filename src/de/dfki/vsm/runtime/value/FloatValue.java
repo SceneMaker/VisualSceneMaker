@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.value;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class FloatValue extends AbstractValue {
     private final float mValue;

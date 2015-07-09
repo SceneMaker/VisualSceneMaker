@@ -5,7 +5,7 @@ package de.dfki.vsm.runtime.value;
 import de.dfki.vsm.util.TextFormat;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class StringValue extends AbstractValue {
     private final String mValue;

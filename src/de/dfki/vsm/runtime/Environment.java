@@ -12,7 +12,7 @@ import de.dfki.vsm.util.cpy.Copyable;
 import java.util.LinkedList;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Environment implements Copyable {
     private final LinkedList<SymbolTable> mSymbolTableList;

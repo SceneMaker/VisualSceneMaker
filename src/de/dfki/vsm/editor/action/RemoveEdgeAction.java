@@ -13,7 +13,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class RemoveEdgeAction extends EdgeAction {
     public RemoveEdgeAction(WorkSpace workSpace, de.dfki.vsm.editor.Edge edge) {

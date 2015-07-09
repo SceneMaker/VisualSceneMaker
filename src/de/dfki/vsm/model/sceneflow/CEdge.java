@@ -64,7 +64,7 @@ public class CEdge extends Edge {
                          getCopyOfAltStartNodeMap(), mCondition.getCopy());
     }
 
-    public void writeXML(de.dfki.vsm.util.ios.IndentWriter out) throws XMLWriteError {
+    public void writeXML(de.dfki.vsm.util.ios.IOSIndentWriter out) throws XMLWriteError {
         String   start = "";
         Iterator it    = mAltStartNodeMap.entrySet().iterator();
 

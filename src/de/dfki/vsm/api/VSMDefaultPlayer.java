@@ -7,7 +7,7 @@ import de.dfki.vsm.runtime.value.AbstractValue;
 import java.util.LinkedList;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class VSMDefaultPlayer extends VSMScenePlayer {
 

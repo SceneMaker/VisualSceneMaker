@@ -18,7 +18,7 @@ import javax.swing.undo.UndoManager;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class RedoAction extends AbstractAction {
     private static RedoAction sSingeltonInstance = null;

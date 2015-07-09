@@ -3,12 +3,12 @@ package de.dfki.vsm.model.sceneflow.command;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.Command.CmdType;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class HistoryClear extends Command {
     private String mState;
@@ -43,7 +43,7 @@ public class HistoryClear extends Command {
         return new HistoryClear(mState);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<HistoryClear state=\"" + mState + "\"/>");
     }
 

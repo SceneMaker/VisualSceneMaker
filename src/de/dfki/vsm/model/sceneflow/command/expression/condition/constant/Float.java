@@ -2,14 +2,14 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * A floating point constant.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Float extends Constant {
     private float mValue;
@@ -50,7 +50,7 @@ public class Float extends Constant {
         return new Float(mValue);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Float value=\"" + mValue + "\"/>");
     }
 

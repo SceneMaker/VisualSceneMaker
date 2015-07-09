@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.value;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class BooleanValue extends AbstractValue {
     private final boolean mValue;

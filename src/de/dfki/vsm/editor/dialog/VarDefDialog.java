@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class VarDefDialog extends Dialog {
     private final Node   mNode;

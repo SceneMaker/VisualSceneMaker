@@ -96,7 +96,7 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public final class WorkSpace extends JPanel implements Observer, EventListener, MouseListener, MouseMotionListener {
@@ -243,7 +243,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     private void checkChangesOnWorkspace() {
 
         // checkHash
-        if (EditorInstance.getInstance().getProjectEditorList().getSelectedProject() != null) {
+        if (EditorInstance.getInstance().getProjectEditorList().getSelectedEditorProject() != null) {
             if (mProject.hasChanged()) {
                 EditorInstance.getInstance().getProjectEditorList().setTitleAt(
                     EditorInstance.getInstance().getProjectEditorList().getSelectedIndex(), mProject.getProjectName() + "*");

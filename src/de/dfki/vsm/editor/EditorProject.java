@@ -5,8 +5,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.io.File;
 
 /**
- *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class EditorProject extends RunTimeProject {
 
@@ -20,45 +19,92 @@ public class EditorProject extends RunTimeProject {
     private final EditorConfig mEditorConfig
             = new EditorConfig();
 
-    public EditorProject(final File file) {
+    // Construct an editor project
+    public EditorProject() {
         // Initialize the pending flag
-        mIsPending = false;
+        mIsPending = true;
         // Initialize the project file
-        mProjectFile = file.getAbsoluteFile();
-        // Load the editor configuration
-        mEditorConfig.load(file);
-        // Initialize the project data
-        super.load(file);
+        mProjectFile = null;
+        // Initialize the initial hash
+        mInitialHash = getHashCode();
     }
 
-    // Load the project data
-    public final boolean load() {
-        return super.load(mProjectFile)
-                && mEditorConfig.load(mProjectFile);
-    }
-
-    // Load the project data
+    // Load the editor project
     @Override
     public final boolean load(final File file) {
+        // Get the absolute file 
+        final File base = file.getAbsoluteFile();
+        // Check if file exists
+        if (!base.exists()) {
+            // Print an error message
+            mLogger.failure("Error: Cannot find editor project file '" + base + "'");
+            // Return failure here
+            return false;
+        }
         // First set the project file 
-        setProjectFile(file);
+        mProjectFile = base;
         // And then load the project
         return load();
     }
 
-    // Save the project data
-    public final boolean save() {
-        return super.save(mProjectFile)
-                && mEditorConfig.save(mProjectFile);
+    // Save the editor project
+    @Override
+    public final boolean save(final File file) {
+        // Get the absolute file 
+        final File base = file.getAbsoluteFile();
+        // Check if file exists
+        if (!base.exists()) {
+            // Print an error message
+            mLogger.failure("Error: Cannot find editor project file '" + base + "'");
+            // Return failure here
+            return false;
+        }
+        // First set the project file 
+        mProjectFile = base;
+        // And then save the project
+        return save();
+    }
+
+    // Load the project data
+    public final boolean load() {
+        // Check the project file
+        if (mProjectFile == null) {
+            return false;
+        }
+        // Load the project data
+        if (super.load(mProjectFile)
+                && mEditorConfig.load(mProjectFile)) {
+            // Set the pending flag false
+            mIsPending = false;
+            // Set the initial hash code
+            mInitialHash = getHashCode();
+            // Return true if project is saved
+            return true;
+        } else {
+            // Return false when saving failed
+            return false;
+        }
     }
 
     // Save the project data
-    @Override
-    public final boolean save(final File file) {
-        // First set the project file 
-        setProjectFile(file);
-        // And then save the project
-        return save();
+    public final boolean save() {
+        // Check the project file
+        if (mProjectFile == null) {
+            return false;
+        }
+        // Save the project data
+        if (super.save(mProjectFile)
+                && mEditorConfig.save(mProjectFile)) {
+            // Set the editor project unpending
+            mIsPending = false;
+            // Reset the initial hash code here
+            mInitialHash = getHashCode();
+            // Return true when project is saved
+            return true;
+        } else {
+            // Return false when saving failed
+            return false;
+        }
     }
 
     public final File getProjectFile() {
@@ -76,25 +122,20 @@ public class EditorProject extends RunTimeProject {
     public final EditorConfig getEditorConfig() {
         return mEditorConfig;
     }
+    
+    
+    /*
+     public final boolean isPending() {
+     return mIsPending;
+     }
 
-    public void setInitialHash(int value) {
-        mInitialHash = value;
-    }
+     public final void setPending(final boolean state) {
+     mIsPending = state;
+     }
+     */
 
-    public final boolean isPending() {
-        return mIsPending;
-    }
-
-    public final void setPending(final boolean state) {
-        mIsPending = state;
-    }
-
-    // TODO: Does actually not work correct!
+    // Check if the hash code has changed
     public final boolean hasChanged() {
-        boolean hasChanged = false;
-        if (mInitialHash != getHashCode()) {
-            hasChanged = true;
-        }
-        return hasChanged;
+        return (mInitialHash != getHashCode());
     }
 }

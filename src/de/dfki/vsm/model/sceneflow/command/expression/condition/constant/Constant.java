@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * A constant expression.
  *
- * @author Gregor Mehlmannn
+ * @author Not men
  */
 public abstract class Constant extends Condition {
     public enum ConstType {

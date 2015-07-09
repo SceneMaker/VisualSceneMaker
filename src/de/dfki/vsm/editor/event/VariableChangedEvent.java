@@ -6,7 +6,7 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class VariableChangedEvent extends EventObject {
     private TPLTuple<String, String> mVariableValuePair;

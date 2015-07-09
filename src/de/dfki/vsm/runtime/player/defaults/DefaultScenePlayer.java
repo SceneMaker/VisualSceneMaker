@@ -1,44 +1,49 @@
-package de.dfki.vsm.runtime.player;
+package de.dfki.vsm.runtime.player.defaults;
 
+//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
+import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
+import de.dfki.vsm.model.config.ConfigElement;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.ActionObject;
+import de.dfki.vsm.model.scenescript.SceneAbbrev;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneParam;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.model.scenescript.SceneWord;
 import de.dfki.vsm.runtime.Process;
+import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.AbstractValue.Type;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
+//~--- JDK imports ------------------------------------------------------------
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
-import static java.lang.Thread.sleep;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
-
-
-public class DefaultDialogueActPlayer implements Player {
+public class DefaultScenePlayer implements Player {
 
     // The Logger Instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-    // The Player Properties
-    // private final PlayerConfig mProperties;
     // The Current Project
     private final RunTimeProject mProject;
 
     // Construct A Default Player
-    public DefaultDialogueActPlayer(final RunTimeProject project) {
+    public DefaultScenePlayer(final RunTimeProject project) {
         mProject = project;
-
-        // mProperties = project.getScenePlayerProperties();
     }
 
     // Launch The Default Player
@@ -85,18 +90,13 @@ public class DefaultDialogueActPlayer implements Player {
             @Override
             public void run() {
 
-                // while (true) {
-                //// Exit If Interrupted
-                // if (mIsDone) {
-                // return;
-                // }
-                // }
+                // Select The Scene
                 final SceneScript script = mProject.getSceneScript();
                 final SceneGroup group = script.getSceneGroup(name);
                 final SceneObject scene = group.select();
 
                 // Scene Visualization
-                mLogger.message("Executing dialogAct:\r\n" + scene.getText());
+                mLogger.message("Executing scene:\r\n" + scene.getText());
                 EventCaster.getInstance().convey(new SceneExecutedEvent(this, scene));
 
                 // Process The Turns
@@ -107,8 +107,45 @@ public class DefaultDialogueActPlayer implements Player {
                     EventCaster.getInstance().convey(new TurnExecutedEvent(this, turn));
 
                     // Get The Turn Speaker
+                    final String speaker = turn.getSpeaker();
+
+                    if (speaker == null) {
+
+                        // Get The Default Speaker
+                    }
+
                     // Count The Word Number
                     int wordCount = 0;
+
+                    // Process Utterance
+                    for (SceneUttr utt : turn.getUttrList()) {
+
+                        // Utterance Visualization
+                        mLogger.message("Executing utterance:" + utt.getText());
+                        EventCaster.getInstance().convey(new UtteranceExecutedEvent(this, utt));
+
+                        // Process the words of this utterance
+                        for (AbstractWord word : utt.getWordList()) {
+                            if (word instanceof SceneWord) {
+
+                                // Visualization
+                                mLogger.message("Executing vocable:" + ((SceneWord) word).getText());
+                                wordCount = ((SceneWord) word).getText().length();
+                            } else if (word instanceof SceneParam) {
+
+                                // Visualization
+                                mLogger.message("Executing param:" + ((SceneParam) word).getText());
+                            } else if (word instanceof ActionObject) {
+
+                                // Visualization
+                                mLogger.message("Executing action:" + ((ActionObject) word).getText());
+                            } else if (word instanceof SceneAbbrev) {
+
+                                // Visualization
+                                mLogger.message("Executing abbreviation:" + ((SceneAbbrev) word).getText());
+                            }
+                        }
+                    }
 
                     // Utterance Simulation
                     try {
@@ -139,7 +176,7 @@ public class DefaultDialogueActPlayer implements Player {
 
                 // Finish This Execution
                 finished = true;
-            } catch (Exception exc) {
+            } catch (Exception e) {
 
                 // Abort The Player Task
                 task.mIsDone = true;

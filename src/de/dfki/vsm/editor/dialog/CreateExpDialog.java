@@ -22,7 +22,7 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class CreateExpDialog extends Dialog {
 

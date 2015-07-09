@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow;
 import de.dfki.vsm.model.ModelObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class Syntax implements ModelObject {
 

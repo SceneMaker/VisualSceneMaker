@@ -9,7 +9,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class BINUtilities {
 

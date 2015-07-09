@@ -7,7 +7,7 @@ import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
 import de.dfki.vsm.util.cpy.CopyTool;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class Node extends Syntax {
@@ -522,7 +522,7 @@ public class Node extends Syntax {
         return (Node) CopyTool.copy(this);
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<Node id=\"" + mId + "\" name=\"" + mName + "\" exhaustive=\"" + mExhaustive + "\" preserving=\""
                     + mPreserving + "\" history=\"" + mIsHistoryNode + "\">").push();
 

@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Kathrin Janowski
  */
 public final class HCMUserInterface extends JFrame implements ActionListener {

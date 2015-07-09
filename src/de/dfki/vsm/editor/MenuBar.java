@@ -26,7 +26,7 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Parick Gebhard
  */
 public class MenuBar extends JMenuBar {
@@ -37,7 +37,6 @@ public class MenuBar extends JMenuBar {
     private JMenu mFileMenu;
     private JMenuItem mCreateFileMenuItem;
     private JMenuItem mOpenFileMenuItem;
-    private JMenuItem mOpenSceneflowMenuItem;
     private JMenuItem mOpenRecentFileMenu;
     private JMenuItem mClearRecentFileMenuItem;
     private JMenuItem mSaveFileMenuItem;
@@ -96,7 +95,7 @@ public class MenuBar extends JMenuBar {
         mCloseFileMenuItem.setEnabled(flag);
     }
 
-    public void setFileSaveMenuEnabled(boolean flag) {
+    public void setSaveMenusEnabled(boolean flag) {
         mSaveFileMenuItem.setEnabled(flag);
 
 //      mSaveFileAsMenuItem.setEnabled(flag);
@@ -174,6 +173,7 @@ public class MenuBar extends JMenuBar {
         mCreateFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mCreateFileMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.newProject();
             }
@@ -184,6 +184,7 @@ public class MenuBar extends JMenuBar {
         mOpenFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mOpenFileMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.openProject();
                 Preferences.save();
@@ -213,16 +214,7 @@ public class MenuBar extends JMenuBar {
             }
         });
         refreshRecentFileMenu();
-        mOpenSceneflowMenuItem = new JMenuItem("Open Sceneflow...");
-
-        // mOpeSceneflowMenuItem.setIcon(new ImageIcon("data/img/open.png"));
-        mOpenSceneflowMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
-                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mOpenSceneflowMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.openProject();
-            }
-        });
+       
         mCloseFileMenuItem = new JMenuItem("Close");
 
 //      mCloseFileMenuItem.setIcon(new ImageIcon("data/img/close.png"));
@@ -231,7 +223,7 @@ public class MenuBar extends JMenuBar {
         mCloseFileMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.closeCurrentProject();
+                mEditorInstance.closeProject();
             }
         });
 
@@ -289,8 +281,6 @@ public class MenuBar extends JMenuBar {
         mFileMenu.add(mCreateFileMenuItem);
         mFileMenu.add(mOpenFileMenuItem);
         mFileMenu.add(mOpenRecentFileMenu);
-        mFileMenu.add(new JSeparator());
-        mFileMenu.add(mOpenSceneflowMenuItem);
         mFileMenu.add(new JSeparator());
         mFileMenu.add(mCloseFileMenuItem);
         mFileMenu.add(mSaveFileMenuItem);

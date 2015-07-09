@@ -25,7 +25,7 @@ import javax.swing.text.Segment;
 import javax.swing.text.ViewFactory;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SyntaxEditorView extends PlainView {
     private static RenderingHints sRendHints = null;

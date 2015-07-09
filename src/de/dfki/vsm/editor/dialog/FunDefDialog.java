@@ -49,7 +49,7 @@ import javax.swing.text.PlainDocument;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class FunDefDialog extends Dialog {
 

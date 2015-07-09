@@ -5,7 +5,7 @@ package de.dfki.vsm.runtime.value;
 import java.util.LinkedList;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ListValue extends AbstractValue {
     private final LinkedList<AbstractValue> mValueList;

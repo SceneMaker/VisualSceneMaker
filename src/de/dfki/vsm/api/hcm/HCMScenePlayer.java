@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class HCMScenePlayer extends VSMScenePlayer {
 

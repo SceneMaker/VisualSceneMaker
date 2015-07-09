@@ -42,7 +42,7 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class CmdBadge extends JComponent implements EventListener, Observer {

@@ -293,20 +293,22 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             TreePath parentPath = path.getParentPath();
 
             if (parentPath.getLastPathComponent().equals(mFunDefEntry)) {
-                mScriptEditorPanel.getTabPane().setSelectedIndex(1);
-                mScriptEditorPanel.getmParentPE().showSceneDocEditor();
+                //mScriptEditorPanel.getTabPane().setSelectedIndex(1);
+                // TODO: This is total bullshit cyclic dependencies and crossing the hiererchy
+                // Realize that with the update event mechanism (fuck!)
+                //mScriptEditorPanel.getmParentPE().showSceneDocEditor();
 
                 FunDef selectedDef = (FunDef) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchFunctionSelectedEvent(selectedDef);
             } else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
-                mScriptEditorPanel.getTabPane().setSelectedIndex(2);
+                //mScriptEditorPanel.getTabPane().setSelectedIndex(2);
 
                 DialogAct selectedDA = (DialogAct) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchDASelectedEvent(selectedDA);
             } else if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.scenescript.SceneGroup.class)) {
-                mScriptEditorPanel.getTabPane().setSelectedIndex(0);
+                //mScriptEditorPanel.getTabPane().setSelectedIndex(0);
 
                 String     sceneLanguageSelect = ((TreeEntry) parentPath.getLastPathComponent()).getText();
                 SceneGroup selectedScene       = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();

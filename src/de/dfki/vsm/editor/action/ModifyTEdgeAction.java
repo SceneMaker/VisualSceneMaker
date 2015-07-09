@@ -14,7 +14,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyTEdgeAction extends ModifyEdgeAction {
     private long mOldTimeout;

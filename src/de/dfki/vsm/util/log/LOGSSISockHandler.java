@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class LOGSSISockHandler extends Handler {
     private final DatagramSocket mSocket;

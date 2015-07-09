@@ -9,7 +9,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.LinkedList;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class TestPlayer implements Player {
 

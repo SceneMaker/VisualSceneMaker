@@ -1,7 +1,6 @@
 package de.dfki.vsm.runtime.project;
 
 import de.dfki.vsm.model.acticon.ActiconConfig;
-import de.dfki.vsm.model.config.ConfigElement;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
@@ -10,10 +9,10 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.runtime.dialogact.DummyDialogAct;
-import de.dfki.vsm.runtime.player.DefaultDialogueActPlayer;
+import de.dfki.vsm.runtime.player.defaults.DefaultDialogPlayer;
 import de.dfki.vsm.runtime.player.Player;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.runtime.plugin.Plugin;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.File;
 import java.io.IOException;
@@ -22,96 +21,108 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class RunTimeProject {
 
-    // The Logger Instance
+    // The singelton logger instance
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
-
+    // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
+    // The scenescript of the project
     private final SceneScript mSceneScript = new SceneScript();
+    // The default player configuration of the project 
     private final PlayerConfig mPlayerConfig = new PlayerConfig();
+    // The project configuration of the project
     private final ProjectConfig mProjectConfig = new ProjectConfig();
+    // The acticon configuration of the project
     private final ActiconConfig mActiconConfig = new ActiconConfig();
+    // The visicon configuration of the project
     private final VisiconConfig mVisiconConfig = new VisiconConfig();
+    // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
-
-    // Maintained Plugins
+    // The plugins maintained in this object
     private final HashMap<String, Plugin> mPluginMap = new HashMap<>();
-    // Maintained Players
+    // The players maintained in this object
     private final HashMap<String, Player> mPlayerMap = new HashMap<>();
-
-    // Default DialogPlayer
-    private Player mDialogPlayer;
-    // TODO:  Refactor The Dialog Act Interface
+    // The defaut dialog player of the project
+    private Player mDefaultDialogPlayer;
+    // The defaut scene player of the project
+    private Player mDefaultScenePlayer;
+    // TODO:  Refactor The Dialog Act Stuff
     private DialogActInterface mDialogueAct = new DummyDialogAct();
     private String mDialogActClassName;
     private String mDialogPlayerClassName;
 
-    // Default ScenePlayer
-    private Player mDefaultScenePlayer;
-//    private String mScenePlayerClassName;
-//    private String mScenePlayerFileName;
-
+    // Construct an empty project
     public RunTimeProject() {
     }
 
+    // Construct a project from a file
     public RunTimeProject(final File file) {
+        // Call the local load method
         load(file);
     }
 
-    public final ActiconConfig getActicon() {
-        return mActiconConfig;
-    }
-
-    public final VisiconConfig getVisicon() {
-        return mVisiconConfig;
-    }
-
-    public final GesticonConfig getGesticon() {
-        return mGesticonConfig;
-    }
-
-    public final SceneFlow getSceneFlow() {
-        return mSceneFlow;
-    }
-
-    public final SceneScript getSceneScript() {
-        return mSceneScript;
-    }
-
-    public final Player getDefaultScenePlayer() {
-        return mDefaultScenePlayer;
-    }
-
-    public final Player getDefaultDialogPlayer() {
-        return mDialogPlayer;
-    }
-
-    public final ConfigElement getPlayerConfig() {
-        return mPlayerConfig;
-    }
-
-    public final DialogActInterface getDialogAct() {
-        return mDialogueAct;
-    }
-
-    public final Plugin getPlugin(final String name) {
-        return mPluginMap.get(name);
-    }
-
-    public final Player getPlayer(final String name) {
-        return mPlayerMap.get(name);
-    }
-
+    // Get the name of the project from its configuration
     public final String getProjectName() {
         return mProjectConfig.getProjectName();
     }
 
+    // Set the name of the project in its configuration
     public final void setProjectName(final String name) {
         mProjectConfig.setProjectName(name);
+    }
+
+    // Get the sceneflow of the project
+    public final SceneFlow getSceneFlow() {
+        return mSceneFlow;
+    }
+
+    // Get the scenescript of the project
+    public final SceneScript getSceneScript() {
+        return mSceneScript;
+    }
+
+    // Get the acticon of the project
+    public final ActiconConfig getActicon() {
+        return mActiconConfig;
+    }
+
+    // Get the visicon of the project
+    public final VisiconConfig getVisicon() {
+        return mVisiconConfig;
+    }
+
+    // Get the gesticon of the project
+    public final GesticonConfig getGesticon() {
+        return mGesticonConfig;
+    }
+
+    // Get the default scene player of the project
+    public final Player getDefaultScenePlayer() {
+        return mDefaultScenePlayer;
+    }
+
+    // Get the default dialog player of the project
+    public final Player getDefaultDialogPlayer() {
+        return mDefaultDialogPlayer;
+    }
+
+    // Get the default dialog act taxonomy of the project
+    public final DialogActInterface getDialogAct() {
+        return mDialogueAct;
+    }
+
+    // Get a plugin of the project by name
+    public final Plugin getPlugin(final String name) {
+        return mPluginMap.get(name);
+    }
+
+    // Get a player of the project by name
+    public final Player getPlayer(final String name) {
+        return mPlayerMap.get(name);
     }
 
     public boolean load(final File file) {
@@ -126,19 +137,18 @@ public class RunTimeProject {
         }
 
         // Load the project from the configuration
-        return loadProjectConfig(base)
-                && loadSceneFlow(base)
-                && loadSceneScript(base)
-                && loadPlayerConfig(base)
-                && loadActiconConfig(base)
-                && loadVisiconConfig(base)
-                && loadGesticonConfig(base)
+        return parseProjectConfig(base)
+                && parseSceneFlow(base)
+                && parseSceneScript(base)
+                && parsePlayerConfig(base)
+                && parseActiconConfig(base)
+                && parseVisiconConfig(base)
+                && parseGesticonConfig(base)
                 && loadDefaultScenePlayer();
-
+        // TODO: 
         /*       
          loadPlayers();
          loadPlugins();        
-         // TODO: Clean
          loadScenePlayer();
          loadDialogPlayer();
          loadDialogueAct();
@@ -161,13 +171,13 @@ public class RunTimeProject {
             }
         }
         // Save the project to the base directory
-        return (saveProjectConfig(base)
-                && saveSceneFlow(base)
-                && saveSceneScript(base)
-                && savePlayerConfig(base)
-                && saveActiconConfig(base)
-                && saveVisiconConfig(base)
-                && saveGesticonConfig(base));
+        return (writeProjectConfig(base)
+                && writeSceneFlow(base)
+                && writeSceneScript(base)
+                && writePlayerConfig(base)
+                && writeActiconConfig(base)
+                && writeVisiconConfig(base)
+                && writeGesticonConfig(base));
 
         /*
          saveProject();
@@ -183,7 +193,7 @@ public class RunTimeProject {
          */
     }
 
-    private boolean loadProjectConfig(final File base) {
+    private boolean parseProjectConfig(final File base) {
         // Create the project configuration file
         final File file = new File(base, "project.xml");
         // Check if the  configuration does exist
@@ -206,7 +216,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean saveProjectConfig(final File base) {
+    private boolean writeProjectConfig(final File base) {
         // Create the project configuration file
         final File file = new File(base, "project.xml");
         // Check if the configuration does exist
@@ -240,7 +250,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean loadSceneFlow(final File base) {
+    private boolean parseSceneFlow(final File base) {
         // Create the sceneflow configuration file
         final File file = new File(base, "sceneflow.xml");
         // Check if the configuration file does exist
@@ -267,7 +277,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean saveSceneFlow(final File base) {
+    private boolean writeSceneFlow(final File base) {
         // Create the sceneflow configuration file
         final File file = new File(base, "sceneflow.xml");
         // Check if the configuration file does exist
@@ -301,7 +311,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean loadSceneScript(final File base) {
+    private boolean parseSceneScript(final File base) {
         // Create the scenescript configuration file
         final File file = new File(base, "scenescript.xml");
         // Check if the configuration file does exist
@@ -324,7 +334,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean saveSceneScript(final File base) {
+    private boolean writeSceneScript(final File base) {
         // Create the scenescript configuration file
         final File file = new File(base, "scenescript.xml");
         // Check if the configuration file does exist
@@ -358,7 +368,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean loadActiconConfig(final File base) {
+    private boolean parseActiconConfig(final File base) {
         // Create the acticon configuration file
         final File file = new File(base, "acticon.xml");
         // Check if the configuration file does exist
@@ -381,7 +391,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean saveActiconConfig(final File base) {
+    private boolean writeActiconConfig(final File base) {
         // Create the acticon configuration file
         final File file = new File(base, "acticon.xml");
         // Check if the configuration file does exist
@@ -415,7 +425,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean loadGesticonConfig(final File base) {
+    private boolean parseGesticonConfig(final File base) {
         // Create the gesticon configuration file
         final File file = new File(base, "gesticon.xml");
         // Check if the configuration file does exist
@@ -438,7 +448,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean saveGesticonConfig(final File base) {
+    private boolean writeGesticonConfig(final File base) {
         // Create the gesticon configuration file
         final File file = new File(base, "gesticon.xml");
         // Check if the configuration file does exist
@@ -472,7 +482,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean loadVisiconConfig(final File base) {
+    private boolean parseVisiconConfig(final File base) {
         // Create the visicon configuration file
         final File file = new File(base, "visicon.xml");
         // Check if the configuration file does exist
@@ -495,7 +505,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean saveVisiconConfig(final File base) {
+    private boolean writeVisiconConfig(final File base) {
         // Create the visicon configuration file
         final File file = new File(base, "visicon.xml");
         // Check if the configuration file does exist
@@ -529,7 +539,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean loadPlayerConfig(final File base) {
+    private boolean parsePlayerConfig(final File base) {
         // Create the player configuration file
         final File file = new File(base, "player.xml");
         // Check if the configuration file does exist
@@ -552,7 +562,7 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean savePlayerConfig(final File base) {
+    private boolean writePlayerConfig(final File base) {
         // Create the player configuration file
         final File file = new File(base, "player.xml");
         // Check if the configuration file does exist
@@ -892,16 +902,16 @@ public class RunTimeProject {
             try {
                 Class daPlayerClass = Class.forName(mDialogPlayerClassName);
 
-                mDialogPlayer
+                mDefaultDialogPlayer
                         = (Player) daPlayerClass.getConstructor(RunTimeProject.class).newInstance(this);
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
-                mDialogPlayer = new DefaultDialogueActPlayer(this);
+                mDefaultDialogPlayer = new DefaultDialogPlayer(this);
             }
         } else {
-            mDialogPlayer = new DefaultDialogueActPlayer(this);
+            mDefaultDialogPlayer = new DefaultDialogPlayer(this);
         }
 
-        mDialogPlayer.launch();
+        mDefaultDialogPlayer.launch();
     }
 
     public final synchronized void launchScenePlayer() {

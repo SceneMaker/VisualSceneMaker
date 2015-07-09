@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.evt;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public interface EventListener {
 

@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name= "NewStyleProject">
-<Agents>
-  <Agent name="some" player="welt">
-	<Feature key="hallo" value="welt"/>
-  </Agent>
-</Agents>
-<Players>
-  <Player name="some" class="de.dfki.vsm.test.players.TestPlayer">
-	<Feature key="hallo" value="welt"/>
-  </Player>
-</Players>
-<Plugins>
-  <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
-	<Feature key="hallo" value="welt"/>
-  </Plugin>
-  <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
-	<Feature key="hallo" value="welt"/>
-  </Plugin>
-</Plugins>
+<Project name="NewStyleProject">
+  <Plugins>
+    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
+      <Feature key="hallo" value="welt"/>
+    </Plugin>
+    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
+      <Feature key="hallo" value="welt"/>
+    </Plugin>
+  </Plugins>
+  <Players>
+    <Player name="some" class="de.dfki.vsm.test.players.TestPlayer">
+      <Feature key="hallo" value="welt"/>
+    </Player>
+  </Players>
+  <Agents>
+    <Agent name="some" player="welt">
+      <Feature key="hallo" value="welt"/>
+    </Agent>
+  </Agents>
 </Project>

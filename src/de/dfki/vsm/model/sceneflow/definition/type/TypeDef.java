@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 /**
  * An abstract type definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class TypeDef extends Syntax {
     protected String mName;

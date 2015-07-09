@@ -2,7 +2,7 @@ package de.dfki.vsm.model.project;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.config.ConfigElement;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class AgentConfig extends ConfigElement {
 
@@ -61,7 +61,7 @@ public class AgentConfig extends ConfigElement {
 
     // Write A Agent As XML
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<Agent name=\"" + mAgentName + "\" player=\"" + mPlayerName + "\">");
         stream.push();
         for (final ConfigFeature entry : mFeatureList) {

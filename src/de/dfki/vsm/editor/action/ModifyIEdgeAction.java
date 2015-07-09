@@ -16,7 +16,7 @@ import javax.swing.undo.CannotUndoException;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyIEdgeAction extends ModifyEdgeAction {
     private Condition mOldCondition;

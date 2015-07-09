@@ -7,7 +7,7 @@ import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
 import de.dfki.vsm.util.cpy.CopyTool;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SuperNode extends Node {
     protected Vector<Comment>       mCommentList         = new Vector<Comment>();
@@ -282,7 +282,7 @@ public class SuperNode extends Node {
     }
 
     @Override
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         String start = "";
 
         for (String id : mStartNodeMap.keySet()) {

@@ -15,7 +15,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class RemoveNodeAction extends NodeAction {
     Vector<RemoveEdgeAction> mRemoveEdgeActionList = new Vector<RemoveEdgeAction>();

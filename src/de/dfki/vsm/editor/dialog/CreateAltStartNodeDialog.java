@@ -23,7 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class CreateAltStartNodeDialog extends Dialog {
     final private AltStartNodeManager mAltStartNodeManager;

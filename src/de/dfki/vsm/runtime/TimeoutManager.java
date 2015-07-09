@@ -36,7 +36,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TimeoutManager {
     private final LOGDefaultLogger                                   mLogger          = LOGDefaultLogger.getInstance();

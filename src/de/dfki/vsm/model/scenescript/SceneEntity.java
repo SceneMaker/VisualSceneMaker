@@ -3,7 +3,7 @@ package de.dfki.vsm.model.scenescript;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
@@ -14,7 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class SceneEntity implements ModelObject {
 
@@ -66,7 +66,7 @@ public abstract class SceneEntity implements ModelObject {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Initialize The Indent Writer
-        final IndentWriter stream = new IndentWriter(buffer);
+        final IOSIndentWriter stream = new IOSIndentWriter(buffer);
 
         try {
 

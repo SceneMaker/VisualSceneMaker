@@ -6,7 +6,7 @@ package de.dfki.vsm.runtime.error;
  * source of the exception and a message string giving a description of the
  * cause of the exception.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class InterpreterException extends Exception {
     public InterpreterException(Object obj, String msg) {

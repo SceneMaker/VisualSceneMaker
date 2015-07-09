@@ -12,9 +12,10 @@ import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.sys.SYSUtilities;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
@@ -167,7 +168,7 @@ public class CreateProjectDialog extends JDialog {
         mSceneFlowTextField.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                JFileChooser file = new JFileChooser(de.dfki.vsm.editor.util.Preferences.sUSER_HOME);
+                JFileChooser file = new JFileChooser(SYSUtilities.sSYSPROPS_USER_HOME);
 
                 file.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 file.showDialog(EditorInstance.getInstance(), "Select Sceneflow");
@@ -199,7 +200,7 @@ public class CreateProjectDialog extends JDialog {
         mScenesTextField.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                JFileChooser file = new JFileChooser(de.dfki.vsm.editor.util.Preferences.sUSER_HOME);
+                JFileChooser file = new JFileChooser(SYSUtilities.sSYSPROPS_USER_HOME);
 
                 file.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 file.showDialog(EditorInstance.getInstance(), "Select Scenes");
@@ -231,7 +232,7 @@ public class CreateProjectDialog extends JDialog {
         mGesticonTextField.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                JFileChooser file = new JFileChooser(de.dfki.vsm.editor.util.Preferences.sUSER_HOME);
+                JFileChooser file = new JFileChooser(SYSUtilities.sSYSPROPS_USER_HOME);
 
                 file.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 file.showDialog(EditorInstance.getInstance(), "Select Gesticon");
@@ -263,7 +264,7 @@ public class CreateProjectDialog extends JDialog {
         mVisiconTextField.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                JFileChooser file = new JFileChooser(de.dfki.vsm.editor.util.Preferences.sUSER_HOME);
+                JFileChooser file = new JFileChooser(SYSUtilities.sSYSPROPS_USER_HOME);
 
                 file.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 file.showDialog(EditorInstance.getInstance(), "Select Visicon");
@@ -301,7 +302,7 @@ public class CreateProjectDialog extends JDialog {
             public void focusGained(FocusEvent e) {
                 if (!getLocationDialogShownState()) {
                     JFileChooser file = new JFileChooser(mLocationTextField.getText().isEmpty()
-                            ? de.dfki.vsm.editor.util.Preferences.sUSER_HOME
+                            ? SYSUtilities.sSYSPROPS_USER_HOME
                             : mLocationTextField.getText());
 
                     file.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -338,7 +339,7 @@ public class CreateProjectDialog extends JDialog {
                 locationDialogShown();
 
                 JFileChooser file = new JFileChooser(mLocationTextField.getText().isEmpty()
-                        ? de.dfki.vsm.editor.util.Preferences.sUSER_HOME
+                        ? SYSUtilities.sSYSPROPS_USER_HOME
                         : mLocationTextField.getText());
 
                 file.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -612,7 +613,7 @@ public class CreateProjectDialog extends JDialog {
 
                     dummySceneFlow.setNameAndId(mNameTextField.getText().trim());
 
-                    IndentWriter out = new IndentWriter(mSceneFlowFile);
+                    IOSIndentWriter out = new IOSIndentWriter(mSceneFlowFile);
 
                     dummySceneFlow.writeXML(out);
                     out.close();
@@ -638,7 +639,7 @@ public class CreateProjectDialog extends JDialog {
                     mLogger.message("creating file " + mScenesFile);
 
                     SceneScript dummyScene = new SceneScript();
-                    IndentWriter out = new IndentWriter(mScenesFile);
+                    IOSIndentWriter out = new IOSIndentWriter(mScenesFile);
 
                     dummyScene.writeXML(out);
                     out.close();
@@ -660,7 +661,7 @@ public class CreateProjectDialog extends JDialog {
                 mLogger.message("creating file " + mGesticonFile);
 
                 GesticonConfig dummyGesticon = new GesticonConfig();
-                IndentWriter out = new IndentWriter(mGesticonFile);
+                IOSIndentWriter out = new IOSIndentWriter(mGesticonFile);
 
                 dummyGesticon.writeXML(out);
                 out.close();
@@ -681,7 +682,7 @@ public class CreateProjectDialog extends JDialog {
                 mLogger.message("creating file " + mVisiconFile);
 
                 VisiconConfig dummyVisicon = new VisiconConfig();
-                IndentWriter out = new IndentWriter(mVisiconFile);
+                IOSIndentWriter out = new IOSIndentWriter(mVisiconFile);
 
                 dummyVisicon.writeXML(out);
                 out.close();
@@ -702,7 +703,7 @@ public class CreateProjectDialog extends JDialog {
             mLogger.message("creating file " + mActiconFile);
 
             ActiconConfig dummyActicon = new ActiconConfig();
-            IndentWriter out = new IndentWriter(mActiconFile);
+            IOSIndentWriter out = new IOSIndentWriter(mActiconFile);
 
             dummyActicon.writeXML(out);
             out.close();
@@ -714,7 +715,7 @@ public class CreateProjectDialog extends JDialog {
             mLogger.message("creating file " + scenePlayerConfig);
 
             ConfigElement dummyPlayerConfig = new ConfigElement("Player", "Feature");
-            IndentWriter fileOut = new IndentWriter(scenePlayerConfig);
+            IOSIndentWriter fileOut = new IOSIndentWriter(scenePlayerConfig);
 
             dummyPlayerConfig.writeXML(fileOut);
             fileOut.close();

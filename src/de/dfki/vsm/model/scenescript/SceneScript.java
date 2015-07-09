@@ -2,7 +2,7 @@ package de.dfki.vsm.model.scenescript;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -16,7 +16,7 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class SceneScript extends SceneEntity {
 
@@ -313,7 +313,7 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         //stream.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         stream.println("<SceneScript " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "length=\""
                        + mCommentList.size() + "\">");

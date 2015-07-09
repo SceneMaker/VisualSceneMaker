@@ -2,7 +2,7 @@ package de.dfki.vsm.model.scenescript;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 import java.util.HashMap;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SceneWord extends AbstractWord {
 
@@ -64,7 +64,7 @@ public class SceneWord extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.print("<SceneWord " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "text=\"" + mText
                      + "\"/>");
     }

@@ -2,7 +2,7 @@ package de.dfki.vsm.model.scenescript;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocSymbol;
 import de.dfki.vsm.util.syn.SyntaxDocToken;
@@ -16,7 +16,7 @@ import org.w3c.dom.Element;
 import java.lang.reflect.Field;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ScriptSymbol extends SyntaxDocSymbol implements ScriptFields {
 
@@ -100,7 +100,7 @@ public class ScriptSymbol extends SyntaxDocSymbol implements ScriptFields {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<ScriptSymbol>");
         stream.push();
         ((SyntaxDocToken) value).writeXML(stream);

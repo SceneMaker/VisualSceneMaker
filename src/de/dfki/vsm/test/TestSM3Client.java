@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TestSM3Client {
 

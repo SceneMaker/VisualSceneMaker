@@ -11,7 +11,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class VSMUDPSockClient extends VSMAgentClient {
 

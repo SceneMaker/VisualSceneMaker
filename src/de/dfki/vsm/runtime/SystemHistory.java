@@ -15,7 +15,7 @@ import java.util.LinkedList;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SystemHistory {
     private final HashMap<String, Stack> mHistoryStackMap = new HashMap<String, Stack>();

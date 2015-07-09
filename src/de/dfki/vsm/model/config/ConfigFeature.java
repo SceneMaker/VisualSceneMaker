@@ -1,14 +1,14 @@
 package de.dfki.vsm.model.config;
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class ConfigFeature implements ModelObject, Comparable {
 
@@ -67,7 +67,7 @@ public final class ConfigFeature implements ModelObject, Comparable {
 
     // Write As XML To Stream
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.print(toString()).flush();
     }
 

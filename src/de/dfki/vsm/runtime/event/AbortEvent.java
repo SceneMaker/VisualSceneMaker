@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.event;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class AbortEvent extends InterpreterEvent {
     Exception mException;

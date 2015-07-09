@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.acticon;
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class ActiconConfig implements ModelObject {
 
@@ -79,7 +79,7 @@ public final class ActiconConfig implements ModelObject {
 
     // Write Action To XML
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<Acticon>");
         stream.push();
         // Write The Action List
@@ -98,7 +98,7 @@ public final class ActiconConfig implements ModelObject {
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         // Initialize The Indent Writer
-        final IndentWriter stream = new IndentWriter(buffer);
+        final IOSIndentWriter stream = new IOSIndentWriter(buffer);
 
         try {
             // Write The Acticon Now

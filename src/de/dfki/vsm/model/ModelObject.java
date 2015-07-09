@@ -5,17 +5,11 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteable;
 
 /**
- * An interface for all objects of the model of VSM.
- *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public interface ModelObject extends XMLParseable, XMLWriteable, Copyable {
 
-    /**
-     * Get a deep copy of the model object.
-     *
-     * @return A deep copy of the model object.
-     */
+    // Get a deep copy of the copyable
     @Override
     public abstract ModelObject getCopy();
 }

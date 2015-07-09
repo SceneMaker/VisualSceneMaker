@@ -17,7 +17,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class VSMTCPSockClient extends VSMAgentClient {
 

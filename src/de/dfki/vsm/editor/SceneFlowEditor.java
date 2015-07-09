@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.editor.util.Preferences;
@@ -14,7 +13,6 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -53,7 +51,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class SceneFlowEditor extends JPanel implements EventListener, Observer {
@@ -66,29 +64,31 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     private Timer mVisuTimer = new Timer("SceneFlowEditor-Timer");
 
     //
-    private final Observable       mObservable  = new Observable();
-    private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    private final Observable mObservable = new Observable();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventCaster mEventCaster = EventCaster.getInstance();
 
     //
-    private final SceneFlow   mSceneFlow;
+    private final SceneFlow mSceneFlow;
     private final EditorProject mProject;
 
     // TODO: remove sceneflow manager
     private final SceneFlowManager mSceneFlowManager;
 
     // GUI-Components
-    private final SceneFlowToolBar  mToolBar;
-    private final WorkSpace         mWorkSpace;
-    private final ProjectToolBar    mProjectToolBar;
-    private final ElementDisplay    mElementDisplay;
-    private final JPanel            mNewElementDisplay;
-    private final ElementEditor     mElementEditor;
-    private final JLabel            mFooterLabel;
-    private final JSplitPane        mSplitPane;
+    private final SceneFlowToolBar mToolBar;
+    private final WorkSpace mWorkSpace;
+    private final ProjectToolBar mProjectToolBar;
+    private final ElementDisplay mElementDisplay;
+    private final JPanel mNewElementDisplay;
+    private final ElementEditor mElementEditor;
+    private final JLabel mFooterLabel;
+    private final JSplitPane mSplitPane;
     private final ScriptEditorPanel mScriptEditorPanel;
 
-    public SceneFlowEditor(SceneFlow sceneFlow, EditorProject project, ScriptEditorPanel scriptEditor) {
+    public SceneFlowEditor(final EditorProject project, ScriptEditorPanel scriptEditor) {
+        mProject = project;
+        mSceneFlow = mProject.getSceneFlow();
         mScriptEditorPanel = scriptEditor;
 
         final Polygon pUp = new Polygon();
@@ -110,7 +110,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             public BasicSplitPaneDivider createDefaultDivider() {
                 return new BasicSplitPaneDivider(this) {
                     @Override
-                    public void setBorder(Border b) {}
+                    public void setBorder(Border b) {
+                    }
+
                     @Override
                     public void paint(Graphics g) {
                         Graphics2D graphics = (Graphics2D) g;
@@ -132,9 +134,8 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
                 };
             }
         });
-        mSceneFlow        = sceneFlow;
-        mProject          = project;
-        mUndoManager      = new UndoManager();
+
+        mUndoManager = new UndoManager();
         mSceneFlowManager = new SceneFlowManager(mSceneFlow);
         // The center component is the workspace
         mWorkSpace = new WorkSpace(this, mProject);
@@ -146,11 +147,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 //      WorkSpace w = new WorkSpace(this);
 //      JScrollPane wssp = new JScrollPane(w);
         // The west component is the workbar
-        mFooterLabel    = new JLabel();
-        mElementDisplay = new ElementDisplay(sceneFlow, mProject, mScriptEditorPanel);
+        mFooterLabel = new JLabel();
+        mElementDisplay = new ElementDisplay(mSceneFlow, mProject, mScriptEditorPanel);
         mProjectToolBar = new ProjectToolBar();
-        mElementEditor  = new ElementEditor();
-        mToolBar        = new SceneFlowToolBar(this, mProject);
+        mElementEditor = new ElementEditor();
+        mToolBar = new SceneFlowToolBar(this, mProject);
         mToolBar.addPathComponent(mSceneFlow);
         //
         mObservable.addObserver(mToolBar);
@@ -180,11 +181,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         // PG 17.12.13 - FUTURE FEATURE! mNewElementDisplay.add(new EdgeTypeSelection(), BorderLayout.NORTH);
         add(mNewElementDisplay, BorderLayout.WEST);
         mNewElementDisplay.setVisible(Boolean.valueOf(Preferences.getProperty("showelements"))
-                                      ? true
-                                      : false);
+                ? true
+                : false);
         mElementEditor.setVisible(Boolean.valueOf(Preferences.getProperty("showelementproperties"))
-                                  ? true
-                                  : false);
+                ? true
+                : false);
 
         JPanel editorPanel = new JPanel(new GridLayout());
 
@@ -221,7 +222,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         // mLogger.message("SceneFlowEditor.update(" + obj + ")");
         mObservable.update(obj);
     }
-    
+
     /**
      *
      *
@@ -358,9 +359,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     public JSplitPane getSplitPane() {
         return mSplitPane;
     }
-    
-    public JLabel getFooterLabel(){    
-            return mFooterLabel;
+
+    public JLabel getFooterLabel() {
+        return mFooterLabel;
     }
 
     /**
@@ -371,17 +372,18 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
      *
      */
     private class Observable extends java.util.Observable {
+
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);
         }
     }
 
-
     class SceneFlowImage extends TransferHandler implements Transferable {
-        private final DataFlavor flavors[] = { DataFlavor.imageFlavor };
-        private JPanel           source;
-        private Image            image;
+
+        private final DataFlavor flavors[] = {DataFlavor.imageFlavor};
+        private JPanel source;
+        private Image image;
 
         @Override
         public int getSourceActions(JComponent c) {
@@ -410,11 +412,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
             // Clear
             source = null;
-            image  = new BufferedImage(comp.getWidth(), comp.getHeight(), BufferedImage.TYPE_INT_RGB);
+            image = new BufferedImage(comp.getWidth(), comp.getHeight(), BufferedImage.TYPE_INT_RGB);
 
             if (comp instanceof JPanel) {
-                JPanel   panel = (JPanel) comp;
-                Graphics g     = image.getGraphics();
+                JPanel panel = (JPanel) comp;
+                Graphics g = image.getGraphics();
 
                 comp.paint(g);
                 g.dispose();
@@ -437,8 +439,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
                         panel.paint(image.getGraphics());
 
                         return true;
-                    } catch (UnsupportedFlavorException ignored) {}
-                    catch (IOException ignored) {}
+                    } catch (UnsupportedFlavorException ignored) {
+                    } catch (IOException ignored) {
+                    }
                 }
             }
 
@@ -463,7 +466,6 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         }
     }
 
-
     /**
      *
      *
@@ -472,23 +474,24 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
      *
      */
     private class VisuTask extends TimerTask {
-        int    mSteps      = 0;
-        JLabel mLabel      = null;
-        Color  mLabelColor = null;
-        int    mOpacyStep  = 0;
-        int    mRedVal     = 0;
-        int    mGreenVal   = 0;
-        int    mBlueVal    = 0;
-        int    mOpacyVal   = 255;
+
+        int mSteps = 0;
+        JLabel mLabel = null;
+        Color mLabelColor = null;
+        int mOpacyStep = 0;
+        int mRedVal = 0;
+        int mGreenVal = 0;
+        int mBlueVal = 0;
+        int mOpacyVal = 255;
 
         VisuTask(int steps, JLabel l) {
-            mSteps      = steps;
-            mLabel      = l;
+            mSteps = steps;
+            mLabel = l;
             mLabelColor = l.getForeground();
-            mRedVal     = mLabelColor.getRed();
-            mGreenVal   = mLabelColor.getGreen();
-            mBlueVal    = mLabelColor.getBlue();
-            mOpacyStep  = 255 / mSteps;
+            mRedVal = mLabelColor.getRed();
+            mGreenVal = mLabelColor.getGreen();
+            mBlueVal = mLabelColor.getBlue();
+            mOpacyStep = 255 / mSteps;
         }
 
         public synchronized int getActivityTime() {
@@ -496,9 +499,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         }
 
         public void run() {
-            mSteps    = (mSteps > 0)
-                        ? mSteps - 1
-                        : 0;
+            mSteps = (mSteps > 0)
+                    ? mSteps - 1
+                    : 0;
             mOpacyVal -= mOpacyStep;
             mLabel.setForeground(new Color(mRedVal, mGreenVal, mBlueVal, mOpacyVal));
             mLabel.repaint();
@@ -509,6 +512,5 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             }
         }
     }
-      
-    
+
 }

@@ -71,7 +71,7 @@ import java.util.Vector;
 /**
  * An evaluator to evaluate expressions
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Evaluator {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();

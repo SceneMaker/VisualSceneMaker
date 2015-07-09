@@ -19,7 +19,7 @@ import javax.swing.undo.CannotUndoException;
  * old condition and the new condition of the conditional edge and switches
  * between them when undo or redo.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyCEdgeAction extends ModifyEdgeAction {
 

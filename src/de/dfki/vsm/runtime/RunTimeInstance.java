@@ -13,7 +13,7 @@ import de.dfki.vsm.runtime.value.StringValue;
 import java.util.HashMap;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class RunTimeInstance {
 

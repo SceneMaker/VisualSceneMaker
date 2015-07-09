@@ -9,7 +9,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.io.Closeable;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class VSMAgentClient extends Thread {
 

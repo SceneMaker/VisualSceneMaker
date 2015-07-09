@@ -10,7 +10,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class Expression extends Command {
 

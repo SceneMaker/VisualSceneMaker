@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.command.expression;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -11,7 +11,7 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ConditionalExp extends Expression {
     private Condition  mCondition;
@@ -92,7 +92,7 @@ public class ConditionalExp extends Expression {
         return new ConditionalExp(mCondition.getCopy(), mThenExp.getCopy(), mElseExp.getCopy());
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<If>").push();
         mCondition.writeXML(out);
         out.println("<Then>").push();

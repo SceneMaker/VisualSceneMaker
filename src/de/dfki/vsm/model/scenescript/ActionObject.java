@@ -2,7 +2,7 @@ package de.dfki.vsm.model.scenescript;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class ActionObject extends AbstractWord {
 
@@ -163,7 +163,7 @@ public final class ActionObject extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<ActionObject " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "name=\"" + mName
                        + "\">");
         stream.push();

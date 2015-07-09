@@ -7,7 +7,7 @@ import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class UtteranceExecutedEvent extends EventObject {
     private SceneUttr mUtterance;
