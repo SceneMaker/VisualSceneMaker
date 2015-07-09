@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class VSMScenePlayer implements Player {
 
@@ -232,7 +232,7 @@ public abstract class VSMScenePlayer implements Player {
         mAgentClientMap.clear();
 
         // Print Debug Information
-        mVSM3Log.message("Unloading Generic VSM Scenen Player");
+        mVSM3Log.message("Unloading Generic VSM Scene Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////

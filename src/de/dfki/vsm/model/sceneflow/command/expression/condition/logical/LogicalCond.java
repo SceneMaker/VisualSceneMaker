@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * An abstract logical condition
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class LogicalCond extends Condition {
     public enum LogicalType {

@@ -39,7 +39,7 @@ import javax.swing.JTextField;
 /**
  * A dialog to create or edit a type definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TypeDefDialog extends Dialog {
 

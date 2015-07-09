@@ -24,7 +24,7 @@ import java.util.HashMap;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class NodeAction extends EditorAction {
 

@@ -5,7 +5,7 @@ package de.dfki.vsm.runtime;
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.error.RunTimeException;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -18,7 +18,7 @@ import java.util.LinkedList;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Configuration {
     private final HashMap<Node, LinkedList<State>> mConfiguration = new HashMap<Node, LinkedList<State>>();
@@ -172,7 +172,7 @@ public class Configuration {
         public void parseXML(Element element) throws XMLParseError {}
 
         @Override
-        public void writeXML(IndentWriter out) {
+        public void writeXML(IOSIndentWriter out) {
             out.println("<ConfigState node=\"" + mNode.getId() + "\" thread= \"" + mThread.toString() + "\" level=\""
                         + mThread.getLevel() + "\"/>");
         }

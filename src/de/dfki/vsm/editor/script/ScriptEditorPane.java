@@ -1,7 +1,7 @@
 package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
-
+import de.dfki.vsm.editor.EditorProject;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -13,7 +13,6 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -40,7 +39,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ScriptEditorPane extends JEditorPane implements EventListener, Observer {
 
@@ -54,18 +53,23 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
     private Font mFont = new Font("Courier New", Font.PLAIN, 12);
 
     // Init Drag & Drop Support
-    private DropTargetListener       mDropListener;
-    private DropTarget               mDropTarget;
-    private int                      mValidActions;
-    private final EditorConfig mPreferences;
+    private DropTargetListener mDropListener;
+    private DropTarget mDropTarget;
+    private int mValidActions;
+
+    //
+    private final EditorProject mEditorProject;
+    private final EditorConfig mEditorConfig;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Construct The Text Pane
-    public ScriptEditorPane(EditorConfig preferences) {
-        mPreferences = preferences;
-        mFont        = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);
+    public ScriptEditorPane(final EditorProject project) {
+        mEditorProject = project;
+        mEditorConfig = mEditorProject.getEditorConfig();
+
+        mFont = new Font(mEditorConfig.sSCRIPT_FONT_TYPE, Font.PLAIN, mEditorConfig.sSCRIPT_FONT_SIZE);
         setFont(mFont);
 
         // Set Lexxer And Editor
@@ -137,7 +141,6 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
      * }
      * }
      */
-
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -150,19 +153,22 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
 
                 // Do Nothing Here
             }
+
             @Override
             public void dragExit(final DropTargetEvent dte) {
 
                 // Do Nothing Here
             }
+
             @Override
             public void dropActionChanged(final DropTargetDragEvent dtde) {
 
                 // Do Nothing Here
             }
+
             @Override
             public void dragOver(final DropTargetDragEvent dtde) {
-                Object     data   = null;
+                Object data = null;
                 DataFlavor flavor = null;
 
                 try {
@@ -197,7 +203,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
             ////////////////////////////////////////////////////////////////////
             @Override
             public final void drop(final DropTargetDropEvent dtde) {
-                Object     data   = null;
+                Object data = null;
                 DataFlavor flavor = null;
 
                 try {
@@ -293,7 +299,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
     public void update(final Observable obs, final Object obj) {
 
         // Do Nothing
-        mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);
+        mFont = new Font(mEditorConfig.sSCRIPT_FONT_TYPE, Font.PLAIN, mEditorConfig.sSCRIPT_FONT_SIZE);
         setFont(mFont);
     }
 
@@ -304,29 +310,30 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
     public void update(final EventObject event) {
 
         // Do Nothing
-        mFont = new Font(mPreferences.sSCRIPT_FONT_TYPE, Font.PLAIN, mPreferences.sSCRIPT_FONT_SIZE);
+        mFont = new Font(mEditorConfig.sSCRIPT_FONT_TYPE, Font.PLAIN, mEditorConfig.sSCRIPT_FONT_SIZE);
         setFont(mFont);
     }
-    
+
     public void append(String s) {
         try {
-           Document doc = this.getDocument();
-           doc.insertString(doc.getLength(), s, null);
-        } catch(BadLocationException exc) {
+            Document doc = this.getDocument();
+            doc.insertString(doc.getLength(), s, null);
+        } catch (BadLocationException exc) {
         }
-    }   
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     private class HighlightTask extends VisualisationTask {
-        private Color     mColor = null;
-        private Rectangle mRect  = null;
+
+        private Color mColor = null;
+        private Rectangle mRect = null;
 
         public HighlightTask(final int steps, final JComponent c, final Color col, final Rectangle rect) {
             super(steps, c);
             mColor = col;
-            mRect  = rect;
+            mRect = rect;
         }
 
         public int getXPos() {

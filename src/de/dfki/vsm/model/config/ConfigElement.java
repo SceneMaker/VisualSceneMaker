@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.config;
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ConfigElement implements ModelObject {
 
@@ -141,7 +141,7 @@ public class ConfigElement implements ModelObject {
 
     // Write The Config As XML To Stream 
     @Override
-    public void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<" + mElementName + ">");
         stream.push();
         for (final ConfigFeature entry : mFeatureList) {
@@ -178,7 +178,7 @@ public class ConfigElement implements ModelObject {
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         // Initialize The Indent Writer
-        final IndentWriter stream = new IndentWriter(buffer);
+        final IOSIndentWriter stream = new IOSIndentWriter(buffer);
 
         try {
 

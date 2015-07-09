@@ -15,7 +15,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Kathrin Janowski
  */
 public final class HCMEventMessage {

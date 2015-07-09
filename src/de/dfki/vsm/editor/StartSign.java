@@ -24,7 +24,7 @@ import javax.swing.JComponent;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class StartSign extends JComponent implements Observer {
     private final LOGDefaultLogger   mLogger      = LOGDefaultLogger.getInstance();

@@ -52,7 +52,7 @@ import java.util.Vector;
 import javax.swing.JComponent;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public final class Node extends JComponent implements EventListener, Observer {

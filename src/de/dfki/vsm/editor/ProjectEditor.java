@@ -29,52 +29,45 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class ProjectEditor extends JSplitPane implements EventListener, Observer {
 
-    // The editor project managed by this editor
-    private final EditorProject mEditorProject;
-    //
-    private final SceneFlowEditor mSceneFlowEditor;
-    private final ScriptEditorPanel mSceneDocEditor;
-    //
-    private final Observable mObservable = new Observable();
+    // The singelton logger instance   
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    // The singelton event multicaster
     private final EventCaster mEventCaster = EventCaster.getInstance();
+    // The editor project of this editor
+    private final EditorProject mEditorProject;
+    // The sceneflow editor of this project
+    private final SceneFlowEditor mSceneFlowEditor;
+    // The scenescript editor of this project
+    private final ScriptEditorPanel mSceneDocEditor;
+    // The editor's observable component 
+    private final Observable mObservable = new Observable();
 
-    private final double topElementRatio = 0.6;
-    private JDialog quitDialog;
+    // The observable class of the editor
+    private final class Observable extends java.util.Observable {
 
-    /**
-     * *************************************************************************
-     *
-     *
-     *
-     *************************************************************************
-     */
-    private class Observable extends java.util.Observable {
-
-        public void update(Object obj) {
+        public final void update(final Object object) {
             setChanged();
-            notifyObservers(obj);
+            notifyObservers(object);
         }
     }
 
+    //
+    private final double topElementRatio = 0.6;
+    JDialog quitDialog;
+
+    //
     @Override
     public void update(java.util.Observable obs, Object obj) {
         //mLogger.message("ProjectEditor.update(" + obj + ")");
         mObservable.update(obj);
     }
 
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
+    //
     @Override
     public void update(EventObject evt) {
         //System.out.println(evt.getClass());
@@ -88,23 +81,25 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
         }
     }
 
-    /**
-     * *************************************************************************
-     *
-     *
-     *
-     *************************************************************************
-     */
-    public ProjectEditor(EditorProject project) {
+    public ProjectEditor() {
+        this.mEditorProject = null;
+        this.mSceneFlowEditor = null;
+        this.mSceneDocEditor = null;
+    }
+
+    // Construct a project editor with a project
+    public ProjectEditor(final EditorProject project) {
+        // Initialize the parent split pane
         super(JSplitPane.VERTICAL_SPLIT, true);
-
+        // Initialize the editor project
         mEditorProject = project;
-        mSceneDocEditor = new ScriptEditorPanel(mEditorProject.getSceneScript(), mEditorProject.getSceneFlow(), mEditorProject.getEditorConfig(), this);
-        mSceneFlowEditor = new SceneFlowEditor(mEditorProject.getSceneFlow(), mEditorProject, mSceneDocEditor);
-
+        //
+        mSceneDocEditor = new ScriptEditorPanel(mEditorProject);
+        mSceneFlowEditor = new SceneFlowEditor(mEditorProject, mSceneDocEditor);
+        // Add the components as observers
         mObservable.addObserver(mSceneFlowEditor);
         mObservable.addObserver(mSceneDocEditor);
-
+        //
         mEventCaster.append(this);
 
         NodeSelectedEvent e = new NodeSelectedEvent(this, mEditorProject.getSceneFlow());
@@ -182,6 +177,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
 
     }
 
+    // Clean up the editor component
     private void disposeAfterDialog() {
         // Delete all observers
         mObservable.deleteObservers();

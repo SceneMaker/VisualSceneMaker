@@ -15,7 +15,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ProjectEditorList extends JTabbedPane implements EventListener, ChangeListener, Observer {
 
@@ -59,8 +59,8 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void stateChanged(ChangeEvent e) {
-        if (getSelectedProject() != null) {
-            mObservable.update(getSelectedProject());
+        if (getSelectedEditorProject() != null) {
+            mObservable.update(getSelectedEditorProject());
         }
 
         // copy and paste of nodes between the different projects
@@ -85,7 +85,7 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         return (ProjectEditor) getSelectedComponent();
     }
 
-    public EditorProject getSelectedProject() {
+    public EditorProject getSelectedEditorProject() {
         if (getSelectedComponent() != null) {
             return ((ProjectEditor) getSelectedComponent()).getEditorProject();
         } else {
@@ -93,31 +93,36 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         }
     }
 
-    public void add(EditorProject project) {
-
-        // Create a new project editor from the given project
-        ProjectEditor projectEditor = new ProjectEditor(project);
-
+    
+    
+   
+    
+    // Add a new project editor for a project
+    public void append(final EditorProject project) {
+        // Create a new project editor from project
+        final ProjectEditor projectEditor = new ProjectEditor(project);
         // Add the new project editor as observer
         mObservable.addObserver(projectEditor);
-
-        // Add the project editor to the list of project editors
-        // and select it as a component in the tabbed pane
+        // Add the project editor to list of project 
+        // editors and select it in the tabbed pane
         addTab(project.getProjectName(), projectEditor);
         setSelectedComponent(projectEditor);
-
-        // Initialize the workspace of the project editor's scene flow editor
-        // TODO: push down into an init function
-//      projectEditor.getSceneFlowEditor().getWorkSpace().showNodesOnWorkSpace();
-//      projectEditor.getSceneFlowEditor().getWorkSpace().showEdgesOnWorkSpace();
-//      projectEditor.getSceneFlowEditor().getWorkSpace().showVariablesOnWorkSpace(project.getSceneFlow());
-//      projectEditor.getSceneFlowEditor().getWorkSpace().repaint();
-//
-//      // Revalidade and repaint
-//      revalidate();
-//      repaint();
     }
 
+    // Remove a  project editor of a project
+    public void closeProject() {
+        final ProjectEditor projectEditor = getSelectedProjectEditor();
+        //
+        mObservable.deleteObserver(projectEditor);
+        //
+        projectEditor.close();
+        //
+        remove(projectEditor);
+    }
+
+    
+    
+    
     // Save the current editor project
     public final boolean save() {
         // Get the current project editor
@@ -127,14 +132,6 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         // Save the current editor project      
         return editor.save();
 
-    }
-
-    public void closeCurrent() {
-        ProjectEditor projectEditor = ((ProjectEditor) getSelectedComponent());
-
-        mObservable.deleteObserver(projectEditor);
-        projectEditor.close();
-        remove(projectEditor);
     }
 
     public void saveAll() {
@@ -163,5 +160,10 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
             setChanged();
             notifyObservers(obj);
         }
+    }
+
+    // Check if the editor list is empty
+    public final boolean isEmpty() {
+        return (getTabCount() == 0);
     }
 }

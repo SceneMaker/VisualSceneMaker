@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Edge.TYPE;
 import de.dfki.vsm.editor.WorkSpace;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyEdgeAction extends EdgeAction {
     public ModifyEdgeAction(de.dfki.vsm.editor.Edge edge, WorkSpace workSpace) {

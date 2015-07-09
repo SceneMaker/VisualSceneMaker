@@ -6,7 +6,7 @@ import de.dfki.vsm.model.scenescript.ScriptLexxer;
 import de.dfki.vsm.util.syn.SyntaxEditorKit;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ScriptEditorKit extends SyntaxEditorKit {
     public ScriptEditorKit() {

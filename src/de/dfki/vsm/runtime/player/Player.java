@@ -5,7 +5,7 @@ import de.dfki.vsm.runtime.plugin.Plugin;
 import java.util.LinkedList;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public interface Player extends Plugin {
 

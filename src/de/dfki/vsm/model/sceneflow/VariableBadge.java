@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.graphics.node.Position;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -65,7 +65,7 @@ public class VariableBadge extends Syntax {
         });
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<" + mType + ">").push();
 
         if (mPosition != null) {

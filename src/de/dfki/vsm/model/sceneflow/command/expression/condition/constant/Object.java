@@ -2,14 +2,14 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * A boolean constant.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Object extends Constant {
     private java.lang.Object mValue;
@@ -60,7 +60,7 @@ public class Object extends Constant {
     }
 
     @Override
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Object value=\"" + mValue + "\"/>");
     }
 

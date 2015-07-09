@@ -33,7 +33,7 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class MonitorDialog extends JDialog {
     private static MonitorDialog sSingeltonInstance = null;
@@ -50,7 +50,7 @@ public class MonitorDialog extends JDialog {
 
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
-        mSceneFlow = EditorInstance.getInstance().getProjectEditorList().getSelectedProject().getSceneFlow();
+        mSceneFlow = EditorInstance.getInstance().getProjectEditorList().getSelectedEditorProject().getSceneFlow();
         initComponents();
         initVariableList();
     }

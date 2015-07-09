@@ -19,7 +19,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class CreateEdgeAction extends EdgeAction {
     private boolean mShowDialog = true;

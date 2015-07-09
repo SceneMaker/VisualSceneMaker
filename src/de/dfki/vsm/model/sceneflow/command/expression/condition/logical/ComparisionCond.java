@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -17,7 +17,7 @@ import java.util.Vector;
 /**
  * A comparision logical condition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ComparisionCond extends LogicalCond {
     public static String sID = "ComparisionCond";
@@ -163,7 +163,7 @@ public class ComparisionCond extends LogicalCond {
         return new ComparisionCond(mLeftExp.getCopy(), mRightExp.getCopy(), mOperator);
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<" + mOperator.name() + ">").push();
         mLeftExp.writeXML(out);
         mRightExp.writeXML(out);

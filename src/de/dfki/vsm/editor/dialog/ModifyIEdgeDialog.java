@@ -33,7 +33,7 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyIEdgeDialog extends Dialog {
 

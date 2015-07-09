@@ -1,71 +1,64 @@
-package de.dfki.vsm.runtime.player;
-
-//~--- non-JDK imports --------------------------------------------------------
+package de.dfki.vsm.runtime.player.defaults;
 
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
-import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
-import de.dfki.vsm.model.config.ConfigElement;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.model.scenescript.AbstractWord;
-import de.dfki.vsm.model.scenescript.ActionObject;
-import de.dfki.vsm.model.scenescript.SceneAbbrev;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
-import de.dfki.vsm.model.scenescript.SceneParam;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
-import de.dfki.vsm.model.scenescript.SceneUttr;
-import de.dfki.vsm.model.scenescript.SceneWord;
 import de.dfki.vsm.runtime.Process;
+import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.AbstractValue.Type;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import static java.lang.Thread.sleep;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class DefaultSceneGroupPlayer implements Player {
+
+
+public class DefaultDialogPlayer implements Player {
 
     // The Logger Instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Player Properties
-    private final ConfigElement mProperties;
-
+    // private final PlayerConfig mProperties;
     // The Current Project
     private final RunTimeProject mProject;
 
     // Construct A Default Player
-    public DefaultSceneGroupPlayer(final RunTimeProject project) {
-        mProject    = project;
-        mProperties = project.getPlayerConfig();
+    public DefaultDialogPlayer(final RunTimeProject project) {
+        mProject = project;
+
+        // mProperties = project.getScenePlayerProperties();
     }
 
     // Launch The Default Player
     @Override
-    public final void launch() {}
+    public final void launch() {
+    }
 
     // Unload The Default Player
     @Override
-    public final void unload() {}
+    public final void unload() {
+    }
 
     @Override
     public final void play(final String name, final LinkedList<AbstractValue> args) {
-        final Process                 process        = ((Process) java.lang.Thread.currentThread());
+        final Process process = ((Process) java.lang.Thread.currentThread());
         final HashMap<String, String> mSceneParamMap = new HashMap<String, String>();
 
         // Process The Arguments
-        if ((args != null) &&!args.isEmpty()) {
+        if ((args != null) && !args.isEmpty()) {
 
             // Get The First Argument
             final AbstractValue value = args.getFirst();
@@ -93,13 +86,18 @@ public class DefaultSceneGroupPlayer implements Player {
             @Override
             public void run() {
 
-                // Select The Scene
+                // while (true) {
+                //// Exit If Interrupted
+                // if (mIsDone) {
+                // return;
+                // }
+                // }
                 final SceneScript script = mProject.getSceneScript();
-                final SceneGroup  group  = script.getSceneGroup(name);
-                final SceneObject scene  = group.select();
+                final SceneGroup group = script.getSceneGroup(name);
+                final SceneObject scene = group.select();
 
                 // Scene Visualization
-                mLogger.message("Executing scene:\r\n" + scene.getText());
+                mLogger.message("Executing dialogAct:\r\n" + scene.getText());
                 EventCaster.getInstance().convey(new SceneExecutedEvent(this, scene));
 
                 // Process The Turns
@@ -110,45 +108,8 @@ public class DefaultSceneGroupPlayer implements Player {
                     EventCaster.getInstance().convey(new TurnExecutedEvent(this, turn));
 
                     // Get The Turn Speaker
-                    final String speaker = turn.getSpeaker();
-
-                    if (speaker == null) {
-
-                        // Get The Default Speaker
-                    }
-
                     // Count The Word Number
                     int wordCount = 0;
-
-                    // Process Utterance
-                    for (SceneUttr utt : turn.getUttrList()) {
-
-                        // Utterance Visualization
-                        mLogger.message("Executing utterance:" + utt.getText());
-                        EventCaster.getInstance().convey(new UtteranceExecutedEvent(this, utt));
-
-                        // Process the words of this utterance
-                        for (AbstractWord word : utt.getWordList()) {
-                            if (word instanceof SceneWord) {
-
-                                // Visualization
-                                mLogger.message("Executing vocable:" + ((SceneWord) word).getText());
-                                wordCount = ((SceneWord) word).getText().length();
-                            } else if (word instanceof SceneParam) {
-
-                                // Visualization
-                                mLogger.message("Executing param:" + ((SceneParam) word).getText());
-                            } else if (word instanceof ActionObject) {
-
-                                // Visualization
-                                mLogger.message("Executing action:" + ((ActionObject) word).getText());
-                            } else if (word instanceof SceneAbbrev) {
-
-                                // Visualization
-                                mLogger.message("Executing abbreviation:" + ((SceneAbbrev) word).getText());
-                            }
-                        }
-                    }
 
                     // Utterance Simulation
                     try {
@@ -179,7 +140,7 @@ public class DefaultSceneGroupPlayer implements Player {
 
                 // Finish This Execution
                 finished = true;
-            } catch (Exception e) {
+            } catch (Exception exc) {
 
                 // Abort The Player Task
                 task.mIsDone = true;

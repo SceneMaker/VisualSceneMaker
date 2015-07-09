@@ -40,7 +40,7 @@ import javax.swing.JComponent;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyCEdgeDialog extends Dialog {
 

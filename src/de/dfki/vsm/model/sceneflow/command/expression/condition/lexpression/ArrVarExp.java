@@ -8,7 +8,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ArrVarExp extends LExpression {
     private String     mName;
@@ -76,7 +76,7 @@ public class ArrVarExp extends LExpression {
     }
 
     @Override
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<Field name=\"" + mName + "\">").push();
         mIndex.writeXML(out);
         out.pop().println("</Field>");

@@ -65,7 +65,7 @@ import static java.awt.Component.RIGHT_ALIGNMENT;
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -282,7 +282,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -456,7 +456,7 @@ class ConditionEditor extends JPanel implements EventListener {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -526,7 +526,7 @@ class EdgeEditor extends JPanel implements EventListener {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -594,7 +594,7 @@ public class ElementEditor extends JScrollPane implements EventListener, Observe
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -753,7 +753,7 @@ class InterruptEditor extends JPanel implements EventListener {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -813,7 +813,7 @@ class NameEditor extends JPanel implements EventListener {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -974,7 +974,7 @@ class ProbabilityEditor extends JPanel implements EventListener {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -1107,7 +1107,7 @@ class TimeOutEditor extends JPanel implements EventListener {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */
@@ -1205,7 +1205,7 @@ class TypeDefEditor extends AttributeEditor {
 /**
  * 
  *
- * @author Gregor Mehlmann
+ * @author Not me
  *
  *
  */

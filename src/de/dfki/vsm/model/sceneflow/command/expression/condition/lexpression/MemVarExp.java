@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 /**
  * A member of a struct.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class MemVarExp extends LExpression {
     private String mName;
@@ -54,7 +54,7 @@ public class MemVarExp extends LExpression {
         return new MemVarExp(mName, mMember);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Member name=\"" + mName + "\" member=\"" + mMember + "\">").push();
         out.pop().println("</Member>");
     }

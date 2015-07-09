@@ -4,7 +4,7 @@ package de.dfki.vsm.model.sceneflow;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -21,7 +21,7 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class Comment extends Syntax {
@@ -109,7 +109,7 @@ public class Comment extends Syntax {
         });
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Comment>").push();
 
         if (mGraphics != null) {

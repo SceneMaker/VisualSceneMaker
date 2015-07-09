@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class RegExp {
     public static final String WHITE = "[\\ \\t\\b\\r\\f]";

@@ -1,29 +1,34 @@
 package de.dfki.vsm.model.project;
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class ProjectConfig implements ModelObject {
 
-    // Name Of The Project 
+    // The singelton logger instance
+    private final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
+    // The name of the project  
     private String mProjectName;
-    // The List Of Plugins
+    // The list of plugin configurations
     private final ArrayList<PluginConfig> mPluginList;
-    // The List Of Players
+    // The list of player configurations
     private final ArrayList<PlayerConfig> mPlayerList;
-    // The List Of Agents
+    // The list of agent configurations
     private final ArrayList<AgentConfig> mAgentList;
 
-    // Construct A Project
+    // Construct an empty project
     public ProjectConfig() {
         // Initialize The Project Name
         mProjectName = null;
@@ -35,29 +40,49 @@ public final class ProjectConfig implements ModelObject {
         mAgentList = new ArrayList<>();
     }
 
+    // Construct an empty project
+    public ProjectConfig(final String name,
+            final ArrayList<PluginConfig> plugins,
+            final ArrayList<PlayerConfig> players,
+            final ArrayList<AgentConfig> agents) {
+        // Initialize The Project Name
+        mProjectName = name;
+        // Initialize The Plugin List
+        mPluginList = plugins;
+        // Initialize The Player List
+        mPlayerList = players;
+        // Initialize The Agent List
+        mAgentList = agents;
+    }
+
+    // Get the name of the project
     public final String getProjectName() {
         return mProjectName;
     }
 
+    // Set the name of the project
     public final void setProjectName(final String name) {
         mProjectName = name;
     }
 
+    // Get the list of agent configurations
     public final ArrayList<AgentConfig> getAgentList() {
         return mAgentList;
     }
 
+    // Get the list of player configurations
     public ArrayList<PlayerConfig> getPlayerList() {
         return mPlayerList;
     }
 
+    // Get the list of plugin configurations
     public ArrayList<PluginConfig> getPluginList() {
         return mPluginList;
     }
 
-    // Write Config As XML
+    // Write the project coonfiguration as XML
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<Project name=\"" + mProjectName + "\">");
         stream.push();
         // Write The Plugins As XML
@@ -85,7 +110,7 @@ public final class ProjectConfig implements ModelObject {
         stream.pop().print("</Project>").flush();
     }
 
-    // Parse Config From XML
+    // Parse the project coonfiguration from XML
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
         // Get The Type Of The Config
@@ -143,25 +168,14 @@ public final class ProjectConfig implements ModelObject {
         }
     }
 
-    // Get The String Representation
+    // Get the string representation of the configuration
     @Override
     public final String toString() {
-        // Create A Byte Array Stream
+        // Create a new byte array buffer stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        // Initialize The Indent Writer
-        final IndentWriter stream = new IndentWriter(buffer);
-
-        try {
-
-            // Write Object
-            writeXML(stream);
-        } catch (final XMLWriteError exc) {
-            // mLogger.failure(exc.toString());
-        }
-        // Cleanup Stream and Writer
-        stream.flush();
-        stream.close();
-        // Return String Representation
+        // Try to write the project into the stream
+        XMLUtilities.writeToXMLStream(this, buffer);
+        // Return the stream string representation
         try {
             return buffer.toString("UTF-8");
         } catch (Exception exc) {
@@ -169,9 +183,10 @@ public final class ProjectConfig implements ModelObject {
         }
     }
 
-    // Get A Copy Of The Configiguration
+    // Get a copy of the project configuration
     @Override
     public ProjectConfig getCopy() {
-        return null;
+        // TODO: Use copies of the lists
+        return new ProjectConfig(mProjectName, null, null, null);
     }
 }

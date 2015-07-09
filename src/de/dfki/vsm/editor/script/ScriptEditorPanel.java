@@ -1,9 +1,9 @@
 package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.EditorProject;
 import de.dfki.vsm.editor.FunctionEditor;
 import de.dfki.vsm.editor.ProjectEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
@@ -23,17 +23,13 @@ import de.dfki.vsm.util.syn.SyntaxDocument;
 import org.ujmp.core.collections.ArrayIndexList;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
-import java.util.Observable;
 import java.util.Observer;
-import javax.swing.AbstractAction;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -58,7 +54,7 @@ import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 
 /**
- * @author Gregor Mehlmann
+ * @author
  */
 public final class ScriptEditorPanel extends JPanel implements DocumentListener, EventListener, Observer {
 
@@ -69,76 +65,83 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     private final EventCaster mEventCaster = EventCaster.getInstance();
 
     // The Observable Part
-    private final Noticeable mNoticeable = new Noticeable();
+    private final Observable mObservable = new Observable();
+
+    private class Observable extends java.util.Observable {
+
+        public void notify(final Object obj) {
+            setChanged();
+            notifyObservers(obj);
+        }
+    }
 
     // The Script Editor Pane
-    private final JScrollPane         mScrollPane;
-    private final ScriptToolBar       mScenesToolbar;
-    private final JTabbedPane         mTabPane;
-    private final ScriptEditorPane    mEditorPane;
-    private final CaretStatusLabel    mStatusLabel;
+    private final JScrollPane mScrollPane;
+    private final ScriptToolBar mScenesToolbar;
+    private final JTabbedPane mTabPane;
+    private final ScriptEditorPane mEditorPane;
+    private final CaretStatusLabel mStatusLabel;
     private final SceneElementDisplay mElementPane;
-    private final SceneScript         mSceneScript;
-    private final FunctionEditor      mFunctionEditor;
-    private final DialogActEditor     mDialogActEditor;
-    private final EditorConfig  mPreferences;
+    private final SceneScript mSceneScript;
+    private final FunctionEditor mFunctionEditor;
+    private final DialogActEditor mDialogActEditor;
+    private final EditorConfig mPreferences;
     //private final String              mPreferencesFileName;
-    private ProjectEditor             mProjectEditor;    // CONTAINER PROJECT EDITOR
-    private ArrayList<Integer>        searchOffsets;
-    private String                    lastSearchedScene;
-    private int                       lastIndex;
-    Highlighter.HighlightPainter      painter;
-    private int                       tabCounter = 1;
-    private JButton                   mGesticonButton;
-    private final JSplitPane          scriptSplitPane;
+    private ArrayList<Integer> searchOffsets;
+    private String lastSearchedScene;
+    private int lastIndex;
+    Highlighter.HighlightPainter painter;
+    private int tabCounter = 1;
+    private JButton mGesticonButton;
+    private final JSplitPane scriptSplitPane;
+
+    // The current editor project
+    private final EditorProject mProject;
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ScriptEditorPanel(final SceneScript script, final SceneFlow sceneflow, final EditorConfig preferences,
-                             final ProjectEditor parentPE) {
-
-        // Parent project editor
-        mProjectEditor = parentPE;
-
-        // Initialize The Scene Script
-        mSceneScript = script;
-
-        // Grab project preferences
-        mPreferences         = preferences;
-       // mPreferencesFileName = preferencesFileName;
+    public ScriptEditorPanel(final EditorProject project) {
+        // Initialize the editor project
+        mProject = project;
+        // Initialize the scene script
+        mSceneScript = mProject.getSceneScript();
+        // Initialize the editor config
+        mPreferences = mProject.getEditorConfig();
 
         // Initialize The Status Label
         mStatusLabel = new CaretStatusLabel("");
 
         // Initialize The Editor Pane
-        mEditorPane = new ScriptEditorPane(mPreferences);
+        mEditorPane = new ScriptEditorPane(mProject);
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);
-        
+
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
         mScrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionEditor(sceneflow);
+        mFunctionEditor = new FunctionEditor(mProject);
 
         // Initialize The Dialog Act Panel
-        mDialogActEditor = new DialogActEditor(mProjectEditor.getEditorProject());
+        mDialogActEditor = new DialogActEditor(mProject);
 
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane();
         // Initialize The Scroll Pane
         mElementPane = new SceneElementDisplay();
-        mNoticeable.addObserver(mElementPane);
-        mNoticeable.addObserver(mEditorPane);
+        mObservable.addObserver(mElementPane);
+        mObservable.addObserver(mEditorPane);
         mGesticonButton = new JButton(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
-                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
-                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
         mGesticonButton.addMouseListener(new java.awt.event.MouseAdapter() {
-               public void mouseClicked(MouseEvent me) {
-                   showElementDisplay();
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                showElementDisplay();
             }
         });
         mGesticonButton.setContentAreaFilled(false);
@@ -153,7 +156,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         scriptSplitPane.setDividerSize(2);
         scriptSplitPane.setLeftComponent(mElementPane);
         scriptSplitPane.setRightComponent(mScrollPane);
-        
+
         if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
             scriptSplitPane.setDividerLocation(250);
         }
@@ -167,14 +170,14 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         scriptTabPanel.setLayout(new BoxLayout(scriptTabPanel, BoxLayout.Y_AXIS));
         scriptTabPanel.add(bxTop);
         scriptTabPanel.add(bxBottom);
-        
+
         addTab("Script        ", scriptTabPanel);
         addTab("Functions     ", mFunctionEditor);
         addTab("DialogAct [Experimental]", mDialogActEditor);
 
         // Initialize the Toolbar
         mScenesToolbar = new ScriptToolBar(this);
-        
+
         // Initialize The Components
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
@@ -193,76 +196,75 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
             exc.printStackTrace();
         }
 
-        searchOffsets     = new ArrayList<Integer>();
+        searchOffsets = new ArrayList<Integer>();
         lastSearchedScene = "";
-        lastIndex         = 0;
+        lastIndex = 0;
 
         Highlighter highlighter = new DefaultHighlighter();
 
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
-        
+
     }
-    
+
     void addTab(String tabName, final JComponent content) {
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
         mTabPane.addTab(null, new JScrollPane(ep));
         JLabel tabLabel = new JLabel(tabName);
-       // Create an AddButton
+        // Create an AddButton
         final AddButton mAddButton = new AddButton();
-        mAddButton.setTabPos(tabCounter-1);
+        mAddButton.setTabPos(tabCounter - 1);
         mAddButton.removeMouseListener(mAddButton.getMouseListeners()[1]);
         mAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(MouseEvent me) {
-                if (mTabPane.getSelectedIndex()==mAddButton.getTabPos()) {
+                if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
                     mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
-                }             
+                }
             }
+
             public void mouseExited(MouseEvent me) {
                 mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
             }
+
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (mTabPane.getSelectedIndex()==mAddButton.getTabPos()) {
-                    if (content instanceof FunctionEditor)
-                    {
-                        ((FunctionEditor)content).addNewFunction();
+                if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
+                    if (content instanceof FunctionEditor) {
+                        ((FunctionEditor) content).addNewFunction();
                     }
-                    if (content instanceof JPanel)
-                    {
-                        mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n"); 
-                        mEditorPane.requestFocusInWindow();                      
+                    if (content instanceof JPanel) {
+                        mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n");
+                        mEditorPane.requestFocusInWindow();
                     }
-                    if (content instanceof DialogActEditor)
-                    {
+                    if (content instanceof DialogActEditor) {
                         //PLUS ACTION FOR DIALGOACTEDITOR
                     }
-                    
+
                 }
             }
         });
         if (tabCounter != 0) {
-          JPanel pnl = new JPanel();
-          pnl.setOpaque(false);
-          pnl.add(tabLabel);
-          pnl.add(mAddButton);
-          
-          mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnl);
-          mTabPane.setComponentAt(mTabPane.getTabCount() - 1, content);
-          mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
+            JPanel pnl = new JPanel();
+            pnl.setOpaque(false);
+            pnl.add(tabLabel);
+            pnl.add(mAddButton);
+
+            mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnl);
+            mTabPane.setComponentAt(mTabPane.getTabCount() - 1, content);
+            mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
         }
 
         tabCounter++;
-      }
-    
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void update(final Observable obs, final Object obj) {
+    public void update(final java.util.Observable obs, final Object obj) {
 
         // Notify All Observers
-        mNoticeable.notify(obj);
+        mObservable.notify(obj);
     }
 
     /**
@@ -289,20 +291,6 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
 
     public EditorConfig getPreferences() {
         return mPreferences;
-    }
-
-    //public String getPreferencesFileName() {
-    //    return mPreferencesFileName;
-    //}
-
-    // **********************************
-    // Get and set parent project editor
-    public ProjectEditor getmParentPE() {
-        return mProjectEditor;
-    }
-
-    public void setmParentPE(ProjectEditor mParentPE) {
-        this.mProjectEditor = mParentPE;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -422,7 +410,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
          * }
          */
         if (event instanceof SceneSelectedEvent) {
-            String sg       = ((SceneSelectedEvent) event).getGroup().getName().trim();
+            String sg = ((SceneSelectedEvent) event).getGroup().getName().trim();
             String language = ((SceneSelectedEvent) event).getLanguage();
 
             // System.out.println("Language selected: " + language);
@@ -430,8 +418,8 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
             // search offset.
             if (lastSearchedScene.equals("scene_" + language + " " + sg)) {
                 advanceToNextSearchOffset();
-            }    // Different search is required, perform offset recalculation.
-                    else {
+            } // Different search is required, perform offset recalculation.
+            else {
                 search(sg, language, mEditorPane, painter);
             }
 
@@ -467,9 +455,9 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
 
     /* Search for a scene name and give the position of the selected text */
     public void search(String word, String language, JTextComponent comp, Highlighter.HighlightPainter painter) {
-        this.lastIndex         = 0;
+        this.lastIndex = 0;
         this.lastSearchedScene = "scene_" + language + " " + word;
-        this.searchOffsets     = new ArrayIndexList<Integer>();
+        this.searchOffsets = new ArrayIndexList<Integer>();
 
         Highlighter highlighter = comp.getHighlighter();
 
@@ -498,12 +486,12 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         word = word.toLowerCase();
 
         int lastLocalIndex = 0;
-        int wordSize       = word.length();
+        int wordSize = word.length();
 
         while ((lastLocalIndex = content.indexOf("scene_" + language + " " + word, lastLocalIndex)) != -1) {
             lastLocalIndex += 9;
 
-            int endIndex     = lastLocalIndex + wordSize;
+            int endIndex = lastLocalIndex + wordSize;
             int limiterIndex = content.indexOf(':', lastLocalIndex);
 
             try {
@@ -575,7 +563,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public void showElementDisplay() {
-        
+
         if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
             mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
             mPreferences.setProperty("showsceneelements", "false");
@@ -588,8 +576,8 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
             scriptSplitPane.setDividerLocation(250);
         }
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                                        ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
-                                        : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
+                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -601,7 +589,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         mEventCaster.remove(this);
 
         // Remove All Observers
-        mNoticeable.deleteObservers();
+        mObservable.deleteObservers();
 
         // Remove Caret Listener
         mEditorPane.removeCaretListener(mStatusLabel);
@@ -613,6 +601,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     private class CaretStatusLabel extends JLabel implements CaretListener {
+
         public CaretStatusLabel(String label) {
             super(label);
         }
@@ -643,17 +632,6 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
                     }
                 }
             });
-        }
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    private class Noticeable extends Observable {
-        public void notify(final Object obj) {
-            setChanged();
-            notifyObservers(obj);
         }
     }
 }

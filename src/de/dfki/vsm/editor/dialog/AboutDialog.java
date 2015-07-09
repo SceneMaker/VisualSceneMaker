@@ -50,7 +50,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class AboutDialog extends JDialog {
 

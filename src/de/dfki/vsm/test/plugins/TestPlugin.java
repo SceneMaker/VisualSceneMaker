@@ -7,7 +7,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.runtime.plugin.Plugin;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class TestPlugin implements Plugin {
 

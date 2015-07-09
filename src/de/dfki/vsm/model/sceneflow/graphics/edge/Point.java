@@ -3,14 +3,14 @@ package de.dfki.vsm.model.sceneflow.graphics.edge;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.Syntax;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * A point with control point.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Point extends Syntax {
     private int mXPpos;
@@ -80,7 +80,7 @@ public class Point extends Syntax {
         return new Point(mXPpos, mCtrlXPos, mYPos, mCtrlYPos);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Point x-pos=\"" + mXPpos + "\" y-pos=\"" + mYPos + "\" control-x-pos=\"" + mCtrlXPos
                     + "\" control-y-pos=\"" + mCtrlYPos + "\"/>");
     }

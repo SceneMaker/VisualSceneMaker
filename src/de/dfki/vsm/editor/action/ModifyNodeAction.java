@@ -13,7 +13,7 @@ package de.dfki.vsm.editor.action;
 //
 ///**
 // * A Modify-Node-Action.
-// * @author Gregor Mehlmann
+// * @author Not me
 // * @author Patrick Gebhard
 // */
 //public class ModifyNodeAction {

@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.graphics.edge;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.Syntax;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 /**
  * The graphics information for an edge.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Graphics extends Syntax {
     private Arrow mArrow;
@@ -53,7 +53,7 @@ public class Graphics extends Syntax {
         return new Graphics(mArrow.getCopy());
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Graphics>").push();
         mArrow.writeXML(out);
         out.pop().println("</Graphics>");

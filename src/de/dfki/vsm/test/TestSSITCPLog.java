@@ -24,7 +24,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TestSSITCPLog {
 

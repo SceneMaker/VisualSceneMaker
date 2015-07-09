@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -14,7 +14,7 @@ import org.w3c.dom.Element;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class UsrCmd extends Expression {
     private String             mName;
@@ -123,7 +123,7 @@ public class UsrCmd extends Expression {
         return new UsrCmd(mName, getCopyOfArgList());
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<UserCommand name=\"" + mName + "\">").push();
 
         for (int i = 0; i < mArgList.size(); i++) {

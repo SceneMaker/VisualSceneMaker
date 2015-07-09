@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -10,7 +10,7 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class UnaryExp extends Expression {
     private Expression mExp;
@@ -172,7 +172,7 @@ public class UnaryExp extends Expression {
         return new UnaryExp(mExp.getCopy(), mOperator);
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<" + mOperator.name() + ">").push();
         mExp.writeXML(out);
         out.pop().println("</" + mOperator.name() + ">");

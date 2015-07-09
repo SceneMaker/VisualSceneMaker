@@ -7,7 +7,7 @@ import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SceneExecutedEvent extends EventObject {
     private SceneObject mScene;

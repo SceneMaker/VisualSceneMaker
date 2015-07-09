@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class Edge extends Syntax {
     protected String                                                  mTarget          = new String();

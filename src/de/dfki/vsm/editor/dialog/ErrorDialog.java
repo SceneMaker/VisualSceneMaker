@@ -25,7 +25,7 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class ErrorDialog extends JDialog {

@@ -16,7 +16,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyPEdgeAction extends ModifyEdgeAction {
     private Vector<Integer> mOldProbList = new Vector<Integer>();

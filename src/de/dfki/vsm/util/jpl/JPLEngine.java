@@ -3,7 +3,6 @@ package de.dfki.vsm.util.jpl;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.sys.SYSUtilities;
 
 import jpl.JPL;
 import jpl.Query;
@@ -17,7 +16,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class JPLEngine {
 
@@ -26,11 +25,6 @@ public final class JPLEngine {
 
     // The Liveliness Flag
     private static volatile boolean sAlive;
-
-    // Load Default Source Files
-    //public static void load() {
-    //    load(SYSUtilities.sPROLOG_FILE_BASE);
-    //}
 
     // Load A Prolog Source File
     public static void load(final String source) {

@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -14,7 +14,7 @@ import org.w3c.dom.Element;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class BinaryExp extends Expression {
     private Expression mLeftExp;
@@ -195,7 +195,7 @@ public class BinaryExp extends Expression {
         return new BinaryExp(mLeftExp.getCopy(), mOperator, mRightExp.getCopy());
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
 
         // TODO: Check if operand or expression are null
         out.println("<" + mOperator.name() + ">").push();

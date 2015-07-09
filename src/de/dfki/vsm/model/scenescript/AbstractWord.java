@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.scenescript;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class AbstractWord extends SceneEntity {
 

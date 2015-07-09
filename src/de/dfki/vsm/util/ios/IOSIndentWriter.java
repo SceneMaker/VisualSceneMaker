@@ -8,34 +8,34 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class IndentWriter {
+public class IOSIndentWriter {
     private String            mIndent  = "  ";
     private String            mStack   = "";
     private int               mLine    = 0;
     private boolean           mNewline = true;
     private final PrintWriter mStream;
 
-    public IndentWriter(File file) throws IOException {
+    public IOSIndentWriter(File file) throws IOException {
         mStream = new PrintWriter(file, "UTF-8");
     }
 
-    public IndentWriter(OutputStream stream) {
+    public IOSIndentWriter(OutputStream stream) {
         mStream = new PrintWriter(stream);
     }
 
-    public IndentWriter(File file, String indent) throws IOException {
+    public IOSIndentWriter(File file, String indent) throws IOException {
         mStream = new PrintWriter(file, "UTF-8");
         mIndent = indent;
     }
 
-    public IndentWriter(OutputStream stream, String indent) {
+    public IOSIndentWriter(OutputStream stream, String indent) {
         mStream = new PrintWriter(stream);
         mIndent = indent;
     }
 
-    public IndentWriter print(String s) {
+    public IOSIndentWriter print(String s) {
 
         // split the string into lines
         int start  = 0,
@@ -79,19 +79,19 @@ public class IndentWriter {
         return this;
     }
 
-    public IndentWriter println(String s) {
+    public IOSIndentWriter println(String s) {
         return print(s).endl();
     }
 
-    public IndentWriter print(Object o) {
+    public IOSIndentWriter print(Object o) {
         return print(o.toString());
     }
 
-    public IndentWriter println(Object o) {
+    public IOSIndentWriter println(Object o) {
         return print(o.toString()).endl();
     }
 
-    public final IndentWriter endl() {
+    public final IOSIndentWriter endl() {
         ++mLine;
         mNewline = true;
         mStream.print('\n');
@@ -100,19 +100,19 @@ public class IndentWriter {
         return this;
     }
 
-    public final IndentWriter flush() {
+    public final IOSIndentWriter flush() {
         mStream.flush();
 
         return this;
     }
 
-    public final IndentWriter push() {
+    public final IOSIndentWriter push() {
         mStack += mIndent;
 
         return this;
     }
 
-    public final IndentWriter pop() {
+    public final IOSIndentWriter pop() {
         if (mStack.length() >= mIndent.length()) {
             mStack = mStack.substring(0, mStack.length() - mIndent.length());
         }

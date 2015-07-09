@@ -18,7 +18,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Interpreter {
     private final LOGDefaultLogger  mLogger;

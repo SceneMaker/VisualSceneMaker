@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 /**
  * A dialog to create or edit a member definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class MemberDefDialog extends Dialog {
 

@@ -13,7 +13,7 @@ package de.dfki.vsm.editor;
 //import javax.swing.JTabbedPane;
 //
 ///**
-// * @author Gregor Mehlmann
+// * @author Not me
 // */
 //public class ContentEditor extends JTabbedPane implements Observer, EventListener {
 //

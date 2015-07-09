@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.definition;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.Syntax;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * A member definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class MemberDef extends Syntax {
     private String mType;
@@ -59,7 +59,7 @@ public class MemberDef extends Syntax {
         return new MemberDef(mName, mType);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Member type=\"" + mType + "\" name =\"" + mName + "\"/>");
     }
 

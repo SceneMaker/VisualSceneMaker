@@ -32,7 +32,7 @@ import java.util.Random;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Process extends java.lang.Thread {
     private boolean                mIsPauseRequested        = false;

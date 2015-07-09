@@ -11,7 +11,7 @@ import de.dfki.vsm.model.scenescript.AbstractWord;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class WordExecutedEvent extends EventObject {
     private AbstractWord mTurn;

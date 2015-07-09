@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.plugin;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public interface Plugin {
 

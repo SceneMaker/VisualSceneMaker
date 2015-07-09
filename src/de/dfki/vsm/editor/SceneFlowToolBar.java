@@ -45,7 +45,7 @@ import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebahrd
  */
 public class SceneFlowToolBar extends JToolBar implements Observer {

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SceneGroup implements Comparable {
 

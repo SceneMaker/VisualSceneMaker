@@ -2,14 +2,14 @@ package de.dfki.vsm.model.sceneflow.definition.type;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * A list type definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ListTypeDef extends TypeDef {
     private String mType;
@@ -51,7 +51,7 @@ public class ListTypeDef extends TypeDef {
         return Flavour.List;
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<ListType name=\"" + mName + "\" type=\"" + mType + "\"/>");
     }
 
