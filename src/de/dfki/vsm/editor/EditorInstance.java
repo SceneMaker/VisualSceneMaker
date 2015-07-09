@@ -216,7 +216,7 @@ public final class EditorInstance extends JFrame implements EventListener {
 
     public void update() {
         if (mProjectEditorList.getTabCount() > 0) {
-            mObservable.update(mProjectEditorList.getSelectedEditorProject());
+            mObservable.update(mProjectEditorList.getEditorProject());
         }
     }
 
@@ -302,12 +302,12 @@ public final class EditorInstance extends JFrame implements EventListener {
 
     // Get the current project editor
     public final ProjectEditor getSelectedProjectEditor() {
-        return mProjectEditorList.getSelectedProjectEditor();
+        return mProjectEditorList.getProjectEditor();
     }
 
     // Get the current editor project
     public final EditorProject getSelectedEditorProject() {
-        return mProjectEditorList.getSelectedEditorProject();
+        return mProjectEditorList.getEditorProject();
     }
 
     // Create a new editor project
@@ -423,8 +423,8 @@ public final class EditorInstance extends JFrame implements EventListener {
 
         // update rectent project list
         updateRecentProjects(
-                mProjectEditorList.getSelectedEditorProject().getProjectPath(),
-                mProjectEditorList.getSelectedEditorProject().getProjectName());
+                mProjectEditorList.getEditorProject().getProjectPath(),
+                mProjectEditorList.getEditorProject().getProjectName());
 
         // TODO: Refresh the recent file menu
         return true;
@@ -435,7 +435,7 @@ public final class EditorInstance extends JFrame implements EventListener {
         // Show A Project Creation Dialog
         final CreateProjectDialog dialog = new CreateProjectDialog();
         // Get Currently Selected Project
-        final EditorProject project = mProjectEditorList.getSelectedEditorProject();
+        final EditorProject project = mProjectEditorList.getEditorProject();
         // Set The New Project Directory
 
         // TODO: remove getter method
@@ -574,85 +574,41 @@ public final class EditorInstance extends JFrame implements EventListener {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public void startSceneFlow() {
-
-        // Get the sceneflow that has to be executed
-        EditorProject project = mProjectEditorList.getSelectedEditorProject();
-
-        // SceneFlow sceneFlow = mEditorList.getSelectedProject().getSceneFlow();
-        // Register the sceneflow with the sceneplayer at the runtime
-        // Get the sceneplayer that has to be used
-        // ScenePlayer scenePlayer = mEditorList.getSelectedProject().loadPluginScenePlayer();
-        // mRunTime.registerSceneFlow(sceneFlow, scenePlayer);
-        // mLogger.message("Registering Sceneflow " + project.getSceneFlow());
+    // Start the execution of the current project
+    public void start() {
+        // Get the project that has to be executed
+        final EditorProject project = mProjectEditorList.getEditorProject();
+        // Launch the current project in the runtime
         mRunTime.launch(project);
-
-        // Start the interpreter for that sceneflow
-        // mLogger.message("Starting Sceneflow " + project.getSceneFlow());
-        mRunTime.start(project.getSceneFlow());
-
-        // Disable the project list
+        // Start the interpreter for that project
+        mRunTime.start(project);
+        // Disable the project editor list GUI
         mProjectEditorList.setEnabled(false);
-
-        //
-        // mEditorList.getSelectedProjectEditor().getSceneEditor().setEnabled(false);
-        // Update the menu bar
-//      mMenuBar.setRunMenuEnabled(false);
-//      mMenuBar.setStopMenuEnabled(true);
-//      mMenuBar.setPauseMenuEnabled(true);
-//      mMenuBar.setMonitorMenuEnabled(true);
     }
 
-    // Start the sceneflow of the current project
-    public final void stopSceneFlow() {
-        // Get the current project
-        final EditorProject project = mProjectEditorList.getSelectedEditorProject();
-
-        // Stop the interpreter for that sceneflow
-        // mRunTime.stopSceneFlow(sceneFlow);
-        mRunTime.abort(project.getSceneFlow());
-
-        // mLogger.message("Stopping Sceneflow " + project.getSceneFlow());
-        //
+    // Stop the execution of the current project
+    public final void stop() {
+        // Get the project that has to be stopped
+        final EditorProject project = mProjectEditorList.getEditorProject();
+        // Stop the interpreter for that project
+        mRunTime.abort(project);
+        // Unload the current project in the runtime
         mRunTime.unload(project);
-
-        // mLogger.message("Unregistering Sceneflow " + project.getSceneFlow());
-        // Enable the project list
+        // Enable the project editor list GUI
         mProjectEditorList.setEnabled(true);
-
-        //
-        // mEditorList.getSelectedProjectEditor().getSceneEditor().setEnabled(true);
-        //
-//      mMenuBar.setRunMenuEnabled(true);
-//      mMenuBar.setStopMenuEnabled(false);
-//      mMenuBar.setPauseMenuEnabled(false);
-//      mMenuBar.setMonitorMenuEnabled(false);
+        // TODO: Is this really necessary?
         update();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Pause the execution of the current project
     public void pauseSceneFlow() {
-        SceneFlow sceneFlow = mProjectEditorList.getSelectedEditorProject().getSceneFlow();
-
-        if (mRunTime.isPaused(sceneFlow)) {
-            mRunTime.proceed(sceneFlow);
-        } else {
-            mRunTime.pause(sceneFlow);
-        }
-
-        if (mRunTime.isPaused(sceneFlow)) {
-
-            // mMenuBar.setRunMenuEnabled(false);
-            // mMenuBar.setStopMenuEnabled(false);
-            // mMenuBar.setMonitorMenuEnabled(false);
-            // mMenuBar.setPauseMenuText("Proceed");
-        } else {
-
-            // mMenuBar.setStopMenuEnabled(true);
-            // mMenuBar.setMonitorMenuEnabled(true);
-            // mMenuBar.setPauseMenuText("Pause");
+        // Get the project that has to be paused
+        final EditorProject project = mProjectEditorList.getEditorProject();
+        // Pause the interpreter for that project
+        if (mRunTime.isPaused(project)) {
+            mRunTime.proceed(project);
+        } else if (mRunTime.isActive(project)) {
+            mRunTime.pause(project);
         }
     }
 }

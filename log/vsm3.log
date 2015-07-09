@@ -67804,3 +67804,305 @@ Updating recent projects with 'D:\GitHubOrg\VisualSceneMaker\res\prj\test' 'NewS
 INFO to LOGFILE on Thu Jul 09 16:21:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.openProject(EditorInstance.java:390)
 Opening project editor from file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test'
 
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseProjectConfig(RunTimeProject.java:214)
+Loaded project configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="NewStyleProject">
+  <Plugins>
+    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
+      <Feature key="hallo" value="welt"/>
+    </Plugin>
+    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
+      <Feature key="hallo" value="welt"/>
+    </Plugin>
+  </Plugins>
+  <Players>
+    <Player name="some" class="de.dfki.vsm.test.players.TestPlayer">
+      <Feature key="hallo" value="welt"/>
+    </Player>
+  </Players>
+  <Agents>
+    <Agent name="some" player="welt">
+      <Feature key="hallo" value="welt"/>
+    </Agent>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneFlow(RunTimeProject.java:275)
+Loaded sceneflow configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\sceneflow.xml':
+HelloWorld
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneScript(RunTimeProject.java:332)
+Loaded scenescript configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\scenescript.xml':
+<SceneScript lower="0" upper="0" length="0">
+
+</SceneScript>
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parsePlayerConfig(RunTimeProject.java:560)
+Loaded player configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\player.xml':
+<Player name="default" class="de.dfki.vsm.api.VSMDefaultPlayer">
+  <Feature key="vsm.agent.number" value="0"/>
+  <Feature key="swi.handler.local.host" value="0"/>
+  <Feature key="swi.handler.local.port" value="0"/>
+  <Feature key="swi.handler.remote.host" value="0"/>
+  <Feature key="swi.handler.remote.port" value="0"/>
+  <Feature key="swi.handler.local.base" value="../../swi"/>
+</Player>
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseActiconConfig(RunTimeProject.java:389)
+Loaded acticon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseVisiconConfig(RunTimeProject.java:503)
+Loaded visicon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseGesticonConfig(RunTimeProject.java:446)
+Loaded gesticon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.<init>(VSMScenePlayer.java:79)
+Creating VSM Abstract Scene Player
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMDefaultPlayer.<init>(VSMDefaultPlayer.java:28)
+Creating VSM Default Scene Player
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.loadDefaultScenePlayer(RunTimeProject.java:608)
+Loading default scene player 'de.dfki.vsm.api.VSMDefaultPlayer@349bb9b5' with player config:
+<Player name="default" class="de.dfki.vsm.api.VSMDefaultPlayer">
+  <Feature key="vsm.agent.number" value="0"/>
+  <Feature key="swi.handler.local.host" value="0"/>
+  <Feature key="swi.handler.local.port" value="0"/>
+  <Feature key="swi.handler.remote.host" value="0"/>
+  <Feature key="swi.handler.remote.port" value="0"/>
+  <Feature key="swi.handler.local.base" value="../../swi"/>
+</Player>
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.load(EditorConfig.java:455)
+Loaded project editor configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Monospaced, shownodeid=true, showsceneeditor=true, visualization=true, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=14, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=12, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Thu Jul 09 16:33:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Thu Jul 09 16:34:00 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.updateRecentProjects(EditorInstance.java:464)
+Updating recent projects with 'D:\GitHubOrg\VisualSceneMaker\res\prj\test' 'NewStyleProject'
+
+INFO to LOGFILE on Thu Jul 09 16:34:00 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.openProject(EditorInstance.java:387)
+Opening project editor from file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test'
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseProjectConfig(RunTimeProject.java:214)
+Loaded project configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="NewStyleProject">
+  <Plugins>
+    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
+      <Feature key="hallo" value="welt"/>
+    </Plugin>
+    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
+      <Feature key="hallo" value="welt"/>
+    </Plugin>
+  </Plugins>
+  <Players>
+    <Player name="some" class="de.dfki.vsm.test.players.TestPlayer">
+      <Feature key="hallo" value="welt"/>
+    </Player>
+  </Players>
+  <Agents>
+    <Agent name="some" player="welt">
+      <Feature key="hallo" value="welt"/>
+    </Agent>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneFlow(RunTimeProject.java:275)
+Loaded sceneflow configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\sceneflow.xml':
+HelloWorld
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneScript(RunTimeProject.java:332)
+Loaded scenescript configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\scenescript.xml':
+<SceneScript lower="0" upper="0" length="0">
+
+</SceneScript>
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parsePlayerConfig(RunTimeProject.java:560)
+Loaded player configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\player.xml':
+<Player name="default" class="de.dfki.vsm.api.VSMDefaultPlayer">
+  <Feature key="vsm.agent.number" value="0"/>
+  <Feature key="swi.handler.local.host" value="0"/>
+  <Feature key="swi.handler.local.port" value="0"/>
+  <Feature key="swi.handler.remote.host" value="0"/>
+  <Feature key="swi.handler.remote.port" value="0"/>
+  <Feature key="swi.handler.local.base" value="../../swi"/>
+</Player>
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseActiconConfig(RunTimeProject.java:389)
+Loaded acticon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseVisiconConfig(RunTimeProject.java:503)
+Loaded visicon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseGesticonConfig(RunTimeProject.java:446)
+Loaded gesticon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.<init>(VSMScenePlayer.java:79)
+Creating VSM Abstract Scene Player
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMDefaultPlayer.<init>(VSMDefaultPlayer.java:28)
+Creating VSM Default Scene Player
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.loadDefaultScenePlayer(RunTimeProject.java:608)
+Loading default scene player 'de.dfki.vsm.api.VSMDefaultPlayer@11664413' with player config:
+<Player name="default" class="de.dfki.vsm.api.VSMDefaultPlayer">
+  <Feature key="vsm.agent.number" value="0"/>
+  <Feature key="swi.handler.local.host" value="0"/>
+  <Feature key="swi.handler.local.port" value="0"/>
+  <Feature key="swi.handler.remote.host" value="0"/>
+  <Feature key="swi.handler.remote.port" value="0"/>
+  <Feature key="swi.handler.local.base" value="../../swi"/>
+</Player>
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.load(EditorConfig.java:455)
+Loaded project editor configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Monospaced, shownodeid=true, showsceneeditor=true, visualization=true, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=14, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=12, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.updateRecentProjects(EditorInstance.java:464)
+Updating recent projects with 'D:\GitHubOrg\VisualSceneMaker\res\prj\test' 'NewStyleProject'
+
+INFO to LOGFILE on Thu Jul 09 17:36:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.openProject(EditorInstance.java:387)
+Opening project editor from file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test'
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:89)
+Launching VSM Scene Player
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.launch(VSMScenePlayer.java:148)
+SWI Query Handler Local Host  : '0'
+SWI Query Handler Remote Host : '0'
+SWI Query Handler Local Port  : '0'
+SWI Query Handler Remote Port : '0'
+SWI Query Handler Remote Flag : 'null'
+SWI Query Handler Base Files  : '../../swi'
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.jpl.JPLEngine.init(JPLEngine.java:85)
+Initializing JPL Engine 'JPLEngine(3.1.4-alpha,[swipl,-g,true,-nosignals])'
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[JPLLoader(../../swi/*.pl),6,main] at de.dfki.vsm.util.jpl.JPLLoader.run(JPLLoader.java:36)
+Consulted Source '../../swi/*.pl' In JPL Engine 'JPLEngine(3.1.4-alpha,[swipl,-g,true,-nosignals])'
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMSystemTimer.<init>(VSMSystemTimer.java:36)
+Creating VSM System Timer
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMQueryHandler.init(VSMQueryHandler.java:73)
+Initializing SWI Query Handler
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMQueryHandler.init(VSMQueryHandler.java:89)
+Constructing SWI Query Handler
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMDefaultPlayer.launch(VSMDefaultPlayer.java:55)
+Launching Default Scene Player
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-8,6,main] at de.dfki.vsm.api.VSMSystemTimer.run(VSMSystemTimer.java:61)
+Starting VSM System Timer
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-7,6,main] at de.dfki.vsm.api.VSMQueryHandler.run(VSMQueryHandler.java:132)
+Starting SWI Query Handler
+
+INFO to LOGFILE on Thu Jul 09 17:36:14 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-7,6,main] at de.dfki.vsm.api.VSMQueryHandler.run(VSMQueryHandler.java:138)
+SWI Query Handler Trying To Receive
+
+INFO to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMDefaultPlayer.unload(VSMDefaultPlayer.java:65)
+Unloading Default Scene Player
+
+INFO to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMSystemTimer.abort(VSMSystemTimer.java:45)
+Aborting VSM System Timer
+
+INFO to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.unload(VSMScenePlayer.java:215)
+Awaiting System Timer
+
+WARNING to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-8,6,main] at de.dfki.vsm.api.VSMSystemTimer.run(VSMSystemTimer.java:75)
+java.lang.InterruptedException: sleep interrupted
+
+WARNING to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-8,6,main] at de.dfki.vsm.api.VSMSystemTimer.run(VSMSystemTimer.java:78)
+Interrupting VSM System Timer
+
+INFO to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[Thread-8,6,main] at de.dfki.vsm.api.VSMSystemTimer.run(VSMSystemTimer.java:92)
+Stopping VSM System Timer
+
+INFO to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.unload(VSMScenePlayer.java:221)
+Joining System Timer
+
+INFO to LOGFILE on Thu Jul 09 17:36:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.api.VSMScenePlayer.unload(VSMScenePlayer.java:235)
+Unloading Generic VSM Scene Player
+

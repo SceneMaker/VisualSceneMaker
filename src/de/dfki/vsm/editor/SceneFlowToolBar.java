@@ -36,12 +36,6 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
@@ -88,16 +82,21 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private final EditorProject mProject;
     private final EditorConfig mPreferences;
 
-    public SceneFlowToolBar(final SceneFlowEditor sceneFlowEditor, EditorProject project) {
+    public SceneFlowToolBar(final SceneFlowEditor editor , final EditorProject project) {
         super("Navigation Bar", JToolBar.HORIZONTAL);
 
+        mEditor = editor;
+        mProject = project;
+        mSceneFlow = mProject.getSceneFlow();
+        mPreferences = mProject.getEditorConfig();
+        
         // Initialize The Editor
-        mEditor      = sceneFlowEditor;
-        mProject     = sceneFlowEditor.getWorkSpace().getProject();
-        mPreferences = sceneFlowEditor.getWorkSpace().getPreferences();
+        //mEditor      = sceneFlowEditor;
+        //mProject     = sceneFlowEditor.getWorkSpace().getProject();
+        //mPreferences = sceneFlowEditor.getWorkSpace().getPreferences();
 
         // Initialize The SceneFlow
-        mSceneFlow = mEditor.getSceneFlow();
+        //mSceneFlow = mEditor.getSceneFlow();
         setFloatable(false);
         setRollover(true);
         setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
@@ -471,7 +470,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     public final void actionStopSceneFlow() {
 
         // Stop The Execution
-        mWindow.stopSceneFlow();
+        mWindow.stop();
 
         // Update The Buttons
         changeRuntimeButtonState();
@@ -487,10 +486,10 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     public final void actionStartSceneFlow() {
 
         // Check State Of Execution
-        if (mRunTime.isActive(mSceneFlow)) {
+        if (mRunTime.isActive(mProject)) {
             mWindow.pauseSceneFlow();
         } else {
-            mWindow.startSceneFlow();
+            mWindow.start();
         }
 
         // Update The Buttons
@@ -505,8 +504,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     private void changeRuntimeButtonState() {
 
         //
-        if (mRunTime.isActive(mSceneFlow)) {
-            if (mRunTime.isPaused(mSceneFlow)) {
+        if (mRunTime.isActive(mProject)) {
+            if (mRunTime.isPaused(mProject)) {
                 mPlayButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png"));
                 mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
                 mPlayButton.setToolTipText("Play Scene");

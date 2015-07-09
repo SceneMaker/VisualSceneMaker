@@ -321,7 +321,7 @@ public abstract class VSMScenePlayer implements Player {
                 // Try To Set The Variables Globally
                 // Because An Extern Thread Is Trying
                 for (Map.Entry<String, String> entry : subst.entrySet()) {
-                    RunTimeInstance.getInstance().setVariable(mProjectData.getSceneFlow(), entry.getKey(), entry.getValue());
+                    RunTimeInstance.getInstance().setVariable(mProjectData, entry.getKey(), entry.getValue());
                 }
             }
 
@@ -335,13 +335,13 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void setVariable(final String name, final String value) {
-        if (mVSM3RunTime.hasVariable(mSceneFlow, name)) {
+        if (mVSM3RunTime.hasVariable(mProjectData, name)) {
 
             // Debug Some Information
             mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
 
             // Set The Variable Now
-            mVSM3RunTime.setVariable(mSceneFlow, name, value);
+            mVSM3RunTime.setVariable(mProjectData, name, value);
 
             // Debug Some Information
             mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
@@ -356,13 +356,13 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void setVariable(final String name, final boolean value) {
-        if (mVSM3RunTime.hasVariable(mSceneFlow, name)) {
+        if (mVSM3RunTime.hasVariable(mProjectData, name)) {
 
             // Debug Some Information
             mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
 
             // Set The Variable Now
-            mVSM3RunTime.setVariable(mSceneFlow, name, value);
+            mVSM3RunTime.setVariable(mProjectData, name, value);
 
             // Debug Some Information
             mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
@@ -377,13 +377,13 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void setVariable(final String name, final int value) {
-        if (mVSM3RunTime.hasVariable(mSceneFlow, name)) {
+        if (mVSM3RunTime.hasVariable(mProjectData, name)) {
 
             // Debug Some Information
             mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
 
             // Set The Variable Now
-            mVSM3RunTime.setVariable(mSceneFlow, name, value);
+            mVSM3RunTime.setVariable(mProjectData, name, value);
 
             // Debug Some Information
             mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");

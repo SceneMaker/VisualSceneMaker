@@ -4,6 +4,7 @@ package de.dfki.vsm.editor.dialog;
 
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.EditorProject;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -46,11 +47,11 @@ public class MonitorDialog extends JDialog {
     private JTextField           mInputTextField;
     private JScrollPane          mVariableScrollPane;
     private Vector<VarDef>       mVarDefListData;
-    private final SceneFlow      mSceneFlow;
+    private final EditorProject      mEditorProject;
 
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
-        mSceneFlow = EditorInstance.getInstance().getProjectEditorList().getSelectedEditorProject().getSceneFlow();
+        mEditorProject = EditorInstance.getInstance().getProjectEditorList().getEditorProject();
         initComponents();
         initVariableList();
     }
@@ -93,25 +94,25 @@ public class MonitorDialog extends JDialog {
 
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
                     if (exp instanceof Bool) {
-                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Bool) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
                     } else if (exp instanceof Int) {
-                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Int) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
                     } else if (exp instanceof Float) {
-                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
                                 ((Float) exp).getValue());
                     } else if (exp instanceof String) {
-                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
                                 ((String) exp).getValue());
                     } else if (exp instanceof List) {
-                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
                         // Evaluator eval = interpreter.getEvaluator();
                         // Environment env = interpreter.getEnvironment();
                         // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
                     } else if (exp instanceof Struct) {
-                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     } else {
-                        return RunTimeInstance.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     }
                 }
             } catch (Exception e) {
@@ -157,7 +158,7 @@ public class MonitorDialog extends JDialog {
     }
 
     private void initVariableList() {
-        mVarDefListData = mSceneFlow.getCopyOfVarDefList();
+        mVarDefListData = mEditorProject.getSceneFlow().getCopyOfVarDefList();
 
         for (VarDef varDef : mVarDefListData) {
             ((DefaultListModel) mVariableList.getModel()).addElement(varDef.getType() + " " + varDef.getName());

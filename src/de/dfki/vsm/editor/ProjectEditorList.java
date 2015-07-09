@@ -59,8 +59,8 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void stateChanged(ChangeEvent e) {
-        if (getSelectedEditorProject() != null) {
-            mObservable.update(getSelectedEditorProject());
+        if (getEditorProject() != null) {
+            mObservable.update(getEditorProject());
         }
 
         // copy and paste of nodes between the different projects
@@ -81,11 +81,11 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         }
     }
 
-    public ProjectEditor getSelectedProjectEditor() {
+    public ProjectEditor getProjectEditor() {
         return (ProjectEditor) getSelectedComponent();
     }
 
-    public EditorProject getSelectedEditorProject() {
+    public EditorProject getEditorProject() {
         if (getSelectedComponent() != null) {
             return ((ProjectEditor) getSelectedComponent()).getEditorProject();
         } else {
@@ -111,7 +111,7 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
 
     // Remove a  project editor of a project
     public void closeProject() {
-        final ProjectEditor projectEditor = getSelectedProjectEditor();
+        final ProjectEditor projectEditor = getProjectEditor();
         //
         mObservable.deleteObserver(projectEditor);
         //
