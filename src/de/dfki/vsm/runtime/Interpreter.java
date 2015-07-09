@@ -1,19 +1,18 @@
 package de.dfki.vsm.runtime;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.runtime.error.RunTimeException;
 import de.dfki.vsm.runtime.event.AbortEvent;
 import de.dfki.vsm.runtime.player.Player;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.util.evt.EventCaster;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,36 +20,37 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Not me
  */
 public class Interpreter {
-    private final LOGDefaultLogger  mLogger;
-    private final EventCaster       mEventMulticaster;
-    private final SceneFlow         mSceneFlow;
-    private final EventObserver     mEventObserver;
-    private final Configuration     mConfiguration;
-    private final SystemHistory     mSystemHistory;
-    private final Evaluator         mEvaluator;
-    private final TimeoutManager    mTimeoutManager;
-    private final ReentrantLock     mLock;
-    private final Condition         mPauseCondition;
-    private final Player  mSceneGroupPlayer;
+
+    private final LOGDefaultLogger mLogger;
+    private final EventCaster mEventMulticaster;
+    private final SceneFlow mSceneFlow;
+    private final EventObserver mEventObserver;
+    private final Configuration mConfiguration;
+    private final SystemHistory mSystemHistory;
+    private final Evaluator mEvaluator;
+    private final TimeoutManager mTimeoutManager;
+    private final ReentrantLock mLock;
+    private final Condition mPauseCondition;
+    private final Player mSceneGroupPlayer;
     private final Player mDialogueActPlayer;
-    private Process                 mSceneFlowThread;
+    private final RunTimeProject mProject;
+    private Process mSceneFlowThread;
 
     public Interpreter(
-            final SceneFlow sceneFlow, 
-            final Player sceneGroupPlayer,
-            final Player dialogueActPlayer) {
-        mSceneFlow         = sceneFlow;
-        mSceneGroupPlayer  = sceneGroupPlayer;
-        mDialogueActPlayer = dialogueActPlayer;
-        mLogger            = LOGDefaultLogger.getInstance();
-        mEventMulticaster  = EventCaster.getInstance();
-        mLock              = new ReentrantLock(true);
-        mPauseCondition    = mLock.newCondition();
-        mConfiguration     = new Configuration();
-        mSystemHistory     = new SystemHistory();
-        mTimeoutManager    = new TimeoutManager(this);
-        mEventObserver     = new EventObserver(this);
-        mEvaluator         = new Evaluator(this);
+            final RunTimeProject project) {
+        mProject = project;
+        mSceneFlow = mProject.getSceneFlow();
+        mSceneGroupPlayer = mProject.getDefaultScenePlayer();
+        mDialogueActPlayer = mProject.getDefaultDialogPlayer();
+        mLogger = LOGDefaultLogger.getInstance();
+        mEventMulticaster = EventCaster.getInstance();
+        mLock = new ReentrantLock(true);
+        mPauseCondition = mLock.newCondition();
+        mConfiguration = new Configuration();
+        mSystemHistory = new SystemHistory();
+        mTimeoutManager = new TimeoutManager(this);
+        mEventObserver = new EventObserver(this);
+        mEvaluator = new Evaluator(this);
     }
 
     public void lock() {
@@ -163,8 +163,8 @@ public class Interpreter {
         if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
 
             // Create a new thread
-            mSceneFlowThread = new Process(mSceneFlow.getId(), null,    // TODO: choose an adquate thread group and check if this group has died before
-                                           mSceneFlow, new Environment(), 0, null, this);
+            mSceneFlowThread = new Process(mSceneFlow.getId(), null, // TODO: choose an adquate thread group and check if this group has died before
+                    mSceneFlow, new Environment(), 0, null, this);
 
             // Lock the interpreter
             try {
@@ -201,7 +201,6 @@ public class Interpreter {
             // mSystemHistory.clear();
             // mConfiguration.clear();
             // mTimeoutManager.clear();
-
             /**
              * Notification
              */
@@ -289,7 +288,7 @@ public class Interpreter {
             lock();
 
             AbstractValue value = mEvaluator.evaluate(exp,
-                                      mConfiguration.getState(nodeId).getThread().getEnvironment());
+                    mConfiguration.getState(nodeId).getThread().getEnvironment());
 
             setVariable(varName, value);
 
@@ -350,7 +349,7 @@ public class Interpreter {
             lock();
 
             return mConfiguration.getState(nodeId).getThread().getEnvironment().getActiveSymbolTable().contains(
-                varName);
+                    varName);
         } catch (RunTimeException e) {
             return false;
         } finally {

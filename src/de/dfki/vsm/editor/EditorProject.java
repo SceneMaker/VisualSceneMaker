@@ -13,16 +13,12 @@ public class EditorProject extends RunTimeProject {
     private File mProjectFile;
     // The hash of the project
     private int mInitialHash;
-    // The project pending flag
-    private boolean mIsPending;
     // The editor configuration
     private final EditorConfig mEditorConfig
             = new EditorConfig();
 
     // Construct an editor project
     public EditorProject() {
-        // Initialize the pending flag
-        mIsPending = true;
         // Initialize the project file
         mProjectFile = null;
         // Initialize the initial hash
@@ -74,8 +70,6 @@ public class EditorProject extends RunTimeProject {
         // Load the project data
         if (super.load(mProjectFile)
                 && mEditorConfig.load(mProjectFile)) {
-            // Set the pending flag false
-            mIsPending = false;
             // Set the initial hash code
             mInitialHash = getHashCode();
             // Return true if project is saved
@@ -95,8 +89,6 @@ public class EditorProject extends RunTimeProject {
         // Save the project data
         if (super.save(mProjectFile)
                 && mEditorConfig.save(mProjectFile)) {
-            // Set the editor project unpending
-            mIsPending = false;
             // Reset the initial hash code here
             mInitialHash = getHashCode();
             // Return true when project is saved
@@ -122,17 +114,6 @@ public class EditorProject extends RunTimeProject {
     public final EditorConfig getEditorConfig() {
         return mEditorConfig;
     }
-    
-    
-    /*
-     public final boolean isPending() {
-     return mIsPending;
-     }
-
-     public final void setPending(final boolean state) {
-     mIsPending = state;
-     }
-     */
 
     // Check if the hash code has changed
     public final boolean hasChanged() {

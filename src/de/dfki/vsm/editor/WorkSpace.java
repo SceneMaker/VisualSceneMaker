@@ -243,7 +243,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     private void checkChangesOnWorkspace() {
 
         // checkHash
-        if (EditorInstance.getInstance().getProjectEditorList().getSelectedEditorProject() != null) {
+        if (EditorInstance.getInstance().getProjectEditorList().getEditorProject() != null) {
             if (mProject.hasChanged()) {
                 EditorInstance.getInstance().getProjectEditorList().setTitleAt(
                     EditorInstance.getInstance().getProjectEditorList().getSelectedIndex(), mProject.getProjectName() + "*");
