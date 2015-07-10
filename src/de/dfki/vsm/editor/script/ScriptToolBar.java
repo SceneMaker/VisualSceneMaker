@@ -23,13 +23,13 @@ import javax.swing.JToolBar;
  */
 public class ScriptToolBar extends JToolBar {
     private boolean            pinPricked = false;
-    private ScriptEditorPanel  mParent;
+    private SceneScriptEditor  mParent;
     private EditorConfig mPreferences;
 
     // Button to keep the script toolbar visible
     private JButton mPinScriptToolbar;
 
-    public ScriptToolBar(ScriptEditorPanel parent) {
+    public ScriptToolBar(SceneScriptEditor parent) {
         super("Scenes Tool Bar", JToolBar.HORIZONTAL);
         mParent      = parent;
         mPreferences = mParent.getPreferences();

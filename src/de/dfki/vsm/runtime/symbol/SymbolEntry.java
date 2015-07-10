@@ -8,7 +8,7 @@ import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.ListValue;
 import de.dfki.vsm.runtime.value.StructValue;
 import de.dfki.vsm.util.cpy.Copyable;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 public class SymbolEntry implements Copyable {
@@ -45,7 +45,7 @@ public class SymbolEntry implements Copyable {
 
             //
             // System.err.println("Writing variable " + mSymbol/*.getName()*/);
-            EventCaster.getInstance().convey(new VariableChangedEvent(this,
+            EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
                     new TPLTuple<String, String>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
             //
@@ -67,7 +67,7 @@ public class SymbolEntry implements Copyable {
                     ((ListValue) mValue).getValueList().set(index, value);
 
                     //
-                    EventCaster.getInstance().convey(new VariableChangedEvent(this,
+                    EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
                             new TPLTuple<String, String>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                     //
@@ -98,7 +98,7 @@ public class SymbolEntry implements Copyable {
                         ((StructValue) mValue).getValueMap().put(member, value);
 
                         //
-                        EventCaster.getInstance().convey(new VariableChangedEvent(this,
+                        EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
                                 new TPLTuple<String, String>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                         //

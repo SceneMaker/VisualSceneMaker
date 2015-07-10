@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.scenescript;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -10,7 +9,6 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.TreeSet;
@@ -38,7 +36,8 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneScript() {}
+    public SceneScript() {
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -314,21 +313,15 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        //stream.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        stream.println("<SceneScript " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "length=\""
-                       + mCommentList.size() + "\">");
+        stream.println("<SceneScript " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\">");
+        // + "length=\""
+        // + mCommentList.size() + "\">");
         stream.push();
-
         for (final SceneEntity entity : mEntityList) {
             entity.writeXML(stream);
-
-            if (!entity.equals(mEntityList.getLast())) {
-                stream.endl();
-            }
+            stream.endl();
         }
-
         stream.pop();
-        stream.endl();
         stream.print("</SceneScript>");
         stream.flush();
     }

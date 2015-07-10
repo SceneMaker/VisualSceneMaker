@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.util.DockingManager;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -76,7 +76,7 @@ public final class Node extends JComponent implements EventListener, Observer {
 
     //
     private final LOGDefaultLogger           mLogger           = LOGDefaultLogger.getInstance();
-    private final EventCaster                mEventMulticaster = EventCaster.getInstance();
+    private final EventDispatcher                mEventMulticaster = EventDispatcher.getInstance();
     private Type                             mType;
     private de.dfki.vsm.model.sceneflow.Node mDataNode;
 

@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.CmdDialog;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
@@ -28,7 +29,7 @@ import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.RegExp;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -215,7 +216,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         add(Box.createRigidArea(new Dimension(20, 100)));
 
         // Add the attribute editor to the event multicaster
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     protected abstract void add();
@@ -392,7 +393,7 @@ class ConditionEditor extends JPanel implements EventListener {
 
     public ConditionEditor() {
         initComponents();
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     private void initComponents() {
@@ -482,7 +483,7 @@ class EdgeEditor extends JPanel implements EventListener {
         add(mConditionEditor);
         add(mProbabilityEditor);
         add(mInterruptEditor);
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     @Override
@@ -556,7 +557,7 @@ public class ElementEditor extends JScrollPane implements EventListener, Observe
         setViewportView(null);
 
         // Add the element editor to the event multicaster
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     @Override
@@ -687,7 +688,7 @@ class InterruptEditor extends JPanel implements EventListener {
 
     public InterruptEditor() {
         initComponents();
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     private void initComponents() {
@@ -763,7 +764,7 @@ class NameEditor extends JPanel implements EventListener {
 
     public NameEditor() {
         initComponents();
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     private void initComponents() {
@@ -850,7 +851,7 @@ class NodeEditor extends JPanel implements EventListener {
         add(mCmdEditor);
 
         // Add the element editor to the event multicaster
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     @Override
@@ -898,7 +899,7 @@ class ProbabilityEditor extends JPanel implements EventListener {
 
     public ProbabilityEditor() {
         initComponents();
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     private void initComponents() {
@@ -1058,7 +1059,7 @@ class TimeOutEditor extends JPanel implements EventListener {
 
     public TimeOutEditor() {
         initComponents();
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     private void initComponents() {

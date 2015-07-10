@@ -1,62 +1,61 @@
-package de.dfki.vsm.test.plugins;
+package de.dfki.vsm.plugins;
 
-import de.dfki.vsm.model.config.ConfigElement;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.runtime.plugin.Plugin;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
-public final class TestPlugin implements Plugin {
+public final class DefaultSystemPlugin implements Plugin {
 
     // The Singelton Instance
-    public static TestPlugin sInstance = null;
+    public static DefaultSystemPlugin sInstance = null;
     // The Logger Instance
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
     // The Project Data
     final RunTimeProject mProject;
     // The Config Data
-    final ConfigElement mConfig;
+    final PluginConfig mConfig;
 
     ////////////////////////////////////////////////////////////////////////////
-    public static synchronized TestPlugin getInstance(
+    public static synchronized DefaultSystemPlugin getInstance(
             final RunTimeProject project,
             final PluginConfig config) {
         if (sInstance == null) {
-            sInstance = new TestPlugin(project, config);
+            sInstance = new DefaultSystemPlugin(project, config);
         }
         // Return The Singelton Instance
         return sInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    private TestPlugin(
+    private DefaultSystemPlugin(
             final RunTimeProject project,
             final PluginConfig config) {
-        //
+        // Initialize the plugin members
         mProject = project;
         mConfig = config;
-        // Print Some Information
-        mLogger.message("Creating Plugin '" + this
-                + "' With Project '" + mProject.toString()
-                + "' And Config\n" + mConfig.toString());
     }
 
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void launch() {
+    public boolean launch() {
         // Print Some Information
         mLogger.message("Launching Plugin '" + this + "'");
+        // Return true at success
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void unload() {
+    public boolean unload() {
         // Print Some Information
         mLogger.message("Unloading Plugin '" + this + "'");
+        // Return true at success
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////

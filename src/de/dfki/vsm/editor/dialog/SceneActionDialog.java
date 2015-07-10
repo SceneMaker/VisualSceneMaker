@@ -7,7 +7,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -326,7 +326,7 @@ public class SceneActionDialog extends JDialog {
     }
 
     private void saveActions() {
-        ActiconConfig            asd  = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
+        ActiconConfig            asd  = EditorInstance.getInstance().getProjectEditor().getEditorProject().getActicon();
         ArrayList<ActionFeature> args = new ArrayList<ActionFeature>();
 
         for (Object o : mListModel.toArray()) {

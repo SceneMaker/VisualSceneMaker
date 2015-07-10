@@ -1,14 +1,15 @@
 package de.dfki.vsm;
 
-import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.runtime.RunTimeInstance;
+import de.dfki.vsm.editor.instance.EditorInstance;
+import de.dfki.vsm.runtime.instance.RunTimeInstance;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.SwingUtilities;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class SceneMaker3 {
 
@@ -30,44 +31,44 @@ public class SceneMaker3 {
                     if (mode.equals("runtime")) {
                         // In runtime mode we need a project file
                         if (args.length == 2) {
-                            // Get project file name agrument
+                            // Get the project file name agrument
                             final String name = args[1];
                             // Create the project configuration 
                             final File file = new File(name);
                             if (file.exists()) {
-                                startRunTime(file);
+                                runtime(file);
                             } else {
-                                fileError(file);
+                                error(file);
                             }
                         } else {
-                            usageError();
+                            usage();
                         }
                     } else if (mode.equalsIgnoreCase("editor")) {
                         if (args.length == 2) {
-                            // Get project file name agrument
+                            // Get the project file name agrument
                             final String name = args[1];
                             // Create the project configuration 
                             final File file = new File(name);
                             if (file.exists()) {
-                                startEditor(file);
+                                editor(file);
                             } else {
-                                fileError(file);
+                                error(file);
                             }
                         } else {
-                            usageError();
+                            usage();
                         }
                     } else {
-                        usageError();
+                        usage();
                     }
                 } else {
-                    startEditor();
+                    editor();
                 }
             }
         });
     }
 
     // Start the editor without a project
-    private static void startEditor() {
+    private static void editor() {
         // Get the singelton editor instance
         final EditorInstance sEditor = EditorInstance.getInstance();
         // Show the singelton editor instance
@@ -75,7 +76,7 @@ public class SceneMaker3 {
     }
 
     // Start the editor with some project
-    private static void startEditor(final File file) {
+    private static void editor(final File file) {
         // Get the singelton editor instance
         final EditorInstance sEditor = EditorInstance.getInstance();
         // Get an editor project from file 
@@ -85,24 +86,44 @@ public class SceneMaker3 {
     }
 
     // Start the runtime with some project
-    private static void startRunTime(final File file) {
+    private static void runtime(final File file) {
         // Get an editor project from file 
         final RunTimeProject data = new RunTimeProject(file);
         // Get the singelton runtime instance
         final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
         // Launch the runtime with the project
-        sRunTime.launch(data);
-        // Unload the project from the runtime  
-        sRunTime.unload(data);
+        if (sRunTime.launch(data)) {
+            // Start the runtime with the project
+            if (sRunTime.start(data)) {
+                // Wait until user aborts execution
+                System.err.println("Press Key To Abort ...");
+                // TODO: Stop waiting if execution
+                // has been aborted in another way
+                try {
+                    final int in = System.in.read();
+                    if (in != -1) {
+                        // Aborting the execution now
+                    }
+                } catch (final IOException exc) {
+                    // Do nothing
+                } finally {
+                    // Abort the runtime with the project
+                    sRunTime.abort(data);
+                    // Unload the project from the runtime  
+                    sRunTime.unload(data);
+                }
+
+            }
+        }
     }
 
-    // Print usage when usage error happened
-    private static void usageError() {
+// Print usage when usage error happened
+    private static void usage() {
         sLogger.failure("Error: Usage: [runtime|editor] [filename]");
     }
 
     // Print error when a file error happened
-    private static void fileError(final File file) {
+    private static void error(final File file) {
         sLogger.failure("Error: Cannot find file '" + file.getAbsolutePath() + "'");
     }
 }

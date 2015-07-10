@@ -1,12 +1,14 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.SceneActionDialog;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonAgent;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -52,7 +54,7 @@ import javax.swing.tree.TreeSelectionModel;
 public class SceneElementDisplay extends JScrollPane implements Observer, EventListener {
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventCaster mEventMulticaster = EventCaster.getInstance();
+    private final EventDispatcher mEventMulticaster = EventDispatcher.getInstance();
     private final SceneElementTree mGesticonTree = new SceneElementTree();
     private final Observable mObservable = new Observable();
 
@@ -128,7 +130,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
     //
     private final Observable mObservable = new Observable();
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventCaster mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
 //  mActionDefinitionsEntry
 //  private final Entry mTemplatesEntry = new Entry("Templates", null, null);
@@ -261,7 +263,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
                 SceneActionDialog.getInstance().setVisible(true);
                 node.removeFromParent();
 
-                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getProjectEditor().getEditorProject().getActicon();
 
                 asd.remove(a);
             }
@@ -276,7 +278,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
 
                 node.removeFromParent();
 
-                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getProjectEditor().getEditorProject().getActicon();
 
                 asd.remove(aToDel);
                 // TODO: Why do we save the acticon here, that is bullshit

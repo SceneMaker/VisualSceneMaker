@@ -1,13 +1,14 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
-import de.dfki.vsm.editor.script.ScriptEditorPanel;
+import de.dfki.vsm.editor.script.SceneScriptEditor;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -66,11 +67,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     //
     private final Observable mObservable = new Observable();
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventCaster mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     //
     private final SceneFlow mSceneFlow;
-    private final EditorProject mProject;
+    private final EditorProject mEditorProject;
 
     // TODO: remove sceneflow manager
     private final SceneFlowManager mSceneFlowManager;
@@ -78,18 +79,18 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     // GUI-Components
     private final SceneFlowToolBar mToolBar;
     private final WorkSpace mWorkSpace;
-    private final ProjectToolBar mProjectToolBar;
+    private final ProjectToolPanel mProjectToolBar;
     private final ElementDisplay mElementDisplay;
     private final JPanel mNewElementDisplay;
     private final ElementEditor mElementEditor;
     private final JLabel mFooterLabel;
     private final JSplitPane mSplitPane;
-    private final ScriptEditorPanel mScriptEditorPanel;
+    //private final SceneScriptEditor mSceneScriptEditor;
 
-    public SceneFlowEditor(final EditorProject project, ScriptEditorPanel scriptEditor) {
-        mProject = project;
-        mSceneFlow = mProject.getSceneFlow();
-        mScriptEditorPanel = scriptEditor;
+    public SceneFlowEditor(final EditorProject project/*, final SceneScriptEditor scriptEditor*/) {
+        mEditorProject = project;
+        //mSceneScriptEditor = scriptEditor;
+        mSceneFlow = mEditorProject.getSceneFlow();
 
         final Polygon pUp = new Polygon();
 
@@ -138,7 +139,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mUndoManager = new UndoManager();
         mSceneFlowManager = new SceneFlowManager(mSceneFlow);
         // The center component is the workspace
-        mWorkSpace = new WorkSpace(this, mProject);
+        mWorkSpace = new WorkSpace(this, mEditorProject);
         mWorkSpace.setTransferHandler(new SceneFlowImage());
         JScrollPane mWorkSpaceScrollPane = new JScrollPane(mWorkSpace);
         mWorkSpaceScrollPane.setBorder(BorderFactory.createEtchedBorder());
@@ -148,10 +149,10 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 //      JScrollPane wssp = new JScrollPane(w);
         // The west component is the workbar
         mFooterLabel = new JLabel();
-        mElementDisplay = new ElementDisplay(mSceneFlow, mProject, mScriptEditorPanel);
-        mProjectToolBar = new ProjectToolBar();
+        mElementDisplay = new ElementDisplay(mSceneFlow, mEditorProject/*, mSceneScriptEditor*/);
+        mProjectToolBar = new ProjectToolPanel();
         mElementEditor = new ElementEditor();
-        mToolBar = new SceneFlowToolBar(this, mProject);
+        mToolBar = new SceneFlowToolBar(this, mEditorProject);
         mToolBar.addPathComponent(mSceneFlow);
         //
         mObservable.addObserver(mToolBar);
@@ -200,7 +201,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
                 // solve issue here
                 if (Preferences.getProperty("showelementproperties").equals("true")) {
-                    mProject.getEditorConfig().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
+                    mEditorProject.getEditorConfig().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
                     //mProject.getEditorConfig().save(/*mScriptEditorPanel.getPreferencesFileName()*/);
 //                    Preferences.save();
                 }
@@ -209,7 +210,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
 
         if (Preferences.getProperty("showelementproperties").equals("true")) {
 
-            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getEditorConfig().getProperty("propertiesdividerlocation")));
+            mSplitPane.setDividerLocation(Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
         } else {
             mSplitPane.setDividerLocation(1d);
         }
@@ -255,7 +256,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             mElementEditor.setVisible(true);
             Preferences.setProperty("showelementproperties", "true");
             Preferences.save();
-            mSplitPane.setDividerLocation(Integer.parseInt(mProject.getEditorConfig().getProperty("propertiesdividerlocation")));
+            mSplitPane.setDividerLocation(Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
         }
     }
 

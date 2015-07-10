@@ -1,11 +1,11 @@
-package de.dfki.vsm.editor;
+package de.dfki.vsm.editor.project;
 
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.io.File;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class EditorProject extends RunTimeProject {
 
@@ -27,7 +27,14 @@ public class EditorProject extends RunTimeProject {
 
     // Load the editor project
     @Override
-    public final boolean load(final File file) {
+    public final boolean parse(final File file) {
+        // Check if the file is null
+        if (file == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot parse editor project from a bad file");
+            // Return false at error
+            return false;
+        }
         // Get the absolute file 
         final File base = file.getAbsoluteFile();
         // Check if file exists
@@ -40,12 +47,19 @@ public class EditorProject extends RunTimeProject {
         // First set the project file 
         mProjectFile = base;
         // And then load the project
-        return load();
+        return parse();
     }
 
     // Save the editor project
     @Override
-    public final boolean save(final File file) {
+    public final boolean write(final File file) {
+        // Check if the file is null
+        if (file == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot write editor project into a bad file");
+            // Return false at error
+            return false;
+        }
         // Get the absolute file 
         final File base = file.getAbsoluteFile();
         // Check if file exists
@@ -58,17 +72,20 @@ public class EditorProject extends RunTimeProject {
         // First set the project file 
         mProjectFile = base;
         // And then save the project
-        return save();
+        return write();
     }
 
     // Load the project data
-    public final boolean load() {
+    public final boolean parse() {
         // Check the project file
         if (mProjectFile == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot parse editor project from a bad file");
+            // Return false at error
             return false;
         }
         // Load the project data
-        if (super.load(mProjectFile)
+        if (super.parse(mProjectFile)
                 && mEditorConfig.load(mProjectFile)) {
             // Set the initial hash code
             mInitialHash = getHashCode();
@@ -81,13 +98,16 @@ public class EditorProject extends RunTimeProject {
     }
 
     // Save the project data
-    public final boolean save() {
+    public final boolean write() {
         // Check the project file
         if (mProjectFile == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot write editor project into a bad file");
+            // Return false at error
             return false;
         }
         // Save the project data
-        if (super.save(mProjectFile)
+        if (super.write(mProjectFile)
                 && mEditorConfig.save(mProjectFile)) {
             // Reset the initial hash code here
             mInitialHash = getHashCode();
@@ -99,20 +119,23 @@ public class EditorProject extends RunTimeProject {
         }
     }
 
+    // Get the project base directory
     public final File getProjectFile() {
         return mProjectFile.getAbsoluteFile();
     }
 
+    // Set the project base directory
     public final void setProjectFile(final File file) {
         mProjectFile = file.getAbsoluteFile();
     }
 
-    public final String getProjectPath() {
-        return mProjectFile.getAbsolutePath();
-    }
-
+    // Get the editor configuration
     public final EditorConfig getEditorConfig() {
         return mEditorConfig;
+    }
+
+    public final String getProjectPath() {
+        return mProjectFile.getAbsolutePath();
     }
 
     // Check if the hash code has changed

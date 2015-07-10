@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class ProjectConfig implements ModelObject {
 
@@ -31,7 +31,7 @@ public final class ProjectConfig implements ModelObject {
     // Construct an empty project
     public ProjectConfig() {
         // Initialize The Project Name
-        mProjectName = null;
+        mProjectName = new String();
         // Initialize The Plugin List
         mPluginList = new ArrayList<>();
         // Initialize The Player List
@@ -65,26 +65,54 @@ public final class ProjectConfig implements ModelObject {
         mProjectName = name;
     }
 
+    public final AgentConfig getAgentConfig(final String name) {
+        for (final AgentConfig config : mAgentList) {
+            if (config.getAgentName().equals(name)) {
+                return config;
+            }
+        }
+        return null;
+    }
+
+    public final PluginConfig getPluginConfig(final String name) {
+        for (final PluginConfig config : mPluginList) {
+            if (config.getPluginName().equals(name)) {
+                return config;
+            }
+        }
+        return null;
+    }
+
+    public final PlayerConfig getPlayerConfig(final String name) {
+        for (final PlayerConfig config : mPlayerList) {
+            if (config.getPlayerName().equals(name)) {
+                return config;
+            }
+        }
+        return null;
+    }
+
     // Get the list of agent configurations
-    public final ArrayList<AgentConfig> getAgentList() {
+    public final ArrayList<AgentConfig> getAgentConfigList() {
         return mAgentList;
     }
 
     // Get the list of player configurations
-    public ArrayList<PlayerConfig> getPlayerList() {
+    public ArrayList<PlayerConfig> getPlayerConfigList() {
         return mPlayerList;
     }
 
     // Get the list of plugin configurations
-    public ArrayList<PluginConfig> getPluginList() {
+    public ArrayList<PluginConfig> getPluginConfigList() {
         return mPluginList;
     }
 
-    // Write the project coonfiguration as XML
+    // Write the project configuration as XML
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<Project name=\"" + mProjectName + "\">");
         stream.push();
+
         // Write The Plugins As XML
         stream.println("<Plugins>").push();
         for (final PluginConfig plugin : mPluginList) {
@@ -92,6 +120,7 @@ public final class ProjectConfig implements ModelObject {
             stream.endl();
         }
         stream.pop().println("</Plugins>");
+
         // Write The Players As XML
         stream.println("<Players>").push();
         for (final PlayerConfig player : mPlayerList) {
@@ -99,6 +128,7 @@ public final class ProjectConfig implements ModelObject {
             stream.endl();
         }
         stream.pop().println("</Players>");
+
         // Write The Agents As XML
         stream.println("<Agents>").push();
         for (final AgentConfig agent : mAgentList) {
@@ -168,17 +198,17 @@ public final class ProjectConfig implements ModelObject {
         }
     }
 
-    // Get the string representation of the configuration
+    // Get the string representation 
     @Override
     public final String toString() {
-        // Create a new byte array buffer stream
+        // Create a new byte array stream buffer
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        // Try to write the project into the stream
+        // Try to write the project to the stream
         XMLUtilities.writeToXMLStream(this, buffer);
         // Return the stream string representation
         try {
             return buffer.toString("UTF-8");
-        } catch (Exception exc) {
+        } catch (final Exception exc) {
             return buffer.toString();
         }
     }

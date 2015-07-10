@@ -2,7 +2,11 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.editor.Comment;
+import de.dfki.vsm.editor.Edge;
+import de.dfki.vsm.editor.Node;
+import de.dfki.vsm.editor.ToolBarItem;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -36,7 +40,7 @@ import javax.swing.ToolTipManager;
  *
  *
  */
-public class ProjectToolBar extends JPanel implements Observer, EventListener, ActionListener {
+public class ProjectToolPanel extends JPanel implements Observer, EventListener, ActionListener {
     private final ToolBarItem mSuperNodeEntry = new ToolBarItem("Super Node", "Holds Sub-Scences flow",
                                                     "SUPERNODE_ENTRY", Node.Type.SuperNode);
     private final ToolBarItem mBasicNodeEntry = new ToolBarItem("Basic Node", "Holds Scenes Actions",
@@ -58,7 +62,7 @@ public class ProjectToolBar extends JPanel implements Observer, EventListener, A
 
     //
     private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher      mEventCaster = EventDispatcher.getInstance();
 
     // Drag & Drop support
     private DragSource          mDragSource;
@@ -73,7 +77,7 @@ public class ProjectToolBar extends JPanel implements Observer, EventListener, A
      *
      *
      */
-    public ProjectToolBar() {
+    public ProjectToolPanel() {
 
         // super(new DefaultTreeModel(null));
         //

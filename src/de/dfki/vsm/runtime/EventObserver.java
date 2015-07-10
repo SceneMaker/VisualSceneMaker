@@ -7,7 +7,7 @@ import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.runtime.error.RunTimeException;
 import de.dfki.vsm.runtime.event.AbortEvent;
 import de.dfki.vsm.runtime.value.BooleanValue;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 public class EventObserver {
@@ -34,8 +34,8 @@ public class EventObserver {
                         }
                     } catch (RunTimeException e) {
                         LOGDefaultLogger.getInstance().warning("detecting abort in observer");
-                        EventCaster.getInstance().convey(new AbortEvent(this, e));
-                        mInterpreter.stop();
+                        EventDispatcher.getInstance().convey(new AbortEvent(this, e));
+                        mInterpreter.abort();
                         LOGDefaultLogger.getInstance().warning("returnning from observer after runtimeexception");
 
                         return;
@@ -50,8 +50,8 @@ public class EventObserver {
                                                     + "' could not be evaluated to a boolean value.";
                         RunTimeException exception = new RunTimeException(this, errorMsg);
 
-                        EventCaster.getInstance().convey(new AbortEvent(this, exception));
-                        mInterpreter.stop();
+                        EventDispatcher.getInstance().convey(new AbortEvent(this, exception));
+                        mInterpreter.abort();
 
                         return;
                     }

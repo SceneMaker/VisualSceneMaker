@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.action.ModifyEdgeAction;
 import de.dfki.vsm.editor.event.EdgeEditEvent;
 import de.dfki.vsm.editor.event.EdgeExecutedEvent;
@@ -18,7 +19,7 @@ import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -112,7 +113,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     // Activity monitor
     private VisualisationTask      mVisualisationTask = null;
     private final LOGDefaultLogger mLogger            = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventMulticaster  = EventCaster.getInstance();
+    private final EventDispatcher      mEventMulticaster  = EventDispatcher.getInstance();
 
     // edit panel
     private JPanel    mTextPanel   = null;
@@ -466,14 +467,14 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 NodeSelectedEvent evt = new NodeSelectedEvent(mWorkSpace,
                                             mWorkSpace.getSceneFlowManager().getCurrentActiveSuperNode());
 
-                EventCaster.getInstance().convey(evt);
+                EventDispatcher.getInstance().convey(evt);
                 updateFromTextEditor();
                 
                  if(!validate(mValueEditor.getText())){
-                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
-                       EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                    EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
+                       EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Invalid Condition");
-                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
+                    EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
                     // wrong condition
                 }
                 else{
@@ -518,7 +519,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((CEdge) mDataEdge).setCondition(log);
                 } else {
-                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                    EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Remember to wrap condition in parenthesis");
                     // Do nothing
                 }
@@ -558,7 +559,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         //////////!!!!!!!!!!!!!!!!!!!!
         // PG: 25.2.11 DISABELD: System.err.println("Sending node selected event");
-        EventCaster.getInstance().convey(new EdgeSelectedEvent(this, this.getDataEdge()));
+        EventDispatcher.getInstance().convey(new EdgeSelectedEvent(this, this.getDataEdge()));
         mIsSelected = true;
 
         if (mEg.controlPoint1HandlerContainsPoint(event.getPoint(), 10)) {
@@ -624,7 +625,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
              
                 mValueEditor.requestFocus();
                 mEditMode = true;
-                EventCaster.getInstance().convey(new EdgeEditEvent(this, this.getDataEdge()));
+                EventDispatcher.getInstance().convey(new EdgeEditEvent(this, this.getDataEdge()));
                 add(mTextPanel);
                 
                 mValueEditor.setText(mValueEditor.getText()); // hack to make mValueEditor visible

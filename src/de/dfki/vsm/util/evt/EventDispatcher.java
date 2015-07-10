@@ -1,11 +1,9 @@
- package de.dfki.vsm.util.evt;
+package de.dfki.vsm.util.evt;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -13,10 +11,10 @@ import java.util.TimerTask;
 /**
  * @author Not me
  */
-public class EventCaster {
+public class EventDispatcher {
 
     // The Singelton Instance
-    private static EventCaster sInstance = null;
+    private static EventDispatcher sInstance = null;
 
     // The Logger Instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -28,12 +26,13 @@ public class EventCaster {
     private final Timer mTimer = new Timer("EventCasterTimer");
 
     // Construct The Instance
-    private EventCaster() {}
+    private EventDispatcher() {
+    }
 
     // Get The Singelton Instance
-    public final static synchronized EventCaster getInstance() {
+    public final static synchronized EventDispatcher getInstance() {
         if (sInstance == null) {
-            sInstance = new EventCaster();
+            sInstance = new EventDispatcher();
         }
 
         return sInstance;

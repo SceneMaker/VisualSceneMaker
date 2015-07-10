@@ -1,10 +1,9 @@
-package de.dfki.vsm.runtime.player.defaults;
+package de.dfki.vsm.players;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
-import de.dfki.vsm.model.config.ConfigElement;
+import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.scenescript.AbstractWord;
 import de.dfki.vsm.model.scenescript.ActionObject;
@@ -22,42 +21,74 @@ import de.dfki.vsm.runtime.value.AbstractValue;
 import de.dfki.vsm.runtime.value.AbstractValue.Type;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.runtime.value.StructValue;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
-public class DefaultScenePlayer implements Player {
+public final class DefaultScenePlayer implements Player {
 
-    // The Logger Instance
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    // The singelton player instance
+    public static DefaultScenePlayer sInstance = null;
+    // The singelton logger instance
+    private final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
+    // The player's runtime project 
+    final RunTimeProject mProject;
+    // The player's configuration
+    final PlayerConfig mConfig;
+    // The delay for a single letter
+    final long mLetterDelay = 10;
 
-    // The Current Project
-    private final RunTimeProject mProject;
-
-    // Construct A Default Player
-    public DefaultScenePlayer(final RunTimeProject project) {
+    // Construct the default scene player
+    private DefaultScenePlayer(
+            final RunTimeProject project,
+            final PlayerConfig config) {
+        // Initialize the player members
         mProject = project;
+        mConfig = config;
+        // Initialize the letter delay
+        
     }
 
-    // Launch The Default Player
+    // Get the default scene player instance
+    public static synchronized DefaultScenePlayer getInstance(
+            final RunTimeProject project,
+            final PlayerConfig config) {
+        if (sInstance == null) {
+            sInstance = new DefaultScenePlayer(project, config);
+        }
+        return sInstance;
+    }
+
+    // Launch the default scene player
     @Override
-    public final void launch() {
+    public final boolean launch() {
+        // Print some information
+        mLogger.message("Launching the default scene player '" + this + "'");
+        // Return true at success
+        return true;
     }
 
-    // Unload The Default Player
+    // Unload the default scene player
     @Override
-    public final void unload() {
+    public final boolean unload() {
+        // Print some information
+        mLogger.message("Unloading the default scene player '" + this + "'");
+        // Return true at success
+        return true;
     }
 
+    // Play some scene with the player
     @Override
     public final void play(final String name, final LinkedList<AbstractValue> args) {
+        // Print some information
+        mLogger.message("Playing '" + name + "' with the default scene player '" + this + "'");
+        //
         final Process process = ((Process) java.lang.Thread.currentThread());
         final HashMap<String, String> mSceneParamMap = new HashMap<String, String>();
 
@@ -97,14 +128,14 @@ public class DefaultScenePlayer implements Player {
 
                 // Scene Visualization
                 mLogger.message("Executing scene:\r\n" + scene.getText());
-                EventCaster.getInstance().convey(new SceneExecutedEvent(this, scene));
+                EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
 
                 // Process The Turns
                 for (SceneTurn turn : scene.getTurnList()) {
 
                     // Turn Visualization
                     mLogger.message("Executing turn:" + turn.getText());
-                    EventCaster.getInstance().convey(new TurnExecutedEvent(this, turn));
+                    EventDispatcher.getInstance().convey(new TurnExecutedEvent(this, turn));
 
                     // Get The Turn Speaker
                     final String speaker = turn.getSpeaker();
@@ -122,7 +153,7 @@ public class DefaultScenePlayer implements Player {
 
                         // Utterance Visualization
                         mLogger.message("Executing utterance:" + utt.getText());
-                        EventCaster.getInstance().convey(new UtteranceExecutedEvent(this, utt));
+                        EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
                         // Process the words of this utterance
                         for (AbstractWord word : utt.getWordList()) {

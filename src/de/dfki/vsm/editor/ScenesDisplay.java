@@ -2,10 +2,11 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import static de.dfki.vsm.editor.util.Preferences.sHIGHLIGHT_COLOR;
@@ -227,7 +228,7 @@ public class ScenesDisplay extends JPanel implements Observer {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            EventCaster.getInstance().convey(new SceneSelectedEvent(this, mSceneGroup));
+            EventDispatcher.getInstance().convey(new SceneSelectedEvent(this, mSceneGroup));
         }
 
         @Override

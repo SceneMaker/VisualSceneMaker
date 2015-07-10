@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
@@ -8,11 +9,10 @@ import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -50,7 +50,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 public class FunctionEditor extends JPanel implements EventListener, Observer {
 
     private final Observable mObservable = new Observable();
-    private final EventCaster mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     private JSplitPane mSplitPane;
     private JScrollPane mFunctionsScrollPanel;
     private JPanel mFunctionsPanel;
@@ -72,7 +72,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         initComponents();
 
         // Add the element editor to the event multicaster
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     /**
@@ -410,7 +410,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         updateArguments(usrCmdDef);
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
         EditorInstance.getInstance().update();
-        EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
+        EventDispatcher.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
     }
 
     /**

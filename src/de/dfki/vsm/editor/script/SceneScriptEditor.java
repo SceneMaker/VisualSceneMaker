@@ -2,10 +2,10 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.AddButton;
-import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.EditorProject;
+import de.dfki.vsm.editor.instance.EditorInstance;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.FunctionEditor;
-import de.dfki.vsm.editor.ProjectEditor;
+import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
@@ -13,7 +13,7 @@ import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -56,13 +56,13 @@ import javax.swing.text.JTextComponent;
 /**
  * @author
  */
-public final class ScriptEditorPanel extends JPanel implements DocumentListener, EventListener, Observer {
+public final class SceneScriptEditor extends JPanel implements DocumentListener, EventListener, Observer {
 
     // The System Logger
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Event Caster
-    private final EventCaster mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     // The Observable Part
     private final Observable mObservable = new Observable();
@@ -101,7 +101,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ScriptEditorPanel(final EditorProject project) {
+    public SceneScriptEditor(final EditorProject project) {
         // Initialize the editor project
         mProject = project;
         // Initialize the scene script
