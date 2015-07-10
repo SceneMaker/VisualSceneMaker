@@ -241,7 +241,7 @@ public class SceneFlow extends SuperNode {
         out.print("<InitContext>");
         out.print(mContextCode);
         out.println("</InitContext>");
-        out.pop().println("</SceneFlow>");
+        out.pop().print("</SceneFlow>");
     }
 
     /*

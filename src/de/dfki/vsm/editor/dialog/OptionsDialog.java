@@ -2,9 +2,9 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.EditorProject;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -313,7 +313,7 @@ public class OptionsDialog extends JDialog {
         });
 
         EditorConfig preferences =
-            mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+            mEditor.getProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         // Node size stuff
         mNodeSizeLabel            = new JLabel("Node Size:");
@@ -424,7 +424,7 @@ public class OptionsDialog extends JDialog {
 
     private void initScriptPanel() {
         EditorConfig preferences =
-            mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+            mEditor.getProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         mScriptFontTypeLabel = new JLabel("Font Type:");
 
@@ -585,8 +585,8 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initPreferences() {
-        mProject     = mEditor.getSelectedProjectEditor().getEditorProject();
-        mPreferences = mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+        mProject     = mEditor.getProjectEditor().getEditorProject();
+        mPreferences = mEditor.getProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
         ((DefaultListModel) mRecentFileList.getModel()).clear();
 
 //      ((DefaultComboBoxModel) mScenePlayerComboBox.getModel()).removeAllElements();

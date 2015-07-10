@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.Dialog.Button;
@@ -231,7 +231,7 @@ public class ModifyIEdgeDialog extends Dialog {
         }
         else{
             mInputTextField.setForeground(Color.red);
-            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
         }
     }
 

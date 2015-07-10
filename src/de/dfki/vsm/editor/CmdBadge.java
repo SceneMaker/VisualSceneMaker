@@ -8,7 +8,7 @@ import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.TextFormat;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -49,7 +49,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     //
     private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher      mEventCaster = EventDispatcher.getInstance();
 
     // edit
     private boolean      mEditMode = false;

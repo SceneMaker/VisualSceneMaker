@@ -2,6 +2,8 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.DialogActSelectedEvent;
@@ -10,7 +12,7 @@ import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.script.ScriptEditorPanel;
+import de.dfki.vsm.editor.script.SceneScriptEditor;
 import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
@@ -18,7 +20,7 @@ import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.runtime.dialogact.DialogActInterface;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -71,13 +73,13 @@ import javax.swing.tree.TreeSelectionModel;
 public class ElementDisplay extends JScrollPane implements Observer, EventListener {
     private final Observable        mObservable       = new Observable();
     private final LOGDefaultLogger  mLogger           = LOGDefaultLogger.getInstance();
-    private final EventCaster       mEventMulticaster = EventCaster.getInstance();
+    private final EventDispatcher       mEventMulticaster = EventDispatcher.getInstance();
     private final ElementTree       mElementTree;
-    private final ScriptEditorPanel mScriptEditor;
+    //private final SceneScriptEditor mSceneScriptEditor;
 
-    public ElementDisplay(SceneFlow sceneFlow, EditorProject project, ScriptEditorPanel scriptEditor) {
-        mScriptEditor = scriptEditor;
-        mElementTree  = new ElementTree(sceneFlow, project, mScriptEditor);
+    public ElementDisplay(SceneFlow sceneFlow, EditorProject project/*, SceneScriptEditor scriptEditor*/) {
+       // mSceneScriptEditor = scriptEditor;
+        mElementTree  = new ElementTree(sceneFlow, project/*, mSceneScriptEditor*/);
         mObservable.addObserver(mElementTree);
 
         //
@@ -195,12 +197,12 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
     //
     private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher      mEventCaster = EventDispatcher.getInstance();
 
     // private final EventCaster mEventMulticaster = EventCaster.getInstance();
     // private final Observable mObservable = new Observable();
     private final SceneFlow         mSceneFlow;
-    private final ScriptEditorPanel mScriptEditorPanel;
+    //private final SceneScriptEditor mSceneScriptEditor;
 
     // Drag & Drop support
     private DragSource               mDragSource;
@@ -214,12 +216,12 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    public ElementTree(SceneFlow sceneFlow, EditorProject project, ScriptEditorPanel scriptEditor) {
+    public ElementTree(SceneFlow sceneFlow, EditorProject project/*, SceneScriptEditor scriptEditor*/) {
         super(new DefaultTreeModel(null));
 
         //
         mSceneFlow         = sceneFlow;
-        mScriptEditorPanel = scriptEditor;
+        //mSceneScriptEditor = scriptEditor;
         mProject           = project;
         mDialogAct         = mProject.getDialogAct();
         setBorder(BorderFactory.createEmptyBorder());
@@ -295,7 +297,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             if (parentPath.getLastPathComponent().equals(mFunDefEntry)) {
                 //mScriptEditorPanel.getTabPane().setSelectedIndex(1);
                 // TODO: This is total bullshit cyclic dependencies and crossing the hiererchy
-                // Realize that with the update event mechanism (fuck!)
+                // Realize that with the update event mechanism!!!!!
                 //mScriptEditorPanel.getmParentPE().showSceneDocEditor();
 
                 FunDef selectedDef = (FunDef) ((TreeEntry) path.getLastPathComponent()).getData();
@@ -596,7 +598,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
                 FunctionModifiedEvent ev = new FunctionModifiedEvent(this, usrCmdDef);
 
-                EventCaster.getInstance().convey(ev);
+                EventDispatcher.getInstance().convey(ev);
             }
         }
     }

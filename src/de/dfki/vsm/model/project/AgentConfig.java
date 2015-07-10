@@ -25,8 +25,8 @@ public class AgentConfig extends ConfigElement {
         // Initialize The Config
         super("Agent", "Feature");
         // Initialize The Members
-        mAgentName = null;
-        mPlayerName = null;
+        mAgentName = new String();
+        mPlayerName = new String();
     }
 
     // Construct A New Agent
@@ -82,10 +82,10 @@ public class AgentConfig extends ConfigElement {
             mAgentName = element.getAttribute("name");
             mPlayerName = element.getAttribute("player");
             // Parse The Entries
-            XMLParseAction.processChildNodes(element, mFeatureType, new XMLParseAction() {
+            XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
                 @Override
                 public void run(final Element element) throws XMLParseError {
-                    final ConfigFeature entry = new ConfigFeature(mFeatureType);
+                    final ConfigFeature entry = new ConfigFeature(mFeatureName);
                     // Parse The New Entry Here
                     entry.parseXML(element);
                     // And Add It To The List

@@ -2,13 +2,13 @@ package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.EditorProject;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.event.DialogActSelectedEvent;
 import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.runtime.dialogact.DialogActInterface;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -93,7 +93,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         initComponents();
 
         // Add the element editor to the event multicaster
-        EventCaster.getInstance().append(this);
+        EventDispatcher.getInstance().append(this);
     }
 
     private void initComponents() {

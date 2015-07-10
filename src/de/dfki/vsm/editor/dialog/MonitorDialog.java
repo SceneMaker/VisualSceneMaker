@@ -3,8 +3,8 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.EditorProject;
+import de.dfki.vsm.editor.instance.EditorInstance;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -15,7 +15,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.RunTimeInstance;
+import de.dfki.vsm.runtime.instance.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -51,7 +51,7 @@ public class MonitorDialog extends JDialog {
 
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
-        mEditorProject = EditorInstance.getInstance().getProjectEditorList().getEditorProject();
+        mEditorProject = EditorInstance.getInstance().getProjectEditor().getEditorProject();
         initComponents();
         initVariableList();
     }

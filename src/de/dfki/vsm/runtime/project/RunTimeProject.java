@@ -4,36 +4,34 @@ import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.dialogact.DialogActInterface;
 import de.dfki.vsm.runtime.dialogact.DummyDialogAct;
-import de.dfki.vsm.runtime.player.defaults.DefaultDialogPlayer;
 import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.plugin.Plugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class RunTimeProject {
 
     // The singelton logger instance
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
+
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
     // The scenescript of the project
     private final SceneScript mSceneScript = new SceneScript();
-    // The default player configuration of the project 
-    private final PlayerConfig mPlayerConfig = new PlayerConfig();
     // The project configuration of the project
     private final ProjectConfig mProjectConfig = new ProjectConfig();
     // The acticon configuration of the project
@@ -42,37 +40,46 @@ public class RunTimeProject {
     private final VisiconConfig mVisiconConfig = new VisiconConfig();
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
-    // The plugins maintained in this object
+
+    // The plugins maintained within this project
     private final HashMap<String, Plugin> mPluginMap = new HashMap<>();
-    // The players maintained in this object
+    // The players maintained within this project
     private final HashMap<String, Player> mPlayerMap = new HashMap<>();
-    // The defaut dialog player of the project
-    private Player mDefaultDialogPlayer;
-    // The defaut scene player of the project
-    private Player mDefaultScenePlayer;
+
     // TODO:  Refactor The Dialog Act Stuff
-    private DialogActInterface mDialogueAct = new DummyDialogAct();
-    private String mDialogActClassName;
-    private String mDialogPlayerClassName;
+    // Maybe use a configuration file for that
+    private final DialogActInterface mDialogueAct = new DummyDialogAct();
 
-    // Construct an empty project
+    // Construct an empty runtime project
     public RunTimeProject() {
+        // Print some information
+        mLogger.warning("Creating a new empty runtime project");
     }
 
-    // Construct a project from a file
+    // Construct a project from a directory
     public RunTimeProject(final File file) {
-        // Call the local load method
-        load(file);
+        // Call the local parsing method
+        parse(file);
     }
 
-    // Get the name of the project from its configuration
+    // Get the name of the project's configuration
     public final String getProjectName() {
         return mProjectConfig.getProjectName();
     }
 
-    // Set the name of the project in its configuration
+    // Set the name in the project's configuration
     public final void setProjectName(final String name) {
         mProjectConfig.setProjectName(name);
+    }
+
+    // Get a specific player from the map of players
+    public final Player getPlayer(final String name) {
+        return mPlayerMap.get(name);
+    }
+
+    // Get a specific plugin from the map of plugins
+    public final Plugin getPlugin(final String name) {
+        return mPluginMap.get(name);
     }
 
     // Get the sceneflow of the project
@@ -100,73 +107,61 @@ public class RunTimeProject {
         return mGesticonConfig;
     }
 
-    // Get the default scene player of the project
-    public final Player getDefaultScenePlayer() {
-        return mDefaultScenePlayer;
-    }
-
-    // Get the default dialog player of the project
-    public final Player getDefaultDialogPlayer() {
-        return mDefaultDialogPlayer;
-    }
-
+    // TODO: refactor this
     // Get the default dialog act taxonomy of the project
     public final DialogActInterface getDialogAct() {
         return mDialogueAct;
     }
 
-    // Get a plugin of the project by name
-    public final Plugin getPlugin(final String name) {
-        return mPluginMap.get(name);
-    }
+    // Parse the project data from a directory
+    public boolean parse(final File file) {
+        // Check if the file is null
+        if (file == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot parse runtime project from a bad file");
+            // Return false at error
+            return false;
+        }
 
-    // Get a player of the project by name
-    public final Player getPlayer(final String name) {
-        return mPlayerMap.get(name);
-    }
-
-    public boolean load(final File file) {
         // Get the absolute file for this directory
         final File base = file.getAbsoluteFile();
         // Check if the project directory does exist
         if (!base.exists()) {
-            // Print an error message in this case
-            mLogger.failure("Error: Cannot find runtime project base directory '" + base + "'");
-            // Return failure if it does not exist
+            // Print an error message
+            mLogger.failure("Error: Cannot find runtime project directory '" + base + "'");
+            // Return false at error
+            return false;
+        }
+        // Parse the project from the base directory
+        return (parseProjectConfig(base)
+                && parseSceneFlow(base)
+                && parseSceneScript(base)
+                && parseActiconConfig(base)
+                && parseVisiconConfig(base)
+                && parseGesticonConfig(base));
+    }
+
+    // Write the project data to a directory
+    public boolean write(final File file) {
+        // Check if the file is null
+        if (file == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot write runtime project into a bad file");
+            // Return false at error
             return false;
         }
 
-        // Load the project from the configuration
-        return parseProjectConfig(base)
-                && parseSceneFlow(base)
-                && parseSceneScript(base)
-                && parsePlayerConfig(base)
-                && parseActiconConfig(base)
-                && parseVisiconConfig(base)
-                && parseGesticonConfig(base)
-                && loadDefaultScenePlayer();
-        // TODO: Move laoading player to runtime
-        /*       
-         loadPlayers();
-         loadPlugins();        
-         loadScenePlayer();
-         loadDialogPlayer();
-         loadDialogueAct();
-         */
-    }
-
-    public boolean save(final File file) {
         // Get the absolute file for the directory
         final File base = file.getAbsoluteFile();
-        // Check if the base directory does exist
+        // Check if the project directory does exist
         if (!base.exists()) {
             // Print a warning message in this case
-            mLogger.warning("Warning: Creating the new runtime project base directory '" + base + "'");
+            mLogger.warning("Warning: Creating a new runtime project directory '" + base + "'");
             // Try to create a project base directory
             if (!base.mkdir()) {
-                // Print an error message in this case
-                mLogger.failure("Failure: Cannot create the new runtime project base directory '" + base + "'");
-                // Return failure if it does not exist
+                // Print an error message
+                mLogger.failure("Failure: Cannot create a new runtime project directory '" + base + "'");
+                // Return false at error
                 return false;
             }
         }
@@ -174,23 +169,24 @@ public class RunTimeProject {
         return (writeProjectConfig(base)
                 && writeSceneFlow(base)
                 && writeSceneScript(base)
-                && writePlayerConfig(base)
                 && writeActiconConfig(base)
                 && writeVisiconConfig(base)
                 && writeGesticonConfig(base));
+    }
 
-        /*
-         saveProject();
-         savePlayers();
-         savePlugins();
-         saveActicon();
-         saveVisicon();
-         saveGesticon();
-         saveSceneFlow();
-         saveSceneScript();
-         // TODO: Clean
-         saveScenePlayer();
-         */
+    // Load the runtime objects of the project
+    public final boolean load() {
+        return (loadPlayers() && loadPlugins());
+    }
+
+    // Launch the runtime objects of the project
+    public final boolean launch() {
+        return (launchPlayers() && launchPlugins());
+    }
+
+    // Unload the runtime objects of the project
+    public final boolean unload() {
+        return (unloadPlayers() && unloadPlugins());
     }
 
     private boolean parseProjectConfig(final File base) {
@@ -539,392 +535,146 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean parsePlayerConfig(final File base) {
-        // Create the player configuration file
-        final File file = new File(base, "player.xml");
-        // Check if the configuration file does exist
-        if (!file.exists()) {
-            // Print an error message in this case
-            mLogger.failure("Error: Cannot find player configuration file '" + file + "'");
-            // Return failure if it does not exist
-            return false;
-        }
-        // Parse the player configuration file
-        if (!XMLUtilities.parseFromXMLFile(mPlayerConfig, file)) {
-            // Print an error message in this case
-            mLogger.failure("Error: Cannot parse player configuration file '" + file + "'");
-            // Return failure if it does not exist
-            return false;
-        }
-        // Print an information message in this case
-        mLogger.message("Loaded player configuration file '" + file + "':\n" + mPlayerConfig);
-        // Return success if the project was loaded
-        return true;
-    }
-
-    private boolean writePlayerConfig(final File base) {
-        // Create the player configuration file
-        final File file = new File(base, "player.xml");
-        // Check if the configuration file does exist
-        if (!file.exists()) {
-            // Print a warning message in this case
-            mLogger.warning("Warning: Creating the new player configuration file '" + file + "'");
-            // Create a new configuration file now
+    // Load the plugins of the project
+    private boolean loadPlugins() {
+        for (final PluginConfig config : mProjectConfig.getPluginConfigList()) {
+            // Get the class and plugin name
+            final String className = config.getClassName();
+            final String pluginName = config.getPluginName();
             try {
-                // Try to create a new configuration file
-                if (!file.createNewFile()) {
-                    // Print an error message in this case
-                    mLogger.warning("Warning: There already exists a player configuration file '" + file + "'");
+                // Find the plugin class by name
+                final Class clazz = Class.forName(className);
+                // Get the initialization method
+                final Method method = clazz.getMethod("getInstance", RunTimeProject.class, PluginConfig.class);
+                // Call the initialization method
+                final Plugin plugin = (Plugin) method.invoke(null, this, config);
+                // Check if plugin has been created
+                if (plugin == null) {
+                    // Print an error message 
+                    mLogger.failure("Failure: Cannot load plugin of class '" + className + "'");
+                    // Return false at error
+                    return false;
+                } else {
+                    // Set the default scene player then
+                    mPluginMap.put(pluginName, plugin);
+                    // Print an information message here
+                    mLogger.message("Loading plugin '" + plugin + "' with plugin config:\n" + config);
                 }
-            } catch (final IOException exc) {
-                // Print an error message in this case
-                mLogger.failure("Failure: Cannot create the new player configuration file '" + file + "'");
-                // Return failure if it does not exist
-                return false;
+            } catch (final Exception exc) {
+                // Print an error message
+                mLogger.failure("Failure: Cannot load plugin of class '" + className + "'");
+                // Print an error message
+                mLogger.failure(exc.toString());
             }
         }
-        // Write the player configuration file
-        if (!XMLUtilities.writeToXMLFile(mPlayerConfig, file)) {
-            // Print an error message in this case
-            mLogger.failure("Error: Cannot write player configuration file '" + file + "'");
-            // Return failure if it does not exist
-            return false;
-        }
-        // Print an information message in this case
-        mLogger.message("Saved player configuration file '" + file + "':\n" + mPlayerConfig);
-        // Return success if the project was saved
+        // Return true at success
         return true;
     }
 
-    private boolean loadDefaultScenePlayer() {
-        try {
-            // Find the scene player class by name
-            final Class clazz = Class.forName(mPlayerConfig.getClassName());
-            // Get the player initialization method
-            final Method method = clazz.getMethod("getInstance", RunTimeProject.class, PlayerConfig.class);
-            // Call the player initialization method
-            mDefaultScenePlayer = (Player) method.invoke(null, this, mPlayerConfig);
-            // Print an information message in this case
-            mLogger.message("Loading default scene player '" + mDefaultScenePlayer + "' with player config:\n" + mPlayerConfig);
-            // Return success if the player was loaded
-            return true;
-        } catch (Exception exc) {
-            // Print an error message in this case
-            mLogger.failure("Failure: Cannot initialize default scene player with class name '" + mPlayerConfig.getClassName() + "'");
-            /// Return failure if it does not exist
-            return false;
-        }
-    }
-
-    /*
-     ////////////////////////////////////////////////////////////////////////////
-     public final synchronized void loadProject() {
-     // Create The Project Config File
-     final File file = new File(mProjectFile, "project.xml");
-     // Check The Project Config File
-     if (file.exists()) {
-     // Parse The Project Config File
-     if (XMLUtilities.parseFromXMLFile(mProjectConfig, file)) {
-     // Print Some Information
-     mLogger.message("Success: Parsing Project Configuration '"
-     + file.getAbsolutePath() + "':\n" + mProjectConfig.toString());
-     // Get Project Data
-     mProjectName = mProjectConfig.getProperty("project.name");
-     mPluginsFileName = mProjectConfig.getProperty("project.plugins");
-     mPlayersFileName = mProjectConfig.getProperty("project.players");
-     mActiconFileName = mProjectConfig.getProperty("project.acticon");
-     mVisiconFileName = mProjectConfig.getProperty("project.visicon");
-     mGesticonFileName = mProjectConfig.getProperty("project.gesticon");
-     mSceneFlowFileName = mProjectConfig.getProperty("project.sceneflow");
-     mSceneScriptFileName = mProjectConfig.getProperty("project.scenescript");
-
-     // TODO: Clean
-     // Added condition for legacy support for project independent preferences
-     if (mProjectConfig.getProperty("project.preferences") == null) {
-     mPreferencesFileName = "preferences.xml";
-     } else {
-     mPreferencesFileName = mProjectConfig.getProperty("project.preferences");
-     }
-
-     // Read Player Propertiesy   // TODO: Clean
-     mScenePlayerClassName = mProjectConfig.getProperty("project.player.default.class");
-     mScenePlayerFileName = mProjectConfig.getProperty("project.player.default.config");
-     // Get Project ...   // TODO: Clean
-     mDialogActClassName = mProjectConfig.getProperty("project.dialogact.class");
-     mDialogPlayerClassName = mProjectConfig.getProperty("project.dialogact.player");
-     } else {
-     // Print Some Information
-     mLogger.warning("Failure: Cannot Parse Project Configuration '"
-     + file.getAbsolutePath() + "'");
-     }
-     } else {
-     // Print Some Information
-     mLogger.failure("Failure: Cannot Find Project Configuration '"
-     + file.getAbsolutePath() + "'");
-     }
-     } 
-
-     ////////////////////////////////////////////////////////////////////////////
-     ////////////////////////////////////////////////////////////////////////////
-     ////////////////////////////////////////////////////////////////////////////
-     public final synchronized void loadPlayers() {
-     // Check The Players Config File Name
-     if (mPlayersFileName != null) {
-     // Create The Players Config File
-     final File file = new File(mProjectFile, mPlayersFileName);
-     // Check The Players Config File
-     if (file.exists()) {
-     // Parse The Players Config File
-     if (XMLUtilities.parseFromXMLFile(mPlayersConfig, file)) {
-     // Print Some Information 
-     mLogger.message("Success: Parsing Players Configuration '"
-     + file.getAbsolutePath() + "':\n" + mPlayersConfig.toString());
-     // Get The Individual Players
-     for (final ConfigFeature entry : mPlayersConfig.getEntryList()) {
-     // Get Name And File
-     final String key = ((String) entry.getKey());
-     final String val = ((String) entry.getValue());
-     // Get The Config File
-     final File base = new File(val);
-     // Check The Config File
-     if (base.exists()) {
-     // Get Plugin Config File
-     final ConfigElement data = new ConfigElement("Player", "Feature");
-     // Parse The Config File
-     if (XMLUtilities.parseFromXMLFile(data, base)) {
-     // Print Some Information
-     mLogger.message("Success: Parsing Player Configuration '"
-     + base.getAbsolutePath() + "':\n" + data.toString());
-     // Get Plugin Class Name
-     final String name = data.getProperty("class");
-     // Check Plugin Class Name
-     if (name != null) {
-     // Try To Load Plugin
-     try {
-     // Find The Class
-     final Class clazz = Class.forName(name);
-     // Get The Method
-     final Method method = clazz.getMethod("getInstance", ProjectData.class, ConfigElement.class);
-     // Call The Method
-     final Player player = (Player) method.invoke(null, this, data);
-     // Add The Plugin
-     mPlayerMap.put(key, player);
-     // Print Some Information 
-     mLogger.message("Success: Registering Player Name '"
-     + key + "' With Player Object '" + player + "' And Config:\n" + data);
-     } catch (Exception exc) {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Initialize Player Of Class '" + name + "'");
-     // Print Some Information 
-     mLogger.failure(exc.toString());
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Find Player Classpath Attribute In \n"
-     + data.toString());
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Parse Player Configuration '"
-     + base.getAbsolutePath() + "'");
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Find Player Configuration '"
-     + base.getAbsolutePath() + "'");
-     }
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Parse Players Configuration '"
-     + file.getAbsolutePath() + "'");
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Find Players Configuration '"
-     + file.getAbsolutePath() + "'");
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Invalid Players Configuration Filename");
-     }
-     }
-
-  
-     ////////////////////////////////////////////////////////////////////////////
-     ////////////////////////////////////////////////////////////////////////////
-     ////////////////////////////////////////////////////////////////////////////
-     public final synchronized void loadPlugins() {
-     // Check The Plugins Config File Name
-     if (mPluginsFileName != null) {
-     // Create The Plugins Config File
-     final File file = new File(mProjectFile, mPluginsFileName);
-     // Check The Plugins Config File
-     if (file.exists()) {
-     // Parse The Plugins Config File
-     if (XMLUtilities.parseFromXMLFile(mPluginsConfig, file)) {
-     // Print Some Information 
-     mLogger.message("Success: Parsing Plugins Configuration '"
-     + file.getAbsolutePath() + "':\n" + mPluginsConfig.toString());
-     // Get The Individual Plugins
-     for (final ConfigFeature entry : mPluginsConfig.getEntryList()) {
-     // Get Name And File
-     final String key = ((String) entry.getKey());
-     final String val = ((String) entry.getValue());
-     // Get The Config File
-     final File base = new File(val);
-     // Check The Config File
-     if (base.exists()) {
-     // Get Plugin Config File
-     final ConfigElement data = new ConfigElement("Plugin", "Feature");
-     // Parse The Config File
-     if (XMLUtilities.parseFromXMLFile(data, base)) {
-     // Print Some Information
-     mLogger.message("Success: Parsing Plugin Configuration '"
-     + base.getAbsolutePath() + "':\n" + data.toString());
-     // Get Plugin Class Name
-     final String name = data.getProperty("class");
-     // Check Plugin Class Name
-     if (name != null) {
-     // Try To Load Plugin
-     try {
-     // Find The Class
-     final Class clazz = Class.forName(name);
-     // Get The Method
-     final Method method = clazz.getMethod("getInstance", ProjectData.class, ConfigElement.class);
-     // Call The Method
-     final Plugin plugin = (Plugin) method.invoke(null, this, data);
-     // Add The Plugin
-     mPluginMap.put(key, plugin);
-     // Print Some Information 
-     mLogger.message("Success: Registering Plugin Name '"
-     + key + "' With Plugin Object '" + plugin + "' And Config:\n" + data);
-     } catch (Exception exc) {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Initialize Plugin Of Class '" + name + "'");
-     // Print Some Information 
-     mLogger.failure(exc.toString());
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Find Plugin Classpath Attribute In \n"
-     + data.toString());
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Parse Plugin Configuration '"
-     + base.getAbsolutePath() + "'");
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Find Plugin Configuration '"
-     + base.getAbsolutePath() + "'");
-     }
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Parse Players Configuration '"
-     + file.getAbsolutePath() + "'");
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Cannot Find Players Configuration '"
-     + file.getAbsolutePath() + "'");
-     }
-     } else {
-     // Print Some Information 
-     mLogger.failure("Failure: Invalid Plugins Configuration Filename");
-     }
-     }
-
-     */
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void launchPlayerList() {
-        // Launch All Players
-        for (final Player player : mPlayerMap.values()) {
-            // Launch The Player
-            player.launch();
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void unloadPlayerList() {
-        // Unload All Players
-        for (final Player player : mPlayerMap.values()) {
-            // Unload The Player
-            player.unload();
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void launchPluginList() {
-        // Launch All Plugins
-        for (final Plugin plugin : mPluginMap.values()) {
-            // Launch The Plugin
-            plugin.launch();
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final synchronized void unloadPluginList() {
-        // Unload All Plugins
-        for (final Plugin plugin : mPluginMap.values()) {
-            // Unload The Plugin
-            plugin.unload();
-        }
-    }
-
-    public final synchronized void loadDialogueAct() {
-        if (mDialogActClassName != null) {
+    // Load the players of the project
+    private boolean loadPlayers() {
+        //
+        for (final PlayerConfig config : mProjectConfig.getPlayerConfigList()) {
+            // Get the class and plugin name
+            final String className = config.getClassName();
+            final String playerName = config.getPlayerName();
             try {
-                Class daClass = Class.forName(mDialogActClassName);
-
-                mDialogueAct = (DialogActInterface) daClass.getConstructor().newInstance();
-            } catch (Exception exc) {
-
-                // do nothing
+                // Find the plugin class by name
+                final Class clazz = Class.forName(className);
+                // Get the initialization method
+                final Method method = clazz.getMethod("getInstance", RunTimeProject.class, PlayerConfig.class);
+                // Call the initialization method
+                final Player player = (Player) method.invoke(null, this, config);
+                // Check if plugin has been created
+                if (player == null) {
+                    // Print an error message 
+                    mLogger.failure("Failure: Cannot load player of class '" + className + "'");
+                    // Return false at error
+                    return false;
+                } else {
+                    // Set the default scene player then
+                    mPlayerMap.put(playerName, player);
+                    // Print an information message here
+                    mLogger.message("Loading player '" + player + "' with plugin config:\n" + config);
+                }
+            } catch (final Exception exc) {
+                // Print an error message
+                mLogger.failure("Failure: Cannot load player of class '" + className + "'");
+                // Print an error message
+                mLogger.failure(exc.toString());
             }
-        } //else {
-
-        //}
-    }
-
-    public final synchronized void loadDialogPlayer() {
-        if (mDialogPlayerClassName != null) {
-            try {
-                Class daPlayerClass = Class.forName(mDialogPlayerClassName);
-
-                mDefaultDialogPlayer
-                        = (Player) daPlayerClass.getConstructor(RunTimeProject.class).newInstance(this);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
-                mDefaultDialogPlayer = new DefaultDialogPlayer(this);
-            }
-        } else {
-            mDefaultDialogPlayer = new DefaultDialogPlayer(this);
         }
-
-        mDefaultDialogPlayer.launch();
+        // Return true at success
+        return true;
     }
 
-    public final synchronized void launchScenePlayer() {
-        // Launch The Player
-        mDefaultScenePlayer.launch();
+    // Launch the players of the project
+    private boolean launchPlayers() {
+        // Initialize the result flag
+        boolean success = true;
+        // Try launching all the players
+        for (final Player player : mPlayerMap.values()) {
+            if (!player.launch()) {
+                success = false;
+            }
+        }
+        return success;
     }
 
-    public final synchronized void unloadScenePlayer() {
-        // Unload The Player
-        mDefaultScenePlayer.unload();
+    // Launch the plugins of the project
+    private boolean launchPlugins() {
+        // Initialize the result flag
+        boolean success = true;
+        // Try launching all the plugins
+        for (final Plugin plugin : mPluginMap.values()) {
+            if (!plugin.launch()) {
+                success = false;
+            }
+        }
+        return success;
     }
 
-    public synchronized int getHashCode() {
+    // Unload the players of the project
+    private boolean unloadPlayers() {
+        // Initialize the result flag
+        boolean success = true;
+        // Try unloading all the players
+        for (final Player player : mPlayerMap.values()) {
+            if (!player.unload()) {
+                success = false;
+            }
+        }
+        return success;
+    }
+
+    // Unload the plugins of the project
+    private boolean unloadPlugins() {
+        // Initialize the result flag
+        boolean success = true;
+        // Try unloading all the plugins
+        for (final Plugin plugin : mPluginMap.values()) {
+            if (!plugin.unload()) {
+                success = false;
+            }
+        }
+        return success;
+    }
+
+//        //%%
+//        if (mDialogActClassName != null) {
+//            try {
+//                Class daClass = Class.forName(mDialogActClassName);
+//
+//                mDialogueAct = (DialogActInterface) daClass.getConstructor().newInstance();
+//            } catch (Exception exc) {
+//
+//                // do nothing
+//            }
+//        } //else {
+//
+//        //}
+    // Get the hash code of the project
+    protected synchronized int getHashCode() {
         int hashCode = ((mSceneFlow == null)
                 ? 0
                 : mSceneFlow.getHashCode());
@@ -934,5 +684,4 @@ public class RunTimeProject {
         // Other Project Data Structures?
         return hashCode;
     }
-
 }

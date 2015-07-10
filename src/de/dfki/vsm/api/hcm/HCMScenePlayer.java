@@ -63,7 +63,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void launch() {
+    public final boolean launch() {
 
         // Load Parent Scene Player
         super.launch();
@@ -107,13 +107,15 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
         // Print Debug Information
         mVSM3Log.message("Launching HCM Scene Player");
+        
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void unload() {
+    public final boolean unload() {
 
         // Unload Parent Scene Player
         super.unload();
@@ -140,6 +142,8 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
         // Print Debug Information
         mVSM3Log.message("Unloading HCM Scene Player");
+        
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////

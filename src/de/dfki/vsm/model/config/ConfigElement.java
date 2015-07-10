@@ -18,28 +18,28 @@ public class ConfigElement implements ModelObject {
     // The Element Name
     protected final String mElementName;
     // The Feature Type
-    protected final String mFeatureType;
+    protected final String mFeatureName;
     // The Feature List
     protected final ArrayList<ConfigFeature> mFeatureList;
 
     // Construct An Element
-    public ConfigElement(final String name, final String type ) {
+    public ConfigElement(final String name, final String type) {
         // Initialize The Element Name
         mElementName = name;
         // Initialize The Feature Type
-        mFeatureType = type;
+        mFeatureName = type;
         // Initialize The Feature List
         mFeatureList = new ArrayList<>();
     }
 
     // Construct An Element
     public ConfigElement(
-            final String name,final String type,
+            final String name, final String type,
             final ArrayList<ConfigFeature> list) {
         // Initialize The Element Name
         mElementName = name;
         // Initialize The Feature Type
-        mFeatureType = type;
+        mFeatureName = type;
         // Initialize The Feature List
         mFeatureList = list;
     }
@@ -51,7 +51,7 @@ public class ConfigElement implements ModelObject {
 
     // Get The Feature Type Name 
     public final String getFeatureType() {
-        return mFeatureType;
+        return mFeatureName;
     }
 
     // Sort The Feature List
@@ -96,7 +96,7 @@ public class ConfigElement implements ModelObject {
 
     // Add A New Feature
     public final void addProperty(final String key, final String value) {
-        mFeatureList.add(new ConfigFeature(mFeatureType, key, value));
+        mFeatureList.add(new ConfigFeature(mFeatureName, key, value));
     }
 
     // Get Some Feature
@@ -159,10 +159,10 @@ public class ConfigElement implements ModelObject {
         // Check The Type Of The Config
         if (tag.equals(mElementName)) {
             // Parse The Individual Entries
-            XMLParseAction.processChildNodes(element, mFeatureType, new XMLParseAction() {
+            XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
                 @Override
                 public void run(final Element element) throws XMLParseError {
-                    final ConfigFeature entry = new ConfigFeature(mFeatureType);
+                    final ConfigFeature entry = new ConfigFeature(mFeatureName);
                     // Parse The New Entry Here
                     entry.parseXML(element);
                     // And Add It To The List
@@ -201,6 +201,6 @@ public class ConfigElement implements ModelObject {
     // Get A Copy Of The Configiguration
     @Override
     public ConfigElement getCopy() {
-        return new ConfigElement(mFeatureType, mElementName, copyEntryList());
+        return new ConfigElement(mFeatureName, mElementName, copyEntryList());
     }
 }

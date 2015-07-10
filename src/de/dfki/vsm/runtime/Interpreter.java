@@ -1,6 +1,5 @@
 package de.dfki.vsm.runtime;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -9,20 +8,18 @@ import de.dfki.vsm.runtime.event.AbortEvent;
 import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.value.AbstractValue;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Interpreter {
 
     private final LOGDefaultLogger mLogger;
-    private final EventCaster mEventMulticaster;
+    private final EventDispatcher mEventMulticaster;
     private final SceneFlow mSceneFlow;
     private final EventObserver mEventObserver;
     private final Configuration mConfiguration;
@@ -31,19 +28,23 @@ public class Interpreter {
     private final TimeoutManager mTimeoutManager;
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
-    private final Player mSceneGroupPlayer;
-    private final Player mDialogueActPlayer;
-    private final RunTimeProject mProject;
+    private final Player mScenePlayer;
+    private final Player mDialogPlayer;
+    private final RunTimeProject mRunTimeProject;
     private Process mSceneFlowThread;
 
-    public Interpreter(
-            final RunTimeProject project) {
-        mProject = project;
-        mSceneFlow = mProject.getSceneFlow();
-        mSceneGroupPlayer = mProject.getDefaultScenePlayer();
-        mDialogueActPlayer = mProject.getDefaultDialogPlayer();
+    // Construct an interpreter with a project
+    public Interpreter(final RunTimeProject project) {
+        // Initialize the runtime project
+        mRunTimeProject = project;
+        // Initialize the sceneflow object
+        mSceneFlow = mRunTimeProject.getSceneFlow();
+        // TODO: We want only one scene player
+        mScenePlayer = mRunTimeProject.getPlayer("sceneplayer");
+        mDialogPlayer = mRunTimeProject.getPlayer("dialogplayer");
+        //
         mLogger = LOGDefaultLogger.getInstance();
-        mEventMulticaster = EventCaster.getInstance();
+        mEventMulticaster = EventDispatcher.getInstance();
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
         mConfiguration = new Configuration();
@@ -95,11 +96,12 @@ public class Interpreter {
         }
     }
 
-    public Player getScenePlayer() {
+    // Get the scene player
+    public final Player getScenePlayer() {
         try {
             lock();
 
-            return mSceneGroupPlayer;
+            return mScenePlayer;
         } finally {
             unlock();
         }
@@ -109,7 +111,7 @@ public class Interpreter {
         try {
             lock();
 
-            return mDialogueActPlayer;
+            return mDialogPlayer;
         } finally {
             unlock();
         }
@@ -155,12 +157,16 @@ public class Interpreter {
         }
     }
 
-    public void start() {
+    // Start the execution of the project
+    public final boolean start() {
 
         // TODO: This is insecure, cause the thread could die in the meantime
         // alive is not the right condition
         // PathLogger.startLogging();
         if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
+
+            // Print some information 
+            mLogger.message("Starting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
 
             // Create a new thread
             mSceneFlowThread = new Process(mSceneFlow.getId(), null, // TODO: choose an adquate thread group and check if this group has died before
@@ -183,10 +189,16 @@ public class Interpreter {
                 unlock();
             }
         }
+
+        return true;
     }
 
-    public void stop() {
+    public boolean abort() {
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {    // TODO: This is insecure, cause the thread could start in the meantime
+
+            // Print some information 
+            mLogger.message("Aborting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
+
             try {
                 lock();
 
@@ -205,17 +217,18 @@ public class Interpreter {
              * Notification
              */
         } else {
-            mLogger.warning("Interpreter cannot stop the execution of '" + mSceneFlow.getId() + "'");
+            mLogger.warning("Interpreter '" + this + "' cannot abort the execution of '" + mSceneFlow.getId() + "'");
         }
 
         // mLogger.message("Stopping EventCaster and TimeoutManager");
         mTimeoutManager.cancel();
         mEventMulticaster.cancel();
 
+        return true;
         // PathLogger.stopLogging();
     }
 
-    public void pause() {
+    public boolean pause() {
         lock();
 
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {
@@ -223,9 +236,11 @@ public class Interpreter {
         }
 
         unlock();
+
+        return true;
     }
 
-    public void proceed() {
+    public boolean proceed() {
         lock();
 
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {
@@ -233,6 +248,8 @@ public class Interpreter {
         }
 
         unlock();
+
+        return true;
     }
 
     public boolean isPaused() {
@@ -243,6 +260,7 @@ public class Interpreter {
         } finally {
             unlock();
         }
+
     }
 
     public boolean isRunning() {

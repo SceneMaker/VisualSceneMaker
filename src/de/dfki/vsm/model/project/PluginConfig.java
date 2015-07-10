@@ -25,8 +25,8 @@ public class PluginConfig extends ConfigElement {
         // Initialize The Config
         super("Plugin", "Feature");
         // Initialize The Members
-        mPluginName = null;
-        mClassName = null;
+        mPluginName = new String();
+        mClassName = new String();
     }
 
     // Construct A New Plugin
@@ -43,7 +43,7 @@ public class PluginConfig extends ConfigElement {
             final String name, final String clazz,
             final ArrayList<ConfigFeature> features) {
         // Initialize The Config
-        super("Feature", "Plugin", features);
+        super("Plugin", "Feature", features);
         // Initialize The Members
         mPluginName = name;
         mClassName = clazz;
@@ -82,10 +82,10 @@ public class PluginConfig extends ConfigElement {
             mPluginName = element.getAttribute("name");
             mClassName = element.getAttribute("class");
             // Parse The Entries
-            XMLParseAction.processChildNodes(element, mFeatureType, new XMLParseAction() {
+            XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
                 @Override
                 public void run(final Element element) throws XMLParseError {
-                    final ConfigFeature entry = new ConfigFeature(mFeatureType);
+                    final ConfigFeature entry = new ConfigFeature(mFeatureName);
                     // Parse The New Entry Here
                     entry.parseXML(element);
                     // And Add It To The List

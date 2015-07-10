@@ -22,7 +22,7 @@ import de.dfki.vsm.runtime.error.RunTimeException;
 import de.dfki.vsm.runtime.error.TerminatedException;
 import de.dfki.vsm.runtime.event.AbortEvent;
 import de.dfki.vsm.runtime.value.BooleanValue;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -230,7 +230,7 @@ public class Process extends java.lang.Thread {
         /**
          * Multicast the events for visualization
          */
-        EventCaster.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
+        EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
     }
 
     public void handleTermination() throws RunTimeException {
@@ -276,7 +276,7 @@ public class Process extends java.lang.Thread {
         /**
          * Multicast the events for visualization
          */
-        EventCaster.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
+        EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
     }
 
     public void handleForkTermination() throws RunTimeException {
@@ -310,7 +310,7 @@ public class Process extends java.lang.Thread {
         /**
          * Multicast the events for visualization
          */
-        EventCaster.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
+        EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
     }
 
     public void handleInterruption() throws RunTimeException {
@@ -387,8 +387,8 @@ public class Process extends java.lang.Thread {
         /**
          * Multicast the events for visualization
          */
-        EventCaster.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
-        EventCaster.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
+        EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
+        EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
     }
 
     public void handleContinuation() throws RunTimeException {
@@ -416,7 +416,7 @@ public class Process extends java.lang.Thread {
         /**
          * Multicast the events for visualization
          */
-        EventCaster.getInstance().convey(new NodeExecutedEvent(this, mCurrentNode));
+        EventDispatcher.getInstance().convey(new NodeExecutedEvent(this, mCurrentNode));
 
         /**
          * Set the new current node to the target node of the incoming edge
@@ -472,8 +472,8 @@ public class Process extends java.lang.Thread {
         /**
          * Multicast the events for visualization
          */
-        EventCaster.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
-        EventCaster.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
+        EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
+        EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
     }
 
     @Override
@@ -490,12 +490,12 @@ public class Process extends java.lang.Thread {
              * Multicast the events for visualization
              */
             // mLogger.message("Interpreter: Aborting execution");
-            EventCaster.getInstance().convey(new AbortEvent(this, e));
+            EventDispatcher.getInstance().convey(new AbortEvent(this, e));
 
             /**
              * Stop the interpreter
              */
-            mInterpreter.stop();
+            mInterpreter.abort();
             mInterpreter.unlock();
         }
     }
@@ -676,7 +676,7 @@ public class Process extends java.lang.Thread {
                         mParentThread.mAddChildThreadList.add(thread);
                         forkThreadList.add(thread);
                         thread.handleStart();
-                        EventCaster.getInstance().convey(new EdgeExecutedEvent(this, edge));
+                        EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, edge));
 
                         // Propagate the pause status
                         thread.mIsPauseRequested = mIsPauseRequested;

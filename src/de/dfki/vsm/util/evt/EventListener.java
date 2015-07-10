@@ -1,10 +1,10 @@
 package de.dfki.vsm.util.evt;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public interface EventListener {
 
-    // Update An Event Listener With A New Event
+    // Update an event listener with an event object
     public void update(final EventObject event);
 }

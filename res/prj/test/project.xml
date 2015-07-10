@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="NewStyleProject">
   <Plugins>
-    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
-      <Feature key="hallo" value="welt"/>
-    </Plugin>
-    <Plugin name="some" class="de.dfki.vsm.test.players.TestPlugin">
-      <Feature key="hallo" value="welt"/>
+    <Plugin name="system" class="de.dfki.vsm.plugins.DefaultSystemPlugin">
     </Plugin>
   </Plugins>
   <Players>
-    <Player name="some" class="de.dfki.vsm.test.players.TestPlayer">
-      <Feature key="hallo" value="welt"/>
+    <Player name="scenes" class="de.dfki.vsm.players.DefaultScenePlayer">
+    </Player>
+    <Player name="dialog" class="de.dfki.vsm.players.DefaultDialogPlayer">
     </Player>
   </Players>
   <Agents>
-    <Agent name="some" player="welt">
-      <Feature key="hallo" value="welt"/>
+    <Agent name="Reeti" player="">
     </Agent>
   </Agents>
 </Project>

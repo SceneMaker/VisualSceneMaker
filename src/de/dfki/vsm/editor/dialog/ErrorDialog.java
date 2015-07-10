@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.runtime.event.AbortEvent;
 
 //~--- JDK imports ------------------------------------------------------------

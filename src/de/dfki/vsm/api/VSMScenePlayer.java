@@ -6,7 +6,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.Environment;
 import de.dfki.vsm.runtime.Process;
-import de.dfki.vsm.runtime.RunTimeInstance;
+import de.dfki.vsm.runtime.instance.RunTimeInstance;
 import de.dfki.vsm.runtime.player.Player;
 import de.dfki.vsm.runtime.value.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
@@ -62,7 +62,7 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    protected VSMScenePlayer( 
+    protected VSMScenePlayer(
             final RunTimeProject project,
             final PlayerConfig config) {
 
@@ -83,7 +83,7 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void launch() {
+    public boolean launch() {
 
         // Print Debug Information
         mVSM3Log.message("Launching VSM Scene Player");
@@ -173,13 +173,16 @@ public abstract class VSMScenePlayer implements Player {
 
         // Now Start The Query Handler
         mQueryHandler.start();
+
+        // Return true at success
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public void unload() {
+    public boolean unload() {
 
         // Shutdown Agent Clients
         for (VSMAgentClient client : mAgentClientMap.values()) {
@@ -233,6 +236,9 @@ public abstract class VSMScenePlayer implements Player {
 
         // Print Debug Information
         mVSM3Log.message("Unloading Generic VSM Scene Player");
+
+        // Return true at success
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////

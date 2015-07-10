@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -72,7 +72,7 @@ public class Comment extends Syntax {
 
     private void formatHTML() {
         mFontSize =
-            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences()
+            EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences()
                 .sWORKSPACEFONTSIZE;
 
         if (mTextEditor == null) {

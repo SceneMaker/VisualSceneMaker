@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Player name="default" class="de.dfki.vsm.api.VSMDefaultPlayer">
-  <Feature key="vsm.agent.number" value="0"/>
-  <Feature key="swi.handler.local.host" value="0"/>
-  <Feature key="swi.handler.local.port" value="0"/>
-  <Feature key="swi.handler.remote.host" value="0"/>
-  <Feature key="swi.handler.remote.port" value="0"/>
-  <Feature key="swi.handler.local.base" value="../../swi"/>
-</Player>

@@ -1,5 +1,7 @@
 package de.dfki.vsm.editor;
 
+import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
@@ -354,7 +356,7 @@ public final class WelcomePanel extends JPanel implements Observer {
             if (sampleProj.exists()) {
                 File projectPath = new File(sampleDir.getPath() + "/vsm/"/* + "config.xml"*/);
                 EditorProject project = new EditorProject();
-                project.load(projectPath);
+                project.parse(projectPath);
                 JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
                         + sdf.format(sampleProj.lastModified()));
 

@@ -1,13 +1,13 @@
 package de.dfki.vsm.editor.script;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.editor.EditorProject;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
 import de.dfki.vsm.model.visicon.VisiconViseme;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -47,7 +47,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Event Caster
-    private final EventCaster mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     // Activity monitor
     private Font mFont = new Font("Courier New", Font.PLAIN, 12);
