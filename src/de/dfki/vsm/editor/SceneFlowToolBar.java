@@ -139,8 +139,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
     }
     private void checkRedoUndo()
     {
-        System.out.println("undoo  "+undoAction.isEnabled());
-        System.out.println("redoo  "+redoAction.isEnabled());
         if(undoAction.isEnabled())
         {
             mUndo.setEnabled(true);

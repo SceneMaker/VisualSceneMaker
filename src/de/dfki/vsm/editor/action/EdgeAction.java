@@ -27,6 +27,7 @@ import static de.dfki.vsm.editor.Edge.TYPE.EEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.TEDGE;
+import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -366,7 +367,6 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint     = mSourceGUINode.disconnectEdge(mGUIEdge);
             mLastTargetGUINodeDockPoint = mGUIEdge.mLastTargetNodeDockPoint;
         }
-
         cleanUpData();
     }
 
@@ -380,8 +380,12 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint = mSourceGUINode.disconnectEdge(mGUIEdge);
             mTargetGUINodeDockPoint = mTargetGUINode.disconnectEdge(mGUIEdge);
         }
-
         cleanUpData();
+        if(mGUIEdgeType.equals(PEDGE) && mSourceGUINode.getDataNode().hasPEdges())
+        {
+            ModifyPEdgeDialog mPEdgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode().getFirstPEdge());
+            mPEdgeDialog.run();
+        }
     }
 
     private void cleanUpData() {

@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
@@ -15,6 +16,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -26,6 +28,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
@@ -44,8 +47,7 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
     private final Observable mObservable = new Observable();
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventCaster mEventCaster = EventCaster.getInstance();
-
-    private JDialog quitDialog;
+    public boolean saveMessage = true;
 
     /**
      * *************************************************************************
@@ -135,41 +137,17 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      *
      *
      */
-    public void close() {
-        if (mProject.hasChanged()) {
-            OKButton mYesButton = new OKButton();
-            mYesButton.setText(" Yes     ");
-            mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    save();
-                    disposeAfterDialog();
-                }
-            });
-            //NO BUTTON
-            CancelButton mNoButton = new CancelButton();
-            mNoButton.setText("  No       ");
-            mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                       disposeAfterDialog();
-                }
-            });
-            JOptionPane optionPane = new JOptionPane();
-            optionPane.setBackground(Color.white);
-            optionPane.setMessage("The project " + mProject.getProjectName() + " has changed.  Save it?");
-            optionPane.setMessageType(JOptionPane.INFORMATION_MESSAGE);
-            optionPane.setOptions(new Object[]{mYesButton, mNoButton});
-            quitDialog = optionPane.createDialog("Save before quitting?");
-            quitDialog.setVisible(true);
-        }
+    public boolean saveBeforeClosing() {
+        QuitDialog qDiag = new QuitDialog(this);
+        return saveMessage;
         
     }
-    private void disposeAfterDialog(){
+    public void disposeAfterDialog(){
         // Delete all observers
         mObservable.deleteObservers();
         // Close / Cleanup
         mSceneFlowEditor.close();
         mSceneDocEditor.close();
-        quitDialog.dispose();
     }
     ////////////////////////////////////////////////////////////////////////////
     public void save() {
