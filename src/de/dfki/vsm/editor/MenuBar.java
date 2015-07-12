@@ -235,7 +235,7 @@ public class MenuBar extends JMenuBar {
         mCloseFileMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditor.closeCurrentProject();
+                mEditor.removeProject();
             }
         });
         mSaveFileMenuItem = new JMenuItem("Save");

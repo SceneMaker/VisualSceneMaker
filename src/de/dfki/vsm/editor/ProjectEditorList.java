@@ -126,12 +126,19 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         setTitleAt(getSelectedIndex(), getTitleAt(getSelectedIndex()).replace("*", ""));
     }
 
-    public void closeCurrent() {
+    public boolean closeCurrent() {
         ProjectEditor projectEditor = ((ProjectEditor) getSelectedComponent());
-
-        mObservable.deleteObserver(projectEditor);
-        projectEditor.close();
-        remove(projectEditor);
+        boolean result = false;
+        if(projectEditor.getProject().hasChanged())
+        {
+            result = projectEditor.saveBeforeClosing();
+        }
+        if(result)
+        {
+            mObservable.deleteObserver(projectEditor);
+            remove(projectEditor);
+        }
+        return result; 
     }
 
     public void saveAll() {
@@ -140,15 +147,19 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         }
     }
 
-    public void closeAll() {
-
-        // Delete all observers
-        mObservable.deleteObservers();
-
+    public boolean closeAll() {
+        boolean closingMsgs = true;
         // Close all projects
         for (int i = 0; i < getTabCount(); i++) {
-            ((ProjectEditor) getComponentAt(i)).close();
+            closingMsgs = (((ProjectEditor) getComponentAt(i)).saveBeforeClosing());
+            if(!closingMsgs)
+            {
+                return closingMsgs;
+            }
         }
+        // Delete all observers
+        mObservable.deleteObservers();
+        return closingMsgs;
     }
 
     ////////////////////////////////////////////////////////////////////////////

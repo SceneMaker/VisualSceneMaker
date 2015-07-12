@@ -159,7 +159,24 @@ public class Node extends Object {
 
         return false;
     }
-
+    /**
+     * Tells if the node has more than 0 Probabilistic edge
+     * in case true, it is necessary to reorganize the values of probabilities
+     * Used when deleting an edge
+     * @return 
+     */
+    public boolean hasPEdges()
+    {
+        if(mPEdgeList.size() > 0)
+        {
+            return true;
+        }
+        return false;
+    }
+    public PEdge getFirstPEdge()
+    {
+        return mPEdgeList.get(0);
+    }
     public boolean hasDEdge() {
         return (mDEdge != null);
     }

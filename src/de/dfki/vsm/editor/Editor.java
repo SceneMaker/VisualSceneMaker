@@ -44,6 +44,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -160,7 +161,7 @@ public class Editor extends JFrame implements EventListener {
         jsWelcome.getViewport().setOpaque(false);
         add(jsWelcome);
         setIconImage(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png").getImage());
-
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         // Init the windows closing support
         addWindowListener(new WindowAdapter() {
             @Override
@@ -457,9 +458,6 @@ public class Editor extends JFrame implements EventListener {
             mProjectEditorList.getSelectedProject().getHashCode());
     }
 
-    public void closeCurrentProject() {
-        removeProject();
-    }
 
     public void saveAllProjects() {
         mProjectEditorList.saveAll();
@@ -503,8 +501,11 @@ public class Editor extends JFrame implements EventListener {
     public void exit() {
 
         // Close the whole list of project editors
-        mProjectEditorList.closeAll();
-        System.exit(0);
+        boolean result = mProjectEditorList.closeAll();
+        if (result)
+        {
+            System.exit(0);
+        }
     }
 
     private void addProject(ProjectData project) {
@@ -521,15 +522,15 @@ public class Editor extends JFrame implements EventListener {
         project.setSceneInitialHash(project.getHashCode());
     }
 
-    private void removeProject() {
+    public void removeProject() {
 
         // Close the currently selected project editor
-        mProjectEditorList.closeCurrent();
-
+        boolean result = mProjectEditorList.closeCurrent();
+        
         // Update the recent file list
         // updateRecentFiles(sceneFlowFile);
         // Cleaning of used objects and threads
-        if (mProjectEditorList.getTabCount() == 0) {
+        if (mProjectEditorList.getTabCount() == 0 && result) {
             mMenuBar.setFileSaveMenuEnabled(false);
             mMenuBar.setCloseMenuEnabled(false);
             mMenuBar.setEditMenuEnabled(false);
