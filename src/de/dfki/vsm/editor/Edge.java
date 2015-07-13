@@ -471,10 +471,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 updateFromTextEditor();
                 
                  if(!validate(mValueEditor.getText())){
-                    EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
-                       EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
+                       EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Invalid Condition");
-                    EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
+                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
                     // wrong condition
                 }
                 else{
@@ -519,7 +519,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((CEdge) mDataEdge).setCondition(log);
                 } else {
-                    EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().setMessageLabelText(
+                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Remember to wrap condition in parenthesis");
                     // Do nothing
                 }

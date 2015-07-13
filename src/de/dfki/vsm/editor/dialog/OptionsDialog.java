@@ -313,7 +313,7 @@ public class OptionsDialog extends JDialog {
         });
 
         EditorConfig preferences =
-            mEditor.getProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+            mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         // Node size stuff
         mNodeSizeLabel            = new JLabel("Node Size:");
@@ -424,7 +424,7 @@ public class OptionsDialog extends JDialog {
 
     private void initScriptPanel() {
         EditorConfig preferences =
-            mEditor.getProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+            mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         mScriptFontTypeLabel = new JLabel("Font Type:");
 
@@ -585,8 +585,8 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initPreferences() {
-        mProject     = mEditor.getProjectEditor().getEditorProject();
-        mPreferences = mEditor.getProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
+        mProject     = mEditor.getSelectedProjectEditor().getEditorProject();
+        mPreferences = mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
         ((DefaultListModel) mRecentFileList.getModel()).clear();
 
 //      ((DefaultComboBoxModel) mScenePlayerComboBox.getModel()).removeAllElements();

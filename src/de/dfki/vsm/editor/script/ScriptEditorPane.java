@@ -98,7 +98,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
         // registerKeyboardAction(getDocument().getRedoAction(), KeyStroke.getKeyStroke(
         // KeyEvent.VK_Y, InputEvent.CTRL_MASK), JComponent.WHEN_FOCUSED);
         // Register As Event Listener
-        mEventCaster.append(this);
+        mEventCaster.register(this);
     }
 
     /*

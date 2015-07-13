@@ -93,7 +93,7 @@ class DialogActEditor extends JPanel implements EventListener, Observer {
         initComponents();
 
         // Add the element editor to the event multicaster
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     private void initComponents() {

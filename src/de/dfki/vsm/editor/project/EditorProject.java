@@ -35,13 +35,13 @@ public class EditorProject extends RunTimeProject {
             // Return false at error
             return false;
         }
-        // Get the absolute file 
+        // Get the absolute file for this directory
         final File base = file.getAbsoluteFile();
-        // Check if file exists
+        // Check if the project directory does exist
         if (!base.exists()) {
             // Print an error message
-            mLogger.failure("Error: Cannot find editor project file '" + base + "'");
-            // Return failure here
+            mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
+            // Return false at error
             return false;
         }
         // First set the project file 
@@ -60,14 +60,19 @@ public class EditorProject extends RunTimeProject {
             // Return false at error
             return false;
         }
-        // Get the absolute file 
+        // Get the absolute file for the directory
         final File base = file.getAbsoluteFile();
-        // Check if file exists
+        // Check if the project directory does exist
         if (!base.exists()) {
-            // Print an error message
-            mLogger.failure("Error: Cannot find editor project file '" + base + "'");
-            // Return failure here
-            return false;
+            // Print a warning message in this case
+            mLogger.warning("Warning: Creating a new editor project directory '" + base + "'");
+            // Try to create a project base directory
+            if (!base.mkdir()) {
+                // Print an error message
+                mLogger.failure("Failure: Cannot create a new editor project directory '" + base + "'");
+                // Return false at error
+                return false;
+            }
         }
         // First set the project file 
         mProjectFile = base;
@@ -77,10 +82,17 @@ public class EditorProject extends RunTimeProject {
 
     // Load the project data
     public final boolean parse() {
-        // Check the project file
+        // Check if the file is null
         if (mProjectFile == null) {
             // Print an error message
             mLogger.failure("Error: Cannot parse editor project from a bad file");
+            // Return false at error
+            return false;
+        }
+        // Check if the project directory does exist
+        if (!mProjectFile.exists()) {
+            // Print an error message
+            mLogger.failure("Error: Cannot find editor project directory '" + mProjectFile + "'");
             // Return false at error
             return false;
         }
@@ -99,12 +111,24 @@ public class EditorProject extends RunTimeProject {
 
     // Save the project data
     public final boolean write() {
-        // Check the project file
+        // Check if the file is null
         if (mProjectFile == null) {
             // Print an error message
             mLogger.failure("Error: Cannot write editor project into a bad file");
             // Return false at error
             return false;
+        }
+        // Check if the project directory does exist
+        if (!mProjectFile.exists()) {
+            // Print a warning message in this case
+            mLogger.warning("Warning: Creating a new editor project directory '" + mProjectFile + "'");
+            // Try to create a project base directory
+            if (!mProjectFile.mkdir()) {
+                // Print an error message
+                mLogger.failure("Failure: Cannot create a new editor project directory '" + mProjectFile + "'");
+                // Return false at error
+                return false;
+            }
         }
         // Save the project data
         if (super.write(mProjectFile)
@@ -121,12 +145,12 @@ public class EditorProject extends RunTimeProject {
 
     // Get the project base directory
     public final File getProjectFile() {
-        return mProjectFile.getAbsoluteFile();
+        return mProjectFile;
     }
 
-    // Set the project base directory
-    public final void setProjectFile(final File file) {
-        mProjectFile = file.getAbsoluteFile();
+    // Get the project pending flag
+    public final boolean isPending() {
+        return (mProjectFile == null);
     }
 
     // Get the editor configuration
@@ -134,8 +158,13 @@ public class EditorProject extends RunTimeProject {
         return mEditorConfig;
     }
 
+    // Get the project file's path
     public final String getProjectPath() {
-        return mProjectFile.getAbsolutePath();
+        if (mProjectFile != null) {
+            return mProjectFile.getPath();
+        } else {
+            return null;
+        }
     }
 
     // Check if the hash code has changed

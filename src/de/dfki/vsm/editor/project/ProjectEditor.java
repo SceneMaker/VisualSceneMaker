@@ -1,12 +1,9 @@
 package de.dfki.vsm.editor.project;
 
-import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.SceneFlowEditor;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.script.SceneScriptEditor;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -20,8 +17,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.util.Observer;
 import javax.swing.BorderFactory;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
@@ -36,49 +31,14 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The singelton event multicaster
     private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
-
     // The editor project of this editor
     private final EditorProject mEditorProject;
-
     // The sceneflow editor of this project
     private final SceneFlowEditor mSceneFlowEditor;
     // The scenescript editor of this project
     private final SceneScriptEditor mSceneScriptEditor;
-
     // The editor's observable component 
     private final Observable mObservable = new Observable();
-
-    // The observable class of the editor
-    private final class Observable extends java.util.Observable {
-
-        public final void update(final Object object) {
-            setChanged();
-            notifyObservers(object);
-        }
-    }
-
-//    JDialog quitDialog;
-
-    //
-    @Override
-    public void update(java.util.Observable obs, Object obj) {
-        //mLogger.message("ProjectEditor.update(" + obj + ")");
-        mObservable.update(obj);
-    }
-
-    //
-    @Override
-    public void update(EventObject evt) {
-        //System.out.println(evt.getClass());
-        if (evt instanceof FunctionSelectedEvent || evt instanceof TreeEntrySelectedEvent) {
-            {
-                showSceneDocEditor();
-            }
-        }
-        if (evt instanceof NodeSelectedEvent && !mSceneScriptEditor.isPinPricked()) {
-            hideSceneDocEditor();
-        }
-    }
 
     // Create an empty project editor
     public ProjectEditor() {
@@ -91,23 +51,16 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         super(JSplitPane.VERTICAL_SPLIT, true);
         // Initialize the editor project
         mEditorProject = project;
-        //
-        mSceneScriptEditor = new SceneScriptEditor(mEditorProject);
+        // Initialize the sceneflow editor
         mSceneFlowEditor = new SceneFlowEditor(mEditorProject);
-        // Add the components as observers
         mObservable.addObserver(mSceneFlowEditor);
+        // Initialize the scenescript editor
+        mSceneScriptEditor = new SceneScriptEditor(mEditorProject);
         mObservable.addObserver(mSceneScriptEditor);
-
-        NodeSelectedEvent e = new NodeSelectedEvent(this, mEditorProject.getSceneFlow());
-        EventDispatcher.getInstance().convey(e);
-
-        WorkSpaceSelectedEvent ev = new WorkSpaceSelectedEvent(this);
-        EventDispatcher.getInstance().convey(ev);
-
-        initComponents();
-
         // Register at the event dispatcher
-        mEventDispatcher.append(this);
+        mEventDispatcher.register(this);
+        // Initialize the GUI components
+        initComponents();
     }
 
     // Get the sceneflow editor 
@@ -125,65 +78,18 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         return mEditorProject;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Close the editor project 
-   // public void close() {
-
-//        // TODO: Move that to the editor
-//        if (mEditorProject.hasChanged()) {
-//            OKButton mYesButton = new OKButton();
-//            mYesButton.setText(" Yes     ");
-//            mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//                @Override
-//                public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                    save();
-//                    disposeAfterDialog();
-//                }
-//            });
-//            //NO BUTTON
-//            CancelButton mNoButton = new CancelButton();
-//            mNoButton.setText("  No       ");
-//            mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//                @Override
-//                public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                    disposeAfterDialog();
-//                }
-//            });
-//            //
-//            JOptionPane optionPane = new JOptionPane();
-//            optionPane.setBackground(Color.white);
-//            optionPane.setMessage("The project " + mEditorProject.getProjectName() + " has changed.  Save it?");
-//            optionPane.setMessageType(JOptionPane.INFORMATION_MESSAGE);
-//            optionPane.setOptions(new Object[]{mYesButton, mNoButton});
-//            quitDialog = optionPane.createDialog("Save before quitting?");
-//            quitDialog.setVisible(true);
-//
-//        }
-
-   // }
-
     // Clean up the editor component
-    private void close() {
-        // Delete all observers
+    public final void close() {
+        // Delete all observer objects
         mObservable.deleteObservers();
-        // Close / Cleanup
+        // Remove from event dispatcher
+        mEventDispatcher.remove(this);
+        // Close / Cleanup Members
         mSceneFlowEditor.close();
         mSceneScriptEditor.close();
-//        quitDialog.dispose();
     }
 
-//    // Save the project managed by this editor
-//    public final boolean save() {
-//        return mEditorProject.write();
-//    }
-
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
+    // Initialize the GUI components
     private void initComponents() {
         // Set Background Color
         setBackground(Color.WHITE);
@@ -212,7 +118,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
 
                             case MouseEvent.MOUSE_ENTERED:
                                 if (!mSceneScriptEditor.isPinPricked()) {
-                                    showSceneDocEditor();
+                                    showSceneScriptEditor();
                                 }
                                 break;
                             case MouseEvent.MOUSE_RELEASED:
@@ -289,18 +195,49 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         );
     }
 
-    /**
-     * Shows the bottom part of the project editor
-     */
-    public void showSceneDocEditor() {
-        setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
+    // Show the bottom part of the project editor
+    private final void showSceneScriptEditor() {
+        setDividerLocation(
+                // TODO: Do we really need to parse this every time here?
+                Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
     }
 
-    /*
-     * Hides the bottom part of the project editor
-     */
-    public void hideSceneDocEditor() {
-        this.setDividerLocation(1d);
+    // Hides the bottom part of the project editor
+    private final void hideSceneScriptEditor() {
+        setDividerLocation(1d);
+    }
+
+    // The observable class of the editor
+    private final class Observable extends java.util.Observable {
+
+        public final void update(final Object object) {
+            setChanged();
+            notifyObservers(object);
+        }
+    }
+
+    // Recursively notify observers
+    @Override
+    public void update(java.util.Observable obs, Object obj) {
+        mObservable.update(obj);
+    }
+
+    // Update when an event happened  
+    @Override
+    public void update(final EventObject event) {
+        if (event instanceof FunctionSelectedEvent
+                || event instanceof TreeEntrySelectedEvent) {
+            {
+                // Show the scenescript editor
+                showSceneScriptEditor();
+            }
+        }
+        // TODO: I do not like this conceptually
+        if (event instanceof NodeSelectedEvent
+                && !mSceneScriptEditor.isPinPricked()) {
+            // Hide the scenescript editor
+            hideSceneScriptEditor();
+        }
     }
 
 }

@@ -5,13 +5,11 @@ import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.FunctionEditor;
-import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -54,7 +52,7 @@ import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 
 /**
- * @author
+ * @author Gregor Mehlmannn
  */
 public final class SceneScriptEditor extends JPanel implements DocumentListener, EventListener, Observer {
 
@@ -187,7 +185,7 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
         add(mStatusLabel, BorderLayout.SOUTH);
 
         // Register As Event Listener
-        mEventCaster.append(this);
+        mEventCaster.register(this);
 
         //
         try {

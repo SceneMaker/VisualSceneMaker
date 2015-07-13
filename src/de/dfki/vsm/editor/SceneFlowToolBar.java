@@ -132,7 +132,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     }
 
     private void initPreferences() {
-        if (mSMEditor.getProjectEditor() != null) {
+        if (mSMEditor.getSelectedProjectEditor() != null) {
             for (Object keyObj : mPreferences.getKeySet()) {
                 String key = (String) keyObj;
 
@@ -298,7 +298,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mNormalize = add(new AbstractAction("ACTION_NORMALIZE", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/normalize_edges_gray.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mWindow.getProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
+                mWindow.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
         });
         mNormalize.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/normalize_edges_blue.png"));
@@ -309,7 +309,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mStraighten = add(new AbstractAction("ACTION_STRAIGHTEN", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/straighten_gray.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mWindow.getProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
+                mWindow.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
             }
         });
         mStraighten.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/straighten_blue.png"));

@@ -44,7 +44,7 @@ public class EventDispatcher {
     }
 
     // Add An Event Listener
-    public final synchronized void append(final EventListener listener) {
+    public final synchronized void register(final EventListener listener) {
         mListenerList.add(listener);
     }
 

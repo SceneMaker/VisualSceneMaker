@@ -150,25 +150,15 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     }
 
     @Override
-    public void update(EventObject event) {
+    public void update(EventObject event) {   }
 
-//      System.err.println("Updating comment" + this);
-//      mFont = new Font("SansSerif", Font.PLAIN, /*(mWorkSpace != null) ?*/ sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
-//      String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
-//      ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
-//
-//      repaint();
-    }
-
-    /**
-     *
-     *
-     */
+    
     @Override
     public void update(Observable o, Object obj) {
         update();
     }
-
+    
+    
     public void update() {
         mFont = new Font("SansSerif", Font.ITALIC, mPreferences.sWORKSPACEFONTSIZE);
         mTextLabel.setFont(mFont);

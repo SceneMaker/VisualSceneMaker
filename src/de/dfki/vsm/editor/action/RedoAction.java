@@ -41,7 +41,7 @@ public class RedoAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        UndoManager manager = EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getUndoManager();
+        UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
         try {
             manager.redo();
@@ -64,7 +64,7 @@ public class RedoAction extends AbstractAction {
     }
 
     public void refreshRedoState() {
-        UndoManager manager = EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getUndoManager();
+        UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
         if (manager.canRedo()) {
             setEnabled(true);
