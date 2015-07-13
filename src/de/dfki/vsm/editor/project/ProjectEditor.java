@@ -4,7 +4,7 @@ import de.dfki.vsm.editor.SceneFlowEditor;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.script.SceneScriptEditor;
+import de.dfki.vsm.editor.project.auxiliary.AuxiliaryEditor;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -35,8 +35,8 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     private final EditorProject mEditorProject;
     // The sceneflow editor of this project
     private final SceneFlowEditor mSceneFlowEditor;
-    // The scenescript editor of this project
-    private final SceneScriptEditor mSceneScriptEditor;
+    // The auxiliary editor of this project
+    private final AuxiliaryEditor mAuxiliaryEditor;
     // The editor's observable component 
     private final Observable mObservable = new Observable();
 
@@ -55,8 +55,8 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         mSceneFlowEditor = new SceneFlowEditor(mEditorProject);
         mObservable.addObserver(mSceneFlowEditor);
         // Initialize the scenescript editor
-        mSceneScriptEditor = new SceneScriptEditor(mEditorProject);
-        mObservable.addObserver(mSceneScriptEditor);
+        mAuxiliaryEditor = new AuxiliaryEditor(mEditorProject);
+        mObservable.addObserver(mAuxiliaryEditor);
         // Register at the event dispatcher
         mEventDispatcher.register(this);
         // Initialize the GUI components
@@ -69,8 +69,8 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     }
 
     // Get the scenescript editor 
-    public final SceneScriptEditor getSceneScriptEditor() {
-        return mSceneScriptEditor;
+    public final AuxiliaryEditor getAuxiliaryEditor() {
+        return mAuxiliaryEditor;
     }
 
     // Get the editor project 
@@ -86,7 +86,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         mEventDispatcher.remove(this);
         // Close / Cleanup Members
         mSceneFlowEditor.close();
-        mSceneScriptEditor.close();
+        mAuxiliaryEditor.close();
     }
 
     // Initialize the GUI components
@@ -117,13 +117,13 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
                         switch (me.getID()) {
 
                             case MouseEvent.MOUSE_ENTERED:
-                                if (!mSceneScriptEditor.isPinPricked()) {
-                                    showSceneScriptEditor();
+                                if (!mAuxiliaryEditor.isPinPricked()) {
+                                    showAuxiliaryEditor();
                                 }
                                 break;
                             case MouseEvent.MOUSE_RELEASED:
                                 Preferences.setProperty("propertiesdividerlocation", String.valueOf(((ProjectEditor) this.getParent()).getDividerLocation()));
-                                mSceneScriptEditor.prickPin();
+                                mAuxiliaryEditor.setPinPricked();
                                 break;
                         }
                     }
@@ -140,9 +140,9 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         mSceneFlowEditor.setMinimumSize(new Dimension(10, 10));
         mSceneFlowEditor.setMaximumSize(new Dimension(10000, 3000));
         setTopComponent(mSceneFlowEditor);
-        mSceneScriptEditor.setMinimumSize(new Dimension(10, 10));
-        mSceneScriptEditor.setMaximumSize(new Dimension(10000, 3000));
-        setBottomComponent(mSceneScriptEditor);
+        mAuxiliaryEditor.setMinimumSize(new Dimension(10, 10));
+        mAuxiliaryEditor.setMaximumSize(new Dimension(10000, 3000));
+        setBottomComponent(mAuxiliaryEditor);
 
         // setting size
         boolean showSceneFlowEditor = Boolean.valueOf(Preferences.getProperty("showscenefloweditor"));
@@ -156,7 +156,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
             setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
         }
 
-        mSceneScriptEditor.addComponentListener(
+        mAuxiliaryEditor.addComponentListener(
                 new ComponentListener() {
 
                     @Override
@@ -168,7 +168,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
                         } else {
                             Preferences.setProperty("showscenefloweditor", "true");
                         }
-                        if (mSceneScriptEditor.getSize().height == 0) {
+                        if (mAuxiliaryEditor.getSize().height == 0) {
                             Preferences.setProperty("showscenefloweditor", "true");
                             Preferences.setProperty("showsceneeditor", "false");
                         } else {
@@ -196,14 +196,15 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     }
 
     // Show the bottom part of the project editor
-    private final void showSceneScriptEditor() {
+    private void showAuxiliaryEditor() {
         setDividerLocation(
                 // TODO: Do we really need to parse this every time here?
                 Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
     }
 
     // Hides the bottom part of the project editor
-    private final void hideSceneScriptEditor() {
+    private void hideAuxiliaryEditor() {
+        // TODO: Can we do that by adding and removing the component?
         setDividerLocation(1d);
     }
 
@@ -227,16 +228,14 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     public void update(final EventObject event) {
         if (event instanceof FunctionSelectedEvent
                 || event instanceof TreeEntrySelectedEvent) {
-            {
-                // Show the scenescript editor
-                showSceneScriptEditor();
-            }
+            // Show the auxiliary editor
+            showAuxiliaryEditor();
         }
         // TODO: I do not like this conceptually
         if (event instanceof NodeSelectedEvent
-                && !mSceneScriptEditor.isPinPricked()) {
-            // Hide the scenescript editor
-            hideSceneScriptEditor();
+                && !mAuxiliaryEditor.isPinPricked()) {
+            // Hide the auxiliary editor
+            hideAuxiliaryEditor();
         }
     }
 
