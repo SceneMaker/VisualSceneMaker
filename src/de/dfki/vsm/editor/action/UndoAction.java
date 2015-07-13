@@ -39,7 +39,7 @@ public class UndoAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        UndoManager manager = EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getUndoManager();
+        UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
         try {
             manager.undo();
@@ -62,7 +62,7 @@ public class UndoAction extends AbstractAction {
     }
 
     public void refreshUndoState() {
-        UndoManager manager = EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().getUndoManager();
+        UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
         if (manager.canUndo()) {
             setEnabled(true);

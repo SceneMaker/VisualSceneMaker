@@ -47,7 +47,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public final class EditorInstance extends JFrame implements EventListener, ChangeListener {
@@ -78,6 +78,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
+    public void update() {
+        mObservable.update(this);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -85,8 +89,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        if (getProjectEditor().getEditorProject() != null) {
-            mObservable.update(getProjectEditor().getEditorProject());
+        if (getSelectedProjectEditor().getEditorProject() != null) {
+            mObservable.update(getSelectedProjectEditor().getEditorProject());
         }
 
         // copy and paste of nodes between the different projects
@@ -174,7 +178,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent event) {
+                // Close all project editors
                 closeAll();
+                // And finally exit the system
+                System.exit(0);
             }
         });
 
@@ -197,7 +204,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         this.addComponentListener(mComponentListener);
 
         // Register the editor as event listener
-        mEventCaster.append(this);
+        mEventCaster.register(this);
     }
 
     private void setUIFonts() {
@@ -252,12 +259,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("EditorPane.background", Color.WHITE);
         UIManager.put("ScrollPane.background", Color.WHITE);
         UIManager.put("Viewport.background", Color.WHITE);
-    }
-
-    public void update() {
-        if (mProjectEditors.getTabCount() > 0) {
-            mObservable.update(getProjectEditor());
-        }
     }
 
     public void clearRecentProjects() {
@@ -318,7 +319,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     ////////////////////////////////////////////////////////////////////////////
     // Get the current project editor
-    public final ProjectEditor getProjectEditor() {
+    public final ProjectEditor getSelectedProjectEditor() {
         return (ProjectEditor) mProjectEditors.getSelectedComponent();
     }
 
@@ -330,24 +331,27 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     ////////////////////////////////////////////////////////////////////////////
     // Create a new project editor
-    public final void newProject() {
+    public final boolean newProject() {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();
         // Add the new project editor 
-        mProjectEditors.addTab("undefined", editor);
+        mProjectEditors.addTab("", editor);
         mProjectEditors.setSelectedComponent(editor);
         // Add the editor as observer
         mObservable.addObserver(editor);
-        //
+        // Show the editor projects now
         if (mProjectEditors.getTabCount() == 1) {
             // Show the project editors
             setContentPane(mProjectEditors);
             // Show the menu bar items
             mMenuBar.setVisible(true);
         }
+        // Return true at success
+        return true;
     }
 
-    // Open a new project with a file chooser
+    ////////////////////////////////////////////////////////////////////////////
+    // Open a new project editor with chooser
     public final boolean openProject() {
         // Create a new file chooser
         final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
@@ -370,7 +374,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
-    // Open an editor project from a file
+    // Open an project editor from a file
     public final boolean openProject(final File file) {
         // Check if the file is null
         if (file == null) {
@@ -379,7 +383,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // And return failure here
             return false;
         }
-
         // Check if the file exists
         if (!file.exists()) {
             // Print an error message
@@ -387,7 +390,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // And return failure here
             return false;
         }
-
         // Create a new editor project 
         final EditorProject project = new EditorProject();
         // Try to load it from the file
@@ -407,11 +409,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // editors and select it in the tabbed pane
             mProjectEditors.addTab(project.getProjectName(), projectEditor);
             mProjectEditors.setSelectedComponent(projectEditor);
-
             // Update the recent project list
-            updateRecentProjects(
-                    project.getProjectPath(),
-                    project.getProjectName());
+            updateRecentProjects(project);
             // Print some info message
             mLogger.message("Opening project editor from file '" + file + "'");
             // Return true at success
@@ -425,125 +424,156 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     }
 
-    // Close the current project editor
-    public final void save() {
-        // Close the current project editor
-        save(getProjectEditor());
+    // Save the selected project editor
+    public final boolean save() {
+        return save(getSelectedProjectEditor());
     }
 
-    // Save the selected editor project 
-    public final void save(final ProjectEditor editor) {
-        // Get the selected editor project
-        final EditorProject project = editor.getEditorProject();
-
-        // Save the project managed by this editor
-        //  public final boolean save() {
-        //      return mEditorProject.write();
-        //  }
-        // TODO: Open dialog // Check if pending project, then save as
-        if (project.write()) {
-            // TODO: Can we couple this with the pending stuff?
-
-            // Refresh the title of the project tab
-            final int index = mProjectEditors.getSelectedIndex();
-            mProjectEditors.setTitleAt(index, mProjectEditors.getTitleAt(mProjectEditors.getSelectedIndex()).replace("*", ""));
-
-            // TODO: NO UPDATE IF NO SUCCES AT SAVING SCENES
-            update();
-
-            // update rectent project list
-            updateRecentProjects(
-                    project.getProjectPath(),
-                    project.getProjectName());
-
-            // TODO: Refresh the recent file menu
-        } else {
-            // Error message handling
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Cannot Save the project.",
-                    "Cannot Save the project.",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-
-    }
-
-    
-    // Save the current project editor 
-    public void saveAs() {
-        saveAs(getProjectEditor());
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    public boolean saveAs(final ProjectEditor editor) {
-        // Create a new file chooser
-        final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
-        // Configure The File Chooser
-        // TODO: Set the correct view and filter
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        // Show the file chooser in open mode 
-        final int option = chooser.showOpenDialog(this);
-        // Check the result of the file chooser
-        if (option == JFileChooser.APPROVE_OPTION) {
-            // Get the chooser's selected file 
-            final File file = chooser.getSelectedFile();
-
-            // Get currently selected project
+    // Save the specific project editor 
+    public final boolean save(final ProjectEditor editor) {
+        // Check if the editor is valid
+        if (editor != null) {
+            // Get the selected editor project
             final EditorProject project = editor.getEditorProject();
-            // And try to write the file then
-            if (project.write(file)) {
-                mProjectEditors.setTitleAt(mProjectEditors.getSelectedIndex(), project.getProjectName());
-
-                // update rectent project list
-                updateRecentProjects(
-                        project.getProjectPath(),
-                        project.getProjectName());
-
-                return true;
+            // Check if the project is valid
+            if (project != null) {
+                // Check if the project is pending
+                if (!project.isPending()) {
+                    // Try to write the editor project
+                    if (project.write()) {
+                        // Refresh the title of the project tab
+                        final int index = mProjectEditors.getSelectedIndex();
+                        final String title = mProjectEditors.getTitleAt(index);
+                        mProjectEditors.setTitleAt(index, title.replace("*", ""));
+                        // Update rectent project list
+                        updateRecentProjects(project);
+                        // Update all editor parts
+                        // TODO: DO we need to update here?
+                        update();
+                        // Return true at success
+                        return true;
+                    } else {
+                        // Print an error message
+                        mLogger.failure("Error: Cannot write the editor project '" + project + "'");
+                        // And return failure here
+                        return false;
+                    }
+                } else {
+                    // Choose a new file to save to
+                    return saveAs(editor);
+                }
             } else {
-                //ERROR
+                // Print an error message
+                mLogger.failure("Error: Cannot save a bad editor project");
+                // And return failure here
                 return false;
             }
         } else {
             // Print an error message
-            mLogger.warning("Warning: Canceled saving of a project file");
+            mLogger.failure("Error: Cannot save a bad project editor");
             // And return failure here
             return false;
         }
     }
 
-    // Close the current project editor
+    // Save the selected project editor 
+    public final boolean saveAs() {
+        return saveAs(getSelectedProjectEditor());
+    }
+
+    // Save the specific project editor 
+    public final boolean saveAs(final ProjectEditor editor) {
+        // Check if the editor is valid
+        if (editor != null) {
+            // Get currently selected project
+            final EditorProject project = editor.getEditorProject();
+            // Check if the project is valid
+            if (project != null) {
+                // Create a new file chooser
+                final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+                // Configure The File Chooser
+                // TODO: Set the correct view and filter
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                // Show the file chooser in open mode 
+                final int option = chooser.showOpenDialog(this);
+                // Check the result of the file chooser
+                if (option == JFileChooser.APPROVE_OPTION) {
+                    // Get the chooser's selected file 
+                    final File file = chooser.getSelectedFile();
+                    // Try to write the editor project
+                    if (project.write(file)) {
+                        // Refresh the title of the project tab
+                        final int index = mProjectEditors.getSelectedIndex();
+                        mProjectEditors.setTitleAt(index, project.getProjectName());
+                        // Update rectent project list
+                        updateRecentProjects(project);
+                        // Update all editor parts
+                        // TODO: DO we need to update here?
+                        update();
+                        // Return true at success
+                        return true;
+                    } else {
+                        // Print an error message
+                        mLogger.failure("Error: Cannot write the editor project '" + project + "'");
+                        // And return failure here
+                        return false;
+                    }
+                } else {
+                    // Print an error message
+                    mLogger.warning("Warning: Canceled saving of a project file");
+                    // And return failure here
+                    return false;
+                }
+            } else {
+                // Print an error message
+                mLogger.failure("Error: Cannot save a bad editor project");
+                // And return failure here
+                return false;
+            }
+        } else {
+            // Print an error message
+            mLogger.failure("Error: Cannot save a bad project editor");
+            // And return failure here
+            return false;
+        }
+    }
+
+    // Close the selected project editor
     public final void close() {
         // Close the current project editor
-        close(getProjectEditor());
+        close(getSelectedProjectEditor());
     }
 
     // Close a specific project editor
     private void close(final ProjectEditor editor) {
-        // Close the editor
-        final JDialog quitDialog;
-        // TODO: Move that to the editor
+        // Close the project editor itself
+        editor.close();
+        // Check if the project has changed
         if (editor.getEditorProject().hasChanged()) {
+
+            // TODO: Make a dialog class for that
+            // such as the other dialogs of our
+            // dialog package
+            JDialog quitDialog = new JDialog(this);
             OKButton mYesButton = new OKButton();
-            mYesButton.setText(" Yes     ");
+            mYesButton.setText("Yes");
             mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    //save();
+                    save(editor);
                     //quitDialog.dispose();
-                    // TODO:
                 }
             });
             //NO BUTTON
             CancelButton mNoButton = new CancelButton();
-            mNoButton.setText("  No       ");
+            mNoButton.setText("No");
             mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
                     //quitDialog.dispose();
                 }
             });
-            //
+            // Create a new option pane
             JOptionPane optionPane = new JOptionPane();
             optionPane.setBackground(Color.white);
             optionPane.setMessage("The project " + editor.getEditorProject().getProjectName() + " has changed.  Save it?");
@@ -553,6 +583,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             quitDialog.setVisible(true);
 
         }
+
         // Remove the observer
         mObservable.deleteObserver(editor);
         // Remove the component 
@@ -566,27 +597,27 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
+    // Save all project editors
     public void saveAll() {
         for (int i = 0; i < mProjectEditors.getTabCount(); i++) {
-            save(((ProjectEditor) mProjectEditors.getComponentAt(i)));//.save();
+            save(((ProjectEditor) mProjectEditors.getComponentAt(i)));
         }
-        update();
     }
 
-    // Quit the application
+    // Close all project editors
     public void closeAll() {
-        // Close all projects
         for (int i = 0; i < mProjectEditors.getTabCount(); i++) {
             close((ProjectEditor) mProjectEditors.getComponentAt(i));
         }
-
-        //System.exit(0);
     }
 
-    public void updateRecentProjects(String projectDir, String projectName) {
+    // Update list of recent projects
+    public void updateRecentProjects(final EditorProject project) {
+        final String projectDir = project.getProjectPath();
+        final String projectName = project.getProjectName();
         // Print some info message
         mLogger.message("Updating recent projects with '" + projectDir + "' '" + projectName + "'");
-
+        //
         ArrayList<String> recentProjectDirs = new ArrayList<String>();
         ArrayList<String> recentProjectNames = new ArrayList<String>();
 
@@ -664,31 +695,28 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         mMenuBar.refreshRecentFileMenu();
     }
 
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
+    // Show the options dialog 
     public void showOptions() {
         OptionsDialog optionsDialog = OptionsDialog.getInstance();
 
         optionsDialog.setVisible(true);
     }
 
+    // Show the monitor dialog
     public void showMonitor() {
         MonitorDialog monitorDialog = MonitorDialog.getInstance();
 
         monitorDialog.setVisible(true);
     }
 
+    // Show the help dialog
     public void showHelp() {
         AboutDialog aboutDialog = AboutDialog.getInstance();
 
         aboutDialog.setVisible(true);
     }
 
+    // Show the about dialog
     public void showAbout() {
         AboutDialog aboutDialog = AboutDialog.getInstance();
 
@@ -701,7 +729,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Start the execution of the current project
     public void start() {
         // Get the project that has to be executed
-        final EditorProject project = getProjectEditor().getEditorProject();
+        final ProjectEditor editor = getSelectedProjectEditor();
+        final EditorProject project = editor.getEditorProject();
         // Launch the current project in the runtime
         mRunTime.launch(project);
         // Start the interpreter for that project
@@ -713,7 +742,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Stop the execution of the current project
     public final void stop() {
         // Get the project that has to be stopped
-        final EditorProject project = getProjectEditor().getEditorProject();
+        final ProjectEditor editor = getSelectedProjectEditor();
+        final EditorProject project = editor.getEditorProject();
         // Stop the interpreter for that project
         mRunTime.abort(project);
         // Unload the current project in the runtime
@@ -727,7 +757,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Pause the execution of the current project
     public void pauseSceneFlow() {
         // Get the project that has to be paused
-        final EditorProject project = getProjectEditor().getEditorProject();
+        final ProjectEditor editor = getSelectedProjectEditor();
+        final EditorProject project = editor.getEditorProject();
         // Pause the interpreter for that project
         if (mRunTime.isPaused(project)) {
             mRunTime.proceed(project);

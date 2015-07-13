@@ -199,7 +199,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         mEventCaster.convey(e);
 
         // Add the element editor to the event multicaster
-        mEventCaster.append(this);
+        mEventCaster.register(this);
 
         // display components
         showVariableBadges();
@@ -243,12 +243,13 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
     // TODO: Move that up to to the editor
     private void checkChangesOnWorkspace() {
-
+        //mLogger.message("Checking changes on workspace");
         // checkHash
-        if (EditorInstance.getInstance().getProjectEditor().getEditorProject() != null) {
+        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject() != null) {
             if (mProject.hasChanged()) {
                 EditorInstance.getInstance().getProjectEditors().setTitleAt(
                         EditorInstance.getInstance().getProjectEditors().getSelectedIndex(), mProject.getProjectName() + "*");
+                //mLogger.message("Changes on workspace detected");
             }
         }
     }
@@ -510,13 +511,13 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
 
         mLocalVarDisplay = new VarBadgeLocal(sn, sn.isLocalVarBadgeHidden());
         add(mLocalVarDisplay);
-        mEventCaster.append(mLocalVarDisplay);
+        mEventCaster.register(mLocalVarDisplay);
         mObservable.addObserver(mLocalVarDisplay);
 
         if (getSceneFlowManager().getParentSuperNode(sn) != null) {
             mGlobalVarDisplay = new VarBadgeGlobal(sn, sn.isGlobalVarBadgeHidden());
             add(mGlobalVarDisplay);
-            mEventCaster.append(mGlobalVarDisplay);
+            mEventCaster.register(mGlobalVarDisplay);
             mObservable.addObserver(mGlobalVarDisplay);
         }
 
@@ -797,7 +798,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public void add(Comment c) {
         mCmtSet.add(c);
         super.add(c);
-        mEventCaster.append(c);
+        mEventCaster.register(c);
         mObservable.addObserver(c);
     }
 
@@ -819,7 +820,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public void addNode(Node node) {
         mNodeSet.add(node);
         super.add(node);
-        mEventCaster.append(node);
+        mEventCaster.register(node);
         mObservable.addObserver(node);
     }
 
@@ -849,7 +850,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public void add(Edge edge) {
         super.add(edge);
         mEdgeSet.add(edge);
-        mEventCaster.append(edge);
+        mEventCaster.register(edge);
         mObservable.addObserver(edge);
     }
 
@@ -879,7 +880,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
     public void addCmdBadge(Node node, CmdBadge badge) {
         super.add(badge);
         mCmdBadgeMap.put(node, badge);
-        mEventCaster.append(badge);
+        mEventCaster.register(badge);
         mObservable.addObserver(badge);
     }
 

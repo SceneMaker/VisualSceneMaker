@@ -216,7 +216,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         add(Box.createRigidArea(new Dimension(20, 100)));
 
         // Add the attribute editor to the event multicaster
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     protected abstract void add();
@@ -393,7 +393,7 @@ class ConditionEditor extends JPanel implements EventListener {
 
     public ConditionEditor() {
         initComponents();
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     private void initComponents() {
@@ -483,7 +483,7 @@ class EdgeEditor extends JPanel implements EventListener {
         add(mConditionEditor);
         add(mProbabilityEditor);
         add(mInterruptEditor);
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     @Override
@@ -557,7 +557,7 @@ public class ElementEditor extends JScrollPane implements EventListener, Observe
         setViewportView(null);
 
         // Add the element editor to the event multicaster
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     @Override
@@ -688,7 +688,7 @@ class InterruptEditor extends JPanel implements EventListener {
 
     public InterruptEditor() {
         initComponents();
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     private void initComponents() {
@@ -764,7 +764,7 @@ class NameEditor extends JPanel implements EventListener {
 
     public NameEditor() {
         initComponents();
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     private void initComponents() {
@@ -851,7 +851,7 @@ class NodeEditor extends JPanel implements EventListener {
         add(mCmdEditor);
 
         // Add the element editor to the event multicaster
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     @Override
@@ -899,7 +899,7 @@ class ProbabilityEditor extends JPanel implements EventListener {
 
     public ProbabilityEditor() {
         initComponents();
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     private void initComponents() {
@@ -1059,7 +1059,7 @@ class TimeOutEditor extends JPanel implements EventListener {
 
     public TimeOutEditor() {
         initComponents();
-        EventDispatcher.getInstance().append(this);
+        EventDispatcher.getInstance().register(this);
     }
 
     private void initComponents() {

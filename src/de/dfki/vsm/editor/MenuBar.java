@@ -215,7 +215,7 @@ public class MenuBar extends JMenuBar {
             }
         });
         refreshRecentFileMenu();
-       
+
         mCloseFileMenuItem = new JMenuItem("Close");
 
 //      mCloseFileMenuItem.setIcon(new ImageIcon("data/img/close.png"));
@@ -258,6 +258,7 @@ public class MenuBar extends JMenuBar {
         mSaveAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 (java.awt.event.InputEvent.ALT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         mSaveAllMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.saveAll();
             }
@@ -268,8 +269,12 @@ public class MenuBar extends JMenuBar {
         mExitEditorMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mExitEditorMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
+                // Close all project editors
                 mEditorInstance.closeAll();
+                // And finally exit the system
+                System.exit(0);
             }
         });
         mFileMenu.add(mCreateFileMenuItem);
@@ -298,7 +303,7 @@ public class MenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mCopyMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes();
             }
         });
         mCutMenuItem = new JMenuItem("Cut");
@@ -320,7 +325,7 @@ public class MenuBar extends JMenuBar {
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mNormalizeAllEdgesMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
         });
         mStraightenAllEdgesMenuItem = new JMenuItem("Straighen all Edges");
@@ -328,7 +333,7 @@ public class MenuBar extends JMenuBar {
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mStraightenAllEdgesMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
             }
         });
 

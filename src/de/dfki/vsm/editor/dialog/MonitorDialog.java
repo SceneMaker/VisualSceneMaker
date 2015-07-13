@@ -51,7 +51,7 @@ public class MonitorDialog extends JDialog {
 
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
-        mEditorProject = EditorInstance.getInstance().getProjectEditor().getEditorProject();
+        mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         initComponents();
         initVariableList();
     }

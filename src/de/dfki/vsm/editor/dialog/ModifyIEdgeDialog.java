@@ -231,7 +231,7 @@ public class ModifyIEdgeDialog extends Dialog {
         }
         else{
             mInputTextField.setForeground(Color.red);
-            EditorInstance.getInstance().getProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
         }
     }
 

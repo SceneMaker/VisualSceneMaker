@@ -256,6 +256,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     public void update(java.util.Observable obs, Object obj) {
 
         // mLogger.message("ElementTree.update(" + obj + ")");
+        
+        // TODO: We already have a reference to the project
+        // Why do we need a reference in the update method
         if (obj instanceof EditorProject) {
             updateScenes((EditorProject) obj);
             updateFunDefs((EditorProject) obj);

@@ -263,7 +263,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
                 SceneActionDialog.getInstance().setVisible(true);
                 node.removeFromParent();
 
-                ActiconConfig asd = EditorInstance.getInstance().getProjectEditor().getEditorProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
 
                 asd.remove(a);
             }
@@ -278,7 +278,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
 
                 node.removeFromParent();
 
-                ActiconConfig asd = EditorInstance.getInstance().getProjectEditor().getEditorProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
 
                 asd.remove(aToDel);
                 // TODO: Why do we save the acticon here, that is bullshit

@@ -122,7 +122,6 @@ public class RunTimeProject {
             // Return false at error
             return false;
         }
-
         // Get the absolute file for this directory
         final File base = file.getAbsoluteFile();
         // Check if the project directory does exist
@@ -150,7 +149,6 @@ public class RunTimeProject {
             // Return false at error
             return false;
         }
-
         // Get the absolute file for the directory
         final File base = file.getAbsoluteFile();
         // Check if the project directory does exist

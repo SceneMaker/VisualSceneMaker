@@ -73835,3 +73835,2114 @@ Could not find resource '/res/img/fml_gray.png'.
 SEVERE to LOGFILE on Fri Jul 10 21:00:10 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.EditorProject.write(EditorProject.java:105)
 Error: Cannot write editor project into a bad file
 
+WARNING to LOGFILE on Mon Jul 13 12:34:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 12:34:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 12:34:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+SEVERE to LOGFILE on Mon Jul 13 12:34:41 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.EditorProject.write(EditorProject.java:69)
+Error: Cannot find editor project file 'C:\Users\Gregor Mehlmann\Desktop\pp'
+
+WARNING to LOGFILE on Mon Jul 13 12:54:46 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 12:54:46 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 12:54:46 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.EditorProject.write(EditorProject.java:68)
+Warning: Creating a new editor project directory 'C:\Users\Gregor Mehlmann\Desktop\e'
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeProjectConfig(RunTimeProject.java:219)
+Warning: Creating the new project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml'
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeProjectConfig(RunTimeProject.java:242)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="">
+  <Plugins>
+  </Plugins>
+  <Players>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneFlow(RunTimeProject.java:280)
+Warning: Creating the new sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml'
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneFlow(RunTimeProject.java:303)
+Saved sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml':
+
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneScript(RunTimeProject.java:337)
+Warning: Creating the new scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml'
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneScript(RunTimeProject.java:360)
+Saved scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml':
+<SceneScript lower="0" upper="0">
+</SceneScript>
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeActiconConfig(RunTimeProject.java:394)
+Warning: Creating the new acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml'
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeActiconConfig(RunTimeProject.java:417)
+Saved acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml':
+<Acticon>
+</Acticon>
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeVisiconConfig(RunTimeProject.java:508)
+Warning: Creating the new visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml'
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeVisiconConfig(RunTimeProject.java:531)
+Saved visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml':
+<Visicon>
+</Visicon>
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeGesticonConfig(RunTimeProject.java:451)
+Warning: Creating the new gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml'
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeGesticonConfig(RunTimeProject.java:474)
+Saved gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+WARNING to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.save(EditorConfig.java:251)
+Warning: Creating the new project editor configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml'
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.save(EditorConfig.java:276)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Arial, shownodeid=true, showsceneeditor=true, visualization=false, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Mon Jul 13 12:54:54 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.updateRecentProjects(EditorInstance.java:596)
+Updating recent projects with 'C:\Users\Gregor Mehlmann\Desktop\e' ''
+
+WARNING to LOGFILE on Mon Jul 13 13:10:48 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:10:48 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:10:48 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeProjectConfig(RunTimeProject.java:242)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="">
+  <Plugins>
+  </Plugins>
+  <Players>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneFlow(RunTimeProject.java:303)
+Saved sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml':
+
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneScript(RunTimeProject.java:360)
+Saved scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml':
+<SceneScript lower="0" upper="0">
+</SceneScript>
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeActiconConfig(RunTimeProject.java:417)
+Saved acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeVisiconConfig(RunTimeProject.java:531)
+Saved visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeGesticonConfig(RunTimeProject.java:474)
+Saved gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.save(EditorConfig.java:276)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Arial, shownodeid=true, showsceneeditor=true, visualization=false, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Mon Jul 13 13:10:55 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.updateRecentProjects(EditorInstance.java:600)
+Updating recent projects with 'C:\Users\Gregor Mehlmann\Desktop\e' ''
+
+WARNING to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseProjectConfig(RunTimeProject.java:208)
+Loaded project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="">
+  <Plugins>
+  </Plugins>
+  <Players>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneFlow(RunTimeProject.java:269)
+Loaded sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml':
+
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneScript(RunTimeProject.java:326)
+Loaded scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml':
+<SceneScript lower="0" upper="0">
+</SceneScript>
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseActiconConfig(RunTimeProject.java:383)
+Loaded acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseVisiconConfig(RunTimeProject.java:497)
+Loaded visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseGesticonConfig(RunTimeProject.java:440)
+Loaded gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.load(EditorConfig.java:455)
+Loaded project editor configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Arial, shownodeid=true, showsceneeditor=true, visualization=false, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.updateRecentProjects(EditorInstance.java:602)
+Updating recent projects with 'C:\Users\Gregor Mehlmann\Desktop\e' ''
+
+INFO to LOGFILE on Mon Jul 13 13:14:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.openProject(EditorInstance.java:419)
+Opening project editor from file 'C:\Users\Gregor Mehlmann\Desktop\e'
+
+WARNING to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseProjectConfig(RunTimeProject.java:208)
+Loaded project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="">
+  <Plugins>
+  </Plugins>
+  <Players>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneFlow(RunTimeProject.java:269)
+Loaded sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml':
+
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneScript(RunTimeProject.java:326)
+Loaded scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml':
+<SceneScript lower="0" upper="0">
+</SceneScript>
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseActiconConfig(RunTimeProject.java:383)
+Loaded acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseVisiconConfig(RunTimeProject.java:497)
+Loaded visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseGesticonConfig(RunTimeProject.java:440)
+Loaded gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.load(EditorConfig.java:455)
+Loaded project editor configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Arial, shownodeid=true, showsceneeditor=true, visualization=false, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.updateRecentProjects(EditorInstance.java:602)
+Updating recent projects with 'C:\Users\Gregor Mehlmann\Desktop\e' ''
+
+INFO to LOGFILE on Mon Jul 13 13:14:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.openProject(EditorInstance.java:419)
+Opening project editor from file 'C:\Users\Gregor Mehlmann\Desktop\e'
+
+WARNING to LOGFILE on Mon Jul 13 13:27:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:27:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:27:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+WARNING to LOGFILE on Mon Jul 13 13:30:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:30:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:30:50 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+WARNING to LOGFILE on Mon Jul 13 13:31:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:31:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:31:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 13 13:32:08 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:08 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:08 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:08 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:15 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:15 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:15 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:15 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:17 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:17 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:17 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:17 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeProjectConfig(RunTimeProject.java:242)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="">
+  <Plugins>
+  </Plugins>
+  <Players>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneFlow(RunTimeProject.java:303)
+Saved sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml':
+
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneScript(RunTimeProject.java:360)
+Saved scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml':
+<SceneScript lower="0" upper="0">
+</SceneScript>
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeActiconConfig(RunTimeProject.java:417)
+Saved acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeVisiconConfig(RunTimeProject.java:531)
+Saved visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeGesticonConfig(RunTimeProject.java:474)
+Saved gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.save(EditorConfig.java:276)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Arial, shownodeid=true, showsceneeditor=true, visualization=false, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Mon Jul 13 13:32:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.updateRecentProjects(EditorInstance.java:616)
+Updating recent projects with 'C:\Users\Gregor Mehlmann\Desktop\e' ''
+
+INFO to LOGFILE on Mon Jul 13 13:32:40 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:40 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:41 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:41 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:43 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:43 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:44 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:44 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:44 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:45 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:45 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:45 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:45 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:47 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:48 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:48 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:49 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:49 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:49 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:57 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:57 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:32:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:32:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:04 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:04 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:04 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:04 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeProjectConfig(RunTimeProject.java:242)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="">
+  <Plugins>
+  </Plugins>
+  <Players>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneFlow(RunTimeProject.java:303)
+Saved sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml':
+
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneScript(RunTimeProject.java:360)
+Saved scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml':
+<SceneScript lower="0" upper="0">
+</SceneScript>
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeActiconConfig(RunTimeProject.java:417)
+Saved acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeVisiconConfig(RunTimeProject.java:531)
+Saved visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeGesticonConfig(RunTimeProject.java:474)
+Saved gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.save(EditorConfig.java:276)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Arial, shownodeid=true, showsceneeditor=true, visualization=false, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Mon Jul 13 13:33:07 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.updateRecentProjects(EditorInstance.java:616)
+Updating recent projects with 'C:\Users\Gregor Mehlmann\Desktop\e' ''
+
+INFO to LOGFILE on Mon Jul 13 13:33:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:16 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:18 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:20 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:21 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:25 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:25 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:25 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:25 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:31 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:32 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:33 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:35 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+INFO to LOGFILE on Mon Jul 13 13:33:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:246)
+Checking changes on workspace
+
+INFO to LOGFILE on Mon Jul 13 13:33:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.WorkSpace.checkChangesOnWorkspace(WorkSpace.java:252)
+Changes on workspace detected
+
+WARNING to LOGFILE on Mon Jul 13 13:34:15 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:34:15 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:34:15 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:58 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:34:59 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="0" state="26" lower="0" upper="1" line="0" column="0">
+  s
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:01 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="2" state="26" lower="6" upper="7" line="0" column="6">
+  d
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:01 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="2" state="26" lower="6" upper="7" line="0" column="6">
+  d
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:03 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:04 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.syntax_error(ScriptParser.java:168)
+Error: Syntax Error With Token '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+SEVERE to LOGFILE on Mon Jul 13 13:35:04 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.scenescript.ScriptParser.unrecovered_syntax_error(ScriptParser.java:179)
+Error: Unrecovered Syntax Error '<SyntaxDocToken field="ERRORSTATE" lexic="YY_ERROR_STATE" token="22" index="3" state="26" lower="8" upper="9" line="0" column="8">
+  :
+</SyntaxDocToken>'
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeProjectConfig(RunTimeProject.java:242)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="">
+  <Plugins>
+  </Plugins>
+  <Players>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneFlow(RunTimeProject.java:303)
+Saved sceneflow configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\sceneflow.xml':
+
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeSceneScript(RunTimeProject.java:360)
+Saved scenescript configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\scenescript.xml':
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="40" language="de" identifier="HelloWorld">
+    <SceneTurn lower="21" upper="40" speaker="reeti">
+      <SceneUttr lower="28" upper="40" punct="!">
+        <SceneWord lower="28" upper="33" text="Hello"/>
+        <SceneWord lower="34" upper="39" text="world"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeActiconConfig(RunTimeProject.java:417)
+Saved acticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeVisiconConfig(RunTimeProject.java:531)
+Saved visicon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.writeGesticonConfig(RunTimeProject.java:474)
+Saved gesticon configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.save(EditorConfig.java:276)
+Saved project configuration file 'C:\Users\Gregor Mehlmann\Desktop\e\preferences.xml':
+{xmlns=xml.sceneflow.dfki.de, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Arial, shownodeid=true, showsceneeditor=true, visualization=false, xsi_schemeLocation=res/xsd/sceneflow.xsd, showgestures=true, frame_height=600, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, xmlns_xsi=http://www.w3.org/2001/XMLSchema-instance, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
+
+INFO to LOGFILE on Mon Jul 13 13:35:28 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.instance.EditorInstance.updateRecentProjects(EditorInstance.java:616)
+Updating recent projects with 'C:\Users\Gregor Mehlmann\Desktop\e' ''
+
+WARNING to LOGFILE on Mon Jul 13 13:44:22 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:44:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:44:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+WARNING to LOGFILE on Mon Jul 13 13:44:29 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:29 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.launch(RunTimeInstance.java:61)
+Loaded runtime objects of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:29 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.launch(RunTimeInstance.java:71)
+Launched runtime objects of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:29 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.launch(RunTimeInstance.java:78)
+Registered the new interpreter 'de.dfki.vsm.runtime.Interpreter@73c25c1a' for project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:29 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.Interpreter.start(Interpreter.java:169)
+Starting execution of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a' with interpreter 'de.dfki.vsm.runtime.Interpreter@73c25c1a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:38 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.Interpreter.abort(Interpreter.java:200)
+Aborting execution of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a' with interpreter 'de.dfki.vsm.runtime.Interpreter@73c25c1a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:38 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.unload(RunTimeInstance.java:100)
+Unloaded runtime objects of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:38 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.unload(RunTimeInstance.java:106)
+Deregistered the interpreter 'de.dfki.vsm.runtime.Interpreter@73c25c1a' with project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+WARNING to LOGFILE on Mon Jul 13 13:44:38 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+WARNING to LOGFILE on Mon Jul 13 13:44:40 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:40 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.launch(RunTimeInstance.java:61)
+Loaded runtime objects of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:40 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.launch(RunTimeInstance.java:71)
+Launched runtime objects of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:40 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.launch(RunTimeInstance.java:78)
+Registered the new interpreter 'de.dfki.vsm.runtime.Interpreter@4848484e' for project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:40 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.Interpreter.start(Interpreter.java:169)
+Starting execution of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a' with interpreter 'de.dfki.vsm.runtime.Interpreter@4848484e'
+
+INFO to LOGFILE on Mon Jul 13 13:44:42 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.Interpreter.abort(Interpreter.java:200)
+Aborting execution of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a' with interpreter 'de.dfki.vsm.runtime.Interpreter@4848484e'
+
+INFO to LOGFILE on Mon Jul 13 13:44:42 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.unload(RunTimeInstance.java:100)
+Unloaded runtime objects of project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+INFO to LOGFILE on Mon Jul 13 13:44:42 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.unload(RunTimeInstance.java:106)
+Deregistered the interpreter 'de.dfki.vsm.runtime.Interpreter@4848484e' with project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+WARNING to LOGFILE on Mon Jul 13 13:44:42 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.instance.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@5e98010a'
+
+WARNING to LOGFILE on Mon Jul 13 13:55:42 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:56)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 13 13:55:42 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 13 13:55:42 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
