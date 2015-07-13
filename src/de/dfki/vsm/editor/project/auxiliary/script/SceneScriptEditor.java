@@ -1,4 +1,4 @@
-package de.dfki.vsm.editor.script;
+package de.dfki.vsm.editor.project.auxiliary.script;
 
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.EditorProject;
@@ -41,7 +41,7 @@ import javax.swing.text.Document;
 /**
  * @author Not me
  */
-public class ScriptEditorPane extends JEditorPane implements EventListener, Observer {
+public class SceneScriptEditor extends JEditorPane implements EventListener, Observer {
 
     // The System Logger
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -61,11 +61,8 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
     private final EditorProject mEditorProject;
     private final EditorConfig mEditorConfig;
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    // Construct The Text Pane
-    public ScriptEditorPane(final EditorProject project) {
+    // Construct scenescript editor pane
+    public SceneScriptEditor(final EditorProject project) {
         mEditorProject = project;
         mEditorConfig = mEditorProject.getEditorConfig();
 
@@ -73,7 +70,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
         setFont(mFont);
 
         // Set Lexxer And Editor
-        setEditorKit(new ScriptEditorKit());
+        setEditorKit(new SceneScriptEditorKit());
 
         // Set An Empty Border
         setBorder(BorderFactory.createEmptyBorder());
@@ -101,49 +98,6 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
         mEventCaster.register(this);
     }
 
-    /*
-     * // Paint The Text Pane
-     * @Override
-     * protected final synchronized void paintComponent(final Graphics graphics) {
-     * super.paintComponent(graphics);
-     *
-     * // If there are visualization tasks then visualize them
-     * if (!mVisualisationTasks.isEmpty()) {
-     * // TODO: why create() and clone()?
-     * Graphics2D graphics2D = (Graphics2D) graphics.create();
-     * ArrayList<ScriptEditPanel.HighlightTask> visTasks = (ArrayList<ScriptEditPanel.HighlightTask>) mVisualisationTasks.clone();
-     *
-     * for (ScriptEditPanel.HighlightTask highlightTask : visTasks) {
-     * // draw activity cue
-     * if (highlightTask.getActivityTime() > 20) {
-     * graphics2D.setColor(highlightTask.mColor);
-     * graphics2D.fillRect(
-     * highlightTask.getXPos(),
-     * highlightTask.getYPos(),
-     * highlightTask.getWidth(),
-     * highlightTask.getHeight());
-     * } else {
-     * // Draw the fading away of the highlight
-     * Color c = new Color(
-     * highlightTask.mColor.getRed(),
-     * highlightTask.mColor.getGreen(),
-     * highlightTask.mColor.getBlue(),
-     * highlightTask.mColor.getTransparency() - (highlightTask.mColor.getTransparency() - 5 * highlightTask.getActivityTime()));
-     * graphics2D.setColor(c);
-     * graphics2D.fillRect(
-     * highlightTask.getXPos(),
-     * highlightTask.getYPos(),
-     * highlightTask.getWidth(),
-     * highlightTask.getHeight());
-     * }
-     * }
-     * graphics2D.dispose();
-     * }
-     * }
-     */
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
     // Init Drag & Drop Support
     private void initDnDSupport() {
         mValidActions = DnDConstants.ACTION_COPY;
@@ -325,7 +279,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private class HighlightTask extends VisualisationTask {
+    private final class HighlightTask extends VisualisationTask {
 
         private Color mColor = null;
         private Rectangle mRect = null;

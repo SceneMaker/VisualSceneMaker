@@ -1,13 +1,14 @@
-package de.dfki.vsm.editor.script;
+package de.dfki.vsm.editor.project.auxiliary;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.FunctionEditor;
+import de.dfki.vsm.editor.project.auxiliary.function.FunctionEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
+import de.dfki.vsm.editor.project.auxiliary.dialog.DialogActEditor;
+import de.dfki.vsm.editor.project.auxiliary.script.SceneScriptEditor;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -17,18 +18,13 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
-
 import org.ujmp.core.collections.ArrayIndexList;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-
 import java.util.ArrayList;
 import java.util.Observer;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -54,15 +50,14 @@ import javax.swing.text.JTextComponent;
 /**
  * @author Gregor Mehlmannn
  */
-public final class SceneScriptEditor extends JPanel implements DocumentListener, EventListener, Observer {
+public final class AuxiliaryEditor extends JPanel implements DocumentListener, EventListener, Observer {
 
-    // The System Logger
+    // The system logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-
-    // The Event Caster
+    // The event dispatcher instance
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
-    // The Observable Part
+    // The editor's observable 
     private final Observable mObservable = new Observable();
 
     private class Observable extends java.util.Observable {
@@ -75,9 +70,9 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
 
     // The Script Editor Pane
     private final JScrollPane mScrollPane;
-    private final ScriptToolBar mScenesToolbar;
+    private final AuxiliaryToolBar mToolBar;
     private final JTabbedPane mTabPane;
-    private final ScriptEditorPane mEditorPane;
+    private final SceneScriptEditor mEditorPane;
     private final CaretStatusLabel mStatusLabel;
     private final SceneElementDisplay mElementPane;
     private final SceneScript mSceneScript;
@@ -99,7 +94,7 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneScriptEditor(final EditorProject project) {
+    public AuxiliaryEditor(final EditorProject project) {
         // Initialize the editor project
         mProject = project;
         // Initialize the scene script
@@ -111,7 +106,7 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
         mStatusLabel = new CaretStatusLabel("");
 
         // Initialize The Editor Pane
-        mEditorPane = new ScriptEditorPane(mProject);
+        mEditorPane = new SceneScriptEditor(mProject);
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);
 
@@ -174,13 +169,13 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
         addTab("DialogAct [Experimental]", mDialogActEditor);
 
         // Initialize the Toolbar
-        mScenesToolbar = new ScriptToolBar(this);
+        mToolBar = new AuxiliaryToolBar();
 
         // Initialize The Components
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
         setBackground(Color.WHITE);
-        add(mScenesToolbar, BorderLayout.NORTH);
+        add(mToolBar, BorderLayout.NORTH);
         add(mTabPane, BorderLayout.CENTER);
         add(mStatusLabel, BorderLayout.SOUTH);
 
@@ -215,16 +210,19 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
         mAddButton.setTabPos(tabCounter - 1);
         mAddButton.removeMouseListener(mAddButton.getMouseListeners()[1]);
         mAddButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(MouseEvent me) {
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
                     mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
                 }
             }
 
+            @Override
             public void mouseExited(MouseEvent me) {
                 mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
             }
 
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
                     if (content instanceof FunctionEditor) {
@@ -255,40 +253,14 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
         tabCounter++;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    @Override
-    public void update(final java.util.Observable obs, final Object obj) {
-
-        // Notify All Observers
-        mObservable.notify(obj);
-    }
-
-    /**
-     * Function to know if the panel can be hidden
-     *
-     * @return boolean
-     */
+    // Get the pin pricked flag
     public boolean isPinPricked() {
-        return mScenesToolbar.isPinPricked();
+        return mToolBar.isPinPricked();
     }
 
-    /**
-     * Fixes the pin
-     *
-     * @return
-     */
-    public void prickPin() {
-        mScenesToolbar.prickPin();
-    }
-
-    public JTabbedPane getTabPane() {
-        return mTabPane;
-    }
-
-    public EditorConfig getPreferences() {
-        return mPreferences;
+    // Set the pin pricked flag
+    public void setPinPricked() {
+        mToolBar.prickPin();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -297,116 +269,6 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
     @Override
     public void update(final EventObject event) {
 
-        /*
-         * try {
-         *
-         * ///////////////////////////////////////////////////////////////////
-         * if (event instanceof GroupSelectedEvent) {
-         * /
-         * SM3SceneGroup group = ((GroupSelectedEvent) event).getGroup();
-         * // Compute the set of rectangles of the whitelisted scenes
-         * // from that group and schedule the tasks to highlight them
-         * for (SM3SceneObject scene : group.getWhiteList()) {
-         * Rectangle sceneRect
-         * = mTextSpace.modelToView(scene.getPosition().mBeginPos).union(
-         * mTextSpace.modelToView(scene.getPosition().mEndPos));
-         * HighlightTask highlightTask = new HighlightTask(100, this, Preferences.sTRANSLUCENT_GREEN_COLOR, sceneRect);
-         * mVisualisationTasks.add(highlightTask);
-         * mVisualisationTimer.schedule(highlightTask, 0, 25);
-         *
-         * }
-         * // Compute the set of rectangles of the blacklisted scenes
-         * // from that group and schedule the tasks to highlight them
-         * for (SM3SceneObject scene : group.getBlackList()) {
-         * Rectangle sceneRect
-         * = mTextSpace.modelToView(scene.getPosition().mBeginPos).union(
-         * mTextSpace.modelToView(scene.getPosition().mEndPos));
-         * HighlightTask highlightTask = new HighlightTask(100, this, Preferences.sTRANSLUCENT_YELLOW_COLOR, sceneRect);
-         * mVisualisationTasks.add(highlightTask);
-         * mVisualisationTimer.schedule(highlightTask, 0, 25);
-         *
-         * }
-         * }
-         * ///////////////////////////////////////////////////////////////////
-         * if (event instanceof SceneExecutedEvent) {
-         * SM3SceneObject scene = ((SceneExecutedEvent) event).getScene();
-         * // Clear the vector of tasks to stop the highlight pane visualizing
-         * // the tasks that are still in the timer's queue. TODO: Cancel the
-         * // tasks from the timer queue, so that the xext time this list is not
-         * // empty there will not be visualized "old" tasks!!!
-         * mVisualisationTasks.clear();
-         * // Get the position of the scene header in the document and
-         * // compute the rectangle that has to be highlighted in the document
-         * Rectangle sceneRect
-         * = mTextSpace.modelToView(scene.getPosition().mBeginPos).union(
-         * mTextSpace.modelToView(scene.getPosition().mEndPos));
-         * for (SM3SceneTurn turn : scene.getBody()) {
-         * Rectangle turnRect
-         * = mTextSpace.modelToView(turn.getPosition().mBeginPos).union(
-         * mTextSpace.modelToView(turn.getPosition().mEndPos));
-         * sceneRect.add(turnRect);
-         * }
-         * // Set the caret position
-         * mTextSpace.setCaretPosition(scene.getPosition().mBeginPos);
-         * // Schedule the highlight task for that rectangle
-         * HighlightTask highlightTask = new HighlightTask(100, this, Preferences.sTRANSLUCENT_GREEN_COLOR, sceneRect);
-         * mVisualisationTasks.add(highlightTask);
-         * mVisualisationTimer.schedule(highlightTask, 0, 25);
-         * // TODO: make visualization dependen on lenght of text  turnText().length()
-         *
-         * }
-         * ///////////////////////////////////////////////////////////////////
-         * if (event instanceof TurnExecutedEvent) {
-         * SM3SceneTurn turn = ((TurnExecutedEvent) event).getTurn();
-         * // Get the position of the turn  in the document and
-         * // Compute the rectangle that has to be highlighted in the document
-         * Rectangle wordRect
-         * = mTextSpace.modelToView(turn.getPosition().mBeginPos).union(
-         * mTextSpace.modelToView(turn.getPosition().mEndPos));
-         * // Set the caret position
-         * mTextSpace.setCaretPosition(turn.getPosition().mBeginPos);
-         * // Schedule the highlight task for that rectangle
-         * HighlightTask highlightTask = new HighlightTask(100, this, Preferences.sTRANSLUCENT_RED_COLOR, wordRect);
-         * mVisualisationTasks.add(highlightTask);
-         * mVisualisationTimer.schedule(highlightTask, 0, 25 );
-         * // TODO: make visualization dependen on lenght of text  turnText().length()
-         * }
-         * ///////////////////////////////////////////////////////////////////
-         * if (event instanceof UtteranceExecutedEvent) {
-         * SM3SceneUttr utt = ((UtteranceExecutedEvent) event).getUtterance();
-         * // Get the position of the turn  in the document and
-         * // Compute the rectangle that has to be highlighted in the document
-         * Rectangle uttRect
-         * = mTextSpace.modelToView(utt.getPosition().mBeginPos).union(
-         * mTextSpace.modelToView(utt.getPosition().mEndPos));
-         * // Set the caret position
-         * mTextSpace.setCaretPosition(utt.getPosition().mBeginPos);
-         * // Schedule the highlight task for that rectangle
-         * HighlightTask highlightTask = new HighlightTask(100, this, Preferences.sTRANSLUCENT_RED_COLOR, uttRect);
-         * mVisualisationTasks.add(highlightTask);
-         * mVisualisationTimer.schedule(highlightTask, 0, 25);
-         * // TODO: make visualization dependen on lenght of text  turnText().length()
-         * }
-         * ///////////////////////////////////////////////////////////////////
-         * if (event instanceof WordExecutedEvent) {
-         * SM3SceneWord word = ((WordExecutedEvent) event).getWord();
-         * // Get the position of the word in the document and
-         * // compute the rectangle that has to be highlighted in the document
-         * Rectangle wordRect
-         * = mTextSpace.modelToView(word.getPosition().mBeginPos).union(
-         * mTextSpace.modelToView(word.getPosition().mEndPos));
-         * // Set the caret position
-         * mTextSpace.setCaretPosition(word.getPosition().mBeginPos);
-         * // Schedule the highlight task for that rectangle
-         * HighlightTask highlightTask = new HighlightTask(100, this, Preferences.sTRANSLUCENT_BLUE_COLOR, wordRect);
-         * mVisualisationTasks.add(highlightTask);
-         * mVisualisationTimer.schedule(highlightTask, 0, 25 );
-         * // TODO: make visualization dependen on lenght of text  turnText().length()
-         * }
-         * } catch (BadLocationException e) {
-         * e.printStackTrace();
-         * }
-         */
         if (event instanceof SceneSelectedEvent) {
             String sg = ((SceneSelectedEvent) event).getGroup().getName().trim();
             String language = ((SceneSelectedEvent) event).getLanguage();
@@ -631,5 +493,11 @@ public final class SceneScriptEditor extends JPanel implements DocumentListener,
                 }
             });
         }
+    }
+
+    // Notify all observers
+    @Override
+    public void update(final java.util.Observable obs, final Object obj) {
+        mObservable.notify(obj);
     }
 }

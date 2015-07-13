@@ -136,6 +136,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     };
 
+    
+    
     // Private construction of an editor
     private EditorInstance() {
         Preferences.configure();
@@ -696,38 +698,35 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Show the options dialog 
-    public void showOptions() {
-        OptionsDialog optionsDialog = OptionsDialog.getInstance();
+    public final void showOptions() {
+        final OptionsDialog optionsDialog = OptionsDialog.getInstance();
 
         optionsDialog.setVisible(true);
     }
 
     // Show the monitor dialog
-    public void showMonitor() {
-        MonitorDialog monitorDialog = MonitorDialog.getInstance();
+    public final void showMonitor() {
+        final MonitorDialog monitorDialog = MonitorDialog.getInstance();
 
         monitorDialog.setVisible(true);
     }
 
     // Show the help dialog
-    public void showHelp() {
-        AboutDialog aboutDialog = AboutDialog.getInstance();
+    public final void showHelp() {
+        final AboutDialog aboutDialog = AboutDialog.getInstance();
 
         aboutDialog.setVisible(true);
     }
 
     // Show the about dialog
-    public void showAbout() {
-        AboutDialog aboutDialog = AboutDialog.getInstance();
+    public final void showAbout() {
+        final AboutDialog aboutDialog = AboutDialog.getInstance();
 
         aboutDialog.setVisible(true);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
     // Start the execution of the current project
-    public void start() {
+    public final void start() {
         // Get the project that has to be executed
         final ProjectEditor editor = getSelectedProjectEditor();
         final EditorProject project = editor.getEditorProject();
@@ -755,7 +754,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Pause the execution of the current project
-    public void pauseSceneFlow() {
+    public final void pauseSceneFlow() {
         // Get the project that has to be paused
         final ProjectEditor editor = getSelectedProjectEditor();
         final EditorProject project = editor.getEditorProject();

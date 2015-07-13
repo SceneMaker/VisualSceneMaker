@@ -1,4 +1,4 @@
-package de.dfki.vsm.editor.script;
+package de.dfki.vsm.editor.project.auxiliary.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
@@ -54,7 +54,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 /**
  * @author Sergio Soto
  */
-class DialogActEditor extends JPanel implements EventListener, Observer {
+public final class DialogActEditor extends JPanel implements EventListener, Observer {
     private final Observable mObservable = new DialogActEditor.Observable();
     private Dimension        buttonSize  = new Dimension(125, 30);;
 

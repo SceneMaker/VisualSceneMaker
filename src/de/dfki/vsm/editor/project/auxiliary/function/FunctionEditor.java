@@ -1,5 +1,6 @@
-package de.dfki.vsm.editor;
+package de.dfki.vsm.editor.project.auxiliary.function;
 
+import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
@@ -61,9 +62,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
 
     private final EditorProject mProject;
 
-    /**
-     *
-     */
+    //
     public FunctionEditor(final EditorProject project) {
         mProject = project;
         mSceneFlow = mProject.getSceneFlow();
