@@ -6,7 +6,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.interpreter.Environment;
 import de.dfki.vsm.runtime.interpreter.Process;
-import de.dfki.vsm.runtime.instance.RunTimeInstance;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;

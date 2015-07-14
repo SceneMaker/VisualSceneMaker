@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 
@@ -29,10 +30,10 @@ import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public class Preferences {
+public final class Preferences {
 
     // The editor properties object
     private static final Properties sPROPERTIES = new Properties();
@@ -452,26 +453,6 @@ public class Preferences {
         }
     }
 
-//    // TODO: complete function implementation
-//    public static synchronized void info() {
-//        String infoString =
-//            "\r\n___________________________________________________________________________________________________________________\r\n"
-//            + "                                                                                                                   \r\n"
-//            + "                                  SceneMaker Editor Preferences                                                    \r\n"
-//            + "___________________________________________________________________________________________________________________\r\n"
-//            + "                                                                                                                   \r\n"
-//            + "User Name:            " + sUSER_NAME + "\r\n" + "User Home Directory:  " + sUSER_HOME + "\r\n"
-//            + "Configuration File:   " + sCONFIG_FILE + "\r\n"
-//            + "                                                                                                                   \r\n"
-//            + "Working Directory:    " + sUSER_DIR + "\r\n"
-//            + "                                                                                                                   \r\n"
-//            + "Resource Class:       " +  SceneMaker3.class.getCanonicalName() + "\r\n"
-//            + "                                                                                                                   \r\n";
-//
-//        infoString +=
-//            "___________________________________________________________________________________________________________________\r\n";
-//        LOGDefaultLogger.getInstance().message(infoString);
-//    }
     public static synchronized void configure() {
         try {
 
@@ -482,45 +463,40 @@ public class Preferences {
             // Use system look and feel
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-            // UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
+            UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
             UIManager.put("TabbedPane.background", new Color(100, 100, 100));
             UIManager.put("TabbedPane.contentAreaColor", new Color(100, 100, 100));
             UIManager.put("TabbedPane.tabAreaBackground", new Color(100, 100, 100));
 
             // paint a nice doc icon when os is mac
             if (isMac()) {
-                Class appClass = Class.forName("com.apple.eawt.Application");
-
-                try {
-                    Object app = appClass.getMethod("getApplication", new Class[]{}).invoke(null,
-                            new Object[]{});
-                    Method setDockIconImage = appClass.getMethod("setDockIconImage", new Class[]{Image.class});
-
-                    setDockIconImage.invoke(app, new Object[]{Preferences.sSCENEMAKER_DOCICON.getImage()});
-                } catch (Exception x) {
-                    x.printStackTrace();
-                }
+                final Class appClass = Class.forName("com.apple.eawt.Application");
+                // Get the application and the method to set the dock icon
+                final Object app = appClass.getMethod("getApplication", new Class[]{}).invoke(null, new Object[]{});
+                final Method setDockIconImage = appClass.getMethod("setDockIconImage", new Class[]{Image.class});
+                // Set the dock icon to the logo of Visual Scene Maker 3  
+                setDockIconImage.invoke(app, new Object[]{Preferences.sSCENEMAKER_DOCICON.getImage()});
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
         }
     }
 
+    // Check if we are on a WINDOWS system
     private static synchronized boolean isWindows() {
-        String os = System.getProperty("os.name").toLowerCase();
-
+        final String os = System.getProperty("os.name").toLowerCase();
         return (os.indexOf("win") >= 0);
     }
 
+    // Check if we are on a MAC system
     private static synchronized boolean isMac() {
-        String os = System.getProperty("os.name").toLowerCase();
-
+        final String os = System.getProperty("os.name").toLowerCase();
         return (os.indexOf("mac") >= 0);
     }
 
+    // Check if we are on a UNIX system
     private static synchronized boolean isUnix() {
-        String os = System.getProperty("os.name").toLowerCase();
-
+        final String os = System.getProperty("os.name").toLowerCase();
         return ((os.indexOf("nix") >= 0) || (os.indexOf("nux") >= 0));
     }
 }

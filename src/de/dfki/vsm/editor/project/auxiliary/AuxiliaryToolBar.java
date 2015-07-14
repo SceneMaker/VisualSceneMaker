@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.project.auxiliary;
 
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Dimension;
 import java.awt.Insets;
@@ -21,15 +22,19 @@ public final class AuxiliaryToolBar extends JToolBar {
     private boolean pinPricked = false;
     // The pin toolbar button 
     private JButton mPinButton;
+    // The current editor project
+    private final EditorProject mProject;
 
-    public AuxiliaryToolBar() {
+    public AuxiliaryToolBar(final EditorProject project) {
         // Initialize the tool bar
         super("AuxiliaryToolBar", JToolBar.HORIZONTAL);
+        // Initialize the editor project
+        mProject = project;
         // Initialize tool bar features
         setFloatable(false);
         setRollover(true);
         // Set an empty tool bar border
-        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        setBorder(BorderFactory.createEmptyBorder());
         // Initialize the GUI components
         initComponents();
     }
