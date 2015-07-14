@@ -6,6 +6,7 @@ import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
@@ -41,28 +42,35 @@ import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 
 /**
  * @author Sergio Soto
  *
  */
 public class FunctionEditor extends JPanel implements EventListener, Observer {
-    private final Observable              mObservable  = new Observable();
-    private final EventCaster             mEventCaster = EventCaster.getInstance();
+    private final Observable                mObservable  = new Observable();
+    private final EventCaster               mEventCaster = EventCaster.getInstance();
 //    private JSplitPane                    mSplitPane;
-    private JScrollPane                   mFunctionsScrollPanel;
-    private JPanel                        mFunctionsPanel;
+    private JScrollPane                     mFunctionsScrollPanel;
+    private JPanel                          mFunctionsPanel;
 //    private JPanel                        mButtonPanel;
-    private RemoveButton                  mRemoveButton;
-    private final ArrayList<FunDefDialog> mFunDefDialogList;
-    private final SceneFlow               mSceneFlow;
+    private RemoveButton                    mRemoveButton;
+    private final ArrayList<FunDefDialog>   mFunDefDialogList;
+    private final SceneFlow                 mSceneFlow;
+    private final ScriptEditorPanel         mScriptEditorPanel;
 
     /**
      *
      */
-    public FunctionEditor(SceneFlow sceneflow) {
+    public FunctionEditor(SceneFlow sceneflow, ScriptEditorPanel parentScriptEditor) {
         mSceneFlow        = sceneflow;
+        mScriptEditorPanel = parentScriptEditor;
+        
         mFunDefDialogList = new ArrayList<>();
+        
         setLayout(new GridLayout(1, 0));
         initComponents();
 
@@ -73,7 +81,8 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
     /**
      *
      */
-    private void initComponents() {
+    private void initComponents() {        
+        //
         mFunctionsPanel = new JPanel();
         mFunctionsPanel.setOpaque(false);
         mFunctionsPanel.setLayout(new BoxLayout(mFunctionsPanel, BoxLayout.Y_AXIS));
@@ -389,6 +398,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
             launchFunctionCreatedEvent(funDef);
             Editor.getInstance().update();
             mFunctionsScrollPanel.repaint();
+            mScriptEditorPanel.getUndoManager().addEdit(new Edit());
         }
 
         // Editor.getInstance().update();
@@ -538,6 +548,38 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         public void update(Object obj) {
             setChanged();
             notifyObservers(obj);
+        }
+    }
+    
+    private class Edit extends AbstractUndoableEdit {
+        @Override
+        public void undo() throws CannotUndoException {
+            addNewFunction();
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            removeFunction(null);
+        }
+
+        @Override
+        public boolean canUndo() {
+            return true;
+        }
+
+        @Override
+        public boolean canRedo() {
+            return true;
+        }
+
+        @Override
+        public String getUndoPresentationName() {
+            return "Undo Deletion Of Function";
+        }
+
+        @Override
+        public String getRedoPresentationName() {
+            return "Redo Deletion Of Function";
         }
     }
 }

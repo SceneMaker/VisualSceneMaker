@@ -49,7 +49,7 @@ public class QuitDialog extends JDialog {
         mParentEditor = parentEdit;
         
         //CHANGE MODALITY 
-        setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+        setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
         
         // the exit message
         mExitMessage = new JLabel("<html><body>This Project has been modified but not saved. <br> Do you want to save before quitting?</body></html>");

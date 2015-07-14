@@ -125,15 +125,21 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         ((ProjectEditor) getSelectedComponent()).save();
         setTitleAt(getSelectedIndex(), getTitleAt(getSelectedIndex()).replace("*", ""));
     }
-
+/**
+ * Saves the current project, returns true or false depending on the exit's dialog result
+ * The user can save and exit == true, 
+ * exit without saving == true
+ * cancel the action == false
+ * @return 
+ */
     public boolean closeCurrent() {
         ProjectEditor projectEditor = ((ProjectEditor) getSelectedComponent());
-        boolean result = false;
+        boolean result = true;
         if(projectEditor.getProject().hasChanged())
         {
             result = projectEditor.saveBeforeClosing();
         }
-        if(result)
+        if(result )
         {
             mObservable.deleteObserver(projectEditor);
             remove(projectEditor);

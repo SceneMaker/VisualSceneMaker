@@ -547,7 +547,7 @@ public class Editor extends JFrame implements EventListener {
     public void updateRecentProjects(String projectDir, String projectName) {
         ArrayList<String> recentProjectDirs  = new ArrayList<String>();
         ArrayList<String> recentProjectNames = new ArrayList<String>();
-
+ 
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
             String pDir = Preferences.getProperty("recentprojectdir" + i);
             if (pDir != null) {
@@ -566,7 +566,7 @@ public class Editor extends JFrame implements EventListener {
             if (recentProjectNames.contains(projectName)) {
                 // case: project is on list - has now to be at first pos
                 int index = recentProjectDirs.indexOf(projectDir);
-
+                Preferences.setProperty("recentprojectdate" + index, new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(new Date()));
                 if (index != 0) {
                     recentProjectDirs.add(0, projectDir);
                     recentProjectNames.add(0, projectName);
@@ -577,7 +577,7 @@ public class Editor extends JFrame implements EventListener {
                 int index = recentProjectDirs.indexOf(projectDir);
 
                 Preferences.setProperty("recentprojectname" + index, projectName);
-                Preferences.setProperty("recentprojectdate" + index, new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(new Date()));
+                
                 recentProjectNames.remove(index);
                 recentProjectNames.add(index, projectName);
             }
@@ -604,7 +604,7 @@ public class Editor extends JFrame implements EventListener {
             if ((dir != null) && (name != null)) {
                 Preferences.setProperty("recentprojectdir" + i, dir);
                 Preferences.setProperty("recentprojectname" + i, name);
-                Preferences.setProperty("recentprojectdate" + i, new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
+                //Preferences.setProperty("recentprojectdate" + i, new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(new Date()));
             } else {
                 break;
             }
