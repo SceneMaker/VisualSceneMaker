@@ -1,9 +1,13 @@
-package de.dfki.vsm.editor;
+package de.dfki.vsm.editor.project.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.editor.ElementDisplay;
+import de.dfki.vsm.editor.ElementEditor;
+import de.dfki.vsm.editor.ProjectToolPanel;
+import de.dfki.vsm.editor.SceneFlowToolBar;
+import de.dfki.vsm.editor.WorkSpace;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
-import de.dfki.vsm.editor.project.auxiliary.AuxiliaryEditor;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
@@ -52,7 +56,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class SceneFlowEditor extends JPanel implements EventListener, Observer {

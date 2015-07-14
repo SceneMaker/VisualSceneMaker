@@ -83,6 +83,16 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
     private final List<JList>        mDAJLists;
     private final List<DialogAct>    mDialogActList;
 
+    
+    //
+    public final void close() {
+        // Remove All Observers
+        mObservable.deleteObservers();
+        // TODO: Close the dialog act editor
+    }
+
+    
+    
     public DialogActEditor(EditorProject project) {
         mProject   = project;
         mDialogAct = mProject.getDialogAct();

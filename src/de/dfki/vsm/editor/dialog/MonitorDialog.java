@@ -15,7 +15,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.instance.RunTimeInstance;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 
 //~--- JDK imports ------------------------------------------------------------

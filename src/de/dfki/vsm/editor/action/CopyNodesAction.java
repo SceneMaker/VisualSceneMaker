@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.SceneFlowEditor;
+import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.WorkSpace;
 
 //~--- JDK imports ------------------------------------------------------------

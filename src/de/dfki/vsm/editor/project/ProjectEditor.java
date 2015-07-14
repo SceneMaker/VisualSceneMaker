@@ -1,10 +1,10 @@
 package de.dfki.vsm.editor.project;
 
-import de.dfki.vsm.editor.SceneFlowEditor;
+import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.project.auxiliary.AuxiliaryEditor;
+import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -36,7 +36,9 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     // The sceneflow editor of this project
     private final SceneFlowEditor mSceneFlowEditor;
     // The auxiliary editor of this project
-    private final AuxiliaryEditor mAuxiliaryEditor;
+     private final OLDSceneScriptEditor mAuxiliaryEditor;
+    //private final AuxiliaryEditor mAuxiliaryEditor;
+
     // The editor's observable component 
     private final Observable mObservable = new Observable();
 
@@ -53,9 +55,11 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         mEditorProject = project;
         // Initialize the sceneflow editor
         mSceneFlowEditor = new SceneFlowEditor(mEditorProject);
+        // Initialize the auxuliary editor
+        mAuxiliaryEditor = new OLDSceneScriptEditor(mEditorProject);
+        //mAuxiliaryEditor = new AuxiliaryEditor(mEditorProject);
+        // register the observers
         mObservable.addObserver(mSceneFlowEditor);
-        // Initialize the scenescript editor
-        mAuxiliaryEditor = new AuxiliaryEditor(mEditorProject);
         mObservable.addObserver(mAuxiliaryEditor);
         // Register at the event dispatcher
         mEventDispatcher.register(this);
@@ -69,10 +73,9 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     }
 
     // Get the scenescript editor 
-    public final AuxiliaryEditor getAuxiliaryEditor() {
-        return mAuxiliaryEditor;
-    }
-
+    //public final SceneScriptEditor getAuxiliaryEditor() {
+    //    return mAuxiliaryEditor;
+    //}
     // Get the editor project 
     public final EditorProject getEditorProject() {
         return mEditorProject;

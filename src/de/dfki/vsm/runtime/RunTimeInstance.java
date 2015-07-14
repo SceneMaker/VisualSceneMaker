@@ -1,4 +1,4 @@
-package de.dfki.vsm.runtime.instance;
+package de.dfki.vsm.runtime;
 
 import de.dfki.vsm.runtime.interpreter.Interpreter;
 import de.dfki.vsm.runtime.project.RunTimeProject;

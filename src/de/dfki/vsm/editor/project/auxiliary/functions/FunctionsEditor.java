@@ -63,6 +63,13 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
     private final EditorProject mProject;
 
     //
+    public final void close() {
+        // Remove All Observers
+        mObservable.deleteObservers();
+        // TODO: Close the functions editor
+    }
+
+    //
     public FunctionsEditor(final EditorProject project) {
         mProject = project;
         mSceneFlow = mProject.getSceneFlow();

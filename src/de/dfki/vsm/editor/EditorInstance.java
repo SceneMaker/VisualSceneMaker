@@ -8,7 +8,7 @@ import de.dfki.vsm.editor.dialog.MonitorDialog;
 import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.runtime.instance.RunTimeInstance;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -48,7 +48,7 @@ import javax.swing.event.ChangeListener;
 public final class EditorInstance extends JFrame implements EventListener, ChangeListener {
 
     // The singelton editor instance
-    private static EditorInstance sInstance = null;
+    public static EditorInstance sInstance = null;
 
     // The singelton runtime instance 
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
@@ -64,19 +64,13 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     private final WelcomePanel mWelcomePanel;
     private final JScrollPane mWelcomeScreen;
 
-    // The observable class of the editor
-    private final class Observable extends java.util.Observable {
-
-        public final void update(final Object object) {
-            setChanged();
-            notifyObservers(object);
+    // Get the singelton editor instance
+    public synchronized static EditorInstance getInstance() {
+        if (sInstance == null) {
+            sInstance = new EditorInstance();
         }
-    }
 
-    public void update() {
-        mObservable.update(this);
-        
-        
+        return sInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -133,26 +127,25 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     };
 
-    
-    
     // Private construction of an editor
     private EditorInstance() {
         Preferences.configure();
 
         // Load the preferences
         Preferences.load();
-        getContentPane().setBackground(Color.WHITE);
-        try {
-            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-        } catch (final Exception e) {
-            // If Nimbus is not available, you can set the GUI to another look and feel.
-        }
-        // SET FONTS
-        setUIFonts();
 
-        // SET BACKGROUNDS
-        setUIBackgrounds();
+        //getContentPane().setBackground(Color.WHITE);
+        /*try {
+         UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+         } catch (final Exception e) {
+         // If Nimbus is not available, you can set the GUI to another look and feel.
+         }
+         // SET FONTS
+         setUIFonts();
 
+         // SET BACKGROUNDS
+         setUIBackgrounds();
+         */
         // Preferences.info();
         // Init the menu bar
         mMenuBar = new MenuBar(this);
@@ -262,24 +255,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     public void clearRecentProjects() {
         mWelcomePanel.updateWelcomePanel();
-    }
-
-    public synchronized static EditorInstance getInstance() {
-        if (sInstance == null) {
-            sInstance = new EditorInstance();
-        }
-
-        return sInstance;
-    }
-
-    @Override
-    public void update(final EventObject event) {
-        if (event instanceof AbortionEvent) {
-            ErrorDialog errorDialog = ErrorDialog.getInstance();
-
-            errorDialog.addError((AbortionEvent) event);
-            errorDialog.setVisible(true);
-        }
     }
 
     private void checkAndSetLocation() {
@@ -760,6 +735,33 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             mRunTime.proceed(project);
         } else if (mRunTime.isRunning(project)) {
             mRunTime.pause(project);
+        }
+    }
+
+    // The observable class of the editor
+    private final class Observable extends java.util.Observable {
+
+        public final void update(final Object object) {
+            setChanged();
+            notifyObservers(object);
+        }
+    }
+
+    // Update the observables of the editor
+    public final void update() {
+        mObservable.update(this);
+    }
+
+    // Update whenever an event has happened
+    @Override
+    public final void update(final EventObject event) {
+        if (event instanceof AbortionEvent) {
+            // Get the error dialog
+            final ErrorDialog errorDialog = ErrorDialog.getInstance();
+            // Appen the error message
+            errorDialog.addError((AbortionEvent) event);
+            // Show the error dialog
+            errorDialog.setVisible(true);
         }
     }
 }
