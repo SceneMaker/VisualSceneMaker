@@ -56,6 +56,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import javax.swing.undo.UndoManager;
 
 /**
  * @author Gregor Mehlmann
@@ -91,6 +92,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
     private int                       tabCounter = 1;
     private JButton                   mGesticonButton;
     private final JSplitPane          scriptSplitPane;
+    private UndoManager               mUndoManager;
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -119,7 +121,7 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
         mScrollPane = new JScrollPane(mEditorPane);
         mScrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionEditor(sceneflow);
+        mFunctionEditor = new FunctionEditor(sceneflow, this);
 
         // Initialize The Dialog Act Panel
         mDialogActEditor = new DialogActEditor(mParentPE.getProject());
@@ -609,7 +611,21 @@ public final class ScriptEditorPanel extends JPanel implements DocumentListener,
 
         // TODO: Stop The Document Painter Timer
     }
-
+    /**
+     * Receives the global undoManager
+     * @param undoMan 
+     */
+    public void setUndoManager(UndoManager undoMan) {
+        mUndoManager = undoMan;
+    }
+    /**
+     * Returns the undoManager
+     * @return 
+     */
+    public UndoManager getUndoManager()
+    {
+        return mUndoManager;
+    }
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

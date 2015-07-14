@@ -44,7 +44,7 @@ import javax.swing.JSeparator;
  */
 public class WelcomePanel extends JPanel implements Observer {
     private final String backgroundImage  = "/res/img/icon_big.png";    // Background for the welcome screen
-    SimpleDateFormat     sdf              = new SimpleDateFormat("dd.MM.yyyy");
+    SimpleDateFormat     sdf              = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
     private final File   SampleProjFolder = new File("res/prj/");
 
 //  private final JButton mOpenProjButton;
