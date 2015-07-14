@@ -10,10 +10,10 @@ import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
-import de.dfki.vsm.runtime.Process;
-import de.dfki.vsm.runtime.value.AbstractValue;
-import de.dfki.vsm.runtime.value.StringValue;
-import de.dfki.vsm.runtime.value.StructValue;
+import de.dfki.vsm.runtime.interpreter.Process;
+import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.values.StringValue;
+import de.dfki.vsm.runtime.values.StructValue;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -35,12 +35,8 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private HCMScenePlayer(
-            final RunTimeProject project,
-            final PlayerConfig config) {
+    private HCMScenePlayer() {
 
-        // Initialize The Scene Player
-        super(project, config);
 
         // Print Some Debug Information
         mVSM3Log.message("Creating HCM Scene Player");
@@ -49,11 +45,9 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public static synchronized HCMScenePlayer getInstance(
-            final RunTimeProject project,
-            final PlayerConfig config) {
+    public static synchronized HCMScenePlayer getInstance() {
         if (sInstance == null) {
-            sInstance = new HCMScenePlayer(project, config);
+            sInstance = new HCMScenePlayer();
         }
 
         return sInstance;
@@ -63,10 +57,10 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final boolean launch() {
+    public final boolean launch(final RunTimeProject project) {
 
         // Load Parent Scene Player
-        super.launch();
+        super.launch(project);
 
         // Initialize Scene Player
         try {
@@ -379,7 +373,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                         }
 
                         // Exit If Interrupted After Utterance
-                        if (mIsDone) {
+                        if (isDone()) {
 
                             // Print Information
                             mVSM3Log.message("Finishing Task '" + utid + "' After Utterance");
@@ -389,7 +383,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                     }
 
                     // Exit If Interrupted After Turn
-                    if (mIsDone) {
+                    if (isDone()) {
 
                         // Print Information
                         mVSM3Log.message("Finishing Task '" + utid + "' After Turn");
@@ -419,10 +413,8 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                 // Print Information
                 mVSM3Log.warning("Interrupting '" + Thread.currentThread().getName()
                         + "' During The Execution Of Scene '" + sceneName + "'");
-
                 // Terminate The Task
-                task.mIsDone = true;
-
+                task.abort();
                 // Interrupt The Task
                 task.interrupt();
             }

@@ -2,7 +2,6 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.SceneActionDialog;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
@@ -51,14 +50,17 @@ import javax.swing.tree.TreeSelectionModel;
  *
  *
  */
-public class SceneElementDisplay extends JScrollPane implements Observer, EventListener {
+public final class SceneElementDisplay extends JScrollPane implements Observer, EventListener {
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventDispatcher mEventMulticaster = EventDispatcher.getInstance();
     private final SceneElementTree mGesticonTree = new SceneElementTree();
     private final Observable mObservable = new Observable();
 
-    public SceneElementDisplay() {
+    private final EditorProject mProject;
+    public SceneElementDisplay(final EditorProject project) {
+        
+        mProject = project;
         mObservable.addObserver(mGesticonTree);
 
         //
@@ -86,7 +88,7 @@ public class SceneElementDisplay extends JScrollPane implements Observer, EventL
             notifyObservers(obj);
         }
     }
-}
+//}
 
 /**
  *
@@ -120,7 +122,7 @@ public class SceneElementDisplay extends JScrollPane implements Observer, EventL
  *
  *
  */
-class SceneElementTree extends JTree implements Observer, EventListener {
+private class SceneElementTree extends JTree implements Observer, EventListener {
 
     // Elements
     private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", sROOT_FOLDER, null);
@@ -128,9 +130,9 @@ class SceneElementTree extends JTree implements Observer, EventListener {
     private final TreeEntry mActionDefinitionsEntry = new TreeEntry("Acticon", null, null);
 
     //
-    private final Observable mObservable = new Observable();
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
+    //private final Observable mObservable = new Observable();
+    //private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    //private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
 //  mActionDefinitionsEntry
 //  private final Entry mTemplatesEntry = new Entry("Templates", null, null);
@@ -199,12 +201,12 @@ class SceneElementTree extends JTree implements Observer, EventListener {
     public void update(java.util.Observable obs, Object obj) {
 
         // mLogger.message("SceneElementTree.update(" + obj + ")");
-        if (obj instanceof EditorProject) {
-            EditorProject p = (EditorProject) obj;
+        //if (obj instanceof EditorProject) {
+            //EditorProject p = (EditorProject) obj;
 
-            showGesticon(p);
-            showSceneAction(p);
-        }
+            showGesticon();
+            showSceneAction();
+        //}
     }
 
     /**
@@ -306,11 +308,11 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         ((DefaultTreeModel) getModel()).setRoot(mRootEntry);
     }
 
-    private void showGesticon(EditorProject project) {
+    private void showGesticon(/*EditorProject project*/) {
 
         // Construct the tree from the gestion
         // Entry gesticonNode = new Entry("Gesticon", null, project.getGesticon());
-        for (GesticonAgent characterEntry : project.getGesticon().getAgentList()) {
+        for (GesticonAgent characterEntry : mProject.getGesticon().getAgentList()) {
             TreeEntry characterNode = new TreeEntry("Character", null, characterEntry);
 
             for (GesticonGesture gestureEntry : characterEntry.getGestureList()) {
@@ -327,7 +329,7 @@ class SceneElementTree extends JTree implements Observer, EventListener {
         expandAll();
     }
 
-    private void showSceneAction(EditorProject p) {
+    private void showSceneAction(/*EditorProject p*/) {
 
         /*
          * mActionDefinitionsEntry.removeAllChildren();
@@ -456,4 +458,5 @@ class SceneElementTree extends JTree implements Observer, EventListener {
             notifyObservers(obj);
         }
     }
+}
 }

@@ -2,7 +2,6 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.CmdDialog;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;

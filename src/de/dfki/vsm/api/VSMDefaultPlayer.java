@@ -1,8 +1,7 @@
 package de.dfki.vsm.api;
 
-import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.value.AbstractValue;
+import de.dfki.vsm.runtime.values.AbstractValue;
 
 import java.util.LinkedList;
 
@@ -17,12 +16,7 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private VSMDefaultPlayer(
-            final RunTimeProject project,
-            final PlayerConfig config) {
-
-        // Initialize The Scene Player
-        super(project, config);
+    private VSMDefaultPlayer() {
 
         // Print Some Debug Information
         mVSM3Log.message("Creating VSM Default Scene Player");
@@ -32,11 +26,9 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public static synchronized VSMDefaultPlayer getInstance(
-            final RunTimeProject project,
-            final PlayerConfig config) {
+    public static synchronized VSMDefaultPlayer getInstance() {
         if (sInstance == null) {
-            sInstance = new VSMDefaultPlayer(project, config);
+            sInstance = new VSMDefaultPlayer();
         }
         // Return The Singelton Instance
         return sInstance;
@@ -46,13 +38,15 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public boolean launch() {
-      //
-        mVSM3Log.message("Launching Default Scene Player");
-        
-        return super.launch();
-
-  
+    public boolean launch(final RunTimeProject project) {
+        // Launch 
+        if (super.launch(project)) {
+            //
+            mVSM3Log.message("Launching Default Scene Player");//
+            return true;
+        } else {
+            return false;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////

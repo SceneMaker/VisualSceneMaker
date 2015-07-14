@@ -2,7 +2,6 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.action.AddCommandAction;
 import de.dfki.vsm.editor.action.AddVariableAction;
 import de.dfki.vsm.editor.action.ChangeNodeTypeAction;

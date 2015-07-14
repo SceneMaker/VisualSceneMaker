@@ -2,8 +2,8 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.instance.EditorInstance;
-import de.dfki.vsm.runtime.event.AbortEvent;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.runtime.events.AbortionEvent;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -52,7 +52,7 @@ public class ErrorDialog extends JDialog {
         return sSingeltonInstance;
     }
 
-    public void addError(AbortEvent event) {
+    public void addError(AbortionEvent event) {
 
         //
         // TODO: clear old error list
@@ -61,7 +61,7 @@ public class ErrorDialog extends JDialog {
 
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        textArea.setText(event.getEventDescription());
+        textArea.setText(event.getMessage());
         textArea.setBorder(BorderFactory.createEtchedBorder());
         textArea.getRows();
 

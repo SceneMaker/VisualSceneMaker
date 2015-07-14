@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.dialog;
 
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.instance.EditorInstance;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.ios.ResourceLoader;

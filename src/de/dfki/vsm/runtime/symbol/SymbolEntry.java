@@ -3,10 +3,10 @@ package de.dfki.vsm.runtime.symbol;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.event.VariableChangedEvent;
-import de.dfki.vsm.runtime.error.RunTimeException;
-import de.dfki.vsm.runtime.value.AbstractValue;
-import de.dfki.vsm.runtime.value.ListValue;
-import de.dfki.vsm.runtime.value.StructValue;
+import de.dfki.vsm.runtime.exceptions.InterpretException;
+import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.values.ListValue;
+import de.dfki.vsm.runtime.values.StructValue;
 import de.dfki.vsm.util.cpy.Copyable;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.tpl.TPLTuple;
@@ -37,7 +37,7 @@ public class SymbolEntry implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue write(final AbstractValue value) throws RunTimeException {
+    public final AbstractValue write(final AbstractValue value) throws InterpretException {
 
         // Check If The Type Is Valid
         if (mValue.getType() == value.getType()) {
@@ -51,14 +51,14 @@ public class SymbolEntry implements Copyable {
             //
             return mValue;
         } else {
-            throw new RunTimeException(this, value.getConcreteSyntax() + " has wrong type");
+            throw new InterpretException(this, value.getConcreteSyntax() + " has wrong type");
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue write(final AbstractValue value, final int index) throws RunTimeException {
+    public final AbstractValue write(final AbstractValue value, final int index) throws InterpretException {
         try {
             if (mValue.getType() == AbstractValue.Type.LIST) {
                 AbstractValue oldValue = ((ListValue) mValue).getValueList().get(index);
@@ -73,22 +73,22 @@ public class SymbolEntry implements Copyable {
                     //
                     return mValue;
                 } else {
-                    throw new RunTimeException(this, value.getAbstractSyntax() + " has wrong type");
+                    throw new InterpretException(this, value.getAbstractSyntax() + " has wrong type");
                 }
             } else {
-                throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a list");
+                throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a list");
             }
         } catch (ClassCastException e) {
-            throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a list");
+            throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a list");
         } catch (IndexOutOfBoundsException e) {
-            throw new RunTimeException(this, mValue.getAbstractSyntax() + " out of bounds");
+            throw new InterpretException(this, mValue.getAbstractSyntax() + " out of bounds");
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue write(final AbstractValue value, final String member) throws RunTimeException {
+    public final AbstractValue write(final AbstractValue value, final String member) throws InterpretException {
         try {
             if (mValue.getType() == AbstractValue.Type.STRUCT) {
                 if (((StructValue) mValue).getValueMap().containsKey(member)) {
@@ -104,17 +104,17 @@ public class SymbolEntry implements Copyable {
                         //
                         return mValue;
                     } else {
-                        throw new RunTimeException(this, value.getAbstractSyntax() + " has wrong type");
+                        throw new InterpretException(this, value.getAbstractSyntax() + " has wrong type");
                     }
                 } else {
-                    throw new RunTimeException(this,
+                    throw new InterpretException(this,
                                                member + " does not exist in struct " + mValue.getAbstractSyntax());
                 }
             } else {
-                throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a struct");
+                throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a struct");
             }
         } catch (ClassCastException e) {
-            throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a struct");
+            throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a struct");
         }
     }
 
@@ -128,24 +128,24 @@ public class SymbolEntry implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue read(final int index) throws RunTimeException {
+    public final AbstractValue read(final int index) throws InterpretException {
         try {
             if (mValue.getType() == AbstractValue.Type.LIST) {
                 return ((ListValue) mValue).getValueList().get(index);
             } else {
-                throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a list");
+                throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a list");
             }
         } catch (ClassCastException e) {
-            throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a list");
+            throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a list");
         } catch (IndexOutOfBoundsException e) {
-            throw new RunTimeException(this, mValue.getAbstractSyntax() + " out of bounds");
+            throw new InterpretException(this, mValue.getAbstractSyntax() + " out of bounds");
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue read(final String member) throws RunTimeException {
+    public final AbstractValue read(final String member) throws InterpretException {
         try {
             if (mValue.getType() == AbstractValue.Type.STRUCT) {
                 AbstractValue result = ((StructValue) mValue).getValueMap().get(member);
@@ -153,14 +153,14 @@ public class SymbolEntry implements Copyable {
                 if (result != null) {
                     return result;
                 } else {
-                    throw new RunTimeException(this,
+                    throw new InterpretException(this,
                                                member + " does not exist in struct " + mValue.getAbstractSyntax());
                 }
             } else {
-                throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a struct");
+                throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a struct");
             }
         } catch (ClassCastException e) {
-            throw new RunTimeException(this, mValue.getAbstractSyntax() + " is not a struct");
+            throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a struct");
         }
     }
 

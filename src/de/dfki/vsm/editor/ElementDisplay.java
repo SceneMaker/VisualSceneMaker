@@ -3,7 +3,6 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.DialogActSelectedEvent;
@@ -19,7 +18,7 @@ import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.runtime.dialogact.DialogActInterface;
+import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -259,10 +258,10 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         
         // TODO: We already have a reference to the project
         // Why do we need a reference in the update method
-        if (obj instanceof EditorProject) {
-            updateScenes((EditorProject) obj);
-            updateFunDefs((EditorProject) obj);
-        }
+        //if (obj instanceof EditorProject) {
+            updateScenesXXX(/*(EditorProject) obj*/);
+            updateFunDefsXXX(/*(EditorProject) obj*/);
+        //}
 
         // Update the visual appearance of the ElementTree
         updateUI();
@@ -378,7 +377,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    private void updateScenes(EditorProject project) {
+    private void updateScenesXXX(/*EditorProject project*/) {
 
         //
         // System.out.println("Updating Scenes");
@@ -394,7 +393,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         }
 
         //
-        SceneScript sceneScript = project.getSceneScript();
+        SceneScript sceneScript = mProject.getSceneScript();
 
         if (sceneScript != null) {
             if (sceneScript.getSceneListSize() > 0) {
@@ -482,6 +481,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     /**
      *
      */
+    
+    /*
     private void updatDialogueActs(EditorProject project) {
         mDAEntry.removeAllChildren();
 
@@ -496,7 +497,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
         expandAll();
     }
-
+*/
     /**
      *
      *
@@ -610,13 +611,13 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    private void updateFunDefs(EditorProject project) {
+    private void updateFunDefsXXX(/*EditorProject project*/) {
 
         //
         mFunDefEntry.removeAllChildren();
 
         //
-        SceneFlow sceneFlow = project.getSceneFlow();
+        SceneFlow sceneFlow = mProject.getSceneFlow();
 
         for (FunDef def : sceneFlow.getUsrCmdDefMap().values()) {
             mFunDefEntry.add(new TreeEntry(def.getName(), null, def));

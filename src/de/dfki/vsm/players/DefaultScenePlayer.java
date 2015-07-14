@@ -15,12 +15,12 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.model.scenescript.SceneWord;
-import de.dfki.vsm.runtime.Process;
-import de.dfki.vsm.runtime.player.Player;
-import de.dfki.vsm.runtime.value.AbstractValue;
-import de.dfki.vsm.runtime.value.AbstractValue.Type;
-import de.dfki.vsm.runtime.value.StringValue;
-import de.dfki.vsm.runtime.value.StructValue;
+import de.dfki.vsm.runtime.interpreter.Process;
+import de.dfki.vsm.runtime.players.RunTimePlayer;
+import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.values.AbstractValue.Type;
+import de.dfki.vsm.runtime.values.StringValue;
+import de.dfki.vsm.runtime.values.StructValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 /**
  * @author Gregor Mehlmann
  */
-public final class DefaultScenePlayer implements Player {
+public final class DefaultScenePlayer implements RunTimePlayer {
 
     // The singelton player instance
     public static DefaultScenePlayer sInstance = null;
@@ -38,38 +38,36 @@ public final class DefaultScenePlayer implements Player {
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
     // The player's runtime project 
-    final RunTimeProject mProject;
-    // The player's configuration
-    final PlayerConfig mConfig;
-    // The delay for a single letter
-    final long mLetterDelay = 10;
+    private RunTimeProject mProject;
+    // The project specific config
+    private PlayerConfig mPlayerConfig;
+    // The project specific name
+    private String mPlayerName;
 
     // Construct the default scene player
-    private DefaultScenePlayer(
-            final RunTimeProject project,
-            final PlayerConfig config) {
-        // Initialize the player members
-        mProject = project;
-        mConfig = config;
-        // Initialize the letter delay
-        
+    private DefaultScenePlayer() {
+
     }
 
     // Get the default scene player instance
-    public static synchronized DefaultScenePlayer getInstance(
-            final RunTimeProject project,
-            final PlayerConfig config) {
+    public static synchronized DefaultScenePlayer getInstance() {
         if (sInstance == null) {
-            sInstance = new DefaultScenePlayer(project, config);
+            sInstance = new DefaultScenePlayer();
         }
         return sInstance;
     }
 
     // Launch the default scene player
     @Override
-    public final boolean launch() {
+    public final boolean launch(final RunTimeProject project) {
+        // Initialize the project
+        mProject = project;
+        // Initialize the name
+        mPlayerName = project.getPlayerName(this);
+        // Initialize the config
+        mPlayerConfig = project.getPlayerConfig(mPlayerName);
         // Print some information
-        mLogger.message("Launching the default scene player '" + this + "'");
+        mLogger.message("Launching the default scene player '" + this + "' with configuration:\n" + mPlayerConfig);
         // Return true at success
         return true;
     }
@@ -78,7 +76,7 @@ public final class DefaultScenePlayer implements Player {
     @Override
     public final boolean unload() {
         // Print some information
-        mLogger.message("Unloading the default scene player '" + this + "'");
+        mLogger.message("Unloading the default scene player '" + this + "' with configuration:\n" + mPlayerConfig);
         // Return true at success
         return true;
     }
@@ -89,27 +87,21 @@ public final class DefaultScenePlayer implements Player {
         // Print some information
         mLogger.message("Playing '" + name + "' with the default scene player '" + this + "'");
         //
-        final Process process = ((Process) java.lang.Thread.currentThread());
-        final HashMap<String, String> mSceneParamMap = new HashMap<String, String>();
-
+        final Process process = ((Process) Thread.currentThread());
+        final HashMap<String, String> mSceneParamMap = new HashMap<>();
         // Process The Arguments
         if ((args != null) && !args.isEmpty()) {
-
             // Get The First Argument
             final AbstractValue value = args.getFirst();
-
             // Check The Argument Type
             if (value.getType().equals(Type.STRUCT)) {
-
                 // Cast The Argument Type
                 final StructValue struct = (StructValue) value;
-
                 // Process Scene Arguments
                 for (final Entry<String, AbstractValue> entry : struct.getValueMap().entrySet()) {
                     if (entry.getValue().getType() == Type.STRING) {
                         mSceneParamMap.put(entry.getKey(), ((StringValue) entry.getValue()).getValue());
                     } else {
-
                         // Process Other Argument Types
                     }
                 }
@@ -178,40 +170,66 @@ public final class DefaultScenePlayer implements Player {
                         }
                     }
 
-                    // Utterance Simulation
+                    // Utterance simulation
                     try {
-                        sleep(wordCount * 100);
+                        Thread.sleep(wordCount * 100);
                     } catch (InterruptedException exc) {
                         mLogger.warning(exc.toString());
                     }
 
-                    // Exit If Interrupted
-                    if (mIsDone) {
+                    // Exit if interrupted
+                    if (isDone()) {
                         return;
                     }
                 }
             }
         };
 
-        // Start The Player Task
+        // Start the player task
         task.start();
-
-        // Wait For Termination
+        // Wait for termination
         boolean finished = false;
-
         while (!finished) {
             try {
-
-                // Join The Player Task
+                // Join the player task
                 task.join();
-
-                // Finish This Execution
+                // Stop waiting for task
                 finished = true;
-            } catch (Exception e) {
-
-                // Abort The Player Task
-                task.mIsDone = true;
+            } catch (final InterruptedException exc) {
+                // Print some warning
+                mLogger.warning("Warning: Interrupting process '" + process + "'");
+                // Terminate the task
+                task.abort();
+                // Interrupt the task
+                task.interrupt();
             }
         }
     }
+
+    /*
+     private boolean init() {
+     // Initialize the delay
+     try {
+     // Check if the config is null
+     if (mConfig != null) {
+     mDelay = Integer.parseInt(
+     mConfig.getProperty("delay"));
+     // Print an error message in this case
+     mLogger.message("Initializing the default scene player delay with '" + mDelay + "'");
+     // Return failure if it does not exist
+     return true;
+     } else {
+     // Print an error message in this case
+     mLogger.warning("Warning: Cannot read bad default scene player configuration");
+     // Return failure if it does not exist
+     return false;
+     }
+     } catch (final NumberFormatException exc) {
+     // Print an error message in this case
+     mLogger.failure("Error: Cannot initialize the default scene player delay");
+     // Return failure if it does not exist
+     return false;
+     }
+     }
+     */
 }

@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;

@@ -1,6 +1,6 @@
 package de.dfki.vsm;
 
-import de.dfki.vsm.editor.instance.EditorInstance;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.runtime.instance.RunTimeInstance;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;

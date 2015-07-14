@@ -1,14 +1,14 @@
 package de.dfki.vsm.editor.project.auxiliary;
 
 import de.dfki.vsm.editor.AddButton;
-import de.dfki.vsm.editor.instance.EditorInstance;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.project.auxiliary.function.FunctionEditor;
+import de.dfki.vsm.editor.project.auxiliary.functions.FunctionsEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.project.auxiliary.dialog.DialogActEditor;
-import de.dfki.vsm.editor.project.auxiliary.script.SceneScriptEditor;
+import de.dfki.vsm.editor.project.auxiliary.dialogact.DialogActEditor;
+import de.dfki.vsm.editor.project.auxiliary.scenescript.ScriptEditorPane;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -72,11 +72,13 @@ public final class AuxiliaryEditor extends JPanel implements DocumentListener, E
     private final JScrollPane mScrollPane;
     private final AuxiliaryToolBar mToolBar;
     private final JTabbedPane mTabPane;
-    private final SceneScriptEditor mEditorPane;
+
+    private final ScriptEditorPane mEditorPane;
     private final CaretStatusLabel mStatusLabel;
     private final SceneElementDisplay mElementPane;
     private final SceneScript mSceneScript;
-    private final FunctionEditor mFunctionEditor;
+
+    private final FunctionsEditor mFunctionEditor;
     private final DialogActEditor mDialogActEditor;
     private final EditorConfig mPreferences;
     //private final String              mPreferencesFileName;
@@ -101,20 +103,23 @@ public final class AuxiliaryEditor extends JPanel implements DocumentListener, E
         mSceneScript = mProject.getSceneScript();
         // Initialize the editor config
         mPreferences = mProject.getEditorConfig();
-
         // Initialize The Status Label
         mStatusLabel = new CaretStatusLabel("");
 
         // Initialize The Editor Pane
-        mEditorPane = new SceneScriptEditor(mProject);
+        mEditorPane = new ScriptEditorPane(mProject);
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);
 
         // Initialize The Scroll Pane
         mScrollPane = new JScrollPane(mEditorPane);
         mScrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        
+        
+        
+        
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionEditor(mProject);
+        mFunctionEditor = new FunctionsEditor(mProject);
 
         // Initialize The Dialog Act Panel
         mDialogActEditor = new DialogActEditor(mProject);
@@ -122,7 +127,7 @@ public final class AuxiliaryEditor extends JPanel implements DocumentListener, E
         // Initialize Tabbed Pane
         mTabPane = new JTabbedPane();
         // Initialize The Scroll Pane
-        mElementPane = new SceneElementDisplay();
+        mElementPane = new SceneElementDisplay(mProject);
         mObservable.addObserver(mElementPane);
         mObservable.addObserver(mEditorPane);
         mGesticonButton = new JButton(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
@@ -225,8 +230,8 @@ public final class AuxiliaryEditor extends JPanel implements DocumentListener, E
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
-                    if (content instanceof FunctionEditor) {
-                        ((FunctionEditor) content).addNewFunction();
+                    if (content instanceof FunctionsEditor) {
+                        ((FunctionsEditor) content).addNewFunction();
                     }
                     if (content instanceof JPanel) {
                         mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n");
@@ -383,6 +388,7 @@ public final class AuxiliaryEditor extends JPanel implements DocumentListener, E
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void insertUpdate(final DocumentEvent event) {
+        //mLogger.message("insertUpdate " + event);
         parse(event);
     }
 
@@ -391,6 +397,7 @@ public final class AuxiliaryEditor extends JPanel implements DocumentListener, E
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void removeUpdate(final DocumentEvent event) {
+        //mLogger.message("removeUpdate " + event);
         parse(event);
     }
 
