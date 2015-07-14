@@ -4,17 +4,18 @@ import de.dfki.vsm.model.config.ConfigElement;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.runtime.Environment;
-import de.dfki.vsm.runtime.Process;
+import de.dfki.vsm.runtime.interpreter.Environment;
+import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.instance.RunTimeInstance;
-import de.dfki.vsm.runtime.player.Player;
-import de.dfki.vsm.runtime.value.StringValue;
+import de.dfki.vsm.runtime.players.RunTimePlayer;
+import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.jpl.JPLUtility;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.log.LOGNovaFileLogger;
 import de.dfki.vsm.util.log.LOGSSISockLogger;
+import java.io.File;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,7 @@ import java.util.Map;
 /**
  * @author Not me
  */
-public abstract class VSMScenePlayer implements Player {
+public abstract class VSMScenePlayer implements RunTimePlayer {
 
     // The VSM Runtime Environment
     protected final RunTimeInstance mVSM3RunTime = RunTimeInstance.getInstance();
@@ -42,14 +43,14 @@ public abstract class VSMScenePlayer implements Player {
     // The Agent Clients
     protected HashMap<String, VSMAgentClient> mAgentClientMap = new HashMap<>();
 
+    // The Player Name
+    protected String mPlayerName;
     // The ScenePlayer Config
-    protected final ConfigElement mPlayerConfig;
-
+    protected PlayerConfig mPlayerConfig;
     // The SceneMaker Project
-    protected final RunTimeProject mProjectData;
-
+    protected RunTimeProject mProjectData;
     // The SceneMaker Project
-    protected final SceneFlow mSceneFlow;
+    protected SceneFlow mSceneFlow;
 
     // The System Timer Thead
     protected volatile long mStartupTime;
@@ -62,18 +63,7 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    protected VSMScenePlayer(
-            final RunTimeProject project,
-            final PlayerConfig config) {
-
-        // Init SceneMaker 3 Project
-        mProjectData = project;
-
-        // Init The SceneMaker Sceneflow
-        mSceneFlow = project.getSceneFlow();
-
-        // Init Scene Player Config
-        mPlayerConfig = config;
+    protected VSMScenePlayer() {
 
         // Print Debug Information
         mVSM3Log.message("Creating VSM Abstract Scene Player");
@@ -83,14 +73,18 @@ public abstract class VSMScenePlayer implements Player {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public boolean launch() {
-
+    public boolean launch(final RunTimeProject project) {
+        // Init SceneMaker 3 Project
+        mProjectData = project;
+        mSceneFlow = mProjectData.getSceneFlow();
+        mPlayerName = mProjectData.getPlayerName(this);
+        mPlayerConfig = project.getPlayerConfig(mPlayerName);
         // Print Debug Information
         mVSM3Log.message("Launching VSM Scene Player");
 
         // Initialize The Properties
         final String numagent = mPlayerConfig.getProperty("vsm.agent.number");
-
+        
         for (int i = 0; i < Integer.parseInt(numagent); i++) {
 
             // Get Agent's Initial Data
@@ -154,6 +148,10 @@ public abstract class VSMScenePlayer implements Player {
 
         // Initialize the JPL Engine
         JPLEngine.init();
+        
+        File file = new File(swilbase);
+        
+        mVSM3Log.message(file.getAbsolutePath());
 
         // Load The Prolog Program
         JPLEngine.load(swilbase + "/*.pl");
@@ -330,7 +328,7 @@ public abstract class VSMScenePlayer implements Player {
                     RunTimeInstance.getInstance().setVariable(mProjectData, entry.getKey(), entry.getValue());
                 }
             }
-
+            
             return true;
         } else {
             return false;

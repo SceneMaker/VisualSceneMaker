@@ -8,16 +8,19 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
-import de.dfki.vsm.runtime.dialogact.DialogActInterface;
-import de.dfki.vsm.runtime.dialogact.DummyDialogAct;
-import de.dfki.vsm.runtime.player.Player;
-import de.dfki.vsm.runtime.plugin.Plugin;
+import de.dfki.vsm.players.DefaultDialogPlayer;
+import de.dfki.vsm.players.DefaultScenePlayer;
+import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
+import de.dfki.vsm.runtime.dialogacts.DummyDialogAct;
+import de.dfki.vsm.runtime.players.RunTimePlayer;
+import de.dfki.vsm.runtime.plugins.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 /**
  * @author Gregor Mehlmann
@@ -42,9 +45,9 @@ public class RunTimeProject {
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
 
     // The plugins maintained within this project
-    private final HashMap<String, Plugin> mPluginMap = new HashMap<>();
+    private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap<>();
     // The players maintained within this project
-    private final HashMap<String, Player> mPlayerMap = new HashMap<>();
+    private final HashMap<String, RunTimePlayer> mPlayerMap = new HashMap<>();
 
     // TODO:  Refactor The Dialog Act Stuff
     // Maybe use a configuration file for that
@@ -72,14 +75,34 @@ public class RunTimeProject {
         mProjectConfig.setProjectName(name);
     }
 
-    // Get a specific player from the map of players
-    public final Player getPlayer(final String name) {
-        return mPlayerMap.get(name);
+    // Get a specific config from the map of players
+    public final PlayerConfig getPlayerConfig(final String name) {
+        return mProjectConfig.getPlayerConfig(name);
     }
 
-    // Get a specific plugin from the map of plugins
-    public final Plugin getPlugin(final String name) {
-        return mPluginMap.get(name);
+    // Get a specific config from the map of plugins
+    public final PluginConfig getPluginConfig(final String name) {
+        return mProjectConfig.getPluginConfig(name);
+    }
+
+    // Get the project specific name of a player
+    public final String getPlayerName(final RunTimePlayer player) {
+        for (final Entry<String, RunTimePlayer> entry : mPlayerMap.entrySet()) {
+            if (entry.getValue().equals(player)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    // Get the project specific name of a plugin
+    public final String getPluginName(final RunTimePlugin plugin) {
+        for (final Entry<String, RunTimePlugin> entry : mPluginMap.entrySet()) {
+            if (entry.getValue().equals(plugin)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     // Get the sceneflow of the project
@@ -111,6 +134,46 @@ public class RunTimeProject {
     // Get the default dialog act taxonomy of the project
     public final DialogActInterface getDialogAct() {
         return mDialogueAct;
+    }
+
+    // Get a specific player from the map of players
+    public final RunTimePlayer getPlayer(final String name) {
+        return mPlayerMap.get(name);
+    }
+
+    // Get a specific plugin from the map of plugins
+    public final RunTimePlugin getPlugin(final String name) {
+        return mPluginMap.get(name);
+    }
+
+    // Get the gesticon of the project
+    public final RunTimePlayer getDefaultScenePlayer() {
+        // Get the player from the map
+        final RunTimePlayer player = getPlayer("defaultsceneplayer");
+        // Check if the player exists
+        if (player != null) {
+            // And return it in this case
+            return player;
+        } else {
+            // Or construct a default scene 
+            // player without a configuration
+            return DefaultScenePlayer.getInstance();
+        }
+    }
+
+    // Get the gesticon of the project
+    public final RunTimePlayer getDefaultDialogPlayer() {
+        // Get the player from the map
+        final RunTimePlayer player = getPlayer("defaultdialogplayer");
+        // Check if the player exists
+        if (player != null) {
+            // And return it in this case
+            return player;
+        } else {
+            // Or construct a default scene 
+            // player without a configuration
+            return DefaultDialogPlayer.getInstance();
+        }
     }
 
     // Parse the project data from a directory
@@ -543,9 +606,9 @@ public class RunTimeProject {
                 // Find the plugin class by name
                 final Class clazz = Class.forName(className);
                 // Get the initialization method
-                final Method method = clazz.getMethod("getInstance", RunTimeProject.class, PluginConfig.class);
+                final Method method = clazz.getMethod("getInstance");
                 // Call the initialization method
-                final Plugin plugin = (Plugin) method.invoke(null, this, config);
+                final RunTimePlugin plugin = (RunTimePlugin) method.invoke(null);
                 // Check if plugin has been created
                 if (plugin == null) {
                     // Print an error message 
@@ -580,9 +643,9 @@ public class RunTimeProject {
                 // Find the plugin class by name
                 final Class clazz = Class.forName(className);
                 // Get the initialization method
-                final Method method = clazz.getMethod("getInstance", RunTimeProject.class, PlayerConfig.class);
+                final Method method = clazz.getMethod("getInstance");
                 // Call the initialization method
-                final Player player = (Player) method.invoke(null, this, config);
+                final RunTimePlayer player = (RunTimePlayer) method.invoke(null);
                 // Check if plugin has been created
                 if (player == null) {
                     // Print an error message 
@@ -592,6 +655,7 @@ public class RunTimeProject {
                 } else {
                     // Set the default scene player then
                     mPlayerMap.put(playerName, player);
+                    //new TPLTuple<Player, PlayerConfig>(player, config)
                     // Print an information message here
                     mLogger.message("Loading player '" + player + "' with plugin config:\n" + config);
                 }
@@ -611,8 +675,8 @@ public class RunTimeProject {
         // Initialize the result flag
         boolean success = true;
         // Try launching all the players
-        for (final Player player : mPlayerMap.values()) {
-            if (!player.launch()) {
+        for (final RunTimePlayer player : mPlayerMap.values()) {
+            if (!player.launch(this)) {
                 success = false;
             }
         }
@@ -624,8 +688,8 @@ public class RunTimeProject {
         // Initialize the result flag
         boolean success = true;
         // Try launching all the plugins
-        for (final Plugin plugin : mPluginMap.values()) {
-            if (!plugin.launch()) {
+        for (final RunTimePlugin plugin : mPluginMap.values()) {
+            if (!plugin.launch(this)) {
                 success = false;
             }
         }
@@ -637,7 +701,7 @@ public class RunTimeProject {
         // Initialize the result flag
         boolean success = true;
         // Try unloading all the players
-        for (final Player player : mPlayerMap.values()) {
+        for (final RunTimePlayer player : mPlayerMap.values()) {
             if (!player.unload()) {
                 success = false;
             }
@@ -650,7 +714,7 @@ public class RunTimeProject {
         // Initialize the result flag
         boolean success = true;
         // Try unloading all the plugins
-        for (final Plugin plugin : mPluginMap.values()) {
+        for (final RunTimePlugin plugin : mPluginMap.values()) {
             if (!plugin.unload()) {
                 success = false;
             }

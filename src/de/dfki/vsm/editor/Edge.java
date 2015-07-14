@@ -2,7 +2,6 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.instance.EditorInstance;
 import de.dfki.vsm.editor.action.ModifyEdgeAction;
 import de.dfki.vsm.editor.event.EdgeEditEvent;
 import de.dfki.vsm.editor.event.EdgeExecutedEvent;

@@ -209,10 +209,10 @@ public class ScriptParser extends java_cup.runtime.lr_parser {
             // Cast The Symbol Down
             if(symbol != null) {
                 if(symbol.value instanceof SceneScript) {
-                    //mLogger.failure("Parsing Result:\n" + symbol.value);  
+                    mLogger.failure("Parsing Result:\n" + symbol.value);  
                     return (SceneScript)symbol.value;
                 } else {
-                    //mLogger.failure("Error: Cannot Parse Scene Script");
+                    mLogger.failure("Error: Cannot Parse Scene Script");
                     return null;
                 }
             } else {

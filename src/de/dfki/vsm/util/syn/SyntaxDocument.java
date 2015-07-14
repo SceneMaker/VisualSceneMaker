@@ -98,8 +98,6 @@ public class SyntaxDocument extends PlainDocument implements UndoableEditListene
         // Scan The Document Content
         loadSymbolList();
         super.fireInsertUpdate(e);
-
-        // mLogger.message("fireInsertUpdate");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -111,8 +109,6 @@ public class SyntaxDocument extends PlainDocument implements UndoableEditListene
         // Scan The Document Content
         loadSymbolList();
         super.fireRemoveUpdate(e);
-
-        // mmLogger.message("fireRemoveUpdate");
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="10.07.2015" start="N3;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="14.07.2015" start="N3;S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
     <Variable type="String" name ="SystemTime">
+      <String value="undefined"/>
+    </Variable>
+    <Variable type="String" name ="SomeValue">
       <String value="undefined"/>
     </Variable>
   </Declare>
@@ -21,6 +24,9 @@
     <Declare>
     </Declare>
     <Commands>
+      <PlaySceneGroup>
+        <String value="Hello"/>
+      </PlaySceneGroup>
     </Commands>
     <TEdge target="N3" start="" timeout="1000">
     <Graphics>
@@ -34,7 +40,7 @@
       <Position x-pos="300" y-pos="300"/>
     </Graphics>
   </Node>
-  <SuperNode id="S1" name="Statistics" comment="" exhaustive="false" preserving="false" hideLocalVar="false" hideGlobalVar="false" start="N1;N2;">
+  <SuperNode id="S1" name="Statistics" comment="" exhaustive="false" preserving="false" hideLocalVar="false" hideGlobalVar="false" start="N1;N2;N4;">
     <Define>
     </Define>
     <Declare>
@@ -103,6 +109,53 @@
       </TEdge>
       <Graphics>
         <Position x-pos="120" y-pos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N4" name="N4" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <UserCommand name="query">
+          <Add>
+            <Add>
+              <String value="set(SomeValue, "/>
+              <Variable name="SystemTime"/>
+            </Add>
+            <String value=")"/>
+          </Add>
+        </UserCommand>
+      </Commands>
+      <FEdge target="N4" start="">
+        <Graphics>
+          <Arrow>
+            <Point x-pos="627" y-pos="212" control-x-pos="651" control-y-pos="126"/>
+            <Point x-pos="654" y-pos="232" control-x-pos="732" control-y-pos="186"/>
+          </Arrow>
+        </Graphics>
+      </FEdge>
+      <Graphics>
+        <Position x-pos="570" y-pos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N5" name="N5" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <EEdge target="N5" start ="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="357" y-pos="392" control-x-pos="381" control-y-pos="306"/>
+          <Point x-pos="384" y-pos="412" control-x-pos="462" control-y-pos="366"/>
+        </Arrow>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position x-pos="300" y-pos="390"/>
       </Graphics>
     </Node>
   </SuperNode>

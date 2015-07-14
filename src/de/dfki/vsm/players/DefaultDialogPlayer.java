@@ -2,15 +2,15 @@ package de.dfki.vsm.players;
 
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.player.Player;
-import de.dfki.vsm.runtime.value.AbstractValue;
+import de.dfki.vsm.runtime.players.RunTimePlayer;
+import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.LinkedList;
 
 /**
  * @author Gregor Mehlmann
  */
-public class DefaultDialogPlayer implements Player {
+public class DefaultDialogPlayer implements RunTimePlayer {
 
     // The singelton player instance
     public static DefaultDialogPlayer sInstance = null;
@@ -18,34 +18,36 @@ public class DefaultDialogPlayer implements Player {
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
     // The player's runtime project 
-    final RunTimeProject mProject;
-    // The player's configuration
-    final PlayerConfig mConfig;
+    private RunTimeProject mProject;
+    // The project specific config
+    private PlayerConfig mPlayerConfig;
+    // The project specific name
+    private String mPlayerName;
 
     // Construct the default dialog player
-    private DefaultDialogPlayer(
-            final RunTimeProject project,
-            final PlayerConfig config) {
-        // Initialize the player members
-        mProject = project;
-        mConfig = config;
+    private DefaultDialogPlayer() {
+
     }
 
     // Get the default dialog player instance
-    public static synchronized DefaultDialogPlayer getInstance(
-            final RunTimeProject project,
-            final PlayerConfig config) {
+    public static synchronized DefaultDialogPlayer getInstance() {
         if (sInstance == null) {
-            sInstance = new DefaultDialogPlayer(project, config);
+            sInstance = new DefaultDialogPlayer();
         }
         return sInstance;
     }
 
     // Launch the default dialog player
     @Override
-    public final boolean launch() {
+    public final boolean launch(final RunTimeProject project) {
+        // Initialize the project
+        mProject = project;
+        // Initialize the name
+        mPlayerName = project.getPlayerName(this);
+        // Initialize the config
+        mPlayerConfig = project.getPlayerConfig(mPlayerName);
         // Print some information
-        mLogger.message("Launching the default dialog player '" + this + "'");
+        mLogger.message("Launching the default dialog player '" + this + "' with configuration:\n" + mPlayerConfig);
         // Return true at success
         return true;
     }
@@ -54,7 +56,7 @@ public class DefaultDialogPlayer implements Player {
     @Override
     public final boolean unload() {
         // Print some information
-        mLogger.message("Unloading the default dialog player '" + this + "'");
+        mLogger.message("Unloading the default dialog player '" + this + "' with configuration:\n" + mPlayerConfig);
         // Return true at success
         return true;
     }

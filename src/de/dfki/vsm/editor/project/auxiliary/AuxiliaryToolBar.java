@@ -15,21 +15,16 @@ import javax.swing.JToolBar;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public class AuxiliaryToolBar extends JToolBar {
+public final class AuxiliaryToolBar extends JToolBar {
 
     // The pricked pin flag
     private boolean pinPricked = false;
-    // The auxiliary editor
-    //private final AuxiliaryEditor mParent;
-
-    // Button to keep the script toolbar visible
+    // The pin toolbar button 
     private JButton mPinButton;
 
-    public AuxiliaryToolBar(/*AuxiliaryEditor parent*/) {
+    public AuxiliaryToolBar() {
         // Initialize the tool bar
         super("AuxiliaryToolBar", JToolBar.HORIZONTAL);
-        // Initialize the parent editor
-        //mParent = parent;
         // Initialize tool bar features
         setFloatable(false);
         setRollover(true);
@@ -75,9 +70,7 @@ public class AuxiliaryToolBar extends JToolBar {
         });
 //        sanitizeTinyButton(mGesticonButton);
         sanitizeTinyButton(mPinButton);
-        
-        
-        
+
         add(Box.createHorizontalGlue());
         add(mPinButton);
         mPinButton.setBounds(TOP, TOP, TOP, TOP);

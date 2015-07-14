@@ -1,12 +1,12 @@
 package de.dfki.vsm.runtime.instance;
 
-import de.dfki.vsm.runtime.Interpreter;
+import de.dfki.vsm.runtime.interpreter.Interpreter;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.value.AbstractValue;
-import de.dfki.vsm.runtime.value.BooleanValue;
-import de.dfki.vsm.runtime.value.FloatValue;
-import de.dfki.vsm.runtime.value.IntValue;
-import de.dfki.vsm.runtime.value.StringValue;
+import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.values.BooleanValue;
+import de.dfki.vsm.runtime.values.FloatValue;
+import de.dfki.vsm.runtime.values.IntValue;
+import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
 
