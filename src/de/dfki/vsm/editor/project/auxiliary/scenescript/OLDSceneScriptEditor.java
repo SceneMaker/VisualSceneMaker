@@ -50,24 +50,14 @@ import javax.swing.text.JTextComponent;
 /**
  * @author Gregor Mehlmannn
  */
-public final class OLDSceneScriptEditor extends JPanel implements DocumentListener, EventListener, Observer {
+public final class OLDSceneScriptEditor extends JPanel implements DocumentListener, EventListener {
 
     // The system logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The event dispatcher instance
-    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
+    private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
 
-    // The editor's observable 
-    private final Observable mObservable = new Observable();
-
-    private class Observable extends java.util.Observable {
-
-        public void notify(final Object obj) {
-            setChanged();
-            notifyObservers(obj);
-        }
-    }
-
+    
     // The Script Editor Pane
     private final JScrollPane mScrollPane;
     private final AuxiliaryToolBar mToolBar;
@@ -125,8 +115,8 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mTabPane = new JTabbedPane();
         // Initialize The Scroll Pane
         mElementPane = new SceneElementDisplay(mProject);
-        mObservable.addObserver(mElementPane);
-        mObservable.addObserver(mEditorPane);
+//        mObservable.addObserver(mElementPane);
+//        mObservable.addObserver(mEditorPane);
         mGesticonButton = new JButton(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
                 ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
                 : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
@@ -182,7 +172,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         add(mStatusLabel, BorderLayout.SOUTH);
 
         // Register As Event Listener
-        mEventCaster.register(this);
+        mEventDispatcher.register(this);
 
         //
         try {
@@ -370,7 +360,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         }
     }
 
-    
     ////////////////////////////////////////////////////////////////////////////
     // React to a change update of the document listener
     @Override
@@ -408,9 +397,9 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             // and these changes could result in
             // changes of the user interface in
             // various editor subcomponents
-            EditorInstance.getInstance().update();
+            EditorInstance.getInstance().refresh();
             // Print some information
-            mLogger.message("Updating editor after successful parsinf the scenescript document");
+            mLogger.message("Updating editor after successful parsing the scenescript document");
             // Return true at success
             return true;
         } catch (final BadLocationException exc) {
@@ -450,11 +439,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     public final void close() {
 
         // Remove As Event Listener
-        mEventCaster.remove(this);
+        mEventDispatcher.remove(this);
 
         // Remove All Observers
-        mObservable.deleteObservers();
-
+//        mObservable.deleteObservers();
         // Remove Caret Listener
         mEditorPane.removeCaretListener(mStatusLabel);
 
@@ -500,8 +488,14 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     }
 
     // Notify all observers
-    @Override
-    public void update(final java.util.Observable obs, final Object obj) {
-        mObservable.notify(obj);
+//    @Override
+//    public void update(final java.util.Observable obs, final Object obj) {
+//        mObservable.notify(obj);
+//    }
+    // Refresh the visual appearance
+    public final void refresh() {
+        mElementPane.refresh();
+        mEditorPane.refresh();
+        // TODO: Refresh the appearance
     }
 }

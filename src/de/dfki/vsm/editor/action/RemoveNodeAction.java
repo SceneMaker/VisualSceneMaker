@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -20,7 +20,7 @@ import javax.swing.undo.CannotUndoException;
 public class RemoveNodeAction extends NodeAction {
     Vector<RemoveEdgeAction> mRemoveEdgeActionList = new Vector<RemoveEdgeAction>();
 
-    public RemoveNodeAction(WorkSpace workSpace, Node node) {
+    public RemoveNodeAction(WorkSpacePanel workSpace, Node node) {
         mWorkSpace        = workSpace;
         mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
         mSceneFlowManager = mWorkSpace.getSceneFlowManager();

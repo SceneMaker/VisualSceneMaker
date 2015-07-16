@@ -3,20 +3,23 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/project/auxiliary/scenescript/ScriptEditorPane.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/api/hcm/HCMScenePlayer.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/api/VSMDefaultPlayer.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/util/jpl/JPLLoader.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/api/VSMScenePlayer.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/project/auxiliary/AuxiliaryEditor.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/runtime/player/RunTimePlayer.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/SceneFlowEditor.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/project/auxiliary/functions/FunctionEditor.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/runtime/project/RunTimeProject.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/players/DefaultDialogPlayer.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/runtime/plugin/RunTimePlugin.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/runtime/instance/RunTimeInstance.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/project/auxiliary/scenescript/ScriptEditorKit.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/CreateEdgeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/RedoAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/CopyNodesAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/ModifyTEdgeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/CutNodesAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/ChangeNodeTypeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/project/sceneflow/SceneFlowEditor.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/UndoAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/EdgeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/CreateNodeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/AddCommandAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/ToggleStartNodeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/ModifyEdgeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/NodeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/EditorAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/DeflectEdgeAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/action/CreateCommentAction.java</file>
         </group>
     </open-files>
 </project-private>

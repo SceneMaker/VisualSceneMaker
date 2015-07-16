@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Edge.TYPE;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Flavour;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.AStarEdgeFinder;
 import de.dfki.vsm.editor.util.grid.BezierFit;
 import de.dfki.vsm.editor.util.grid.BezierPoint;
@@ -44,7 +44,7 @@ import javax.swing.undo.UndoManager;
 public abstract class EdgeAction extends EditorAction {
     protected UndoManager             mUndoManager                = null;
     protected SceneFlowEditor         mSceneFlowPane              = null;
-    protected WorkSpace               mWorkSpace                  = null;
+    protected WorkSpacePanel               mWorkSpace                  = null;
     protected de.dfki.vsm.editor.Node mSourceGUINode              = null;
     protected de.dfki.vsm.editor.Node mTargetGUINode              = null;
     protected de.dfki.vsm.editor.Node mLastTargetGUINode          = null;
@@ -151,7 +151,7 @@ public abstract class EdgeAction extends EditorAction {
         }
 
         // mSourceGUINode.update();
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
         mWorkSpace.add(mGUIEdge);
         mWorkSpace.revalidate();
         mWorkSpace.repaint();
@@ -457,7 +457,7 @@ public abstract class EdgeAction extends EditorAction {
 
         // Remove the GUI-Edge from the workspace and
         // update the source node appearance
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
         mWorkSpace.remove(mGUIEdge);
         mWorkSpace.revalidate();
         mWorkSpace.repaint();

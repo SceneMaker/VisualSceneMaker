@@ -1,7 +1,5 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
@@ -11,7 +9,6 @@ import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
 import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
@@ -20,15 +17,11 @@ import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import static de.dfki.vsm.editor.util.Preferences.sFUNCTION_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sFUNCTION_ERROR_ENTRY;
 import static de.dfki.vsm.editor.util.Preferences.sROOT_FOLDER;
-
-//~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Color;
 import java.awt.Component;
@@ -49,7 +42,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -66,60 +58,35 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- *
- *
+ * @author Gregor Mehlmann
  */
-public class ElementDisplay extends JScrollPane implements Observer, EventListener {
-    private final Observable        mObservable       = new Observable();
-    private final LOGDefaultLogger  mLogger           = LOGDefaultLogger.getInstance();
-    private final EventDispatcher       mEventMulticaster = EventDispatcher.getInstance();
-    private final ElementTree       mElementTree;
-    //private final SceneScriptEditor mSceneScriptEditor;
+public final class DynamicElementsPanel extends JScrollPane {
 
-    public ElementDisplay(SceneFlow sceneFlow, EditorProject project/*, SceneScriptEditor scriptEditor*/) {
-       // mSceneScriptEditor = scriptEditor;
-        mElementTree  = new ElementTree(sceneFlow, project/*, mSceneScriptEditor*/);
-        mObservable.addObserver(mElementTree);
+    // The singelton logger instance
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-        //
+    // The element tree of this panel
+    private final ElementTree mElementTree;
+
+    // Construct the element display
+    public DynamicElementsPanel(final EditorProject project) {
+        // Initialize the element tree
+        mElementTree = new ElementTree(project);
+        // Initialize the GUI components
         setBackground(Color.WHITE);
+        setViewportView(mElementTree);
         setBorder(BorderFactory.createEtchedBorder());
         setPreferredSize(new Dimension(250, 200));
-        setViewportView(mElementTree);
     }
 
-    @Override
-    public void update(java.util.Observable obs, Object obj) {
-
-        // mLogger.message("ElementDisplay.update(" + obj + ")");
-        mObservable.update(obj);
-        updateFunctionList();
-        updateDAList();
-    }
-
-    private void updateFunctionList() {
-        mElementTree.updateFunDefs();
-    }
-
-    private void updateDAList() {
-        mElementTree.updatDialogueActs();
-    }
-
-    @Override
-    public void update(EventObject event) {}
-
-    public ElementTree getElementTree() {
-        return mElementTree;
-    }
-
-    private class Observable extends java.util.Observable {
-        public void update(Object obj) {
-            setChanged();
-            notifyObservers(obj);
-        }
+    // Refresh the element display
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
+        // Refresh the element tree
+        mElementTree.refresh();
     }
 }
-
 
 ///***************************************************************************
 // *
@@ -163,66 +130,99 @@ public class ElementDisplay extends JScrollPane implements Observer, EventListen
 //        return null;
 //    }
 //}
-
 /**
  *
  *
  */
-class ElementTree extends JTree implements Observer, EventListener, ActionListener, TreeSelectionListener {
+class ElementTree extends JTree implements ActionListener, TreeSelectionListener {
+
     private final TreeEntry mRootEntry = new TreeEntry("SceneFlow", sROOT_FOLDER, null);
 
     // private final TreeEntry mBasicEntry = new TreeEntry("Elements", null, null);
-    private final TreeEntry      mSceneEntry     = new TreeEntry("Scenes", null, null);
+    private final TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
     private ArrayList<TreeEntry> mSceneListEntry = new ArrayList<TreeEntry>();
-    private final TreeEntry      mFunDefEntry    = new TreeEntry("Functions", null, null);
-    private final TreeEntry      mDAEntry        = new TreeEntry("DialogActs", null, null);
+    private final TreeEntry mFunDefEntry = new TreeEntry("Functions", null, null);
+    private final TreeEntry mDAEntry = new TreeEntry("DialogActs", null, null);
 
-    // COMMENTED BY M. FALLAS ON 03-2015
-
-    /*
-     * private final TreeEntry mSuperNodeEntry = new TreeEntry("Super Node", sSUPERNODE_ENTRY, Node.Type.SuperNode);
-     * private final TreeEntry mBasicNodeEntry = new TreeEntry("Basic Node", sBASICNODE_ENTRY, Node.Type.BasicNode);
-     * private final TreeEntry mEEdgeEntry = new TreeEntry("Epsilon Edge", sEEDGE_ENTRY, new Edge(Edge.TYPE.EEDGE));
-     * private final TreeEntry mTEdgeEntry = new TreeEntry("Timeout Edge", sTEDGE_ENTRY, new Edge(Edge.TYPE.TEDGE));
-     * private final TreeEntry mPEdgeEntry = new TreeEntry("Probability Edge", sPEDGE_ENTRY, new Edge(Edge.TYPE.PEDGE));
-     * private final TreeEntry mCEdgeEntry = new TreeEntry("Conditional Edge", sCEDGE_ENTRY, new Edge(Edge.TYPE.CEDGE));
-     * private final TreeEntry mIEdgeEntry = new TreeEntry("Interruptive Edge", sIEDGE_ENTRY, new Edge(Edge.TYPE.IEDGE));
-     * private final TreeEntry mFEdgeEntry = new TreeEntry("Fork Edge", sFEDGE_ENTRY, new Edge(Edge.TYPE.FEDGE));
-     * private final TreeEntry mCommentEntry = new TreeEntry("Comment", sCOMMENT_ENTRY, new Comment());
-     */
-    private final JMenuItem functionsAdd   = new JMenuItem("Add...");
+    private final JMenuItem functionsAdd = new JMenuItem("Add...");
     private final JMenuItem functionModify = new JMenuItem("Modify...");
     private final JMenuItem functionRemove = new JMenuItem("Remove");
 
     //
-    private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventDispatcher      mEventCaster = EventDispatcher.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     // private final EventCaster mEventMulticaster = EventCaster.getInstance();
     // private final Observable mObservable = new Observable();
-    private final SceneFlow         mSceneFlow;
+    private final SceneFlow mSceneFlow;
     //private final SceneScriptEditor mSceneScriptEditor;
 
     // Drag & Drop support
-    private DragSource               mDragSource;
-    private DragGestureListener      mDragGestureListener;
-    private DragSourceListener       mDragSourceListener;
-    private int                      mAcceptableDnDActions;
-    private final EditorProject        mProject;
+    private DragSource mDragSource;
+    private DragGestureListener mDragGestureListener;
+    private DragSourceListener mDragSourceListener;
+    private int mAcceptableDnDActions;
+    private final EditorProject mProject;
     private final DialogActInterface mDialogAct;
+
+    public void updateFunctions() {
+        mFunDefEntry.removeAllChildren();
+
+        List<FunDef> functionDefinitions = new ArrayList<FunDef>(mSceneFlow.getUsrCmdDefMap().values());
+
+        Collections.sort(functionDefinitions);
+
+        for (final FunDef def : functionDefinitions) {
+            mFunDefEntry.add(new TreeEntry(def.getName(), def.isValidClass()
+                    ? sFUNCTION_ENTRY
+                    : sFUNCTION_ERROR_ENTRY, def));
+        }
+    }
+
+    private void updateFunDefsXXX() {
+
+        //
+        mFunDefEntry.removeAllChildren();
+
+        //
+        SceneFlow sceneFlow = mProject.getSceneFlow();
+
+        for (FunDef def : sceneFlow.getUsrCmdDefMap().values()) {
+            mFunDefEntry.add(new TreeEntry(def.getName(), null, def));
+        }
+
+        //
+        expandAll();
+    }
+
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
+        updateSceneList();
+        updateFunDefsXXX();
+        //}
+        // TODO: which oene is the right function to call???
+        //
+         //TODO: call the right update method
+        updateFunctions();
+        updateDialogActs();
+
+        // Update the visual appearance of the ElementTree
+        updateUI();
+    }
 
     /**
      *
      *
      */
-    public ElementTree(SceneFlow sceneFlow, EditorProject project/*, SceneScriptEditor scriptEditor*/) {
+    public ElementTree(EditorProject project) {
         super(new DefaultTreeModel(null));
 
         //
-        mSceneFlow         = sceneFlow;
+        mSceneFlow = project.getSceneFlow();
         //mSceneScriptEditor = scriptEditor;
-        mProject           = project;
-        mDialogAct         = mProject.getDialogAct();
+        mProject = project;
+        mDialogAct = mProject.getDialogAct();
         setBorder(BorderFactory.createEmptyBorder());
         setCellRenderer(new CellRenderer());
         setBackground(Color.WHITE);
@@ -243,48 +243,45 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-
-//  public class Observable extends java.util.Observable {
+////  public class Observable extends java.util.Observable {
+////
+////      public void update(Object obj) {
+////          setChanged();
+////          notifyObservers(obj);
+////      }
+////  }
+//    @Override
+//    public void update(java.util.Observable obs, Object obj) {
 //
-//      public void update(Object obj) {
-//          setChanged();
-//          notifyObservers(obj);
-//      }
-//  }
-    @Override
-    public void update(java.util.Observable obs, Object obj) {
-
-        // mLogger.message("ElementTree.update(" + obj + ")");
-        
-        // TODO: We already have a reference to the project
-        // Why do we need a reference in the update method
-        //if (obj instanceof EditorProject) {
-            updateScenesXXX(/*(EditorProject) obj*/);
-            updateFunDefsXXX(/*(EditorProject) obj*/);
-        //}
-
-        // Update the visual appearance of the ElementTree
-        updateUI();
-    }
-
-    /**
-     *
-     *
-     */
-    @Override
-    public void update(EventObject event) {
-        System.err.println("EventListener of ElementTree");
-
-        // Update the visual appearance of the ElementTree
-        updateUI();
-
-        throw new Error();
-    }
-
+//        // mLogger.message("ElementTree.update(" + obj + ")");
+//        
+//        // TODO: We already have a reference to the project
+//        // Why do we need a reference in the update method
+//        //if (obj instanceof EditorProject) {
+//            updateScenesXXX(/*(EditorProject) obj*/);
+//            updateFunDefsXXX(/*(EditorProject) obj*/);
+//        //}
+//
+//        // Update the visual appearance of the ElementTree
+//        updateUI();
+//    }
+//    /**
+//     *
+//     *
+//     */
+//    @Override
+//    public void update(EventObject event) {
+//        System.err.println("EventListener of ElementTree");
+//
+//        // Update the visual appearance of the ElementTree
+//        updateUI();
+//
+//        throw new Error();
+//    }
     @Override
     public void valueChanged(TreeSelectionEvent e) {
-        TreePath path      = e.getPath();
-        int      pathCount = path.getPathCount();
+        TreePath path = e.getPath();
+        int pathCount = path.getPathCount();
 
         // Make sure that focus can be requested
         if (requestFocusInWindow()) {
@@ -314,8 +311,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             } else if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.scenescript.SceneGroup.class)) {
                 //mScriptEditorPanel.getTabPane().setSelectedIndex(0);
 
-                String     sceneLanguageSelect = ((TreeEntry) parentPath.getLastPathComponent()).getText();
-                SceneGroup selectedScene       = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();
+                String sceneLanguageSelect = ((TreeEntry) parentPath.getLastPathComponent()).getText();
+                SceneGroup selectedScene = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);
             }
@@ -343,19 +340,18 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         // Add basic element entries
         // COMMENTED BY M. FALLAS ON 03-2015
 
-/*        mBasicEntry.add(mSuperNodeEntry);
-        mBasicEntry.add(mBasicNodeEntry);
-        mBasicEntry.add(mEEdgeEntry);
-        mBasicEntry.add(mTEdgeEntry);
-        mBasicEntry.add(mPEdgeEntry);
-        mBasicEntry.add(mCEdgeEntry);
-        mBasicEntry.add(mIEdgeEntry);
-        mBasicEntry.add(mFEdgeEntry);
-        mBasicEntry.add(mCommentEntry);
-        //
-        mRootEntry.add(mBasicEntry);
-        mRootEntry.add(mSceneEntry);*/
-
+        /*        mBasicEntry.add(mSuperNodeEntry);
+         mBasicEntry.add(mBasicNodeEntry);
+         mBasicEntry.add(mEEdgeEntry);
+         mBasicEntry.add(mTEdgeEntry);
+         mBasicEntry.add(mPEdgeEntry);
+         mBasicEntry.add(mCEdgeEntry);
+         mBasicEntry.add(mIEdgeEntry);
+         mBasicEntry.add(mFEdgeEntry);
+         mBasicEntry.add(mCommentEntry);
+         //
+         mRootEntry.add(mBasicEntry);
+         mRootEntry.add(mSceneEntry);*/
 //      TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
 //      mSceneListEntry.add(mSceneEntry);
 //      for(int i = 0; i < mSceneListEntry.size(); i++) {
@@ -377,7 +373,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    private void updateScenesXXX(/*EditorProject project*/) {
+    private void updateSceneList(/*EditorProject project*/) {
 
         //
         // System.out.println("Updating Scenes");
@@ -398,9 +394,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         if (sceneScript != null) {
             if (sceneScript.getSceneListSize() > 0) {
                 for (SceneGroup group : sceneScript.getOrderedGroupSet().descendingSet()) {
-                    ArrayList<SceneObject> whiteList    = group.getWhiteList();
-                    ArrayList<SceneObject> blackList    = group.getBlackList();
-                    ArrayList<String>      languageList = new ArrayList<String>();
+                    ArrayList<SceneObject> whiteList = group.getWhiteList();
+                    ArrayList<SceneObject> blackList = group.getBlackList();
+                    ArrayList<String> languageList = new ArrayList<String>();
 
                     if (mRootEntry.isNodeDescendant(mSceneEntry)) {
                         mRootEntry.remove(mSceneEntry);
@@ -456,11 +452,11 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     /**
      *
      */
-    void updatDialogueActs() {
+    void updateDialogActs() {
         mDAEntry.removeAllChildren();
 
         Map<String, List<String>> attributeValueMap = new HashMap();
-        List<String>              valueList         = new ArrayList<>();
+        List<String> valueList = new ArrayList<>();
 
         // Populate attributeValueMap with DA attributes and its values
         for (String att : mProject.getDialogAct().getNLGAttributes()) {
@@ -481,23 +477,22 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
     /**
      *
      */
-    
     /*
-    private void updatDialogueActs(EditorProject project) {
-        mDAEntry.removeAllChildren();
+     private void updatDialogueActs(EditorProject project) {
+     mDAEntry.removeAllChildren();
 
-        for (String phase : project.getDialogAct().getDialogueActPhases()) {
+     for (String phase : project.getDialogAct().getDialogueActPhases()) {
 
-            // mDAEntry.add(new TreeEntry(phase, null, null));
-            for (String da : project.getDialogAct().getDialogueActs(phase)) {
+     // mDAEntry.add(new TreeEntry(phase, null, null));
+     for (String da : project.getDialogAct().getDialogueActs(phase)) {
 
-                // mDAEntry.add(new TreeEntry(da, null, new DialogAct(da, phase)));
-            }
-        }
+     // mDAEntry.add(new TreeEntry(da, null, new DialogAct(da, phase)));
+     }
+     }
 
-        expandAll();
-    }
-*/
+     expandAll();
+     }
+     */
     /**
      *
      *
@@ -513,9 +508,9 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
                 tree.setSelectionPath(path);
 
-                boolean    showPopup = false;
-                JPopupMenu menu      = new JPopupMenu();
-                int        pathCount = path.getPathCount();
+                boolean showPopup = false;
+                JPopupMenu menu = new JPopupMenu();
+                int pathCount = path.getPathCount();
 
                 // System.out.println(pathCount);
                 // TODO: why do we check the pathCount?
@@ -531,9 +526,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                     if (path.getLastPathComponent() instanceof TreeEntry) {
                         launchTreeEntrySelectedEvent((TreeEntry) path.getLastPathComponent());
                     }
-                }
-
-                // test if the user clicked on exact function
+                } // test if the user clicked on exact function
                 else if (pathCount == 3) {
                     TreePath parentPath = path.getParentPath();
 
@@ -546,14 +539,14 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                             menu.add(functionModify);
                             menu.add(functionRemove);
                             showPopup = true;
-                        } else if ((e.getClickCount() == 2) &&!e.isConsumed()) {
+                        } else if ((e.getClickCount() == 2) && !e.isConsumed()) {
                             TreeEntry entry = (TreeEntry) path.getLastPathComponent();
 
                             modifyFunctionAction(entry);
                         }
                     } else if (parentPath.getLastPathComponent().equals(mDAEntry)) {
-                        if (e.isPopupTrigger()) {}
-                        else if ((e.getClickCount() == 2) &&!e.isConsumed()) {
+                        if (e.isPopupTrigger()) {
+                        } else if ((e.getClickCount() == 2) && !e.isConsumed()) {
                             TreeEntry entry = (TreeEntry) path.getLastPathComponent();
 
                             modifyDialogAct(entry);
@@ -565,16 +558,19 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                     menu.show(tree, e.getX(), e.getY());
                 }
             }
+
             private void launchFunctionSelectedEvent(FunDef funDef) {
                 FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
 
                 mEventCaster.convey(ev);
             }
+
             private void launchTreeEntrySelectedEvent(TreeEntry entry) {
                 TreeEntrySelectedEvent ev = new TreeEntrySelectedEvent(this, entry);
 
                 mEventCaster.convey(ev);
             }
+
             private void modifyDialogAct(TreeEntry entry) {
                 if (entry != null) {
                     DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct, entry.getText());
@@ -598,7 +594,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-                updateFunDefs();
+                 //TODO: call the right update method
+                updateFunctions();
 
                 FunctionModifiedEvent ev = new FunctionModifiedEvent(this, usrCmdDef);
 
@@ -611,22 +608,6 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    private void updateFunDefsXXX(/*EditorProject project*/) {
-
-        //
-        mFunDefEntry.removeAllChildren();
-
-        //
-        SceneFlow sceneFlow = mProject.getSceneFlow();
-
-        for (FunDef def : sceneFlow.getUsrCmdDefMap().values()) {
-            mFunDefEntry.add(new TreeEntry(def.getName(), null, def));
-        }
-
-        //
-        expandAll();
-    }
-
     /**
      *
      *
@@ -645,20 +626,6 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      *
      */
-    public void updateFunDefs() {
-        mFunDefEntry.removeAllChildren();
-
-        List<FunDef> functionDefinitions = new ArrayList<FunDef>(mSceneFlow.getUsrCmdDefMap().values());
-
-        Collections.sort(functionDefinitions);
-
-        for (final FunDef def : functionDefinitions) {
-            mFunDefEntry.add(new TreeEntry(def.getName(), def.isValidClass()
-                    ? sFUNCTION_ENTRY
-                    : sFUNCTION_ERROR_ENTRY, def));
-        }
-    }
-
     /**
      *
      *
@@ -672,15 +639,16 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
 
             if (usrCmdDef != null) {
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-                updateFunDefs();
-                EditorInstance.getInstance().update();
+                 //TODO: call the right update method
+                updateFunctions();
+                EditorInstance.getInstance().refresh();
                 launchFunctionCreatedEvent(usrCmdDef);
             }
         } else if (source == functionModify) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent();
 
             modifyFunctionAction(entry);
-            EditorInstance.getInstance().update();
+            EditorInstance.getInstance().refresh();
             launchFunctionSelectedEvent((FunDef) entry.getData());
         } else if (source == functionRemove) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent();
@@ -689,8 +657,10 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
                 FunDef oldFunDef = (FunDef) entry.getData();
 
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
-                updateFunDefs();
-                EditorInstance.getInstance().update();
+                 //TODO: call the right update method
+                updateFunctions();
+               
+                EditorInstance.getInstance().refresh();
                 launchFunctionCreatedEvent((FunDef) entry.getData());
             }
         }
@@ -731,8 +701,8 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         mDragSource = DragSource.getDefaultDragSource();
 
         // Install the drag source listener
-        mDragSourceListener = new DragSourceAdapter() {}
-        ;
+        mDragSourceListener = new DragSourceAdapter() {
+        };
 
         // Install the drag gesture listener
         mDragGestureListener = new DragGestureListener() {
@@ -785,6 +755,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
      *
      */
     private class CellRenderer extends DefaultTreeCellRenderer {
+
         public CellRenderer() {
             super();
 
@@ -799,7 +770,7 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
             // Get the entry information
             Object data = ((TreeEntry) value).getData();
             String text = ((TreeEntry) value).getText();
-            Icon   icon = ((TreeEntry) value).getIcon();
+            Icon icon = ((TreeEntry) value).getIcon();
 
             // Render the cell
             setText(text);

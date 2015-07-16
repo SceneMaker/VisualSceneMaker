@@ -15,7 +15,6 @@ import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
-import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
@@ -23,9 +22,8 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 /**
  * @author Gregor Mehlmann
- * @author Patrick Gebhard
  */
-public final class ProjectEditor extends JSplitPane implements EventListener, Observer {
+public final class ProjectEditor extends JSplitPane implements EventListener {
 
     // The singelton logger instance   
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -36,11 +34,8 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
     // The sceneflow editor of this project
     private final SceneFlowEditor mSceneFlowEditor;
     // The auxiliary editor of this project
-     private final OLDSceneScriptEditor mAuxiliaryEditor;
+    private final OLDSceneScriptEditor mAuxiliaryEditor;
     //private final AuxiliaryEditor mAuxiliaryEditor;
-
-    // The editor's observable component 
-    private final Observable mObservable = new Observable();
 
     // Create an empty project editor
     public ProjectEditor() {
@@ -58,9 +53,6 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         // Initialize the auxuliary editor
         mAuxiliaryEditor = new OLDSceneScriptEditor(mEditorProject);
         //mAuxiliaryEditor = new AuxiliaryEditor(mEditorProject);
-        // register the observers
-        mObservable.addObserver(mSceneFlowEditor);
-        mObservable.addObserver(mAuxiliaryEditor);
         // Register at the event dispatcher
         mEventDispatcher.register(this);
         // Initialize the GUI components
@@ -72,10 +64,6 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         return mSceneFlowEditor;
     }
 
-    // Get the scenescript editor 
-    //public final SceneScriptEditor getAuxiliaryEditor() {
-    //    return mAuxiliaryEditor;
-    //}
     // Get the editor project 
     public final EditorProject getEditorProject() {
         return mEditorProject;
@@ -83,8 +71,6 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
 
     // Clean up the editor component
     public final void close() {
-        // Delete all observer objects
-        mObservable.deleteObservers();
         // Remove from event dispatcher
         mEventDispatcher.remove(this);
         // Close / Cleanup Members
@@ -211,21 +197,6 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
         setDividerLocation(1d);
     }
 
-    // The observable class of the editor
-    private final class Observable extends java.util.Observable {
-
-        public final void update(final Object object) {
-            setChanged();
-            notifyObservers(object);
-        }
-    }
-
-    // Recursively notify observers
-    @Override
-    public void update(java.util.Observable obs, Object obj) {
-        mObservable.update(obj);
-    }
-
     // Update when an event happened  
     @Override
     public void update(final EventObject event) {
@@ -240,6 +211,15 @@ public final class ProjectEditor extends JSplitPane implements EventListener, Ob
             // Hide the auxiliary editor
             hideAuxiliaryEditor();
         }
+    }
+
+    // Refresh the editor's visual appearance
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
+        // Refresh the components
+        mAuxiliaryEditor.refresh();
+        mSceneFlowEditor.refresh();
     }
 
 }

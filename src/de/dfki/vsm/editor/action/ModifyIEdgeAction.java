@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
@@ -22,7 +22,7 @@ public class ModifyIEdgeAction extends ModifyEdgeAction {
     private Condition mOldCondition;
     private Condition mNewCondition;
 
-    public ModifyIEdgeAction(Edge edge, WorkSpace workSpace) {
+    public ModifyIEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);
     }
 

@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
@@ -12,8 +11,6 @@ import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.datatransfer.Clipboard;
@@ -23,7 +20,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -37,63 +33,20 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
- * @author Not me
- * @author Patrick Gebahrd
+ * @author Gregor Mehlmann
  */
 
 
-public class SceneFlowToolBar extends JToolBar implements Observer {
+public final class SceneFlowToolBar extends JToolBar implements Observer {
 
     // The VSM Runtime Instance
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
 
     // The Parent Editor Window
-    private final EditorInstance mWindow = EditorInstance.getInstance();
+    private final EditorInstance mEditorInstance = EditorInstance.getInstance();
 
     // Clipboard
     final Clipboard clipboard = getToolkit().getSystemClipboard();
@@ -191,7 +144,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mPreferences.setProperty("node_width", Integer.toString(mNodeSize));
         mPreferences.setProperty("node_height", Integer.toString(mNodeSize));
         //mPreferences.save(mProject.getEditorConfigName());
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
     }
 
     public void addPathComponent(SuperNode supernode) {
@@ -334,7 +287,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mNormalize = add(new AbstractAction("ACTION_NORMALIZE", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/normalize_edges_gray.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mWindow.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
         });
         mNormalize.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/normalize_edges_blue.png"));
@@ -345,7 +298,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mStraighten = add(new AbstractAction("ACTION_STRAIGHTEN", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/straighten_gray.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mWindow.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
             }
         });
         mStraighten.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/straighten_blue.png"));
@@ -359,12 +312,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mPlayButton = add(new AbstractAction("ACTION_PLAY", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                if (mPreferences.sLAUNCHPLAYER) {
-                    //LaunchDefaultScenePlayer.getInstance().launch();
-                }
-
-                actionStartSceneFlow();
+                mEditorInstance.play(mProject);
             }
         });
         mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
@@ -377,7 +325,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mStopButton = add(new AbstractAction("ACTION_STOP", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop.png")) {
             @Override
             public final void actionPerformed(ActionEvent e) {
-                actionStopSceneFlow();
+                mEditorInstance.stop(mProject);
             }
         });
         mStopButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop_blue.png"));
@@ -510,41 +458,9 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void actionStopSceneFlow() {
-
-        // Stop The Execution
-        mWindow.stop();
-
-        // Update The Buttons
-        changeRuntimeButtonState();
-
-        // un select nodes and edges
-        SceneStoppedEvent ev = new SceneStoppedEvent(this);
-        mEventCaster.convey(ev);
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void actionStartSceneFlow() {
-
-        // Check State Of Execution
-        if (mRunTime.isRunning(mProject)) {
-            mWindow.pauseSceneFlow();
-        } else {
-            mWindow.start();
-        }
-
-        // Update The Buttons
-        changeRuntimeButtonState();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    private void changeRuntimeButtonState() {
+    private void refreshRuntimeButtonState() {
 
         //
         if (mRunTime.isRunning(mProject)) {
@@ -615,5 +531,12 @@ public class SceneFlowToolBar extends JToolBar implements Observer {
         mPathScrollPane.setPreferredSize(new Dimension(500, 22));
         mPathScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         mPathScrollPane.setHorizontalScrollBar(mPathScrollBar);
+    }
+
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
+        // Refresh runtime buttons
+        refreshRuntimeButtonState();
     }
 }

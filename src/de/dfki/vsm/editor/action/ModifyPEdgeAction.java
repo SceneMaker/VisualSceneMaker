@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 import de.dfki.vsm.model.sceneflow.PEdge;
 
@@ -22,7 +22,7 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
     private Vector<Integer> mOldProbList = new Vector<Integer>();
     private Vector<Integer> mNewProbList = new Vector<Integer>();
 
-    public ModifyPEdgeAction(Edge edge, WorkSpace workSpace) {
+    public ModifyPEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);
     }
 

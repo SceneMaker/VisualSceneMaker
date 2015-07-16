@@ -308,7 +308,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
@@ -328,7 +328,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mVisualizationTraceCheckBox = new JCheckBox("Activity Trace", true);
@@ -337,7 +337,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mShowNodeIDCheckBox = new JCheckBox("Draw Node ID", true);
@@ -346,7 +346,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mShowVariablesCheckBox = new JCheckBox("Show Variables", true);
@@ -355,7 +355,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mShowSmartPathDebugCheckBox = new JCheckBox("Show Smart Path Calculation", false);
@@ -364,7 +364,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
@@ -446,7 +446,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mScriptFontSizeLabel   = new JLabel("Font Size:");
@@ -476,7 +476,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         
@@ -651,7 +651,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
@@ -660,7 +660,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
@@ -669,7 +669,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
@@ -678,7 +678,7 @@ public class OptionsDialog extends JDialog {
             @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
     }

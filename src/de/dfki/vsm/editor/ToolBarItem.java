@@ -1,11 +1,6 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.ios.ResourceLoader;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -31,27 +26,28 @@ import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 
 public final class ToolBarItem extends JButton implements Transferable {
-    private final String iconsPath    = "/res/img/workspace_toolbar/";
-    private Dimension    toolItemSize = new Dimension(35, 45);
+
+    private final String iconsPath = "/res/img/workspace_toolbar/";
+    private Dimension toolItemSize = new Dimension(35, 45);
     private final String mText;
-    private final Icon   mIcon;
-    private final Icon   mRollOverIcon;
+    private final Icon mIcon;
+    private final Icon mRollOverIcon;
     private final Object mData;
 
     // marks this JButton as the source of the Drag
-    private DragSource                source;
-    private TransferHandler           t;
+    private DragSource source;
+    private TransferHandler t;
     private final DragGestureListener mDragGestureListener;
-    private final DragSourceListener  mDragSourceListener;
+    private final DragSourceListener mDragSourceListener;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ToolBarItem(final String text, final String info, final String icon, final Object data) {
-        mText         = text;
-        mIcon         = ResourceLoader.loadImageIcon(iconsPath + icon + ".png");
+        mText = text;
+        mIcon = ResourceLoader.loadImageIcon(iconsPath + icon + ".png");
         mRollOverIcon = ResourceLoader.loadImageIcon(iconsPath + icon + "_BLUE.png");
-        mData         = data;
+        mData = data;
         setContentAreaFilled(false);
         setFocusable(false);
         setOpaque(false);
@@ -70,34 +66,37 @@ public final class ToolBarItem extends JButton implements Transferable {
             @Override
             public void dragEnter(DragSourceDragEvent dsde) {
 
-//              System.out.println("drag enter");
+                System.out.println("drag enter");
             }
+
             @Override
             public void dragOver(DragSourceDragEvent dsde) {
 
-//              System.out.println("drag over");
+                System.out.println("drag over");
             }
+
             @Override
             public void dropActionChanged(DragSourceDragEvent dsde) {
-
-//              System.out.println("drag action changed");
+                System.out.println("drag action changed");
             }
+
             @Override
             public void dragExit(DragSourceEvent dse) {
 
-//              System.out.println("drag exit");
+                System.out.println("drag exit");
             }
+
             @Override
             public void dragDropEnd(DragSourceDropEvent dsde) {
 
-//              System.out.println("drag drop end");
+                System.out.println("drag drop end");
             }
         };
         mDragGestureListener = new DragGestureListener() {
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
-                Image  cursorIcon = ResourceLoader.loadImageIcon(iconsPath + icon + "_SMALL.png").getImage();
-                Cursor cur        = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(0, 0), mText);
+                Image cursorIcon = ResourceLoader.loadImageIcon(iconsPath + icon + "_SMALL.png").getImage();
+                Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(0, 0), mText);
 
                 source.startDrag(event, cur, (ToolBarItem) event.getComponent(), mDragSourceListener);
             }
@@ -108,55 +107,19 @@ public final class ToolBarItem extends JButton implements Transferable {
         source.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY, mDragGestureListener);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-//  public final String getText() {
-//      return mText;
-//  }
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final Icon getIcon() {
-        return mIcon;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final Icon getRolloverIcon() {
-        return mRollOverIcon;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final Object getData() {
-        return mData;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get the data for a drag & drop operation
     @Override
     public final Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         return mData;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Generally support all d&d data flavours
     @Override
     public final boolean isDataFlavorSupported(final DataFlavor flavor) {
         return true;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    //
     @Override
     public final DataFlavor[] getTransferDataFlavors() {
         return null;

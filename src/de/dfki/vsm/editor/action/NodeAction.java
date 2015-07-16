@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Node.Type;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -31,7 +31,7 @@ public abstract class NodeAction extends EditorAction {
     // Common data
     protected UndoManager        mUndoManager      = null;
     protected SceneFlowEditor    mSceneFlowPane    = null;
-    protected WorkSpace          mWorkSpace        = null;
+    protected WorkSpacePanel          mWorkSpace        = null;
     protected EditorConfig mPreferences      = null;
     protected Point              mCoordinate       = null;
     protected Type               mGUINodeType      = null;

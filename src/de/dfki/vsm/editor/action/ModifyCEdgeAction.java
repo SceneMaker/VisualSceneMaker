@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
@@ -38,7 +38,7 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
      * @param edge
      * @param workSpace
      */
-    public ModifyCEdgeAction(Edge edge, WorkSpace workSpace) {
+    public ModifyCEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);
     }
 

@@ -15,6 +15,8 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.tpl.TPLTriple;
+import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -28,6 +30,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,7 +46,6 @@ import javax.swing.event.ChangeListener;
 
 /**
  * @author Gregor Mehlmann
- * @author Patrick Gebhard
  */
 public final class EditorInstance extends JFrame implements EventListener, ChangeListener {
 
@@ -57,11 +59,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The singelton event multicaster
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // The editor's observable component 
-    private final Observable mObservable = new Observable();
+    //private final Observable mObservable = new Observable();
     // The editor's GUI components
     private final MenuBar mMenuBar;
     private final JTabbedPane mProjectEditors;
-    private final WelcomePanel mWelcomePanel;
+    private final WelcomePanel mStarter;
     private final JScrollPane mWelcomeScreen;
 
     // Get the singelton editor instance
@@ -76,12 +78,13 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    WorkSpace.ClipBoard previousCB = null;
+    WorkSpacePanel.ClipBoard previousCB = null;
 
     @Override
     public void stateChanged(ChangeEvent e) {
         if (getSelectedProjectEditor().getEditorProject() != null) {
-            mObservable.update(getSelectedProjectEditor().getEditorProject());
+            getSelectedProjectEditor().refresh();
+            //mObservable.update(getSelectedProjectEditor().getEditorProject());
         }
 
         // copy and paste of nodes between the different projects
@@ -89,7 +92,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         if (projectEditor != null) {
             if (previousCB != null) {
-                WorkSpace.ClipBoard currentCB = projectEditor.getSceneFlowEditor().getWorkSpace().getClipBoard();
+                WorkSpacePanel.ClipBoard currentCB = projectEditor.getSceneFlowEditor().getWorkSpace().getClipBoard();
 
                 currentCB.clear();
 
@@ -158,8 +161,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         //mObservable.addObserver(mProjectEditors);
 
         // Init welcome screen
-        mWelcomePanel = new WelcomePanel(this);
-        mWelcomeScreen = new JScrollPane(mWelcomePanel);
+        mStarter = new WelcomePanel(this);
+        mWelcomeScreen = new JScrollPane(mStarter);
         mWelcomeScreen.setMaximumSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
         mWelcomeScreen.setOpaque(false);
         mWelcomeScreen.getViewport().setOpaque(false);
@@ -254,7 +257,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     public void clearRecentProjects() {
-        mWelcomePanel.updateWelcomePanel();
+        mStarter.updateWelcomePanel();
     }
 
     private void checkAndSetLocation() {
@@ -312,7 +315,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         mProjectEditors.addTab("", editor);
         mProjectEditors.setSelectedComponent(editor);
         // Add the editor as observer
-        mObservable.addObserver(editor);
+        //mObservable.addObserver(editor);
         // Show the editor projects now
         if (mProjectEditors.getTabCount() == 1) {
             // Show the project editors
@@ -378,7 +381,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Create a new project editor from project
             final ProjectEditor projectEditor = new ProjectEditor(project);
             // Add the new project editor as observer
-            mObservable.addObserver(projectEditor);
+            //mObservable.addObserver(projectEditor);
             // Add the project editor to list of project 
             // editors and select it in the tabbed pane
             mProjectEditors.addTab(project.getProjectName(), projectEditor);
@@ -421,9 +424,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         mProjectEditors.setTitleAt(index, title.replace("*", ""));
                         // Update rectent project list
                         updateRecentProjects(project);
-                        // Update all editor parts
-                        // TODO: DO we need to update here?
-                        update();
                         // Return true at success
                         return true;
                     } else {
@@ -481,9 +481,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         mProjectEditors.setTitleAt(index, project.getProjectName());
                         // Update rectent project list
                         updateRecentProjects(project);
-                        // Update all editor parts
-                        // TODO: DO we need to update here?
-                        update();
                         // Return true at success
                         return true;
                     } else {
@@ -558,8 +555,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         }
 
-        // Remove the observer
-        mObservable.deleteObserver(editor);
         // Remove the component 
         mProjectEditors.remove(editor);
         // Toggle the editor main screen
@@ -572,92 +567,118 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Save all project editors
-    public void saveAll() {
+    public final void saveAll() {
         for (int i = 0; i < mProjectEditors.getTabCount(); i++) {
             save(((ProjectEditor) mProjectEditors.getComponentAt(i)));
         }
     }
 
     // Close all project editors
-    public void closeAll() {
+    public final void closeAll() {
         for (int i = 0; i < mProjectEditors.getTabCount(); i++) {
             close((ProjectEditor) mProjectEditors.getComponentAt(i));
         }
     }
 
+    private final void refreshRecentProjects(final EditorProject project) throws ParseException {
+        final String projectPath = project.getProjectPath();
+        final String projectName = project.getProjectName();
+        // Create the list of recent projects
+        final ArrayList<TPLTriple<String, String, Date>> projects = new ArrayList<>();
+        // Get all remembered recent projects
+        for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
+            final String path = Preferences.getProperty("recentproject." + i + ".path");
+            final String name = Preferences.getProperty("recentproject." + i + ".name");
+            final Date date = new SimpleDateFormat("dd.MM.yyyy").parse(
+                    Preferences.getProperty("recentproject." + i + ".date"));
+            // Create the current recent project
+            TPLTriple<String, String, Date> recent = new TPLTriple(name, path, date);
+            //
+            projects.add(recent);
+        }
+        // Interate over the recent projects
+        for (TPLTriple<String, String, Date> recent : projects) {
+            //if () {
+
+            //}
+        }
+
+    }
+
     // Update list of recent projects
     public void updateRecentProjects(final EditorProject project) {
-        final String projectDir = project.getProjectPath();
+        final String projectPath = project.getProjectPath();
         final String projectName = project.getProjectName();
         // Print some info message
-        mLogger.message("Updating recent projects with '" + projectDir + "' '" + projectName + "'");
+        mLogger.message("Updating recent projects with '" + projectPath + "' '" + projectName + "'");
         //
-        ArrayList<String> recentProjectDirs = new ArrayList<String>();
-        ArrayList<String> recentProjectNames = new ArrayList<String>();
-
+        ArrayList<String> paths = new ArrayList<>();
+        ArrayList<String> names = new ArrayList<>();
+        // Load the list of recent projects
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
-            String pDir = Preferences.getProperty("recentprojectdir" + i);
+            final String path = Preferences.getProperty("recentproject." + i + ".path");
 
-            if (pDir != null) {
-                if (pDir.startsWith("res" + System.getProperty("file.separator") + "prj")) {
+            if (path != null) {
+                // TODO: hardcoding this is bad style
+                if (path.startsWith("res" + System.getProperty("file.separator") + "prj")) {
                     continue;
                 }
 
-                recentProjectDirs.add(Preferences.getProperty("recentprojectdir" + i));
+                paths.add(Preferences.getProperty("recentproject." + i + ".path"));
             }
 
-            String pName = Preferences.getProperty("recentprojectname" + i);
+            String pName = Preferences.getProperty("recentproject." + i + ".name");
 
             if (pName != null) {
-                recentProjectNames.add(Preferences.getProperty("recentprojectname" + i));
+                names.add(Preferences.getProperty("recentproject." + i + ".name"));
             }
         }
 
-        if (recentProjectDirs.contains(projectDir)) {
+        if (paths.contains(projectPath)) {
 
             // case: project in recent list
-            if (recentProjectNames.contains(projectName)) {
+            if (names.contains(projectName)) {
 
                 // case: project is on list - has now to be at first pos
-                int index = recentProjectDirs.indexOf(projectDir);
+                int index = paths.indexOf(projectPath);
 
                 if (index != 0) {
-                    recentProjectDirs.add(0, projectDir);
-                    recentProjectNames.add(0, projectName);
-                    recentProjectNames.remove(index + 1);
+                    paths.add(0, projectPath);
+                    names.add(0, projectName);
+                    names.remove(index + 1);
                 }
             } else {
 
                 // dir is the same, but name changed
-                int index = recentProjectDirs.indexOf(projectDir);
+                int index = paths.indexOf(projectPath);
 
-                Preferences.setProperty("recentprojectname" + index, projectName);
-                Preferences.setProperty("recentprojectdate" + index, new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
-                recentProjectNames.remove(index);
-                recentProjectNames.add(index, projectName);
+                Preferences.setProperty("recentproject." + index + ".name", projectName);
+                Preferences.setProperty("recentproject." + index + ".date", new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
+                names.remove(index);
+                names.add(index, projectName);
             }
         } else {
 
             // case: project not in recent list
-            recentProjectDirs.add(0, projectDir);
-            recentProjectNames.add(0, projectName);
+            paths.add(0, projectPath);
+            names.add(0, projectName);
         }
 
         // set properties
         String dir = null;
         String name = null;
-        int maxCnt = (recentProjectDirs.size() <= Preferences.sMAX_RECENT_PROJECTS)
-                ? recentProjectDirs.size()
+        int maxCnt = (paths.size() <= Preferences.sMAX_RECENT_PROJECTS)
+                ? paths.size()
                 : Preferences.sMAX_RECENT_PROJECTS;
 
         for (int i = 0; i < maxCnt; i++) {
-            dir = recentProjectDirs.get(i);
-            name = recentProjectNames.get(i);
+            dir = paths.get(i);
+            name = names.get(i);
 
             if ((dir != null) && (name != null)) {
-                Preferences.setProperty("recentprojectdir" + i, dir);
-                Preferences.setProperty("recentprojectname" + i, name);
-                Preferences.setProperty("recentprojectdate" + i, new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
+                Preferences.setProperty("recentproject." + i + ".path", dir);
+                Preferences.setProperty("recentproject." + i + ".name", name);
+                Preferences.setProperty("recentproject." + i + ".date", new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
             } else {
                 break;
             }
@@ -665,7 +686,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         // save properties
         Preferences.save();
-        mWelcomePanel.createListOfRecentProj();
+        mStarter.createListOfRecentProj();
         mMenuBar.refreshRecentFileMenu();
     }
 
@@ -697,59 +718,102 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         aboutDialog.setVisible(true);
     }
 
-    // Start the execution of the current project
-    public final void start() {
+    // Play the execution of the current project
+    public final void play() {
         // Get the project that has to be executed
         final ProjectEditor editor = getSelectedProjectEditor();
         final EditorProject project = editor.getEditorProject();
         // Launch the current project in the runtime
-        mRunTime.launch(project);
-        // Start the interpreter for that project
-        mRunTime.start(project);
-        // Disable the project editor list GUI
-        mProjectEditors.setEnabled(false);
+        play(project);
     }
 
-    // Stop the execution of the current project
-    public final void stop() {
-        // Get the project that has to be stopped
-        final ProjectEditor editor = getSelectedProjectEditor();
-        final EditorProject project = editor.getEditorProject();
-        // Stop the interpreter for that project
-        mRunTime.abort(project);
-        // Unload the current project in the runtime
-        mRunTime.unload(project);
-        // Enable the project editor list GUI
-        mProjectEditors.setEnabled(true);
-        // TODO: Is this really necessary?
-        update();
-    }
-
-    // Pause the execution of the current project
-    public final void pauseSceneFlow() {
-        // Get the project that has to be paused
-        final ProjectEditor editor = getSelectedProjectEditor();
-        final EditorProject project = editor.getEditorProject();
-        // Pause the interpreter for that project
-        if (mRunTime.isPaused(project)) {
-            mRunTime.proceed(project);
-        } else if (mRunTime.isRunning(project)) {
-            mRunTime.pause(project);
+    // Play the execution of the current project
+    public final boolean play(final EditorProject project) {
+        // Check State Of Execution
+        if (mRunTime.isRunning(project)) {
+            if (mRunTime.isPaused(project)) {
+                if (mRunTime.proceed(project)) {
+                    // Print some information
+                    mLogger.message("Proceeding project '" + project + "'");
+                    // Refresh the appearance
+                    refresh();
+                    // Return true at success
+                    return true;
+                } else {
+                    // Print an error message
+                    mLogger.failure("Error: Cannot proceed project '" + project + "'");
+                    // Return false at failure
+                    return false;
+                }
+            } else {
+                if (mRunTime.pause(project)) {
+                    // Print some information
+                    mLogger.message("Pausing project '" + project + "'");
+                    // Refresh the appearance
+                    refresh();
+                    // Return true at success
+                    return true;
+                } else {
+                    // Print an error message
+                    mLogger.failure("Error: Cannot pause project '" + project + "'");
+                    // Return false at failure
+                    return false;
+                }
+            }
+        } else {
+            // Launch the current project in the runtime
+            if (mRunTime.launch(project)) {
+                // Print some information
+                mLogger.message("Launching project '" + project + "'");
+                // Start the interpreter for that project
+                if (mRunTime.start(project)) {
+                    // Print some information
+                    mLogger.message("Starting project '" + project + "'");
+                    // Refresh the appearance
+                    refresh();
+                    // Return true at success
+                    return true;
+                } else {
+                    // Print an error message
+                    mLogger.failure("Error: Cannot start project '" + project + "'");
+                    // Return false at failure
+                    return false;
+                }
+            } else {
+                // Print an error message
+                mLogger.failure("Error: Cannot launch project '" + project + "'");
+                // Return false at failure
+                return false;
+            }
         }
     }
 
-    // The observable class of the editor
-    private final class Observable extends java.util.Observable {
-
-        public final void update(final Object object) {
-            setChanged();
-            notifyObservers(object);
+    // Stop the execution of a specific project
+    public final boolean stop(final EditorProject project) {
+        // Abort the interpreter for that project
+        if (mRunTime.abort(project)) {
+            // Print some information
+            mLogger.message("Aborting project '" + project + "'");
+            // Unload the current project in the runtime
+            if (mRunTime.unload(project)) {
+                // Print some information
+                mLogger.message("Unloading project '" + project + "'");
+                // Refresh the appearance
+                refresh();
+                // Return true at success
+                return true;
+            } else {
+                // Print an error message
+                mLogger.failure("Error: Cannot unload project '" + project + "'");
+                // Return false at failure
+                return false;
+            }
+        } else {
+            // Print an error message
+            mLogger.failure("Error: Cannot abort project '" + project + "'");
+            // Return false at failure
+            return false;
         }
-    }
-
-    // Update the observables of the editor
-    public final void update() {
-        mObservable.update(this);
     }
 
     // Update whenever an event has happened
@@ -763,5 +827,21 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Show the error dialog
             errorDialog.setVisible(true);
         }
+    }
+
+    // Update the observables of the editor
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
+        // Get the selected project editor
+        final ProjectEditor editor = getSelectedProjectEditor();
+        // Refresh the selected project editor
+        if (editor != null) {
+            editor.refresh();
+        }
+        // Refresh the editor's menu bar
+        mMenuBar.refresh();
+        // Refresh editor welcome panel
+        //mStarter.refresh();
     }
 }

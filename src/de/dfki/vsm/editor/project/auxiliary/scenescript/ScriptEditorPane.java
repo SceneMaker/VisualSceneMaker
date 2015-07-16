@@ -41,7 +41,7 @@ import javax.swing.text.Document;
 /**
  * @author Gregor Mehlmann
  */
-public class ScriptEditorPane extends JEditorPane implements EventListener, Observer {
+public class ScriptEditorPane extends JEditorPane implements EventListener {
 
     // The System Logger
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -246,12 +246,8 @@ public class ScriptEditorPane extends JEditorPane implements EventListener, Obse
         mDropTarget = new DropTarget(this, mDropListener);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    @Override
-    public void update(final Observable obs, final Object obj) {
-
+    // Refresh the visual appearance
+    public final void refresh() {
         // Do Nothing
         mFont = new Font(mEditorConfig.sSCRIPT_FONT_TYPE, Font.PLAIN, mEditorConfig.sSCRIPT_FONT_SIZE);
         setFont(mFont);
