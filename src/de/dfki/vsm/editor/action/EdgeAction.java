@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Edge.TYPE;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Flavour;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpacePanel;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.AStarEdgeFinder;
 import de.dfki.vsm.editor.util.grid.BezierFit;
 import de.dfki.vsm.editor.util.grid.BezierPoint;

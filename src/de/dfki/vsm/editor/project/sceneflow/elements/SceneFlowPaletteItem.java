@@ -1,4 +1,4 @@
-package de.dfki.vsm.editor;
+package de.dfki.vsm.editor.project.sceneflow.elements;
 
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Cursor;
@@ -25,92 +25,96 @@ import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 
-public final class ToolBarItem extends JButton implements Transferable {
+public final class SceneFlowPaletteItem extends JButton implements Transferable {
 
-    private final String iconsPath = "/res/img/workspace_toolbar/";
-    private Dimension toolItemSize = new Dimension(35, 45);
-    private final String mText;
-    private final Icon mIcon;
+    // TODO: get icons path from prefrences
+    private final String mIconsPath = "/res/img/workspace_toolbar/";
+    // TODO: do that to static preferences
+    private final Dimension mToolItemSize = new Dimension(35, 45);
+    private final String mToolTipText;
+    private final Icon mStandardIcon;
     private final Icon mRollOverIcon;
-    private final Object mData;
+    private final Object mDragableData;
 
-    // marks this JButton as the source of the Drag
-    private DragSource source;
-    private TransferHandler t;
+    // Drag & drop support
+    private final DragSource mDragSource;
+    private final TransferHandler mTransferHandler;
     private final DragGestureListener mDragGestureListener;
     private final DragSourceListener mDragSourceListener;
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public ToolBarItem(final String text, final String info, final String icon, final Object data) {
-        mText = text;
-        mIcon = ResourceLoader.loadImageIcon(iconsPath + icon + ".png");
-        mRollOverIcon = ResourceLoader.loadImageIcon(iconsPath + icon + "_BLUE.png");
-        mData = data;
+    // Create a sceneflow element item
+    public SceneFlowPaletteItem(
+            final String text,
+            final String info,
+            final String icon,
+            final Object data) {
+        mToolTipText = text;
+        mStandardIcon = ResourceLoader.loadImageIcon(mIconsPath + icon + ".png");
+        mRollOverIcon = ResourceLoader.loadImageIcon(mIconsPath + icon + "_BLUE.png");
+        mDragableData = data;
         setContentAreaFilled(false);
         setFocusable(false);
         setOpaque(false);
         setBorder(null);
 
         // to be transferred in the Drag
-        t = new TransferHandler(text);
-        setTransferHandler(t);
+        mTransferHandler = new TransferHandler(text);
+        setTransferHandler(mTransferHandler);
         setVerticalTextPosition(SwingConstants.BOTTOM);
         setHorizontalTextPosition(SwingConstants.CENTER);
-        setToolTipText(mText + ": " + info);
-        setPreferredSize(toolItemSize);
-        setMinimumSize(toolItemSize);
-        setMaximumSize(toolItemSize);
+        setToolTipText(mToolTipText + ": " + info);
+        setPreferredSize(mToolItemSize);
+        setMinimumSize(mToolItemSize);
+        setMaximumSize(mToolItemSize);
         mDragSourceListener = new DragSourceListener() {
             @Override
             public void dragEnter(DragSourceDragEvent dsde) {
 
-                System.out.println("drag enter");
+                //System.out.println("drag enter");
             }
 
             @Override
             public void dragOver(DragSourceDragEvent dsde) {
 
-                System.out.println("drag over");
+                //System.out.println("drag over");
             }
 
             @Override
             public void dropActionChanged(DragSourceDragEvent dsde) {
-                System.out.println("drag action changed");
+                //System.out.println("drag action changed");
             }
 
             @Override
             public void dragExit(DragSourceEvent dse) {
 
-                System.out.println("drag exit");
+                //System.out.println("drag exit");
             }
 
             @Override
             public void dragDropEnd(DragSourceDropEvent dsde) {
 
-                System.out.println("drag drop end");
+                //System.out.println("drag drop end");
             }
         };
         mDragGestureListener = new DragGestureListener() {
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
-                Image cursorIcon = ResourceLoader.loadImageIcon(iconsPath + icon + "_SMALL.png").getImage();
-                Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(0, 0), mText);
+                Image cursorIcon = ResourceLoader.loadImageIcon(mIconsPath + icon + "_SMALL.png").getImage();
+                Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(0, 0), mToolTipText);
 
-                source.startDrag(event, cur, (ToolBarItem) event.getComponent(), mDragSourceListener);
+                mDragSource.startDrag(event, cur, (SceneFlowPaletteItem) event.getComponent(), mDragSourceListener);
             }
         };
 
         // The Drag will copy the DnDButton rather than moving it
-        source = new DragSource();
-        source.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY, mDragGestureListener);
+        mDragSource = new DragSource();
+        mDragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY, mDragGestureListener);
     }
 
     // Get the data for a drag & drop operation
     @Override
     public final Object getTransferData(final DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        return mData;
+        return mDragableData;
     }
 
     // Generally support all d&d data flavours
@@ -123,5 +127,15 @@ public final class ToolBarItem extends JButton implements Transferable {
     @Override
     public final DataFlavor[] getTransferDataFlavors() {
         return null;
+    }
+
+    @Override
+    public final Icon getIcon() {
+        return mStandardIcon;
+    }
+
+    @Override
+    public final Icon getRolloverIcon() {
+        return mRollOverIcon;
     }
 }

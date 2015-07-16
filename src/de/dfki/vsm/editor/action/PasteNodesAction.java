@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpacePanel;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.Edge;

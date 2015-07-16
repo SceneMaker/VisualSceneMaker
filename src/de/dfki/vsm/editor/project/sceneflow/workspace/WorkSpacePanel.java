@@ -1,6 +1,14 @@
-package de.dfki.vsm.editor;
+package de.dfki.vsm.editor.project.sceneflow.workspace;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.editor.CmdBadge;
+import de.dfki.vsm.editor.Comment;
+import de.dfki.vsm.editor.Edge;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.Node;
+import de.dfki.vsm.editor.NodeVariableBadge;
+import de.dfki.vsm.editor.VarBadgeGlobal;
+import de.dfki.vsm.editor.VarBadgeLocal;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.action.AddCommandAction;
@@ -478,7 +486,7 @@ public final class WorkSpacePanel extends JPanel implements  EventListener, Mous
         mDropTarget = new DropTarget(this, mDropTargetListener);
     }
 
-    void showVariablesOnWorkspace() {
+    public void showVariablesOnWorkspace() {
         if (mLocalVarDisplay != null) {
             if (mVisibleBadges) {
                 mLocalVarDisplay.setVisible(false);

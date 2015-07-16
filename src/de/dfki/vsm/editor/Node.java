@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeStartedEvent;

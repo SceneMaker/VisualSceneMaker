@@ -1,5 +1,6 @@
-package de.dfki.vsm.editor;
+package de.dfki.vsm.editor.project.sceneflow;
 
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
@@ -40,7 +41,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
  */
 
 
-public final class SceneFlowToolBar extends JToolBar implements Observer {
+public final class SceneFlowToolBar extends JToolBar {
 
     // The VSM Runtime Instance
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
@@ -101,14 +102,7 @@ public final class SceneFlowToolBar extends JToolBar implements Observer {
         initComponents();
     }
 
-    @Override
-    public void update(Observable obs, Object obj) {
-
-        // mLogger.message("SceneFlowToolBar.update");
-        updatePathDisplay();
-        updatePathText();
-        initPreferences();
-    }
+  
 
     public void updatePathDisplay() {
         mPathComponents.clear();
@@ -538,5 +532,11 @@ public final class SceneFlowToolBar extends JToolBar implements Observer {
         mLogger.message("Refreshing '" + this + "'");
         // Refresh runtime buttons
         refreshRuntimeButtonState();
+       updatePathDisplay();
+        updatePathText();
+        initPreferences();
+    // TODO: what else do we need to refresh?
+    
     }
+    
 }

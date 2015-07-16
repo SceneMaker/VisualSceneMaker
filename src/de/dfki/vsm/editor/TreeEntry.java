@@ -11,6 +11,7 @@ import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+// TODO: move to util package
 public final class TreeEntry extends DefaultMutableTreeNode implements Transferable {
     private final String mText;
     private final Icon   mIcon;
