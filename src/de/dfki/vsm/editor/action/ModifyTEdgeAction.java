@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
 import de.dfki.vsm.model.sceneflow.TEdge;
 
@@ -20,7 +20,7 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
     private long mOldTimeout;
     private long mNewTimeout;
 
-    public ModifyTEdgeAction(Edge edge, WorkSpace workSpace) {
+    public ModifyTEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);
     }
 

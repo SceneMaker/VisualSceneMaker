@@ -28,7 +28,7 @@ import javax.swing.JComponent;
 public class NodeVariableBadge extends JComponent {
     LocationType                                  mLocation          = LocationType.RIGHT;
     Node                                          mNode              = null;
-    WorkSpace                                     mWorkSpace         = null;
+    WorkSpacePanel                                     mWorkSpace         = null;
     de.dfki.vsm.model.sceneflow.Node              mDataNode          = null;
     Point                                         mRelPos            = null;
     ArrayList<TPLTuple<String, AttributedString>> mLocalVarDefList   = null;
@@ -45,7 +45,7 @@ public class NodeVariableBadge extends JComponent {
     static enum LocationType { TOP, BOTTOM, LEFT, RIGHT }
 
     ;
-    public NodeVariableBadge(Node node, WorkSpace workSpace, ArrayList<String> localVarDefList,
+    public NodeVariableBadge(Node node, WorkSpacePanel workSpace, ArrayList<String> localVarDefList,
                              ArrayList<String> globalVarDefList, ArrayList<String> localTypeDefList,
                              ArrayList<String> globalTypeDefList) {
         mNode              = node;

@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -21,15 +21,15 @@ import javax.swing.undo.CannotUndoException;
 public class CopyNodesAction extends EditorAction {
     Set<Node>             mNodes             = new HashSet<Node>();
     Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<RemoveNodeAction>();
-    WorkSpace             mWorkSpace         = null;
+    WorkSpacePanel             mWorkSpace         = null;
     SceneFlowEditor       mSceneFlowEditor;
 
-    public CopyNodesAction(WorkSpace workSpace, Node node) {
+    public CopyNodesAction(WorkSpacePanel workSpace, Node node) {
         mWorkSpace = workSpace;
         mNodes.add(node);
     }
 
-    public CopyNodesAction(WorkSpace workSpace, Set<Node> nodes) {
+    public CopyNodesAction(WorkSpacePanel workSpace, Set<Node> nodes) {
         mWorkSpace       = workSpace;
         mNodes           = nodes;
         mSceneFlowEditor = mWorkSpace.getSceneFlowEditor();

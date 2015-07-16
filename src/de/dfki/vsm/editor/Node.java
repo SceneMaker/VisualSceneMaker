@@ -82,7 +82,7 @@ public final class Node extends JComponent implements EventListener, Observer {
 
     //
     // TODO: move away
-    private final WorkSpace          mWorkSpace;
+    private final WorkSpacePanel          mWorkSpace;
     private final EditorConfig mPreferences;
 
     // The name which will be displayed on the node
@@ -106,7 +106,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     /**
      *
      */
-    public Node(WorkSpace workSpace, de.dfki.vsm.model.sceneflow.Node dataNode) {
+    public Node(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.Node dataNode) {
         mWorkSpace   = workSpace;
         mPreferences = mWorkSpace.getPreferences();
         mDataNode    = dataNode;
@@ -176,7 +176,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         mFlavour = flavour;
     }
 
-    public WorkSpace getWorkSpace() {
+    public WorkSpacePanel getWorkSpace() {
         return mWorkSpace;
     }
 

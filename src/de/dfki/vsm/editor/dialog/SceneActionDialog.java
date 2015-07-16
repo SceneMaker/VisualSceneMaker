@@ -347,7 +347,7 @@ public class SceneActionDialog extends JDialog {
         // asd.addAction(a);
         // TODO: Why do we save this here?
         //Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
     }
 
     private class StripedCellRenderer extends JLabel implements ListCellRenderer {

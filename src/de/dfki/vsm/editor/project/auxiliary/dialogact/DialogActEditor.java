@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor.project.auxiliary.dialogact;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
@@ -14,7 +13,6 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
@@ -54,51 +52,50 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 /**
  * @author Sergio Soto
  */
-public final class DialogActEditor extends JPanel implements EventListener, Observer {
-    private final Observable mObservable = new DialogActEditor.Observable();
-    private Dimension        buttonSize  = new Dimension(125, 30);;
+public final class DialogActEditor extends JPanel implements EventListener {
+
+    // private final Observable mObservable = new DialogActEditor.Observable();
+    private Dimension buttonSize = new Dimension(125, 30);
+    ;
 
     // Main Pane Containers
     private JSplitPane mMainSplitPane;
-    private JPanel     mDialogActsPanel;
-    private JPanel     mUtterancePanel;
+    private JPanel mDialogActsPanel;
+    private JPanel mUtterancePanel;
 
     // Left Panel
-    private JPanel      mDATitlePanel;
-    private JLabel      mDATitleLabel;
+    private JPanel mDATitlePanel;
+    private JLabel mDATitleLabel;
     private JScrollPane mPhasesListPanel;
 
     // Right Panel
-    private JPanel      mUtteranceTitlePanel;
-    private JLabel      mUtteranceTitle;
-    private JLabel      mTextButton;
-    private JLabel      mFMLButton;
+    private JPanel mUtteranceTitlePanel;
+    private JLabel mUtteranceTitle;
+    private JLabel mTextButton;
+    private JLabel mFMLButton;
     private JScrollPane mUtteranceTextPanel;
-    private JTextArea   mUtteranceTextArea;
-    private JTextArea   mFMLTextArea;
+    private JTextArea mUtteranceTextArea;
+    private JTextArea mFMLTextArea;
 
     //
-    private final EditorProject        mProject;
+    private final EditorProject mProject;
     private final DialogActInterface mDialogAct;
-    private final List<JList>        mDAJLists;
-    private final List<DialogAct>    mDialogActList;
+    private final List<JList> mDAJLists;
+    private final List<DialogAct> mDialogActList;
 
-    
     //
     public final void close() {
         // Remove All Observers
-        mObservable.deleteObservers();
+        //mObservable.deleteObservers();
         // TODO: Close the dialog act editor
     }
 
-    
-    
     public DialogActEditor(EditorProject project) {
-        mProject   = project;
+        mProject = project;
         mDialogAct = mProject.getDialogAct();
         setBackground(Color.white);
         setMinimumSize(new Dimension(0, 200));
-        mDAJLists      = new ArrayList<>();
+        mDAJLists = new ArrayList<>();
         mDialogActList = new ArrayList<>();
         initComponents();
 
@@ -204,7 +201,9 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
         });
         phaseLabel.addFocusListener(new FocusListener() {
             @Override
-            public void focusGained(FocusEvent e) {}
+            public void focusGained(FocusEvent e) {
+            }
+
             @Override
             public void focusLost(FocusEvent e) {
                 phaseLabel.setEditable(false);
@@ -238,7 +237,6 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
         dialogActList.setFixedCellHeight(25);
 
         // dialogActList.setFixedCellWidth(100);
-
         JScrollPane listScrollPane = new JScrollPane(dialogActList);
 
         listScrollPane.setOpaque(false);
@@ -280,7 +278,6 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
         phaseContainer.add(phaseLabel);
 
         // phaseContainer.add(Box.createRigidArea(new Dimension(10, 0)));
-
         // set click listener for text areas
         dialogActList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -302,7 +299,8 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
                             mAttributeValueMap));
                     mFMLTextArea.setText(mDialogAct.getFMLCommands(dialogActList.getSelectedValue().toString(),
                             mAttributeValueMap).toString());
-                } catch (Exception ex) {}
+                } catch (Exception ex) {
+                }
             }
         });
         dialogActList.addMouseListener(new MouseAdapter() {
@@ -312,7 +310,7 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
 
                 if (evt.getClickCount() == 2) {
                     DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct,
-                                                                dialogActList.getSelectedValue().toString());
+                            dialogActList.getSelectedValue().toString());
 
                     daAttributeDialog.run();
                 }
@@ -353,10 +351,12 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
                 mFMLTextArea.setVisible(false);
                 mUtteranceTextArea.setVisible(true);
             }
+
             public void mouseEntered(MouseEvent me) {
                 mTextButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_blue.png"));
                 mTextButton.setBackground(new Color(82, 127, 255));
             }
+
             public void mouseExited(MouseEvent me) {
                 mTextButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png"));
                 mTextButton.setBackground(new Color(255, 255, 255));
@@ -383,10 +383,12 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
 
                 // Do something
             }
+
             public void mouseEntered(MouseEvent me) {
                 mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_blue.png"));
                 mFMLButton.setBackground(new Color(82, 127, 255));
             }
+
             public void mouseExited(MouseEvent me) {
                 mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_gray.png"));
                 mFMLButton.setBackground(new Color(255, 255, 255));
@@ -405,7 +407,7 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
         mUtteranceTextPanel = new JScrollPane();
         mUtteranceTextPanel.setBorder(BorderFactory.createEmptyBorder());
         mUtteranceTextArea = new JTextArea();
-        mFMLTextArea       = new JTextArea();
+        mFMLTextArea = new JTextArea();
 
         JPanel textArea = new JPanel();
 
@@ -446,20 +448,8 @@ public final class DialogActEditor extends JPanel implements EventListener, Obse
         }
     }
 
-    /**
-     *
-     */
-    @Override
-    public void update(java.util.Observable obs, Object obj) {
-        mObservable.update(obj);
-    }
+    // Refresh the visual appearance
+    public final void refresh() {
 
-    private static class Observable extends java.util.Observable {
-        public Observable() {}
-
-        public void update(Object obj) {
-            setChanged();
-            notifyObservers(obj);
-        }
     }
 }

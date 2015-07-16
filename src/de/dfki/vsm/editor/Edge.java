@@ -88,7 +88,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private boolean     hasAlternativeTargetNodes = false;
     private boolean     mPointingToSameNode       = false;
     public EdgeGraphics mEg                       = null;
-    private WorkSpace   mWorkSpace                = null;
+    private WorkSpacePanel   mWorkSpace                = null;
 
     // rendering issues
     private FontMetrics mFM                   = null;
@@ -188,7 +188,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         initEditBox();
     }
 
-    public Edge(WorkSpace ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
                 EditorConfig preferences) {
         mDataEdge           = edge;
         mWorkSpace          = ws;
@@ -210,7 +210,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     // TODO: Neuer Konstruktor, der Source und Target dockpoint "mitbekommt"
-    public Edge(WorkSpace ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
                 Point sourceDockPoint, Point targetDockpoint) {
         mDataEdge           = edge;
         mWorkSpace          = ws;
@@ -537,7 +537,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             } catch (Exception e) {}
         }
 
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
     }
 
     
@@ -611,7 +611,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 ModifyEdgeAction modifyAction = new ModifyEdgeAction(this, mWorkSpace);
 
                 modifyAction.run();
-                EditorInstance.getInstance().update();
+                EditorInstance.getInstance().refresh();
                 
                 
             } else if (mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {

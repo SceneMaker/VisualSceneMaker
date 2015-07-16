@@ -1,18 +1,17 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.editor.ElementDisplay;
+import de.dfki.vsm.editor.DynamicElementsPanel;
 import de.dfki.vsm.editor.ElementEditor;
-import de.dfki.vsm.editor.ProjectToolPanel;
+import de.dfki.vsm.editor.StaticElementsPanel;
 import de.dfki.vsm.editor.SceneFlowToolBar;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -37,7 +36,6 @@ import java.beans.PropertyChangeListener;
 
 import java.io.IOException;
 
-import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -59,19 +57,16 @@ import javax.swing.undo.UndoManager;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public class SceneFlowEditor extends JPanel implements EventListener, Observer {
+public class SceneFlowEditor extends JPanel implements EventListener {
 
     // TODO: move undo manager up at least to project editor
     private UndoManager mUndoManager = null;
-
-    // Message variables
-    // TODO: make final singel timer
-    private Timer mVisuTimer = new Timer("SceneFlowEditor-Timer");
+    // TODO: make final singelton timer
+    private Timer mVisualizationTimer = new Timer("SceneFlowEditor-Timer");
 
     //
-    private final Observable mObservable = new Observable();
+    // private final Observable mObservable = new Observable();
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     //
     private final SceneFlow mSceneFlow;
@@ -80,20 +75,22 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     // TODO: remove sceneflow manager
     private final SceneFlowManager mSceneFlowManager;
 
-    // GUI-Components
-    private final SceneFlowToolBar mToolBar;
-    private final WorkSpace mWorkSpace;
-    private final ProjectToolPanel mProjectToolBar;
-    private final ElementDisplay mElementDisplay;
-    private final JPanel mNewElementDisplay;
+    // The GUI components of the editor
+    private final WorkSpacePanel mWorkSpacePanel;
+    private final SceneFlowToolBar mSceneFlowToolBar;
     private final ElementEditor mElementEditor;
+    private final StaticElementsPanel mStaticElementsPanel;
+    private final DynamicElementsPanel mDynamicElementsPanel;
+
+    private final JPanel mNewElementDisplay;
     private final JLabel mFooterLabel;
     private final JSplitPane mSplitPane;
-    //private final SceneScriptEditor mSceneScriptEditor;
 
-    public SceneFlowEditor(final EditorProject project/*, final SceneScriptEditor scriptEditor*/) {
+    // Create a sceneflow editor
+    public SceneFlowEditor(final EditorProject project) {
+        // Initialize the editor project
         mEditorProject = project;
-        //mSceneScriptEditor = scriptEditor;
+        // Initialize the sceneflow
         mSceneFlow = mEditorProject.getSceneFlow();
 
         final Polygon pUp = new Polygon();
@@ -143,45 +140,29 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         mUndoManager = new UndoManager();
         mSceneFlowManager = new SceneFlowManager(mSceneFlow);
         // The center component is the workspace
-        mWorkSpace = new WorkSpace(this, mEditorProject);
-        mWorkSpace.setTransferHandler(new SceneFlowImage());
-        JScrollPane mWorkSpaceScrollPane = new JScrollPane(mWorkSpace);
+        mWorkSpacePanel = new WorkSpacePanel(this, mEditorProject);
+        mWorkSpacePanel.setTransferHandler(new SceneFlowImage());
+        JScrollPane mWorkSpaceScrollPane = new JScrollPane(mWorkSpacePanel);
         mWorkSpaceScrollPane.setBorder(BorderFactory.createEtchedBorder());
 
-        // TODO - second workspace for visualisation
-//      WorkSpace w = new WorkSpace(this);
-//      JScrollPane wssp = new JScrollPane(w);
         // The west component is the workbar
         mFooterLabel = new JLabel();
-        mElementDisplay = new ElementDisplay(mSceneFlow, mEditorProject/*, mSceneScriptEditor*/);
-        mProjectToolBar = new ProjectToolPanel();
+        mDynamicElementsPanel = new DynamicElementsPanel(mEditorProject);
+        mStaticElementsPanel = new StaticElementsPanel();
         mElementEditor = new ElementEditor();
-        mToolBar = new SceneFlowToolBar(this, mEditorProject);
-        mToolBar.addPathComponent(mSceneFlow);
+        mSceneFlowToolBar = new SceneFlowToolBar(this, mEditorProject);
+        mSceneFlowToolBar.addPathComponent(mSceneFlow);
         //
-        mObservable.addObserver(mToolBar);
-        mObservable.addObserver(mProjectToolBar);
-        mObservable.addObserver(mElementDisplay);
-        mObservable.addObserver(mWorkSpace);
-        mObservable.addObserver(mElementEditor);
-        // mObservable.addObserver(mFooterLabel);
-        //
-        // TODO - a panel wraps first and second workspaces - better a jsplitpane?
-//      JPanel p = new JPanel();
-//      p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
-//      p.add(mWorkSpaceScrollPane);
-//      p.add(wssp);
-//
-//      // TODO - second workspace is disabled
-//      wssp.setVisible(false);
+
         setLayout(new BorderLayout());
-        add(mToolBar, BorderLayout.NORTH);
+        add(mSceneFlowToolBar, BorderLayout.NORTH);
+
         mNewElementDisplay = new JPanel();
         mNewElementDisplay.setLayout(new BoxLayout(mNewElementDisplay, BoxLayout.Y_AXIS));
-        mNewElementDisplay.add(mProjectToolBar);
+        mNewElementDisplay.add(mStaticElementsPanel);
 
         // mNewElementDisplay.add(new JSeparator(JSeparator.HORIZONTAL));
-        mNewElementDisplay.add(mElementDisplay);
+        mNewElementDisplay.add(mDynamicElementsPanel);
 
         // PG 17.12.13 - FUTURE FEATURE! mNewElementDisplay.add(new EdgeTypeSelection(), BorderLayout.NORTH);
         add(mNewElementDisplay, BorderLayout.WEST);
@@ -222,21 +203,15 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         add(mFooterLabel, BorderLayout.SOUTH);
     }
 
-    public void update(java.util.Observable obs, Object obj) {
-
-        // mLogger.message("SceneFlowEditor.update(" + obj + ")");
-        mObservable.update(obj);
-    }
-
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
-    public void update(EventObject event) {
-        if (mVisuTimer != null) {
+//    public void update(java.util.Observable obs, Object obj) {
+//
+//        // mLogger.message("SceneFlowEditor.update(" + obj + ")");
+//        mObservable.update(obj);
+//    }
+    // Update the visualization
+    @Override
+    public final void update(final EventObject event) {
+        if (mVisualizationTimer != null) {
             if (event instanceof NodeExecutedEvent) {
                 setMessageLabelText("SceneFlow is running", false);
             }
@@ -286,7 +261,7 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     }
 
     public final SceneFlowToolBar getToolBar() {
-        return mToolBar;
+        return mSceneFlowToolBar;
     }
 
     public SceneFlowManager getSceneFlowManager() {
@@ -297,8 +272,8 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         return mSceneFlow;
     }
 
-    public WorkSpace getWorkSpace() {
-        return mWorkSpace;
+    public WorkSpacePanel getWorkSpace() {
+        return mWorkSpacePanel;
     }
 
     public UndoManager getUndoManager() {
@@ -306,11 +281,11 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     }
 
     public void addPathComponent(SuperNode supernode) {
-        mToolBar.addPathComponent(supernode);
+        mSceneFlowToolBar.addPathComponent(supernode);
     }
 
     public SuperNode removePathComponent() {
-        return mToolBar.removePathComponent();
+        return mSceneFlowToolBar.removePathComponent();
     }
 
     public void setMessageLabelText(String value) {
@@ -326,9 +301,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
             VisuTask visuTask = new VisuTask(25, mFooterLabel);
 
             try {
-                mVisuTimer.cancel();
-                mVisuTimer = new Timer();
-                mVisuTimer.schedule(visuTask, 0, 100);
+                mVisualizationTimer.cancel();
+                mVisualizationTimer = new Timer();
+                mVisualizationTimer.schedule(visuTask, 0, 100);
             } catch (Exception e) {
 
                 // e.printStackTrace();
@@ -339,10 +314,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     public void close() {
 
         // Delete all observers
-        mObservable.deleteObservers();
-
+//        mObservable.deleteObservers();
         // Cleanup worspace
-        mWorkSpace.cleanup();
+        mWorkSpacePanel.cleanup();
 
         // Stop visualization
         stopVisualisation();
@@ -352,9 +326,9 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
      * Nullifies the VisalisationTimer thread
      */
     public void stopVisualisation() {
-        if (mVisuTimer != null) {
-            mVisuTimer.purge();
-            mVisuTimer.cancel();
+        if (mVisualizationTimer != null) {
+            mVisualizationTimer.purge();
+            mVisualizationTimer.cancel();
 
             // TODO: Why setting to null
             // mVisuTimer = null;
@@ -368,21 +342,21 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
     public JLabel getFooterLabel() {
         return mFooterLabel;
     }
-
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
-    private class Observable extends java.util.Observable {
-
-        public void update(Object obj) {
-            setChanged();
-            notifyObservers(obj);
-        }
-    }
+//
+//    /**
+//     *
+//     *
+//     *
+//     *
+//     *
+//     */
+//    private class Observable extends java.util.Observable {
+//
+//        public void update(Object obj) {
+//            setChanged();
+//            notifyObservers(obj);
+//        }
+//    }
 
     class SceneFlowImage extends TransferHandler implements Transferable {
 
@@ -518,4 +492,14 @@ public class SceneFlowEditor extends JPanel implements EventListener, Observer {
         }
     }
 
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
+        // Refresh editor toolbar
+        mSceneFlowToolBar.refresh();
+        mStaticElementsPanel.refresh();
+        mDynamicElementsPanel.refresh();
+        mWorkSpacePanel.refresh();
+        mElementEditor.refresh();
+    }
 }

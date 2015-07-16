@@ -100,7 +100,7 @@ import javax.swing.KeyStroke;
  * @author Not me
  * @author Patrick Gebhard
  */
-public final class WorkSpace extends JPanel implements Observer, EventListener, MouseListener, MouseMotionListener {
+public final class WorkSpacePanel extends JPanel implements  EventListener, MouseListener, MouseMotionListener {
 
     // The clipboard
     private final ClipBoard mClipboard = new ClipBoard();
@@ -171,7 +171,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      *
      *
      */
-    public WorkSpace(SceneFlowEditor sceneFlowEditor, EditorProject project) {
+    public WorkSpacePanel(SceneFlowEditor sceneFlowEditor, EditorProject project) {
         mSceneFlowEditor = sceneFlowEditor;
         mProject = project;
         mPreferences = mProject.getEditorConfig();
@@ -207,15 +207,15 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
         showEdgesOnWorkSpace();
     }
 
-    /**
-     *
-     *
-     */
-    @Override
-    public void update(java.util.Observable obs, Object obj) {
-
+    
+   
+    
+    //
+    public void refresh() {
+ // Print some information
+        mLogger.message("Refreshing '" + this + "'");
         // mLogger.message("WorkSpace.update(" + obj + ")");
-        mObservable.update(obj);
+        mObservable.update(null);
 
         // rebuild node position
         mGridManager.update();
@@ -472,7 +472,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
                 }
 
                 // Update whole editor after a drop!!!!
-                EditorInstance.getInstance().update();
+                EditorInstance.getInstance().refresh();
             }
         };
         mDropTarget = new DropTarget(this, mDropTargetListener);
@@ -499,7 +499,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             }
         }
 
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
     }
 
     /**
@@ -2518,7 +2518,7 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
             removeNode();
         }
 
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
     }
 
     /**
@@ -2679,9 +2679,9 @@ public final class WorkSpace extends JPanel implements Observer, EventListener, 
      */
     private class KeyAction extends AbstractAction {
 
-        WorkSpace mWorkspace = null;
+        WorkSpacePanel mWorkspace = null;
 
-        public KeyAction(WorkSpace workspace) {
+        public KeyAction(WorkSpacePanel workspace) {
             mWorkspace = workspace;
         }
 

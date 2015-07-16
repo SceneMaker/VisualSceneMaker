@@ -1,11 +1,9 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.util.Preferences;
-
-//~--- JDK imports ------------------------------------------------------------
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -13,24 +11,23 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-
 import java.io.File;
-
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 /**
- * @author Not me
- * @author Parick Gebhard
+ * @author Gregor Mehlmann
  */
-public class MenuBar extends JMenuBar {
+public final class MenuBar extends JMenuBar {
 
+    // The singelton logger instance   
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    // The singelton  editor instance
     private final EditorInstance mEditorInstance;
 
     // File menu
@@ -62,9 +59,19 @@ public class MenuBar extends JMenuBar {
     private JMenuItem mInfoMenuItem;
     private JMenuItem mSaveFileAsMenuItem;
 
+    // Construct the editor's menu bar
     public MenuBar(final EditorInstance editor) {
+        // Initialize the parent editor
         mEditorInstance = editor;
+        // Initialize the GUI components
         initComponents();
+    }
+
+    // Refresh the visual appearance
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
+        // TODO: Refresh the appearance, i.e. the recent file menu
     }
 
     @Override
@@ -77,20 +84,7 @@ public class MenuBar extends JMenuBar {
         g2d.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
     }
 
-//  public void setRunMenuEnabled(boolean flag) {
-//    mRunMenuItem.setEnabled(flag);
-//  }
-//  public void setStopMenuEnabled(boolean flag) {
-//    mStopMenuItem.setEnabled(flag);
-//  }
-//
-//  public void setPauseMenuText(String value) {
-//    mPauseMenuItem.setText(value);
-//  }
-//
-//  public void setPauseMenuEnabled(boolean flag) {
-//    mPauseMenuItem.setEnabled(flag);
-//  }
+    
     public void setCloseMenuEnabled(boolean flag) {
         mCloseFileMenuItem.setEnabled(flag);
     }
@@ -102,26 +96,7 @@ public class MenuBar extends JMenuBar {
         mSaveAllMenuItem.setEnabled(flag);
     }
 
-//
-//  public void setMonitorMenuEnabled(boolean flag) {
-//    mMonitorMenuItem.setEnabled(flag);
-//  }
-//  public void setMonitorMenuEnabled(boolean flag) {
-//     mMonitorMenuItem.setEnabled(flag);
-//    }
-//
-//   public void setMonitorMenuEnabled(boolean flag) {
-//     mMonitorMenuItem.setEnabled(flag);
-//    }
-//
-//
-//    public void setMonitorMenuEnabled(boolean flag) {
-//     mMonitorMenuItem.setEnabled(flag);
-//    }
-//
-//     public void setMonitorMenuEnabled(boolean flag) {
-//     mMonitorMenuItem.setEnabled(flag);
-//    }
+    
     private void initComponents() {
         initFileMenu();
         initEditMenu();
@@ -134,8 +109,8 @@ public class MenuBar extends JMenuBar {
         boolean hasEntries = false;
 
         for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
-            String projectDirName = Preferences.getProperty("recentprojectdir" + i);
-            String projectName = Preferences.getProperty("recentprojectname" + i);
+            String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
+            String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
@@ -199,12 +174,12 @@ public class MenuBar extends JMenuBar {
             @Override
             public void actionPerformed(ActionEvent e) {
                 for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
-                    String projectDirName = Preferences.getProperty("recentprojectdir" + i);
-                    String projectName = Preferences.getProperty("recentprojectname" + i);
+                    String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
+                    String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
                     if (projectDirName != null) {
-                        Preferences.removeProperty("recentprojectdir" + i);
-                        Preferences.removeProperty("recentprojectname" + i);
+                        Preferences.removeProperty("recentproject." + i + ".path");
+                        Preferences.removeProperty("recentproject." + i + ".name");
                     }
                 }
 

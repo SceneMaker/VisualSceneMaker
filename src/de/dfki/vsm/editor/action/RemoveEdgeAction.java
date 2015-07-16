@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -16,7 +16,7 @@ import javax.swing.undo.CannotUndoException;
  * @author Not me
  */
 public class RemoveEdgeAction extends EdgeAction {
-    public RemoveEdgeAction(WorkSpace workSpace, de.dfki.vsm.editor.Edge edge) {
+    public RemoveEdgeAction(WorkSpacePanel workSpace, de.dfki.vsm.editor.Edge edge) {
         mWorkSpace     = workSpace;
         mGUIEdge       = edge;
         mDataEdge      = edge.getDataEdge();

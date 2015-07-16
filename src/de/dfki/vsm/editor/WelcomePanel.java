@@ -245,8 +245,8 @@ public final class WelcomePanel extends JPanel implements Observer {
         recentPanel.setLayout(new BoxLayout(recentPanel, BoxLayout.Y_AXIS));
 
         for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
-            String projectDirName = Preferences.getProperty("recentprojectdir" + i);
-            String projectName = Preferences.getProperty("recentprojectname" + i);
+            String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
+            String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
@@ -255,7 +255,7 @@ public final class WelcomePanel extends JPanel implements Observer {
                     if (projectDirName.startsWith("res" + System.getProperty("file.separator") + "prj")) {
                         continue;
                     }
-                    String modified = Preferences.getProperty("recentprojectdate" + i);
+                    String modified = Preferences.getProperty("recentproject." + i + ".date");
                     if (modified == null) {
                         modified = "Not saved yet";
                     }

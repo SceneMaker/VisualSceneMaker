@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.Comment;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 
@@ -24,7 +24,7 @@ import javax.swing.undo.UndoManager;
  */
 public class RemoveCommentAction extends EditorAction {
     Vector<RemoveEdgeAction>                    mRemoveEdgeActionList = new Vector<RemoveEdgeAction>();
-    private WorkSpace                           mWorkSpace;
+    private WorkSpacePanel                           mWorkSpace;
     private SceneFlowEditor                     mSceneFlowPane;
     private SceneFlowManager                    mSceneFlowManager;
     private UndoManager                         mUndoManager;
@@ -33,7 +33,7 @@ public class RemoveCommentAction extends EditorAction {
     private Point                               mLocation;
     private de.dfki.vsm.model.sceneflow.Comment mDataComment;
 
-    public RemoveCommentAction(WorkSpace workSpace, Comment c) {
+    public RemoveCommentAction(WorkSpacePanel workSpace, Comment c) {
         mWorkSpace        = workSpace;
         mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
         mSceneFlowManager = mWorkSpace.getSceneFlowManager();

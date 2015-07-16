@@ -59,7 +59,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
     // edit
     private boolean            mEditMode = false;
-    private WorkSpace          mWorkSpace;
+    private WorkSpacePanel          mWorkSpace;
     private EditorConfig mPreferences;
 
     // image
@@ -80,7 +80,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mDataComment = null;
     }
 
-    public Comment(WorkSpace ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
+    public Comment(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;

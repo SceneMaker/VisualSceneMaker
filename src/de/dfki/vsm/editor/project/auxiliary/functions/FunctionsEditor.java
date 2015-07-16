@@ -48,9 +48,9 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
  * @author Sergio Soto
  *
  */
-public class FunctionsEditor extends JPanel implements EventListener, Observer {
+public class FunctionsEditor extends JPanel implements EventListener {
 
-    private final Observable mObservable = new Observable();
+   // private final Observable mObservable = new Observable();
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     private JSplitPane mSplitPane;
     private JScrollPane mFunctionsScrollPanel;
@@ -65,7 +65,7 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
     //
     public final void close() {
         // Remove All Observers
-        mObservable.deleteObservers();
+        //mObservable.deleteObservers();
         // TODO: Close the functions editor
     }
 
@@ -100,11 +100,10 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
 
     public static void flattenSplitPane(JSplitPane jSplitPane) {
         jSplitPane.setUI(new BasicSplitPaneUI() {
-            @Override
-            public BasicSplitPaneDivider createDefaultDivider() {
+           
+            public @Override BasicSplitPaneDivider createDefaultDivider() {
                 return new BasicSplitPaneDivider(this) {
-                    @Override
-                    public void setBorder(Border b) {
+                    public @Override void setBorder(Border b) {
                     }
                 };
             }
@@ -152,14 +151,17 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
             mRemoveButton = new RemoveButton();
             mRemoveButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
+                @Override
                 public synchronized void mouseClicked(java.awt.event.MouseEvent evt) {
                     removeFunction(funDef);
                 }
 
+                @Override
                 public void mouseEntered(MouseEvent me) {
                     functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
                 }
 
+                @Override
                 public void mouseExited(MouseEvent me) {
                     functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
                 }
@@ -282,7 +284,7 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
                                         new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
                             }
 
-                            EditorInstance.getInstance().update();
+                            EditorInstance.getInstance().refresh();
                         }
                     }
                 }
@@ -338,7 +340,7 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
                                         funDefPanel.getTypeMap().get(argString)));
                             }
 
-                            EditorInstance.getInstance().update();
+                            EditorInstance.getInstance().refresh();
                         }
                     }
                 }
@@ -373,7 +375,7 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
                                 funDefPanel.getTypeMap().get(argString)));
                     }
 
-                    EditorInstance.getInstance().update();
+                    EditorInstance.getInstance().refresh();
                 }
             });
         }
@@ -415,7 +417,7 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
         usrCmdDef.addParam(new ParamDef("text", "String"));
         updateArguments(usrCmdDef);
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
         EventDispatcher.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
     }
 
@@ -426,15 +428,13 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
         if (funDef != null) {
             mSceneFlow.removeUsrCmdDef(funDef.getName());
             launchFunctionCreatedEvent(funDef);
-            EditorInstance.getInstance().update();
+            EditorInstance.getInstance().refresh();
         }
 
         // Editor.getInstance().update();
     }
 
-    /**
-     *
-     */
+    //
     @Override
     public void update(EventObject event) {
         if (event instanceof FunctionSelectedEvent) {
@@ -493,12 +493,9 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
         }
     }
 
-    /**
-     *
-     */
-    @Override
-    public void update(java.util.Observable obs, Object obj) {
-        mObservable.update(obj);
+    // Refresh the visual appearance
+    public final void refresh() {
+       
     }
 
     private void updateFunDef(FunDef funDef, FunDefDialog funDefDialog) {
@@ -531,7 +528,7 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
 
         }
 
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
     }
 
     /**
@@ -551,7 +548,7 @@ public class FunctionsEditor extends JPanel implements EventListener, Observer {
                     funDefPanel.getTypeMap().get(argString)));
         }
 
-        EditorInstance.getInstance().update();
+        EditorInstance.getInstance().refresh();
     }
 
     /**

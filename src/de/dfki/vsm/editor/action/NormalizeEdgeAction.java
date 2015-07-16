@@ -10,7 +10,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.AStarEdgeFinder;
 import de.dfki.vsm.editor.util.grid.BezierFit;
 import de.dfki.vsm.editor.util.grid.BezierPoint;
@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Souza Putra
  */
 public class NormalizeEdgeAction {
-    private WorkSpace                 mWorkSpace              = null;
+    private WorkSpacePanel                 mWorkSpace              = null;
     private de.dfki.vsm.editor.Edge   mGUIEdge                = null;
     protected GridRectangle           gridSource              = null;
     protected GridRectangle           gridDestination         = null;
@@ -43,7 +43,7 @@ public class NormalizeEdgeAction {
     protected Point                   mSourceGUINodeDockPoint = null;
     protected Point                   mTargetGUINodeDockPoint = null;
 
-    public NormalizeEdgeAction(WorkSpace workSpace, de.dfki.vsm.editor.Edge edge) {
+    public NormalizeEdgeAction(WorkSpacePanel workSpace, de.dfki.vsm.editor.Edge edge) {
         mWorkSpace     = workSpace;
         mGUIEdge       = edge;
         mSourceGUINode = mGUIEdge.getSourceNode();
