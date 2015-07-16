@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Comment;
-import de.dfki.vsm.editor.WorkSpacePanel;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
 

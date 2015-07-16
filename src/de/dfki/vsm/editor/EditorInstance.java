@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor;
 
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.dialog.AboutDialog;
@@ -323,6 +324,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Show the menu bar items
             mMenuBar.setVisible(true);
         }
+        // Refresh the appearance
+        refresh();
         // Return true at success
         return true;
     }
@@ -380,8 +383,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
             // Create a new project editor from project
             final ProjectEditor projectEditor = new ProjectEditor(project);
-            // Add the new project editor as observer
-            //mObservable.addObserver(projectEditor);
             // Add the project editor to list of project 
             // editors and select it in the tabbed pane
             mProjectEditors.addTab(project.getProjectName(), projectEditor);
@@ -390,6 +391,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             updateRecentProjects(project);
             // Print some info message
             mLogger.message("Opening project editor from file '" + file + "'");
+            // Refresh the appearance
+            refresh();
             // Return true at success
             return true;
         } else {
@@ -424,6 +427,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         mProjectEditors.setTitleAt(index, title.replace("*", ""));
                         // Update rectent project list
                         updateRecentProjects(project);
+                        // Refresh the appearance
+                        refresh();
                         // Return true at success
                         return true;
                     } else {
@@ -481,6 +486,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         mProjectEditors.setTitleAt(index, project.getProjectName());
                         // Update rectent project list
                         updateRecentProjects(project);
+                        // Refresh the appearance
+                        refresh();
                         // Return true at success
                         return true;
                     } else {
@@ -554,7 +561,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             quitDialog.setVisible(true);
 
         }
-
         // Remove the component 
         mProjectEditors.remove(editor);
         // Toggle the editor main screen
@@ -564,6 +570,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Hide the menu bar items
             mMenuBar.setVisible(false);
         }
+        // Refresh the appearance
+        refresh();
     }
 
     // Save all project editors
@@ -580,31 +588,32 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
-    private final void refreshRecentProjects(final EditorProject project) throws ParseException {
-        final String projectPath = project.getProjectPath();
-        final String projectName = project.getProjectName();
-        // Create the list of recent projects
-        final ArrayList<TPLTriple<String, String, Date>> projects = new ArrayList<>();
-        // Get all remembered recent projects
-        for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
-            final String path = Preferences.getProperty("recentproject." + i + ".path");
-            final String name = Preferences.getProperty("recentproject." + i + ".name");
-            final Date date = new SimpleDateFormat("dd.MM.yyyy").parse(
-                    Preferences.getProperty("recentproject." + i + ".date"));
-            // Create the current recent project
-            TPLTriple<String, String, Date> recent = new TPLTriple(name, path, date);
-            //
-            projects.add(recent);
-        }
-        // Interate over the recent projects
-        for (TPLTriple<String, String, Date> recent : projects) {
-            //if () {
+    /*
 
-            //}
-        }
+     private final void refreshRecentProjects(final EditorProject project) throws ParseException {
+     final String projectPath = project.getProjectPath();
+     final String projectName = project.getProjectName();
+     // Create the list of recent projects
+     final ArrayList<TPLTriple<String, String, Date>> projects = new ArrayList<>();
+     // Get all remembered recent projects
+     for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
+     final String path = Preferences.getProperty("recentproject." + i + ".path");
+     final String name = Preferences.getProperty("recentproject." + i + ".name");
+     final Date date = new SimpleDateFormat("dd.MM.yyyy").parse(
+     Preferences.getProperty("recentproject." + i + ".date"));
+     // Create the current recent project
+     TPLTriple<String, String, Date> recent = new TPLTriple(name, path, date);
+     //
+     projects.add(recent);
+     }
+     // Interate over the recent projects
+     for (TPLTriple<String, String, Date> recent : projects) {
+     //if () {
 
-    }
+     //}
+     }
 
+     }*/
     // Update list of recent projects
     public void updateRecentProjects(final EditorProject project) {
         final String projectPath = project.getProjectPath();

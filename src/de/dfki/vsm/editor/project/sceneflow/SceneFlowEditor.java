@@ -1,11 +1,10 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.editor.DynamicElementsPanel;
-import de.dfki.vsm.editor.ElementEditor;
-import de.dfki.vsm.editor.StaticElementsPanel;
-import de.dfki.vsm.editor.SceneFlowToolBar;
-import de.dfki.vsm.editor.WorkSpacePanel;
+import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
+import de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor;
+import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.util.Preferences;
@@ -79,8 +78,8 @@ public class SceneFlowEditor extends JPanel implements EventListener {
     private final WorkSpacePanel mWorkSpacePanel;
     private final SceneFlowToolBar mSceneFlowToolBar;
     private final ElementEditor mElementEditor;
-    private final StaticElementsPanel mStaticElementsPanel;
-    private final DynamicElementsPanel mDynamicElementsPanel;
+    private final SceneFlowPalettePanel mStaticElementsPanel;
+    private final SceneFlowElementPanel mDynamicElementsPanel;
 
     private final JPanel mNewElementDisplay;
     private final JLabel mFooterLabel;
@@ -147,8 +146,10 @@ public class SceneFlowEditor extends JPanel implements EventListener {
 
         // The west component is the workbar
         mFooterLabel = new JLabel();
-        mDynamicElementsPanel = new DynamicElementsPanel(mEditorProject);
-        mStaticElementsPanel = new StaticElementsPanel();
+        mDynamicElementsPanel = new SceneFlowElementPanel(mEditorProject);
+        mStaticElementsPanel = new SceneFlowPalettePanel();
+        
+        
         mElementEditor = new ElementEditor();
         mSceneFlowToolBar = new SceneFlowToolBar(this, mEditorProject);
         mSceneFlowToolBar.addPathComponent(mSceneFlow);
@@ -203,11 +204,7 @@ public class SceneFlowEditor extends JPanel implements EventListener {
         add(mFooterLabel, BorderLayout.SOUTH);
     }
 
-//    public void update(java.util.Observable obs, Object obj) {
-//
-//        // mLogger.message("SceneFlowEditor.update(" + obj + ")");
-//        mObservable.update(obj);
-//    }
+
     // Update the visualization
     @Override
     public final void update(final EventObject event) {
