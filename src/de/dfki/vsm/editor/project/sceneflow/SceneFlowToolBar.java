@@ -1,15 +1,11 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.runtime.RunTimeInstance;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
@@ -19,15 +15,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.LinkedList;
-import java.util.Observable;
-import java.util.Observer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
-;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
@@ -39,31 +33,38 @@ import javax.swing.plaf.basic.BasicButtonUI;
 /**
  * @author Gregor Mehlmann
  */
-
-
 public final class SceneFlowToolBar extends JToolBar {
 
-    // The VSM Runtime Instance
-    private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
+    private final ImageIcon ICON_PLAY_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png");
+    private final ImageIcon ICON_PLAY_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png");
+    private final ImageIcon ICON_PAUSE_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/pause.png");
+    private final ImageIcon ICON_PAUSE_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/pause_blue.png");
 
-    // The Parent Editor Window
-    private final EditorInstance mEditorInstance = EditorInstance.getInstance();
+    private final ImageIcon ICON_MORE_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png");
+    private final ImageIcon ICON_MORE_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png");
 
-    // Clipboard
-    final Clipboard clipboard = getToolkit().getSystemClipboard();
-    private final LinkedList<SuperNode> mPathComponents = new LinkedList<>();
+    private final ImageIcon ICON_LESS_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png");
+    private final ImageIcon ICON_LESS_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png");
+
+// The singelton logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
-    private final EditorInstance mSMEditor = EditorInstance.getInstance();
+    // The singelton runtime instance
+    private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
+    // The singelton editor instance
+    private final EditorInstance mEditorInstance = EditorInstance.getInstance();
+    // The singelton system clipboard
+    private final Clipboard mSystemClipBoard = getToolkit().getSystemClipboard();
+    // The parent sceneflow editor
+    private final SceneFlowEditor mSceneFlowEditor;
+    // The supernodes of the path display
+    private final LinkedList<SuperNode> mPathComponents = new LinkedList<>();
 
-    // The Parent SceneFlow Editor
-    private final SceneFlowEditor mEditor;
-    private final SceneFlow mSceneFlow;
+    // The current editor project
+    private final EditorProject mEditorProject;
+    // The current editor config    
+    private final EditorConfig mEditorConfig;
 
-    //
-    private int mNodeSize;    // only one dimension
-
-    // The Button Components
+    // The button GUI components
     private JButton mElementButton;
     private JButton mModifyButton;
     private JButton mPlayButton;
@@ -71,56 +72,41 @@ public final class SceneFlowToolBar extends JToolBar {
     private JButton mShowVarButton;
     private JButton mStraighten;
     private JButton mNormalize;
-
-    // Path Display GUI Components
+    // Path display GUI components
     private JPanel mPathDisplay;
     private JScrollBar mPathScrollBar;
     private JScrollPane mPathScrollPane;
 
-    //
-    private final EditorProject mProject;
-    private final EditorConfig mPreferences;
+    // TODO: why is this here?
+    private int mNodeSize;    // only one dimension
 
-    public SceneFlowToolBar(final SceneFlowEditor editor, final EditorProject project) {
-        super("Navigation Bar", JToolBar.HORIZONTAL);
-
-        mEditor = editor;
-        mProject = project;
-        mSceneFlow = mProject.getSceneFlow();
-        mPreferences = mProject.getEditorConfig();
-
-        // Initialize The Editor
-        //mEditor      = sceneFlowEditor;
-        //mProject     = sceneFlowEditor.getWorkSpace().getProject();
-        //mPreferences = sceneFlowEditor.getWorkSpace().getPreferences();
-        // Initialize The SceneFlow
-        //mSceneFlow = mEditor.getSceneFlow();
-        setFloatable(false);
+    // Construct a sceneflow editor toolbar
+    public SceneFlowToolBar(
+            final SceneFlowEditor editor,
+            final EditorProject project) {
+        // Create a horizontal toolbar
+        super("SceneFlowToolBar", JToolBar.HORIZONTAL);
+        // Initialize the sceneflow editor
+        mSceneFlowEditor = editor;
+        // Initialize the editor project
+        mEditorProject = project;
+        // Initialize the editor config
+        mEditorConfig = mEditorProject.getEditorConfig();
+        // Initialize the GUI components
         setRollover(true);
+        setFloatable(false);
         setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
         initPreferences();
         initComponents();
     }
 
-  
-
-    public void updatePathDisplay() {
-        mPathComponents.clear();
-
-        for (SuperNode superNode : mEditor.getSceneFlowManager().getActiveSuperNodes()) {
-            mPathComponents.add(superNode);
-        }
-
-        updatePathText();
-    }
-
     private void initPreferences() {
-        if (mSMEditor.getSelectedProjectEditor() != null) {
-            for (Object keyObj : mPreferences.getKeySet()) {
+        if (mEditorInstance.getSelectedProjectEditor() != null) {
+            for (Object keyObj : mEditorConfig.getKeySet()) {
                 String key = (String) keyObj;
 
                 if (key.equals("node_width")) {
-                    mNodeSize = Integer.valueOf(mPreferences.getProperty(key));
+                    mNodeSize = Integer.valueOf(mEditorConfig.getProperty(key));
                 }
             }
         } else {
@@ -135,15 +121,16 @@ public final class SceneFlowToolBar extends JToolBar {
     }
 
     private void savePreferences() {
-        mPreferences.setProperty("node_width", Integer.toString(mNodeSize));
-        mPreferences.setProperty("node_height", Integer.toString(mNodeSize));
+        mEditorConfig.setProperty("node_width", Integer.toString(mNodeSize));
+        mEditorConfig.setProperty("node_height", Integer.toString(mNodeSize));
         //mPreferences.save(mProject.getEditorConfigName());
         EditorInstance.getInstance().refresh();
     }
 
+    //TODO: adding not explicit but via refresh method
     public void addPathComponent(SuperNode supernode) {
         mPathComponents.addLast(supernode);
-        updatePathText();
+        refreshDisplay();
 
         int va = mPathScrollBar.getMaximum();
 
@@ -154,71 +141,14 @@ public final class SceneFlowToolBar extends JToolBar {
         SuperNode sn = mPathComponents.removeLast();
 
         // String str = mPathComponents.removeLast();
-        updatePathText();
+        refreshDisplay();
 
         return sn;
     }
 
     public void setPathComponent(int index, SuperNode supernode) {
         mPathComponents.set(index, supernode);
-        updatePathText();
-    }
-
-    private void updatePathText() {
-        mPathDisplay.removeAll();
-
-        for (final SuperNode sn : mPathComponents) {
-            Action action = new AbstractAction("ACTION_SET_LEVEL") {
-                public void actionPerformed(ActionEvent e) {
-                    //System.err.println("setting level to node " + getValue(Action.NAME));
-                    mEditor.getWorkSpace().selectNewWorkSpaceLevel(sn);
-                }
-            };
-
-            action.putValue(Action.SHORT_DESCRIPTION, sn.getName());
-            action.putValue(Action.NAME, sn.getName());
-            JLabel lab = new JLabel("\u2192");
-            JButton label = new JButton(action);
-
-            label.setUI(new BasicButtonUI());
-            label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-
-            // label.setFont(new Font("Arial", Font.ITALIC, 10));
-            label.setMinimumSize(new Dimension(80, 18));
-            label.setMaximumSize(new Dimension(80, 18));
-            label.setPreferredSize(new Dimension(80, 18));
-
-            int compCnt = mPathDisplay.getComponentCount();
-            int gray = 255 - 5 * compCnt;
-
-            gray = (gray < 0)
-                    ? 0
-                    : gray;
-            label.setBackground(new Color(gray, gray, gray));
-            label.addMouseMotionListener(new MouseMotionAdapter() {
-
-                // moving the content
-                @Override
-                public void mouseDragged(MouseEvent e) {
-                    int dir = e.getX();
-
-                    if (dir < 0) {
-                        mPathScrollBar.setValue(mPathScrollBar.getValue() + 10);
-                    } else {
-                        mPathScrollBar.setValue(mPathScrollBar.getValue() - 10);
-                    }
-                }
-            });
-
-            if (compCnt > 0) {
-                mPathDisplay.add(lab);
-            }
-
-            mPathDisplay.add(label);
-        }
-
-        revalidate();
-        repaint();
+        refreshDisplay();
     }
 
     private void sanitizeTinyButton(JButton b) {
@@ -264,11 +194,15 @@ public final class SceneFlowToolBar extends JToolBar {
                 Boolean.valueOf(Preferences.getProperty("showelements"))
                 ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
                 : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png")) {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
-                        mEditor.showElementDisplay();
-                        changeElementButtonState();
-                        revalidate();
-                        repaint();
+                        mSceneFlowEditor.showElementDisplay();
+
+                        //
+                        refreshButtons();
+                        //changeElementButtonState();
+                        //revalidate();
+                        //repaint();
                     }
                 });
         mElementButton.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showelements"))
@@ -303,14 +237,15 @@ public final class SceneFlowToolBar extends JToolBar {
         addSeparator();
         add(Box.createHorizontalStrut(30));
         // The Play SceneFlow Button
-        mPlayButton = add(new AbstractAction("ACTION_PLAY", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png")) {
+        mPlayButton = add(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.play(mProject);
+                mEditorInstance.play(mEditorProject);
             }
         });
-        mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
-        mPlayButton.setToolTipText("Play Scene");
+        mPlayButton.setIcon(ICON_PLAY_STANDARD);
+        mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
+        mPlayButton.setToolTipText("Start the execution of the sceneflow");
         sanitizeTinyButton(mPlayButton);
 
         add(Box.createHorizontalStrut(3));
@@ -319,7 +254,7 @@ public final class SceneFlowToolBar extends JToolBar {
         mStopButton = add(new AbstractAction("ACTION_STOP", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop.png")) {
             @Override
             public final void actionPerformed(ActionEvent e) {
-                mEditorInstance.stop(mProject);
+                mEditorInstance.stop(mEditorProject);
             }
         });
         mStopButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop_blue.png"));
@@ -347,7 +282,7 @@ public final class SceneFlowToolBar extends JToolBar {
                 ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var.png")
                 : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden.png")) {
                     public void actionPerformed(ActionEvent evt) {
-                        mEditor.getWorkSpace().showVariablesOnWorkspace();
+                        mSceneFlowEditor.getWorkSpace().showVariablesOnWorkspace();
                         changeShowVariablesButtonState();
                         revalidate();
                         repaint();
@@ -372,7 +307,7 @@ public final class SceneFlowToolBar extends JToolBar {
         b = add(new AbstractAction("ACTION_LEVEL_UP", ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up.png")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditor.getWorkSpace().decreaseWorkSpaceLevel();
+                mSceneFlowEditor.getWorkSpace().decreaseWorkSpaceLevel();
             }
         });
         b.setToolTipText("Up to parent node");
@@ -385,10 +320,10 @@ public final class SceneFlowToolBar extends JToolBar {
                 ResourceLoader.loadImageIcon("/res/img/toolbar_icons/screenshot.png")) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        TransferHandler handler = mEditor.getWorkSpace().getTransferHandler();
+                        TransferHandler handler = mSceneFlowEditor.getWorkSpace().getTransferHandler();
 
                         if (handler != null) {
-                            handler.exportToClipboard(mEditor.getWorkSpace(), clipboard, TransferHandler.COPY);
+                            handler.exportToClipboard(mSceneFlowEditor.getWorkSpace(), mSystemClipBoard, TransferHandler.COPY);
                         } else {
                             System.err.println("handler null");
                         }
@@ -435,7 +370,7 @@ public final class SceneFlowToolBar extends JToolBar {
                 ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png")
                 : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")) {
                     public void actionPerformed(ActionEvent evt) {
-                        mEditor.showElementEditor();
+                        mSceneFlowEditor.showElementEditor();
                         changeModifyButtonState();
                         revalidate();
                         repaint();
@@ -454,42 +389,37 @@ public final class SceneFlowToolBar extends JToolBar {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private void refreshRuntimeButtonState() {
-
-        //
-        if (mRunTime.isRunning(mProject)) {
-            if (mRunTime.isPaused(mProject)) {
-                mPlayButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png"));
-                mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
-                mPlayButton.setToolTipText("Play Scene");
+    private void refreshButtons() {
+        // TODO: Refresh other buttons in this method too
+        if (mRunTime.isRunning(mEditorProject)) {
+            if (mRunTime.isPaused(mEditorProject)) {
+                mPlayButton.setIcon(ICON_PLAY_STANDARD);
+                mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
+                mPlayButton.setToolTipText("Proceed the execution of the sceneflow");
             } else {
-                mPlayButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/pause.png"));
-                mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/pause_blue.png"));
-                mPlayButton.setToolTipText("Pause Scene");
+                mPlayButton.setIcon(ICON_PAUSE_STANDARD);
+                mPlayButton.setRolloverIcon(ICON_PAUSE_ROLLOVER);
+                mPlayButton.setToolTipText("Pause the execution of the sceneflow");
             }
         } else {
-            mPlayButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png"));
-            mPlayButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png"));
-            mPlayButton.setToolTipText("Play Scene");
+            mPlayButton.setIcon(ICON_PLAY_STANDARD);
+            mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
+            mPlayButton.setToolTipText("Start the execution of the sceneflow");
         }
-    }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    private void changeElementButtonState() {
-        if (mEditor.isElementDisplayVisible()) {
-            mElementButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png"));
+        // Refresh the element display buttons
+        if (mSceneFlowEditor.isElementDisplayVisible()) {
+            mElementButton.setIcon(ICON_MORE_STANDARD);
         } else {
-            mElementButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
+            mElementButton.setIcon(ICON_LESS_STANDARD);
         }
         mElementButton.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showelements"))
-                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
-                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+                ? ICON_MORE_ROLLOVER : ICON_LESS_ROLLOVER);
     }
 
+  
     private void changeModifyButtonState() {
-        if (mEditor.isElementEditorVisible()) {
+        if (mSceneFlowEditor.isElementEditorVisible()) {
             mModifyButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
         } else {
             mModifyButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png"));
@@ -500,13 +430,13 @@ public final class SceneFlowToolBar extends JToolBar {
     }
 
     private void changeShowVariablesButtonState() {
-        mShowVarButton.setIcon(mEditor.getWorkSpace().isVarBadgeVisible()
+        mShowVarButton.setIcon(mSceneFlowEditor.getWorkSpace().isVarBadgeVisible()
                 ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden.png")
                 : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var.png"));
-        mShowVarButton.setRolloverIcon(mEditor.getWorkSpace().isVarBadgeVisible()
+        mShowVarButton.setRolloverIcon(mSceneFlowEditor.getWorkSpace().isVarBadgeVisible()
                 ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_hidden_blue.png")
                 : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/var_blue.png"));
-        mShowVarButton.setToolTipText(mEditor.getWorkSpace().isVarBadgeVisible()
+        mShowVarButton.setToolTipText(mSceneFlowEditor.getWorkSpace().isVarBadgeVisible()
                 ? "Hide Variables"
                 : "Show Variables");
     }
@@ -530,13 +460,66 @@ public final class SceneFlowToolBar extends JToolBar {
     public final void refresh() {
         // Print some information
         mLogger.message("Refreshing '" + this + "'");
-        // Refresh runtime buttons
-        refreshRuntimeButtonState();
-       updatePathDisplay();
-        updatePathText();
+        // Refresh all components
+        refreshButtons();
+        refreshDisplay();
         initPreferences();
-    // TODO: what else do we need to refresh?
-    
+        // TODO: what else do we need to refresh?
+
     }
-    
+
+    // Refresh the path display
+    private void refreshDisplay() {
+        // Remove all path components
+        mPathDisplay.removeAll();
+        // Get the list of active nodes
+        // TODO: Maybe better to have this on sceneflow editor
+        final LinkedList<SuperNode> path = mSceneFlowEditor.getSceneFlowManager().getActiveSuperNodes();
+        // For each supernode in the path
+        for (final SuperNode supernode : path) {
+            final Action action = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    //System.err.println("setting level to node " + getValue(Action.NAME));
+                    mSceneFlowEditor.getWorkSpace().selectNewWorkSpaceLevel(supernode);
+                }
+            };
+            action.putValue(Action.NAME, supernode.getName());
+            action.putValue(Action.SHORT_DESCRIPTION, supernode.getName());
+            // Compute color intensity
+            int index = mPathDisplay.getComponentCount();
+            int intensity = 255 - 5 * index;
+            intensity = (intensity < 0) ? 0 : intensity;
+            // Create a label with an arrow
+            final JLabel arrow = new JLabel("\u2192");
+            // Create a button with the name
+            final JButton label = new JButton(action);
+            label.setUI(new BasicButtonUI());
+            label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            label.setMinimumSize(new Dimension(80, 18));
+            label.setMaximumSize(new Dimension(80, 18));
+            label.setPreferredSize(new Dimension(80, 18));
+            label.setBackground(new Color(intensity, intensity, intensity));
+            label.addMouseMotionListener(new MouseMotionAdapter() {
+                // TODO: This does not work smouthly, please work over 
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    int dir = e.getX();
+
+                    if (dir < 0) {
+                        mPathScrollBar.setValue(mPathScrollBar.getValue() + 10);
+                    } else {
+                        mPathScrollBar.setValue(mPathScrollBar.getValue() - 10);
+                    }
+                }
+            });
+
+            if (index > 0) {
+                mPathDisplay.add(arrow);
+            }
+            mPathDisplay.add(label);
+        }
+        // revalidate();
+        // repaint();
+    }
 }

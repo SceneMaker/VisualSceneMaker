@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
 import de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
@@ -14,8 +13,6 @@ import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -29,15 +26,11 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.io.IOException;
-
 import java.util.Timer;
 import java.util.TimerTask;
-
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -56,16 +49,15 @@ import javax.swing.undo.UndoManager;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public class SceneFlowEditor extends JPanel implements EventListener {
+public final class SceneFlowEditor extends JPanel implements EventListener {
+
+    // The singelton logger instance
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // TODO: move undo manager up at least to project editor
     private UndoManager mUndoManager = null;
     // TODO: make final singelton timer
     private Timer mVisualizationTimer = new Timer("SceneFlowEditor-Timer");
-
-    //
-    // private final Observable mObservable = new Observable();
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     //
     private final SceneFlow mSceneFlow;
@@ -148,10 +140,10 @@ public class SceneFlowEditor extends JPanel implements EventListener {
         mFooterLabel = new JLabel();
         mDynamicElementsPanel = new SceneFlowElementPanel(mEditorProject);
         mStaticElementsPanel = new SceneFlowPalettePanel();
-        
-        
+
         mElementEditor = new ElementEditor();
         mSceneFlowToolBar = new SceneFlowToolBar(this, mEditorProject);
+             //TODO: adding not explicit but via refresh method
         mSceneFlowToolBar.addPathComponent(mSceneFlow);
         //
 
@@ -203,7 +195,6 @@ public class SceneFlowEditor extends JPanel implements EventListener {
 
         add(mFooterLabel, BorderLayout.SOUTH);
     }
-
 
     // Update the visualization
     @Override
@@ -264,6 +255,7 @@ public class SceneFlowEditor extends JPanel implements EventListener {
     public SceneFlowManager getSceneFlowManager() {
         return mSceneFlowManager;
     }
+    
 
     public SceneFlow getSceneFlow() {
         return mSceneFlow;
@@ -277,7 +269,9 @@ public class SceneFlowEditor extends JPanel implements EventListener {
         return mUndoManager;
     }
 
+         //TODO: adding not explicit but via refresh method
     public void addPathComponent(SuperNode supernode) {
+             //TODO: adding not explicit but via refresh method
         mSceneFlowToolBar.addPathComponent(supernode);
     }
 
