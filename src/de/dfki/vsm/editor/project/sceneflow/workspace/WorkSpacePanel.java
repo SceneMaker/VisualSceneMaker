@@ -108,7 +108,7 @@ import javax.swing.KeyStroke;
  * @author Not me
  * @author Patrick Gebhard
  */
-public final class WorkSpacePanel extends JPanel implements  EventListener, MouseListener, MouseMotionListener {
+public final class WorkSpacePanel extends JPanel implements EventListener, MouseListener, MouseMotionListener {
 
     // The clipboard
     private final ClipBoard mClipboard = new ClipBoard();
@@ -215,12 +215,9 @@ public final class WorkSpacePanel extends JPanel implements  EventListener, Mous
         showEdgesOnWorkSpace();
     }
 
-    
-   
-    
     //
     public void refresh() {
- // Print some information
+        // Print some information
         mLogger.message("Refreshing '" + this + "'");
         // mLogger.message("WorkSpace.update(" + obj + ")");
         mObservable.update(null);
@@ -1235,6 +1232,7 @@ public final class WorkSpacePanel extends JPanel implements  EventListener, Mous
 
         getSceneFlowManager().addActiveSuperNode(superNode);
         mSceneFlowEditor.addPathComponent(superNode);
+        //TODO: adding not explicit but via refresh method
 
         // Create a new Gridmanager for the workspace
         mGridManager.update();
@@ -1318,6 +1316,7 @@ public final class WorkSpacePanel extends JPanel implements  EventListener, Mous
         // active supernodes and remove it's name from the path
         SuperNode s = getSceneFlowManager().removeActiveSuperNode();
         SuperNode sn = mSceneFlowEditor.removePathComponent();
+             //TODO: adding not explicit but via refresh method
 
         // Create a new Gridmanager for the workspace
         mGridManager.update();
@@ -1333,6 +1332,8 @@ public final class WorkSpacePanel extends JPanel implements  EventListener, Mous
         // Update the workspace
         revalidate();
         repaint();
+
+        // TODO: Refresh here!
     }
 
     /**

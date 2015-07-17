@@ -16,8 +16,6 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.tpl.TPLTriple;
-import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -31,7 +29,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +38,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -59,8 +57,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The singelton event multicaster
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
-    // The editor's observable component 
-    //private final Observable mObservable = new Observable();
     // The editor's GUI components
     private final MenuBar mMenuBar;
     private final JTabbedPane mProjectEditors;
@@ -726,7 +722,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         aboutDialog.setVisible(true);
     }
-
+    
     // Play the execution of the current project
     public final void play() {
         // Get the project that has to be executed
