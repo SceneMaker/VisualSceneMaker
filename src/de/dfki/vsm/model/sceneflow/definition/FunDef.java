@@ -12,7 +12,6 @@ import org.w3c.dom.Element;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import java.util.Vector;
 
@@ -26,7 +25,9 @@ public class FunDef extends Object implements Comparable<FunDef> {
     private String           mClassName;
     private String           mMethod;
     private Vector<ParamDef> mParamList;
+    private boolean          active = true;
 
+    
     public FunDef() {
         mName      = new String();
         mClassName = new String();
@@ -47,7 +48,13 @@ public class FunDef extends Object implements Comparable<FunDef> {
         mMethod    = method;
         mParamList = paramList;
     }
+    public boolean isActive() {
+        return active;
+    }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
     public String getName() {
         return mName;
     }

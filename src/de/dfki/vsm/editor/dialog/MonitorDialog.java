@@ -50,7 +50,7 @@ public class MonitorDialog extends JDialog {
     private final SceneFlow      mSceneFlow;
 
     private MonitorDialog() {
-        super(Editor.getInstance(), "Stack Manager", true);
+        super(Editor.getInstance(), "Variable Manager", true);
         this.setIconImage(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stack_icon.png").getImage());
         mSceneFlow = Editor.getInstance().getProjectEditorList().getSelectedProject().getSceneFlow();
         initComponents();

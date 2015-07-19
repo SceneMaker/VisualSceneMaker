@@ -247,8 +247,10 @@ public class SceneFlow extends SuperNode {
             while (it.hasNext()) {
                 Map.Entry pairs = (java.util.Map.Entry) it.next();
                 FunDef    def   = (FunDef) pairs.getValue();
-
-                def.writeXML(out);
+                if(def.isActive())
+                {
+                    def.writeXML(out);
+                }
             }
 
             out.pop().println("</UserCommands>");

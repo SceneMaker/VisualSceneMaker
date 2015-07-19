@@ -613,7 +613,10 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         SceneFlow sceneFlow = project.getSceneFlow();
 
         for (FunDef def : sceneFlow.getUsrCmdDefMap().values()) {
-            mFunDefEntry.add(new TreeEntry(def.getName(), null, def));
+            if (def.isActive())
+            {
+                mFunDefEntry.add(new TreeEntry(def.getName(), null, def));
+            }
         }
 
         //
@@ -646,9 +649,12 @@ class ElementTree extends JTree implements Observer, EventListener, ActionListen
         Collections.sort(functionDefinitions);
 
         for (final FunDef def : functionDefinitions) {
-            mFunDefEntry.add(new TreeEntry(def.getName(), def.isValidClass()
-                    ? sFUNCTION_ENTRY
-                    : sFUNCTION_ERROR_ENTRY, def));
+            if (def.isActive())
+            {
+                mFunDefEntry.add(new TreeEntry(def.getName(), def.isValidClass()
+                        ? sFUNCTION_ENTRY
+                        : sFUNCTION_ERROR_ENTRY, def));
+            }
         }
     }
 

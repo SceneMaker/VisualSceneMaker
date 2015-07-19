@@ -27,13 +27,11 @@ import org.ujmp.core.collections.ArrayIndexList;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
-import javax.swing.AbstractAction;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;

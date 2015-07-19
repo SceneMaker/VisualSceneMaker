@@ -893,11 +893,14 @@ public class Evaluator {
         FunDef cmdDef = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(cmdName);
 
         if (cmdDef == null) {
-            java.lang.String errorMsg = "An error occured while executing thread " + Process.currentThread().toString()
-                                        + " : " + "The user command call '" + cmd.getConcreteSyntax()
-                                        + "' referes to the user command '" + cmdName + "' which is not defined.";
+            if (cmdDef.isActive())
+            {
+                java.lang.String errorMsg = "An error occured while executing thread " + Process.currentThread().toString()
+                                            + " : " + "The user command call '" + cmd.getConcreteSyntax()
+                                            + "' referes to the user command '" + cmdName + "' which is not defined.";
 
-            throw new RunTimeException(this, errorMsg);
+                throw new RunTimeException(this, errorMsg);
+            }
         }
 
         java.lang.String cmdClassName  = cmdDef.getClassName();

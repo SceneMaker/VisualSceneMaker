@@ -39,7 +39,11 @@ public class Node extends Object {
     protected Graphics        mGraphics      = null;
     protected SuperNode       mParentNode    = null;
     protected boolean         mIsHistoryNode = false;
-
+    
+    public Byte              hasNone        = new Byte("0");
+    public Byte              hasOne         = new Byte("1");
+    public Byte              hasMany        = new Byte("2");
+    
     public enum FLAVOUR {
         NONE, ENODE, TNODE, CNODE, PNODE, INODE, FNODE
     }
@@ -161,17 +165,21 @@ public class Node extends Object {
     }
     /**
      * Tells if the node has more than 0 Probabilistic edge
-     * in case true, it is necessary to reorganize the values of probabilities
+     * in case true, it is necessary to reorganise the values of probabilities
      * Used when deleting an edge
      * @return 
      */
-    public boolean hasPEdges()
+    public byte hasPEdges()
     {
-        if(mPEdgeList.size() > 0)
+        if(mPEdgeList.size() == 1)
         {
-            return true;
+            return hasOne;
         }
-        return false;
+        if(mPEdgeList.size() > 1)
+        {
+            return hasMany;
+        }
+        return hasNone;
     }
     public PEdge getFirstPEdge()
     {

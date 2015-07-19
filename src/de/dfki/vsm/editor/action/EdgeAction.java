@@ -381,10 +381,14 @@ public abstract class EdgeAction extends EditorAction {
             mTargetGUINodeDockPoint = mTargetGUINode.disconnectEdge(mGUIEdge);
         }
         cleanUpData();
-        if(mGUIEdgeType.equals(PEDGE) && mSourceGUINode.getDataNode().hasPEdges())
+        if(mGUIEdgeType.equals(PEDGE) && mSourceGUINode.getDataNode().hasPEdges() == mSourceGUINode.getDataNode().hasMany) //TODO VALUES OF hasMany SHOULD BE GLOBAL
         {
-            ModifyPEdgeDialog mPEdgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode().getFirstPEdge());
+            ModifyPEdgeDialog mPEdgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode().getFirstPEdge()); //OPEN EDITION DIALOG TO ASSING NEW PROBABILITIES
             mPEdgeDialog.run();
+        }
+        if(mSourceGUINode.getDataNode().hasPEdges() == mSourceGUINode.getDataNode().hasOne) //HAS ONLY ONE EDGE LEFT
+        {
+            mSourceGUINode.getDataNode().getFirstPEdge().setProbability(100);// ASSIGN 100% PROBABILITY AUTOMATICALLY
         }
     }
 

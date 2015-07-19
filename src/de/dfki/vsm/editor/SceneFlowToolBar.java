@@ -465,7 +465,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
             }
         });
         b.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stack_icon_blue.png"));
-        b.setToolTipText("Stack Manager");
+        b.setToolTipText("Variable Manager");
         sanitizeTinyButton(b);
         add(Box.createHorizontalStrut(10));
         add(createSeparator());
