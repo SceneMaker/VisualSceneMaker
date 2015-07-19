@@ -2,10 +2,13 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.action.RedoAction;
+import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.script.ScriptEditorPanel;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
@@ -119,261 +122,266 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
 
         // Create a FunDefDialog object for every existing function
         // in order to reuse components
+        System.out.println(mSceneFlow.getUsrCmdDefMap().values());
         for (final FunDef funDef : mSceneFlow.getUsrCmdDefMap().values()) {
-            FunDefDialog funDefPanel = new FunDefDialog(funDef);
-            
-            mFunDefDialogList.add(funDefPanel);
+            if (funDef.isActive())
+            {
+                FunDefDialog funDefPanel = new FunDefDialog(funDef);
 
-            // Add content of the function container
-            JPanel functionContent = funDefPanel.createPanel();
+                mFunDefDialogList.add(funDefPanel);
 
-            functionContent.setOpaque(true);
-            //
-            JPanel functionContainer = new JPanel();
-//            functionContainer.addMouseListener(new MouseAdapter() {
-//                public void mouseEntered(MouseEvent me) {
-//                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
-//                }
-//                
-//                public void mouseExited(MouseEvent me) {
-//                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
-//                }
-//            });
-            functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
-            functionContainer.setOpaque(true);
-            functionContainer.setBackground(Color.white);
-            functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
+                // Add content of the function container
+                JPanel functionContent = funDefPanel.createPanel();
 
-            // add remove button to the far right
-            // REMOVE BUTTON
-            mRemoveButton = new RemoveButton();
-            mRemoveButton.addMouseListener(new java.awt.event.MouseAdapter() {
-                
-                public synchronized void mouseClicked(java.awt.event.MouseEvent evt) {
-                    removeFunction(funDef);
-                }
-                
-                public void mouseEntered(MouseEvent me) {
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
-                }
-                
-                public void mouseExited(MouseEvent me) {
-                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
-                }
-            });
-            functionContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-            functionContainer.add(mRemoveButton);
-            functionContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-            functionContainer.add(functionContent);
-            mFunctionsPanel.add(Box.createRigidArea(new Dimension(1, 5)));
-            mFunctionsPanel.add(functionContainer);
+                functionContent.setOpaque(true);
+                //
+                JPanel functionContainer = new JPanel();
+    //            functionContainer.addMouseListener(new MouseAdapter() {
+    //                public void mouseEntered(MouseEvent me) {
+    //                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+    //                }
+    //                
+    //                public void mouseExited(MouseEvent me) {
+    //                    functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+    //                }
+    //            });
+                functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                functionContainer.setOpaque(true);
+                functionContainer.setBackground(Color.white);
+                functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
 
-            /*
-             *   Add action and focus listeners to editable elements from
-             *   content to highlight the functionContainer being edited
-             *   nd save edited changes
-             */
+                // add remove button to the far right
+                // REMOVE BUTTON
+                mRemoveButton = new RemoveButton();
+                mRemoveButton.addMouseListener(new java.awt.event.MouseAdapter() {
 
-            // Function Name
-            funDefPanel.getNameInput().addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(true);
-                    functionContent.setBackground(Color.LIGHT_GRAY);
-                }
-                
-                @Override
-                public void focusLost(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(false);
-                    funDefPanel.getNameInput().setText(funDef.getName());
-                    funDefPanel.getNameInput().setForeground(Color.black);
-                    functionContent.setBackground(Color.white);
-                    
-                }
-            });
-            funDefPanel.getNameInput().addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyReleased(KeyEvent evt) {
-                    String newFundDefName = funDefPanel.getNameInput().getText().trim();
-                    
-                    if (!(funDef.getName().equals(newFundDefName))) {
-                        if (!newFundDefName.equals("")) {
+                    public synchronized void mouseClicked(java.awt.event.MouseEvent evt) {
+                        funDef.setActive(false);
+                        removeFunction(funDef);
+                    }
 
-                            // look if name is already being used by another command
-                            if (mSceneFlow.getUsrCmdDef(newFundDefName) != null) {
-                                funDefPanel.getNameInput().setForeground(Color.red);
-                            } else {
-                                funDefPanel.getNameInput().setForeground(Color.BLACK);
-                                mSceneFlow.removeUsrCmdDef(funDef.getName());
-                                mSceneFlow.putUsrCmdDef(newFundDefName, funDef);
-                                updateFunDef(funDef, funDefPanel);
+                    public void mouseEntered(MouseEvent me) {
+                        functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(82, 127, 255), 2), BorderFactory.createLineBorder(new Color(82, 127, 255), 2)));
+                    }
+
+                    public void mouseExited(MouseEvent me) {
+                        functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
+                    }
+                });
+                functionContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+                functionContainer.add(mRemoveButton);
+                functionContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+                functionContainer.add(functionContent);
+                mFunctionsPanel.add(Box.createRigidArea(new Dimension(1, 5)));
+                mFunctionsPanel.add(functionContainer);
+
+                /*
+                 *   Add action and focus listeners to editable elements from
+                 *   content to highlight the functionContainer being edited
+                 *   nd save edited changes
+                 */
+
+                // Function Name
+                funDefPanel.getNameInput().addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(true);
+                        functionContent.setBackground(Color.LIGHT_GRAY);
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(false);
+                        funDefPanel.getNameInput().setText(funDef.getName());
+                        funDefPanel.getNameInput().setForeground(Color.black);
+                        functionContent.setBackground(Color.white);
+
+                    }
+                });
+                funDefPanel.getNameInput().addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyReleased(KeyEvent evt) {
+                        String newFundDefName = funDefPanel.getNameInput().getText().trim();
+
+                        if (!(funDef.getName().equals(newFundDefName))) {
+                            if (!newFundDefName.equals("")) {
+
+                                // look if name is already being used by another command
+                                if (mSceneFlow.getUsrCmdDef(newFundDefName) != null) {
+                                    funDefPanel.getNameInput().setForeground(Color.red);
+                                } else {
+                                    funDefPanel.getNameInput().setForeground(Color.BLACK);
+                                    //mSceneFlow.removeUsrCmdDef(funDef.getName());
+                                    mSceneFlow.putUsrCmdDef(newFundDefName, funDef);
+                                    updateFunDef(funDef, funDefPanel);
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
 
-            // Function Class Name
-            funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyReleased(KeyEvent evt) {
-                    updateFunDef(funDef, funDefPanel);
-                }
-            });
-            
-            funDefPanel.getClassNameInput().addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(true);
-                    functionContent.setBackground(Color.LIGHT_GRAY);
-                }
-                
-                @Override
-                public void focusLost(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(false);
-                    functionContent.setBackground(Color.white);
-                }
-            });
+                // Function Class Name
+                funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyReleased(KeyEvent evt) {
+                        updateFunDef(funDef, funDefPanel);
+                    }
+                });
 
-            // Function Method
-            funDefPanel.getMethodBox().addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(true);
-                    functionContent.setBackground(Color.LIGHT_GRAY);
-                }
-                
-                @Override
-                public void focusLost(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(false);
-                    functionContent.setBackground(Color.white);
-                }
-            });
-            
-            funDefPanel.getMethodBox().addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    
-                    if (funDefPanel.getIsValidClass()) {
-                        
-                        if (funDefPanel.getMethodBox().getSelectedItem() != null) {
-                            funDefPanel.setSelectedMethod(
-                                funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
-                        }
+                funDefPanel.getClassNameInput().addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(true);
+                        functionContent.setBackground(Color.LIGHT_GRAY);
+                    }
 
-                        if (funDefPanel.getSelectedMethod() != null) {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(false);
+                        functionContent.setBackground(Color.white);
+                    }
+                });
 
-                            // updateFunDef(funDef, funDefPanel);
-                            String newSelectedMethodName = funDefPanel.getSelectedMethod().getName().trim();
-                            
-                            funDef.setMethod(newSelectedMethodName);
-                            funDefPanel.getFunDef().setMethod(newSelectedMethodName);
-                            funDefPanel.methodComboBoxActionPerformed(evt);
-                            funDef.getParamList().clear();
+                // Function Method
+                funDefPanel.getMethodBox().addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(true);
+                        functionContent.setBackground(Color.LIGHT_GRAY);
+                    }
 
-                            Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(false);
+                        functionContent.setBackground(Color.white);
+                    }
+                });
 
-                            while (args.hasMoreElements()) {
-                                String argString = (String) args.nextElement();
-                                
-                                funDef.addParam(
-                                        new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
+                funDefPanel.getMethodBox().addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+
+                        if (funDefPanel.getIsValidClass()) {
+
+                            if (funDefPanel.getMethodBox().getSelectedItem() != null) {
+                                funDefPanel.setSelectedMethod(
+                                    funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
                             }
-                            
-                            Editor.getInstance().update();
-                        }
-                    }
-                }
-            });
 
-            // Function Class Name
-            funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyReleased(KeyEvent evt) {
-                    updateFunDef(funDef, funDefPanel);
-                }
-            });
+                            if (funDefPanel.getSelectedMethod() != null) {
 
-            // Function Method
-            funDefPanel.getMethodBox().addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(true);
-                    functionContent.setBackground(Color.LIGHT_GRAY);
-                }
-                
-                @Override
-                public void focusLost(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(false);
-                    functionContent.setBackground(Color.white);
-                }
-            });
-            funDefPanel.getMethodBox().addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    if (funDefPanel.getIsValidClass()) {
-                        if (funDefPanel.getMethodBox().getSelectedItem() != null) {
-                            funDefPanel.setSelectedMethod(
-                                funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
-                        }
-                        
-                        if (funDefPanel.getSelectedMethod() != null) {
+                                // updateFunDef(funDef, funDefPanel);
+                                String newSelectedMethodName = funDefPanel.getSelectedMethod().getName().trim();
 
-                            // updateFunDef(funDef, funDefPanel);
-                            String newSelectedMethodName = funDefPanel.getSelectedMethod().getName().trim();
-                            
-                            funDef.setMethod(newSelectedMethodName);
-                            funDefPanel.getFunDef().setMethod(newSelectedMethodName);
-                            funDefPanel.methodComboBoxActionPerformed(evt);
-                            funDef.getParamList().clear();
-                            
-                            Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
-                            
-                            while (args.hasMoreElements()) {
-                                String argString = (String) args.nextElement();
-                                
-                                funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
-                                                             funDefPanel.getTypeMap().get(argString)));
+                                funDef.setMethod(newSelectedMethodName);
+                                funDefPanel.getFunDef().setMethod(newSelectedMethodName);
+                                funDefPanel.methodComboBoxActionPerformed(evt);
+                                funDef.getParamList().clear();
+
+                                Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
+
+                                while (args.hasMoreElements()) {
+                                    String argString = (String) args.nextElement();
+
+                                    funDef.addParam(
+                                            new ParamDef(funDefPanel.getNameMap().get(argString), funDefPanel.getTypeMap().get(argString)));
+                                }
+
+                                Editor.getInstance().update();
                             }
-                            
-                            Editor.getInstance().update();
                         }
                     }
-                }
-            });
+                });
 
-            // Function Arguments
-            funDefPanel.getArgList().addFocusListener(new FocusListener() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(true);
-                    functionContent.setBackground(Color.LIGHT_GRAY);
-                }
-                
-                @Override
-                public void focusLost(FocusEvent e) {
-                    funDefPanel.setSelectedBackground(false);
-                    functionContent.setBackground(Color.white);
-                }
-            });
-            funDefPanel.getArgList().addMouseListener(new MouseInputAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent evt) {
-                    funDefPanel.argumentListMouseClicked(evt);
-                    funDef.getParamList().clear();
-                    
-                    Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
-                    
-                    while (args.hasMoreElements()) {
-                        String argString = (String) args.nextElement();
-                        
-                        funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
-                                                     funDefPanel.getTypeMap().get(argString)));
+                // Function Class Name
+                funDefPanel.getClassNameInput().addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyReleased(KeyEvent evt) {
+                        updateFunDef(funDef, funDefPanel);
                     }
-                    
-                    Editor.getInstance().update();
-                }
-            });
+                });
+
+                // Function Method
+                funDefPanel.getMethodBox().addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(true);
+                        functionContent.setBackground(Color.LIGHT_GRAY);
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(false);
+                        functionContent.setBackground(Color.white);
+                    }
+                });
+                funDefPanel.getMethodBox().addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        if (funDefPanel.getIsValidClass()) {
+                            if (funDefPanel.getMethodBox().getSelectedItem() != null) {
+                                funDefPanel.setSelectedMethod(
+                                    funDefPanel.getmMethodMap().get((String) funDefPanel.getMethodBox().getSelectedItem()));
+                            }
+
+                            if (funDefPanel.getSelectedMethod() != null) {
+
+                                // updateFunDef(funDef, funDefPanel);
+                                String newSelectedMethodName = funDefPanel.getSelectedMethod().getName().trim();
+
+                                funDef.setMethod(newSelectedMethodName);
+                                funDefPanel.getFunDef().setMethod(newSelectedMethodName);
+                                funDefPanel.methodComboBoxActionPerformed(evt);
+                                funDef.getParamList().clear();
+
+                                Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
+
+                                while (args.hasMoreElements()) {
+                                    String argString = (String) args.nextElement();
+
+                                    funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
+                                                                 funDefPanel.getTypeMap().get(argString)));
+                                }
+
+                                Editor.getInstance().update();
+                            }
+                        }
+                    }
+                });
+
+                // Function Arguments
+                funDefPanel.getArgList().addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(true);
+                        functionContent.setBackground(Color.LIGHT_GRAY);
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        funDefPanel.setSelectedBackground(false);
+                        functionContent.setBackground(Color.white);
+                    }
+                });
+                funDefPanel.getArgList().addMouseListener(new MouseInputAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent evt) {
+                        funDefPanel.argumentListMouseClicked(evt);
+                        funDef.getParamList().clear();
+
+                        Enumeration args = ((DefaultListModel) funDefPanel.getArgList().getModel()).elements();
+
+                        while (args.hasMoreElements()) {
+                            String argString = (String) args.nextElement();
+
+                            funDef.addParam(new ParamDef(funDefPanel.getNameMap().get(argString),
+                                                         funDefPanel.getTypeMap().get(argString)));
+                        }
+
+                        Editor.getInstance().update();
+                    }
+                });
+            }
         }
         
         mFunctionsPanel.add(Box.createRigidArea(new Dimension(5, 5)));
@@ -387,6 +395,7 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
         Editor.getInstance().update();
         EventCaster.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
+        launchProjectChangedEvent();
     }
 
     /**
@@ -394,11 +403,14 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
      */
     private synchronized void removeFunction(FunDef funDef) {
         if (funDef != null) {
-            mSceneFlow.removeUsrCmdDef(funDef.getName());
+            //mSceneFlow.removeUsrCmdDef(funDef.getName());
             launchFunctionCreatedEvent(funDef);
             Editor.getInstance().update();
             mFunctionsScrollPanel.repaint();
-            mScriptEditorPanel.getUndoManager().addEdit(new Edit());
+            mScriptEditorPanel.getUndoManager().addEdit(new Edit(funDef));
+            UndoAction.getInstance().refreshUndoState();
+            RedoAction.getInstance().refreshRedoState();
+            launchProjectChangedEvent();
         }
 
         // Editor.getInstance().update();
@@ -505,7 +517,14 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
         
         Editor.getInstance().update();
     }
-    
+    /**
+     * 
+     */
+    private void launchProjectChangedEvent()
+    {
+        ProjectChangedEvent ev = new ProjectChangedEvent(this);
+        mEventCaster.convey(ev);
+    }
     /**
      *
      */
@@ -552,14 +571,31 @@ public class FunctionEditor extends JPanel implements EventListener, Observer {
     }
     
     private class Edit extends AbstractUndoableEdit {
+        FunDef funDef;
+        
+        public Edit(FunDef fd)
+        {
+            funDef = fd;
+        }
         @Override
         public void undo() throws CannotUndoException {
-            addNewFunction();
+            setFunDef();
         }
 
         @Override
         public void redo() throws CannotRedoException {
-            removeFunction(null);
+            setFunDef();
+        }
+        private void setFunDef()
+        {
+            for (final FunDef funDefVal : mSceneFlow.getUsrCmdDefMap().values()) {
+                if (funDefVal.getName().equals(funDef.getName())) {
+                    funDefVal.setActive(!funDefVal.isActive());
+                }
+            }
+            launchFunctionCreatedEvent(funDef);
+            mFunctionsScrollPanel.repaint();
+            
         }
 
         @Override

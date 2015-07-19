@@ -501,7 +501,9 @@ public class Editor extends JFrame implements EventListener {
     public void exit() {
 
         // Close the whole list of project editors
-        boolean result = mProjectEditorList.closeAll();
+        
+        
+        boolean result = mProjectEditorList.closeAll(0); //0 VALUE INDICATES EXIT MESSAGE FOR QuitDialog.java TODO: CREATE GLOBAL VARIABLES
         if (result)
         {
             System.exit(0);
@@ -525,7 +527,7 @@ public class Editor extends JFrame implements EventListener {
     public void removeProject() {
 
         // Close the currently selected project editor
-        boolean result = mProjectEditorList.closeCurrent();
+        boolean result = mProjectEditorList.closeCurrent(1); // 1 INDICATES CLOSING CURRENT PROJECT FOR QuitDialog.java    
         
         // Update the recent file list
         // updateRecentFiles(sceneFlowFile);

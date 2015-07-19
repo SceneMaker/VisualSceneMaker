@@ -16,7 +16,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -25,10 +24,8 @@ import java.awt.event.MouseEvent;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
@@ -139,8 +136,8 @@ public class ProjectEditor extends JSplitPane implements EventListener, Observer
      *
      *
      */
-    public boolean saveBeforeClosing() {
-        QuitDialog qDiag = new QuitDialog(this);
+    public boolean saveBeforeClosing(int quitType) {
+        QuitDialog qDiag = new QuitDialog(this, quitType);
         return saveMessage;
         
     }

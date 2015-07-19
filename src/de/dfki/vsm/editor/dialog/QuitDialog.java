@@ -7,7 +7,6 @@ import de.dfki.vsm.editor.Editor;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.ProjectEditor;
 
-import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
 import de.dfki.vsm.util.ios.ResourceLoader;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -15,11 +14,8 @@ import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.PopupMenu;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import javax.swing.Box;
 
 
@@ -43,16 +39,42 @@ public class QuitDialog extends JDialog {
     private CancelButton        mCancelButton;
     private ProjectEditor       mParentEditor;
     private JLabel              mExitMessage;
+    ///TYPE OF DIALOGS --- AFFECTS THE MESSAGE SHOWN
+    private final int           EXIT_DIALOG = 0;
+    private final int           CLOSE_PROJ_DIALOG = 1;
+    //MESSAGES TO BE SHOWN 
+    private String              exitMessage;
+    private String              yesButtonMessage;
+    private String              noButtonMessage;
+    private String              cancelButtonMessage;
+    
+    
     // Construction
-    public QuitDialog(ProjectEditor parentEdit) {
+    public QuitDialog(ProjectEditor parentEdit, int quitType) {
         super(Editor.getInstance(), "Quit", false);
+        if (quitType == EXIT_DIALOG)
+        {
+            exitMessage ="<html><body>This Project has been modified but not saved. <br> Do you want to save before quitting?</body></html>";
+            yesButtonMessage = "Save";
+            noButtonMessage = "Discard";
+            cancelButtonMessage = "Cancel";
+            this.setTitle("Save before exiting?");
+        }
+        else if(quitType == CLOSE_PROJ_DIALOG)
+        {
+            exitMessage ="<html><body>This Project has been modified but not saved. <br> Do you want to save before closing it?</body></html>";
+            yesButtonMessage = "Save";
+            noButtonMessage = "Close";
+            cancelButtonMessage = "Cancel";
+            this.setTitle("Save before closing?");
+        }
         mParentEditor = parentEdit;
         
         //CHANGE MODALITY 
         setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
         
         // the exit message
-        mExitMessage = new JLabel("<html><body>This Project has been modified but not saved. <br> Do you want to save before quitting?</body></html>");
+        mExitMessage = new JLabel(exitMessage);
         mExitMessage.setIcon(ResourceLoader.loadImageIcon("/res/img/warning_icon.png"));
         mExitMessage.setMinimumSize(new Dimension(450, 120));
         mExitMessage.setMaximumSize(new Dimension(450, 120));
@@ -60,7 +82,7 @@ public class QuitDialog extends JDialog {
         // Init the button
         // Ok button
         mYesButton = new OKButton();
-        mYesButton.setText("Save");
+        mYesButton.setText(yesButtonMessage);
         mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 mParentEditor.save();
@@ -72,7 +94,7 @@ public class QuitDialog extends JDialog {
         //NO BUTTON
         mNoButton = new CancelButton();
         mNoButton.setIcon(ResourceLoader.loadImageIcon("/res/img/exit_icon.png"));
-        mNoButton.setText("Close");
+        mNoButton.setText(noButtonMessage);
         mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 mParentEditor.disposeAfterDialog();
@@ -89,7 +111,7 @@ public class QuitDialog extends JDialog {
             }
         });
         mCancelButton = new CancelButton();
-        mCancelButton.setText("Cancel");
+        mCancelButton.setText(cancelButtonMessage);
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 mParentEditor.saveMessage = false;
@@ -123,11 +145,11 @@ public class QuitDialog extends JDialog {
         setVisible(true);
     }
     // Get the singelton instance
-    public static QuitDialog getInstance(ProjectEditor pE) {
+    /*public static QuitDialog getInstance(ProjectEditor pE) {
         if (sInstance == null) {
             sInstance = new QuitDialog(pE);
         }
 
         return sInstance;
-    }
+    }*/
 }

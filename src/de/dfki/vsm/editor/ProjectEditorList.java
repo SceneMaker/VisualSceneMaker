@@ -132,12 +132,12 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
  * cancel the action == false
  * @return 
  */
-    public boolean closeCurrent() {
+    public boolean closeCurrent(int quitType) {
         ProjectEditor projectEditor = ((ProjectEditor) getSelectedComponent());
         boolean result = true;
         if(projectEditor.getProject().hasChanged())
         {
-            result = projectEditor.saveBeforeClosing();
+            result = projectEditor.saveBeforeClosing(quitType);
         }
         if(result )
         {
@@ -153,11 +153,11 @@ public class ProjectEditorList extends JTabbedPane implements EventListener, Cha
         }
     }
 
-    public boolean closeAll() {
+    public boolean closeAll(int quitType) {
         boolean closingMsgs = true;
         // Close all projects
         for (int i = 0; i < getTabCount(); i++) {
-            closingMsgs = (((ProjectEditor) getComponentAt(i)).saveBeforeClosing());
+            closingMsgs = (((ProjectEditor) getComponentAt(i)).saveBeforeClosing(quitType));
             if(!closingMsgs)
             {
                 return closingMsgs;

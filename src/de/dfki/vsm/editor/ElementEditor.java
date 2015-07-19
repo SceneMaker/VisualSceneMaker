@@ -614,7 +614,10 @@ class FunDefEditor extends AttributeEditor {
                 mListModel.clear();
 
                 for (FunDef def : ((SceneFlow) mDataNode).getUsrCmdDefMap().values()) {
-                    mListModel.addElement(def);
+                    if (def.isActive())
+                    {
+                        mListModel.addElement(def);
+                    }
                 }
             }
         } else {
