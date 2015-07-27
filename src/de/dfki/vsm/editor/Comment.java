@@ -2,7 +2,8 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -45,7 +46,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Comment extends JComponent implements EventListener, Observer, MouseListener, MouseMotionListener {
     private JEditorPane mTextEditor = null;
@@ -60,8 +61,8 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
     // edit
     private boolean            mEditMode = false;
-    private WorkSpace          mWorkSpace;
-    private ProjectPreferences mPreferences;
+    private WorkSpacePanel          mWorkSpace;
+    private EditorConfig mPreferences;
 
     // image
     private Image                               mResizeMarker;
@@ -81,7 +82,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mDataComment = null;
     }
 
-    public Comment(WorkSpace ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
+    public Comment(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;
@@ -128,25 +129,15 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     }
 
     @Override
-    public void update(EventObject event) {
+    public void update(EventObject event) {   }
 
-//      System.err.println("Updating comment" + this);
-//      mFont = new Font("SansSerif", Font.PLAIN, /*(mWorkSpace != null) ?*/ sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
-//      String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
-//      ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
-//
-//      repaint();
-    }
-
-    /**
-     *
-     *
-     */
+    
     @Override
     public void update(Observable o, Object obj) {
         update();
     }
-
+    
+    
     public void update() {
         mFont = new Font("SansSerif", Font.ITALIC, mPreferences.sWORKSPACEFONTSIZE);
         mTextLabel.setFont(mFont);

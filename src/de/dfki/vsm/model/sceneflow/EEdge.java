@@ -4,7 +4,7 @@ package de.dfki.vsm.model.sceneflow;
 
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.graphics.edge.Graphics;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class EEdge extends Edge {
     public EEdge() {}
@@ -52,7 +52,7 @@ public class EEdge extends Edge {
                          getCopyOfAltStartNodeMap());
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         String   start = "";
         Iterator it    = mAltStartNodeMap.entrySet().iterator();
 

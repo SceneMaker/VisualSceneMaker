@@ -2,17 +2,17 @@ package de.dfki.vsm.model.sceneflow.graphics.node;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * A position of a node
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class Position extends Object {
+public class Position extends Syntax {
     private int mXPos;
     private int mYPos;
 
@@ -58,7 +58,7 @@ public class Position extends Object {
         return new Position(mXPos, mYPos);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Position x-pos=\"" + mXPos + "\" y-pos=\"" + mYPos + "\"/>");
     }
 

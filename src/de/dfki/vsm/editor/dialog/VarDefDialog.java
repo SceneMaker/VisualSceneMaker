@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class VarDefDialog extends Dialog {
     private final Node   mNode;
@@ -53,7 +53,7 @@ public class VarDefDialog extends Dialog {
     private Dimension            textFielSize = new Dimension(250, 30);
     private JLabel errorMsg;
     public VarDefDialog(Node node, VarDef varDef) {
-        super(Editor.getInstance(), "Create/Modify Variable Definition", true);
+        super(EditorInstance.getInstance(), "Create/Modify Variable Definition", true);
         mNode = node;
 
         if (varDef != null) {

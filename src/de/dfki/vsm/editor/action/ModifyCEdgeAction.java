@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
@@ -19,7 +19,7 @@ import javax.swing.undo.CannotUndoException;
  * old condition and the new condition of the conditional edge and switches
  * between them when undo or redo.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyCEdgeAction extends ModifyEdgeAction {
 
@@ -38,7 +38,7 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
      * @param edge
      * @param workSpace
      */
-    public ModifyCEdgeAction(Edge edge, WorkSpace workSpace) {
+    public ModifyCEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);
     }
 

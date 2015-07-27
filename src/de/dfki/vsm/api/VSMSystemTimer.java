@@ -5,7 +5,7 @@ package de.dfki.vsm.api;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class VSMSystemTimer extends Thread {
 

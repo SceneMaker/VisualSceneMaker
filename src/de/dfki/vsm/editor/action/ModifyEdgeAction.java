@@ -3,13 +3,13 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge.TYPE;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyEdgeAction extends EdgeAction {
-    public ModifyEdgeAction(de.dfki.vsm.editor.Edge edge, WorkSpace workSpace) {
+    public ModifyEdgeAction(de.dfki.vsm.editor.Edge edge, WorkSpacePanel workSpace) {
         mGUIEdge       = edge;
         mWorkSpace     = workSpace;
         mDataEdge      = edge.getDataEdge();

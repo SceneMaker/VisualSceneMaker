@@ -16,7 +16,7 @@ import java.util.LinkedList;
 import javax.swing.text.Segment;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class SyntaxDocLexxer implements Scanner {
 

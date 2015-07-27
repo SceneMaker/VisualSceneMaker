@@ -1,19 +1,15 @@
 package de.dfki.vsm.model;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.cpy.Copyable;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteable;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public interface ModelObject extends XMLParseable, XMLWriteable, Copyable {
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get a deep copy of the model object
     @Override
     public abstract ModelObject getCopy();
 }

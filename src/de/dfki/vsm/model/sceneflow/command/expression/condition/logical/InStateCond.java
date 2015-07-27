@@ -2,13 +2,13 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class InStateCond extends LogicalCond {
     String mState;
@@ -43,7 +43,7 @@ public class InStateCond extends LogicalCond {
         return new InStateCond(mState);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<StateCondition state=\"" + mState + "\"/>");
     }
 

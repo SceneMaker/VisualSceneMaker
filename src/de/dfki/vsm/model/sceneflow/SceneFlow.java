@@ -1,49 +1,25 @@
 package de.dfki.vsm.model.sceneflow;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.util.cpy.CopyTool;
-import de.dfki.vsm.util.ios.IndentWriter;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import org.xml.sax.SAXException;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import java.io.File;
-import java.io.IOException;
-
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class SceneFlow extends SuperNode {
@@ -52,17 +28,18 @@ public class SceneFlow extends SuperNode {
     // protected String mSceneFileName = new String();
     // protected String mSceneInfoFileName = new String();
     // protected VariableBadge mVariableBadge = null;
-    protected String                  mXMLNameSpace      = new String();
-    protected String                  mXMLSchemeInstance = new String();
-    protected String                  mXMLSchemeLocation = new String();
-    protected String                  mPackageName       = new String();
-    protected String                  mContextClass      = new String();
-    protected String                  mContextCode       = new String();
-    protected Vector<String>          mClassPathList     = new Vector<String>();
-    protected HashMap<String, FunDef> mUserCmdDefMap     = new HashMap<String, FunDef>();
-    protected String                  mModifDate         = new String();
+    protected String mXMLNameSpace = new String();
+    protected String mXMLSchemeInstance = new String();
+    protected String mXMLSchemeLocation = new String();
+    protected String mPackageName = new String();
+    protected String mContextClass = new String();
+    protected String mContextCode = new String();
+    protected Vector<String> mClassPathList = new Vector<String>();
+    protected HashMap<String, FunDef> mUserCmdDefMap = new HashMap<String, FunDef>();
+    protected String mModifDate = new String();
 
-    public SceneFlow() {}
+    public SceneFlow() {
+    }
 
     public String getContextCode() {
         return mContextCode;
@@ -129,13 +106,13 @@ public class SceneFlow extends SuperNode {
     // TODO:
     public HashMap<String, FunDef> getCopyOfUserCmdDefMap() {
         HashMap<String, FunDef> copy = new HashMap<String, FunDef>();
-        Iterator                it   = mUserCmdDefMap.entrySet().iterator();
+        Iterator it = mUserCmdDefMap.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry pairs           = (Map.Entry) it.next();
-            String    userCommandName = (String) pairs.getKey();
-            FunDef    userCommand     = (FunDef) pairs.getValue();
-            FunDef    userCommandCopy = userCommand.getCopy();
+            Map.Entry pairs = (Map.Entry) it.next();
+            String userCommandName = (String) pairs.getKey();
+            FunDef userCommand = (FunDef) pairs.getValue();
+            FunDef userCommandCopy = userCommand.getCopy();
 
             copy.put(userCommandCopy.getName(), userCommandCopy);
         }
@@ -157,27 +134,25 @@ public class SceneFlow extends SuperNode {
     }
 
     @Override
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         String start = "";
 
         for (String id : mStartNodeMap.keySet()) {
             start += id + ";";
         }
 
-        out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        //out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         out.println("<SceneFlow " + "id=\"" + mId + "\" " + "name=\"" + mName + "\" " + "comment=\"" + mComment
-                    + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
-                    + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "modifDate=\"" + new SimpleDateFormat("dd.MM.yyyy").format(new Date()) + "\" "+ "start=\""
-                    + start + "\" "
-
-        // + "context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "
-        + "context=\"" + mContextClass + "\" " + "package=\"" + mPackageName + "\" "
-
-        // + "scenefile=\"" + mSceneFileName + "\" "
-        // + "sceneinfo=\"" + mSceneInfoFileName + "\" "
-        + "xmlns=\"" + Preferences.getProperty("xmlns") + "\" " + "xmlns:xsi=\"" + Preferences.getProperty("xmlns_xsi")
-                     + "\" " + "xsi:schemaLocation=\"" + Preferences.getProperty("xmlns") + " "
-                     + Preferences.getProperty("xsi_schemeLocation") + "\">").push();
+                + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
+                + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "modifDate=\"" + new SimpleDateFormat("dd.MM.yyyy").format(new Date()) + "\" " + "start=\""
+                + start + "\" "
+                // + "context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "
+                + "context=\"" + mContextClass + "\" " + "package=\"" + mPackageName + "\" "
+                // + "scenefile=\"" + mSceneFileName + "\" "
+                // + "sceneinfo=\"" + mSceneInfoFileName + "\" "
+                + "xmlns=\"" + Preferences.getProperty("xmlns") + "\" " + "xmlns:xsi=\"" + Preferences.getProperty("xmlns_xsi")
+                + "\" " + "xsi:schemaLocation=\"" + Preferences.getProperty("xmlns") + " "
+                + Preferences.getProperty("xsi_schemeLocation") + "\">").push();
 
         int i = 0;
 
@@ -268,20 +243,16 @@ public class SceneFlow extends SuperNode {
         out.print("<InitContext>");
         out.print(mContextCode);
         out.println("</InitContext>");
-        out.pop().println("</SceneFlow>");
+        out.pop().print("</SceneFlow>");
     }
 
-    public void parseFromXMLFile(URL url) throws
-
     /*
-     *  IOException,
-     * SAXException,
-     * ParserConfigurationException,
-     */
-    XMLParseError {
-        DocumentBuilder        parser                 = null;
-        Schema                 schema                 = null;
-        Document               document               = null;
+    public void parseFromXMLFile(URL url) throws
+           
+            XMLParseError {
+        DocumentBuilder parser = null;
+        Schema schema = null;
+        Document document = null;
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
         documentBuilderFactory.setNamespaceAware(true);
@@ -360,18 +331,14 @@ public class SceneFlow extends SuperNode {
 
         parseXML(document.getDocumentElement());
     }
-
+*/
+/*
     public void parseFromXMLFile(File file) throws
-
-    /*
-     *  IOException,
-     * SAXException,
-     * ParserConfigurationException,
-     */
-    XMLParseError {
-        DocumentBuilder        parser                 = null;
-        Schema                 schema                 = null;
-        Document               document               = null;
+          
+            XMLParseError {
+        DocumentBuilder parser = null;
+        Schema schema = null;
+        Document document = null;
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
         documentBuilderFactory.setNamespaceAware(true);
@@ -432,25 +399,25 @@ public class SceneFlow extends SuperNode {
 //      }
         parseXML(document.getDocumentElement());
     }
-
+*/
     @Override
     public void parseXML(Element element) throws XMLParseError {
-        mId      = element.getAttribute("id");
-        mName    = element.getAttribute("name");
+        mId = element.getAttribute("id");
+        mName = element.getAttribute("name");
         mComment = element.getAttribute("comment");
 
         String start = element.getAttribute("start");
 
-        mContextClass       = element.getAttribute("context");
-        mPackageName        = element.getAttribute("package");
-        mExhaustive         = Boolean.valueOf(element.getAttribute("exhaustive"));
-        mPreserving         = Boolean.valueOf(element.getAttribute("preserving"));
-        mXMLSchemeLocation  = element.getAttribute("xsi:schemaLocation");
-        mXMLNameSpace       = element.getAttribute("xmlns");
-        mXMLSchemeInstance  = element.getAttribute("xmlns:xsi");
-        mHideLocalVarBadge  = Boolean.valueOf(element.getAttribute("hideLocalVar"));
+        mContextClass = element.getAttribute("context");
+        mPackageName = element.getAttribute("package");
+        mExhaustive = Boolean.valueOf(element.getAttribute("exhaustive"));
+        mPreserving = Boolean.valueOf(element.getAttribute("preserving"));
+        mXMLSchemeLocation = element.getAttribute("xsi:schemaLocation");
+        mXMLNameSpace = element.getAttribute("xmlns");
+        mXMLSchemeInstance = element.getAttribute("xmlns:xsi");
+        mHideLocalVarBadge = Boolean.valueOf(element.getAttribute("hideLocalVar"));
         mHideGlobalVarBadge = Boolean.valueOf(element.getAttribute("hideGlobalVar"));
-        mModifDate          = element.getAttribute("modifDate");
+        mModifDate = element.getAttribute("modifDate");
         // mSceneFileName = element.getAttribute("scenefile");
         // mSceneInfoFileName = element.getAttribute("sceneinfo");
 
@@ -542,8 +509,8 @@ public class SceneFlow extends SuperNode {
                     mContextCode = element.getTextContent().trim();
                 } else {
                     throw new XMLParseError(null,
-                                            "Cannot parse the element with the tag \"" + tag
-                                            + "\" into a sceneflow child!");
+                            "Cannot parse the element with the tag \"" + tag
+                            + "\" into a sceneflow child!");
                 }
             }
         });
@@ -553,12 +520,12 @@ public class SceneFlow extends SuperNode {
 
         // Add hash of General Attributes
         int hashCode = ((mName == null)
-                        ? 0
-                        : mName.hashCode()) + ((mComment == null)
+                ? 0
+                : mName.hashCode()) + ((mComment == null)
                 ? 0
                 : mComment.hashCode()) + ((mGraphics == null)
-                                          ? 0
-                                          : mGraphics.hashCode()) + ((mParentNode == null)
+                ? 0
+                : mGraphics.hashCode()) + ((mParentNode == null)
                 ? 0
                 : mParentNode.hashCode()) + ((mHistoryNode == null)
                 ? 0
@@ -567,19 +534,19 @@ public class SceneFlow extends SuperNode {
                 : mStartNodeMap.hashCode()) + ((mIsHistoryNode == true)
                 ? 1
                 : 0) + ((mLocalVariableBadge == null)
-                        ? 0
-                        : mLocalVariableBadge.hashCode()) + ((mGlobalVariableBadge == null)
+                ? 0
+                : mLocalVariableBadge.hashCode()) + ((mGlobalVariableBadge == null)
                 ? 0
                 : mGlobalVariableBadge.hashCode()) + ((mHideLocalVarBadge == true)
                 ? 1
                 : 0) + ((mHideGlobalVarBadge == true)
-                        ? 1
-                        : 0);
+                ? 1
+                : 0);
 
         // Add hash of existing user commands
         for (FunDef fundDef : mUserCmdDefMap.values()) {
             hashCode += fundDef.getName().hashCode() + fundDef.getClassName().hashCode()
-                        + fundDef.getMethod().hashCode() + fundDef.getParamList().hashCode();
+                    + fundDef.getMethod().hashCode() + fundDef.getParamList().hashCode();
         }
 
         // Add hash of all nodes on workspace
@@ -606,14 +573,14 @@ public class SceneFlow extends SuperNode {
         // Add hash of all TypeDef on workspace
         for (int cntType = 0; cntType < getSizeOfTypeDefList(); cntType++) {
             hashCode += mTypeDefList.get(cntType).hashCode() + mTypeDefList.get(cntType).getName().hashCode()
-                        + mTypeDefList.get(cntType).toString().hashCode();
+                    + mTypeDefList.get(cntType).toString().hashCode();
         }
 
         // Add hash of VarDef on workspace
         for (int cntVar = 0; cntVar < getVarDefList().size(); cntVar++) {
             hashCode += getVarDefList().get(cntVar).getName().hashCode()
-                        + getVarDefList().get(cntVar).getType().hashCode()
-                        + getVarDefList().get(cntVar).toString().hashCode();
+                    + getVarDefList().get(cntVar).getType().hashCode()
+                    + getVarDefList().get(cntVar).toString().hashCode();
         }
 
         return hashCode;

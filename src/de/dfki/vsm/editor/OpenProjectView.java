@@ -1,21 +1,20 @@
 package de.dfki.vsm.editor;
 
-//~--- JDK imports ------------------------------------------------------------
-
 import java.io.File;
-
 import javax.swing.*;
 import javax.swing.filechooser.*;
 
-public class OpenProjectView extends FileView {
+public final class OpenProjectView extends FileView {
+    // The Icon To Show For Project Directories
     ImageIcon sceneMakerIcon = new ImageIcon("res/img/icon.png");
-
+    //
     @Override
-    public Icon getIcon(File f) {
+    public final Icon getIcon(final File file) {
+        // The Icon
         Icon icon = null;
 
-        if (f.isDirectory()) {
-            File configFile = new File(f.getPath() + System.getProperty("file.separator") + "config.xml");
+        if (file.isDirectory()) {
+            File configFile = new File(file.getAbsolutePath()/*+ System.getProperty("file.separator") + "config.xml"*/);
 
             if (configFile.exists()) {
                 icon = sceneMakerIcon;

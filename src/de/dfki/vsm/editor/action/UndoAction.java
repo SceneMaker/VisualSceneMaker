@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -18,7 +18,7 @@ import javax.swing.undo.UndoManager;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class UndoAction extends AbstractAction {
     private static UndoAction sSingeltonInstance = null;
@@ -39,7 +39,7 @@ public class UndoAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        UndoManager manager = Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
+        UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
         try {
             manager.undo();
@@ -62,7 +62,7 @@ public class UndoAction extends AbstractAction {
     }
 
     public void refreshUndoState() {
-        UndoManager manager = Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
+        UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
         if (manager.canUndo()) {
             setEnabled(true);

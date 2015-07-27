@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
@@ -19,12 +19,12 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class CreateEdgeAction extends EdgeAction {
     private boolean mShowDialog = true;
 
-    public CreateEdgeAction(WorkSpace workSpace, Node sourceNode, Node targetNode, Edge.TYPE type) {
+    public CreateEdgeAction(WorkSpacePanel workSpace, Node sourceNode, Node targetNode, Edge.TYPE type) {
         mWorkSpace     = workSpace;
         mTargetGUINode = targetNode;
         mSourceGUINode = sourceNode;
@@ -34,7 +34,7 @@ public class CreateEdgeAction extends EdgeAction {
         mShowDialog    = true;
     }
 
-    public CreateEdgeAction(WorkSpace workSpace, Node sourceNode, Node targetNode,
+    public CreateEdgeAction(WorkSpacePanel workSpace, Node sourceNode, Node targetNode,
                             de.dfki.vsm.model.sceneflow.Edge dataEdge, Edge.TYPE type) {
         mWorkSpace     = workSpace;
         mTargetGUINode = targetNode;

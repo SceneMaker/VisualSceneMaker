@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
@@ -39,7 +39,7 @@ import javax.swing.JTextField;
 /**
  * A dialog to create or edit a type definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TypeDefDialog extends Dialog {
 
@@ -73,7 +73,7 @@ public class TypeDefDialog extends Dialog {
     private Dimension            textFielSize = new Dimension(250, 30);
     
     public TypeDefDialog(TypeDef typeDef) {
-        super(Editor.getInstance(), "Create/Modify Type Definition", true);
+        super(EditorInstance.getInstance(), "Create/Modify Type Definition", true);
 
         if (typeDef != null) {
 

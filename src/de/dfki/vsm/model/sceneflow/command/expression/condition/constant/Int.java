@@ -2,14 +2,14 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * An integer constant.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Int extends Constant {
     private int mValue;
@@ -50,7 +50,7 @@ public class Int extends Constant {
         return new Int(mValue);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Int value=\"" + mValue + "\"/>");
     }
 

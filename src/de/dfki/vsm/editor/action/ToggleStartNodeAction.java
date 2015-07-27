@@ -2,8 +2,8 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.Node;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -17,7 +17,7 @@ public class ToggleStartNodeAction extends NodeAction {
     private boolean               mIsStartNode = false;
     private HashMap<String, Node> mStartNodes  = null;
 
-    public ToggleStartNodeAction(de.dfki.vsm.editor.Node node, WorkSpace workSpace) {
+    public ToggleStartNodeAction(de.dfki.vsm.editor.Node node, WorkSpacePanel workSpace) {
         super();
         mWorkSpace        = workSpace;
         mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
@@ -49,7 +49,7 @@ public class ToggleStartNodeAction extends NodeAction {
             mGUINode.addStartSign();
         }
 
-        Editor.getInstance().update();
+        EditorInstance.getInstance().refresh();
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
     }

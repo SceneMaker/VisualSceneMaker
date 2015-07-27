@@ -8,10 +8,10 @@ package de.dfki.vsm.editor.util;
 
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.GridConstants;
 import de.dfki.vsm.editor.util.grid.GridRectangle;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -44,13 +44,13 @@ public class GridManager {
     private int                      height               = 0;
     private int                      width                = 0;
     private ArrayList<Point2D>       dockingPoints        = new ArrayList<Point2D>();
-    private final WorkSpace          mWorkSpace;
-    private final ProjectPreferences mPreferences;
+    private final WorkSpacePanel          mWorkSpace;
+    private final EditorConfig mPreferences;
     private ArrayList<Rectangle>     mNodeAreas;
     private boolean                  isDebug;
     private boolean                  isDockingView;
 
-    public GridManager(WorkSpace ws) {
+    public GridManager(WorkSpacePanel ws) {
         mWorkSpace    = ws;
         mPreferences  = ws.getPreferences();
         isDebug       = mPreferences.sSHOW_SMART_PATH_DEBUG;

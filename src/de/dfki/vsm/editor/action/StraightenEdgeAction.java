@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -15,9 +15,9 @@ import java.awt.event.ActionListener;
  */
 public class StraightenEdgeAction {
     private de.dfki.vsm.editor.Edge mGUIEdge = null;
-    private WorkSpace               mWorkSpace;
+    private WorkSpacePanel               mWorkSpace;
 
-    public StraightenEdgeAction(WorkSpace workSpace, de.dfki.vsm.editor.Edge edge) {
+    public StraightenEdgeAction(WorkSpacePanel workSpace, de.dfki.vsm.editor.Edge edge) {
         mWorkSpace = workSpace;
         mGUIEdge   = edge;
     }

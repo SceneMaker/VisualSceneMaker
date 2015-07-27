@@ -2,9 +2,9 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
-import de.dfki.vsm.editor.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.Edge;
@@ -30,7 +30,7 @@ import javax.swing.undo.CannotUndoException;
  */
 public class PasteNodesAction extends EditorAction {
     Set<CreateNodeAction>          mCreateNodeActions = new HashSet<CreateNodeAction>();
-    WorkSpace                      mWorkSpace         = null;
+    WorkSpacePanel                      mWorkSpace         = null;
     Hashtable<Node, Vector<CEdge>> mNodesCEdges       = new Hashtable<Node, Vector<CEdge>>();
     Hashtable<Node, Vector<PEdge>> mNodesPEdges       = new Hashtable<Node, Vector<PEdge>>();
     Hashtable<Node, Vector<FEdge>> mNodesFEdges       = new Hashtable<Node, Vector<FEdge>>();
@@ -38,7 +38,7 @@ public class PasteNodesAction extends EditorAction {
     Hashtable<Node, Edge>          mNodesDefaultEdge  = new Hashtable<Node, Edge>();
     SceneFlowEditor                mSceneFlowEditor;
 
-    public PasteNodesAction(WorkSpace workSpace) {
+    public PasteNodesAction(WorkSpacePanel workSpace) {
         mWorkSpace       = workSpace;
         mSceneFlowEditor = mWorkSpace.getSceneFlowEditor();
     }

@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class TemporalCond extends Condition {
     public enum TemporalType { TIMEOUT }
