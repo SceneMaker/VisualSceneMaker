@@ -7,6 +7,7 @@ package de.dfki.vsm.editor.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.GridConstants;
@@ -44,16 +45,16 @@ public class GridManager {
     private int                      height               = 0;
     private int                      width                = 0;
     private ArrayList<Point2D>       dockingPoints        = new ArrayList<Point2D>();
-    private final WorkSpacePanel          mWorkSpace;
-    private final EditorConfig mPreferences;
+    private final WorkSpacePanel     mWorkSpacePanel;
+    private final EditorConfig       mEditorConfig;
     private ArrayList<Rectangle>     mNodeAreas;
     private boolean                  isDebug;
     private boolean                  isDockingView;
 
     public GridManager(WorkSpacePanel ws) {
-        mWorkSpace    = ws;
-        mPreferences  = ws.getPreferences();
-        isDebug       = mPreferences.sSHOW_SMART_PATH_DEBUG;
+        mWorkSpacePanel    = ws;
+        mEditorConfig = mWorkSpacePanel.getEditorConfig();
+        isDebug       = mEditorConfig.sSHOW_SMART_PATH_DEBUG;
         isDockingView = false;
         compute();
     }
@@ -63,35 +64,35 @@ public class GridManager {
         int       w    = area.width;
         int       h    = area.height;    // <-
 
-        mNodesinRow = w / mPreferences.sGRID_XSPACE;
+        mNodesinRow = w / mEditorConfig.sGRID_XSPACE;
         mNodeAreas  = new ArrayList<>();
 
-        if ((w / mPreferences.sGRID_XSPACE) > 0 && (h / mPreferences.sGRID_YSPACE) > 0
+        if ((w / mEditorConfig.sGRID_XSPACE) > 0 && (h / mEditorConfig.sGRID_YSPACE) > 0
                 && (isSubgridEstablished == false)) {
             mTransitionArea =
-                new GridRectangle[((w / mPreferences.sGRID_XSPACE) + 1) * 2][((h / mPreferences.sGRID_YSPACE) + 1) * 2];
+                new GridRectangle[((w / mEditorConfig.sGRID_XSPACE) + 1) * 2][((h / mEditorConfig.sGRID_YSPACE) + 1) * 2];
         }
 
-        if (!((height == h / mPreferences.sGRID_YSPACE) && (width == w / mPreferences.sGRID_XSPACE))) {
+        if (!((height == h / mEditorConfig.sGRID_YSPACE) && (width == w / mEditorConfig.sGRID_XSPACE))) {
             mTempTransitions =
-                new GridRectangle[((w / mPreferences.sGRID_XSPACE) + 1) * 2][((h / mPreferences.sGRID_YSPACE) + 1) * 2];
+                new GridRectangle[((w / mEditorConfig.sGRID_XSPACE) + 1) * 2][((h / mEditorConfig.sGRID_YSPACE) + 1) * 2];
         }
 
-        int halfNodeSize = mPreferences.sGRID_NODEWIDTH / 2;
+        int halfNodeSize = mEditorConfig.sGRID_NODEWIDTH / 2;
 
-        for (int j = 0; j <= (h / mPreferences.sGRID_YSPACE); j++) {
-            for (int i = 0; i <= (w / mPreferences.sGRID_XSPACE); i++) {
-                Rectangle r = new Rectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE),
-                                            mPreferences.sYOFFSET + (j * mPreferences.sGRID_YSPACE),
-                                            mPreferences.sGRID_NODEWIDTH, mPreferences.sGRID_NODEWIDTH);
+        for (int j = 0; j <= (h / mEditorConfig.sGRID_YSPACE); j++) {
+            for (int i = 0; i <= (w / mEditorConfig.sGRID_XSPACE); i++) {
+                Rectangle r = new Rectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE),
+                                            mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE),
+                                            mEditorConfig.sGRID_NODEWIDTH, mEditorConfig.sGRID_NODEWIDTH);
 
                 mNodeAreas.add(r);
 
                 // Initiates subgrids.
-                if ((w / mPreferences.sGRID_XSPACE) > 0 && (h / mPreferences.sGRID_YSPACE) > 0
+                if ((w / mEditorConfig.sGRID_XSPACE) > 0 && (h / mEditorConfig.sGRID_YSPACE) > 0
                         && (isSubgridEstablished == false)) {
-                    GridRectangle s = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE) + 2,
-                                          mPreferences.sYOFFSET + (j * mPreferences.sGRID_YSPACE) + 2,
+                    GridRectangle s = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE) + 2,
+                                          mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE) + 2,
                                           halfNodeSize - 4, halfNodeSize - 4);
 
                     s.setColumnIndex(j * 2);
@@ -99,8 +100,8 @@ public class GridManager {
                     mTransitionArea[i * 2][j * 2] = s;
 
                     // System.out.println("(" + (i*2) + "," + (j*2) + ")");
-                    GridRectangle t = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE)
-                                          + halfNodeSize + 2, mPreferences.sYOFFSET + (j * mPreferences.sGRID_YSPACE)
+                    GridRectangle t = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE)
+                                          + halfNodeSize + 2, mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE)
                                               + 2, halfNodeSize - 4, halfNodeSize - 4);
 
                     t.setColumnIndex(j * 2);
@@ -108,8 +109,8 @@ public class GridManager {
                     mTransitionArea[i * 2 + 1][j * 2] = t;
 
                     // System.out.println("(" + (i*2+1) + "," + (j*2) + ")");
-                    GridRectangle u = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE) + 2,
-                                          mPreferences.sYOFFSET + (j * mPreferences.sGRID_YSPACE) + halfNodeSize + 2,
+                    GridRectangle u = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE) + 2,
+                                          mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE) + halfNodeSize + 2,
                                           halfNodeSize - 4, halfNodeSize - 4);
 
                     u.setColumnIndex(j * 2 + 1);
@@ -117,8 +118,8 @@ public class GridManager {
                     mTransitionArea[i * 2][j * 2 + 1] = u;
 
                     // System.out.println("(" + (i*2) + "," + (j*2+1) + ")");
-                    GridRectangle v = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE)
-                                          + halfNodeSize + 2, mPreferences.sYOFFSET + (j * mPreferences.sGRID_YSPACE)
+                    GridRectangle v = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE)
+                                          + halfNodeSize + 2, mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE)
                                               + halfNodeSize + 2, halfNodeSize - 4, halfNodeSize - 4);
 
                     mTransitionArea[i * 2 + 1][j * 2 + 1] = v;
@@ -128,38 +129,38 @@ public class GridManager {
                     // System.out.println("(" + (i*2+1) + "," + (j*2+1) + ")");
                 }
 
-                if (!((height == (h / mPreferences.sGRID_YSPACE)) && (width == (w / mPreferences.sGRID_XSPACE)))) {
+                if (!((height == (h / mEditorConfig.sGRID_YSPACE)) && (width == (w / mEditorConfig.sGRID_XSPACE)))) {
                     if ((j < height) && (i < width)) {
                         mTempTransitions[i * 2][j * 2] = mTransitionArea[i * 2][j * 2];
                         mTempTransitions[i * 2][j * 2].setaStarPath(mTransitionArea[i * 2][j * 2].isaStarPath());
-                        mTempTransitions[i * 2][j * 2].setLocation(mPreferences.sXOFFSET
-                                + (i * mPreferences.sGRID_XSPACE) + 2, mPreferences.sYOFFSET
-                                    + (j * mPreferences.sGRID_YSPACE) + 2);
+                        mTempTransitions[i * 2][j * 2].setLocation(mEditorConfig.sXOFFSET
+                                + (i * mEditorConfig.sGRID_XSPACE) + 2, mEditorConfig.sYOFFSET
+                                    + (j * mEditorConfig.sGRID_YSPACE) + 2);
                         mTempTransitions[i * 2][j * 2].setSize(halfNodeSize - 4, halfNodeSize - 4);
                         mTempTransitions[i * 2 + 1][j * 2] = mTransitionArea[i * 2 + 1][j * 2];
                         mTempTransitions[i * 2 + 1][j * 2].setaStarPath(
                             mTransitionArea[i * 2 + 1][j * 2].isaStarPath());
-                        mTempTransitions[i * 2 + 1][j * 2].setLocation(mPreferences.sXOFFSET
-                                + (i * mPreferences.sGRID_XSPACE) + halfNodeSize + 2, mPreferences.sYOFFSET
-                                    + (j * mPreferences.sGRID_YSPACE) + 2);
+                        mTempTransitions[i * 2 + 1][j * 2].setLocation(mEditorConfig.sXOFFSET
+                                + (i * mEditorConfig.sGRID_XSPACE) + halfNodeSize + 2, mEditorConfig.sYOFFSET
+                                    + (j * mEditorConfig.sGRID_YSPACE) + 2);
                         mTempTransitions[i * 2 + 1][j * 2].setSize(halfNodeSize - 4, halfNodeSize - 4);
                         mTempTransitions[i * 2][j * 2 + 1] = mTransitionArea[i * 2][j * 2 + 1];
                         mTempTransitions[i * 2][j * 2 + 1].setaStarPath(
                             mTransitionArea[i * 2][j * 2 + 1].isaStarPath());
-                        mTempTransitions[i * 2][j * 2 + 1].setLocation(mPreferences.sXOFFSET
-                                + (i * mPreferences.sGRID_XSPACE) + 2, mPreferences.sYOFFSET
-                                    + (j * mPreferences.sGRID_YSPACE) + halfNodeSize + 2);
+                        mTempTransitions[i * 2][j * 2 + 1].setLocation(mEditorConfig.sXOFFSET
+                                + (i * mEditorConfig.sGRID_XSPACE) + 2, mEditorConfig.sYOFFSET
+                                    + (j * mEditorConfig.sGRID_YSPACE) + halfNodeSize + 2);
                         mTempTransitions[i * 2][j * 2 + 1].setSize(halfNodeSize - 4, halfNodeSize - 4);
                         mTempTransitions[i * 2 + 1][j * 2 + 1] = mTransitionArea[i * 2 + 1][j * 2 + 1];
                         mTempTransitions[i * 2 + 1][j * 2 + 1].setaStarPath(
                             mTransitionArea[i * 2 + 1][j * 2 + 1].isaStarPath());
-                        mTempTransitions[i * 2 + 1][j * 2 + 1].setLocation(mPreferences.sXOFFSET
-                                + (i * mPreferences.sGRID_XSPACE) + halfNodeSize + 2, mPreferences.sYOFFSET
-                                    + (j * mPreferences.sGRID_YSPACE) + halfNodeSize + 2);
+                        mTempTransitions[i * 2 + 1][j * 2 + 1].setLocation(mEditorConfig.sXOFFSET
+                                + (i * mEditorConfig.sGRID_XSPACE) + halfNodeSize + 2, mEditorConfig.sYOFFSET
+                                    + (j * mEditorConfig.sGRID_YSPACE) + halfNodeSize + 2);
                         mTempTransitions[i * 2 + 1][j * 2 + 1].setSize(halfNodeSize - 4, halfNodeSize - 4);
                     } else {
-                        GridRectangle s = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE)
-                                              + 2, mPreferences.sYOFFSET + (j * mPreferences.sGRID_YSPACE) + 2,
+                        GridRectangle s = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE)
+                                              + 2, mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE) + 2,
                                                    halfNodeSize - 4, halfNodeSize - 4);
 
                         s.setColumnIndex(j * 2);
@@ -167,9 +168,9 @@ public class GridManager {
                         mTempTransitions[i * 2][j * 2] = s;
 
                         // System.out.println("(" + (i*2) + "," + (j*2) + ")");
-                        GridRectangle t = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE)
-                                              + halfNodeSize + 2, mPreferences.sYOFFSET
-                                                  + (j * mPreferences.sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize
+                        GridRectangle t = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE)
+                                              + halfNodeSize + 2, mEditorConfig.sYOFFSET
+                                                  + (j * mEditorConfig.sGRID_YSPACE) + 2, halfNodeSize - 4, halfNodeSize
                                                       - 4);
 
                         t.setColumnIndex(j * 2);
@@ -177,8 +178,8 @@ public class GridManager {
                         mTempTransitions[i * 2 + 1][j * 2] = t;
 
                         // System.out.println("(" + (i*2+1) + "," + (j*2) + ")");
-                        GridRectangle u = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE)
-                                              + 2, mPreferences.sYOFFSET + (j * mPreferences.sGRID_YSPACE)
+                        GridRectangle u = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE)
+                                              + 2, mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE)
                                                    + halfNodeSize + 2, halfNodeSize - 4, halfNodeSize - 4);
 
                         u.setColumnIndex(j * 2 + 1);
@@ -186,9 +187,9 @@ public class GridManager {
                         mTempTransitions[i * 2][j * 2 + 1] = u;
 
                         // System.out.println("(" + (i*2) + "," + (j*2+1) + ")");
-                        GridRectangle v = new GridRectangle(mPreferences.sXOFFSET + (i * mPreferences.sGRID_XSPACE)
-                                              + halfNodeSize + 2, mPreferences.sYOFFSET
-                                                  + (j * mPreferences.sGRID_YSPACE) + halfNodeSize + 2, halfNodeSize
+                        GridRectangle v = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE)
+                                              + halfNodeSize + 2, mEditorConfig.sYOFFSET
+                                                  + (j * mEditorConfig.sGRID_YSPACE) + halfNodeSize + 2, halfNodeSize
                                                       - 4, halfNodeSize - 4);
 
                         mTempTransitions[i * 2 + 1][j * 2 + 1] = v;
@@ -199,22 +200,22 @@ public class GridManager {
             }
         }
 
-        if ((w / mPreferences.sGRID_XSPACE) > 0 && (h / mPreferences.sGRID_YSPACE) > 0
+        if ((w / mEditorConfig.sGRID_XSPACE) > 0 && (h / mEditorConfig.sGRID_YSPACE) > 0
                 && (isSubgridEstablished == false)) {
             isSubgridEstablished = true;
-            height               = h / mPreferences.sGRID_YSPACE;
-            width                = w / mPreferences.sGRID_XSPACE;
+            height               = h / mEditorConfig.sGRID_YSPACE;
+            width                = w / mEditorConfig.sGRID_XSPACE;
         }
 
-        if (!((height == h / mPreferences.sGRID_YSPACE) && (width == w / mPreferences.sGRID_XSPACE))) {
+        if (!((height == h / mEditorConfig.sGRID_YSPACE) && (width == w / mEditorConfig.sGRID_XSPACE))) {
             mTransitionArea = mTempTransitions;
-            height          = h / mPreferences.sGRID_YSPACE;
-            width           = w / mPreferences.sGRID_XSPACE;
+            height          = h / mEditorConfig.sGRID_YSPACE;
+            width           = w / mEditorConfig.sGRID_XSPACE;
         }
     }
 
     public void update() {
-        isDebug      = mPreferences.sSHOW_SMART_PATH_DEBUG;
+        isDebug      = mEditorConfig.sSHOW_SMART_PATH_DEBUG;
         mPlacedNodes = new HashSet<>();
         compute();
     }
@@ -223,30 +224,30 @@ public class GridManager {
         int w = 0;
         int h = 0;
 
-        if (mWorkSpace.getSize().equals(new Dimension(0, 0))) {
-            for (de.dfki.vsm.model.sceneflow.Node n : mWorkSpace.getSceneFlowEditor().getSceneFlow().getNodeList()) {
+        if (mWorkSpacePanel.getSize().equals(new Dimension(0, 0))) {
+            for (de.dfki.vsm.model.sceneflow.Node n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
                 if (n.getGraphics().getPosition().getXPos() > w) {
-                    w = n.getGraphics().getPosition().getXPos() + Preferences.sNODEWIDTH;
+                    w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
                 }
 
                 if (n.getGraphics().getPosition().getYPos() > h) {
-                    h = n.getGraphics().getPosition().getYPos() + Preferences.sNODEHEIGHT;
+                    h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
                 }
             }
 
             for (de.dfki.vsm.model.sceneflow.SuperNode n :
-                    mWorkSpace.getSceneFlowEditor().getSceneFlow().getSuperNodeList()) {
+                    mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getSuperNodeList()) {
                 if (n.getGraphics().getPosition().getXPos() > w) {
-                    w = n.getGraphics().getPosition().getXPos() + Preferences.sNODEWIDTH;
+                    w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
                 }
 
                 if (n.getGraphics().getPosition().getYPos() > h) {
-                    h = n.getGraphics().getPosition().getYPos() + Preferences.sNODEHEIGHT;
+                    h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
                 }
             }
         } else {
-            w = mWorkSpace.getSize().width + Preferences.sNODEWIDTH;
-            h = mWorkSpace.getSize().height + Preferences.sNODEWIDTH;
+            w = mWorkSpacePanel.getSize().width + mEditorConfig.sNODEWIDTH;
+            h = mWorkSpacePanel.getSize().height + mEditorConfig.sNODEWIDTH;
         }
 
         return new Dimension(w, h);
@@ -255,7 +256,7 @@ public class GridManager {
     public void drawGrid(Graphics2D g2d) {
         compute();
 
-        if (mPreferences.sSHOWGRID) {
+        if (mEditorConfig.sSHOWGRID) {
             g2d.setStroke(new BasicStroke(1.0f));
 
             for (Rectangle r : mNodeAreas) {
@@ -338,8 +339,8 @@ public class GridManager {
     }
 
     public Point getNodeLocation(Point inputPoint) {
-        Point p = new Point(inputPoint.x + mPreferences.sGRID_NODEWIDTH / 2,
-                            inputPoint.y + mPreferences.sGRID_NODEWIDTH / 2);
+        Point p = new Point(inputPoint.x + mEditorConfig.sGRID_NODEWIDTH / 2,
+                            inputPoint.y + mEditorConfig.sGRID_NODEWIDTH / 2);
 
         for (Rectangle r : mNodeAreas) {
             if (r.contains(p)) {
@@ -438,14 +439,14 @@ public class GridManager {
             for (GridRectangle gridRectangle : gridParent) {
                 boolean isGridInteresected = false;
 
-                for (Edge edge : mWorkSpace.getEdges()) {
+                for (Edge edge : mWorkSpacePanel.getEdges()) {
                     if (gridRectangle.isIntersectByRectangle(edge.mEg)) {
                         gridRectangle.setWeight(GridConstants.EDGE_WEIGHT);
                         isGridInteresected = true;
                     }
                 }
 
-                for (Node node : mWorkSpace.getNodes()) {
+                for (Node node : mWorkSpacePanel.getNodes()) {
                     if (gridRectangle.isIntersectedbyNode(node)) {
                         gridRectangle.setWeight(GridConstants.NODE_WEIGHT);
                         isGridInteresected = true;
@@ -490,10 +491,10 @@ public class GridManager {
             if ((-mNodesinRow / 2 <= x) && (x <= mNodesinRow / 2) && (-mNodesinRow / 2 <= y)
                     && (y <= mNodesinRow / 2)) {
                 if (i > 0) {
-                    if ((iPoint.x - (x * mPreferences.sGRID_XSPACE) > 0)
-                            && (iPoint.y - (y * mPreferences.sGRID_YSPACE) > 0)) {    // check if position is not outside the workspace on the left / top
-                        Point p = new Point(iPoint.x - (x * mPreferences.sGRID_XSPACE),
-                                            iPoint.y - (y * mPreferences.sGRID_YSPACE));
+                    if ((iPoint.x - (x * mEditorConfig.sGRID_XSPACE) > 0)
+                            && (iPoint.y - (y * mEditorConfig.sGRID_YSPACE) > 0)) {    // check if position is not outside the workspace on the left / top
+                        Point p = new Point(iPoint.x - (x * mEditorConfig.sGRID_XSPACE),
+                                            iPoint.y - (y * mEditorConfig.sGRID_YSPACE));
 
                         if (!mPlacedNodes.contains(p)) {
                             return p;

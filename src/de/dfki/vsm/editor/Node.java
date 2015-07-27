@@ -84,7 +84,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     //
     // TODO: move away
     private final WorkSpacePanel          mWorkSpace;
-    private final EditorConfig mPreferences;
+    private final EditorConfig mEditorConfig;
 
     // The name which will be displayed on the node
     private String mDisplayName;
@@ -108,9 +108,9 @@ public final class Node extends JComponent implements EventListener, Observer {
      *
      */
     public Node(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.Node dataNode) {
-        mWorkSpace   = workSpace;
-        mPreferences = mWorkSpace.getPreferences();
-        mDataNode    = dataNode;
+        mWorkSpace    = workSpace;
+        mEditorConfig = mWorkSpace.getEditorConfig();
+        mDataNode     = dataNode;
 
         //
         if (mDataNode instanceof SuperNode) {
@@ -143,7 +143,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         Point pos = new Point(mDataNode.getGraphics().getPosition().getXPos(),
                               mDataNode.getGraphics().getPosition().getYPos());
 
-        setBounds(pos.x, pos.y, mPreferences.sNODEWIDTH, mPreferences.sNODEHEIGHT);
+        setBounds(pos.x, pos.y, mEditorConfig.sNODEWIDTH, mEditorConfig.sNODEHEIGHT);
 
         // Set the initial start sign
         HashMap<String, de.dfki.vsm.model.sceneflow.Node> startNodeMap =
@@ -255,7 +255,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         map.put(TextAttribute.FAMILY, Font.SANS_SERIF);
         map.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
         map.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
-        map.put(TextAttribute.SIZE, mPreferences.sWORKSPACEFONTSIZE);
+        map.put(TextAttribute.SIZE, mEditorConfig.sWORKSPACEFONTSIZE);
 
         // Derive the font from the attribute map
         Font font = Font.getFont(map);
@@ -270,9 +270,9 @@ public final class Node extends JComponent implements EventListener, Observer {
         // node's size or the node's font size have chaged
         String prefix = "";
 
-        if (fontMetrics.stringWidth(mDataNode.getName()) > (mPreferences.sNODEWIDTH - 10)) {
+        if (fontMetrics.stringWidth(mDataNode.getName()) > (mEditorConfig.sNODEWIDTH - 10)) {
             for (char c : mDataNode.getName().toCharArray()) {
-                if (fontMetrics.stringWidth(prefix + c + "...") < mPreferences.sNODEWIDTH - 10) {
+                if (fontMetrics.stringWidth(prefix + c + "...") < mEditorConfig.sNODEWIDTH - 10) {
                     prefix += c;
                 } else {
                     break;
@@ -337,7 +337,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         }
 
         // Update the bounds if the node's size has changed
-        setBounds(getX(), getY(), mPreferences.sNODEWIDTH, mPreferences.sNODEHEIGHT);
+        setBounds(getX(), getY(), mEditorConfig.sNODEWIDTH, mEditorConfig.sNODEHEIGHT);
     }
 
     /**
@@ -346,7 +346,7 @@ public final class Node extends JComponent implements EventListener, Observer {
      */
     @Override
     public void update(EventObject event) {
-        if (mPreferences.sVISUALISATION) {
+        if (mEditorConfig.sVISUALISATION) {
             if (event instanceof SceneStoppedEvent) {
                 mVisualisationTask = null;
                 repaint();
@@ -373,7 +373,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                         mVisualisationTask.cancel();
                     }
 
-                    mVisualisationTask = new VisualisationTask(mPreferences.sVISUALISATIONTIME, this);
+                    mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
                     mVisuTimer.schedule(mVisualisationTask, 0, 15);
                 }
             } else if (event instanceof NodeTerminatedEvent) {
@@ -385,7 +385,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                         mVisualisationTask.cancel();
                     }
 
-                    mVisualisationTask = new VisualisationTask(mPreferences.sVISUALISATIONTIME, this,
+                    mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this,
                             new Color(0, 0, 0, 100));
                     mVisuTimer.schedule(mVisualisationTask, 0, 15);
                 }
@@ -600,7 +600,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         Point loc = getLocation();
         Point c   = new Point();
 
-        c.setLocation(loc.x + (mPreferences.sNODEWIDTH / 2), loc.y + (mPreferences.sNODEHEIGHT / 2));
+        c.setLocation(loc.x + (mEditorConfig.sNODEWIDTH / 2), loc.y + (mEditorConfig.sNODEHEIGHT / 2));
 
         return c;
     }
@@ -808,7 +808,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                 mVisualisationTask.cancel();
             }
 
-            mVisualisationTask = new VisualisationTask(mPreferences.sVISUALISATIONTIME, this,
+            mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this,
                     new Color(255, 255, 255, 100), VisualisationTask.Type.Highlight);
             mVisuTimer.schedule(mVisualisationTask, 0, 25);
         }
@@ -831,7 +831,7 @@ public final class Node extends JComponent implements EventListener, Observer {
 
         // Compute the border which is relative to a nodes size.
         // It is used for visualising an end nodes and node selection
-        final float   borderSize   = Math.max(1.0f, mPreferences.sNODEWIDTH / 25.0f);
+        final float   borderSize   = Math.max(1.0f, mEditorConfig.sNODEWIDTH / 25.0f);
         final int     borderOffset = Math.round(borderSize);
         final float[] dashPattern  = { borderSize * 0.5f, borderSize * 1.25f };
 
@@ -847,26 +847,26 @@ public final class Node extends JComponent implements EventListener, Observer {
 
         // Draw the node as a supernode
         if (mType == Type.SuperNode) {
-            graphics2D.fillRect(borderOffset + 1, borderOffset + 1, mPreferences.sNODEWIDTH - borderOffset * 2 - 1,
-                                mPreferences.sNODEHEIGHT - borderOffset * 2 - 1);
+            graphics2D.fillRect(borderOffset + 1, borderOffset + 1, mEditorConfig.sNODEWIDTH - borderOffset * 2 - 1,
+                                mEditorConfig.sNODEHEIGHT - borderOffset * 2 - 1);
 
             if (mSelected) {
                 graphics2D.setStroke(new BasicStroke(borderSize, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10,
                         dashPattern, 0));
                 graphics2D.setColor(sSTART_SIGN_COLOR);
-                graphics2D.drawRect(borderOffset, borderOffset, mPreferences.sNODEWIDTH - borderOffset * 2,
-                                    mPreferences.sNODEHEIGHT - borderOffset * 2);
+                graphics2D.drawRect(borderOffset, borderOffset, mEditorConfig.sNODEWIDTH - borderOffset * 2,
+                                    mEditorConfig.sNODEHEIGHT - borderOffset * 2);
             } else if (mIsEndNode) {
                 graphics2D.setStroke(new BasicStroke(borderSize));
                 graphics2D.setColor(mColor.darker());
-                graphics2D.drawRect(borderOffset + 1, borderOffset + 1, mPreferences.sNODEWIDTH - borderOffset * 2 - 2,
-                                    mPreferences.sNODEHEIGHT - borderOffset * 2 - 2);
+                graphics2D.drawRect(borderOffset + 1, borderOffset + 1, mEditorConfig.sNODEWIDTH - borderOffset * 2 - 2,
+                                    mEditorConfig.sNODEHEIGHT - borderOffset * 2 - 2);
             }
 
             // Draw visualization highlights
             if (mIsActive) {
                 graphics2D.setColor(new Color(246, 0, 0, 100));
-                graphics2D.fillRect(1, 1, mPreferences.sNODEWIDTH - 1, mPreferences.sNODEHEIGHT - 1);
+                graphics2D.fillRect(1, 1, mEditorConfig.sNODEWIDTH - 1, mEditorConfig.sNODEHEIGHT - 1);
             }
 
             if (mVisualisationTask != null) {
@@ -879,23 +879,23 @@ public final class Node extends JComponent implements EventListener, Observer {
                     int alpha = mVisualisationTask.getColor().getAlpha();
                     int gray  = ((10 - mVisualisationTask.getActivityTime()) * 6);
 
-                    graphics2D.setColor(new Color((mPreferences.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
+                    graphics2D.setColor(new Color((mEditorConfig.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
                                                   ? gray
-                                                  : red, (mPreferences.sACTIVITYTRACE
+                                                  : red, (mEditorConfig.sACTIVITYTRACE
                                                   &&!mVisualisationTask.isHighLight())
                             ? gray
-                            : green, (mPreferences.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
+                            : green, (mEditorConfig.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
                                      ? gray
-                                     : blue, (mPreferences.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
+                                     : blue, (mEditorConfig.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
                                              ? 100
                                              : alpha - (alpha - 6 * mVisualisationTask.getActivityTime())));
                 }
 
-                graphics2D.fillRect(1, 1, mPreferences.sNODEWIDTH - 1, mPreferences.sNODEHEIGHT - 1);
+                graphics2D.fillRect(1, 1, mEditorConfig.sNODEWIDTH - 1, mEditorConfig.sNODEHEIGHT - 1);
             }
         } else if (mType == Type.BasicNode) {
-            graphics2D.fillOval(borderOffset + 1, borderOffset + 1, mPreferences.sNODEWIDTH - borderOffset * 2 - 1,
-                                mPreferences.sNODEHEIGHT - borderOffset * 2 - 1);
+            graphics2D.fillOval(borderOffset + 1, borderOffset + 1, mEditorConfig.sNODEWIDTH - borderOffset * 2 - 1,
+                                mEditorConfig.sNODEHEIGHT - borderOffset * 2 - 1);
 
             if (mSelected) {
                 graphics2D.setStroke(new BasicStroke(borderSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 2,
@@ -903,19 +903,19 @@ public final class Node extends JComponent implements EventListener, Observer {
 
                 // TODO: warum andrs als bei supernode?
                 graphics2D.setColor(sSTART_SIGN_COLOR);
-                graphics2D.drawOval(borderOffset, borderOffset, mPreferences.sNODEWIDTH - borderOffset * 2,
-                                    mPreferences.sNODEHEIGHT - borderOffset * 2);
+                graphics2D.drawOval(borderOffset, borderOffset, mEditorConfig.sNODEWIDTH - borderOffset * 2,
+                                    mEditorConfig.sNODEHEIGHT - borderOffset * 2);
             } else if (mIsEndNode) {
                 graphics2D.setStroke(new BasicStroke(borderSize));
                 graphics2D.setColor(mColor.darker());
-                graphics2D.drawOval(borderOffset + 1, borderOffset + 1, mPreferences.sNODEWIDTH - borderOffset * 2 - 2,
-                                    mPreferences.sNODEHEIGHT - borderOffset * 2 - 2);
+                graphics2D.drawOval(borderOffset + 1, borderOffset + 1, mEditorConfig.sNODEWIDTH - borderOffset * 2 - 2,
+                                    mEditorConfig.sNODEHEIGHT - borderOffset * 2 - 2);
             }
 
             // draw activity cue
             if (mIsActive) {
                 graphics2D.setColor(new Color(246, 0, 0, 100));
-                graphics2D.fillOval(1, 1, mPreferences.sNODEWIDTH - 1, mPreferences.sNODEHEIGHT - 1);
+                graphics2D.fillOval(1, 1, mEditorConfig.sNODEWIDTH - 1, mEditorConfig.sNODEHEIGHT - 1);
             }
 
             // draw visualisation ...
@@ -927,14 +927,14 @@ public final class Node extends JComponent implements EventListener, Observer {
                     int alpha = mVisualisationTask.getColor().getAlpha();
                     int gray  = ((10 - mVisualisationTask.getActivityTime()) * 6);
 
-                    graphics2D.setColor(new Color((mPreferences.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
+                    graphics2D.setColor(new Color((mEditorConfig.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
                                                   ? gray
-                                                  : red, (mPreferences.sACTIVITYTRACE
+                                                  : red, (mEditorConfig.sACTIVITYTRACE
                                                   &&!mVisualisationTask.isHighLight())
                             ? gray
-                            : green, (mPreferences.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
+                            : green, (mEditorConfig.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
                                      ? gray
-                                     : blue, (mPreferences.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
+                                     : blue, (mEditorConfig.sACTIVITYTRACE &&!mVisualisationTask.isHighLight())
                                              ? 100
                                              : alpha - (alpha - 6 * mVisualisationTask.getActivityTime())));
                 } else {
@@ -942,7 +942,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                 }
 
                 graphics2D.setStroke(new BasicStroke(20f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
-                graphics2D.fillOval(1, 1, mPreferences.sNODEWIDTH - 1, mPreferences.sNODEHEIGHT - 1);
+                graphics2D.fillOval(1, 1, mEditorConfig.sNODEWIDTH - 1, mEditorConfig.sNODEHEIGHT - 1);
             }
         }
 
@@ -954,15 +954,15 @@ public final class Node extends JComponent implements EventListener, Observer {
         }
 
         if (!mDisplayName.isEmpty()) {
-            graphics2D.drawString(mDisplayName, mPreferences.sNODEWIDTH / 2 - wNameOffset,
-                                  (mPreferences.sNODEHEIGHT + 2) / 2 + hOffset);
+            graphics2D.drawString(mDisplayName, mEditorConfig.sNODEWIDTH / 2 - wNameOffset,
+                                  (mEditorConfig.sNODEHEIGHT + 2) / 2 + hOffset);
         }
 
         // Draw the node's identifier string
-        if (mPreferences.sSHOWIDSOFNODES) {
+        if (mEditorConfig.sSHOWIDSOFNODES) {
             graphics2D.setColor(Color.LIGHT_GRAY);
-            graphics2D.drawString("[" + mDataNode.getId() + "]", mPreferences.sNODEWIDTH / 2 - wIdOffset,
-                                  ((mPreferences.sNODEHEIGHT + 2) / 2) + hOffset + fontMetrics.getHeight());
+            graphics2D.drawString("[" + mDataNode.getId() + "]", mEditorConfig.sNODEWIDTH / 2 - wIdOffset,
+                                  ((mEditorConfig.sNODEHEIGHT + 2) / 2) + hOffset + fontMetrics.getHeight());
         }
     }
 }

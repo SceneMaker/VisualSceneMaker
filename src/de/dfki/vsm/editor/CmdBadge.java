@@ -62,7 +62,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     // The node to which the badge is connected
     private final Node               mNode;
-    private final EditorConfig mPreferences;
+    private final EditorConfig       mEditorConfig;
     private final Timer              mVisuTimer;
 
     // The maintained list
@@ -79,13 +79,13 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      */
     public CmdBadge(Node node) {
         mNode        = node;
-        mPreferences = node.getWorkSpace().getPreferences();
+        mEditorConfig= mNode.getWorkSpace().getEditorConfig();
         mVisuTimer   = new Timer("Command-Badge-Visualization-Timer");
         setSize(new Dimension(1, 1));
         setLocation(0, 0);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         mFont       = new Font("SansSerif", Font.ITALIC,    /* (mWorkSpace != null) ? */
-                               mPreferences.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
+                               mEditorConfig.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
         mCmdEditors = new ArrayList<>();
         update();
     }
@@ -172,7 +172,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
                 }
 
                 if (contained) {
-                    VisualisationTask visuTask = new VisualisationTask(mPreferences.sVISUALISATIONTIME, this);
+                    VisualisationTask visuTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
 
                     mVisuTimer.schedule(visuTask, 0, 25);
                 }
@@ -193,8 +193,8 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
             dimension = new Dimension((int) (dimension.width * 1.2), (int) (22 * (mCmdEditors.size())));
             setSize(dimension);
-            setLocation(mNode.getLocation().x + (mPreferences.sNODEWIDTH / 2) - (dimension.width / 2),
-                        mNode.getLocation().y + mPreferences.sNODEHEIGHT);
+            setLocation(mNode.getLocation().x + (mEditorConfig.sNODEWIDTH / 2) - (dimension.width / 2),
+                        mNode.getLocation().y + mEditorConfig.sNODEHEIGHT);
 
             // draw background
             graphics.setColor(new Color(155, 155, 155, 100));
@@ -213,8 +213,8 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
             Dimension dimension = computeTextRectSize(graphics);
 
             setSize(dimension);
-            setLocation(mNode.getLocation().x + (mPreferences.sNODEWIDTH / 2) - (dimension.width / 2),
-                        mNode.getLocation().y + mPreferences.sNODEHEIGHT);
+            setLocation(mNode.getLocation().x + (mEditorConfig.sNODEWIDTH / 2) - (dimension.width / 2),
+                        mNode.getLocation().y + mEditorConfig.sNODEHEIGHT);
 
             // draw background
             graphics.setColor(new Color(100, 100, 100, 100));

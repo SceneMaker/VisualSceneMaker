@@ -2,9 +2,8 @@ package de.dfki.vsm.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.util.tpl.TPLTuple;
-
-import static de.dfki.vsm.editor.util.Preferences.sWORKSPACEFONTSIZE;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -149,11 +148,18 @@ public class TextFormat {
 
         AttributedString attributedString = new AttributedString(unformattedString);
 
-        attributedString.addAttribute(TextAttribute.FAMILY, Font.SANS_SERIF);
-        attributedString.addAttribute(TextAttribute.SIZE, sWORKSPACEFONTSIZE);
+        
         attributedString.addAttribute(TextAttribute.FOREGROUND, Color.BLACK);
         attributedString.addAttribute(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
-
+        attributedString.addAttribute(TextAttribute.FAMILY, Font.SANS_SERIF);
+        
+        if(EditorInstance.getInstance().getSelectedProjectEditor()!= null){
+            attributedString.addAttribute(TextAttribute.SIZE, EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE);
+        } 
+        else{
+            attributedString.addAttribute(TextAttribute.SIZE, 12);
+        }
+       
         // Fill the attributed string with attributes
         Iterator it = attributeMap.entrySet().iterator();
 

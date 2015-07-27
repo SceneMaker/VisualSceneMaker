@@ -3,6 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CmdBadge;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Type;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.Node;
@@ -54,7 +55,6 @@ public class CreateNodeAction extends NodeAction {
         mWorkSpace        = workSpace;
         mCoordinate       = coordinate;
         mGUINodeType      = type;
-        mPreferences      = mWorkSpace.getPreferences();
         mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
         mSceneFlowManager = mWorkSpace.getSceneFlowManager();
         mUndoManager      = mSceneFlowPane.getUndoManager();

@@ -96,11 +96,11 @@ public class CreateProjectDialog extends JDialog {
     public File mGesticonFile;
     public File mVisiconFile;
     public File mActiconFile;
-    //private String mPreferencesFilePath;
+    private String mEditorConfigFilePath;
 
     // essential strings
     public String mProjectName;
-    private ConfigElement mProjectConfig;
+    private final ConfigElement mProjectConfig;
 
     public CreateProjectDialog() {
         super(EditorInstance.getInstance(), "New Project", true);
@@ -110,7 +110,7 @@ public class CreateProjectDialog extends JDialog {
         mProperties.add(new ConfigFeature("Feature", "project.data.visicon", "visicon.xml"));
         mProperties.add(new ConfigFeature("Feature", "project.data.gesticon", "gesticon.xml"));
         mProperties.add(new ConfigFeature("Feature", "project.data.sceneflow", "sceneflow.xml"));
-        mProperties.add(new ConfigFeature("Feature", "project.data.preferences", "preferences.xml"));
+        mProperties.add(new ConfigFeature("Feature", "project.data.preferences", "editorconfig.xml"));
         mProperties.add(new ConfigFeature("Feature", "project.dialogact.class", "de.dfki.vsm.runtime.dialogact.DummyDialogAct"));
         mProperties.add(new ConfigFeature("Feature", "project.dialogact.player",
                 "de.dfki.vsm.runtime.player.DefaultDialogueActPlayer"));
@@ -596,8 +596,10 @@ public class CreateProjectDialog extends JDialog {
 
             // check if target dir exisits
             mProjectDir = new File(mLocationTextField.getText());
+            
 
             if (!mProjectDir.exists()) {
+                mProjectName = mNameTextField.getText();
                 mLogger.message("creating dir " + mProjectDir.toString());
                 mProjectDir.mkdir();
             }
@@ -732,15 +734,16 @@ public class CreateProjectDialog extends JDialog {
              * dspProp.store(fileOut, "Default Scene Player Configuration");
              * fileOut.close();
              */
-            // Create Preferences File
-           // mPreferencesFilePath = (mLocationTextField.getText() + System.getProperty("file.separator")
-           //         + mProjectConfig.getProperty("project.data.preferences"));
-           // mLogger.message("creating file " + mPreferencesFilePath);
+            
+            // Create EditorConfig File
+            mEditorConfigFilePath = (mLocationTextField.getText() + System.getProperty("file.separator")
+                    + mProjectConfig.getProperty("project.data.preferences"));
+             mLogger.message("creating file " + mEditorConfigFilePath);
 
-            EditorConfig dummyPreferences = new EditorConfig();
+            EditorConfig dummyEditorConfig = new EditorConfig();
 
-            //dummyPreferences.load("");
-            //dummyPreferences.save(mPreferencesFilePath);
+            dummyEditorConfig.load(mProjectDir);
+            dummyEditorConfig.save(mProjectDir);
 
             // build config file
             mProperties.set(0, new ConfigFeature("Feature", "project.basic.name", mNameTextField.getText()));
