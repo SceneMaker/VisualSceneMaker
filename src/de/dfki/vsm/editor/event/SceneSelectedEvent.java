@@ -2,11 +2,11 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.script.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SceneSelectedEvent extends EventObject {
     private SceneGroup mGroup;

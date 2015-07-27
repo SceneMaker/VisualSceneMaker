@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Comment;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
 
@@ -17,18 +17,18 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class CreateCommentAction extends EditorAction {
     private UndoManager                           mUndoManager = null;
-    private WorkSpace                             mWorkSpace   = null;
+    private WorkSpacePanel                             mWorkSpace   = null;
     private Point                                 mCoordinate  = null;
     private Comment                               mGUIComment;
     private de.dfki.vsm.model.sceneflow.Comment   mComment;
     private de.dfki.vsm.model.sceneflow.SuperNode mParentDataNode;
 
-    public CreateCommentAction(WorkSpace workSpace, Point coordinate) {
+    public CreateCommentAction(WorkSpacePanel workSpace, Point coordinate) {
         mWorkSpace   = workSpace;
         mCoordinate  = coordinate;
         mUndoManager = mWorkSpace.getSceneFlowEditor().getUndoManager();

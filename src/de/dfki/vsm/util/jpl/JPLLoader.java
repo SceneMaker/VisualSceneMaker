@@ -5,7 +5,7 @@ package de.dfki.vsm.util.jpl;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class JPLLoader extends Thread {
 

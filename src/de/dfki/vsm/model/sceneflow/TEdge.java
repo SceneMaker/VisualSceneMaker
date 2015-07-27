@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TEdge extends Edge {
     protected long       mTimeout    = Long.MIN_VALUE;
@@ -81,7 +81,7 @@ public class TEdge extends Edge {
                          getCopyOfAltStartNodeMap(), mTimeout);
     }
 
-    public void writeXML(de.dfki.vsm.util.ios.IndentWriter out) throws XMLWriteError {
+    public void writeXML(de.dfki.vsm.util.ios.IOSIndentWriter out) throws XMLWriteError {
         String   start = "";
         Iterator it    = mAltStartNodeMap.entrySet().iterator();
 

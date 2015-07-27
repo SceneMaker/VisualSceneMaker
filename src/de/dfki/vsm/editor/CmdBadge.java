@@ -4,11 +4,11 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.util.VisualisationTask;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.TextFormat;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -42,14 +42,14 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class CmdBadge extends JComponent implements EventListener, Observer {
 
     //
     private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    private final EventDispatcher      mEventCaster = EventDispatcher.getInstance();
 
     // edit
     private boolean      mEditMode = false;
@@ -62,7 +62,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     // The node to which the badge is connected
     private final Node               mNode;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mPreferences;
     private final Timer              mVisuTimer;
 
     // The maintained list

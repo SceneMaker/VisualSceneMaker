@@ -14,7 +14,7 @@ import org.w3c.dom.Element;
 /**
  * An abstract condition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class Condition extends Expression {
     public enum CondType {

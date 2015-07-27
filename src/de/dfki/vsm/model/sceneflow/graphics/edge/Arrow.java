@@ -2,8 +2,8 @@ package de.dfki.vsm.model.sceneflow.graphics.edge;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -16,9 +16,9 @@ import java.util.Vector;
 /**
  * An arrow of an edge.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class Arrow extends Object {
+public class Arrow extends Syntax {
     private Vector<Point> mPointList;
 
     public Arrow() {
@@ -87,7 +87,7 @@ public class Arrow extends Object {
         return new Arrow(getCopyOfPointList());
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Arrow>").push();
 
         for (int i = 0; i < mPointList.size(); i++) {

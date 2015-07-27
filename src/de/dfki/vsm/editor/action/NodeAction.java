@@ -4,11 +4,11 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Node.Type;
-import de.dfki.vsm.editor.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 
@@ -24,15 +24,15 @@ import java.util.HashMap;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class NodeAction extends EditorAction {
 
     // Common data
     protected UndoManager        mUndoManager      = null;
     protected SceneFlowEditor    mSceneFlowPane    = null;
-    protected WorkSpace          mWorkSpace        = null;
-    protected ProjectPreferences mPreferences      = null;
+    protected WorkSpacePanel          mWorkSpace        = null;
+    protected EditorConfig mPreferences      = null;
     protected Point              mCoordinate       = null;
     protected Type               mGUINodeType      = null;
     protected SceneFlowManager   mSceneFlowManager = null;

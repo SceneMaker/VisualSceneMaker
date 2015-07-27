@@ -2,8 +2,8 @@ package de.dfki.vsm.model.sceneflow.definition;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -18,9 +18,9 @@ import java.util.Vector;
 /**
  * A user command definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class FunDef extends Object implements Comparable<FunDef> {
+public class FunDef extends Syntax implements Comparable<FunDef> {
     private String           mName;
     private String           mClassName;
     private String           mMethod;
@@ -145,7 +145,7 @@ public class FunDef extends Object implements Comparable<FunDef> {
         return new FunDef(mName, mClassName, mMethod, getCopyOfParamList());
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<UserCommand name=\"" + mName + "\" classname =\"" + mClassName + "\" method=\"" + mMethod
                     + "\">").push();
 

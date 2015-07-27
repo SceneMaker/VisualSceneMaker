@@ -3,7 +3,8 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -14,9 +15,8 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.RunTime;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
-import de.dfki.vsm.util.ios.ResourceLoader;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -34,7 +34,7 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class MonitorDialog extends JDialog {
     private static MonitorDialog sSingeltonInstance = null;
@@ -47,12 +47,11 @@ public class MonitorDialog extends JDialog {
     private JTextField           mInputTextField;
     private JScrollPane          mVariableScrollPane;
     private Vector<VarDef>       mVarDefListData;
-    private final SceneFlow      mSceneFlow;
+    private final EditorProject      mEditorProject;
 
     private MonitorDialog() {
-        super(Editor.getInstance(), "Variable Manager", true);
-        this.setIconImage(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stack_icon.png").getImage());
-        mSceneFlow = Editor.getInstance().getProjectEditorList().getSelectedProject().getSceneFlow();
+        super(EditorInstance.getInstance(), "Run Monitor", true);
+        mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         initComponents();
         //initVariableList(); Now this init is being called from the button calling the monitor -- by M. Fallas 07 2015 
     }
@@ -95,24 +94,25 @@ public class MonitorDialog extends JDialog {
 
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
                     if (exp instanceof Bool) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Bool) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
                     } else if (exp instanceof Int) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Int) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
                     } else if (exp instanceof Float) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
                                 ((Float) exp).getValue());
                     } else if (exp instanceof String) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
                                 ((String) exp).getValue());
                     } else if (exp instanceof List) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
+
                         // Evaluator eval = interpreter.getEvaluator();
                         // Environment env = interpreter.getEnvironment();
                         // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
                     } else if (exp instanceof Struct) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     } else {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     }
                 }
             } catch (Exception e) {
@@ -156,9 +156,9 @@ public class MonitorDialog extends JDialog {
                     getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
     }
 
-    public void initVariableList() {
-        mVarDefListData = mSceneFlow.getCopyOfVarDefList();
-        ((DefaultListModel) mVariableList.getModel()).removeAllElements();
+    private void initVariableList() {
+        mVarDefListData = mEditorProject.getSceneFlow().getCopyOfVarDefList();
+
         for (VarDef varDef : mVarDefListData) {
             ((DefaultListModel) mVariableList.getModel()).addElement(varDef.getType() + " " + varDef.getName());
         }

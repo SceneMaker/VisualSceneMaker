@@ -1,19 +1,8 @@
-
-/*
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates
-* and open the template in the editor.
- */
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
-
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.util.Preferences;
-import de.dfki.vsm.model.project.ProjectData;
 import de.dfki.vsm.util.ios.ResourceLoader;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -21,14 +10,10 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
 import java.io.File;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Observable;
 import java.util.Observer;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -38,7 +23,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
 /**
- *
  * @author mfallas Class implements welcome screen with a list of recent
  * projects
  */
@@ -47,26 +31,25 @@ public class WelcomePanel extends JPanel implements Observer {
     SimpleDateFormat     sdf              = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
     private final File   SampleProjFolder = new File("res/prj/");
 
-//  private final JButton mOpenProjButton;
-//  private final JButton mNewProjButton;
-    private final Editor    parentEditor;
-    private final Box       mRecentProjects;
-    private final int       paddingSize;
+    private final EditorInstance mEditorInstance;
+    private final Box mRecentProjects;
+    private final int paddingSize;
     private final Dimension screenDimension;
     private final Dimension buttonSize;
     private final Dimension halfScreenDimension;
-    
-    public WelcomePanel(final Editor mParent) {
+
+    public WelcomePanel(final EditorInstance mParent) {
         try {
 
             // UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
-        parentEditor        = mParent;
-        screenDimension     = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        mEditorInstance = mParent;
+        screenDimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         halfScreenDimension = new Dimension((int) (java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight()
                 / 2), (int) java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight());
-        buttonSize  = new Dimension((int) halfScreenDimension.getWidth(), 50);
+        buttonSize = new Dimension((int) halfScreenDimension.getWidth(), 50);
         paddingSize = (int) (0.075 * screenDimension.getHeight());
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(paddingSize, paddingSize, paddingSize, paddingSize));
@@ -76,10 +59,10 @@ public class WelcomePanel extends JPanel implements Observer {
         titleLabel.setOpaque(false);
         titleLabel.setFont(new Font("Helvetica", Font.BOLD, 24));
 
-        JLabel msgLabel =
-            new JLabel(
-                "<html>This welcome screen provides quick starting actions, like a new project, open a recent project, <br>"
-                + "open a example project, and check news and documentation</html>");
+        JLabel msgLabel
+                = new JLabel(
+                        "<html>This welcome screen provides quick starting actions, like a new project, open a recent project, <br>"
+                        + "open a example project, and check news and documentation</html>");
 
         msgLabel.setOpaque(false);
         msgLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
@@ -98,8 +81,8 @@ public class WelcomePanel extends JPanel implements Observer {
 //      js.setMaximumSize(new Dimension(5000, 1));
 //      add(js);
         add(mRecentProjects);
-        setMaximumSize(parentEditor.getSize());
-        setPreferredSize(parentEditor.getSize());
+        setMaximumSize(mEditorInstance.getSize());
+        setPreferredSize(mEditorInstance.getSize());
         setOpaque(true);
 
         // setBackground(new Color(250, 250, 250));
@@ -107,7 +90,8 @@ public class WelcomePanel extends JPanel implements Observer {
     }
 
     @Override
-    public void update(Observable o, Object o1) {}
+    public void update(Observable o, Object o1) {
+    }
 
     /**
      * Draws the image on the background of the welcome
@@ -182,13 +166,18 @@ public class WelcomePanel extends JPanel implements Observer {
         mNewProjMenu.setFont(new Font("Helvetica", Font.PLAIN, 18));
         mNewProjMenu.setOpaque(false);
         mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                parentEditor.newProject();
+                mEditorInstance.newProject();
             }
+
+            @Override
             public void mouseEntered(MouseEvent me) {
                 ((JLabel) me.getComponent()).setOpaque(true);
                 me.getComponent().setBackground(new Color(82, 127, 255));
             }
+
+            @Override
             public void mouseExited(MouseEvent me) {
                 ((JLabel) me.getComponent()).setOpaque(false);
                 me.getComponent().setBackground(new Color(1f, 1f, 1f));
@@ -209,12 +198,14 @@ public class WelcomePanel extends JPanel implements Observer {
         mOpenProjectMenu.setFont(new Font("Helvetica", Font.PLAIN, 18));
         mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                parentEditor.openProject();
+                mEditorInstance.openProject();
             }
+
             public void mouseEntered(MouseEvent me) {
                 ((JLabel) me.getComponent()).setOpaque(true);
                 me.getComponent().setBackground(new Color(82, 127, 255));
             }
+
             public void mouseExited(MouseEvent me) {
                 ((JLabel) me.getComponent()).setOpaque(false);
                 me.getComponent().setBackground(new Color(255, 255, 255));
@@ -247,14 +238,14 @@ public class WelcomePanel extends JPanel implements Observer {
         titleMenu.setPreferredSize(new Dimension(buttonSize));
 
         JLabel[] projectList = new JLabel[Preferences.sMAX_RECENT_FILE_COUNT];
-        JPanel   recentPanel = new JPanel();
+        JPanel recentPanel = new JPanel();
 
         recentPanel.setOpaque(false);
         recentPanel.setLayout(new BoxLayout(recentPanel, BoxLayout.Y_AXIS));
 
         for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
-            String projectDirName = Preferences.getProperty("recentprojectdir" + i);
-            String projectName    = Preferences.getProperty("recentprojectname" + i);
+            String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
+            String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
@@ -263,13 +254,12 @@ public class WelcomePanel extends JPanel implements Observer {
                     if (projectDirName.startsWith("res" + System.getProperty("file.separator") + "prj")) {
                         continue;
                     }
-                    String modified = Preferences.getProperty("recentprojectdate" + i);
-                    if(modified == null)
-                    {
+                    String modified = Preferences.getProperty("recentproject." + i + ".date");
+                    if (modified == null) {
                         modified = "Not saved yet";
                     }
                     projectList[i] = new JLabel(projectName + ", last edited: "
-                                                + modified);
+                            + modified);
                     projectList[i].setLayout(new BoxLayout(projectList[i], BoxLayout.X_AXIS));
                     projectList[i].setOpaque(false);
                     projectList[i].setMaximumSize(new Dimension(buttonSize));
@@ -279,18 +269,24 @@ public class WelcomePanel extends JPanel implements Observer {
                     projectList[i].addMouseListener(new MouseListener() {
                         @Override
                         public void mouseClicked(MouseEvent me) {
-                            parentEditor.toggleProjectEditorList(true);
-                            parentEditor.openProject(projectDir);
+                            //mEditorInstance.toggleProjectEditorList(true);
+                            mEditorInstance.openProject(projectDir);
                         }
+
                         @Override
-                        public void mousePressed(MouseEvent me) {}
+                        public void mousePressed(MouseEvent me) {
+                        }
+
                         @Override
-                        public void mouseReleased(MouseEvent me) {}
+                        public void mouseReleased(MouseEvent me) {
+                        }
+
                         @Override
                         public void mouseEntered(MouseEvent me) {
                             ((JLabel) me.getComponent()).setOpaque(true);
                             me.getComponent().setBackground(new Color(82, 127, 255));
                         }
+
                         @Override
                         public void mouseExited(MouseEvent me) {
                             ((JLabel) me.getComponent()).setOpaque(false);
@@ -331,7 +327,7 @@ public class WelcomePanel extends JPanel implements Observer {
      * Creates a list of sample projects
      */
     private void listOfSampleProjects() {
-        
+
         // *****************************************************************************************************************************************************
         // LIST OF SAMPLE PROJECTS******************************************************************************************************************************
         // *****************************************************************************************************************************************************
@@ -353,12 +349,14 @@ public class WelcomePanel extends JPanel implements Observer {
         File listDirs[] = SampleProjFolder.listFiles();
 
         for (final File sampleDir : listDirs) {
-            File sampleProj = new File(sampleDir.getPath() + "/vsm");
+            final File sampleProj = new File(sampleDir.getPath() + "/vsm");
+
             if (sampleProj.exists()) {
-                File        configFile    = new File(sampleDir.getPath() + "/vsm/" + "config.xml");
-                ProjectData project       = new ProjectData(configFile);
-                JLabel      newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
-                                                + sdf.format(sampleProj.lastModified()));
+                File projectPath = new File(sampleDir.getPath() + "/vsm/"/* + "config.xml"*/);
+                EditorProject project = new EditorProject();
+                project.parse(projectPath);
+                JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
+                        + sdf.format(sampleProj.lastModified()));
 
                 newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
                 newSampleProj.setOpaque(false);
@@ -369,18 +367,24 @@ public class WelcomePanel extends JPanel implements Observer {
                 newSampleProj.addMouseListener(new MouseListener() {
                     @Override
                     public void mouseClicked(MouseEvent me) {
-                        parentEditor.toggleProjectEditorList(true);
-                        parentEditor.openProject(sampleProj);
+                        //mEditorInstance.toggleProjectEditorList(true);
+                        mEditorInstance.openProject(sampleProj);
                     }
+
                     @Override
-                    public void mousePressed(MouseEvent me) {}
+                    public void mousePressed(MouseEvent me) {
+                    }
+
                     @Override
-                    public void mouseReleased(MouseEvent me) {}
+                    public void mouseReleased(MouseEvent me) {
+                    }
+
                     @Override
                     public void mouseEntered(MouseEvent me) {
                         ((JLabel) me.getComponent()).setOpaque(true);
                         me.getComponent().setBackground(new Color(82, 127, 255));
                     }
+
                     @Override
                     public void mouseExited(MouseEvent me) {
                         ((JLabel) me.getComponent()).setOpaque(false);

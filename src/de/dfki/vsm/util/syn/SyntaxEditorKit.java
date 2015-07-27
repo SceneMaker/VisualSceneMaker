@@ -10,7 +10,7 @@ import javax.swing.text.ViewFactory;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SyntaxEditorKit extends DefaultEditorKit implements ViewFactory {
 
@@ -28,14 +28,14 @@ public class SyntaxEditorKit extends DefaultEditorKit implements ViewFactory {
 
     @Override
     public View create(final Element element) {
-        System.err.println("Creating View");
+        //System.err.println("Creating View");
 
         return new SyntaxEditorView(element);
     }
 
     @Override
     public Document createDefaultDocument() {
-        System.err.println("Creating Document");
+        //System.err.println("Creating Document");
 
         return new SyntaxDocument(mLexxer);
     }

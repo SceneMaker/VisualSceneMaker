@@ -2,17 +2,17 @@ package de.dfki.vsm.model.sceneflow.definition;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * A paramater definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class ParamDef extends Object {
+public class ParamDef extends Syntax {
     private String mName;
     private String mType;
 
@@ -84,7 +84,7 @@ public class ParamDef extends Object {
         return new ParamDef(mName, mType);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Argument name=\"" + mName + "\" type=\"" + mType + "\"/>");
     }
 

@@ -7,10 +7,10 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.acticon.ActiconAction;
-import de.dfki.vsm.model.acticon.ActiconObject;
-import de.dfki.vsm.model.script.ActionFeature;
+import de.dfki.vsm.model.acticon.ActiconConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -47,7 +47,7 @@ import javax.swing.WindowConstants;
 public class SceneActionDialog extends JDialog {
     private static SceneActionDialog sInstance = null;
     private final LOGDefaultLogger   mLogger   = LOGDefaultLogger.getInstance();
-    private final Editor             mEditor   = Editor.getInstance();
+    private final EditorInstance             mEditor   = EditorInstance.getInstance();
     private JPanel                   mMainPanel;
     private JPanel                   mActionPanel;
     private JPanel                   mButtonsPanel;
@@ -64,7 +64,7 @@ public class SceneActionDialog extends JDialog {
     private JLabel           mPreviewLabel;
 
     SceneActionDialog() {
-        super(Editor.getInstance(), "Scene Action Dialog", false);
+        super(EditorInstance.getInstance(), "Scene Action Dialog", false);
         initComponents();
     }
 
@@ -326,7 +326,7 @@ public class SceneActionDialog extends JDialog {
     }
 
     private void saveActions() {
-        ActiconObject            asd  = Editor.getInstance().getSelectedProjectEditor().getProject().getSceneActions();
+        ActiconConfig            asd  = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
         ArrayList<ActionFeature> args = new ArrayList<ActionFeature>();
 
         for (Object o : mListModel.toArray()) {
@@ -345,8 +345,9 @@ public class SceneActionDialog extends JDialog {
 
         // SM3SceneAction a = new SM3SceneAction("", mActionName.getText(), args, null);
         // asd.addAction(a);
-        Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
-        Editor.getInstance().update();
+        // TODO: Why do we save this here?
+        //Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
+        EditorInstance.getInstance().refresh();
     }
 
     private class StripedCellRenderer extends JLabel implements ListCellRenderer {

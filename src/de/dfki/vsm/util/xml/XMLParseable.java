@@ -1,16 +1,12 @@
 package de.dfki.vsm.util.xml;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public interface XMLParseable {
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Parse a parsable object from an XML document element
     public void parseXML(final Element element) throws XMLParseError;
 }

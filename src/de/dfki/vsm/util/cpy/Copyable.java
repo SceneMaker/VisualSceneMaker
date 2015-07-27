@@ -1,12 +1,19 @@
 package de.dfki.vsm.util.cpy;
 
-//~--- JDK imports ------------------------------------------------------------
-
 import java.io.Serializable;
 
 /**
- * @author Gregor Mehlmann
+ * An interface for all copyable objects.
+ *
+ * @author Not me
  */
 public interface Copyable extends Serializable {
-    public abstract Object getCopy();
+
+    /**
+     * Create a deep copy of the copyable object.
+     *
+     * @return A deep copy of the copyable object.
+     */
+    public abstract Copyable getCopy();
+
 }

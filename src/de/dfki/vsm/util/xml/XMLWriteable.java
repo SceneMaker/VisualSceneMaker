@@ -1,16 +1,12 @@
 package de.dfki.vsm.util.xml;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public interface XMLWriteable {
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public void writeXML(final IndentWriter stream) throws XMLWriteError;
+    // Write a writeable object in XML to an indent writer 
+    public void writeXML(final IOSIndentWriter writer) throws XMLWriteError;
 }

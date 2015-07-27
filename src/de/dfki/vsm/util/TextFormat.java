@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TextFormat {
 

@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class SceneFlowManager {

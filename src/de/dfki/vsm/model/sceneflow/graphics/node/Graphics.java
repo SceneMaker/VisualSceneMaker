@@ -2,17 +2,17 @@ package de.dfki.vsm.model.sceneflow.graphics.node;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class Graphics extends Object {
+public class Graphics extends Syntax {
     private Position mPosition;
 
     public Graphics() {
@@ -60,7 +60,7 @@ public class Graphics extends Object {
         return new Graphics(mPosition.getCopy());
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Graphics>").push();
         mPosition.writeXML(out);
         out.pop().println("</Graphics>");

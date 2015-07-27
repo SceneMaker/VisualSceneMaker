@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class CmdDialog extends Dialog {
 
@@ -35,7 +35,7 @@ public class CmdDialog extends Dialog {
     private JLabel errorMsg;
 
     public CmdDialog(Command command) {
-        super(Editor.getInstance(), "Specify Command", true);
+        super(EditorInstance.getInstance(), "Specify Command", true);
         mCommand = command;
         initComponents();
 

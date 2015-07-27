@@ -2,7 +2,8 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -22,13 +23,13 @@ import java.util.ArrayList;
 import javax.swing.JComponent;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class NodeVariableBadge extends JComponent {
     LocationType                                  mLocation          = LocationType.RIGHT;
     Node                                          mNode              = null;
-    WorkSpace                                     mWorkSpace         = null;
+    WorkSpacePanel                                     mWorkSpace         = null;
     de.dfki.vsm.model.sceneflow.Node              mDataNode          = null;
     Point                                         mRelPos            = null;
     ArrayList<TPLTuple<String, AttributedString>> mLocalVarDefList   = null;
@@ -40,12 +41,12 @@ public class NodeVariableBadge extends JComponent {
     int                                           mPositionOffset    = 10;
     int                                           mBeautyXOffSet     = 0;
     int                                           mBeautyYOffSet     = 0;
-    ProjectPreferences                            mPreferences;
+    EditorConfig                            mPreferences;
 
     static enum LocationType { TOP, BOTTOM, LEFT, RIGHT }
 
     ;
-    public NodeVariableBadge(Node node, WorkSpace workSpace, ArrayList<String> localVarDefList,
+    public NodeVariableBadge(Node node, WorkSpacePanel workSpace, ArrayList<String> localVarDefList,
                              ArrayList<String> globalVarDefList, ArrayList<String> localTypeDefList,
                              ArrayList<String> globalTypeDefList) {
         mNode              = node;

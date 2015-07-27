@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
@@ -49,7 +49,7 @@ import javax.swing.text.PlainDocument;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class FunDefDialog extends Dialog {
 
@@ -105,7 +105,7 @@ public class FunDefDialog extends Dialog {
     private Dimension textFielSize = new Dimension(250, 30);
 
     public FunDefDialog(FunDef funDef) {
-        super(Editor.getInstance(), "Function Definition", true);
+        super(EditorInstance.getInstance(), "Function Definition", true);
 
         if (funDef != null) {
 

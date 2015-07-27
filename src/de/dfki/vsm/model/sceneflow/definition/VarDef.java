@@ -2,9 +2,9 @@ package de.dfki.vsm.model.sceneflow.definition;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
+import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -12,9 +12,9 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public class VarDef extends Object {
+public class VarDef extends Syntax {
     private String     mType;
     private String     mName;
     private Expression mExp;
@@ -79,7 +79,7 @@ public class VarDef extends Object {
                                          : null));
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<Variable type=\"" + mType + "\" name =\"" + mName + "\">").push();
 
         if (mExp != null) {

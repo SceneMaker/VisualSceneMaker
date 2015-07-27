@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.definition.type;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -16,7 +16,7 @@ import java.util.Vector;
 /**
  * A struct type definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class StructTypeDef extends TypeDef {
     private Vector<MemberDef> mMemberDefList;
@@ -120,7 +120,7 @@ public class StructTypeDef extends TypeDef {
         return Flavour.Struct;
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<StructType name=\"" + mName + "\">").push();
 
         for (int i = 0; i < mMemberDefList.size(); i++) {

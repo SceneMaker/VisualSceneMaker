@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.definition.type;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Object;
+import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -10,9 +10,9 @@ import org.w3c.dom.Element;
 /**
  * An abstract type definition.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
-public abstract class TypeDef extends Object {
+public abstract class TypeDef extends Syntax {
     protected String mName;
 
     public enum Flavour { List, Struct }

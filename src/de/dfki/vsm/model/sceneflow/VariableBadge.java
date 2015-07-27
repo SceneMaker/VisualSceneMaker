@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.graphics.node.Position;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 /**
  * @author Patrick Gebhard
  */
-public class VariableBadge extends Object {
+public class VariableBadge extends Syntax {
     protected Position mPosition;
     protected String   mType;
 
@@ -65,7 +65,7 @@ public class VariableBadge extends Object {
         });
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<" + mType + ">").push();
 
         if (mPosition != null) {
@@ -75,7 +75,7 @@ public class VariableBadge extends Object {
         out.pop().println("</" + mType + ">");
     }
 
-    public Object getCopy() {
+    public Syntax getCopy() {
         return null;
     }
 }

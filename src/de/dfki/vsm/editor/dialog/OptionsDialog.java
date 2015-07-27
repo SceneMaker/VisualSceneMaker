@@ -2,11 +2,11 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.model.configs.ProjectPreferences;
-import de.dfki.vsm.model.project.ProjectData;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -41,7 +41,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class OptionsDialog extends JDialog {
@@ -49,10 +49,10 @@ public class OptionsDialog extends JDialog {
 
     // private JComboBox mScenePlayerComboBox;
     private final LOGDefaultLogger mLogger         = LOGDefaultLogger.getInstance();
-    private final Editor           mEditor         = Editor.getInstance();
+    private final EditorInstance           mEditor         = EditorInstance.getInstance();
     private final Dimension        mLabelDimension = new Dimension(100, 10);
     private final Dimension        buttonSize      = new Dimension(125, 30);
-    private Dimension              textfieldSize   = new Dimension(150, 30);
+    private final Dimension              textfieldSize   = new Dimension(150, 30);
     private JPanel                 mMainPanel;
     private JPanel                 mPrefPanel;
 
@@ -75,6 +75,7 @@ public class OptionsDialog extends JDialog {
     private JComboBox          mScriptFontComboBox;
     private JLabel             mGridScaleLabel;
     private JSpinner           mGridScaleSpinner;
+    private JCheckBox          mLaunchDefaultPlayerCheckBox;
     private JCheckBox          mGridCheckBox;
     private JCheckBox          mVisualizationCheckBox;
     private JCheckBox          mVisualizationTraceCheckBox;
@@ -93,11 +94,11 @@ public class OptionsDialog extends JDialog {
     private JPanel             mScriptPanel;
     private JButton            mDeleteRecentFileListButton;
     private JButton            mDeleteRecentFileButton;
-    private ProjectPreferences mPreferences;
-    private ProjectData        mProject;
+    private EditorConfig mPreferences;
+    private EditorProject        mProject;
 
     private OptionsDialog() {
-        super(Editor.getInstance(), "Preferences", false);
+        super(EditorInstance.getInstance(), "Preferences", false);
         initComponents();
         initPreferences();
     }
@@ -125,12 +126,14 @@ public class OptionsDialog extends JDialog {
         mButtonsPanel.setOpaque(false);
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 savePreferences(true);
             }
         });
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 dispose();
             }
@@ -189,11 +192,12 @@ public class OptionsDialog extends JDialog {
         mXSDFileButton.setOpaque(false);
         mXSDFileButton.setContentAreaFilled(false);
         mXSDFileButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser file = new JFileChooser(mPreferences.sUSER_DIR);
 
                 file.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                file.showDialog(Editor.getInstance(), "Select Sceneflow XSD");
+                file.showDialog(EditorInstance.getInstance(), "Select Sceneflow XSD");
 
                 if (file.getSelectedFile() != null) {
                     mXSDFileTextField.setText(file.getSelectedFile().getPath());
@@ -253,6 +257,7 @@ public class OptionsDialog extends JDialog {
         mRecentFileScrollPane.setBounds(140, 95, 230, 100);
         mDeleteRecentFileButton = new JButton("Remove Item");
         mDeleteRecentFileButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 int index = mRecentFileList.getSelectedIndex();
 
@@ -263,6 +268,7 @@ public class OptionsDialog extends JDialog {
         });
         mDeleteRecentFileListButton = new JButton("Delete List");
         mDeleteRecentFileListButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 ((DefaultListModel) mRecentFileList.getModel()).clear();
             }
@@ -299,13 +305,14 @@ public class OptionsDialog extends JDialog {
         mGridCheckBox           = new JCheckBox("Draw Grid", true);
         mGridCheckBox.setOpaque(false);
         mGridCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
-        ProjectPreferences preferences =
+        EditorConfig preferences =
             mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         // Node size stuff
@@ -318,41 +325,46 @@ public class OptionsDialog extends JDialog {
         mVisualizationCheckBox = new JCheckBox("Activitiy Visualization", true);
         mVisualizationCheckBox.setOpaque(false);
         mVisualizationCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mVisualizationTraceCheckBox = new JCheckBox("Activity Trace", true);
         mVisualizationTraceCheckBox.setOpaque(false);
         mVisualizationTraceCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mShowNodeIDCheckBox = new JCheckBox("Draw Node ID", true);
         mShowNodeIDCheckBox.setOpaque(false);
         mShowNodeIDCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mShowVariablesCheckBox = new JCheckBox("Show Variables", true);
         mShowVariablesCheckBox.setOpaque(false);
         mShowVariablesCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mShowSmartPathDebugCheckBox = new JCheckBox("Show Smart Path Calculation", false);
         mShowSmartPathDebugCheckBox.setOpaque(false);
         mShowSmartPathDebugCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
@@ -411,7 +423,7 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initScriptPanel() {
-        ProjectPreferences preferences =
+        EditorConfig preferences =
             mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
 
         mScriptFontTypeLabel = new JLabel("Font Type:");
@@ -431,9 +443,10 @@ public class OptionsDialog extends JDialog {
         mScriptFontComboBox.setOpaque(false);
         mScriptFontComboBox.setSelectedItem(preferences.sSCRIPT_FONT_TYPE);
         mScriptFontComboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
         mScriptFontSizeLabel   = new JLabel("Font Size:");
@@ -456,6 +469,18 @@ public class OptionsDialog extends JDialog {
         fontAndSize.add(mScriptFontSizeSpinner);
         fontAndSize.add(Box.createRigidArea(new Dimension(5, 0)));
         fontAndSize.add(Box.createHorizontalGlue());
+               
+        mLaunchDefaultPlayerCheckBox = new JCheckBox("Launch Default Scene Player", false);
+        mLaunchDefaultPlayerCheckBox.setOpaque(false);
+        mLaunchDefaultPlayerCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                savePreferences(false);
+                mEditor.refresh();
+            }
+        });
+        
+        
         mScriptPanel = new JPanel();
         mScriptPanel.setBackground(Color.white);
         mScriptPanel.setLayout(new BoxLayout(mScriptPanel, BoxLayout.Y_AXIS));
@@ -463,6 +488,9 @@ public class OptionsDialog extends JDialog {
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
         mScriptPanel.add(fontAndSize);
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
+        mScriptPanel.add(mLaunchDefaultPlayerCheckBox);
+        mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
+        
     }
 
 //  private void initScenePlayerPanel() {
@@ -506,6 +534,8 @@ public class OptionsDialog extends JDialog {
             "scriptfonsize",
             Integer.toString(((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).getNumber().intValue()));
         mPreferences.setProperty("scriptfonttype", mScriptFontComboBox.getSelectedItem().toString());
+        
+        mPreferences.setProperty("launchPlayer", Boolean.toString(mLaunchDefaultPlayerCheckBox.isSelected()));
 
 //      Preferences.setProperty("selectedsceneplayer",
 //              (String) mScenePlayerComboBox.getSelectedItem());
@@ -547,7 +577,7 @@ public class OptionsDialog extends JDialog {
 //          Preferences.removeProperty("recentfile" + i);
 //          mLogger.message("  Removing recentfile" + i + " ");
 //      }
-        mPreferences.save(mProject.getPreferencesFileName());
+        //mPreferences.save(mProject.getEditorConfigName());
 
         if (dispose) {
             dispose();
@@ -555,7 +585,7 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initPreferences() {
-        mProject     = mEditor.getSelectedProjectEditor().getProject();
+        mProject     = mEditor.getSelectedProjectEditor().getEditorProject();
         mPreferences = mEditor.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences();
         ((DefaultListModel) mRecentFileList.getModel()).clear();
 
@@ -592,6 +622,8 @@ public class OptionsDialog extends JDialog {
                 mScriptFontComboBox.setSelectedItem(mPreferences.getProperty(key));
             } else if (key.equals("visualizationtrace")) {
                 mVisualizationTraceCheckBox.setSelected(Boolean.valueOf(mPreferences.getProperty(key)));
+            }  else if (key.equals("launchPlayer")) {
+                mLaunchDefaultPlayerCheckBox.setSelected(Boolean.valueOf(mPreferences.getProperty(key)));
             } else if (key.equals("shownodeid")) {
                 mShowNodeIDCheckBox.setSelected(Boolean.valueOf(mPreferences.getProperty(key)));
             } else if (key.equals("showvariables")) {
@@ -616,33 +648,37 @@ public class OptionsDialog extends JDialog {
 
         // Add specific listeners
         mNodeSizeSpinner.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
         // Add specific listeners
         mScriptFontSizeSpinner.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
         // Add specific listeners
         mGridScaleSpinner.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
 
         // Add specific listeners
         mWorkspaceFontSizeSpinner.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 savePreferences(false);
-                mEditor.update();
+                mEditor.refresh();
             }
         });
     }

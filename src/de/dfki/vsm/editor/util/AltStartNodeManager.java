@@ -16,7 +16,7 @@ import java.util.Vector;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class AltStartNodeManager {
     public Edge                                                    mEdge;

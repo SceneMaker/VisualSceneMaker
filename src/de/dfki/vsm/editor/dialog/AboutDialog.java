@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.SImageView;
 
@@ -50,7 +50,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class AboutDialog extends JDialog {
 
@@ -90,7 +90,7 @@ public class AboutDialog extends JDialog {
 
     // Construction
     private AboutDialog() {
-        super(Editor.getInstance(), "About", false);
+        super(EditorInstance.getInstance(), "About", false);
 
         // Init close operation
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
