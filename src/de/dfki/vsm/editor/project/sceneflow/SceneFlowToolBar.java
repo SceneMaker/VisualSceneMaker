@@ -19,6 +19,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.io.File;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
@@ -162,7 +163,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
             mRedo.setEnabled(false);
         }
     }
-   /* public void updatePathDisplay() {
+   /* 
+    public void updatePathDisplay() {
         mPathComponents.clear();
 
         for (SuperNode superNode : mEditor.getSceneFlowManager().getActiveSuperNodes()) {
@@ -195,7 +197,9 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
     private void saveEditorConfig() {
         mEditorConfig.setProperty("node_width", Integer.toString(mNodeSize));
         mEditorConfig.setProperty("node_height", Integer.toString(mNodeSize));
-      //  mEditorConfig.save(mEditorProject.getEditorConfigName());
+        
+        mEditorConfig.save(mEditorInstance.getSelectedProjectEditor().getEditorProject().getProjectFile());
+
         EditorInstance.getInstance().refresh();
     }
 
