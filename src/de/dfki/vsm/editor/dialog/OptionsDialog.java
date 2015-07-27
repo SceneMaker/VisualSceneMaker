@@ -96,6 +96,7 @@ public class OptionsDialog extends JDialog {
     private JPanel             mScriptPanel;
     private JButton            mDeleteRecentFileListButton;
     private JButton            mDeleteRecentFileButton;
+    
     private final EditorConfig       mEditorConfig;
 
     private OptionsDialog() {
@@ -145,7 +146,7 @@ public class OptionsDialog extends JDialog {
         // Do the layout
         mPrefPanel = new JPanel();
         mPrefPanel.setLayout(new BoxLayout(mPrefPanel, BoxLayout.Y_AXIS));
-        mPrefPanel.add(mGeneralPanel);
+        //mPrefPanel.add(mGeneralPanel);
 
         // mPrefPanel.add(mFileListPanel);
         mPrefPanel.add(mGraphicsPanel);
