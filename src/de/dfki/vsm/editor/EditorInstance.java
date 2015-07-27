@@ -4,6 +4,7 @@ import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.dialog.AboutDialog;
+import de.dfki.vsm.editor.dialog.CreateProjectDialog;
 import de.dfki.vsm.editor.dialog.ErrorDialog;
 import de.dfki.vsm.editor.dialog.MonitorDialog;
 import de.dfki.vsm.editor.dialog.OptionsDialog;
@@ -33,10 +34,8 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
@@ -303,8 +302,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         return mProjectEditors;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Create a new project editor
     public final boolean newProject() {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();

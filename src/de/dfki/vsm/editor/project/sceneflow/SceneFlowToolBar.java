@@ -192,10 +192,10 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
         }
     }
 
-    private void savePreferences() {
+    private void saveEditorConfig() {
         mEditorConfig.setProperty("node_width", Integer.toString(mNodeSize));
         mEditorConfig.setProperty("node_height", Integer.toString(mNodeSize));
-        //mPreferences.save(mProject.getEditorConfigName());
+      //  mEditorConfig.save(mEditorProject.getEditorConfigName());
         EditorInstance.getInstance().refresh();
     }
 
@@ -466,7 +466,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
                 mNodeSize = (mNodeSize < 190)
                         ? mNodeSize = mNodeSize + 10
                         : mNodeSize;
-                savePreferences();
+                saveEditorConfig();
             }
         });
         b.setToolTipText("Zoom In");
@@ -479,7 +479,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
                 mNodeSize = (mNodeSize > 30)
                         ? mNodeSize = mNodeSize - 10
                         : mNodeSize;
-                savePreferences();
+                saveEditorConfig();
             }
         });
         b.setToolTipText("Zoom Out");

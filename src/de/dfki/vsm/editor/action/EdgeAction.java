@@ -135,8 +135,7 @@ public abstract class EdgeAction extends EditorAction {
         // Connect GUI Edge to Target GUI node
         // TODO: Recompute the appearance of the source GUI node
         if (mGUIEdge == null) {
-            mGUIEdge = new de.dfki.vsm.editor.Edge(mWorkSpace, mDataEdge, mGUIEdgeType, mSourceGUINode, mTargetGUINode,
-                    mWorkSpace.getPreferences());
+            mGUIEdge = new de.dfki.vsm.editor.Edge(mWorkSpace, mDataEdge, mGUIEdgeType, mSourceGUINode, mTargetGUINode);
         } else {
             if (mSourceGUINode.equals(mTargetGUINode)) {
 

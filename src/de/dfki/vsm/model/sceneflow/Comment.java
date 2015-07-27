@@ -71,8 +71,7 @@ public class Comment extends Syntax {
 
     private void formatHTML() {
         mFontSize =
-            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences()
-                .sWORKSPACEFONTSIZE;
+            EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
 
         if (mTextEditor == null) {
             mTextEditor = new JEditorPane();

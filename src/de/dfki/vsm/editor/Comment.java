@@ -62,7 +62,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     // edit
     private boolean            mEditMode = false;
     private WorkSpacePanel          mWorkSpace;
-    private EditorConfig mPreferences;
+    private EditorConfig mEditorConfig;
 
     // image
     private Image                               mResizeMarker;
@@ -86,7 +86,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;
-        mPreferences = mWorkSpace.getPreferences();
+        mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
         mDataComment = dataComment;
 
         // resize marker
@@ -94,7 +94,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
         // font setup
         mFont = new Font("SansSerif", Font.ITALIC,    /* (mWorkSpace != null) ? */
-                         mPreferences.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
+                         mEditorConfig.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
 
         // size setup
         Rectangle rect = new Rectangle(mDataComment.getGraphics().getRect().getXPos(),
@@ -139,7 +139,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     
     
     public void update() {
-        mFont = new Font("SansSerif", Font.ITALIC, mPreferences.sWORKSPACEFONTSIZE);
+        mFont = new Font("SansSerif", Font.ITALIC, mEditorConfig.sWORKSPACEFONTSIZE);
         mTextLabel.setFont(mFont);
         mTextEditor.setFont(mFont);
 

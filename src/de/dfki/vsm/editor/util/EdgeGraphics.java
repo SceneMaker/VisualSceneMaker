@@ -1,13 +1,9 @@
-
-/*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
- */
 package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.model.project.EditorConfig;
 
@@ -53,7 +49,7 @@ public final class EdgeGraphics {
 
     // general flags
     boolean                          mPointingToSameNode = false;
-    private final EditorConfig mPreferences;
+    private final EditorConfig mEditorConfig;
     public double                    mArrowDir;
     double                           mArrow1Point;
     double                           mArrow2Point;
@@ -62,7 +58,7 @@ public final class EdgeGraphics {
         mDataEdge    = e.getDataEdge();
         mSourceNode  = e.getSourceNode();
         mTargetNode  = e.getTargetNode();
-        mPreferences = mSourceNode.getWorkSpace().getPreferences();
+        mEditorConfig = mSourceNode.getWorkSpace().getEditorConfig();
 
         // check if edge has already graphic information in data model
         if (mDataEdge.getGraphics() != null) {
@@ -189,7 +185,7 @@ public final class EdgeGraphics {
         double distance      = Point.distance(sNC.x, sNC.y, tNC.x, tNC.y);
         double scalingFactor = (mPointingToSameNode)
                                ? 3
-                               : ((distance / mPreferences.sNODEHEIGHT) - 0.5d);
+                               : ((distance / mEditorConfig.sNODEHEIGHT) - 0.5d);
 
         scalingFactor = (scalingFactor < 1.0d)
                         ? 1.25d
@@ -283,7 +279,7 @@ public final class EdgeGraphics {
 
             // let the start and end point bet placed at least one third of the mean
             // of width and height od nodes away from each other
-            double minDist = (mPreferences.sNODEHEIGHT + mPreferences.sNODEWIDTH) / 2 / 3;
+            double minDist = (mEditorConfig.sNODEHEIGHT + mEditorConfig.sNODEWIDTH) / 2 / 3;
 
             for (Point p : freeSourceNodeDockPoints) {
                 for (Point q : freeSourceNodeDockPoints) {
