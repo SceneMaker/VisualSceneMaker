@@ -21,7 +21,7 @@ import javax.swing.SwingConstants;
  * @author mfallas
  */
 public class OKButton extends JLabel {
-    private final Dimension buttonSize = new Dimension(125, 30);
+    private final Dimension buttonSize = new Dimension(135, 30);
 
     public OKButton() {
         setText("OK");

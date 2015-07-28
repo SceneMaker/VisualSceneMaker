@@ -7,6 +7,8 @@ import de.dfki.vsm.editor.dialog.AboutDialog;
 import de.dfki.vsm.editor.dialog.ErrorDialog;
 import de.dfki.vsm.editor.dialog.MonitorDialog;
 import de.dfki.vsm.editor.dialog.OptionsDialog;
+import de.dfki.vsm.editor.dialog.QuitDialog;
+import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
@@ -32,13 +34,10 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -50,7 +49,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     // The singelton editor instance
     public static EditorInstance sInstance = null;
-
     // The singelton runtime instance 
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
     // The singelton logger instance   
@@ -58,10 +56,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The singelton event multicaster
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // The editor's GUI components
-    private final MenuBar mMenuBar;
+    private final EditorMenuBar mEditorMenuBar;
     private final JTabbedPane mProjectEditors;
-    private final WelcomePanel mStarter;
     private final JScrollPane mWelcomeScreen;
+    private final EditorStarter mWelcomePanel;
 
     // Get the singelton editor instance
     public synchronized static EditorInstance getInstance() {
@@ -148,9 +146,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
          */
         // Preferences.info();
         // Init the menu bar
-        mMenuBar = new MenuBar(this);
+        mEditorMenuBar = new EditorMenuBar(this);
         // Hide the menu bar 
-        mMenuBar.setVisible(false);
+        mEditorMenuBar.setVisible(false);
 
         // Init the project editor list
         mProjectEditors = new JTabbedPane(
@@ -158,8 +156,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         //mObservable.addObserver(mProjectEditors);
 
         // Init welcome screen
-        mStarter = new WelcomePanel(this);
-        mWelcomeScreen = new JScrollPane(mStarter);
+        mWelcomePanel = new EditorStarter(this);
+        mWelcomeScreen = new JScrollPane(mWelcomePanel);
         mWelcomeScreen.setMaximumSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
         mWelcomeScreen.setOpaque(false);
         mWelcomeScreen.getViewport().setOpaque(false);
@@ -187,7 +185,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         checkAndSetLocation();
         setTitle(Preferences.getProperty("frame_title"));
         setName(Preferences.getProperty("frame_name"));
-        setJMenuBar(mMenuBar);
+        setJMenuBar(mEditorMenuBar);
         // setContentPane(jsWelcome);
         // add(mProjectEditorList); // COMMENTED BY M.FALLAS
         pack();
@@ -254,7 +252,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     public void clearRecentProjects() {
-        mStarter.updateWelcomePanel();
+        mWelcomePanel.updateWelcomePanel();
     }
 
     private void checkAndSetLocation() {
@@ -303,22 +301,18 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         return mProjectEditors;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Create a new project editor
     public final boolean newProject() {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();
         // Add the new project editor 
         mProjectEditors.addTab("", editor);
         mProjectEditors.setSelectedComponent(editor);
-        // Add the editor as observer
-        //mObservable.addObserver(editor);
         // Show the editor projects now
         if (mProjectEditors.getTabCount() == 1) {
             // Show the project editors
             setContentPane(mProjectEditors);
             // Show the menu bar items
-            mMenuBar.setVisible(true);
+            mEditorMenuBar.setVisible(true);
         }
         // Refresh the appearance
         refresh();
@@ -375,7 +369,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 // Show the project editors
                 setContentPane(mProjectEditors);
                 // Show the menu bar items
-                mMenuBar.setVisible(true);
+                mEditorMenuBar.setVisible(true);
             }
             // Create a new project editor from project
             final ProjectEditor projectEditor = new ProjectEditor(project);
@@ -525,36 +519,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Check if the project has changed
         if (editor.getEditorProject().hasChanged()) {
 
-            // TODO: Make a dialog class for that
-            // such as the other dialogs of our
-            // dialog package
-            JDialog quitDialog = new JDialog(this);
-            OKButton mYesButton = new OKButton();
-            mYesButton.setText("Yes");
-            mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    save(editor);
-                    //quitDialog.dispose();
-                }
-            });
-            //NO BUTTON
-            CancelButton mNoButton = new CancelButton();
-            mNoButton.setText("No");
-            mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    //quitDialog.dispose();
-                }
-            });
-            // Create a new option pane
-            JOptionPane optionPane = new JOptionPane();
-            optionPane.setBackground(Color.white);
-            optionPane.setMessage("The project " + editor.getEditorProject().getProjectName() + " has changed.  Save it?");
-            optionPane.setMessageType(JOptionPane.INFORMATION_MESSAGE);
-            optionPane.setOptions(new Object[]{mYesButton, mNoButton});
-            quitDialog = optionPane.createDialog("Save before quitting?");
-            quitDialog.setVisible(true);
+            QuitDialog qDiag = new QuitDialog(0);
+            //return saveMessage;
 
         }
         // Remove the component 
@@ -564,7 +530,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Show the project editors
             setContentPane(mWelcomeScreen);
             // Hide the menu bar items
-            mMenuBar.setVisible(false);
+            mEditorMenuBar.setVisible(false);
         }
         // Refresh the appearance
         refresh();
@@ -691,8 +657,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         // save properties
         Preferences.save();
-        mStarter.createListOfRecentProj();
-        mMenuBar.refreshRecentFileMenu();
+        mWelcomePanel.createListOfRecentProj();
+        mEditorMenuBar.refreshRecentFileMenu();
     }
 
     // Show the options dialog 
@@ -722,7 +688,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         aboutDialog.setVisible(true);
     }
-    
+
     // Play the execution of the current project
     public final void play() {
         // Get the project that has to be executed
@@ -803,6 +769,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             if (mRunTime.unload(project)) {
                 // Print some information
                 mLogger.message("Unloading project '" + project + "'");
+                // Launch event to unselect nodes and edges
+                mEventCaster.convey(new SceneStoppedEvent(this));
                 // Refresh the appearance
                 refresh();
                 // Return true at success
@@ -834,7 +802,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
-    // Update the observables of the editor
+    // Refresh this editor component
     public final void refresh() {
         // Print some information
         mLogger.message("Refreshing '" + this + "'");
@@ -845,8 +813,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             editor.refresh();
         }
         // Refresh the editor's menu bar
-        mMenuBar.refresh();
+        mEditorMenuBar.refresh();
         // Refresh editor welcome panel
-        //mStarter.refresh();
+        mWelcomePanel.refresh();
     }
 }

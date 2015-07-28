@@ -27,6 +27,7 @@ import static de.dfki.vsm.editor.Edge.TYPE.EEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.TEDGE;
+import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -134,8 +135,7 @@ public abstract class EdgeAction extends EditorAction {
         // Connect GUI Edge to Target GUI node
         // TODO: Recompute the appearance of the source GUI node
         if (mGUIEdge == null) {
-            mGUIEdge = new de.dfki.vsm.editor.Edge(mWorkSpace, mDataEdge, mGUIEdgeType, mSourceGUINode, mTargetGUINode,
-                    mWorkSpace.getPreferences());
+            mGUIEdge = new de.dfki.vsm.editor.Edge(mWorkSpace, mDataEdge, mGUIEdgeType, mSourceGUINode, mTargetGUINode);
         } else {
             if (mSourceGUINode.equals(mTargetGUINode)) {
 
@@ -366,7 +366,6 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint     = mSourceGUINode.disconnectEdge(mGUIEdge);
             mLastTargetGUINodeDockPoint = mGUIEdge.mLastTargetNodeDockPoint;
         }
-
         cleanUpData();
     }
 
@@ -380,8 +379,16 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint = mSourceGUINode.disconnectEdge(mGUIEdge);
             mTargetGUINodeDockPoint = mTargetGUINode.disconnectEdge(mGUIEdge);
         }
-
         cleanUpData();
+        if(mGUIEdgeType.equals(PEDGE) && mSourceGUINode.getDataNode().hasPEdges() == mSourceGUINode.getDataNode().hasMany) //TODO VALUES OF hasMany SHOULD BE GLOBAL
+        {
+            ModifyPEdgeDialog mPEdgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode().getFirstPEdge()); //OPEN EDITION DIALOG TO ASSING NEW PROBABILITIES
+            mPEdgeDialog.run();
+        }
+        if(mSourceGUINode.getDataNode().hasPEdges() == mSourceGUINode.getDataNode().hasOne) //HAS ONLY ONE EDGE LEFT
+        {
+            mSourceGUINode.getDataNode().getFirstPEdge().setProbability(100);// ASSIGN 100% PROBABILITY AUTOMATICALLY
+        }
     }
 
     private void cleanUpData() {

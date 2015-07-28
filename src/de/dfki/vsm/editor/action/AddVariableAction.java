@@ -25,7 +25,6 @@ public class AddVariableAction extends EditorAction {
         // Add the new variable definition if the creation was successful
         if (varDef != null) {
             mDataNode.addVarDef(varDef);
-
             // mListModel.addElement(varDef);
             EditorInstance.getInstance().refresh();
         }

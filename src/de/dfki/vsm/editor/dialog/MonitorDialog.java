@@ -53,14 +53,14 @@ public class MonitorDialog extends JDialog {
         super(EditorInstance.getInstance(), "Run Monitor", true);
         mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         initComponents();
-        initVariableList();
+        //initVariableList(); Now this init is being called from the button calling the monitor -- by M. Fallas 07 2015 
     }
 
     public static MonitorDialog getInstance() {
         if (sSingeltonInstance == null) {
             sSingeltonInstance = new MonitorDialog();
         }
-
+        
         return sSingeltonInstance;
     }
 
@@ -131,9 +131,8 @@ public class MonitorDialog extends JDialog {
         mOkButton.setBounds(205, 0, 125, 30);
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (process()) {
-                    dispose();
-                }
+                boolean varAssigned = process();
+                dispose();
             }
         });
         mCancelButton = new CancelButton();

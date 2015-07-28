@@ -1,10 +1,10 @@
 package de.dfki.vsm.editor.util;
 
 import de.dfki.vsm.SceneMaker3;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import java.lang.reflect.Method;
 
@@ -28,10 +29,13 @@ import java.util.TreeSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
+ * 
+ * Standard VSM configurations 
  */
 public final class Preferences {
 
@@ -41,6 +45,13 @@ public final class Preferences {
     private static final String sCONFIG_FILE
             = System.getProperty("user.home")
             + System.getProperty("file.separator") + ".scenefloweditor";
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // DIRECTORIES
+    ////////////////////////////////////////////////////////////////////////////
+    public static final String sUSER_NAME = System.getProperty("user.name");
+    public static final String sUSER_HOME = System.getProperty("user.home");
+    public static final String sUSER_DIR  = System.getProperty("user.dir");
 
     //////////////////////////////////////////////////////////////////////////////
     // NODE COLORS
@@ -53,13 +64,6 @@ public final class Preferences {
     //////////////////////////////////////////////////////////////////////////////
     // EDGE COLORS
     //////////////////////////////////////////////////////////////////////////////
-//    public static final Color sFEDGE_COLOR = new Color(82, 51, 161);
-//    public static final Color sEEDGE_COLOR = new Color(128, 128, 128);
-//    public static final Color sTEDGE_COLOR = new Color(128, 70, 24);
-//    public static final Color sCEDGE_COLOR = new Color(207, 175, 0);
-//    public static final Color sPEDGE_COLOR = new Color(97, 140, 30);
-//    public static final Color sIEDGE_COLOR = new Color(181, 45, 13);
-//    
     public static final Color sFEDGE_COLOR = new Color(150, 192, 206);  //BLUE
     public static final Color sEEDGE_COLOR = new Color(190, 185, 181);  //GRAY
     public static final Color sTEDGE_COLOR = new Color(200, 171, 101);  //BROWN
@@ -92,20 +96,11 @@ public final class Preferences {
     public static boolean sSHOW_GESTURES = true;
 
     //////////////////////////////////////////////////////////////////////////////
-    // BUILDING BLOCKS
-    //////////////////////////////////////////////////////////////////////////////
-//  public static final int sBUILDING_BLOCK_FONT_SIZE = 10;
-//  public static final int sBUILDING_BLOCK_NODE_WIDTH = 16;
-//  public static final int sBUILDING_BLOCK_NODE_HEIGHT = 16;
-//  public static final Dimension sBUILDING_BLOCK_DIMENSION = new Dimension(
-//          sBUILDING_BLOCK_NODE_WIDTH,
-//          sBUILDING_BLOCK_NODE_HEIGHT);
-    //////////////////////////////////////////////////////////////////////////////
     // RECENT FILES
     //////////////////////////////////////////////////////////////////////////////
     public static final int sMAX_RECENT_FILE_COUNT = 8;
     public static final int sMAX_RECENT_PROJECTS = 8;
-    public static final ArrayList<Integer> sDYNAMIC_KEYS = new ArrayList<Integer>(Arrays.asList(KeyEvent.VK_1,
+    public static final ArrayList<Integer> sDYNAMIC_KEYS = new ArrayList<>(Arrays.asList(KeyEvent.VK_1,
             KeyEvent.VK_2, KeyEvent.VK_3, KeyEvent.VK_4,
             KeyEvent.VK_5, KeyEvent.VK_6, KeyEvent.VK_7,
             KeyEvent.VK_8, KeyEvent.VK_9));
@@ -133,10 +128,6 @@ public final class Preferences {
             = new ImageIcon(Toolkit.getDefaultToolkit().createImage(SceneMaker3.class.getResource("/res/img/smlogo.png")));
     public static final ImageIcon sSCENEMAKER_DOCICON
             = new ImageIcon(Toolkit.getDefaultToolkit().createImage(SceneMaker3.class.getResource("/res/img/docicon.png")));
-
-//  public static final ImageIcon sSCENE_EDIT_ICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage( SceneMaker3.class.getResource("/res/img/edit.png")));
-//  public static final ImageIcon sADD_SCENES_ICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage( SceneMaker3.class.getResource("/res/img/addscenes.png")));
-//  // public static final ImageIcon sSCENEEDITPROBLEMICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage( SceneMaker3.class.getResource("/res/img/sceneeditproblem.png")));
     public static final ImageIcon sSHOW_GRID_ICON
             = new ImageIcon(Toolkit.getDefaultToolkit().createImage(SceneMaker3.class.getResource("/res/img/grid.png")));
     public static final ImageIcon sSCREENSHOT_ICON = new ImageIcon(
@@ -146,12 +137,6 @@ public final class Preferences {
             Toolkit.getDefaultToolkit().createImage(
                     SceneMaker3.class.getResource(
                             "/res/img/visualisation.png")));
-
-//  //public static final ImageIcon sSAVEICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage(SCENEMAKER.getResource("/res/img/save.png")));
-//  public static final ImageIcon sUNDO_ICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage( SceneMaker3.class.getResource("/res/img/undo.png")));
-//  public static final ImageIcon sREDO_ICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage( SceneMaker3.class.getResource("/res/img/redo.png")));
-//  public static final ImageIcon sINCREASE_ICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage( SceneMaker3.class.getResource("/res/img/increase.png")));
-//  public static final ImageIcon sDECREASE_ICON = new ImageIcon(Toolkit.getDefaultToolkit().createImage( SceneMaker3.class.getResource("/res/img/decrease.png")));
     public static final ImageIcon sCOMMENT_ENTRY = new ImageIcon(
             Toolkit.getDefaultToolkit().createImage(
                     SceneMaker3.class.getResource(
@@ -217,91 +202,21 @@ public final class Preferences {
                     Toolkit.getDefaultToolkit().createImage(
                             SceneMaker3.class.getResource("/res/img/elementtree/FUNCTION_ERROR_ENTRY.png")));
 
-    //////////////////////////////////////////////////////////////////////////////
-    // VARIABLE STATIC FIELDS
-    //////////////////////////////////////////////////////////////////////////////
-    public static int sNODEWIDTH = 100;
-    public static int sNODEHEIGHT = 100;
-    public static int sSUPERNODEWIDTH = sNODEWIDTH;
-    public static int sSUPERNODEHEIGHT = sNODEWIDTH;
-    public static Dimension sNODESIZE = new Dimension(sNODEWIDTH, sNODEHEIGHT);
-    public static Dimension sSUPERNODESIZE = new Dimension(sSUPERNODEWIDTH, sSUPERNODEHEIGHT);
-    public static int sGRID_NODEWIDTH = sNODEWIDTH;
-    public static int sGRID_NODEHEIGHT = sNODEHEIGHT;
-    public static int sGRID_XSCALE = 1;
-    public static int sGRID_YSCALE = sGRID_XSCALE;
-    public static int sGRID_XSPACE = sNODEWIDTH * sGRID_XSCALE;
-    public static int sGRID_YSPACE = sNODEHEIGHT * sGRID_YSCALE;
-    public static int sXOFFSET = sGRID_NODEWIDTH / 3;
-    public static int sYOFFSET = sGRID_NODEHEIGHT / 3;
-    public static int sWORKSPACEFONTSIZE = 16;
-    public static float sEDITORFONTSIZE = 11;
-    public static boolean sSHOWGRID = true;
-    public static boolean sVISUALISATION = true;
-    public static boolean sACTIVITYTRACE = true;
-    public static int sVISUALISATIONTIME = 15; // 25 = 1 second
-    public static boolean sSHOW_VARIABLE_BADGE_ON_WORKSPACE = true;
-    public static boolean sSHOW_SMART_PATH_DEBUG = false;
-    public static boolean sSHOWIDSOFNODES = true;
-    private static double sPROPERTIES_PANE_SIZE;
 
-    /**
-     *
-     */
-    private static synchronized void init() {
-        sNODEWIDTH = Integer.valueOf(sPROPERTIES.getProperty("node_width"));
-        sNODEHEIGHT = Integer.valueOf(sPROPERTIES.getProperty("node_height"));
-        sGRID_XSCALE = Integer.valueOf(sPROPERTIES.getProperty("grid_x"));
-        sGRID_YSCALE = Integer.valueOf(sPROPERTIES.getProperty("grid_y"));
-        sWORKSPACEFONTSIZE = Integer.valueOf(sPROPERTIES.getProperty("workspace_fontsize"));
-        sSHOWGRID = Boolean.valueOf(sPROPERTIES.getProperty("grid"));
-        sVISUALISATION = Boolean.valueOf(sPROPERTIES.getProperty("visualization"));
-        sACTIVITYTRACE = Boolean.valueOf(sPROPERTIES.getProperty("visualizationtrace"));
-        sSHOWIDSOFNODES = Boolean.valueOf(sPROPERTIES.getProperty("shownodeid"));
-        sSHOW_VARIABLE_BADGE_ON_WORKSPACE = Boolean.valueOf(sPROPERTIES.getProperty("showvariables"));
-        sSHOW_SMART_PATH_DEBUG = Boolean.valueOf(sPROPERTIES.getProperty("showsmartpathcalculations"));
-
-        // load visual appearance settings
-        sSHOW_ELEMENTS = Boolean.valueOf(sPROPERTIES.getProperty("showelements"));
-        sSHOW_ELEMENT_PROPERTIES = Boolean.valueOf(sPROPERTIES.getProperty("showelementproperties"));
-        sPROPERTIES_PANE_SIZE = Integer.valueOf(sPROPERTIES.getProperty("propertiesdividerlocation"));
-        sSHOW_SCENEEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showsceneeditor"));
-        sSHOW_SCENEFLOWEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showscenefloweditor"));
-        sSCENEFLOW_SCENE_EDITOR_RATIO = Float.valueOf(sPROPERTIES.getProperty("sceneflow_sceneeditor_ratio"));
-        sSHOW_GESTURES = Boolean.valueOf(sPROPERTIES.getProperty("showgestures"));
-        sSUPERNODEWIDTH = sNODEWIDTH;
-        sSUPERNODEHEIGHT = sNODEWIDTH;
-        sGRID_NODEWIDTH = sNODEWIDTH;
-        sGRID_NODEHEIGHT = sNODEHEIGHT;
-        sNODESIZE = new Dimension(sNODEWIDTH, sNODEHEIGHT);
-        sSUPERNODESIZE = new Dimension(sSUPERNODEWIDTH, sSUPERNODEHEIGHT);
-        sGRID_XSPACE = sNODEWIDTH * sGRID_XSCALE;
-        sGRID_YSPACE = sNODEHEIGHT * sGRID_YSCALE;
-        sXOFFSET = sGRID_NODEWIDTH / 3;
-        sYOFFSET = sGRID_NODEHEIGHT / 3;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////
     public static synchronized void save() {
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream(sCONFIG_FILE);
-
-            sPROPERTIES.storeToXML(fileOutputStream, "Properties for the Sceneflow Editor", "ISO8859_1");
-            fileOutputStream.close();
+            try (FileOutputStream fileOutputStream = new FileOutputStream(sCONFIG_FILE)) {
+                sPROPERTIES.storeToXML(fileOutputStream, "Properties for the Sceneflow Editor", "ISO8859_1");
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGDefaultLogger.getInstance().failure("Error: " + e.getMessage());
         }
-
-        init();
     }
-
+    
     public static synchronized void load() {
         parseConfigFile();
-        init();
     }
-
+   
     // TODO: This should actually be private
     public static synchronized String getProperty(String key) {
         return sPROPERTIES.getProperty(key);
@@ -319,18 +234,17 @@ public final class Preferences {
 
     // TODO: This should actually be private
     public static synchronized SortedSet<Object> getKeySet() {
-        return new TreeSet<Object>(sPROPERTIES.keySet());
+        return new TreeSet<>(sPROPERTIES.keySet());
     }
 
     private static synchronized void parseConfigFile() {
         if ((new File(sCONFIG_FILE)).canRead()) {
             try {
-                FileInputStream in = new FileInputStream(sCONFIG_FILE);
-
-                sPROPERTIES.loadFromXML(in);
-                in.close();
+                try (FileInputStream in = new FileInputStream(sCONFIG_FILE)) {
+                    sPROPERTIES.loadFromXML(in);
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGDefaultLogger.getInstance().failure("Error: " + e.getMessage());
             }
         }
 
@@ -361,96 +275,6 @@ public final class Preferences {
         if (!sPROPERTIES.containsKey("frame_height")) {
             sPROPERTIES.setProperty("frame_height", "600");
         }
-
-        if (!sPROPERTIES.containsKey("node_width")) {
-            sPROPERTIES.setProperty("node_width", "90");
-        }
-
-        if (!sPROPERTIES.containsKey("node_height")) {
-            sPROPERTIES.setProperty("node_height", "90");
-        }
-
-        if (!sPROPERTIES.containsKey("grid_x")) {
-            sPROPERTIES.setProperty("grid_x", "1");
-        }
-
-        if (!sPROPERTIES.containsKey("grid_y")) {
-            sPROPERTIES.setProperty("grid_y", "1");
-        }
-
-        if (!sPROPERTIES.containsKey("visualization")) {
-            sPROPERTIES.setProperty("visualization", "false");
-        }
-
-        if (!sPROPERTIES.containsKey("visualizationtrace")) {
-            sPROPERTIES.setProperty("visualizationtrace", "false");
-        }
-
-        if (!sPROPERTIES.containsKey("shownodeid")) {
-            sPROPERTIES.setProperty("shownodeid", "true");
-        }
-
-        if (!sPROPERTIES.containsKey("showvariables")) {
-            sPROPERTIES.setProperty("showvariables", "true");
-        }
-
-        if (!sPROPERTIES.containsKey("showsmartpathcalculations")) {
-            sPROPERTIES.setProperty("showsmartpathcalculations", "false");
-        }
-
-        // default values for editor appearance
-        if (!sPROPERTIES.containsKey("showelements")) {
-            sPROPERTIES.setProperty("showelements", "true");
-        }
-
-        if (!sPROPERTIES.containsKey("showelementproperties")) {
-            sPROPERTIES.setProperty("showelementproperties", "true");
-        }
-
-        if (!sPROPERTIES.containsKey("propertiesdividerlocation")) {
-            sPROPERTIES.setProperty("propertiesdividerlocation", "790");
-        }
-
-        if (!sPROPERTIES.containsKey("showscenefloweditor")) {
-            sPROPERTIES.setProperty("showscenefloweditor", "true");
-        }
-
-        if (!sPROPERTIES.containsKey("showsceneeditor")) {
-            sPROPERTIES.setProperty("showsceneeditor", "true");
-        }
-
-        if (!sPROPERTIES.containsKey("sceneflow_sceneeditor_ratio")) {
-            sPROPERTIES.setProperty("sceneflow_sceneeditor_ratio", "0.75");
-        }
-
-        if (!sPROPERTIES.containsKey("showgestures")) {
-            sPROPERTIES.setProperty("showgestures", "true");
-        }
-
-        // visual appearance of workspace and its elements
-        if (!sPROPERTIES.containsKey("grid")) {
-            sPROPERTIES.setProperty("grid", "true");
-        }
-
-        if (!sPROPERTIES.containsKey("num_magnets")) {
-            sPROPERTIES.setProperty("num_magnets", "8");
-        }
-
-        if (!sPROPERTIES.containsKey("xmlns")) {
-            sPROPERTIES.setProperty("xmlns", "xml.sceneflow.dfki.de");
-        }
-
-        if (!sPROPERTIES.containsKey("xmlns_xsi")) {
-            sPROPERTIES.setProperty("xmlns_xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        }
-
-        if (!sPROPERTIES.containsKey("xsi_schemeLocation")) {
-            sPROPERTIES.setProperty("xsi_schemeLocation", "res/xsd/sceneflow.xsd");
-        }
-
-        if (!sPROPERTIES.containsKey("workspace_fontsize")) {
-            sPROPERTIES.setProperty("workspace_fontsize", "11");
-        }
     }
 
     public static synchronized void configure() {
@@ -477,26 +301,26 @@ public final class Preferences {
                 // Set the dock icon to the logo of Visual Scene Maker 3  
                 setDockIconImage.invoke(app, new Object[]{Preferences.sSCENEMAKER_DOCICON.getImage()});
             }
-        } catch (final Exception exc) {
-            exc.printStackTrace();
+        } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException exc) {
+            LOGDefaultLogger.getInstance().failure("Error: " + exc.getMessage());
         }
     }
 
     // Check if we are on a WINDOWS system
     private static synchronized boolean isWindows() {
         final String os = System.getProperty("os.name").toLowerCase();
-        return (os.indexOf("win") >= 0);
+        return (os.contains("win"));
     }
 
     // Check if we are on a MAC system
     private static synchronized boolean isMac() {
         final String os = System.getProperty("os.name").toLowerCase();
-        return (os.indexOf("mac") >= 0);
+        return (os.contains("mac"));
     }
 
     // Check if we are on a UNIX system
     private static synchronized boolean isUnix() {
         final String os = System.getProperty("os.name").toLowerCase();
-        return ((os.indexOf("nix") >= 0) || (os.indexOf("nux") >= 0));
+        return ((os.contains("nix")) || (os.contains("nux")));
     }
 }

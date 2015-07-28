@@ -7,6 +7,7 @@ import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
@@ -27,7 +28,6 @@ import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Observer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -130,7 +130,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
             // Add content of the function container
             JPanel functionContent = funDefPanel.createPanel();
 
-            functionContent.setOpaque(false);
+            functionContent.setOpaque(true);
             //
             final JPanel functionContainer = new JPanel();
 //            functionContainer.addMouseListener(new MouseAdapter() {
@@ -145,6 +145,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
             functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
             functionContainer.setOpaque(false);
             functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
+            functionContainer.setBackground(Color.WHITE);
 
             // add remove button to the far right
             // REMOVE BUTTON
@@ -382,7 +383,14 @@ public class FunctionsEditor extends JPanel implements EventListener {
 
         mFunctionsPanel.add(Box.createRigidArea(new Dimension(5, 5)));
     }
-
+    /**
+     * 
+     */
+    private void launchProjectChangedEvent()
+    {
+        ProjectChangedEvent ev = new ProjectChangedEvent(this);
+        mEventCaster.convey(ev);
+    }
     /**
      *
      */
@@ -419,6 +427,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
         EditorInstance.getInstance().refresh();
         EventDispatcher.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
+        launchProjectChangedEvent();
     }
 
     /**
@@ -429,6 +438,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
             mSceneFlow.removeUsrCmdDef(funDef.getName());
             launchFunctionCreatedEvent(funDef);
             EditorInstance.getInstance().refresh();
+            launchProjectChangedEvent();
         }
 
         // Editor.getInstance().update();

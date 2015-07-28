@@ -34,6 +34,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
@@ -61,7 +62,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     // edit
     private boolean            mEditMode = false;
     private WorkSpacePanel          mWorkSpace;
-    private EditorConfig mPreferences;
+    private EditorConfig mEditorConfig;
 
     // image
     private Image                               mResizeMarker;
@@ -85,7 +86,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;
-        mPreferences = mWorkSpace.getPreferences();
+        mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
         mDataComment = dataComment;
 
         // resize marker
@@ -93,7 +94,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
         // font setup
         mFont = new Font("SansSerif", Font.ITALIC,    /* (mWorkSpace != null) ? */
-                         mPreferences.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
+                         mEditorConfig.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
 
         // size setup
         Rectangle rect = new Rectangle(mDataComment.getGraphics().getRect().getXPos(),
@@ -124,29 +125,6 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // first put it in the editor, then back in the label
         mTextEditor.setText(mDataComment.getHTMLText());
         mTextLabel.setText(mTextEditor.getText());
-        JButton colourPicker = new JButton();
-        colourPicker.setHorizontalAlignment(SwingConstants.RIGHT);
-        colourPicker.setOpaque(false);
-        colourPicker.setContentAreaFilled(false);
-        colourPicker.setBorder(null);
-        colourPicker.setIcon(ResourceLoader.loadImageIcon("/res/img/colour_picker_small.png"));
-        colourPicker.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        colourPicker.setToolTipText("Select Font Color");
-        colourPicker.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        colourPicker.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Color color = JColorChooser.showDialog(mWorkSpace, "Colours", Color.yellow);
-                mTextEditor.selectAll();
-                mTextEditor.setForeground(color); // color of selected text
-                mTextLabel.setForeground(color);
-//                mTextEditor.setSelectionColor(color); // background of selected text
-                mTextEditor.requestFocusInWindow();
-            }
-        });
-        colourPicker.setMaximumSize(new Dimension(30, 20));
-        colourPicker.setPreferredSize(new Dimension(30, 20));
-        colourPicker.setMinimumSize(new Dimension(30, 20));
-        add(colourPicker, BorderLayout.PAGE_END);
         add(mTextLabel, BorderLayout.CENTER);
     }
 
@@ -161,7 +139,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     
     
     public void update() {
-        mFont = new Font("SansSerif", Font.ITALIC, mPreferences.sWORKSPACEFONTSIZE);
+        mFont = new Font("SansSerif", Font.ITALIC, mEditorConfig.sWORKSPACEFONTSIZE);
         mTextLabel.setFont(mFont);
         mTextEditor.setFont(mFont);
 
