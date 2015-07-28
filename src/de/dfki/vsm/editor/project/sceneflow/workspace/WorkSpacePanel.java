@@ -32,6 +32,7 @@ import de.dfki.vsm.editor.action.ShortestEdgeAction;
 import de.dfki.vsm.editor.action.StraightenEdgeAction;
 import de.dfki.vsm.editor.action.ToggleStartNodeAction;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
 import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
@@ -90,7 +91,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Observer;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractAction;
@@ -173,7 +173,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     // The parent SceneFlowEditor (TODO: remove)
     private final SceneFlowEditor mSceneFlowEditor;
     private final EditorProject mProject;
-    private final EditorConfig mPreferences;
+    private final EditorConfig mEditorConfig;
 
     /**
      *
@@ -182,7 +182,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public WorkSpacePanel(SceneFlowEditor sceneFlowEditor, EditorProject project) {
         mSceneFlowEditor = sceneFlowEditor;
         mProject = project;
-        mPreferences = mProject.getEditorConfig();
+        mEditorConfig = mProject.getEditorConfig();
         mGridManager = new GridManager(this);
 
         // Add the mouse listeners
@@ -250,12 +250,24 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     private void checkChangesOnWorkspace() {
         //mLogger.message("Checking changes on workspace");
         // checkHash
-        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject() != null) {
-            if (mProject.hasChanged()) {
-                EditorInstance.getInstance().getProjectEditors().setTitleAt(
-                        EditorInstance.getInstance().getProjectEditors().getSelectedIndex(), mProject.getProjectName() + "*");
-                //mLogger.message("Changes on workspace detected");
+        if(EditorInstance.getInstance().getSelectedProjectEditor()!= null){
+            if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject() != null) {
+                if (mProject.hasChanged()) {
+                    EditorInstance.getInstance().getProjectEditors().setTitleAt(
+                            EditorInstance.getInstance().getProjectEditors().getSelectedIndex(), mProject.getProjectName() + "*");
+                    //mLogger.message("Changes on workspace detected");
+                }
             }
+        }
+    }
+    /**
+     * 
+     */
+    private void launchProjectChangedEvent()
+    {
+        if (mProject.hasChanged()) {
+            ProjectChangedEvent ev = new ProjectChangedEvent(this);
+            mEventCaster.convey(ev);
         }
     }
 
@@ -271,8 +283,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         return mProject;
     }
 
-    public EditorConfig getPreferences() {
-        return mPreferences;
+    public EditorConfig getEditorConfig() {
+        return mEditorConfig;
     }
 
     public SceneFlowManager getSceneFlowManager() {
@@ -636,8 +648,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void createNode(Point point, Node.Type type) {
-        Point correctedPoint = new Point(point.x - mPreferences.sGRID_NODEWIDTH / 2,
-                point.y - mPreferences.sGRID_NODEWIDTH / 2);
+        Point correctedPoint = new Point(point.x - mEditorConfig.sGRID_NODEWIDTH / 2,
+                point.y - mEditorConfig.sGRID_NODEWIDTH / 2);
 
         new CreateNodeAction(this, mGridManager.getNodeLocation(correctedPoint), type).run();
     }
@@ -1381,7 +1393,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                     // Why should this be null????????
                     // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
-                    Edge edge = new Edge(this, cedge, Edge.TYPE.CEDGE, sourceNode, targetNode, mPreferences);
+                    Edge edge = new Edge(this, cedge, Edge.TYPE.CEDGE, sourceNode, targetNode);
 
                     add(edge);
                 }
@@ -1394,7 +1406,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                     // Why should this be null????????
                     // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
-                    Edge edge = new Edge(this, pedge, Edge.TYPE.PEDGE, sourceNode, targetNode, mPreferences);
+                    Edge edge = new Edge(this, pedge, Edge.TYPE.PEDGE, sourceNode, targetNode);
 
                     add(edge);
                 }
@@ -1407,7 +1419,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                     // Why should this be null????????
                     // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
-                    Edge edge = new Edge(this, fedge, Edge.TYPE.FEDGE, sourceNode, targetNode, mPreferences);
+                    Edge edge = new Edge(this, fedge, Edge.TYPE.FEDGE, sourceNode, targetNode);
 
                     add(edge);
                 }
@@ -1420,7 +1432,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                     // Why should this be null????????
                     // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
-                    Edge edge = new Edge(this, iedge, Edge.TYPE.IEDGE, sourceNode, targetNode, mPreferences);
+                    Edge edge = new Edge(this, iedge, Edge.TYPE.IEDGE, sourceNode, targetNode);
 
                     add(edge);
                 }
@@ -1443,7 +1455,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 }
 
                 // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
-                Edge edge = new Edge(this, dedge, dEdgeType, sourceNode, targetNode, mPreferences);
+                Edge edge = new Edge(this, dedge, dEdgeType, sourceNode, targetNode);
 
                 add(edge);
             }
@@ -1964,6 +1976,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      */
     @Override
     public void mouseReleased(MouseEvent event) {
+        launchProjectChangedEvent();
         straightenAllOutOfBoundEdges();
 
         if (mDoAreaSelection) {
@@ -2655,18 +2668,18 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                 g2d.setStroke(new BasicStroke(0.5f));
                 g2d.drawLine(mSelectNodePoint.x, mSelectNodePoint.y, mSelectNodePoint.x,
-                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) + (height / 2));
+                        mSelectNodePoint.y - (mEditorConfig.sNODEHEIGHT / 2) + (height / 2));
                 g2d.setColor(new Color(100, 100, 100, 100));
                 g2d.fillRoundRect(mSelectNodePoint.x - (width / 2) - 5,
-                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
+                        mSelectNodePoint.y - (mEditorConfig.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
                         height + 5, 5, 5);
                 g2d.setColor(Color.WHITE);
                 g2d.setStroke(new BasicStroke(2.0f));
                 g2d.drawRoundRect(mSelectNodePoint.x - (width / 2) - 5,
-                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
+                        mSelectNodePoint.y - (mEditorConfig.sNODEHEIGHT / 2) - (height / 2) - 6, width + 10,
                         height + 5, 5, 5);
                 g2d.drawString(sEdgeCreationHint.getIterator(), mSelectNodePoint.x - (width / 2),
-                        mSelectNodePoint.y - (mPreferences.sNODEHEIGHT / 2) + 1);
+                        mSelectNodePoint.y - (mEditorConfig.sNODEHEIGHT / 2) + 1);
             }
         }
     }

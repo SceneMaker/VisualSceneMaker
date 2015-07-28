@@ -39,7 +39,11 @@ public class Node extends Syntax {
     protected Graphics        mGraphics      = null;
     protected SuperNode       mParentNode    = null;
     protected boolean         mIsHistoryNode = false;
-
+    
+    public Byte              hasNone        = new Byte("0");
+    public Byte              hasOne         = new Byte("1");
+    public Byte              hasMany        = new Byte("2");
+    
     public enum FLAVOUR {
         NONE, ENODE, TNODE, CNODE, PNODE, INODE, FNODE
     }
@@ -159,7 +163,28 @@ public class Node extends Syntax {
 
         return false;
     }
-
+    /**
+     * Tells if the node has more than 0 Probabilistic edge
+     * in case true, it is necessary to reorganise the values of probabilities
+     * Used when deleting an edge
+     * @return 
+     */
+    public byte hasPEdges()
+    {
+        if(mPEdgeList.size() == 1)
+        {
+            return hasOne;
+        }
+        if(mPEdgeList.size() > 1)
+        {
+            return hasMany;
+        }
+        return hasNone;
+    }
+    public PEdge getFirstPEdge()
+    {
+        return mPEdgeList.get(0);
+    }
     public boolean hasDEdge() {
         return (mDEdge != null);
     }
@@ -227,6 +252,7 @@ public class Node extends Syntax {
     }
 
     public void addVarDef(VarDef value) {
+        System.out.println("VARIABLE ADDED ******************************************");
         mVarDefList.add(value);
     }
 
@@ -252,11 +278,10 @@ public class Node extends Syntax {
 
     public Vector<VarDef> getCopyOfVarDefList() {
         Vector<VarDef> copy = new Vector<VarDef>();
-
+        System.out.println(mVarDefList+ " /////////////////////////////////////////////////////////////////////");
         for (VarDef varDef : mVarDefList) {
             copy.add(varDef.getCopy());
         }
-
         return copy;
     }
 
@@ -328,7 +353,7 @@ public class Node extends Syntax {
 
     public Vector<TypeDef> getCopyOfTypeDefList() {
         Vector<TypeDef> copy = new Vector<TypeDef>();
-
+        
         for (TypeDef def : mTypeDefList) {
             copy.add(def.getCopy());
         }

@@ -126,7 +126,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private String             mName;
     private String             mDescription;
     private Color              mColor;
-    private EditorConfig mPreferences;
+    private EditorConfig mEditorConfig;
     private Timer              mVisualisationTimer;
 
     public enum TYPE {
@@ -189,11 +189,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         initEditBox();
     }
 
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
-                EditorConfig preferences) {
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode) {
         mDataEdge           = edge;
         mWorkSpace          = ws;
-        mPreferences        = preferences;
+        mEditorConfig       = mWorkSpace.getEditorConfig();
         mSourceNode         = sourceNode;
         mTargetNode         = targetNode;
         mType               = type;
@@ -215,7 +214,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 Point sourceDockPoint, Point targetDockpoint) {
         mDataEdge           = edge;
         mWorkSpace          = ws;
-        mPreferences        = ws.getPreferences();
+        mEditorConfig        = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
         mSourceNode         = sourceNode;
         mTargetNode         = targetNode;
         mType               = type;
@@ -335,7 +334,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         // map.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
         map.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
-        map.put(TextAttribute.SIZE, mPreferences.sWORKSPACEFONTSIZE);
+        map.put(TextAttribute.SIZE, mEditorConfig.sWORKSPACEFONTSIZE);
 
         // Derive the font from the attribute map
         Font font = Font.getFont(map);
@@ -817,7 +816,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 //      graphics.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
         graphics.setColor(mColor);
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setStroke(new BasicStroke(mPreferences.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
+        graphics.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
                                            BasicStroke.JOIN_MITER));
         graphics.draw(mEg.mCurve);
 
@@ -854,7 +853,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                               (int) mEg.mCurve.ctrly1);
             graphics.drawLine((int) mEg.mCurve.x2, (int) mEg.mCurve.y2, (int) mEg.mCurve.ctrlx2,
                               (int) mEg.mCurve.ctrly2);
-            graphics.setStroke(new BasicStroke(mPreferences.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
+            graphics.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
                                                BasicStroke.JOIN_MITER));
 
             if (mCP1Selected) {
@@ -877,7 +876,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             graphics.fillRect((int) mEg.mCurve.x1 - 7, (int) mEg.mCurve.y1 - 7, 14, 14);
             graphics.fillPolygon(mEg.mHead);
         } else {
-            graphics.setStroke(new BasicStroke(mPreferences.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
+            graphics.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
                                                BasicStroke.JOIN_MITER));
             graphics.fillPolygon(mEg.mHead);
             graphics.setColor(mColor);
@@ -913,7 +912,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 // fade out
                 int gray = ((20 - mVisualisationTask.getActivityTime()) * 6);
 
-                graphics.setColor(new Color(246 - gray, gray, gray, ((mPreferences.sACTIVITYTRACE)
+                graphics.setColor(new Color(246 - gray, gray, gray, ((mEditorConfig.sACTIVITYTRACE)
                         ? 100
                         : 5 * mVisualisationTask.getActivityTime())));
             } else {
@@ -994,7 +993,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             repaint();
         }
 
-        if (mPreferences.sVISUALISATION) {
+        if (mEditorConfig.sVISUALISATION) {
             if (event instanceof EdgeExecutedEvent) {
                 de.dfki.vsm.model.sceneflow.Edge edge = ((EdgeExecutedEvent) event).getEdge();
 
@@ -1003,7 +1002,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                         mVisualisationTask.cancel();
                     }
 
-                    mVisualisationTask = new VisualisationTask(mPreferences.sVISUALISATIONTIME, this);
+                    mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
                     mVisualisationTimer.schedule(mVisualisationTask, 0, 15);
                 }
             }

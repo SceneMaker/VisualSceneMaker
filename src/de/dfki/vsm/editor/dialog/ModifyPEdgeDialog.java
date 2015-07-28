@@ -145,8 +145,9 @@ public class ModifyPEdgeDialog extends Dialog {
 
     /**
      * Set the correct size of the components
+     *
      * @param jb
-     * @param dim 
+     * @param dim
      */
     private void sanitizeComponent(JComponent jb, Dimension dim) {
         jb.setPreferredSize(dim);
@@ -178,9 +179,9 @@ public class ModifyPEdgeDialog extends Dialog {
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mButtonPanel);
 
-        addComponent(finalBox, 20, 20, 480, 430);
+        addComponent(finalBox, 20, 20, 480, 480);
 
-        packComponents(510, 450);
+        packComponents(510, 500);
     }
 
     private void initButtonPanel() {
@@ -297,7 +298,15 @@ public class ModifyPEdgeDialog extends Dialog {
         mEdgeProbPanel.setLayout(new BoxLayout(mEdgeProbPanel, BoxLayout.Y_AXIS));
         mEdgeProbPanel.add(mHeaderLabel);
         mEdgeProbPanel.add(Box.createVerticalStrut(30));
-
+        //nodes scroll pane
+        JPanel nodesPanel = new JPanel();
+        nodesPanel.setLayout(new BoxLayout(nodesPanel, BoxLayout.Y_AXIS));
+        nodesPanel.setBorder(null);
+        JScrollPane nodesScrollPanel = new JScrollPane(nodesPanel);
+        nodesScrollPanel.setPreferredSize(new Dimension(480, 90));
+        nodesScrollPanel.setMinimumSize(new Dimension(480, 90));
+        nodesScrollPanel.setMaximumSize(new Dimension(480, 90));
+        nodesScrollPanel.setBorder(null);
         //
         for (PEdge pedge : mPEdgeMap.keySet()) {
 
@@ -316,28 +325,24 @@ public class ModifyPEdgeDialog extends Dialog {
 
             // Init probability text field
             JTextField probField = new JTextField(new IntegerDocument(), String.valueOf(prob), 3);
-
             probField.setMinimumSize(new Dimension(40, 25));
             probField.setPreferredSize(new Dimension(40, 25));
             probField.setMaximumSize(new Dimension(40, 25));
             probField.addCaretListener(new CaretListener() {
                 public void caretUpdate(CaretEvent e) {
                     int sum = 0;
-
                     for (JTextField textField : mPEdgeMap.values()) {
                         try {
                             sum += Integer.valueOf(textField.getText().trim()).intValue();
-                        } catch (NumberFormatException es) {
-
-                            //
+                        }
+                        catch (NumberFormatException es) {
                         }
                     }
-
                     // Set the rest to the rest text field
                     mRestField.setText(Integer.valueOf(100 - sum).toString());
                 }
             });
-
+            
             // Add the text field to the mapping
             mPEdgeMap.put(pedge, probField);
 
@@ -349,12 +354,12 @@ public class ModifyPEdgeDialog extends Dialog {
             pedgePanel.add(Box.createRigidArea(new Dimension(15, 0)));
             pedgePanel.add(probField);
             pedgePanel.add(Box.createHorizontalGlue());
-            
-            
-            mEdgeProbPanel.add(pedgePanel);
-            
-        }
+            nodesPanel.add(pedgePanel);
+//            mEdgeProbPanel
 
+        }
+        mEdgeProbPanel.add(nodesScrollPanel);
+        
         // Init rest panel
         mRestPanel = new JPanel();
         mRestPanel.setOpaque(false);
@@ -469,7 +474,7 @@ public class ModifyPEdgeDialog extends Dialog {
 
         for (JTextField textField : mPEdgeMap.values()) {
             try {
-                if(textField.getText().length() == 0){
+                if (textField.getText().length() == 0) {
                     textField.setBorder(BorderFactory.createLineBorder(Color.red));
                     errorMsg.setForeground(Color.red);
                     return false;
@@ -637,11 +642,13 @@ public class ModifyPEdgeDialog extends Dialog {
         return mPEdgeMap;
     }
 }
+
 /**
  * @author Patrick Gebhard
  * @author Not me
  */
 class IntegerDocument extends PlainDocument {
+
     @Override
     public void insertString(int offset, String s, AttributeSet attributeSet) throws BadLocationException {
         try {

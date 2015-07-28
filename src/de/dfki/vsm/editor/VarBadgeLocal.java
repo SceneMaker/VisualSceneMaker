@@ -12,8 +12,6 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
-import static de.dfki.vsm.editor.util.Preferences.sSHOW_VARIABLE_BADGE_ON_WORKSPACE;
-
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.BasicStroke;
@@ -112,7 +110,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     public synchronized void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
 
-        if (sSHOW_VARIABLE_BADGE_ON_WORKSPACE &&!mEntryList.isEmpty()) {
+        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE &&!mEntryList.isEmpty()) {
             if (mIsHidden) {
 
                 // Enable antialiasing

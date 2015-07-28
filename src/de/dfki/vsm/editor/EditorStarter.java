@@ -3,6 +3,7 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -12,8 +13,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Observable;
-import java.util.Observer;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -26,12 +25,14 @@ import javax.swing.JSeparator;
  * @author mfallas Class implements welcome screen with a list of recent
  * projects
  */
-public final class WelcomePanel extends JPanel implements Observer {
+public class EditorStarter extends JPanel {
+
+    // The singelton logger instance   
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     private final String backgroundImage = "/res/img/icon_big.png";    // Background for the welcome screen
-    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+    SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
     private final File SampleProjFolder = new File("res/prj/");
-
     private final EditorInstance mEditorInstance;
     private final Box mRecentProjects;
     private final int paddingSize;
@@ -39,7 +40,7 @@ public final class WelcomePanel extends JPanel implements Observer {
     private final Dimension buttonSize;
     private final Dimension halfScreenDimension;
 
-    public WelcomePanel(final EditorInstance mParent) {
+    public EditorStarter(final EditorInstance mParent) {
         try {
 
             // UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -90,35 +91,14 @@ public final class WelcomePanel extends JPanel implements Observer {
         setBackground(Color.white);
     }
 
+    // Draws the image on the background 
     @Override
-    public void update(Observable o, Object o1) {
-    }
-
-    /**
-     * Draws the image on the background of the welcome
-     *
-     * @param g
-     */
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    public final void paintComponent(final Graphics graphics) {
+        super.paintComponent(graphics);
 
         Image image = ResourceLoader.loadImageIcon(backgroundImage).getImage();
 
-//      ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-//      ColorConvertOp op = new ColorConvertOp(cs, null);
-//
-//      BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null),
-//              BufferedImage.TYPE_INT_ARGB);
-//      //Graphics g2 = bufferedImage.createGraphics();
-//
-//      Graphics2D g2d = (Graphics2D) bufferedImage.getGraphics();
-//      g2d.setComposite(AlphaComposite.SrcOver.derive(0.1f));
-//      g2d.drawImage(img, 0, 0, null);
-//      g2d.dispose();
-//      BufferedImage image = op.filter(bufferedImage, null);
-        // g.drawImage(ResourceLoader.loadImageIcon("/res/img/welcome_message.png").getImage(), getWidth() / 3, paddingSize / 2, this);
-        g.drawImage(image, -300, 0, null);
+        graphics.drawImage(image, -300, 0, null);
     }
 
     public void updateWelcomePanel() {
@@ -255,12 +235,14 @@ public final class WelcomePanel extends JPanel implements Observer {
                     if (projectDirName.startsWith("res" + System.getProperty("file.separator") + "prj")) {
                         continue;
                     }
+
                     String modified = Preferences.getProperty("recentproject." + i + ".date");
+
                     if (modified == null) {
                         modified = "Not saved yet";
                     }
-                    projectList[i] = new JLabel(projectName + ", last edited: "
-                            + modified);
+
+                    projectList[i] = new JLabel(projectName + ", last edited: " + modified);
                     projectList[i].setLayout(new BoxLayout(projectList[i], BoxLayout.X_AXIS));
                     projectList[i].setOpaque(false);
                     projectList[i].setMaximumSize(new Dimension(buttonSize));
@@ -270,7 +252,8 @@ public final class WelcomePanel extends JPanel implements Observer {
                     projectList[i].addMouseListener(new MouseListener() {
                         @Override
                         public void mouseClicked(MouseEvent me) {
-                            //mEditorInstance.toggleProjectEditorList(true);
+
+                            // mEditorInstance.toggleProjectEditorList(true);
                             mEditorInstance.openProject(projectDir);
                         }
 
@@ -353,9 +336,11 @@ public final class WelcomePanel extends JPanel implements Observer {
             final File sampleProj = new File(sampleDir.getPath() + "/vsm");
 
             if (sampleProj.exists()) {
-                File projectPath = new File(sampleDir.getPath() + "/vsm/"/* + "config.xml"*/);
+                File projectPath = new File(sampleDir.getPath() + "/vsm/" /* + "config.xml" */);
                 EditorProject project = new EditorProject();
+
                 project.parse(projectPath);
+
                 JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
                         + sdf.format(sampleProj.lastModified()));
 
@@ -368,7 +353,8 @@ public final class WelcomePanel extends JPanel implements Observer {
                 newSampleProj.addMouseListener(new MouseListener() {
                     @Override
                     public void mouseClicked(MouseEvent me) {
-                        //mEditorInstance.toggleProjectEditorList(true);
+
+                        // mEditorInstance.toggleProjectEditorList(true);
                         mEditorInstance.openProject(sampleProj);
                     }
 
@@ -442,5 +428,11 @@ public final class WelcomePanel extends JPanel implements Observer {
         JLabelURL link = new JLabelURL("Visual SceneMaker Online", "http://scenemaker.dfki.de/");
 
         mRecentProjects.add(link);
+    }
+
+    // Refresh this editor component
+    public final void refresh() {
+        // Print some information
+        mLogger.message("Refreshing '" + this + "'");
     }
 }

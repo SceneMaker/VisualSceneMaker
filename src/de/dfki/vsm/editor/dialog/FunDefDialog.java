@@ -206,6 +206,7 @@ public class FunDefDialog extends Dialog {
         // Button panel
         JPanel mButtonPanel = new JPanel();
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.setBackground(Color.WHITE);
         mButtonPanel.add(Box.createHorizontalGlue());
         mButtonPanel.add(mCancelButton);
         mButtonPanel.add(Box.createHorizontalStrut(30));
@@ -363,60 +364,69 @@ public class FunDefDialog extends Dialog {
     public JPanel createPanel() {
         mFunDefContent = new JPanel();
         mFunDefContent.setLayout(new BoxLayout(mFunDefContent, BoxLayout.Y_AXIS));
-
+     
         // mFunDefContent.setLayout(new GridLayout(0,1));
         mFunDefContent.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+          
         nameContainer = new JPanel();
         nameContainer.setLayout(new BoxLayout(nameContainer, BoxLayout.X_AXIS));
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         nameContainer.add(mNameLabel);
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         nameContainer.add(mNameTextField);
+        
         mNameTextField.setPreferredSize(new Dimension(0, 25));
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        
         methodContainer = new JPanel();
         methodContainer.setLayout(new BoxLayout(methodContainer, BoxLayout.X_AXIS));
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         methodContainer.add(mMethodLabel);
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         methodContainer.add(mMethodComboBox);
+        
         mMethodComboBox.setPreferredSize(new Dimension(0, 25));
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        
         classNameContainer = new JPanel();
         classNameContainer.setLayout(new BoxLayout(classNameContainer, BoxLayout.X_AXIS));
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         classNameContainer.add(mClassNameLabel);
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         classNameContainer.add(mClassNameTextField);
+        
         mClassNameTextField.setPreferredSize(new Dimension(0, 25));
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        
         argContainer = new JPanel();
 
         JList list = mArgList;
-
         list.setVisibleRowCount(1);
         list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        
         argContainer.setLayout(new BoxLayout(argContainer, BoxLayout.X_AXIS));
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         argContainer.add(mArgLabel);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         argContainer.add(list);
+        
         list.setPreferredSize(new Dimension(0, 25));
-
         DefaultListCellRenderer renderer = (DefaultListCellRenderer) list.getCellRenderer();
-
         renderer.setHorizontalAlignment(JLabel.CENTER);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
+        
         mUpperPanel = new JPanel();
         mUpperPanel.setOpaque(true);
         mUpperPanel.setLayout(new GridLayout(0, 2));
         mUpperPanel.add(nameContainer);
         mUpperPanel.add(methodContainer);
+        
         mLowerPanel = new JPanel();
         mLowerPanel.setOpaque(true);
         mLowerPanel.setLayout(new GridLayout(0, 2));
         mLowerPanel.add(classNameContainer);
         mLowerPanel.add(argContainer);
+        
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
         mFunDefContent.add(mUpperPanel);
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 5)));

@@ -23,7 +23,7 @@ import javax.swing.KeyStroke;
 /**
  * @author Gregor Mehlmann
  */
-public final class MenuBar extends JMenuBar {
+public final class EditorMenuBar extends JMenuBar {
 
     // The singelton logger instance   
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -36,31 +36,27 @@ public final class MenuBar extends JMenuBar {
     private JMenuItem mOpenFileMenuItem;
     private JMenuItem mOpenRecentFileMenu;
     private JMenuItem mClearRecentFileMenuItem;
-    private JMenuItem mSaveFileMenuItem;
-
-//  private JMenuItem mSaveFileAsMenuItem;
-    private JMenuItem mSaveAllMenuItem;
     private JMenuItem mCloseFileMenuItem;
+    private JMenuItem mSaveFileMenuItem;
+    private JMenuItem mSaveAsMenuItem;
+    private JMenuItem mSaveAllMenuItem;
     private JMenuItem mExitEditorMenuItem;
-
     // Edit menu
     private JMenu mEditMenu;
     private JMenuItem mCutMenuItem;
     private JMenuItem mCopyMenuItem;
     private JMenuItem mPasteMenuItem;
     private JMenuItem mDeleteMenuItem;
-    private JMenuItem mStraightenAllEdgesMenuItem;
-    private JMenuItem mNormalizeAllEdgesMenuItem;
+    private JMenuItem mStraightenMenuItem;
+    private JMenuItem mNormalizeMenuItem;
     private JMenuItem mOptionsMenuItem;
-
     // Help menu
     private JMenu mHelpMenu;
     private JMenuItem mQuestionMenuItem;
     private JMenuItem mInfoMenuItem;
-    private JMenuItem mSaveFileAsMenuItem;
 
     // Construct the editor's menu bar
-    public MenuBar(final EditorInstance editor) {
+    public EditorMenuBar(final EditorInstance editor) {
         // Initialize the parent editor
         mEditorInstance = editor;
         // Initialize the GUI components
@@ -84,19 +80,16 @@ public final class MenuBar extends JMenuBar {
         g2d.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
     }
 
-    
     public void setCloseMenuEnabled(boolean flag) {
         mCloseFileMenuItem.setEnabled(flag);
     }
 
     public void setSaveMenusEnabled(boolean flag) {
         mSaveFileMenuItem.setEnabled(flag);
-
-//      mSaveFileAsMenuItem.setEnabled(flag);
+        mSaveAsMenuItem.setEnabled(flag);
         mSaveAllMenuItem.setEnabled(flag);
     }
 
-    
     private void initComponents() {
         initFileMenu();
         initEditMenu();
@@ -178,8 +171,9 @@ public final class MenuBar extends JMenuBar {
                     String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
                     if (projectDirName != null) {
-                        Preferences.removeProperty("recentproject." + i + ".path");
-                        Preferences.removeProperty("recentproject." + i + ".name");
+                        Preferences.removeProperty("recentprojectdir" + i);
+                        Preferences.removeProperty("recentprojectdate" + i);
+                        Preferences.removeProperty("recentprojectname" + i);
                     }
                 }
 
@@ -190,8 +184,7 @@ public final class MenuBar extends JMenuBar {
         });
         refreshRecentFileMenu();
 
-        mCloseFileMenuItem = new JMenuItem("Close");
-
+        mCloseFileMenuItem = new JMenuItem("Close Project");
 //      mCloseFileMenuItem.setIcon(new ImageIcon("data/img/close.png"));
         mCloseFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -216,11 +209,11 @@ public final class MenuBar extends JMenuBar {
                 mEditorInstance.save();
             }
         });
-        mSaveFileAsMenuItem = new JMenuItem("Save As");
-        mSaveFileAsMenuItem.setIcon(new ImageIcon("data/img/saveas.png"));
-        mSaveFileAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
+        mSaveAsMenuItem = new JMenuItem("Save As");
+        mSaveAsMenuItem.setIcon(new ImageIcon("data/img/saveas.png"));
+        mSaveAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
-        mSaveFileAsMenuItem.addActionListener(new ActionListener() {
+        mSaveAsMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.saveAs();
             }
@@ -257,7 +250,7 @@ public final class MenuBar extends JMenuBar {
         mFileMenu.add(new JSeparator());
         mFileMenu.add(mCloseFileMenuItem);
         mFileMenu.add(mSaveFileMenuItem);
-        mFileMenu.add(mSaveFileAsMenuItem);
+        mFileMenu.add(mSaveAsMenuItem);
         mFileMenu.add(mSaveAllMenuItem);
 
         if (System.getProperty("os.name").toLowerCase().indexOf("windows") != -1) {
@@ -294,18 +287,18 @@ public final class MenuBar extends JMenuBar {
 
 //      mDeleteMenuItem.setIcon(new ImageIcon("data/img/delete.png"));
         mDeleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));    // , Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mNormalizeAllEdgesMenuItem = new JMenuItem("Normalize all Edges");
-        mNormalizeAllEdgesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
+        mNormalizeMenuItem = new JMenuItem("Normalize all Edges");
+        mNormalizeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
-        mNormalizeAllEdgesMenuItem.addActionListener(new ActionListener() {
+        mNormalizeMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
         });
-        mStraightenAllEdgesMenuItem = new JMenuItem("Straighen all Edges");
-        mStraightenAllEdgesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
+        mStraightenMenuItem = new JMenuItem("Straighen all Edges");
+        mStraightenMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
-        mStraightenAllEdgesMenuItem.addActionListener(new ActionListener() {
+        mStraightenMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
             }
@@ -344,8 +337,8 @@ public final class MenuBar extends JMenuBar {
         mEditMenu.add(mPasteMenuItem);
         mEditMenu.add(mDeleteMenuItem);
         mEditMenu.add(new JSeparator());
-        mEditMenu.add(mStraightenAllEdgesMenuItem);
-        mEditMenu.add(mNormalizeAllEdgesMenuItem);
+        mEditMenu.add(mStraightenMenuItem);
+        mEditMenu.add(mNormalizeMenuItem);
         mEditMenu.add(new JSeparator());
 
 //      mEditMenu.add(mFormatSceneDocument);
