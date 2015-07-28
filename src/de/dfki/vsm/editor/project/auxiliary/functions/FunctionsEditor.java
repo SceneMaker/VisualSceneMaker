@@ -28,7 +28,6 @@ import java.awt.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Observer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -131,7 +130,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
             // Add content of the function container
             JPanel functionContent = funDefPanel.createPanel();
 
-            functionContent.setOpaque(false);
+            functionContent.setOpaque(true);
             //
             final JPanel functionContainer = new JPanel();
 //            functionContainer.addMouseListener(new MouseAdapter() {
@@ -146,6 +145,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
             functionContainer.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createLoweredBevelBorder()));
             functionContainer.setOpaque(false);
             functionContainer.setLayout(new BoxLayout(functionContainer, BoxLayout.X_AXIS));
+            functionContainer.setBackground(Color.WHITE);
 
             // add remove button to the far right
             // REMOVE BUTTON
