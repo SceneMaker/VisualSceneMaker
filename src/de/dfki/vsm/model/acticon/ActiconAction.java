@@ -4,27 +4,29 @@ import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class ActiconAction implements ModelObject {
 
-    // The Action Name
+    // The action name
     private String mActionName;
 
-    // The Feature List
+    // The feature list
     private final ArrayList<ActiconFeature> mFeatureList;
 
-    // Construct An Action
+    // Construct an action
     public ActiconAction() {
-        // Initialize The Action Name
+        // Initialize the action name
         mActionName = null;
-        // Initialize The Feature List
+        // Initialize the feature list
         mFeatureList = new ArrayList<>();
     }
 
@@ -117,28 +119,18 @@ public final class ActiconAction implements ModelObject {
         });
     }
 
-    // Get String Representation
+    // Get the string representation 
     @Override
     public final String toString() {
-        // Create A Byte Array Stream
+        // Create a new byte array stream buffer
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        // Initialize The Indent Writer
-        final IOSIndentWriter stream = new IOSIndentWriter(buffer);
-
-        try {
-            // Write The Action
-            writeXML(stream);
-        } catch (XMLWriteError exc) {
-            // mLogger.failure(exc.toString());
-        }
-        // Cleanup Stream and Writer
-        stream.flush();
-        stream.close();
-        // Get String Representation
+        // Try to write the project to the stream
+        XMLUtilities.writeToXMLStream(this, buffer);
+        // Return the stream string representation
         try {
             return buffer.toString("UTF-8");
-        } catch (Exception exc) {
-            return buffer.toString();
+        } catch (final UnsupportedEncodingException exc) {
+            return exc.getMessage();
         }
     }
 

@@ -8,7 +8,7 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class ActiconFeature implements ModelObject {
 

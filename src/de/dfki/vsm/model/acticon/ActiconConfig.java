@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class ActiconConfig implements ModelObject {
 

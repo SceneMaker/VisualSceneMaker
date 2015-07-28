@@ -28,9 +28,6 @@ import java.awt.dnd.InvalidDnDOperationException;
 
 import java.io.IOException;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import javax.swing.BorderFactory;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
