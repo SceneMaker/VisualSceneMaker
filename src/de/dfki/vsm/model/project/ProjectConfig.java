@@ -8,6 +8,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 
@@ -208,8 +209,8 @@ public final class ProjectConfig implements ModelObject {
         // Return the stream string representation
         try {
             return buffer.toString("UTF-8");
-        } catch (final Exception exc) {
-            return buffer.toString();
+        } catch (final UnsupportedEncodingException exc) {
+            return exc.getMessage();
         }
     }
 

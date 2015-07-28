@@ -2,6 +2,13 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/model/acticon/ActiconFeature.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/model/acticon/ActiconConfig.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/model/project/ProjectConfig.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/model/acticon/ActiconAction.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/model/ModelObject.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/util/xml/XMLUtilities.java</file>
+        </group>
     </open-files>
 </project-private>

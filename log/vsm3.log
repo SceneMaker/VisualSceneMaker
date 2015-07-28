@@ -93214,3 +93214,255 @@ Refreshing 'de.dfki.vsm.editor.EditorInstance[SceneFlowEditor,-8,-8,1936x1176,in
 INFO to LOGFILE on Fri Jul 17 11:59:34 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.MenuBar.refresh(MenuBar.java:73)
 Refreshing 'de.dfki.vsm.editor.MenuBar[,0,0,1920x21,invalid,hidden,layout=javax.swing.plaf.basic.DefaultMenuLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.basic.BasicBorders$MenuBarBorder@405adf88,flags=392,maximumSize=,minimumSize=,preferredSize=,margin=,paintBorder=true]'
 
+WARNING to LOGFILE on Mon Jul 27 11:03:19 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.openProject(EditorInstance.java:347)
+Warning: Canceled opening of a project file
+
+WARNING to LOGFILE on Mon Jul 27 11:03:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:59)
+Creating a new empty runtime project
+
+SEVERE to LOGFILE on Mon Jul 27 11:03:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseProjectConfig(RunTimeProject.java:259)
+Error: Cannot find project configuration file 'D:\GitHubOrg\VisualSceneMaker\project.xml'
+
+SEVERE to LOGFILE on Mon Jul 27 11:03:23 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.openProject(EditorInstance.java:396)
+Error: Cannot load editor project from file 'D:\GitHubOrg\VisualSceneMaker'
+
+WARNING to LOGFILE on Mon Jul 27 11:03:26 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.openProject(EditorInstance.java:347)
+Warning: Canceled opening of a project file
+
+WARNING to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:59)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.refresh(EditorInstance.java:840)
+Refreshing 'de.dfki.vsm.editor.EditorInstance[SceneFlowEditor,0,0,1936x1176,invalid,layout=java.awt.BorderLayout,title=Visual SceneMaker,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,rootPane=javax.swing.JRootPane[,8,31,1920x1137,invalid,layout=javax.swing.JRootPane$RootLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=16777673,maximumSize=,minimumSize=,preferredSize=],rootPaneCheckingEnabled=true]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.ProjectEditor.refresh(ProjectEditor.java:219)
+Refreshing 'de.dfki.vsm.editor.project.ProjectEditor[,0,23,0x-23,layout=javax.swing.plaf.basic.BasicSplitPaneUI$BasicHorizontalLayoutManager,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@266fad46,flags=201326920,maximumSize=,minimumSize=,preferredSize=,continuousLayout=true,dividerSize=10,lastDividerLocation=-1,oneTouchExpandable=true,orientation=VERTICAL_SPLIT]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor.refresh(SceneFlowEditor.java:488)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor[,0,0,0x0,layout=java.awt.BorderLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=java.awt.Dimension[width=10000,height=3000],minimumSize=java.awt.Dimension[width=10,height=10],preferredSize=]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.SceneFlowToolBar.refresh(SceneFlowToolBar.java:462)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.SceneFlowToolBar[SceneFlowToolBar,0,0,0x48,layout=javax.swing.JToolBar$DefaultToolBarLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@58ba4b18,flags=328,maximumSize=,minimumSize=,preferredSize=,floatable=false,margin=,orientation=HORIZONTAL,paintBorder=true]'
+
+WARNING to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@7a063248'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel.refresh(SceneFlowPalettePanel.java:69)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel[,0,0,250x330,layout=java.awt.GridLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@2158a5d3,flags=9,maximumSize=java.awt.Dimension[width=250,height=330],minimumSize=java.awt.Dimension[width=250,height=330],preferredSize=java.awt.Dimension[width=250,height=330]]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel.refresh(SceneFlowElementPanel.java:81)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel[,0,330,250x25,layout=javax.swing.ScrollPaneLayout$UIResource,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@2158a5d3,flags=328,maximumSize=,minimumSize=,preferredSize=java.awt.Dimension[width=250,height=200],columnHeader=,horizontalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=HORIZONTAL,unitIncrement=1],horizontalScrollBarPolicy=HORIZONTAL_SCROLLBAR_AS_NEEDED,lowerLeft=,lowerRight=,rowHeader=,upperLeft=,upperRight=,verticalScrollBar=javax.swing.JScrollPane$ScrollBar[,231,2,17x21,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=VERTICAL,unitIncrement=1],verticalScrollBarPolicy=VERTICAL_SCROLLBAR_AS_NEEDED,viewport=javax.swing.JViewport[,2,2,229x21,layout=javax.swing.ViewportLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=25165832,maximumSize=,minimumSize=,preferredSize=,isViewSizeSet=true,lastPaintPosition=,scrollUnderway=false],viewportBorder=]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.ElementTree.refresh(SceneFlowElementPanel.java:150)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.ElementTree[,0,0,229x32,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@266fad46,flags=16777576,maximumSize=,minimumSize=,preferredSize=,editable=false,invokesStopCellEditing=false,largeModel=false,rootVisible=false,rowHeight=16,scrollsOnExpand=true,showsRootHandles=false,toggleClickCount=2,visibleRowCount=20]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel.refresh(WorkSpacePanel.java:221)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel[,0,0,11x61,layout=de.dfki.vsm.editor.util.SceneFlowLayoutManager,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@266fad46,flags=393,maximumSize=,minimumSize=,preferredSize=]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor.refresh(ElementEditor.java:553)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor[,0,0,0x0,layout=javax.swing.ScrollPaneLayout$UIResource,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@2158a5d3,flags=16777536,maximumSize=,minimumSize=java.awt.Dimension[width=260,height=500],preferredSize=java.awt.Dimension[width=260,height=500],columnHeader=,horizontalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=HORIZONTAL,unitIncrement=1],horizontalScrollBarPolicy=HORIZONTAL_SCROLLBAR_NEVER,lowerLeft=,lowerRight=,rowHeader=,upperLeft=,upperRight=,verticalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=VERTICAL,unitIncrement=1],verticalScrollBarPolicy=VERTICAL_SCROLLBAR_AS_NEEDED,viewport=javax.swing.JViewport[,2,2,-4x-4,layout=javax.swing.ViewportLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=25165824,maximumSize=,minimumSize=,preferredSize=,isViewSizeSet=false,lastPaintPosition=,scrollUnderway=false],viewportBorder=]'
+
+INFO to LOGFILE on Mon Jul 27 11:03:27 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.MenuBar.refresh(MenuBar.java:73)
+Refreshing 'de.dfki.vsm.editor.MenuBar[,0,0,0x0,invalid,layout=javax.swing.plaf.basic.DefaultMenuLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.basic.BasicBorders$MenuBarBorder@70fc30b8,flags=392,maximumSize=,minimumSize=,preferredSize=,margin=,paintBorder=true]'
+
+WARNING to LOGFILE on Mon Jul 27 11:04:48 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@7a063248'
+
+WARNING to LOGFILE on Mon Jul 27 11:04:48 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@7a063248'
+
+WARNING to LOGFILE on Mon Jul 27 11:05:06 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_blue.png'.
+
+WARNING to LOGFILE on Mon Jul 27 11:05:06 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 27 11:05:47 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.refresh(EditorInstance.java:840)
+Refreshing 'de.dfki.vsm.editor.EditorInstance[SceneFlowEditor,0,0,1936x1176,invalid,layout=java.awt.BorderLayout,title=Visual SceneMaker,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,rootPane=javax.swing.JRootPane[,8,31,1920x1137,invalid,layout=javax.swing.JRootPane$RootLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=16777673,maximumSize=,minimumSize=,preferredSize=],rootPaneCheckingEnabled=true]'
+
+INFO to LOGFILE on Mon Jul 27 11:05:47 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.MenuBar.refresh(MenuBar.java:73)
+Refreshing 'de.dfki.vsm.editor.MenuBar[,0,0,1920x21,invalid,hidden,layout=javax.swing.plaf.basic.DefaultMenuLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.basic.BasicBorders$MenuBarBorder@70fc30b8,flags=392,maximumSize=,minimumSize=,preferredSize=,margin=,paintBorder=true]'
+
+WARNING to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:59)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.refresh(EditorInstance.java:840)
+Refreshing 'de.dfki.vsm.editor.EditorInstance[SceneFlowEditor,0,0,1936x1176,invalid,layout=java.awt.BorderLayout,title=Visual SceneMaker,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,rootPane=javax.swing.JRootPane[,8,31,1920x1137,invalid,layout=javax.swing.JRootPane$RootLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=16777673,maximumSize=,minimumSize=,preferredSize=],rootPaneCheckingEnabled=true]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.ProjectEditor.refresh(ProjectEditor.java:219)
+Refreshing 'de.dfki.vsm.editor.project.ProjectEditor[,0,23,0x-23,layout=javax.swing.plaf.basic.BasicSplitPaneUI$BasicHorizontalLayoutManager,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@1cab862b,flags=201326920,maximumSize=,minimumSize=,preferredSize=,continuousLayout=true,dividerSize=10,lastDividerLocation=-1,oneTouchExpandable=true,orientation=VERTICAL_SPLIT]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor.refresh(SceneFlowEditor.java:488)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor[,0,0,0x0,layout=java.awt.BorderLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=java.awt.Dimension[width=10000,height=3000],minimumSize=java.awt.Dimension[width=10,height=10],preferredSize=]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.SceneFlowToolBar.refresh(SceneFlowToolBar.java:462)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.SceneFlowToolBar[SceneFlowToolBar,0,0,0x48,layout=javax.swing.JToolBar$DefaultToolBarLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@7679285d,flags=328,maximumSize=,minimumSize=,preferredSize=,floatable=false,margin=,orientation=HORIZONTAL,paintBorder=true]'
+
+WARNING to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@69d0d41b'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel.refresh(SceneFlowPalettePanel.java:69)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel[,0,0,250x330,layout=java.awt.GridLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@298a8dd4,flags=9,maximumSize=java.awt.Dimension[width=250,height=330],minimumSize=java.awt.Dimension[width=250,height=330],preferredSize=java.awt.Dimension[width=250,height=330]]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel.refresh(SceneFlowElementPanel.java:81)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel[,0,330,250x25,layout=javax.swing.ScrollPaneLayout$UIResource,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@298a8dd4,flags=328,maximumSize=,minimumSize=,preferredSize=java.awt.Dimension[width=250,height=200],columnHeader=,horizontalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=HORIZONTAL,unitIncrement=1],horizontalScrollBarPolicy=HORIZONTAL_SCROLLBAR_AS_NEEDED,lowerLeft=,lowerRight=,rowHeader=,upperLeft=,upperRight=,verticalScrollBar=javax.swing.JScrollPane$ScrollBar[,231,2,17x21,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=VERTICAL,unitIncrement=1],verticalScrollBarPolicy=VERTICAL_SCROLLBAR_AS_NEEDED,viewport=javax.swing.JViewport[,2,2,229x21,layout=javax.swing.ViewportLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=25165832,maximumSize=,minimumSize=,preferredSize=,isViewSizeSet=true,lastPaintPosition=,scrollUnderway=false],viewportBorder=]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.ElementTree.refresh(SceneFlowElementPanel.java:150)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.ElementTree[,0,0,229x32,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@1cab862b,flags=16777576,maximumSize=,minimumSize=,preferredSize=,editable=false,invokesStopCellEditing=false,largeModel=false,rootVisible=false,rowHeight=16,scrollsOnExpand=true,showsRootHandles=false,toggleClickCount=2,visibleRowCount=20]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel.refresh(WorkSpacePanel.java:221)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel[,0,0,11x61,layout=de.dfki.vsm.editor.util.SceneFlowLayoutManager,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@1cab862b,flags=393,maximumSize=,minimumSize=,preferredSize=]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor.refresh(ElementEditor.java:553)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor[,0,0,0x0,layout=javax.swing.ScrollPaneLayout$UIResource,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@298a8dd4,flags=16777536,maximumSize=,minimumSize=java.awt.Dimension[width=260,height=500],preferredSize=java.awt.Dimension[width=260,height=500],columnHeader=,horizontalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=HORIZONTAL,unitIncrement=1],horizontalScrollBarPolicy=HORIZONTAL_SCROLLBAR_NEVER,lowerLeft=,lowerRight=,rowHeader=,upperLeft=,upperRight=,verticalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=VERTICAL,unitIncrement=1],verticalScrollBarPolicy=VERTICAL_SCROLLBAR_AS_NEEDED,viewport=javax.swing.JViewport[,2,2,-4x-4,layout=javax.swing.ViewportLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=25165824,maximumSize=,minimumSize=,preferredSize=,isViewSizeSet=false,lastPaintPosition=,scrollUnderway=false],viewportBorder=]'
+
+INFO to LOGFILE on Mon Jul 27 11:07:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.MenuBar.refresh(MenuBar.java:73)
+Refreshing 'de.dfki.vsm.editor.MenuBar[,0,0,0x0,invalid,layout=javax.swing.plaf.basic.DefaultMenuLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.basic.BasicBorders$MenuBarBorder@234c533f,flags=392,maximumSize=,minimumSize=,preferredSize=,margin=,paintBorder=true]'
+
+WARNING to LOGFILE on Mon Jul 27 11:07:12 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_blue.png'.
+
+WARNING to LOGFILE on Mon Jul 27 11:07:12 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+WARNING to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:59)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.syn.SyntaxStylePolicy.<init>(SyntaxStylePolicy.java:57)
+Success: Loading Style Policy URL:
+<?xml version="1.0" encoding="UTF-8"?>
+<StylePolicy>
+  <TokenStyle name="LANGUAGE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ERRORSTATE" fcol="#ff0000" bcol="#c8ff64" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="NEWLINE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="TURNHEADER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="error" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="UNDERLINE" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="COMMENT" fcol="#5e912f" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="BOOLEAN" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PUNCTUATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="PLACEHOLDER" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="FLOATING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="VARIABLE" fcol="#1e14c8" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="WHITESPACE" fcol="#000000" bcol="#00ffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SCENEHEADER" fcol="#1e14c8" bcol="#ffffff" bold="true" emph="true" undl="false"/>
+  <TokenStyle name="ASSIGNMENT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="STRING" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="IDENTIFIER" fcol="#645064" bcol="#ffffff" bold="false" emph="true" undl="false"/>
+  <TokenStyle name="EOF" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+  <TokenStyle name="INTEGER" fcol="#22cc33" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+</StylePolicy>
+
+WARNING to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.util.ios.ResourceLoader.loadImageIcon(ResourceLoader.java:72)
+Could not find resource '/res/img/fml_gray.png'.
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.refresh(EditorInstance.java:840)
+Refreshing 'de.dfki.vsm.editor.EditorInstance[SceneFlowEditor,0,0,1936x1176,invalid,layout=java.awt.BorderLayout,title=Visual SceneMaker,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,rootPane=javax.swing.JRootPane[,8,31,1920x1137,invalid,layout=javax.swing.JRootPane$RootLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=16777673,maximumSize=,minimumSize=,preferredSize=],rootPaneCheckingEnabled=true]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.ProjectEditor.refresh(ProjectEditor.java:219)
+Refreshing 'de.dfki.vsm.editor.project.ProjectEditor[,0,23,0x-23,layout=javax.swing.plaf.basic.BasicSplitPaneUI$BasicHorizontalLayoutManager,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@34d7938b,flags=201326920,maximumSize=,minimumSize=,preferredSize=,continuousLayout=true,dividerSize=10,lastDividerLocation=-1,oneTouchExpandable=true,orientation=VERTICAL_SPLIT]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor.refresh(SceneFlowEditor.java:488)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor[,0,0,0x0,layout=java.awt.BorderLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=java.awt.Dimension[width=10000,height=3000],minimumSize=java.awt.Dimension[width=10,height=10],preferredSize=]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.SceneFlowToolBar.refresh(SceneFlowToolBar.java:462)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.SceneFlowToolBar[SceneFlowToolBar,0,0,0x48,layout=javax.swing.JToolBar$DefaultToolBarLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@3c4b526b,flags=328,maximumSize=,minimumSize=,preferredSize=,floatable=false,margin=,orientation=HORIZONTAL,paintBorder=true]'
+
+WARNING to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.RunTimeInstance.isRunning(RunTimeInstance.java:163)
+Warning: There is no interpreter registered for project 'de.dfki.vsm.editor.project.EditorProject@5bd269db'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel.refresh(SceneFlowPalettePanel.java:69)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel[,0,0,250x330,layout=java.awt.GridLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@5311e2e1,flags=9,maximumSize=java.awt.Dimension[width=250,height=330],minimumSize=java.awt.Dimension[width=250,height=330],preferredSize=java.awt.Dimension[width=250,height=330]]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel.refresh(SceneFlowElementPanel.java:81)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel[,0,330,250x25,layout=javax.swing.ScrollPaneLayout$UIResource,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@5311e2e1,flags=328,maximumSize=,minimumSize=,preferredSize=java.awt.Dimension[width=250,height=200],columnHeader=,horizontalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=HORIZONTAL,unitIncrement=1],horizontalScrollBarPolicy=HORIZONTAL_SCROLLBAR_AS_NEEDED,lowerLeft=,lowerRight=,rowHeader=,upperLeft=,upperRight=,verticalScrollBar=javax.swing.JScrollPane$ScrollBar[,231,2,17x21,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=VERTICAL,unitIncrement=1],verticalScrollBarPolicy=VERTICAL_SCROLLBAR_AS_NEEDED,viewport=javax.swing.JViewport[,2,2,229x21,layout=javax.swing.ViewportLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=25165832,maximumSize=,minimumSize=,preferredSize=,isViewSizeSet=true,lastPaintPosition=,scrollUnderway=false],viewportBorder=]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.elements.ElementTree.refresh(SceneFlowElementPanel.java:150)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.elements.ElementTree[,0,0,229x32,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@34d7938b,flags=16777576,maximumSize=,minimumSize=,preferredSize=,editable=false,invokesStopCellEditing=false,largeModel=false,rootVisible=false,rowHeight=16,scrollsOnExpand=true,showsRootHandles=false,toggleClickCount=2,visibleRowCount=20]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel.refresh(WorkSpacePanel.java:221)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel[,0,0,11x61,layout=de.dfki.vsm.editor.util.SceneFlowLayoutManager,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EmptyBorder@34d7938b,flags=393,maximumSize=,minimumSize=,preferredSize=]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor.refresh(ElementEditor.java:553)
+Refreshing 'de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor[,0,0,0x0,layout=javax.swing.ScrollPaneLayout$UIResource,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.EtchedBorder@5311e2e1,flags=16777536,maximumSize=,minimumSize=java.awt.Dimension[width=260,height=500],preferredSize=java.awt.Dimension[width=260,height=500],columnHeader=,horizontalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=HORIZONTAL,unitIncrement=1],horizontalScrollBarPolicy=HORIZONTAL_SCROLLBAR_NEVER,lowerLeft=,lowerRight=,rowHeader=,upperLeft=,upperRight=,verticalScrollBar=javax.swing.JScrollPane$ScrollBar[,0,0,0x0,hidden,layout=com.sun.java.swing.plaf.windows.WindowsScrollBarUI,alignmentX=0.0,alignmentY=0.0,border=,flags=4194632,maximumSize=,minimumSize=,preferredSize=,blockIncrement=10,orientation=VERTICAL,unitIncrement=1],verticalScrollBarPolicy=VERTICAL_SCROLLBAR_AS_NEEDED,viewport=javax.swing.JViewport[,2,2,-4x-4,layout=javax.swing.ViewportLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=25165824,maximumSize=,minimumSize=,preferredSize=,isViewSizeSet=false,lastPaintPosition=,scrollUnderway=false],viewportBorder=]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:02 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.MenuBar.refresh(MenuBar.java:73)
+Refreshing 'de.dfki.vsm.editor.MenuBar[,0,0,0x0,invalid,layout=javax.swing.plaf.basic.DefaultMenuLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.basic.BasicBorders$MenuBarBorder@5be41e12,flags=392,maximumSize=,minimumSize=,preferredSize=,margin=,paintBorder=true]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.EditorInstance.refresh(EditorInstance.java:840)
+Refreshing 'de.dfki.vsm.editor.EditorInstance[SceneFlowEditor,0,0,1936x1176,invalid,layout=java.awt.BorderLayout,title=Visual SceneMaker,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,rootPane=javax.swing.JRootPane[,8,31,1920x1137,invalid,layout=javax.swing.JRootPane$RootLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=16777673,maximumSize=,minimumSize=,preferredSize=],rootPaneCheckingEnabled=true]'
+
+INFO to LOGFILE on Mon Jul 27 12:45:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.editor.MenuBar.refresh(MenuBar.java:73)
+Refreshing 'de.dfki.vsm.editor.MenuBar[,0,0,1920x21,invalid,hidden,layout=javax.swing.plaf.basic.DefaultMenuLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.plaf.basic.BasicBorders$MenuBarBorder@5be41e12,flags=392,maximumSize=,minimumSize=,preferredSize=,margin=,paintBorder=true]'
+
