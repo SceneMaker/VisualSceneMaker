@@ -9,6 +9,7 @@ import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.runtime.RunTimeInstance;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -115,6 +116,8 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
         setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
         initPreferences();
         initComponents();
+        // Add the sceneflowtoolbar to the event multicaster
+        EventDispatcher.getInstance().register(this);
     }
 
     @Override
@@ -128,11 +131,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
     @Override
     public void update(EventObject event) {
         System.out.println("entra update 2");
-        if(event instanceof ProjectChangedEvent)
-        {
-            mSaveProject.setEnabled(true);
-            checkRedoUndo();
-        }
+        checkChangesOnProject();
     }
 
     private void checkChangesOnProject() {
