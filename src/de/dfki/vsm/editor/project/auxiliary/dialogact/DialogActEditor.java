@@ -340,7 +340,7 @@ public final class DialogActEditor extends JPanel implements EventListener {
         mTextButton.setToolTipText("Uniform");
         mTextButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png"));
         mTextButton.setIconTextGap(20);
-        mTextButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        mTextButton.setFont(new Font("Helvetica", Font.PLAIN, 15));
         mTextButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
         mTextButton.setPreferredSize(buttonSize);
         mTextButton.setMinimumSize(buttonSize);
@@ -370,9 +370,9 @@ public final class DialogActEditor extends JPanel implements EventListener {
         mFMLButton.setBackground(Color.white);
         mFMLButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mFMLButton.setToolTipText("FML Markup Language");
-        mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_gray.png"));
+        mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png"));
         mFMLButton.setIconTextGap(20);
-        mFMLButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        mFMLButton.setFont(new Font("Helvetica", Font.PLAIN, 15));
         mFMLButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
         mFMLButton.setPreferredSize(buttonSize);
         mFMLButton.setMinimumSize(buttonSize);
