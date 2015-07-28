@@ -133,6 +133,7 @@ public class VarDefDialog extends Dialog {
         // Button panel
         JPanel mButtonPanel = new JPanel();
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.setBackground(Color.WHITE);
         mButtonPanel.add(Box.createHorizontalGlue());
         mButtonPanel.add(mCancelButton);
         mButtonPanel.add(Box.createHorizontalStrut(30));

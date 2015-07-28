@@ -21,6 +21,8 @@ import de.dfki.vsm.util.syn.SyntaxDocument;
 import org.ujmp.core.collections.ArrayIndexList;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
@@ -111,7 +114,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mDialogActEditor = new DialogActEditor(mProject);
 
         // Initialize Tabbed Pane
+     //   mTabPane = new JTabbedPane();
+        
         mTabPane = new JTabbedPane();
+        mTabPane.setUI(new BasicTabbedPaneUI());
+                
         // Initialize The Scroll Pane
         mElementPane = new SceneElementDisplay(mProject);
 //        mObservable.addObserver(mElementPane);
@@ -192,10 +199,14 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     }
 
     void addTab(String tabName, final JComponent content) {
+        
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
         mTabPane.addTab(null, new JScrollPane(ep));
         JLabel tabLabel = new JLabel(tabName);
+        tabLabel.setOpaque(true);
+        tabLabel.setBackground(Color.white);
+       
         // Create an AddButton
         final AddButton mAddButton = new AddButton();
         mAddButton.setTabPos(tabCounter - 1);
@@ -232,10 +243,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         });
         if (tabCounter != 0) {
             JPanel pnl = new JPanel();
-            pnl.setOpaque(false);
+            pnl.setOpaque(true);
+            pnl.setBackground(Color.white);
             pnl.add(tabLabel);
             pnl.add(mAddButton);
-
+            mTabPane.setBackgroundAt(mTabPane.getTabCount() - 1, Color.white);
             mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnl);
             mTabPane.setComponentAt(mTabPane.getTabCount() - 1, content);
             mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
