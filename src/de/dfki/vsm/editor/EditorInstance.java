@@ -9,6 +9,7 @@ import de.dfki.vsm.editor.dialog.ErrorDialog;
 import de.dfki.vsm.editor.dialog.MonitorDialog;
 import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
+import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
@@ -772,6 +773,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             if (mRunTime.unload(project)) {
                 // Print some information
                 mLogger.message("Unloading project '" + project + "'");
+                // Launch event to unselect nodes and edges
+                mEventCaster.convey(new SceneStoppedEvent(this));
                 // Refresh the appearance
                 refresh();
                 // Return true at success
