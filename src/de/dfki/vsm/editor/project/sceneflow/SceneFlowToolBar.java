@@ -19,7 +19,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.File;
 import java.util.LinkedList;
 import java.util.Observable;
 import java.util.Observer;
@@ -93,8 +92,10 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
 
     Action undoAction = UndoAction.getInstance();
     Action redoAction = RedoAction.getInstance();
+    
     // TODO: why is this here?
-    private int mNodeSize;    // only one dimension
+    // It is here to simplify code in the zooming in/out operations
+    private int mNodeSize;    
     
     // Construct a sceneflow editor toolbar
     public SceneFlowToolBar(
@@ -118,9 +119,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
 
     @Override
     public void update(Observable obs, Object obj) {
-        // mLogger.message("SceneFlowToolBar.update");
-        //updatePathDisplay();
-        //updatePathText();
         System.out.println("entra update 1");
         initPreferences();
         checkChangesOnProject();
@@ -163,17 +161,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
             mRedo.setEnabled(false);
         }
     }
-   /* 
-    public void updatePathDisplay() {
-        mPathComponents.clear();
-
-        for (SuperNode superNode : mEditor.getSceneFlowManager().getActiveSuperNodes()) {
-            mPathComponents.add(superNode);
-        }
-
-        updatePathText();
-    }*/
-
+   
     private void initPreferences() {
         if (mEditorInstance.getSelectedProjectEditor() != null) {
             for (Object keyObj : mEditorConfig.getKeySet()) {
@@ -648,7 +636,7 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
             }
             mPathDisplay.add(label);
         }
-        // revalidate();
-        // repaint();
+        revalidate();
+        repaint();
     }
 }
