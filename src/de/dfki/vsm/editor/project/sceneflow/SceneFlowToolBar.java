@@ -122,7 +122,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
 
     @Override
     public void update(Observable obs, Object obj) {
-        System.out.println("entra update 1");
         initPreferences();
         checkChangesOnProject();
         
@@ -130,7 +129,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
     
     @Override
     public void update(EventObject event) {
-        System.out.println("entra update 2");
         checkChangesOnProject();
     }
 
