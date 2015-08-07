@@ -36,9 +36,18 @@ public class QuitDialog extends JDialog {
     private CancelButton        mCancelButton;
     private EditorInstance      mEditorInstance = EditorInstance.getInstance();
     private JLabel              mExitMessage;
-    ///TYPE OF DIALOGS --- AFFECTS THE MESSAGE SHOWN
-   private final int           EXIT_DIALOG = 0;
-    private final int           CLOSE_PROJ_DIALOG = 1;
+    
+    private int                 mFinalExitMessage; //TAKES ONE OF THE VALUES OF THE RETURN MESSAGES
+
+    
+    
+    ///TYPES OF DIALOGS --- AFFECTS THE MESSAGE SHOWN
+    public static final int     EXIT_DIALOG = 0;
+    public static final int     CLOSE_PROJ_DIALOG = 1;
+    //RETURN MESSAGES
+    public static final int     SAVE_AND_EXIT = 0;
+    public static final int     EXIT_AND_IGNORE = 1;
+    public static final int     CANCEL_CLOSING = 2;
     //MESSAGES TO BE SHOWN 
     private String              exitMessage;
     private String              yesButtonMessage;
@@ -81,9 +90,10 @@ public class QuitDialog extends JDialog {
         mYesButton.setText(yesButtonMessage);
         mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                mEditorInstance.save();
+                //mEditorInstance.save();
                // mEditorInstance.disposeAfterDialog();
                 //mEditorInstance.saveMessage = true;
+                mFinalExitMessage = SAVE_AND_EXIT;
                 dispose();
             }
         });
@@ -95,6 +105,7 @@ public class QuitDialog extends JDialog {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 //mParentEditor.disposeAfterDialog();
                 //mParentEditor.saveMessage = true;
+                mFinalExitMessage = EXIT_AND_IGNORE;
                 dispose();
             }
             public void mouseEntered(MouseEvent me) {
@@ -111,10 +122,11 @@ public class QuitDialog extends JDialog {
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 //mParentEditor.saveMessage = false;
+                mFinalExitMessage = CANCEL_CLOSING;
                 dispose();
             }
         });
-
+        // Button Panel
         JPanel mButtonPanel = new JPanel();
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
         mButtonPanel.add(Box.createHorizontalGlue());
@@ -139,6 +151,10 @@ public class QuitDialog extends JDialog {
         setLocation((bounds.width - abounds.width) / 2, (bounds.height - abounds.height) / 3);
         setResizable(false);
         setVisible(true);
+    }
+    //RETURN EXIT MESSAGE
+    public int getExitMessage() {
+        return mFinalExitMessage;
     }
     // Get the singelton instance
     /*public static QuitDialog getInstance(ProjectEditor pE) {

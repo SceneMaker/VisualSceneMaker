@@ -3,7 +3,6 @@ package de.dfki.vsm.editor.project.sceneflow;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
-import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -122,7 +121,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
 
     @Override
     public void update(Observable obs, Object obj) {
-        //System.out.println("entra update 1");
         initPreferences();
         checkChangesOnProject();
         
@@ -130,7 +128,6 @@ public class SceneFlowToolBar extends JToolBar implements Observer, EventListene
     
     @Override
     public void update(EventObject event) {
-        //System.out.println("entra update 2");
         checkChangesOnProject();
     }
 
