@@ -777,6 +777,15 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
         }
     }
+    
+     // Stop the execution of the current project
+    public final void stop() {
+        // Get the project that has to be executed
+        final ProjectEditor editor = getSelectedProjectEditor();
+        final EditorProject project = editor.getEditorProject();
+        // Launch the current project in the runtime
+        stop(project);
+    }
 
     // Stop the execution of a specific project
     public final boolean stop(final EditorProject project) {

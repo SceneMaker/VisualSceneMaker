@@ -1,11 +1,14 @@
 package de.dfki.vsm;
 
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import javax.swing.SwingUtilities;
 
 /**
@@ -77,15 +80,90 @@ public class SceneMaker3 {
 
     // Start the editor with some project
     private static void editor(final File file) {
+        // Get the singelton runtime instance
+        final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
         // Get the singelton editor instance
         final EditorInstance sEditor = EditorInstance.getInstance();
         // Get an editor project from file 
         sEditor.openProject(file);
         // Show the singelton editor instance
         sEditor.setVisible(true);
+
+        // Do something for Patrick ...
+        final Thread control = new Thread() {
+            // Termination flag
+            private boolean mDone = false;
+            // Get the input
+            private final BufferedReader mReader = new BufferedReader(
+                    new InputStreamReader(System.in));
+            // Get the project 
+            private final EditorProject mProject
+                    = sEditor.getSelectedProjectEditor().getEditorProject();
+
+            // Set some variable on the current project
+            @Override
+            public void run() {
+                while (!mDone) {
+                    // Wait until user aborts execution
+                    System.err.println("Enter Command ...");
+                    try {
+                        final String in = mReader.readLine();
+                        // Wait until user aborts execution
+                        System.err.println("Your Command Is '" + in + "'");
+                        if (in != null) {
+                            if (in.equals("play")) {
+                                // Maybe we first start the execution now ?
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        sEditor.play();
+                                    }
+                                });
+                            } else if (in.equals("stop")) {
+                                // And then we stop the execution later on?
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        sEditor.stop();
+                                    }
+                                });
+                            } else if (in.equals("exit")) {
+                                mDone = true;
+                            } else {
+                                if (sRunTime.hasVariable(mProject, "in")) {
+                                    // Fancy programmatic variable setting
+                                    sRunTime.setVariable(mProject, "in", in);
+                                }
+                            }
+                        }
+                    } catch (final IOException exc) {
+                        // Do nothing
+                    }
+                }
+                // Print some information
+                System.err.println("Stopping Editor Mode ...");
+                // And then cleanly exit the editor
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        // Close all projects
+                        sEditor.closeAll();
+                        // Dispose the editor
+                        sEditor.dispose();
+                    }
+                });
+            }
+        };
+        // Start the control thread
+        control.start();
+        // Print some information
+        System.err.println("Starting Editor Mode ...");
     }
 
-    // Start the runtime with some project
+// Start the runtime with some project
     private static void runtime(final File file) {
         // Get an editor project from file 
         final RunTimeProject data = new RunTimeProject(file);
