@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
+import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.editor.util.Preferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
@@ -191,7 +192,7 @@ public final class EditorMenuBar extends JMenuBar {
         mCloseFileMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.close();
+                mEditorInstance.close(QuitDialog.CLOSE_PROJ_DIALOG);
             }
         });
 
@@ -241,7 +242,7 @@ public final class EditorMenuBar extends JMenuBar {
                 // Close all project editors
                 mEditorInstance.closeAll();
                 // And finally exit the system
-                System.exit(0);
+                //System.exit(0);
             }
         });
         mFileMenu.add(mCreateFileMenuItem);

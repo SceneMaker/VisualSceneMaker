@@ -39,6 +39,7 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -132,8 +133,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Load the preferences
         Preferences.load();
 
-        //getContentPane().setBackground(Color.WHITE);
-        /*try {
+        getContentPane().setBackground(Color.WHITE);
+        try {
          UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
          } catch (final Exception e) {
          // If Nimbus is not available, you can set the GUI to another look and feel.
@@ -143,7 +144,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
          // SET BACKGROUNDS
          setUIBackgrounds();
-         */
+         
         // Preferences.info();
         // Init the menu bar
         mEditorMenuBar = new EditorMenuBar(this);
@@ -163,7 +164,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         mWelcomeScreen.getViewport().setOpaque(false);
         add(mWelcomeScreen);
         setIconImage(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png").getImage());
-
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         // Init the windows closing support
         addWindowListener(new WindowAdapter() {
             @Override
@@ -171,7 +172,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 // Close all project editors
                 closeAll();
                 // And finally exit the system
-                System.exit(0);
+                //System.exit(0);
             }
         });
 
@@ -507,33 +508,46 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Close the selected project editor
-    public final void close() {
+    public final void close(int DialogType) {
         // Close the current project editor
-        close(getSelectedProjectEditor());
+        close(getSelectedProjectEditor(), DialogType);
     }
 
     // Close a specific project editor
-    private void close(final ProjectEditor editor) {
-        // Close the project editor itself
-        editor.close();
+    private int close(final ProjectEditor editor, int DialogType) {
+        
         // Check if the project has changed
         if (editor.getEditorProject().hasChanged()) {
 
-            QuitDialog qDiag = new QuitDialog(0);
-            //return saveMessage;
+            QuitDialog qDiag = new QuitDialog(DialogType);
+            int exitMessage = qDiag.getExitMessage();
+            System.out.println(exitMessage);
+            if (exitMessage == QuitDialog.CANCEL_CLOSING)
+            {
+                return exitMessage;
+            }
+            if (exitMessage == QuitDialog.SAVE_AND_EXIT)
+            {
+                save(editor);
+            }
+            // Close the project editor itself
+            editor.close();
+            // Remove the component 
+            mProjectEditors.remove(editor);
+            // Toggle the editor main screen
+            if (mProjectEditors.getTabCount() == 0) {
+                // Show the project editors
+                setContentPane(mWelcomeScreen);
+                // Hide the menu bar items
+                mEditorMenuBar.setVisible(false);
+            }
+            // Refresh the appearance
+            refresh();
+            return exitMessage;
 
         }
-        // Remove the component 
-        mProjectEditors.remove(editor);
-        // Toggle the editor main screen
-        if (mProjectEditors.getTabCount() == 0) {
-            // Show the project editors
-            setContentPane(mWelcomeScreen);
-            // Hide the menu bar items
-            mEditorMenuBar.setVisible(false);
-        }
-        // Refresh the appearance
-        refresh();
+        return QuitDialog.SAVE_AND_EXIT;
+        
     }
 
     // Save all project editors
@@ -546,8 +560,13 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Close all project editors
     public final void closeAll() {
         for (int i = 0; i < mProjectEditors.getTabCount(); i++) {
-            close((ProjectEditor) mProjectEditors.getComponentAt(i));
+            int result = close((ProjectEditor) mProjectEditors.getComponentAt(i), QuitDialog.EXIT_DIALOG);
+            if (result == QuitDialog.CANCEL_CLOSING)
+            {
+                return;
+            }
         }
+        System.exit(0);
     }
 
     /*
