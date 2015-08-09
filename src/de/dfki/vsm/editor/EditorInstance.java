@@ -302,11 +302,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         return mProjectEditors;
     }
 
-    public final boolean newProject() {
+    public final boolean newProject(String projectName) {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();
+
         // Add the new project editor 
-        mProjectEditors.addTab("", editor);
+        mProjectEditors.addTab(projectName, editor);
         mProjectEditors.setSelectedComponent(editor);
         // Show the editor projects now
         if (mProjectEditors.getTabCount() == 1) {
@@ -459,6 +460,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             final EditorProject project = editor.getEditorProject();
             // Check if the project is valid
             if (project != null) {
+                // Set ProjectName
+                String projectName = mProjectEditors.getTitleAt(mProjectEditors.getSelectedIndex()).replace("*","");
+                project.setProjectName(projectName);
                 // Create a new file chooser
                 final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
                 // Configure The File Chooser
