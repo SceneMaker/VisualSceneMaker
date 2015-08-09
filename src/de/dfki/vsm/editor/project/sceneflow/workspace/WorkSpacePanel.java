@@ -253,8 +253,15 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         if(EditorInstance.getInstance().getSelectedProjectEditor()!= null){
             if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject() != null) {
                 if (mProject.hasChanged()) {
-                    EditorInstance.getInstance().getProjectEditors().setTitleAt(
-                            EditorInstance.getInstance().getProjectEditors().getSelectedIndex(), mProject.getProjectName() + "*");
+                    
+                    int selectecTabIndex = EditorInstance.getInstance().getProjectEditors().getSelectedIndex();
+                   
+                    if(!EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex).contains("*")){
+                          EditorInstance.getInstance().getProjectEditors().setTitleAt(selectecTabIndex, 
+                            EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex)
+                            + "*");   
+                    }
+                   
                     //mLogger.message("Changes on workspace detected");
                 }
             }
