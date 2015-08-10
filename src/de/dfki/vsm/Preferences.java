@@ -45,7 +45,7 @@ public final class Preferences {
     // The global properties file    
     private static final String sCONFIG_FILE
             = System.getProperty("user.home")
-            + System.getProperty("file.separator") + ".scenefloweditor";
+            + System.getProperty("file.separator") + ".vsm";
     
     //////////////////////////////////////////////////////////////////////////////
     // SYSTEM PROPERTIES
