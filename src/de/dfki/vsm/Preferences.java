@@ -1,6 +1,5 @@
 package de.dfki.vsm;
 
-import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------

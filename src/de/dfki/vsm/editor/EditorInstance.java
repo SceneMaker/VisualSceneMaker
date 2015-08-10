@@ -42,6 +42,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 
 /**
  * @author Gregor Mehlmann
@@ -328,8 +329,35 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Create a new file chooser
         final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
         // Configure The File Chooser
-        // TODO: Set the correct view and filter
+        chooser.setFileView(new OpenProjectView());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    
+                    File configFile = new File(f.getPath() + System.getProperty("file.separator") + "project.xml");
+
+                    if (configFile.exists()) {
+                        return true;
+                    }
+
+                    File[] listOfFiles = f.listFiles();
+
+                    for (File listOfFile : listOfFiles) {
+                        if (listOfFile.isDirectory()) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+            @Override
+            public String getDescription() {
+                return "SceneMaker Project File Filter";
+            }
+        });
         // Show the file chooser in open mode 
         final int option = chooser.showOpenDialog(this);
         // Check the result of the file chooser
