@@ -548,10 +548,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Refresh the appearance
             refresh();
             return exitMessage;
-
         }
         else{
-        
             // Close the project editor itself
             editor.close();
             // Remove the component 
