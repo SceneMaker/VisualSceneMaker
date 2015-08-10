@@ -40,7 +40,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import static de.dfki.vsm.editor.util.Preferences.sUSER_DIR;
+import static de.dfki.vsm.Preferences.sUSER_DIR;
 
 /**
  * @author Not me
