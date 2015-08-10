@@ -550,7 +550,23 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return exitMessage;
 
         }
-        return QuitDialog.SAVE_AND_EXIT;
+        else{
+        
+            // Close the project editor itself
+            editor.close();
+            // Remove the component 
+            mProjectEditors.remove(editor);
+            // Toggle the editor main screen
+            if (mProjectEditors.getTabCount() == 0) {
+                // Show the project editors
+                setContentPane(mWelcomeScreen);
+                // Hide the menu bar items
+                mEditorMenuBar.setVisible(false);
+            }
+            // Refresh the appearance
+            refresh();
+            return QuitDialog.SAVE_AND_EXIT;
+        }
         
     }
 
