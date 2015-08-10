@@ -1,6 +1,6 @@
 package de.dfki.vsm.model.sceneflow;
 
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;

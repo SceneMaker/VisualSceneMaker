@@ -2,7 +2,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;

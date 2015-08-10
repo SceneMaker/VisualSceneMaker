@@ -7,7 +7,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 

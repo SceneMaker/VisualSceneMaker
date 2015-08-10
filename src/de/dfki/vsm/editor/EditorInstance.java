@@ -9,7 +9,7 @@ import de.dfki.vsm.editor.dialog.MonitorDialog;
 import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.events.AbortionEvent;

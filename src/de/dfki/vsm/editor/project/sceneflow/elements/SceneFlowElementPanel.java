@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;

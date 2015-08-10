@@ -2,7 +2,7 @@ package de.dfki.vsm.util.log;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.sys.SYSUtilities;
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -38,8 +38,8 @@ public class LOGNovaFileFormat extends Formatter {
                          + method;
 
         // Append The User Message
-        message += SYSUtilities.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
-                   + SYSUtilities.sSYSPROPS_LINE_SEPR + SYSUtilities.sSYSPROPS_LINE_SEPR;
+        message += Preferences.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
+                   + Preferences.sSYSPROPS_LINE_SEPR + Preferences.sSYSPROPS_LINE_SEPR;
 
         // return The Final Log Message
         return message;

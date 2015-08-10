@@ -2,7 +2,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.dialog.SceneActionDialog;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonAgent;
