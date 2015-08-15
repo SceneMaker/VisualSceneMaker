@@ -173,7 +173,6 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
                 if (contained) {
                     VisualisationTask visuTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
-
                     mVisuTimer.schedule(visuTask, 0, 25);
                 }
             }

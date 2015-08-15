@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 
@@ -25,6 +26,10 @@ public final class AuxiliaryToolBar extends JToolBar {
     // The current editor project
     private final EditorProject mProject;
 
+    //ICONS
+    private final ImageIcon ICON_PIN_STANDARD = ResourceLoader.loadImageIcon("/res/img/pin.png");
+    private final ImageIcon ICON_PIN_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/pin_blue.png");
+    
     public AuxiliaryToolBar(final EditorProject project) {
         // Initialize the tool bar
         super("AuxiliaryToolBar", JToolBar.HORIZONTAL);
@@ -46,8 +51,7 @@ public final class AuxiliaryToolBar extends JToolBar {
 
     // Set the pin pricked flag
     public final void prickPin() {
-        // TODO: Make resource loading once at a global place
-        mPinButton.setIcon(ResourceLoader.loadImageIcon("/res/img/pin_blue.png"));
+        mPinButton.setIcon(ICON_PIN_ROLLOVER);
         pinPricked = true;
     }
 
@@ -56,8 +60,8 @@ public final class AuxiliaryToolBar extends JToolBar {
         setOpaque(false);
         add(Box.createHorizontalStrut(2));
         //Create the pin button
-        mPinButton = new JButton(ResourceLoader.loadImageIcon("/res/img/pin.png"));
-        mPinButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/pin_blue.png"));
+        mPinButton = new JButton();
+        mPinButton.setRolloverIcon(ICON_PIN_ROLLOVER);
         mPinButton.setContentAreaFilled(false);
         mPinButton.setMargin(new Insets(20, 10, 20, 10));
         mPinButton.setFocusable(false);
@@ -65,10 +69,10 @@ public final class AuxiliaryToolBar extends JToolBar {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!pinPricked) {
-                    mPinButton.setIcon(ResourceLoader.loadImageIcon("/res/img/pin_blue.png"));
+                    mPinButton.setIcon(ICON_PIN_ROLLOVER);
                     pinPricked = true;
                 } else {
-                    mPinButton.setIcon(ResourceLoader.loadImageIcon("/res/img/pin.png"));
+                    mPinButton.setIcon(ICON_PIN_STANDARD);
                     pinPricked = false;
                 }
             }

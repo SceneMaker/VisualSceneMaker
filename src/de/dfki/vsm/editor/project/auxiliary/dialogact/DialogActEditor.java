@@ -27,12 +27,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -82,7 +82,13 @@ public final class DialogActEditor extends JPanel implements EventListener {
     private final DialogActInterface mDialogAct;
     private final List<JList> mDAJLists;
     private final List<DialogAct> mDialogActList;
-
+    
+    //ICONS 
+    private final ImageIcon ICON_TEXT_STANDARD = ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png");
+    private final ImageIcon ICON_TEXT_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png");
+    
+    private final ImageIcon ICON_FML_STANDARD = ResourceLoader.loadImageIcon("/res/img/fml_gray.png");
+    private final ImageIcon ICON_FML_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/fml_blue.png");
     //
     public final void close() {
         // Remove All Observers
@@ -338,7 +344,7 @@ public final class DialogActEditor extends JPanel implements EventListener {
         mTextButton.setBackground(Color.white);
         mTextButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mTextButton.setToolTipText("Uniform");
-        mTextButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png"));
+        mTextButton.setIcon(ICON_TEXT_STANDARD);
         mTextButton.setIconTextGap(20);
         mTextButton.setFont(new Font("Helvetica", Font.PLAIN, 15));
         mTextButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -353,12 +359,12 @@ public final class DialogActEditor extends JPanel implements EventListener {
             }
 
             public void mouseEntered(MouseEvent me) {
-                mTextButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_blue.png"));
+                mTextButton.setIcon(ICON_TEXT_ROLLOVER);
                 mTextButton.setBackground(new Color(82, 127, 255));
             }
 
             public void mouseExited(MouseEvent me) {
-                mTextButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png"));
+                mTextButton.setIcon(ICON_TEXT_STANDARD);
                 mTextButton.setBackground(new Color(255, 255, 255));
             }
         });
@@ -370,7 +376,7 @@ public final class DialogActEditor extends JPanel implements EventListener {
         mFMLButton.setBackground(Color.white);
         mFMLButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mFMLButton.setToolTipText("FML Markup Language");
-        mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/text_icon_gray.png"));
+        mFMLButton.setIcon(ICON_FML_STANDARD);
         mFMLButton.setIconTextGap(20);
         mFMLButton.setFont(new Font("Helvetica", Font.PLAIN, 15));
         mFMLButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -385,12 +391,12 @@ public final class DialogActEditor extends JPanel implements EventListener {
             }
 
             public void mouseEntered(MouseEvent me) {
-                mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_blue.png"));
+                mFMLButton.setIcon(ICON_FML_ROLLOVER);
                 mFMLButton.setBackground(new Color(82, 127, 255));
             }
 
             public void mouseExited(MouseEvent me) {
-                mFMLButton.setIcon(ResourceLoader.loadImageIcon("/res/img/fml_gray.png"));
+                mFMLButton.setIcon(ICON_FML_STANDARD);
                 mFMLButton.setBackground(new Color(255, 255, 255));
             }
         });

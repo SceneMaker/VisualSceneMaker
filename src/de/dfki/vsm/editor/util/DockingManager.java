@@ -3,7 +3,6 @@ package de.dfki.vsm.editor.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
