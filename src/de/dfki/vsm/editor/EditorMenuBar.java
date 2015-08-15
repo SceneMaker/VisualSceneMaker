@@ -2,8 +2,9 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
+import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -144,7 +145,7 @@ public final class EditorMenuBar extends JMenuBar {
         mCreateFileMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.newProject();
+                new NewProjectDialog();
             }
         });
         mOpenFileMenuItem = new JMenuItem("Open Project...");
@@ -319,6 +320,7 @@ public final class EditorMenuBar extends JMenuBar {
         mOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
                 (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mOptionsMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.showOptions();
             }
@@ -356,6 +358,7 @@ public final class EditorMenuBar extends JMenuBar {
         mQuestionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mQuestionMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.showHelp();
             }
@@ -366,6 +369,7 @@ public final class EditorMenuBar extends JMenuBar {
         mInfoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mInfoMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.showAbout();
             }

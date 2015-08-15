@@ -9,7 +9,7 @@ import de.dfki.vsm.editor.dialog.MonitorDialog;
 import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.events.AbortionEvent;
@@ -42,6 +42,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 
 /**
  * @author Gregor Mehlmann
@@ -302,11 +303,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         return mProjectEditors;
     }
 
-    public final boolean newProject() {
+    public final boolean newProject(String projectName) {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();
+
         // Add the new project editor 
-        mProjectEditors.addTab("", editor);
+        mProjectEditors.addTab(projectName, editor);
         mProjectEditors.setSelectedComponent(editor);
         // Show the editor projects now
         if (mProjectEditors.getTabCount() == 1) {
@@ -327,8 +329,35 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Create a new file chooser
         final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
         // Configure The File Chooser
-        // TODO: Set the correct view and filter
+        chooser.setFileView(new OpenProjectView());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    
+                    File configFile = new File(f.getPath() + System.getProperty("file.separator") + "project.xml");
+
+                    if (configFile.exists()) {
+                        return true;
+                    }
+
+                    File[] listOfFiles = f.listFiles();
+
+                    for (File listOfFile : listOfFiles) {
+                        if (listOfFile.isDirectory()) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+            @Override
+            public String getDescription() {
+                return "SceneMaker Project File Filter";
+            }
+        });
         // Show the file chooser in open mode 
         final int option = chooser.showOpenDialog(this);
         // Check the result of the file chooser
@@ -459,6 +488,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             final EditorProject project = editor.getEditorProject();
             // Check if the project is valid
             if (project != null) {
+                // Set ProjectName
+                String projectName = mProjectEditors.getTitleAt(mProjectEditors.getSelectedIndex()).replace("*","");
+                project.setProjectName(projectName);
                 // Create a new file chooser
                 final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
                 // Configure The File Chooser
@@ -544,9 +576,23 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Refresh the appearance
             refresh();
             return exitMessage;
-
         }
-        return QuitDialog.SAVE_AND_EXIT;
+        else{
+            // Close the project editor itself
+            editor.close();
+            // Remove the component 
+            mProjectEditors.remove(editor);
+            // Toggle the editor main screen
+            if (mProjectEditors.getTabCount() == 0) {
+                // Show the project editors
+                setContentPane(mWelcomeScreen);
+                // Hide the menu bar items
+                mEditorMenuBar.setVisible(false);
+            }
+            // Refresh the appearance
+            refresh();
+            return QuitDialog.SAVE_AND_EXIT;
+        }
         
     }
 

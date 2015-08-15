@@ -1,7 +1,8 @@
 package de.dfki.vsm.editor;
 
+import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
@@ -135,9 +136,9 @@ public class EditorStarter extends JPanel {
         actionMenu.setFont(new Font("Helvetica", Font.PLAIN, 24));
         mRecentProjects.add(actionMenu);
 
-        // *****************************************************************************************************************************************************
-        // NEW PROJECT BUTTON***********************************************************************************************************************************
-        // *****************************************************************************************************************************************************
+        // *********************************************************************
+        // NEW PROJECT BUTTON
+        // *********************************************************************
         JLabel mNewProjMenu = new JLabel("New Project");
 
         mNewProjMenu.setToolTipText("Create New Project");
@@ -149,7 +150,8 @@ public class EditorStarter extends JPanel {
         mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                mEditorInstance.newProject();
+               // mEditorInstance.newProject();
+                new NewProjectDialog();
             }
 
             @Override
@@ -166,10 +168,10 @@ public class EditorStarter extends JPanel {
         });
         mRecentProjects.add(mNewProjMenu);
 
-        // *****************************************************************************************************************************************************
-        // OPEN PROJECT BUTTON***********************************************************************************************************************************
-        // *****************************************************************************************************************************************************
-        JLabel mOpenProjectMenu = new JLabel("Open a Project");
+        // *********************************************************************
+        // OPEN PROJECT BUTTON
+        // *********************************************************************
+         JLabel mOpenProjectMenu = new JLabel("Open a Project");
 
         mOpenProjectMenu.setToolTipText("Open an external Project");
         mOpenProjectMenu.setIcon(ResourceLoader.loadImageIcon("/res/img/arrow_icon.png"));
@@ -205,9 +207,10 @@ public class EditorStarter extends JPanel {
      */
     private void listOfRecentProjects() {
 
-        // *****************************************************************************************************************************************************
-        // LIST OF RECENT PROJECTS******************************************************************************************************************************
-        // *****************************************************************************************************************************************************
+        // *********************************************************************
+        // LIST OF RECENT PROJECTS
+        // *********************************************************************
+        
         JLabel titleMenu = new JLabel("Open Recent Project");
 
         titleMenu.setBorder(null);
@@ -312,9 +315,10 @@ public class EditorStarter extends JPanel {
      */
     private void listOfSampleProjects() {
 
-        // *****************************************************************************************************************************************************
-        // LIST OF SAMPLE PROJECTS******************************************************************************************************************************
-        // *****************************************************************************************************************************************************
+        // *********************************************************************
+        // LIST OF SAMPLE PROJECTS
+        // *********************************************************************
+        
         JLabel exampleMenu = new JLabel("Sample Projects");
 
         exampleMenu.setBorder(null);
@@ -412,9 +416,10 @@ public class EditorStarter extends JPanel {
      */
     private void newsAndDoc() {
 
-        // *****************************************************************************************************************************************************
-        // NEWS AND DOCUMENTATION*****************************************************************************************************************************
-        // *****************************************************************************************************************************************************
+        // *********************************************************************
+        // NEWS AND DOCUMENTATION
+        // *********************************************************************
+        
         JLabel mDocuMenu = new JLabel("News and Documentation");
 
         mDocuMenu.setToolTipText("News and Documentation online");

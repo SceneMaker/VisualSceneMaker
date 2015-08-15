@@ -10,7 +10,7 @@ import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.EdgeGraphics;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.CEdge;
@@ -24,12 +24,12 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sEEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sEEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sIEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sPEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
 
 //~--- JDK imports ------------------------------------------------------------
 
