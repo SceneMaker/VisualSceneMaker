@@ -30,6 +30,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -91,7 +92,14 @@ public class ModifyPEdgeDialog extends Dialog {
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
     private JLabel errorMsg;
-
+    
+    //ICONS
+    private final ImageIcon ICON_NORMALIZE_STANDARD = ResourceLoader.loadImageIcon("/res/img/normalize_gray.png");
+    private final ImageIcon ICON_NORMALIZE_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/normalize_blue.png");
+    
+    private final ImageIcon ICON_UNIFORM_STANDARD = ResourceLoader.loadImageIcon("/res/img/uniform_gray.png");
+    private final ImageIcon ICON_UNIFORM_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/uniform_blue.png");
+    
     public ModifyPEdgeDialog(Node sourceNode, Node targetNode) {
         super(EditorInstance.getInstance(), "Create Probability Edge", true);
         mSourceNode = sourceNode;
@@ -193,7 +201,7 @@ public class ModifyPEdgeDialog extends Dialog {
         mNormButton.setBackground(Color.white);
         mNormButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mNormButton.setToolTipText("Normalize");
-        mNormButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize_gray.png"));
+        mNormButton.setIcon(ICON_NORMALIZE_STANDARD);
         mNormButton.setIconTextGap(20);
         mNormButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
         mNormButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -205,12 +213,12 @@ public class ModifyPEdgeDialog extends Dialog {
             }
 
             public void mouseEntered(MouseEvent me) {
-                mNormButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize_blue.png"));
+                mNormButton.setIcon(ICON_NORMALIZE_ROLLOVER);
                 mNormButton.setBackground(new Color(82, 127, 255));
             }
 
             public void mouseExited(MouseEvent me) {
-                mNormButton.setIcon(ResourceLoader.loadImageIcon("/res/img/normalize_gray.png"));
+                mNormButton.setIcon(ICON_NORMALIZE_STANDARD);
                 mNormButton.setBackground(new Color(255, 255, 255));
             }
         });
@@ -222,7 +230,7 @@ public class ModifyPEdgeDialog extends Dialog {
         mUniButton.setBackground(Color.white);
         mUniButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mUniButton.setToolTipText("Uniform");
-        mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/uniform_gray.png"));
+        mUniButton.setIcon(ICON_UNIFORM_STANDARD);
         mUniButton.setIconTextGap(20);
         mUniButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
         mUniButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
@@ -234,12 +242,12 @@ public class ModifyPEdgeDialog extends Dialog {
             }
 
             public void mouseEntered(MouseEvent me) {
-                mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/uniform_blue.png"));
+                mUniButton.setIcon(ICON_UNIFORM_ROLLOVER);
                 mUniButton.setBackground(new Color(82, 127, 255));
             }
 
             public void mouseExited(MouseEvent me) {
-                mUniButton.setIcon(ResourceLoader.loadImageIcon("/res/img/uniform_gray.png"));
+                mUniButton.setIcon(ICON_UNIFORM_STANDARD);
                 mUniButton.setBackground(new Color(255, 255, 255));
             }
         });

@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
@@ -22,13 +23,16 @@ import javax.swing.SwingConstants;
  */
 public class OKButton extends JLabel {
     private final Dimension buttonSize = new Dimension(135, 30);
-
+    //Icons
+    private final ImageIcon ICON_OK_STANDARD = ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png");
+    private final ImageIcon ICON_OK_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png");
+    
     public OKButton() {
         setText("OK");
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(true);
         setBackground(Color.white);
-        setIcon(ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png"));
+        setIcon(ICON_OK_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("OK");
         setIconTextGap(20);
@@ -42,11 +46,11 @@ public class OKButton extends JLabel {
 //              //savePreferences(true);
 //          }
             public void mouseEntered(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png"));
+                setIcon(ICON_OK_ROLLOVER);
                 setBackground(new Color(82, 127, 255));
             }
             public void mouseExited(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png"));
+                setIcon(ICON_OK_STANDARD);
                 setBackground(new Color(255, 255, 255));
             }
         });
