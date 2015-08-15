@@ -7,8 +7,8 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.SImageView;
 
 import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
-import static de.dfki.vsm.editor.util.Preferences.sABOUT_FILE;
-import static de.dfki.vsm.editor.util.Preferences.sSCENEMAKER_LOGO;
+import static de.dfki.vsm.Preferences.sABOUT_FILE;
+import static de.dfki.vsm.Preferences.sSCENEMAKER_LOGO;
 
 //~--- JDK imports ------------------------------------------------------------
 

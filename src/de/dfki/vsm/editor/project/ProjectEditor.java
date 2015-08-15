@@ -5,7 +5,7 @@ import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
