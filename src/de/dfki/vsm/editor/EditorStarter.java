@@ -31,9 +31,9 @@ public class EditorStarter extends JPanel {
     // The singelton logger instance   
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-    private final String backgroundImage = "/res/img/icon_big.png";    // Background for the welcome screen
-    SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
-    private final File SampleProjFolder = new File("res/prj/");
+    
+    
+    private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
     private final EditorInstance mEditorInstance;
     private final Box mRecentProjects;
     private final int paddingSize;
@@ -97,9 +97,7 @@ public class EditorStarter extends JPanel {
     public final void paintComponent(final Graphics graphics) {
         super.paintComponent(graphics);
 
-        Image image = ResourceLoader.loadImageIcon(backgroundImage).getImage();
-
-        graphics.drawImage(image, -300, 0, null);
+        graphics.drawImage(Preferences.BACKGROUND_IMAGE, -300, 0, null);
     }
 
     public void updateWelcomePanel() {
@@ -346,7 +344,7 @@ public class EditorStarter extends JPanel {
                 project.parse(projectPath);
 
                 JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
-                        + sdf.format(sampleProj.lastModified()));
+                        + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
 
                 newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
                 newSampleProj.setOpaque(false);

@@ -2,13 +2,13 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.SImageView;
 
 import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
 import static de.dfki.vsm.Preferences.sABOUT_FILE;
-import static de.dfki.vsm.Preferences.sSCENEMAKER_LOGO;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -106,9 +106,9 @@ public class AboutDialog extends JDialog {
         JPanel logoPanel = new JPanel();
 
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS));
-        logoPanel.add(new JLabel(sSCENEMAKER_LOGO));
+        logoPanel.add(new JLabel(Preferences.ICON_SCENEMAKER_LOGO));
 
-        int logoXSize = sSCENEMAKER_LOGO.getIconWidth();
+        int logoXSize = Preferences.ICON_SCENEMAKER_LOGO.getIconWidth();
 
         mAboutPane = new MyEditorPane();
         mAboutPane.setEditorKit(editorKit);

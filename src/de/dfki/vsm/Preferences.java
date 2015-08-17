@@ -1,9 +1,11 @@
 package de.dfki.vsm;
 
+import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
@@ -19,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,7 +89,7 @@ public final class Preferences {
     public static final String sUSER_NAME = System.getProperty("user.name");
     public static final String sUSER_HOME = System.getProperty("user.home");
     public static final String sUSER_DIR  = System.getProperty("user.dir");
-   
+    public static final String sSAMPLE_PROJECTS = "res" + System.getProperty("file.separator") + "prj";
     //////////////////////////////////////////////////////////////////////////////
     // NODE COLORS
     //////////////////////////////////////////////////////////////////////////////
@@ -128,7 +131,10 @@ public final class Preferences {
     public static boolean sSHOW_SCENEFLOWEDITOR = true;
     public static float sSCENEFLOW_SCENE_EDITOR_RATIO = 0.75f;
     public static boolean sSHOW_GESTURES = true;
-
+    // The Screen Size
+    public static Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
+    public static int       SCREEN_HORIZONTAL = SCREEN_SIZE.width;
+    public static int       SCREEN_VERTICAL = SCREEN_SIZE.height;
     //////////////////////////////////////////////////////////////////////////////
     // RECENT FILES
     //////////////////////////////////////////////////////////////////////////////
@@ -153,90 +159,43 @@ public final class Preferences {
     public static final Integer sFONT_SIZE_LIST[] = {
         6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
     };
-
+    //////////////////////////////////////////////////////////////////////////////
+    // DATE FORMAT
+    //////////////////////////////////////////////////////////////////////////////
+    public static final SimpleDateFormat sDATE_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+    
+    
     // public static final int sFONT_SIZE_LIST[] = {6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
     //////////////////////////////////////////////////////////////////////////////
     // IMAGE RESSOURCES
     //////////////////////////////////////////////////////////////////////////////
-    public static final ImageIcon sSCENEMAKER_LOGO
-            = new ImageIcon(Toolkit.getDefaultToolkit().createImage(SceneMaker3.class.getResource("/res/img/smlogo.png")));
-    public static final ImageIcon sSCENEMAKER_DOCICON
-            = new ImageIcon(Toolkit.getDefaultToolkit().createImage(SceneMaker3.class.getResource("/res/img/docicon.png")));
-    public static final ImageIcon sSHOW_GRID_ICON
-            = new ImageIcon(Toolkit.getDefaultToolkit().createImage(SceneMaker3.class.getResource("/res/img/grid.png")));
-    public static final ImageIcon sSCREENSHOT_ICON = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource("/res/img/screenshot.png")));
-    public static final ImageIcon sVISUALISATIONICON = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/visualisation.png")));
-    public static final ImageIcon sCOMMENT_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/COMMENT_ENTRY.png")));
-    public static final ImageIcon sSUPERNODE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/SUPERNODE_ENTRY.png")));
-    public static final ImageIcon sBASICNODE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/BASICNODE_ENTRY.png")));
-    public static final ImageIcon sEEDGE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/EEDGE_ENTRY.png")));
-    public static final ImageIcon sTEDGE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/TEDGE_ENTRY.png")));
-    public static final ImageIcon sPEDGE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/PEDGE_ENTRY.png")));
-    public static final ImageIcon sCEDGE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/CEDGE_ENTRY.png")));
-    public static final ImageIcon sIEDGE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/IEDGE_ENTRY.png")));
-    public static final ImageIcon sFEDGE_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/FEDGE_ENTRY.png")));
-    public static final ImageIcon sROOT_FOLDER = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/ROOT_FOLDER.png")));
-    public static final ImageIcon sSCENE_FOLDER = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/SCENE_FOLDER.png")));
-    public static final ImageIcon sBASIC_FOLDER = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/BASIC_FOLDER.png")));
-    public static final ImageIcon sRADIOBUTTON_UNSELECTED
-            = new ImageIcon(
-                    Toolkit.getDefaultToolkit().createImage(
-                            SceneMaker3.class.getResource("/res/img/elementtree/RADIOBUTTON_UNSELECTED.png")));
-    public static final ImageIcon sRADIOBUTTON_SELECTED
-            = new ImageIcon(
-                    Toolkit.getDefaultToolkit().createImage(
-                            SceneMaker3.class.getResource("/res/img/elementtree/RADIOBUTTON_SELECTED.png")));
-    public static final ImageIcon sFUNCTION_ENTRY = new ImageIcon(
-            Toolkit.getDefaultToolkit().createImage(
-                    SceneMaker3.class.getResource(
-                            "/res/img/elementtree/FUNCTION_ENTRY.png")));
-    public static final ImageIcon sFUNCTION_ERROR_ENTRY
-            = new ImageIcon(
-                    Toolkit.getDefaultToolkit().createImage(
-                            SceneMaker3.class.getResource("/res/img/elementtree/FUNCTION_ERROR_ENTRY.png")));
-
-
+    public static final ImageIcon ICON_SCENEMAKER_LOGO          = ResourceLoader.loadImageIcon("/res/img/smlogo.png");
+    public static final ImageIcon ICON_SCENEMAKER_DOC           = ResourceLoader.loadImageIcon("/res/img/docicon.png");
+    public static final ImageIcon ICON_SHOW_GRID                = ResourceLoader.loadImageIcon("/res/img/grid.png");
+    public static final ImageIcon ICON_SCREENSHOT               = ResourceLoader.loadImageIcon("/res/img/screenshot.png");
+    public static final ImageIcon ICON_VISUALISATION            = ResourceLoader.loadImageIcon("/res/img/visualisation.png");
+    public static final ImageIcon ICON_COMMENT_ENTRY            = ResourceLoader.loadImageIcon("/res/img/elementtree/COMMENT_ENTRY.png");
+    public static final ImageIcon ICON_SUPERNODE_ENTRY          = ResourceLoader.loadImageIcon("/res/img/elementtree/SUPERNODE_ENTRY.png");
+    public static final ImageIcon ICON_BASICNODE_ENTRY          = ResourceLoader.loadImageIcon("/res/img/elementtree/BASICNODE_ENTRY.png");
+    public static final ImageIcon ICON_EEDGE_ENTRY              = ResourceLoader.loadImageIcon("/res/img/elementtree/EEDGE_ENTRY.png");
+    public static final ImageIcon ICON_TEDGE_ENTRY              = ResourceLoader.loadImageIcon("/res/img/elementtree/TEDGE_ENTRY.png");
+    public static final ImageIcon ICON_PEDGE_ENTRY              = ResourceLoader.loadImageIcon("/res/img/elementtree/PEDGE_ENTRY.png");
+    public static final ImageIcon ICON_CEDGE_ENTRY              = ResourceLoader.loadImageIcon("/res/img/elementtree/CEDGE_ENTRY.png");
+    public static final ImageIcon ICON_IEDGE_ENTRY              = ResourceLoader.loadImageIcon("/res/img/elementtree/IEDGE_ENTRY.png");
+    public static final ImageIcon ICON_FEDGE_ENTRY              = ResourceLoader.loadImageIcon("/res/img/elementtree/FEDGE_ENTRY.png");
+    public static final ImageIcon ICON_ROOT_FOLDER              = ResourceLoader.loadImageIcon("/res/img/elementtree/ROOT_FOLDER.png");
+    public static final ImageIcon ICON_SCENE_FOLDER             = ResourceLoader.loadImageIcon("/res/img/elementtree/SCENE_FOLDER.png");
+    public static final ImageIcon ICON_BASIC_FOLDER             = ResourceLoader.loadImageIcon("/res/img/elementtree/BASIC_FOLDER.png");
+    public static final ImageIcon ICON_RADIOBUTTON_UNSELECTED   = ResourceLoader.loadImageIcon("/res/img/elementtree/RADIOBUTTON_UNSELECTED.png");
+    public static final ImageIcon ICON_RADIOBUTTON_SELECTED     = ResourceLoader.loadImageIcon("/res/img/elementtree/RADIOBUTTON_SELECTED.png");
+    public static final ImageIcon ICON_FUNCTION_ENTRY           = ResourceLoader.loadImageIcon("/res/img/elementtree/FUNCTION_ENTRY.png");
+    public static final ImageIcon ICON_FUNCTION_ERROR_ENTRY     = ResourceLoader.loadImageIcon("/res/img/elementtree/FUNCTION_ERROR_ENTRY.png");
+    //show and hide icons
+    public static final ImageIcon ICON_MORE_STANDARD            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png");
+    public static final ImageIcon ICON_MORE_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png");
+    public static final ImageIcon ICON_LESS_STANDARD            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png");
+    public static final ImageIcon ICON_LESS_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png");
+    public static final Image     BACKGROUND_IMAGE              = ResourceLoader.loadImageIcon("/res/img/icon_big.png").getImage();   // Background for the welcome screen
     /**
      *
      */
@@ -439,7 +398,7 @@ public final class Preferences {
                 final Object app = appClass.getMethod("getApplication", new Class[]{}).invoke(null, new Object[]{});
                 final Method setDockIconImage = appClass.getMethod("setDockIconImage", new Class[]{Image.class});
                 // Set the dock icon to the logo of Visual Scene Maker 3  
-                setDockIconImage.invoke(app, new Object[]{Preferences.sSCENEMAKER_DOCICON.getImage()});
+                setDockIconImage.invoke(app, new Object[]{Preferences.ICON_SCENEMAKER_DOC.getImage()});
             }
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException exc) {
             LOGDefaultLogger.getInstance().failure("Error: " + exc.getMessage());

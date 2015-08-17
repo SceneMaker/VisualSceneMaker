@@ -62,6 +62,7 @@ public class EditorConfig {
     public String sSCRIPT_FONT_TYPE = "Arial";
     public int sSCRIPT_FONT_SIZE = 11;
     public boolean sSHOWSCENE_ELEMENTS = true;
+    public boolean sAUTOHIDE_BOTTOMPANEL = true; // Saves the pricked pin of the bottom panel of the editor
 
     public EditorConfig() {
 
@@ -158,6 +159,9 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("launchPlayer")) {
             sPROPERTIES.setProperty("launchPlayer", "false");
         }
+        if (!sPROPERTIES.containsKey("autohidebottombar")) { //state of the bottom bar (pricked pin)
+            sPROPERTIES.setProperty("autohidebottombar", "true");
+        }
     }
 
     /**
@@ -179,6 +183,7 @@ public class EditorConfig {
         sSCRIPT_FONT_TYPE = String.valueOf(sPROPERTIES.getProperty("scriptfonttype"));
         sSCRIPT_FONT_SIZE = Integer.valueOf(sPROPERTIES.getProperty("scriptfonsize"));
         sSHOWSCENE_ELEMENTS = Boolean.valueOf(sPROPERTIES.getProperty("showsceneelements"));
+        sAUTOHIDE_BOTTOMPANEL = Boolean.valueOf(sPROPERTIES.getProperty("autohidebottombar")); //loads pricked pin status
         sSUPERNODEWIDTH = sNODEWIDTH;
         sSUPERNODEHEIGHT = sNODEWIDTH;
         sGRID_NODEWIDTH = sNODEWIDTH;
@@ -398,7 +403,9 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("launchPlayer")) {
             sPROPERTIES.setProperty("launchPlayer", "false");
         }
-
+        if (!sPROPERTIES.containsKey("autohidebottombar")) { // load state of the pin of the bottom bar
+            sPROPERTIES.setProperty("autohidebottombar", "true");
+        }
         //
         init();
 

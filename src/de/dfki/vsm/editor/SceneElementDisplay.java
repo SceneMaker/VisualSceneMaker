@@ -120,7 +120,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
     private class SceneElementTree extends JTree implements EventListener {
 
         // Elements
-        private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", Preferences.sROOT_FOLDER, null);
+        private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", Preferences.ICON_ROOT_FOLDER, null);
         private final TreeEntry mGesticonEntry = new TreeEntry("Gesticon", null, null);
         private final TreeEntry mActionDefinitionsEntry = new TreeEntry("Acticon", null, null);
 

@@ -269,10 +269,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     public boolean isPinPricked() {
         return mToolBar.isPinPricked();
     }
-
-    // Set the pin pricked flag
+//
+//    // Set the pin pricked flag
     public void setPinPricked() {
-        mToolBar.prickPin();
+        mToolBar.setPin(true); // true pricks the pin
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -30,7 +30,7 @@ public final class SceneFlowPaletteItem extends JButton implements Transferable 
     // TODO: get icons path from prefrences
     private final String mIconsPath = "/res/img/workspace_toolbar/";
     // TODO: do that to static preferences
-    private final Dimension mToolItemSize = new Dimension(35, 45);
+    private final Dimension mToolItemSize = new Dimension(61, 65);
     private final String mToolTipText;
     private final Icon mStandardIcon;
     private final Icon mRollOverIcon;

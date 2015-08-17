@@ -144,7 +144,7 @@ public class SceneFlow extends SuperNode {
         //out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         out.println("<SceneFlow " + "id=\"" + mId + "\" " + "name=\"" + mName + "\" " + "comment=\"" + mComment
                 + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
-                + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "modifDate=\"" + new SimpleDateFormat("dd.MM.yyyy").format(new Date()) + "\" " + "start=\""
+                + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "modifDate=\"" + Preferences.sDATE_FORMAT.format(new Date()) + "\" " + "start=\""
                 + start + "\" "
                 // + "context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "
                 + "context=\"" + mContextClass + "\" " + "package=\"" + mPackageName + "\" "
