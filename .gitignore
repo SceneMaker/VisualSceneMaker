@@ -1,3 +1,4 @@
-/log/nova.log
-/log/sock.log
-/log/vsm3.log
+tmp/
+log/
+bld/
+nbproject/
