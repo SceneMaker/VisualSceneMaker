@@ -89,7 +89,7 @@ public final class SceneFlowElementPanel extends JScrollPane {
  */
 class ElementTree extends JTree implements ActionListener, TreeSelectionListener {
 
-    private final TreeEntry mSceneFlowEntry = new TreeEntry("SceneFlow", Preferences.sROOT_FOLDER, null);
+    private final TreeEntry mSceneFlowEntry = new TreeEntry("SceneFlow", Preferences.ICON_ROOT_FOLDER, null);
     private final TreeEntry mSceneListEntry = new TreeEntry("Scenes", null, null);
     private final TreeEntry mFunctionsEntry = new TreeEntry("Functions", null, null);
     private final TreeEntry mDialogActsEntry = new TreeEntry("Dialog Acts", null, null);
@@ -124,8 +124,8 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
         for (final FunDef def : functionDefinitions) {
             mFunctionsEntry.add(new TreeEntry(def.getName(), def.isValidClass()
-                    ? Preferences.sFUNCTION_ENTRY
-                    : Preferences.sFUNCTION_ERROR_ENTRY, def));
+                    ? Preferences.ICON_FUNCTION_ENTRY
+                    : Preferences.ICON_FUNCTION_ERROR_ENTRY, def));
         }
     }
 

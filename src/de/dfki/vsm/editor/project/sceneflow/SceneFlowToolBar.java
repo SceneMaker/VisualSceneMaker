@@ -36,7 +36,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
-
+import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
 /**
  * @author Gregor Mehlmann
  */
@@ -96,6 +96,9 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
     
     private final ImageIcon ICON_ZOOMOUT_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/zoomout.png");
     private final ImageIcon ICON_ZOOMOUT_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/zoomout_blue.png");
+    
+    private final ImageIcon ICON_SETTINGS_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/settings.png");
+    private final ImageIcon ICON_SETTINGS_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/settings_blue.png");
     /**************************************************************************************************************************/
     
     // The singelton logger instance
@@ -125,6 +128,7 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
     private JButton mStraighten;
     private JButton mNormalize;
     private JButton mSaveProject;
+    private JButton mPreferences;
     private JButton mUndo;
     private JButton mRedo;
 
@@ -150,6 +154,10 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
             final EditorProject project) {
         // Create a horizontal toolbar
         super("SceneFlowToolBar", JToolBar.HORIZONTAL);
+        //Set maximum size
+        setMinimumSize(new Dimension((int)(SCREEN_HORIZONTAL*0.6), 40));
+        //setPreferredSize(new Dimension(SCREEN_HORIZONTAL, 40));
+        setMaximumSize(new Dimension(SCREEN_HORIZONTAL, 120));
         // Initialize the sceneflow editor
         mSceneFlowEditor = editor;
         // Initialize the editor project
@@ -277,8 +285,17 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
                 ? ICON_MORE_ROLLOVER
                 : ICON_LESS_ROLLOVER);
         sanitizeButton(mElementButton, tinyButtonDim);
-        add(Box.createHorizontalStrut(30));
-
+        add(Box.createHorizontalGlue());
+        //Preferences
+        mPreferences = add(new AbstractAction("ACTION_SAVEPROJECT", ICON_SETTINGS_STANDARD) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mEditorInstance.showOptions();
+            }
+        });
+        mPreferences.setRolloverIcon(ICON_SETTINGS_ROLLOVER);
+        mPreferences.setToolTipText("Project Preferences");
+        sanitizeButton(mPreferences, tinyButtonDim);
         
         //******************************************************************************************************
         //EDIT PROJECT SECTION
@@ -349,9 +366,7 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
         sanitizeButton(mStraighten, tinyButtonDim);
         // The Show Variables Button
         mShowVarButton = add(new AbstractAction("ACTION_SHOW_VARIABLES",
-                Boolean.valueOf(Preferences.getProperty("showVariables"))
-                        ? ICON_VARS_STANDARD
-                        : ICON_VARS_HIDDEN_STANDARD) {
+                Boolean.valueOf(Preferences.getProperty("showVariables"))? ICON_VARS_STANDARD: ICON_VARS_HIDDEN_STANDARD) {
                     public void actionPerformed(ActionEvent evt) {
                         mSceneFlowEditor.getWorkSpace().showVariablesOnWorkspace();
                         changeShowVariablesButtonState();
@@ -359,20 +374,13 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
                         repaint();
                     }
                 });
-        mShowVarButton.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showVariables"))
-                                       ? ICON_VARS_ROLLOVER
-                                       : ICON_VARS_HIDDEN_ROLLOVER);
-        mShowVarButton.setToolTipText(Boolean.valueOf(Preferences.getProperty("showVariables"))
-                                      ? "Show Variables"
-                                      : "Hide Variables");
+        mShowVarButton.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showVariables"))? ICON_VARS_ROLLOVER: ICON_VARS_HIDDEN_ROLLOVER);
+        mShowVarButton.setToolTipText(Boolean.valueOf(Preferences.getProperty("showVariables"))? "Show Variables": "Hide Variables");
         // Format The Button As Tiny
         sanitizeButton(mShowVarButton, tinyButtonDim);
         add(Box.createHorizontalStrut(10));
         add(createSeparator());
-
-        add(Box.createHorizontalStrut(30));
-        addSeparator();
-        add(Box.createHorizontalStrut(30));
+        add(Box.createHorizontalStrut(10));
         // The Play SceneFlow Button
         mPlayButton = add(new AbstractAction() {
             @Override

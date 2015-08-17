@@ -31,7 +31,6 @@ import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.JFileChooser;
@@ -648,73 +647,63 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Print some info message
         mLogger.message("Updating recent projects with '" + projectPath + "' '" + projectName + "'");
         //
-        ArrayList<String> paths = new ArrayList<>();
-        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> recentProjectPaths = new ArrayList<>();
+        ArrayList<String> recentProjectNames = new ArrayList<>();
         // Load the list of recent projects
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
-            final String path = Preferences.getProperty("recentproject." + i + ".path");
-
-            if (path != null) {
-                // TODO: hardcoding this is bad style
-                if (path.startsWith("res" + System.getProperty("file.separator") + "prj")) {
-                    continue;
-                }
-
-                paths.add(Preferences.getProperty("recentproject." + i + ".path"));
-            }
-
+            String path = Preferences.getProperty("recentproject." + i + ".path");
             String pName = Preferences.getProperty("recentproject." + i + ".name");
-
-            if (pName != null) {
-                names.add(Preferences.getProperty("recentproject." + i + ".name"));
+            if (path != null && pName != null && !path.startsWith(Preferences.sSAMPLE_PROJECTS))
+            {
+                recentProjectPaths.add(Preferences.getProperty("recentproject." + i + ".path"));
+                recentProjectNames.add(Preferences.getProperty("recentproject." + i + ".name")); 
             }
         }
-
-        if (paths.contains(projectPath)) {
+        if (recentProjectPaths.contains(projectPath)) {
 
             // case: project in recent list
-            if (names.contains(projectName)) {
+            if (recentProjectNames.contains(projectName)) {
 
                 // case: project is on list - has now to be at first pos
-                int index = paths.indexOf(projectPath);
-
+                int index = recentProjectPaths.indexOf(projectPath);
+                Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
                 if (index != 0) {
-                    paths.add(0, projectPath);
-                    names.add(0, projectName);
-                    names.remove(index + 1);
+                    recentProjectPaths.add(0, projectPath);
+                    recentProjectNames.add(0, projectName);
+                    recentProjectNames.remove(index + 1);
+                    recentProjectPaths.remove(index + 1);
                 }
             } else {
 
                 // dir is the same, but name changed
-                int index = paths.indexOf(projectPath);
+                int index = recentProjectPaths.indexOf(projectPath);
 
                 Preferences.setProperty("recentproject." + index + ".name", projectName);
-                Preferences.setProperty("recentproject." + index + ".date", new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
-                names.remove(index);
-                names.add(index, projectName);
+                Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
+                recentProjectNames.remove(index);
+                recentProjectNames.add(index, projectName);
             }
         } else {
-
-            // case: project not in recent list
-            paths.add(0, projectPath);
-            names.add(0, projectName);
+            if(!projectPath.contains(Preferences.sSAMPLE_PROJECTS))
+            {
+                // case: project not in recent list
+                recentProjectPaths.add(0, projectPath);
+                recentProjectNames.add(0, projectName);
+            }
         }
 
         // set properties
         String dir = null;
         String name = null;
-        int maxCnt = (paths.size() <= Preferences.sMAX_RECENT_PROJECTS)
-                ? paths.size()
-                : Preferences.sMAX_RECENT_PROJECTS;
-
+        int maxCnt = ((recentProjectPaths.size() <= Preferences.sMAX_RECENT_PROJECTS)? recentProjectPaths.size() : Preferences.sMAX_RECENT_PROJECTS);
         for (int i = 0; i < maxCnt; i++) {
-            dir = paths.get(i);
-            name = names.get(i);
+            dir = recentProjectPaths.get(i);
+            name = recentProjectNames.get(i);
 
             if ((dir != null) && (name != null)) {
                 Preferences.setProperty("recentproject." + i + ".path", dir);
                 Preferences.setProperty("recentproject." + i + ".name", name);
-                Preferences.setProperty("recentproject." + i + ".date", new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
+                //Preferences.setProperty("recentproject." + i + ".date", Preferences.sDATE_FORMAT.format(new Date()));
             } else {
                 break;
             }
