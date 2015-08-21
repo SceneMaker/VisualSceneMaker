@@ -181,7 +181,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         // Initialize The Components
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
-        setBackground(Color.WHITE);
         add(mToolBar, BorderLayout.NORTH);
         add(mTabPane, BorderLayout.CENTER);
         add(mStatusLabel, BorderLayout.SOUTH);
@@ -211,10 +210,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
+   
         mTabPane.addTab(null, new JScrollPane(ep));
+        
         JLabel tabLabel = new JLabel(tabName);
-        tabLabel.setOpaque(true);
-        tabLabel.setBackground(Color.white);
        
         // Create an AddButton
         final AddButton mAddButton = new AddButton();
@@ -252,11 +251,9 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         });
         if (tabCounter != 0) {
             JPanel pnl = new JPanel();
-            pnl.setOpaque(true);
-            pnl.setBackground(Color.white);
+            pnl.setOpaque(false);
             pnl.add(tabLabel);
             pnl.add(mAddButton);
-            mTabPane.setBackgroundAt(mTabPane.getTabCount() - 1, Color.white);
             mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnl);
             mTabPane.setComponentAt(mTabPane.getTabCount() - 1, content);
             mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
