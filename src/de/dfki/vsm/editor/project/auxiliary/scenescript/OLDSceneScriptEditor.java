@@ -71,6 +71,8 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
     private final FunctionsEditor mFunctionEditor;
     private final DialogActEditor mDialogActEditor;
+    private final JPanel mScriptTabPanel = new JPanel();
+          
     private final EditorConfig mPreferences;
     //private final String              mPreferencesFileName;
     private ArrayList<Integer> searchOffsets;
@@ -166,12 +168,12 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         Box bxBottom = Box.createHorizontalBox();
         bxBottom.add(scriptSplitPane);
         //Script Panel
-        JPanel scriptTabPanel = new JPanel();
-        scriptTabPanel.setLayout(new BoxLayout(scriptTabPanel, BoxLayout.Y_AXIS));
-        scriptTabPanel.add(bxTop);
-        scriptTabPanel.add(bxBottom);
 
-        addTab("Script        ", scriptTabPanel);
+        mScriptTabPanel.setLayout(new BoxLayout(mScriptTabPanel, BoxLayout.Y_AXIS));
+        mScriptTabPanel.add(bxTop);
+        mScriptTabPanel.add(bxBottom);
+
+        addTab("Script        ", mScriptTabPanel);
         addTab("Functions     ", mFunctionEditor);
         addTab("DialogAct [Experimental]", mDialogActEditor);
 
@@ -305,7 +307,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         if (event instanceof TreeEntrySelectedEvent) {
             if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Scenes")) {
-                mTabPane.setSelectedComponent(mScrollPane);
+                mTabPane.setSelectedComponent(mScriptTabPanel);
             } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Functions")) {
                 mTabPane.setSelectedComponent(mFunctionEditor);
             } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Dialog")) {
