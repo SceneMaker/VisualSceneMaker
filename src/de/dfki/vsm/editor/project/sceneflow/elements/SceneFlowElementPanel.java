@@ -90,7 +90,7 @@ public final class SceneFlowElementPanel extends JScrollPane {
 class ElementTree extends JTree implements ActionListener, TreeSelectionListener {
 
     private final TreeEntry mSceneFlowEntry = new TreeEntry("SceneFlow", Preferences.ICON_ROOT_FOLDER, null);
-    private final TreeEntry mSceneListEntry = new TreeEntry("Scenes", null, null);
+    //private final TreeEntry mSceneListEntry = new TreeEntry("Scenes", null, null);
     private final TreeEntry mFunctionsEntry = new TreeEntry("Functions", null, null);
     private final TreeEntry mDialogActsEntry = new TreeEntry("Dialog Acts", null, null);
 
@@ -142,7 +142,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         }
 
         //
-        expandAll();
+        //expandAll();
     }
 
     public final void refresh() {
@@ -156,7 +156,20 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         //TODO: call the right update method
         updateFunctions();
         updateDialogActs();
-
+        //remove empty scenes
+        for(int i = 0; i < mSceneFlowEntry.getChildCount(); i++)
+        {
+            TreeEntry tempTE = (TreeEntry)mSceneFlowEntry.getChildAt(i);
+            
+            System.out.println(tempTE.getText()+"888888888888888888888888888888888888888888888888888888888888\n \n \n");
+            System.out.println(tempTE.getChildCount());
+            System.out.println(tempTE.children());
+            if(tempTE.getChildCount() ==0 && !tempTE.getText().equals("Functions"))
+            {
+                mSceneEntryList.remove(tempTE);
+                mSceneFlowEntry.remove(i);
+            }
+        }
         // Update the visual appearance of the ElementTree
         updateUI();
     }
@@ -186,7 +199,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         ToolTipManager.sharedInstance().registerComponent(this);
 
         //
-        expandAll();
+        //expandAll();
     }
 
     //
@@ -286,20 +299,16 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
      *
      */
     private void updateSceneList() {
-
-        //
         // System.out.println("Updating Scenes");
         for (int i = 0; i < mSceneEntryList.size(); i++) {
             mSceneEntryList.get(i).removeAllChildren();
 
-            // System.out.println("Getting:" + mSceneListEntry.get(i).getText());
             if (mSceneEntryList.get(i).isNodeChild(mSceneFlowEntry)) {
 
-                // System.out.println("Removing: " + mSceneListEntry.get(i).getText());
                 mSceneFlowEntry.remove(mSceneEntryList.get(i));
             }
         }
-
+        
         //
         SceneScript sceneScript = mProject.getSceneScript();
 
@@ -310,33 +319,36 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                     ArrayList<SceneObject> blackList = group.getBlackList();
                     ArrayList<String> languageList = new ArrayList<String>();
 
-                    if (mSceneFlowEntry.isNodeDescendant(mSceneListEntry)) {
-                        mSceneFlowEntry.remove(mSceneListEntry);
-                    }
+//                    if (mSceneFlowEntry.isNodeDescendant(mSceneListEntry)) {
+//                        mSceneFlowEntry.remove(mSceneListEntry);
+//                    }
 
                     for (SceneObject scene : whiteList) {
 
-                        // System.out.println("White List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                         System.out.println("White List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                        
                         if (!languageList.contains(scene.getLanguage())) {
                             languageList.add(scene.getLanguage());
-
+                            
                             TreeEntry sceneEntry = getSceneEntry(scene.getLanguage());
-
                             // Add new scene language to the root entry
-                            if (sceneEntry == null) {
+                            if (sceneEntry != null) {
+                                sceneEntry.add(new TreeEntry(scene.getName(), null, group));    // PG: added a space before the number cnt of scenes in scenegroup for better readability
+                            } else {
                                 sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
                                 sceneEntry.add(new TreeEntry(scene.getName(), null, group));
-                                mSceneEntryList.add(sceneEntry);
-                                mSceneFlowEntry.add(sceneEntry);
-                            } else {
-                                sceneEntry.add(new TreeEntry(scene.getName(), null, group));    // PG: added a space before the number cnt of scenes in scenegroup for better readability
+                                if (sceneEntry.getChildCount() >0 )
+                                {
+                                    mSceneEntryList.add(sceneEntry);
+                                    mSceneFlowEntry.add(sceneEntry);
+                                }
                             }
                         }
                     }
 
                     for (SceneObject scene : blackList) {
 
-                        // System.out.println("Black List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                         System.out.println("Black List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
                         if (!languageList.contains(scene.getLanguage())) {
                             languageList.add(scene.getLanguage());
 
@@ -356,9 +368,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 }
             }
         }
-
-        //
-        expandAll();
+        //expandAll();
     }
 
     /**
