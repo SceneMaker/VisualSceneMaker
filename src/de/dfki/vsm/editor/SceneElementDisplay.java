@@ -161,7 +161,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
             initComponents();
 
             //
-            expandAll();
+            //expandAll();
 
             //
 //      addTreeSelectionListener(new TreeSelectionListener() {
@@ -282,7 +282,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
             pop.add(item);
             pop.show(this, e.getX(), e.getY());
         }
-
+        
         public void expandAll() {
             for (int i = 0; i < getRowCount(); i++) {
                 expandRow(i);
@@ -290,7 +290,6 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
 
             updateUI();
         }
-
         private void initComponents() {
             mRootEntry.add(mGesticonEntry);
             mRootEntry.add(mActionDefinitionsEntry);
@@ -317,7 +316,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
 
             // ((DefaultTreeModel) getModel()).setRoot(gesticonNode);
             // Expand the gesticon tree
-            expandAll();
+            //expandAll();
         }
 
         private void showSceneAction(/*EditorProject p*/) {
