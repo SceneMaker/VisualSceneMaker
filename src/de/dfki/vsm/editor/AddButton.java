@@ -35,8 +35,6 @@ public class AddButton extends JLabel {
     }
     public AddButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);
-        setOpaque(false);
-        setBackground(Color.white);
         setIcon(ICON_ADD_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Add");
