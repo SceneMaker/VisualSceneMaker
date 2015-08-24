@@ -215,6 +215,7 @@ public final class EditorMenuBar extends JMenuBar {
         mSaveAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         mSaveAsMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.saveAs();
             }
@@ -270,6 +271,7 @@ public final class EditorMenuBar extends JMenuBar {
         mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mCopyMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes();
             }
@@ -292,6 +294,7 @@ public final class EditorMenuBar extends JMenuBar {
         mNormalizeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mNormalizeMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
@@ -319,6 +322,7 @@ public final class EditorMenuBar extends JMenuBar {
         mOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
                 (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mOptionsMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.showOptions();
             }
@@ -356,6 +360,7 @@ public final class EditorMenuBar extends JMenuBar {
         mQuestionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mQuestionMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.showHelp();
             }
@@ -366,6 +371,7 @@ public final class EditorMenuBar extends JMenuBar {
         mInfoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mInfoMenuItem.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.showAbout();
             }
