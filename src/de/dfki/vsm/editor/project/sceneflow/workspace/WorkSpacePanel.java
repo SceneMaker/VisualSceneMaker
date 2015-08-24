@@ -35,11 +35,11 @@ import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.GridManager;
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sIEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sPEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -253,8 +253,15 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         if(EditorInstance.getInstance().getSelectedProjectEditor()!= null){
             if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject() != null) {
                 if (mProject.hasChanged()) {
-                    EditorInstance.getInstance().getProjectEditors().setTitleAt(
-                            EditorInstance.getInstance().getProjectEditors().getSelectedIndex(), mProject.getProjectName() + "*");
+                    
+                    int selectecTabIndex = EditorInstance.getInstance().getProjectEditors().getSelectedIndex();
+                   
+                    if(!EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex).contains("*")){
+                          EditorInstance.getInstance().getProjectEditors().setTitleAt(selectecTabIndex, 
+                            EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex)
+                            + "*");   
+                    }
+                   
                     //mLogger.message("Changes on workspace detected");
                 }
             }

@@ -17,6 +17,7 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,12 +30,12 @@ import javax.swing.JPanel;
 public class QuitDialog extends JDialog {
 
     // Singelton instance
-    private static QuitDialog   sInstance            = null;
+    //private static QuitDialog   sInstance            = null;
     private JPanel              mContentPanel        = null;
     private OKButton            mYesButton;
     private CancelButton        mNoButton;
     private CancelButton        mCancelButton;
-    private EditorInstance      mEditorInstance = EditorInstance.getInstance();
+    //private EditorInstance      mEditorInstance = EditorInstance.getInstance();
     private JLabel              mExitMessage;
     
     private int                 mFinalExitMessage; //TAKES ONE OF THE VALUES OF THE RETURN MESSAGES
@@ -53,7 +54,9 @@ public class QuitDialog extends JDialog {
     private String              yesButtonMessage;
     private String              noButtonMessage;
     private String              cancelButtonMessage;
-    
+    //ICONS 
+    private ImageIcon ICON_EXIT_STANDARD = ResourceLoader.loadImageIcon("/res/img/exit_icon.png");
+    private ImageIcon ICON_EXIT_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/exit_icon_blue.png");
     
     // Construction
     public QuitDialog(int quitType) {
@@ -99,7 +102,7 @@ public class QuitDialog extends JDialog {
         });
         //NO BUTTON
         mNoButton = new CancelButton();
-        mNoButton.setIcon(ResourceLoader.loadImageIcon("/res/img/exit_icon.png"));
+        mNoButton.setIcon(ICON_EXIT_STANDARD);
         mNoButton.setText(noButtonMessage);
         mNoButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -109,11 +112,11 @@ public class QuitDialog extends JDialog {
                 dispose();
             }
             public void mouseEntered(MouseEvent me) {
-                mNoButton.setIcon(ResourceLoader.loadImageIcon("/res/img/exit_icon_blue.png"));
+                mNoButton.setIcon(ICON_EXIT_ROLLOVER);
                 mNoButton.setBackground(new Color(82, 127, 255));
             }
             public void mouseExited(MouseEvent me) {
-                mNoButton.setIcon(ResourceLoader.loadImageIcon("/res/img/exit_icon.png"));
+                mNoButton.setIcon(ICON_EXIT_STANDARD);
                 mNoButton.setBackground(new Color(255, 255, 255));
             }
         });

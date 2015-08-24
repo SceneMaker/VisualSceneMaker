@@ -17,16 +17,16 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-import static de.dfki.vsm.editor.util.Preferences.sBASIC_NODE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sEEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sHISTORY_NODE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sSTART_SIGN_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sSUPER_NODE_COLOR;
-import static de.dfki.vsm.editor.util.Preferences.sTEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sBASIC_NODE_COLOR;
+import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sEEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sHISTORY_NODE_COLOR;
+import static de.dfki.vsm.Preferences.sIEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sPEDGE_COLOR;
+import static de.dfki.vsm.Preferences.sSTART_SIGN_COLOR;
+import static de.dfki.vsm.Preferences.sSUPER_NODE_COLOR;
+import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
 
 //~--- JDK imports ------------------------------------------------------------
 

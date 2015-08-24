@@ -14,7 +14,7 @@ public final class OpenProjectView extends FileView {
         Icon icon = null;
 
         if (file.isDirectory()) {
-            File configFile = new File(file.getAbsolutePath()/*+ System.getProperty("file.separator") + "config.xml"*/);
+            File configFile = new File(file.getAbsolutePath() + System.getProperty("file.separator") + "project.xml");
 
             if (configFile.exists()) {
                 icon = sceneMakerIcon;
