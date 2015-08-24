@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor.project.sceneflow.elements;
 
-import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -21,6 +20,7 @@ import java.awt.dnd.DragSourceListener;
 import java.io.IOException;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
@@ -30,10 +30,11 @@ public final class SceneFlowPaletteItem extends JButton implements Transferable 
     // TODO: get icons path from prefrences
     private final String mIconsPath = "/res/img/workspace_toolbar/";
     // TODO: do that to static preferences
-    private final Dimension mToolItemSize = new Dimension(35, 45);
+    private final Dimension mToolItemSize = new Dimension(61, 65);
     private final String mToolTipText;
-    private final Icon mStandardIcon;
-    private final Icon mRollOverIcon;
+    private final ImageIcon mStandardIcon;
+    private final ImageIcon mRollOverIcon;
+    private final ImageIcon mDragIcon;
     private final Object mDragableData;
 
     // Drag & drop support
@@ -43,14 +44,13 @@ public final class SceneFlowPaletteItem extends JButton implements Transferable 
     private final DragSourceListener mDragSourceListener;
 
     // Create a sceneflow element item
-    public SceneFlowPaletteItem(
-            final String text,
-            final String info,
-            final String icon,
-            final Object data) {
+    public SceneFlowPaletteItem(final String text, final String info, final ImageIcon stdIcon, final ImageIcon rollIcon, final ImageIcon dragIcon, final Object data) 
+    {
         mToolTipText = text;
-        mStandardIcon = ResourceLoader.loadImageIcon(mIconsPath + icon + ".png");
-        mRollOverIcon = ResourceLoader.loadImageIcon(mIconsPath + icon + "_BLUE.png");
+        //ICONS
+        mStandardIcon = stdIcon;
+        mRollOverIcon = rollIcon;
+        mDragIcon     = dragIcon;
         mDragableData = data;
         setContentAreaFilled(false);
         setFocusable(false);
@@ -99,7 +99,7 @@ public final class SceneFlowPaletteItem extends JButton implements Transferable 
         mDragGestureListener = new DragGestureListener() {
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
-                Image cursorIcon = ResourceLoader.loadImageIcon(mIconsPath + icon + "_SMALL.png").getImage();
+                Image cursorIcon = mDragIcon.getImage();
                 Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(0, 0), mToolTipText);
 
                 mDragSource.startDrag(event, cur, (SceneFlowPaletteItem) event.getComponent(), mDragSourceListener);

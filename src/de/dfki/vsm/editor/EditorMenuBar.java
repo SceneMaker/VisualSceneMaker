@@ -2,8 +2,9 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
+import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -144,7 +145,7 @@ public final class EditorMenuBar extends JMenuBar {
         mCreateFileMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.newProject();
+                new NewProjectDialog();
             }
         });
         mOpenFileMenuItem = new JMenuItem("Open Project...");

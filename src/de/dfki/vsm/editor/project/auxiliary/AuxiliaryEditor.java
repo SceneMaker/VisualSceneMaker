@@ -58,7 +58,7 @@ public final class AuxiliaryEditor extends JPanel {
 
     // Set the pin pricked flag
     public void setPinPricked() {
-        mAuxiliaryToolBar.prickPin();
+        mAuxiliaryToolBar.setPin(true); //TRUE PRICKS THE PIN
     }
 
     // Close the auxiliary editor

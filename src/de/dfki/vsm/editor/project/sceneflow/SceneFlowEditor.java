@@ -8,7 +8,7 @@ import de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;

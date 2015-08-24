@@ -9,7 +9,7 @@ import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.project.auxiliary.AuxiliaryToolBar;
 import de.dfki.vsm.editor.project.auxiliary.dialogact.DialogActEditor;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -21,14 +21,13 @@ import de.dfki.vsm.util.syn.SyntaxDocument;
 import org.ujmp.core.collections.ArrayIndexList;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -72,6 +71,8 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
     private final FunctionsEditor mFunctionEditor;
     private final DialogActEditor mDialogActEditor;
+    private final JPanel mScriptTabPanel = new JPanel();
+          
     private final EditorConfig mPreferences;
     //private final String              mPreferencesFileName;
     private ArrayList<Integer> searchOffsets;
@@ -84,7 +85,17 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
     // The current editor project
     private final EditorProject mProject;
-
+    
+    //ICONS 
+    private final ImageIcon ICON_MORE_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png");
+    private final ImageIcon ICON_MORE_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png");
+    
+    private final ImageIcon ICON_LESS_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png");
+    private final ImageIcon ICON_LESS_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png");
+    
+    private final ImageIcon ICON_ADD_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png");
+    private final ImageIcon ICON_ADD_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png");
+    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -124,11 +135,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 //        mObservable.addObserver(mElementPane);
 //        mObservable.addObserver(mEditorPane);
         mGesticonButton = new JButton(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png")
-                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
+                ? ICON_MORE_STANDARD
+                : ICON_LESS_STANDARD);
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
-                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+                ? ICON_MORE_ROLLOVER
+                : ICON_LESS_ROLLOVER);
         mGesticonButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent me) {
@@ -157,12 +168,12 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         Box bxBottom = Box.createHorizontalBox();
         bxBottom.add(scriptSplitPane);
         //Script Panel
-        JPanel scriptTabPanel = new JPanel();
-        scriptTabPanel.setLayout(new BoxLayout(scriptTabPanel, BoxLayout.Y_AXIS));
-        scriptTabPanel.add(bxTop);
-        scriptTabPanel.add(bxBottom);
 
-        addTab("Script        ", scriptTabPanel);
+        mScriptTabPanel.setLayout(new BoxLayout(mScriptTabPanel, BoxLayout.Y_AXIS));
+        mScriptTabPanel.add(bxTop);
+        mScriptTabPanel.add(bxBottom);
+
+        addTab("Script        ", mScriptTabPanel);
         addTab("Functions     ", mFunctionEditor);
         addTab("DialogAct [Experimental]", mDialogActEditor);
 
@@ -172,7 +183,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         // Initialize The Components
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
-        setBackground(Color.WHITE);
         add(mToolBar, BorderLayout.NORTH);
         add(mTabPane, BorderLayout.CENTER);
         add(mStatusLabel, BorderLayout.SOUTH);
@@ -202,10 +212,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
+   
         mTabPane.addTab(null, new JScrollPane(ep));
+        
         JLabel tabLabel = new JLabel(tabName);
-        tabLabel.setOpaque(true);
-        tabLabel.setBackground(Color.white);
        
         // Create an AddButton
         final AddButton mAddButton = new AddButton();
@@ -215,13 +225,13 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             @Override
             public void mouseEntered(MouseEvent me) {
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
-                    mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
+                    mAddButton.setIcon(ICON_ADD_ROLLOVER);
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
-                mAddButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
+                mAddButton.setIcon(ICON_ADD_STANDARD);
             }
 
             @Override
@@ -243,11 +253,9 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         });
         if (tabCounter != 0) {
             JPanel pnl = new JPanel();
-            pnl.setOpaque(true);
-            pnl.setBackground(Color.white);
+            pnl.setOpaque(false);
             pnl.add(tabLabel);
             pnl.add(mAddButton);
-            mTabPane.setBackgroundAt(mTabPane.getTabCount() - 1, Color.white);
             mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnl);
             mTabPane.setComponentAt(mTabPane.getTabCount() - 1, content);
             mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
@@ -260,10 +268,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     public boolean isPinPricked() {
         return mToolBar.isPinPricked();
     }
-
-    // Set the pin pricked flag
+//
+//    // Set the pin pricked flag
     public void setPinPricked() {
-        mToolBar.prickPin();
+        mToolBar.setPin(true); // true pricks the pin
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -299,7 +307,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         if (event instanceof TreeEntrySelectedEvent) {
             if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Scenes")) {
-                mTabPane.setSelectedComponent(mScrollPane);
+                mTabPane.setSelectedComponent(mScriptTabPanel);
             } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Functions")) {
                 mTabPane.setSelectedComponent(mFunctionEditor);
             } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Dialog")) {
@@ -429,19 +437,19 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     public void showElementDisplay() {
 
         if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
-            mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png"));
+            mGesticonButton.setIcon(ICON_LESS_STANDARD);
             mPreferences.setProperty("showsceneelements", "false");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(0);
         } else {
-            mGesticonButton.setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png"));
+            mGesticonButton.setIcon(ICON_MORE_STANDARD);
             mPreferences.setProperty("showsceneelements", "true");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(250);
         }
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png")
-                : ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png"));
+                ? ICON_MORE_ROLLOVER
+                : ICON_LESS_ROLLOVER);
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@ package de.dfki.vsm.util.log;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.sys.SYSUtilities;
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -36,7 +36,7 @@ public class LOGSSISockFormat extends Formatter {
                                + "<event " + "sender=\"" + sender + "\" " + "ev cent=\"" + event + "\" " + "from=\""
                                + from + "\" " + "dur=\"" + dur + "\" " + "prob=\"" + prob + "\" " + "type=\"" + type
                                + "\" " + "state=\"" + state + "\" " + "glue=\"" + glue + "\">" + record.getMessage()
-                               + "</event>" + "</events>" + SYSUtilities.sSYSPROPS_LINE_SEPR;
+                               + "</event>" + "</events>" + Preferences.sSYSPROPS_LINE_SEPR;
 
         // Create The Date Of Logging
         // Date date = new Date(record.getMillis());

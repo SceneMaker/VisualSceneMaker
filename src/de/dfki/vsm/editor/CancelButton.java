@@ -11,6 +11,7 @@ import java.awt.Font;
 import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
@@ -21,13 +22,16 @@ import javax.swing.SwingConstants;
 public class CancelButton extends JLabel {
 
     private final Dimension buttonSize = new Dimension(125, 30);
-
+    //Icons
+    private final ImageIcon ICON_CANCEL_STANDARD = ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png");
+    private final ImageIcon ICON_CANCEL_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png");
+    
     public CancelButton() {
         setText("Cancel");
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(true);
         setBackground(Color.white);
-        setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png"));
+        setIcon(ICON_CANCEL_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Cancel");
         setIconTextGap(10);
@@ -41,12 +45,12 @@ public class CancelButton extends JLabel {
 //              //savePreferences(true);
 //          }
             public void mouseEntered(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png"));
+                setIcon(ICON_CANCEL_ROLLOVER);
                 setBackground(new Color(82, 127, 255));
             }
 
             public void mouseExited(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png"));
+                setIcon(ICON_CANCEL_STANDARD);
                 setBackground(new Color(255, 255, 255));
             }
         });

@@ -2,7 +2,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.dialog.SceneActionDialog;
-import de.dfki.vsm.editor.util.Preferences;
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonAgent;
@@ -120,7 +120,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
     private class SceneElementTree extends JTree implements EventListener {
 
         // Elements
-        private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", Preferences.sROOT_FOLDER, null);
+        private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", Preferences.ICON_ROOT_FOLDER, null);
         private final TreeEntry mGesticonEntry = new TreeEntry("Gesticon", null, null);
         private final TreeEntry mActionDefinitionsEntry = new TreeEntry("Acticon", null, null);
 
