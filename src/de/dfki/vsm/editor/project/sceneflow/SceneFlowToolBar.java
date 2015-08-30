@@ -37,6 +37,7 @@ import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
+import de.dfki.vsm.editor.dialog.SaveFileDialog;
 /**
  * @author Gregor Mehlmann
  */
@@ -157,7 +158,7 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
         //Set maximum size
         setMinimumSize(new Dimension((int)(SCREEN_HORIZONTAL*0.6), 40));
         //setPreferredSize(new Dimension(SCREEN_HORIZONTAL, 40));
-        setMaximumSize(new Dimension(SCREEN_HORIZONTAL, 120));
+        setMaximumSize(new Dimension(SCREEN_HORIZONTAL, 40));
         // Initialize the sceneflow editor
         mSceneFlowEditor = editor;
         // Initialize the editor project
@@ -443,6 +444,8 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
 
                         if (handler != null) {
                             handler.exportToClipboard(mSceneFlowEditor.getWorkSpace(), mSystemClipBoard, TransferHandler.COPY);
+                            SaveFileDialog fileChooser = new SaveFileDialog();
+                            fileChooser.save();
                         } else {
                             System.err.println("handler null");
                         }
@@ -451,8 +454,9 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
         action.putValue(Action.SHORT_DESCRIPTION, "Add/Remove window");
         b = add(action);
         b.setToolTipText("Take a screenshot");
-        //ZOOM OUT BUTTON
         b.setRolloverIcon(ICON_SCREENSHOT_ROLLOVER);
+        
+        //ZOOM IN BUTTON
         sanitizeButton(b, smallButtonDim);
         b = add(new AbstractAction("ACTION_ZOOM_IN", ICON_ZOOMIN_STANDARD) {
             @Override
@@ -464,8 +468,9 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
             }
         });
         b.setToolTipText("Zoom In");
-        //ZOOM IN BUTTON
         b.setRolloverIcon(ICON_ZOOMIN_ROLLOVER);
+        
+        //ZOOM OUT BUTTON
         sanitizeButton(b, smallButtonDim);
         b = add(new AbstractAction("ACTION_ZOOM_OUT", ICON_ZOOMOUT_STANDARD) {
             @Override
@@ -570,16 +575,18 @@ public class SceneFlowToolBar extends JToolBar implements  EventListener  {
     private void initPathDisplay() {
         mPathDisplay = new JPanel();    // new FlowLayout(FlowLayout.LEFT, 0, 0));
         mPathDisplay.setLayout(new BoxLayout(mPathDisplay, BoxLayout.X_AXIS));
-        mPathDisplay.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-
+        mPathDisplay.setMaximumSize(new Dimension(500, 22));
+        mPathDisplay.setMinimumSize(new Dimension(300, 22));
+        mPathDisplay.setPreferredSize(new Dimension(500, 22));
+        
         // mPathDisplay.setBorder(BorderFactory.createEmptyBorder());
-        mPathScrollPane = new JScrollPane(mPathDisplay, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        mPathScrollPane = new JScrollPane(mPathDisplay);
+        mPathScrollPane.setViewportBorder(BorderFactory.createLineBorder(Color.gray));
+        mPathScrollPane.setMaximumSize(new Dimension(500, 40));
+        mPathScrollPane.setMinimumSize(new Dimension(300, 40));
         mPathScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        mPathScrollPane.setMaximumSize(new Dimension(500, 22));
-        mPathScrollPane.setMinimumSize(new Dimension(500, 22));
-        mPathScrollPane.setPreferredSize(new Dimension(500, 22));
         mPathScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
+        mPathScrollBar.setPreferredSize(new Dimension(300, 8));
         mPathScrollPane.setHorizontalScrollBar(mPathScrollBar);
     }
 

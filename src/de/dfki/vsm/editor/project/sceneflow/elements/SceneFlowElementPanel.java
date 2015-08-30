@@ -160,10 +160,6 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         for(int i = 0; i < mSceneFlowEntry.getChildCount(); i++)
         {
             TreeEntry tempTE = (TreeEntry)mSceneFlowEntry.getChildAt(i);
-            
-            System.out.println(tempTE.getText()+"888888888888888888888888888888888888888888888888888888888888\n \n \n");
-            System.out.println(tempTE.getChildCount());
-            System.out.println(tempTE.children());
             if(tempTE.getChildCount() ==0 && !tempTE.getText().equals("Functions"))
             {
                 mSceneEntryList.remove(tempTE);
@@ -325,7 +321,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
                     for (SceneObject scene : whiteList) {
 
-                         System.out.println("White List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                         //System.out.println("White List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
                         
                         if (!languageList.contains(scene.getLanguage())) {
                             languageList.add(scene.getLanguage());
@@ -348,7 +344,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
                     for (SceneObject scene : blackList) {
 
-                         System.out.println("Black List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
+                        // System.out.println("Black List - Name: " + scene.getName() + "Language: " + scene.getLanguage());
                         if (!languageList.contains(scene.getLanguage())) {
                             languageList.add(scene.getLanguage());
 
@@ -604,7 +600,6 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
             public void dragGestureRecognized(DragGestureEvent event) {
 
                 // TODO: NULLPOINTEREXCEPTION abfangen
-                System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxx");
 
                 TreeEntry selectedEntry = (TreeEntry) getSelectionPath().getLastPathComponent();
 
