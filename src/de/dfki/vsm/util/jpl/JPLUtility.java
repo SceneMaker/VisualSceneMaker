@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
 public class JPLUtility {
     final static Pattern sEmptyIsoListPattern = Pattern.compile("\\[\\]");
     final static Pattern sFillyIsoListPattern = Pattern.compile("'\\.'\\((.*)\\)");
+    //final static Pattern sKeyValuePairPattern = Pattern.compile(":\\((.+?), (.*)\\)");
     final static Pattern sKeyValuePairPattern = Pattern.compile(":\\(([a-zA-Z]+?), (.*)\\)");
-
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

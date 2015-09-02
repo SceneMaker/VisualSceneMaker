@@ -1,20 +1,16 @@
 package de.dfki.vsm.util.jpl;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.util.HashMap;
 
-import jpl.JPL;
-import jpl.Query;
-import jpl.Term;
-import jpl.Variable;
+import java.util.Map;
+import org.jpl7.JPL;
+import org.jpl7.Query;
+import org.jpl7.Term;
+import org.jpl7.Variable;
 
 //~--- JDK imports ------------------------------------------------------------
-
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
 /**
  * @author Not me
  */
@@ -50,8 +46,8 @@ public final class JPLEngine {
     // Get String Representation
     public static synchronized String string() {
         if (sAlive) {
-            String[] arg    = JPL.getActualInitArgs();
-            String   argstr = JPL.version_string();
+            String[] arg = JPL.getActualInitArgs();
+            String argstr = JPL.version_string();
 
             argstr += ",[";
 
@@ -118,7 +114,7 @@ public final class JPLEngine {
             while (jplquery.hasMoreElements()) {
 
                 // Get Next Possible Solution
-                Hashtable solution = (Hashtable) jplquery.nextElement();
+                HashMap solution = (HashMap) jplquery.nextElement();
 
                 // Create The Substitutions
                 HashMap<String, String> substitutions = new HashMap<String, String>();
@@ -164,7 +160,7 @@ public final class JPLEngine {
 
             // Close The New Query
             if (jplquery != null) {
-                jplquery.rewind();
+                //jplquery.rewind();
                 jplquery.close();
             }
 
