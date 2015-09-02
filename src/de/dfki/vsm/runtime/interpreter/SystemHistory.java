@@ -45,8 +45,8 @@ public class SystemHistory {
 
     // TODO:
     public Entry get(String id, int index) {
-        System.err.println(id);
-        System.err.println(index);
+        //System.err.println(id);
+        //System.err.println(index);
 
         return mHistoryStackMap.get(id).get(index);
     }

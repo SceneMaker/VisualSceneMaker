@@ -53,18 +53,22 @@ public class Interpreter {
         mEvaluator = new Evaluator(this);
     }
 
+    public ReentrantLock getLock() {
+        return mLock;
+    }
+
     public void lock() {
 
-        // mLogger.message("REQUEST (" + Thread.currentThread() + ")");
+        //mLogger.message("REQUEST (" + Thread.currentThread() + "," + mLock.getHoldCount()+ ")");
         mLock.lock();
 
-        // mLogger.message("AQUIRE (" + Thread.currentThread() + ")");
+        //mLogger.message("ACQUIRE (" + Thread.currentThread() + "," + mLock.getHoldCount()+ ")");
     }
 
     public void unlock() {
         mLock.unlock();
 
-        // mLogger.message("RELEASE (" + Thread.currentThread() + ")");
+        //mLogger.message("RELEASE (" + Thread.currentThread() + "," + mLock.getHoldCount()+ ")");
     }
 
     public void await() {
@@ -201,7 +205,6 @@ public class Interpreter {
             try {
                 lock();
 
-                // mLogger.warning("Stopping execution of interpreter");
                 mSceneFlowThread.requestTermination();
             } finally {
                 unlock();
@@ -319,6 +322,7 @@ public class Interpreter {
 
     public boolean setVariable(String varName, AbstractValue value) {
         try {
+
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
             mEventObserver.update();

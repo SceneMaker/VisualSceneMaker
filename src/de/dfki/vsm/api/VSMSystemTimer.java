@@ -25,6 +25,8 @@ public final class VSMSystemTimer extends Thread {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public VSMSystemTimer(final VSMScenePlayer player, final long interval) {
+        
+        super("VSMSystemTimer");
 
         // Initialize The Player
         mPlayer = player;

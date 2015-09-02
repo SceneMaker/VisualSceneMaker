@@ -21,8 +21,8 @@ public class EdgeExecutedEvent extends EventObject {
     }
 
     public String getEventDescription() {
-        System.err.println(mEdge.getSourceNode());
-        System.err.println(mEdge.getTargetNode());
+        //System.err.println(mEdge.getSourceNode());
+        //System.err.println(mEdge.getTargetNode());
 
         return "EdgeEvent(" /* + mEdge.getSourceNode().getId() + "," + mEdge.getTargetNode().getId() */ + ")";
     }

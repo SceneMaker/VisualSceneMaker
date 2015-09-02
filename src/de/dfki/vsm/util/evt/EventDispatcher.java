@@ -7,6 +7,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Not me
@@ -53,9 +54,12 @@ public class EventDispatcher {
     }
 
     public final synchronized void convey(final EventObject event) {
+
         for (final EventListener listener : mListenerList) {
+            //mLogger.message("Conveying '" + event + "' To '" + listener + "'");
             listener.update(event);
         }
+
     }
 
     public final synchronized void schedule(final EventObject event, final long timeout) {

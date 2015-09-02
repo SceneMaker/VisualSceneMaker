@@ -19,6 +19,7 @@ import java.io.File;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Not me
@@ -84,7 +85,7 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
 
         // Initialize The Properties
         final String numagent = mPlayerConfig.getProperty("vsm.agent.number");
-        
+
         for (int i = 0; i < Integer.parseInt(numagent); i++) {
 
             // Get Agent's Initial Data
@@ -148,9 +149,9 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
 
         // Initialize the JPL Engine
         JPLEngine.init();
-        
+
         File file = new File(swilbase);
-        
+
         mVSM3Log.message(file.getAbsolutePath());
 
         // Load The Prolog Program
@@ -168,9 +169,8 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
 
         // Now Start The System Timer
         mSystemTimer.start();
-
         // Now Start The Query Handler
-        mQueryHandler.start();
+        //mQueryHandler.start();
 
         // Return true at success
         return true;
@@ -206,7 +206,6 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
         // Shutdown Other Threads
         // mQueryHandler.abort();
         mSystemTimer.abort();
-
         // Join With All Threads
         try {
 
@@ -217,7 +216,6 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
 
             // Join With The System Timer
             mSystemTimer.join();
-
             // Print Debug Information
             mVSM3Log.message("Joining System Timer");
         } catch (Exception exc) {
@@ -286,9 +284,10 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
     ////////////////////////////////////////////////////////////////////////////
     // TODO: Does This Method Need To be Synchronized
     // What Are The Advantaged If It Is Synchronized
-    public final /* synchronized */ boolean query(final String querystr) {
+    public final /*synchronized*/ boolean query(final String querystr) {
 
-        //System.err.println(querystr);
+        // Print Debug Information
+        //System.err.println("Executing Query '" + querystr + "' In JPL Engine '" + JPLEngine.string() + "'");
         // Make The Query To The KB
         JPLResult result = JPLEngine.query(querystr);
 
@@ -311,10 +310,21 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
                 // Set The Variables In The Environment
                 for (Map.Entry<String, String> entry : subst.entrySet()) {
                     try {
-                        environment.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
 
                         // Print Some Information
-                        // System.err.println(entry.getKey() + "->" + entry.getValue());
+                        //System.err.println(entry.getKey() + "->" + entry.getValue());
+                        // Here we write a variable without having the interpreter lock!!!!!!! ?????????
+                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        ReentrantLock lock = RunTimeInstance.getInstance().getLock(mProjectData);
+                        try {
+
+                            lock.lock();
+                            environment.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
+
+                        } finally {
+                            lock.unlock();
+                        }
+
                     } catch (Exception exc) {
 
                         // Print Debug Information
@@ -329,7 +339,7 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
                     RunTimeInstance.getInstance().setVariable(mProjectData, entry.getKey(), entry.getValue());
                 }
             }
-            
+
             return true;
         } else {
             return false;
@@ -339,66 +349,66 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void setVariable(final String name, final String value) {
-        if (mVSM3RunTime.hasVariable(mProjectData, name)) {
+   /* public final void setVariable(final String name, final String value) {
+     if (mVSM3RunTime.hasVariable(mProjectData, name)) {
 
-            // Debug Some Information
-            mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
+     // Debug Some Information
+     mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
 
-            // Set The Variable Now
-            mVSM3RunTime.setVariable(mProjectData, name, value);
+     // Set The Variable Now
+     mVSM3RunTime.setVariable(mProjectData, name, value);
 
-            // Debug Some Information
-            mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
-        } else {
+     // Debug Some Information
+     mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
+     } else {
 
-            // Debug Some Information
-            mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
-        }
-    }
+     // Debug Some Information
+     mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
+     }
+     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void setVariable(final String name, final boolean value) {
-        if (mVSM3RunTime.hasVariable(mProjectData, name)) {
+     ////////////////////////////////////////////////////////////////////////////
+     ////////////////////////////////////////////////////////////////////////////
+     ////////////////////////////////////////////////////////////////////////////
+     public final void setVariable(final String name, final boolean value) {
+     if (mVSM3RunTime.hasVariable(mProjectData, name)) {
 
-            // Debug Some Information
-            mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
+     // Debug Some Information
+     mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
 
-            // Set The Variable Now
-            mVSM3RunTime.setVariable(mProjectData, name, value);
+     // Set The Variable Now
+     mVSM3RunTime.setVariable(mProjectData, name, value);
 
-            // Debug Some Information
-            mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
-        } else {
+     // Debug Some Information
+     mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
+     } else {
 
-            // Debug Some Information
-            mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
-        }
-    }
+     // Debug Some Information
+     mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
+     }
+     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void setVariable(final String name, final int value) {
-        if (mVSM3RunTime.hasVariable(mProjectData, name)) {
+     ////////////////////////////////////////////////////////////////////////////
+     ////////////////////////////////////////////////////////////////////////////
+     ////////////////////////////////////////////////////////////////////////////
+     public final void setVariable(final String name, final int value) {
+     if (mVSM3RunTime.hasVariable(mProjectData, name)) {
 
-            // Debug Some Information
-            mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
+     // Debug Some Information
+     mVSM3Log.message("Finding Variable '" + name + "' To Value '" + value + "'");
 
-            // Set The Variable Now
-            mVSM3RunTime.setVariable(mProjectData, name, value);
+     // Set The Variable Now
+     mVSM3RunTime.setVariable(mProjectData, name, value);
 
-            // Debug Some Information
-            mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
-        } else {
+     // Debug Some Information
+     mVSM3Log.message("Setting Variable '" + name + "' To Value '" + value + "'");
+     } else {
 
-            // Debug Some Information
-            mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
-        }
-    }
-
+     // Debug Some Information
+     mVSM3Log.message("SceneMaker Variable '" + name + "' Not Available");
+     }
+     }
+     */
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
