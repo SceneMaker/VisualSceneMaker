@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.project.sceneflow.attributes;
 
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -55,8 +56,8 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mScrollPane.setMinimumSize(new Dimension(200, 100));
 
         // Init the button panel
-        mAddButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
-        mAddButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
+        mAddButton = new JButton(Preferences.ICON_PLUS_STANDARD);
+        mAddButton.setRolloverIcon(Preferences.ICON_PLUS_ROLLOVER);
         mAddButton.setMaximumSize(new Dimension(22, 22));
         mAddButton.setPreferredSize(new Dimension(22, 22));
         mAddButton.setMinimumSize(new Dimension(22, 22));
@@ -73,8 +74,8 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mRemoveButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove.png"));
-        mRemoveButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_blue.png"));
+        mRemoveButton = new JButton(Preferences.ICON_MINUS_STANDARD);
+        mRemoveButton.setRolloverIcon(Preferences.ICON_MINUS_ROLLOVER);
         mRemoveButton.setMinimumSize(new Dimension(22, 22));
         mRemoveButton.setMaximumSize(new Dimension(22, 22));
         mRemoveButton.setPreferredSize(new Dimension(22, 22));
@@ -91,8 +92,8 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mEditButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png"));
-        mEditButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit_blue.png"));
+        mEditButton = new JButton(Preferences.ICON_EDIT_STANDARD);
+        mEditButton.setRolloverIcon(Preferences.ICON_EDIT_ROLLOVER);
         mEditButton.setMinimumSize(new Dimension(22, 22));
         mEditButton.setMaximumSize(new Dimension(22, 22));
         mEditButton.setPreferredSize(new Dimension(22, 22));

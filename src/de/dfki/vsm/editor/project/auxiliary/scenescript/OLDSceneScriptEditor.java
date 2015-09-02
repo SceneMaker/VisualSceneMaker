@@ -15,7 +15,6 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 import org.ujmp.core.collections.ArrayIndexList;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -86,16 +84,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     // The current editor project
     private final EditorProject mProject;
     
-    //ICONS 
-    private final ImageIcon ICON_MORE_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more.png");
-    private final ImageIcon ICON_MORE_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/more_blue.png");
-    
-    private final ImageIcon ICON_LESS_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less.png");
-    private final ImageIcon ICON_LESS_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/less_blue.png");
-    
-    private final ImageIcon ICON_ADD_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png");
-    private final ImageIcon ICON_ADD_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png");
-    
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -135,11 +123,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 //        mObservable.addObserver(mElementPane);
 //        mObservable.addObserver(mEditorPane);
         mGesticonButton = new JButton(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ICON_MORE_STANDARD
-                : ICON_LESS_STANDARD);
+                ? Preferences.ICON_MORE_STANDARD
+                : Preferences.ICON_LESS_STANDARD);
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ICON_MORE_ROLLOVER
-                : ICON_LESS_ROLLOVER);
+                ? Preferences.ICON_MORE_ROLLOVER
+                : Preferences.ICON_LESS_ROLLOVER);
         mGesticonButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent me) {
@@ -225,13 +213,13 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             @Override
             public void mouseEntered(MouseEvent me) {
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
-                    mAddButton.setIcon(ICON_ADD_ROLLOVER);
+                    mAddButton.setIcon(Preferences.ICON_PLUS_ROLLOVER);
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
-                mAddButton.setIcon(ICON_ADD_STANDARD);
+                mAddButton.setIcon(Preferences.ICON_PLUS_STANDARD);
             }
 
             @Override
@@ -437,19 +425,19 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     public void showElementDisplay() {
 
         if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
-            mGesticonButton.setIcon(ICON_LESS_STANDARD);
+            mGesticonButton.setIcon(Preferences.ICON_LESS_STANDARD);
             mPreferences.setProperty("showsceneelements", "false");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(0);
         } else {
-            mGesticonButton.setIcon(ICON_MORE_STANDARD);
+            mGesticonButton.setIcon(Preferences.ICON_MORE_STANDARD);
             mPreferences.setProperty("showsceneelements", "true");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(250);
         }
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
-                ? ICON_MORE_ROLLOVER
-                : ICON_LESS_ROLLOVER);
+                ? Preferences.ICON_MORE_ROLLOVER
+                : Preferences.ICON_LESS_ROLLOVER);
     }
 
     ////////////////////////////////////////////////////////////////////////////

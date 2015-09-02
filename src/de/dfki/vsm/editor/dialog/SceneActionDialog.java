@@ -7,6 +7,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
@@ -216,7 +217,7 @@ public class SceneActionDialog extends JDialog {
             }
         });
 
-        JButton editButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/edit.png"));
+        JButton editButton = new JButton(Preferences.ICON_EDIT_STANDARD);
 
         editButton.setMinimumSize(new Dimension(20, 20));
         editButton.setMaximumSize(new Dimension(20, 20));
@@ -237,7 +238,7 @@ public class SceneActionDialog extends JDialog {
         argListPanel.add(Box.createHorizontalGlue());
         argAddPanel.setLayout(new BoxLayout(argAddPanel, BoxLayout.X_AXIS));
 
-        JButton addButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/minus.png"));
+        JButton addButton = new JButton(Preferences.ICON_MINUS_STANDARD);
 
         addButton.setMinimumSize(new Dimension(20, 20));
         addButton.setMaximumSize(new Dimension(20, 20));
