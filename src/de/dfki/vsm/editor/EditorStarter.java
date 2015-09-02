@@ -31,8 +31,6 @@ public class EditorStarter extends JPanel {
     // The singelton logger instance   
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-    
-    
     private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
     private final EditorInstance mEditorInstance;
     private final Box mRecentProjects;
@@ -148,7 +146,7 @@ public class EditorStarter extends JPanel {
         mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-               // mEditorInstance.newProject();
+                // mEditorInstance.newProject();
                 new NewProjectDialog();
             }
 
@@ -169,7 +167,7 @@ public class EditorStarter extends JPanel {
         // *********************************************************************
         // OPEN PROJECT BUTTON
         // *********************************************************************
-         JLabel mOpenProjectMenu = new JLabel("Open a Project");
+        JLabel mOpenProjectMenu = new JLabel("Open a Project");
 
         mOpenProjectMenu.setToolTipText("Open an external Project");
         mOpenProjectMenu.setIcon(ResourceLoader.loadImageIcon("/res/img/arrow_icon.png"));
@@ -208,7 +206,6 @@ public class EditorStarter extends JPanel {
         // *********************************************************************
         // LIST OF RECENT PROJECTS
         // *********************************************************************
-        
         JLabel titleMenu = new JLabel("Open Recent Project");
 
         titleMenu.setBorder(null);
@@ -316,7 +313,6 @@ public class EditorStarter extends JPanel {
         // *********************************************************************
         // LIST OF SAMPLE PROJECTS
         // *********************************************************************
-        
         JLabel exampleMenu = new JLabel("Sample Projects");
 
         exampleMenu.setBorder(null);
@@ -332,60 +328,65 @@ public class EditorStarter extends JPanel {
         sampleProjPanel.setOpaque(false);
         sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
 
-        File listDirs[] = SampleProjFolder.listFiles();
+        if (SampleProjFolder != null) {
+            File listDirs[] = SampleProjFolder.listFiles();
 
-        for (final File sampleDir : listDirs) {
-            final File sampleProj = new File(sampleDir.getPath() + "/vsm");
+            for (final File sampleDir : listDirs) {
+                
+                System.err.println(sampleDir);
+                
+                final File sampleProj = new File(sampleDir.getPath() + "/vsm");
 
-            if (sampleProj.exists()) {
-                File projectPath = new File(sampleDir.getPath() + "/vsm/" /* + "config.xml" */);
-                EditorProject project = new EditorProject();
+                if (sampleProj.exists()) {
+                    File projectPath = new File(sampleDir.getPath() + "/vsm/" /* + "config.xml" */);
+                    EditorProject project = new EditorProject();
 
-                project.parse(projectPath);
+                    project.parse(projectPath);
 
-                JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
-                        + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
+                    JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
+                            + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
 
-                newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
-                newSampleProj.setOpaque(false);
-                newSampleProj.setMaximumSize(new Dimension(buttonSize));
-                newSampleProj.setPreferredSize(new Dimension(buttonSize));
-                newSampleProj.setFont(new Font("Helvetica", Font.PLAIN, 18));
-                newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-                newSampleProj.addMouseListener(new MouseListener() {
-                    @Override
-                    public void mouseClicked(MouseEvent me) {
+                    newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
+                    newSampleProj.setOpaque(false);
+                    newSampleProj.setMaximumSize(new Dimension(buttonSize));
+                    newSampleProj.setPreferredSize(new Dimension(buttonSize));
+                    newSampleProj.setFont(new Font("Helvetica", Font.PLAIN, 18));
+                    newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+                    newSampleProj.addMouseListener(new MouseListener() {
+                        @Override
+                        public void mouseClicked(MouseEvent me) {
 
-                        // mEditorInstance.toggleProjectEditorList(true);
-                        mEditorInstance.openProject(sampleProj);
-                    }
+                            // mEditorInstance.toggleProjectEditorList(true);
+                            mEditorInstance.openProject(sampleProj);
+                        }
 
-                    @Override
-                    public void mousePressed(MouseEvent me) {
-                    }
+                        @Override
+                        public void mousePressed(MouseEvent me) {
+                        }
 
-                    @Override
-                    public void mouseReleased(MouseEvent me) {
-                    }
+                        @Override
+                        public void mouseReleased(MouseEvent me) {
+                        }
 
-                    @Override
-                    public void mouseEntered(MouseEvent me) {
-                        ((JLabel) me.getComponent()).setOpaque(true);
-                        me.getComponent().setBackground(new Color(82, 127, 255));
-                    }
+                        @Override
+                        public void mouseEntered(MouseEvent me) {
+                            ((JLabel) me.getComponent()).setOpaque(true);
+                            me.getComponent().setBackground(new Color(82, 127, 255));
+                        }
 
-                    @Override
-                    public void mouseExited(MouseEvent me) {
-                        ((JLabel) me.getComponent()).setOpaque(false);
-                        me.getComponent().setBackground(new Color(1f, 1f, 1f));
-                    }
-                });
-                sampleProjPanel.add(newSampleProj);
+                        @Override
+                        public void mouseExited(MouseEvent me) {
+                            ((JLabel) me.getComponent()).setOpaque(false);
+                            me.getComponent().setBackground(new Color(1f, 1f, 1f));
+                        }
+                    });
+                    sampleProjPanel.add(newSampleProj);
 
-                JSeparator js = new JSeparator();
+                    JSeparator js = new JSeparator();
 
-                js.setMaximumSize(new Dimension(5000, 1));
-                sampleProjPanel.add(js);
+                    js.setMaximumSize(new Dimension(5000, 1));
+                    sampleProjPanel.add(js);
+                }
             }
         }
 
@@ -417,7 +418,6 @@ public class EditorStarter extends JPanel {
         // *********************************************************************
         // NEWS AND DOCUMENTATION
         // *********************************************************************
-        
         JLabel mDocuMenu = new JLabel("News and Documentation");
 
         mDocuMenu.setToolTipText("News and Documentation online");

@@ -288,6 +288,7 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
     // What Are The Advantaged If It Is Synchronized
     public final /* synchronized */ boolean query(final String querystr) {
 
+        //System.err.println(querystr);
         // Make The Query To The KB
         JPLResult result = JPLEngine.query(querystr);
 

@@ -146,7 +146,7 @@ public class RunTimeProject {
         return mPluginMap.get(name);
     }
 
-    // Get the gesticon of the project
+    // Get the scene player of the project
     public final RunTimePlayer getDefaultScenePlayer() {
         // Get the player from the map
         final RunTimePlayer player = getPlayer("defaultsceneplayer");
@@ -161,7 +161,7 @@ public class RunTimeProject {
         }
     }
 
-    // Get the gesticon of the project
+    // Get the dialog player of the project
     public final RunTimePlayer getDefaultDialogPlayer() {
         // Get the player from the map
         final RunTimePlayer player = getPlayer("defaultdialogplayer");
