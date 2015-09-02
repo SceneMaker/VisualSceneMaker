@@ -147,8 +147,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     private final AttributedString sEdgeCreationHint = new AttributedString("Select Target Node");
 
     //
-    private boolean mIgnoreMouseInput = false;
-    private boolean mSelectTargetNodeMode = false;
+    private boolean mIgnoreMouseInput       = false;
+    private boolean mSelectTargetNodeMode   = false;
     private boolean mEdgeSourceNodeReassign = false;
     private boolean mEdgeTargetNodeReassign = false;
     private Node mReassignNode = null;
@@ -235,7 +235,6 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         revalidate();
         repaint();
     }
-
     /**
      *
      *
