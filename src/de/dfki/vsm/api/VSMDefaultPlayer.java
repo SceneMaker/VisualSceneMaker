@@ -74,5 +74,7 @@ public class VSMDefaultPlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public void play(final String name, final LinkedList<AbstractValue> args) {
+        
+       // System.err.println(name);
     }
 }
