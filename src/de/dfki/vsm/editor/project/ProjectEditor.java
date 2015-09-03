@@ -216,7 +216,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
     // Refresh the editor's visual appearance
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+       //mLogger.message("Refreshing '" + this + "'");
         // Refresh the components
         mAuxiliaryEditor.refresh();
         mSceneFlowEditor.refresh();

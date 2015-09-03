@@ -41,17 +41,16 @@ public final class RunTimeInstance {
         return sInstance;
     }
 
-    
     public ReentrantLock getLock(final RunTimeProject project) {
-          if (!mProjectMap.containsKey(project)) {
+        if (!mProjectMap.containsKey(project)) {
             // Print an error message
             mLogger.failure("Failure: There is no interpreter registered for project '" + project + "'");
             // Return false at error
             return null;
         }
-          return mProjectMap.get(project).getLock();
+        return mProjectMap.get(project).getLock();
     }
-            
+
     // Launch a runtime project
     public final /* synchronized */ boolean launch(final RunTimeProject project) {
 

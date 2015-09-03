@@ -611,7 +611,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
 
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         // Refresh all components
         refreshButtons();
         refreshDisplay();
