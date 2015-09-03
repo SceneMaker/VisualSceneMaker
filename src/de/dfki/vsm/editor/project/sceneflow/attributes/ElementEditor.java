@@ -550,7 +550,7 @@ public class ElementEditor extends JScrollPane implements EventListener {
     public final void refresh() {
 
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
     }
 
     @Override

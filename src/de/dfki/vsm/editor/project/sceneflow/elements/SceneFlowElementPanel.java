@@ -78,7 +78,7 @@ public final class SceneFlowElementPanel extends JScrollPane {
     // Refresh the element display
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         // Refresh the element tree
         mElementTree.refresh();
     }
@@ -147,7 +147,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         updateSceneList();
         updateFunDefsXXX();
         //}

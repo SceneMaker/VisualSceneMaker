@@ -68,7 +68,7 @@ public final class EditorMenuBar extends JMenuBar {
     // Refresh the visual appearance
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         // TODO: Refresh the appearance, i.e. the recent file menu
     }
 

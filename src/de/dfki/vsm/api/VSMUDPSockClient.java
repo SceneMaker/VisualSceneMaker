@@ -1,9 +1,6 @@
 package de.dfki.vsm.api;
 
 //~--- JDK imports ------------------------------------------------------------
-
-import java.io.IOException;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -36,20 +33,24 @@ public final class VSMUDPSockClient extends VSMAgentClient {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public VSMUDPSockClient(final VSMScenePlayer player, final String name, final String uaid, final String lhost,
-                            final int lport, final String rhost, final int rport, final boolean rflag) {
+    public VSMUDPSockClient(
+            final VSMScenePlayer player,
+            final String name, final String uaid,
+            final String lhost, final int lport,
+            final String rhost, final int rport,
+            final boolean rflag) {
 
         // Initialize The Client
         super(player, name, uaid, rhost, rport);
 
         // Initialize UDP Client
-        mLocalHost  = lhost;
-        mLocalPort  = lport;
+        mLocalHost = lhost;
+        mLocalPort = lport;
         mRemoteFlag = rflag;
 
         // Debug Some Information
-        mLogger.message("Creating UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                        + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":" + mLocalPort + "'");
+        mVSM3Log.message("Creating UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
+                + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":" + mLocalPort + "'");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -63,8 +64,8 @@ public final class VSMUDPSockClient extends VSMAgentClient {
             mLocalAddr = new InetSocketAddress(mLocalHost, mLocalPort);
 
             // Create The UDP Socket
-            mSocket = new DatagramSocket(mLocalAddr);
-
+            mSocket = new DatagramSocket(mLocalAddr);            
+           
             // Connect The UDP Socket
             if (mRemoteFlag) {
 
@@ -75,18 +76,18 @@ public final class VSMUDPSockClient extends VSMAgentClient {
                 mSocket.connect(mRemoteAddr);
 
                 // Debug Some Information
-                mLogger.message("Connecting UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid
-                                + "' On '" + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":"
-                                + mLocalPort + "'");
+                mVSM3Log.message("Connecting UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid
+                        + "' On '" + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":"
+                        + mLocalPort + "'");
             }
 
             // Debug Some Information
-            mLogger.message("Starting UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                            + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":" + mLocalPort + "'");
+            mVSM3Log.message("Starting UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
+                    + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":" + mLocalPort + "'");
         } catch (final SocketException exc) {
 
             // Debug Some Information
-            mLogger.failure(exc.toString());
+            mVSM3Log.failure(exc.toString());
         }
 
         // Start The Client Thread
@@ -103,7 +104,7 @@ public final class VSMUDPSockClient extends VSMAgentClient {
         mDone = true;
 
         // Close The Socket Now
-        if ((mSocket != null) &&!mSocket.isClosed()) {
+        if ((mSocket != null) && !mSocket.isClosed()) {
             mSocket.close();
         }
     }
@@ -115,8 +116,8 @@ public final class VSMUDPSockClient extends VSMAgentClient {
     public final void run() {
 
         // Debug Some Information
-        mLogger.message("Starting VSM Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                        + mRemoteHost + ":" + mRemotePort + "'");
+        mVSM3Log.message("Starting VSM Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
+                + mRemoteHost + ":" + mRemotePort + "'");
 
         // Execute While Not Done
         try {
@@ -128,12 +129,12 @@ public final class VSMUDPSockClient extends VSMAgentClient {
         } catch (final Exception exc) {
 
             // Debug Some Information
-            mLogger.failure(exc.toString());
+            mVSM3Log.failure(exc.toString());
         }
 
         // Debug Some Information
-        mLogger.message("Stopping VSM Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                        + mRemoteHost + ":" + mRemotePort + "'");
+        mVSM3Log.message("Stopping VSM Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
+                + mRemoteHost + ":" + mRemotePort + "'");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -151,7 +152,22 @@ public final class VSMUDPSockClient extends VSMAgentClient {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final boolean sendString(final String string) {
+        try {
+            //
+            mVSM3Log.message("Sending '" + string + "'");
+            
+            //
+            final byte[] buffer = string.getBytes("UTF-8");
+            //
+            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            //
+            mSocket.send(packet);
+            //
+            return true;
 
+        } catch (final Exception exc) {
+            mVSM3Log.failure(exc.toString());
+        }
         // Return At Failure
         return false;
     }
@@ -161,28 +177,29 @@ public final class VSMUDPSockClient extends VSMAgentClient {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final byte[] recvBytes(final int size) {
-        if ((mSocket != null) &&!mSocket.isClosed()) {
+        if ((mSocket != null) && !mSocket.isClosed()) {
             try {
 
                 // Create The Datagram Packet
-                final byte[]         buffer  = new byte[size];
+                final byte[] buffer = new byte[size];
+                
                 final DatagramPacket mPacket = new DatagramPacket(buffer, buffer.length);
 
                 // Receive The Data Packet
                 mSocket.receive(mPacket);
 
                 // Debug Some Information
-                mLogger.message("VSM Agent Client Receiving Message:");
+                mVSM3Log.message("VSM Agent Client Receiving Message:");
 
                 // Return The Message
                 return buffer;
             } catch (Exception exc) {
 
                 // Debug Some Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
 
                 // Debug Some Information
-                mLogger.warning("VSM Agent Client Has Bad State");
+                mVSM3Log.warning("VSM Agent Client Has Bad State");
             }
         }
 
@@ -209,10 +226,10 @@ public final class VSMUDPSockClient extends VSMAgentClient {
             } catch (final Exception exc) {
 
                 // Debug Some Information
-                mLogger.warning(exc.toString());
+                mVSM3Log.warning(exc.toString());
 
                 // Debug Some Information
-                mLogger.warning("VSM Agent Client Has Bad State");
+                mVSM3Log.warning("VSM Agent Client Has Bad State");
             }
         }
 
