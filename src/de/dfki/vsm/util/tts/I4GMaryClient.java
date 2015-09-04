@@ -275,8 +275,9 @@ public class I4GMaryClient {
     }
     
     public void clearWordList(){
-        synchronized(wordQueue){
+        synchronized(wordQueue) {
             wordQueue.clear();
+            speak_text = "";
         }
         
     }

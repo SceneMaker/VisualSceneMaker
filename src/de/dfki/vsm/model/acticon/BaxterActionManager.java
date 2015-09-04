@@ -11,6 +11,8 @@ import de.dfki.vsm.model.script.ActionFeature;
 import de.dfki.vsm.model.script.ActionObject;
 import de.dfki.vsm.model.script.SceneWord;
 import de.dfki.vsm.util.tts.I4GMaryClient;
+
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -36,7 +38,7 @@ public class BaxterActionManager {
     private long previous_time = 0;
     private boolean actionDone = true;
     private Object monitor = new Object();
-    
+
     public BaxterActionManager(){
         mAction = null;
         mBaxter = BaxterPlayer.getInstance();
@@ -90,7 +92,7 @@ public class BaxterActionManager {
                 actionDone = false;
                 
                 this.executeAction((ActionObject)iterAction, previous_time); 
-                //Blocking: This is the feature that indicates wether it waits for the executinon to end or not
+                //Blocking: This is the feature that indicates whether it waits for the execution to end or not
                 ActionFeature feature =  getFeature((ActionObject)iterAction, "blocking"); 
                 if(feature != null && feature.getVal().equals("0")){
                     actionDone = true;
@@ -106,6 +108,7 @@ public class BaxterActionManager {
             }
         }
         previous_time += executeActionSpeak(mary, actionTimer);
+        previous_time += 100; //A little delay for the next sentence
         actionQueue.clear();
         
     }
@@ -130,10 +133,13 @@ public class BaxterActionManager {
         long startTime = System.currentTimeMillis();
         Date actionExecutionTime = new Date(startTime);
         try {
-            current_time =  mary.getPhraseTime();
             text = mary.getText();
+            if(text.length() <= 0){
+                return 0 ;
+            }
+            System.out.println("Mary get Text: " + text);
+            current_time =  mary.getPhraseTime();
             mary.clearWordList();
-            startTime = System.currentTimeMillis();
             actionExecutionTime = new Date(startTime);
         } catch (UnsupportedAudioFileException ex) {
             Logger.getLogger(BaxterActionManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -142,6 +148,7 @@ public class BaxterActionManager {
         } catch (Exception ex) {
             Logger.getLogger(BaxterActionManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+        startTime = System.currentTimeMillis();
         actionExecutionTime = new Date(startTime + previous_time);
         System.out.println("Texto :" + text + " Comienza " + actionExecutionTime.toString() );
         actionTimer.schedule(new SpeakTask(mary,text), actionExecutionTime);
@@ -162,8 +169,12 @@ public class BaxterActionManager {
       //System.out.println("GestureTask.run()");
       try {
         //Execute the
-        System.out.println("Speaking, phrase: "+ mary.getText());
-        mary.speak(phrase);
+          long startTime = System.currentTimeMillis();
+          Date actionExecutionTime = new Date(startTime);
+          System.out.println("Speaking, phrase: "+ mary.getText() + "at: " + actionExecutionTime.toString());
+          if(phrase.length() > 0) {
+              mary.speak(phrase);
+          }
         } catch (UnsupportedAudioFileException ex) {
             Logger.getLogger(BaxterActionManager.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
@@ -224,7 +235,7 @@ public class BaxterActionManager {
                 System.out.println(c.getName() + "." + method.getName());
                 
                 try {
-                    method.invoke(mBaxter, "Baxter"); //TODO: Change later
+                    method.invoke(mBaxter, "Baxter");
                } catch (IllegalAccessException e) {
                
                } catch (IllegalArgumentException ex) {
