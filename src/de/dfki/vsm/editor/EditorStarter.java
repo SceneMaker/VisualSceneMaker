@@ -9,11 +9,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -31,7 +29,7 @@ public class EditorStarter extends JPanel {
     // The singelton logger instance   
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-    private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
+    private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);;
     private final EditorInstance mEditorInstance;
     private final Box mRecentProjects;
     private final int paddingSize;
@@ -40,12 +38,6 @@ public class EditorStarter extends JPanel {
     private final Dimension halfScreenDimension;
 
     public EditorStarter(final EditorInstance mParent) {
-        try {
-
-            // UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception e) {
-        }
-
         mEditorInstance = mParent;
         screenDimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         halfScreenDimension = new Dimension((int) (java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight()
@@ -328,7 +320,7 @@ public class EditorStarter extends JPanel {
         sampleProjPanel.setOpaque(false);
         sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
 
-        if (SampleProjFolder != null) {
+        if (SampleProjFolder.exists()) {
             File listDirs[] = SampleProjFolder.listFiles();
 
             for (final File sampleDir : listDirs) {
