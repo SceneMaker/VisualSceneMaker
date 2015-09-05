@@ -1,8 +1,7 @@
-package de.dfki.vsm.api.hcm;
+ package de.dfki.vsm.api.hcm;
 
 import de.dfki.vsm.api.VSMAgentClient;
 import de.dfki.vsm.api.VSMScenePlayer;
-import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.scenescript.AbstractWord;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -39,7 +38,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
 
         // Print Some Debug Information
-        mVSM3Log.message("Creating HCM Scene Player");
+        mLogger.message("Creating HCM Scene Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -73,7 +72,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             final String rflag = mPlayerConfig.getProperty("hcm.handler.remote.flag");
 
             // Debug Some Information
-            mVSM3Log.message("" + "HCM Event Handler Local Host  : '" + lhost + "'" + "\r\n"
+            mLogger.message("" + "HCM Event Handler Local Host  : '" + lhost + "'" + "\r\n"
                     + "HCM Event Handler Local Port  : '" + lport + "'" + "\r\n"
                     + "HCM Event Handler Remote Host : '" + rhost + "'" + "\r\n"
                     + "HCM Event Handler Remote Port : '" + rport + "'" + "\r\n"
@@ -90,17 +89,17 @@ public final class HCMScenePlayer extends VSMScenePlayer {
         } catch (final NumberFormatException exc) {
 
             // Debug Some Information
-            mVSM3Log.failure(exc.toString());
+            mLogger.failure(exc.toString());
 
             // Debug Some Information
-            mVSM3Log.message("Failed Launching HCM Scene Player");
+            mLogger.message("Failed Launching HCM Scene Player");
         }
 
         // Create User Interface
         mUserInterface = new HCMUserInterface(this);
 
         // Print Debug Information
-        mVSM3Log.message("Launching HCM Scene Player");
+        mLogger.message("Launching HCM Scene Player");
         
         return true;
     }
@@ -127,15 +126,15 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             mEventHandler.join();
 
             // Print Debug Information
-            mVSM3Log.message("Joining HCM Event Handler");
+            mLogger.message("Joining HCM Event Handler");
         } catch (Exception exc) {
 
             // Print Debug Information
-            mVSM3Log.warning(exc.toString());
+            mLogger.warning(exc.toString());
         }
 
         // Print Debug Information
-        mVSM3Log.message("Unloading HCM Scene Player");
+        mLogger.message("Unloading HCM Scene Player");
         
         return true;
     }
@@ -171,7 +170,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
         if (input != null) {
 
             // Debug Some Information
-            mVSM3Log.message("Agent #" + client.getAgentUaid() + " Receiving Data '" + input + "'");
+            mLogger.message("Agent #" + client.getAgentUaid() + " Receiving Data '" + input + "'");
 
             // Parse The Data To A New Message
             final HCMEventMessage message = HCMEventMessage.getInstance(input);
@@ -183,24 +182,24 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                 final String utid = message.getUtid();
 
                 // Notify The Right Waiting Thread
-                synchronized (mWaitingThreadQueue) {
+                synchronized (mThreadQueue) {
 
                     // Remove Respective Task
-                    final Thread task = mWaitingThreadQueue.remove(utid);
+                    final Thread task = mThreadQueue.remove(utid);
 
                     // Debug Some Information
-                    mVSM3Log.message("Removing The Waiting Thread '" + task + "' With Id '" + utid + "'");
+                    mLogger.message("Removing The Waiting Thread '" + task + "' With Id '" + utid + "'");
 
                     // Debug Some Information
-                    mVSM3Log.message("Notifying All Waiting Threads");
+                    mLogger.message("Notifying All Waiting Threads");
 
                     // Notify Waiting Tasks
-                    mWaitingThreadQueue.notifyAll();
+                    mThreadQueue.notifyAll();
                 }
             } else {
 
                 // Debug Some Information
-                mVSM3Log.warning("Message Has Wrong Format '" + input + "'");
+                mLogger.warning("Message Has Wrong Format '" + input + "'");
             }
         } else {
 
@@ -219,36 +218,36 @@ public final class HCMScenePlayer extends VSMScenePlayer {
         final HCMEventMessage message = HCMEventMessage.newInstance(type, utid, name, uaid, text, date, time);
 
         // Send The New Command
-        synchronized (mWaitingThreadQueue) {
+        synchronized (mThreadQueue) {
             if (client.sendString(message.toString())) {
 
                 // Print Information
-                mVSM3Log.message("Enqueuing Waiting Thread '" + task + "' With Id '" + utid + "'");
+                mLogger.message("Enqueuing Waiting Thread '" + task + "' With Id '" + utid + "'");
 
                 // Enqueue The Waiting Thread
-                mWaitingThreadQueue.put(utid, Thread.currentThread());
+                mThreadQueue.put(utid, Thread.currentThread());
 
                 // And Await The Notification
-                while (mWaitingThreadQueue.containsKey(utid)) {
+                while (mThreadQueue.containsKey(utid)) {
 
                     // Print Information
-                    mVSM3Log.message("Awaiting Notification For '" + task + "' With Id '" + utid + "'");
+                    mLogger.message("Awaiting Notification For '" + task + "' With Id '" + utid + "'");
 
                     // Print Information
                     try {
-                        mWaitingThreadQueue.wait();
+                        mThreadQueue.wait();
                     } catch (final InterruptedException exc) {
 
                         // Print Information
-                        mVSM3Log.message("Interrupting Waiting Task '" + task + "' With Id '" + utid + "'");
+                        mLogger.message("Interrupting Waiting Task '" + task + "' With Id '" + utid + "'");
                     }
 
                     // Print Information
-                    mVSM3Log.message("Searching Notification For '" + task + "' With Id '" + utid + "'");
+                    mLogger.message("Searching Notification For '" + task + "' With Id '" + utid + "'");
                 }
 
                 // Print Information
-                mVSM3Log.message("Received Notification For '" + task + "' With Id '" + utid + "'");
+                mLogger.message("Received Notification For '" + task + "' With Id '" + utid + "'");
             }
         }
     }
@@ -288,7 +287,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             public void run() {
 
                 // Select A Scene From Script
-                final SceneScript sceneScript = mProjectData.getSceneScript();
+                final SceneScript sceneScript = mProject.getSceneScript();
 
                 // Select Default Scene Group
                 final SceneGroup sceneGroup = sceneScript.getSceneGroup(sceneName);
@@ -339,7 +338,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                         if (name != null) {
 
                             // Get The Adequate Agent
-                            final VSMAgentClient client = mAgentClientMap.get(name);
+                            final VSMAgentClient client = mAgentMap.get(name);
 
                             // Check if The Client Exists
                             if (client != null) {
@@ -364,19 +363,19 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                             } else {
 
                                 // Get The Default Speaker
-                                mVSM3Log.failure("Agent '" + name + "'Does Not Exist");
+                                mLogger.failure("Agent '" + name + "'Does Not Exist");
                             }
                         } else {
 
                             // Get The Default Speaker
-                            mVSM3Log.failure("Turn Has No Speaker Definition");
+                            mLogger.failure("Turn Has No Speaker Definition");
                         }
 
                         // Exit If Interrupted After Utterance
                         if (isDone()) {
 
                             // Print Information
-                            mVSM3Log.message("Finishing Task '" + utid + "' After Utterance");
+                            mLogger.message("Finishing Task '" + utid + "' After Utterance");
 
                             return;
                         }
@@ -386,7 +385,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                     if (isDone()) {
 
                         // Print Information
-                        mVSM3Log.message("Finishing Task '" + utid + "' After Turn");
+                        mLogger.message("Finishing Task '" + utid + "' After Turn");
 
                         return;
                     }
@@ -411,7 +410,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             } catch (InterruptedException exc) {
 
                 // Print Information
-                mVSM3Log.warning("Interrupting '" + Thread.currentThread().getName()
+                mLogger.warning("Interrupting '" + Thread.currentThread().getName()
                         + "' During The Execution Of Scene '" + sceneName + "'");
                 // Terminate The Task
                 task.abort();

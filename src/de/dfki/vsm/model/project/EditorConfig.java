@@ -65,43 +65,43 @@ public class EditorConfig {
     public boolean sAUTOHIDE_BOTTOMPANEL = true; // Saves the pricked pin of the bottom panel of the editor
 
     public EditorConfig() {
-
+        
         if (!sPROPERTIES.containsKey("node_width")) {
             sPROPERTIES.setProperty("node_width", "90");
         }
-
+        
         if (!sPROPERTIES.containsKey("node_height")) {
             sPROPERTIES.setProperty("node_height", "90");
         }
-
+        
         if (!sPROPERTIES.containsKey("grid_x")) {
             sPROPERTIES.setProperty("grid_x", "1");
         }
-
+        
         if (!sPROPERTIES.containsKey("grid_y")) {
             sPROPERTIES.setProperty("grid_y", "1");
         }
-
+        
         if (!sPROPERTIES.containsKey("visualization")) {
             sPROPERTIES.setProperty("visualization", "false");
         }
-
+        
         if (!sPROPERTIES.containsKey("visualizationtrace")) {
             sPROPERTIES.setProperty("visualizationtrace", "false");
         }
-
+        
         if (!sPROPERTIES.containsKey("shownodeid")) {
             sPROPERTIES.setProperty("shownodeid", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showvariables")) {
             sPROPERTIES.setProperty("showvariables", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showsmartpathcalculations")) {
             sPROPERTIES.setProperty("showsmartpathcalculations", "false");
         }
-
+        
         if (!sPROPERTIES.containsKey("showsceneelements")) {
             sPROPERTIES.setProperty("showsceneelements", "true");
         }
@@ -110,27 +110,27 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("showelements")) {
             sPROPERTIES.setProperty("showelements", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showelementproperties")) {
             sPROPERTIES.setProperty("showelementproperties", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("propertiesdividerlocation")) {
             sPROPERTIES.setProperty("propertiesdividerlocation", "790");
         }
-
+        
         if (!sPROPERTIES.containsKey("showscenefloweditor")) {
             sPROPERTIES.setProperty("showscenefloweditor", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showsceneeditor")) {
             sPROPERTIES.setProperty("showsceneeditor", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("sceneflow_sceneeditor_ratio")) {
             sPROPERTIES.setProperty("sceneflow_sceneeditor_ratio", "0.75");
         }
-
+        
         if (!sPROPERTIES.containsKey("showgestures")) {
             sPROPERTIES.setProperty("showgestures", "true");
         }
@@ -139,23 +139,23 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("grid")) {
             sPROPERTIES.setProperty("grid", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("num_magnets")) {
             sPROPERTIES.setProperty("num_magnets", "8");
         }
-
+        
         if (!sPROPERTIES.containsKey("workspace_fontsize")) {
             sPROPERTIES.setProperty("workspace_fontsize", "11");
         }
-
+        
         if (!sPROPERTIES.containsKey("scriptfonsize")) {
             sPROPERTIES.setProperty("scriptfonsize", "11");
         }
-
+        
         if (!sPROPERTIES.containsKey("scriptfonttype")) {
             sPROPERTIES.setProperty("scriptfonttype", "Arial");
         }
-
+        
         if (!sPROPERTIES.containsKey("launchPlayer")) {
             sPROPERTIES.setProperty("launchPlayer", "false");
         }
@@ -238,7 +238,7 @@ public class EditorConfig {
             // Return failure if it does not exist
             return false;
         }
-
+        
         init();
 
         // Print an information message if this case
@@ -246,9 +246,9 @@ public class EditorConfig {
 
         // Return success if the project was saved
         return true;
-
+        
     }
-
+    
     public synchronized boolean load(final File base) {
 
         // Create the project configuration file
@@ -273,7 +273,7 @@ public class EditorConfig {
             // Return failure if it does not exist
             return false;
         }
-
+        
         try {
             try (FileInputStream in = new FileInputStream(file)) {
                 sPROPERTIES.loadFromXML(in);
@@ -281,71 +281,71 @@ public class EditorConfig {
         } catch (IOException e) {
             e.printStackTrace(System.out);
         }
-
+        
         if (!sPROPERTIES.containsKey("frame_title")) {
             sPROPERTIES.setProperty("frame_title", "Visual SceneMaker");
         }
-
+        
         if (!sPROPERTIES.containsKey("frame_name")) {
             sPROPERTIES.setProperty("frame_name", "SceneFlowEditor");
         }
-
+        
         if (!sPROPERTIES.containsKey("icon_file")) {
             sPROPERTIES.setProperty("icon_file", "res/img/icon.png");
         }
-
+        
         if (!sPROPERTIES.containsKey("frame_posx")) {
             sPROPERTIES.setProperty("frame_posx", "0");
         }
-
+        
         if (!sPROPERTIES.containsKey("frame_posy")) {
             sPROPERTIES.setProperty("frame_posy", "0");
         }
-
+        
         if (!sPROPERTIES.containsKey("frame_width")) {
             sPROPERTIES.setProperty("frame_width", "800");
         }
-
+        
         if (!sPROPERTIES.containsKey("frame_height")) {
             sPROPERTIES.setProperty("frame_height", "600");
         }
-
+        
         if (!sPROPERTIES.containsKey("node_width")) {
             sPROPERTIES.setProperty("node_width", "90");
         }
-
+        
         if (!sPROPERTIES.containsKey("node_height")) {
             sPROPERTIES.setProperty("node_height", "90");
         }
-
+        
         if (!sPROPERTIES.containsKey("grid_x")) {
             sPROPERTIES.setProperty("grid_x", "1");
         }
-
+        
         if (!sPROPERTIES.containsKey("grid_y")) {
             sPROPERTIES.setProperty("grid_y", "1");
         }
-
+        
         if (!sPROPERTIES.containsKey("visualization")) {
             sPROPERTIES.setProperty("visualization", "false");
         }
-
+        
         if (!sPROPERTIES.containsKey("visualizationtrace")) {
             sPROPERTIES.setProperty("visualizationtrace", "false");
         }
-
+        
         if (!sPROPERTIES.containsKey("shownodeid")) {
             sPROPERTIES.setProperty("shownodeid", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showvariables")) {
             sPROPERTIES.setProperty("showvariables", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showsmartpathcalculations")) {
             sPROPERTIES.setProperty("showsmartpathcalculations", "false");
         }
-
+        
         if (!sPROPERTIES.containsKey("showsceneelements")) {
             sPROPERTIES.setProperty("showsceneelements", "true");
         }
@@ -354,27 +354,27 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("showelements")) {
             sPROPERTIES.setProperty("showelements", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showelementproperties")) {
             sPROPERTIES.setProperty("showelementproperties", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("propertiesdividerlocation")) {
             sPROPERTIES.setProperty("propertiesdividerlocation", "790");
         }
-
+        
         if (!sPROPERTIES.containsKey("showscenefloweditor")) {
             sPROPERTIES.setProperty("showscenefloweditor", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("showsceneeditor")) {
             sPROPERTIES.setProperty("showsceneeditor", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("sceneflow_sceneeditor_ratio")) {
             sPROPERTIES.setProperty("sceneflow_sceneeditor_ratio", "0.75");
         }
-
+        
         if (!sPROPERTIES.containsKey("showgestures")) {
             sPROPERTIES.setProperty("showgestures", "true");
         }
@@ -383,23 +383,23 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("grid")) {
             sPROPERTIES.setProperty("grid", "true");
         }
-
+        
         if (!sPROPERTIES.containsKey("num_magnets")) {
             sPROPERTIES.setProperty("num_magnets", "8");
         }
-
+        
         if (!sPROPERTIES.containsKey("workspace_fontsize")) {
             sPROPERTIES.setProperty("workspace_fontsize", "11");
         }
-
+        
         if (!sPROPERTIES.containsKey("scriptfonsize")) {
             sPROPERTIES.setProperty("scriptfonsize", "11");
         }
-
+        
         if (!sPROPERTIES.containsKey("scriptfonttype")) {
             sPROPERTIES.setProperty("scriptfonttype", "Arial");
         }
-
+        
         if (!sPROPERTIES.containsKey("launchPlayer")) {
             sPROPERTIES.setProperty("launchPlayer", "false");
         }
@@ -410,7 +410,15 @@ public class EditorConfig {
         init();
 
         // Print an information message if this case
-        mLogger.message("Loaded project editor configuration file '" + file + "':\n" + sPROPERTIES.toString());
+        mLogger.message("Loaded project editor configuration file '" + file + "':\n");
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        if (XMLUtilities.writeToXMLStream(sPROPERTIES, stream)) {
+            try {
+                mLogger.message(stream.toString("UTF-8"));
+            } catch (Exception exc) {
+                mLogger.failure(exc.toString());
+            }
+        }
 
         // Return success if the project was loaded
         return true;

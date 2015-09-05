@@ -35,6 +35,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +78,7 @@ public final class SceneFlowElementPanel extends JScrollPane {
     // Refresh the element display
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         // Refresh the element tree
         mElementTree.refresh();
     }
@@ -120,6 +121,19 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     private DragSourceListener mDragSourceListener;
     private int mAcceptableDnDActions;
 
+    public void updateFunctions() {
+        mFunctionsEntry.removeAllChildren();
+
+        List<FunDef> functionDefinitions = new ArrayList<FunDef>(mSceneFlow.getUsrCmdDefMap().values());
+
+        Collections.sort(functionDefinitions);
+
+        for (final FunDef def : functionDefinitions) {
+            mFunctionsEntry.add(new TreeEntry(def.getName(), def.isValidClass()
+                    ? Preferences.ICON_FUNCTION_ENTRY
+                    : Preferences.ICON_FUNCTION_ERROR_ENTRY, def));
+        }
+    }
     /**
      *
      *
@@ -247,7 +261,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         // Print some information
         mLogger.message("Refreshing '" + this + "'");
         updateSceneList();
-        updateFunDefs();
+        updateFunctions();
         updateDialogActs();
         //remove empty scenes
         for(int i = 0; i < mSceneFlowEntry.getChildCount(); i++)
@@ -261,23 +275,6 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         }
         // Update the visual appearance of the ElementTree
         updateUI();
-    }
-    /*
-    * Refresh the list of functions
-    */
-    private void updateFunDefs() {
-
-        //
-        mFunctionsEntry.removeAllChildren();
-
-        //
-        SceneFlow sceneFlow = mProject.getSceneFlow();
-
-        for (FunDef def : sceneFlow.getUsrCmdDefMap().values()) {
-            mFunctionsEntry.add(new TreeEntry(def.getName(), def.isValidClass()
-                    ? Preferences.ICON_FUNCTION_ENTRY
-                    : Preferences.ICON_FUNCTION_ERROR_ENTRY, def));
-        }
     }
     /**
      * Refresh the list of scenes
@@ -483,8 +480,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-                //TODO: call the right update method
-                updateFunDefs();
+                updateFunctions();
 
                 FunctionModifiedEvent ev = new FunctionModifiedEvent(this, usrCmdDef);
 
@@ -515,8 +511,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
             if (usrCmdDef != null) {
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-                //TODO: call the right update method
-                updateFunDefs();
+                updateFunctions();
                 EditorInstance.getInstance().refresh();
                 launchFunctionCreatedEvent(usrCmdDef);
             }
@@ -533,8 +528,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 FunDef oldFunDef = (FunDef) entry.getData();
 
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
-                //TODO: call the right update method
-                updateFunDefs();
+                updateFunctions();
 
                 EditorInstance.getInstance().refresh();
                 launchFunctionCreatedEvent((FunDef) entry.getData());

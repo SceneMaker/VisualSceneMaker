@@ -83,10 +83,8 @@ public final class JPLEngine {
     }
 
     // Call A Query On The Engine
-    public static synchronized JPLResult query(final String strquery) {
+    public static /*synchronized*/ JPLResult query(final String strquery) {
 
-        // Print Debug Information
-        // sLogger.message("Executing Query '" + strquery + "' In JPL Engine '" + JPLEngine.string() + "'");
         // Eventually Initialize JPL
         init();
 
@@ -113,6 +111,7 @@ public final class JPLEngine {
             // Process All Solutions
             while (jplquery.hasMoreElements()) {
 
+               
                 // Get Next Possible Solution
                 HashMap solution = (HashMap) jplquery.nextElement();
 
@@ -161,11 +160,10 @@ public final class JPLEngine {
             // Close The New Query
             if (jplquery != null) {
                 //jplquery.rewind();
+                //jplquery.remove();
                 jplquery.close();
             }
-
-            // Print Debug Information
-            // sLogger.message("Terminating Query '" + strquery + "' In JPL Engine '" + JPLEngine.string() + "'");
+            //System.err.println(result);
             // Always Return Result
             return result;
         }
