@@ -868,7 +868,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Refresh this editor component
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         // Get the selected project editor
         final ProjectEditor editor = getSelectedProjectEditor();
         // Refresh the selected project editor

@@ -9,6 +9,7 @@ import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Gregor Mehlmann
@@ -32,7 +33,7 @@ public final class RunTimeInstance {
     }
 
     // Initialize the runtime instance
-    public static synchronized RunTimeInstance getInstance() {
+    public static /* synchronized */ RunTimeInstance getInstance() {
         if (sInstance == null) {
             sInstance = new RunTimeInstance();
         }
@@ -40,8 +41,18 @@ public final class RunTimeInstance {
         return sInstance;
     }
 
+    public ReentrantLock getLock(final RunTimeProject project) {
+        if (!mProjectMap.containsKey(project)) {
+            // Print an error message
+            mLogger.failure("Failure: There is no interpreter registered for project '" + project + "'");
+            // Return false at error
+            return null;
+        }
+        return mProjectMap.get(project).getLock();
+    }
+
     // Launch a runtime project
-    public final synchronized boolean launch(final RunTimeProject project) {
+    public final /* synchronized */ boolean launch(final RunTimeProject project) {
 
         // Check if the project is already registered
         if (mProjectMap.containsKey(project)) {
@@ -81,7 +92,7 @@ public final class RunTimeInstance {
     }
 
     // Unload a runtime project
-    public final synchronized boolean unload(final RunTimeProject project) {
+    public final /* synchronized */ boolean unload(final RunTimeProject project) {
         // Check if the project is already registered
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
@@ -109,7 +120,7 @@ public final class RunTimeInstance {
     }
 
     // Start the execution of the project
-    public final synchronized boolean start(final RunTimeProject project) {
+    public final /* synchronized */ boolean start(final RunTimeProject project) {
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
             mLogger.failure("Failure: There is no interpreter registered for project '" + project + "'");
@@ -121,7 +132,7 @@ public final class RunTimeInstance {
     }
 
     // Abort the execution of the project
-    public final synchronized boolean abort(final RunTimeProject project) {
+    public final /* synchronized */ boolean abort(final RunTimeProject project) {
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
             mLogger.failure("Failure: There is no interpreter registered for project '" + project + "'");
@@ -133,7 +144,7 @@ public final class RunTimeInstance {
     }
 
     // Pause the execution of the project
-    public final synchronized boolean pause(final RunTimeProject project) {
+    public final /* synchronized */ boolean pause(final RunTimeProject project) {
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
             mLogger.failure("Failure: There is no interpreter registered for project '" + project + "'");
@@ -145,7 +156,7 @@ public final class RunTimeInstance {
     }
 
     // Proceed the execution of the project
-    public final synchronized boolean proceed(final RunTimeProject project) {
+    public final /* synchronized */ boolean proceed(final RunTimeProject project) {
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
             mLogger.failure("Failure: There is no interpreter registered for project '" + project + "'");
@@ -157,19 +168,21 @@ public final class RunTimeInstance {
     }
 
     // Check activity status of the project
-    public final synchronized boolean isRunning(final RunTimeProject project) {
+    public final /* synchronized */ boolean isRunning(final RunTimeProject project) {
+        //mLogger.message("Check if running");
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
             mLogger.warning("Warning: There is no interpreter registered for project '" + project + "'");
             // Return false at error
             return false;
         }
+        //mLogger.message("Check really running '" + this + "'");
         // Check activity status with the interpreter
         return mProjectMap.get(project).isRunning();
     }
 
     // Check paused status of the project
-    public final synchronized boolean isPaused(final RunTimeProject project) {
+    public final /* synchronized */ boolean isPaused(final RunTimeProject project) {
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
             mLogger.warning("Warning: There is no interpreter registered for project '" + project + "'");
@@ -180,7 +193,7 @@ public final class RunTimeInstance {
         return mProjectMap.get(project).isPaused();
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final int value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final int value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, new IntValue(value));
@@ -190,7 +203,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final int index, final int value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final int index, final int value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, index, new IntValue(value));
@@ -200,7 +213,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final String member, final int value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final String member, final int value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, member, new IntValue(value));
@@ -210,7 +223,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, float value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, float value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, new FloatValue(value));
@@ -220,7 +233,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final int index, float value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final int index, float value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, index, new FloatValue(value));
@@ -230,7 +243,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final String member, float value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final String member, float value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, member, new FloatValue(value));
@@ -240,7 +253,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, boolean value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, boolean value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, new BooleanValue(value));
@@ -250,7 +263,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final int index, boolean value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final int index, boolean value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, index, new BooleanValue(value));
@@ -260,7 +273,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final String member, boolean value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final String member, boolean value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, member, new BooleanValue(value));
@@ -270,7 +283,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final String value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final String value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, new StringValue(value));
@@ -280,7 +293,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final int index, final String value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final int index, final String value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, index, new StringValue(value));
@@ -290,7 +303,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final String member, final String value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final String member, final String value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, member, new StringValue(value));
@@ -300,7 +313,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final AbstractValue value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final AbstractValue value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, value);
@@ -310,7 +323,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final int index, final AbstractValue value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final int index, final AbstractValue value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, index, value);
@@ -320,7 +333,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean setVariable(final RunTimeProject project, final String name, final String member, final AbstractValue value) {
+    public final /* synchronized */ boolean setVariable(final RunTimeProject project, final String name, final String member, final AbstractValue value) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).setVariable(name, member, value);
@@ -330,7 +343,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean hasVariable(final RunTimeProject project, final String name) {
+    public final /* synchronized */ boolean hasVariable(final RunTimeProject project, final String name) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).hasVariable(name);
@@ -340,7 +353,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean hasVariable(final RunTimeProject project, final String name, final int index) {
+    public final /* synchronized */ boolean hasVariable(final RunTimeProject project, final String name, final int index) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).hasVariable(name, index);
@@ -350,7 +363,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized boolean hasVariable(final RunTimeProject project, final String name, final String member) {
+    public final /* synchronized */ boolean hasVariable(final RunTimeProject project, final String name, final String member) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).hasVariable(name, member);
@@ -360,7 +373,7 @@ public final class RunTimeInstance {
         return false;
     }
 
-    public final synchronized AbstractValue getValueOf(final RunTimeProject project, final String name) {
+    public final /* synchronized */ AbstractValue getValueOf(final RunTimeProject project, final String name) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).getValueOf(name);
@@ -370,7 +383,7 @@ public final class RunTimeInstance {
         return null;
     }
 
-    public final synchronized AbstractValue getValueOf(final RunTimeProject project, final String name, final int index) {
+    public final /* synchronized */ AbstractValue getValueOf(final RunTimeProject project, final String name, final int index) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).getValueOf(name, index);
@@ -380,7 +393,7 @@ public final class RunTimeInstance {
         return null;
     }
 
-    public final synchronized AbstractValue getValueOf(final RunTimeProject project, final String name, final String member) {
+    public final /* synchronized */ AbstractValue getValueOf(final RunTimeProject project, final String name, final String member) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).getValueOf(name, member);

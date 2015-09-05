@@ -218,7 +218,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     //
     public void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+       // mLogger.message("Refreshing '" + this + "'");
         // mLogger.message("WorkSpace.update(" + obj + ")");
         mObservable.update(null);
 

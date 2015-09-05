@@ -92,7 +92,7 @@ public class SceneFlowPalettePanel extends JPanel {
     
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         //
     }
 }
