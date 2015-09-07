@@ -425,7 +425,6 @@ public class FunctionsEditor extends JPanel implements EventListener {
         usrCmdDef.addParam(new ParamDef("text", "String"));
         updateArguments(usrCmdDef);
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-        EditorInstance.getInstance().refresh();
         EventDispatcher.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
         launchProjectChangedEvent();
     }
@@ -437,8 +436,9 @@ public class FunctionsEditor extends JPanel implements EventListener {
         if (funDef != null) {
             mSceneFlow.removeUsrCmdDef(funDef.getName());
             launchFunctionCreatedEvent(funDef);
-            EditorInstance.getInstance().refresh();
+          
             launchProjectChangedEvent();
+            this.repaint();
         }
 
         // Editor.getInstance().update();
