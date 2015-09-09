@@ -29,6 +29,8 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tts.I4GMaryClient;
+import de.dfki.vsm.util.tts.VoiceName;
+
 import java.io.IOException;
 
 import javax.sound.sampled.AudioInputStream;
@@ -133,7 +135,7 @@ public class BaxterSceneGroupPlayer implements SceneGroupPlayer, EventListener {
                 for (SceneTurn turn : scene.getTurnList()) {
 
                     // Turn Visualization
-                    mLogger.message("Executing turn:" + turn.getText());
+                    //mLogger.message("Executing turn:" + turn.getText());
                     EventCaster.getInstance().convey(new TurnExecutedEvent(this, turn));
 
                     // Get The Turn Speaker
@@ -148,11 +150,13 @@ public class BaxterSceneGroupPlayer implements SceneGroupPlayer, EventListener {
                     int wordCount = 0;
                     float time = 0;
                     BaxterActionManager actionManager =   BaxterActionManager.getInstance();
+                    VoiceName speakerVoice = I4GMaryClient.FEMALE;
+
                     // Process Utterance
                     for (SceneUttr utt : turn.getUttrList()) {
 
                         // Utterance Visualization
-                        mLogger.message("Executing utterance:" + utt.getText());
+                        //mLogger.message("Executing utterance:" + utt.getText());
                         EventCaster.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
                         // Process the words of this utterance
@@ -160,7 +164,7 @@ public class BaxterSceneGroupPlayer implements SceneGroupPlayer, EventListener {
                             if (word instanceof SceneWord) {
 
                                 // Visualization
-                                mLogger.message("Executing vocable:" + ((SceneWord) word).getText());
+                                //mLogger.message("Executing vocable:" + ((SceneWord) word).getText());
                                 wordCount = ((SceneWord) word).getText().length();
                                 actionManager.addAction(word);
                                // mary.addWord(((SceneWord) word).getText());
@@ -170,11 +174,8 @@ public class BaxterSceneGroupPlayer implements SceneGroupPlayer, EventListener {
                                 //mLogger.message("Executing param:" + ((SceneParam) word).getText());
                             } else if (word instanceof ActionObject) {
 
-                                if(speaker.equals("Baxter")){//Is a Baxter Action
 
-                                   actionManager.addAction((ActionObject) word);
-                                  // actionManager.executeAction();
-                                }
+                                //speakerVoice = I4GMaryClient.MALE;
 
                                 // Visualization
                                 //mLogger.message("Executing action:" + ((ActionObject) word).getText());
@@ -187,7 +188,14 @@ public class BaxterSceneGroupPlayer implements SceneGroupPlayer, EventListener {
                     }
 
                     // Utterance Simulation
-                    BaxterActionManager.getInstance().executeActionQueue();
+                    if(speaker.equals("Baxter")){//Is a Baxter Action
+                        speakerVoice = I4GMaryClient.MALE;
+                    }
+                    else{
+                        speakerVoice = I4GMaryClient.FEMALE;
+                    }
+
+                    BaxterActionManager.getInstance().executeActionQueue(speakerVoice);
 
                     // Exit If Interrupted
                     if (mIsDone) {

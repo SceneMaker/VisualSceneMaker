@@ -11,10 +11,12 @@ import de.dfki.vsm.model.script.ActionFeature;
 import de.dfki.vsm.model.script.ActionObject;
 import de.dfki.vsm.model.script.SceneWord;
 import de.dfki.vsm.util.tts.I4GMaryClient;
-
+import de.dfki.vsm.util.tts.VoiceName;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -43,6 +45,7 @@ public class BaxterActionManager {
         mAction = null;
         mBaxter = BaxterPlayer.getInstance();
         actionQueue = new LinkedList<AbstractWord>();
+
     }
     
     public BaxterActionManager(ActionObject action){
@@ -76,7 +79,7 @@ public class BaxterActionManager {
         return 0;
     }
     
-    public void executeActionQueue(){
+    public void executeActionQueue(VoiceName speakerVoice){
         Timer actionTimer = new Timer();
         System.out.println("Starting Baxter action");
         Iterator it = actionQueue.iterator();
@@ -88,7 +91,7 @@ public class BaxterActionManager {
                 mary.addWord(((SceneWord)iterAction).getText());
             } else if(iterAction instanceof ActionObject){ 
                 //Speak the phrase before the Baxter action
-                previous_time += executeActionSpeak(mary, actionTimer);
+                previous_time += executeActionSpeak(mary, actionTimer, speakerVoice);
                 actionDone = false;
                 
                 this.executeAction((ActionObject)iterAction, previous_time); 
@@ -107,8 +110,8 @@ public class BaxterActionManager {
                 actionDone = true;
             }
         }
-        previous_time += executeActionSpeak(mary, actionTimer);
-        previous_time += 100; //A little delay for the next sentence
+        previous_time += executeActionSpeak(mary, actionTimer, speakerVoice);
+        previous_time += 200; //A little delay for the next sentence
         actionQueue.clear();
         
     }
@@ -127,7 +130,7 @@ public class BaxterActionManager {
         return feat;
     }
     
-    private long executeActionSpeak(I4GMaryClient mary, Timer actionTimer){
+    private long executeActionSpeak(I4GMaryClient mary, Timer actionTimer, VoiceName speakerVoice){
         float current_time = 0;
         String text = "";
         long startTime = System.currentTimeMillis();
@@ -138,7 +141,7 @@ public class BaxterActionManager {
                 return 0 ;
             }
             System.out.println("Mary get Text: " + text);
-            current_time =  mary.getPhraseTime();
+            current_time =  mary.getPhraseTime(speakerVoice);
             mary.clearWordList();
             actionExecutionTime = new Date(startTime);
         } catch (UnsupportedAudioFileException ex) {
@@ -150,8 +153,9 @@ public class BaxterActionManager {
         }
         startTime = System.currentTimeMillis();
         actionExecutionTime = new Date(startTime + previous_time);
-        System.out.println("Texto :" + text + " Comienza " + actionExecutionTime.toString() );
-        actionTimer.schedule(new SpeakTask(mary,text), actionExecutionTime);
+        DateFormat dateFormat  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        System.out.println("Texto :" + text + " Comienza " + dateFormat.format(actionExecutionTime) );
+        actionTimer.schedule(new SpeakTask(mary,text, speakerVoice), actionExecutionTime);
         return (long) current_time;
 }
     
@@ -159,10 +163,13 @@ public class BaxterActionManager {
     // GestureAction
     I4GMaryClient mary = null;
     String phrase = null;
+        VoiceName voice = null;
+
     
-    SpeakTask(I4GMaryClient ga, String text) {
+    SpeakTask(I4GMaryClient ga, String text, VoiceName speakerVoice) {
       mary = ga;
       phrase = text;
+        voice = speakerVoice;
     }
     
     public void run() {
@@ -171,9 +178,10 @@ public class BaxterActionManager {
         //Execute the
           long startTime = System.currentTimeMillis();
           Date actionExecutionTime = new Date(startTime);
-          System.out.println("Speaking, phrase: "+ mary.getText() + "at: " + actionExecutionTime.toString());
+          DateFormat dateFormat  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+          System.out.println("Speaking, phrase: "+ phrase + "at: " + dateFormat.format(actionExecutionTime));
           if(phrase.length() > 0) {
-              mary.speak(phrase);
+              mary.speak(phrase, voice);
           }
         } catch (UnsupportedAudioFileException ex) {
             Logger.getLogger(BaxterActionManager.class.getName()).log(Level.SEVERE, null, ex);

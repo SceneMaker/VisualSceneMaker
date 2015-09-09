@@ -34,8 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +52,8 @@ import marytts.util.http.Address;
 import marytts.client.MaryClient;
 import marytts.util.data.audio.AudioPlayer;
 
+import marytts.LocalMaryInterface;
+import marytts.MaryInterface;
 import marytts.util.data.audio.AudioPlayer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,8 +63,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -76,8 +75,9 @@ public class I4GMaryClient {
 
     private MaryClient maryClient = null;
     public static final Language Language_DE = new Language("de");
-    public static final Language Language_EN = new Language("en");
-    public static final VoiceName FEMALE = new VoiceName("female");
+    public static final Language Language_EN = new Language("en-GB");
+    public static final VoiceName FEMALE = new VoiceName("dfki-poppy");
+    public static final VoiceName MALE = new VoiceName("dfki-obadiah");
     public static final VoiceName DE1 = new VoiceName("dfki-poker");
     public static final VoiceName DE2 = new VoiceName("hmm-bits2");
     public static final VoiceName DE3 = new VoiceName("hmm-bits3");
@@ -92,6 +92,9 @@ public class I4GMaryClient {
     public static final VoiceName BITS2 = new VoiceName("bits2");
     public static final VoiceName BITS3 = new VoiceName("bits3");
     public static final VoiceName BITS4 = new VoiceName("bits4");
+    public static final VoiceName POPPY = new VoiceName("dfki-poppy");
+    public static final VoiceName SPIKE = new VoiceName("dfki-spike");
+    public static final VoiceName OBADIAH = new VoiceName("dfki-obadiah");
     public static final VoiceName CMU = new VoiceName("cmu-slt-hsmm");
     private static final String SAMPLE_TEXT = "Willkommen in der Welt der Sprachsynthese!";
     // Singleton
@@ -188,7 +191,7 @@ public class I4GMaryClient {
 
         // process (old version)
         //maryClient.process(rawMaryXml, DataType.RAWMARYXML.toString(), DataType.ACOUSTPARAMS.toString(), null, voice.toString(), baos); // ggf. AudioType.WAVE
-        maryClient.process(rawMaryXml, "RAWMARYXML", "ACOUSTPARAMS", "de",  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
+        maryClient.process(rawMaryXml, "RAWMARYXML", "ACOUSTPARAMS", Language_EN.toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
          
         String acoustParams = baos.toString();
         baos.close();
@@ -204,7 +207,7 @@ public class I4GMaryClient {
 
         
         //maryClient.process(rawMaryXml, DataType.RAWMARYXML.toString(), DataType.AUDIO.toString(), AudioType.WAVE.toString(), voice.toString(), baos);
-          maryClient.process(rawMaryXml, "ACOUSTPARAMS", "AUDIO", "de",  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
+          maryClient.process(rawMaryXml, "ACOUSTPARAMS", "AUDIO", Language_EN.toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
         
 //System.out.println("length of baos " + baos.size());
           baos.close();
@@ -237,15 +240,15 @@ public class I4GMaryClient {
             }
         }
         
-        mLogger.message("Word to process: \"" + finalWord + "\"");
+        //mLogger.message("Word to process: \"" + finalWord + "\"");
         return finalWord;
     }
     
-    public long getPhraseTime() throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public long getPhraseTime(VoiceName voiceName) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception { //TODO: Get language from scene
         String text = this.getPhrase();
-        String rawMaryXml = getRawMaryXml("", text, Language_DE);
-        String acoustParams = getAcoustParams("", rawMaryXml, BITS3);
+        String rawMaryXml = getRawMaryXml("", text, Language_EN);
+        String acoustParams = getAcoustParams("", rawMaryXml, voiceName);
         InputStream stream = new ByteArrayInputStream(acoustParams.getBytes(StandardCharsets.UTF_8));
         String endTime = parseAcoustParams(stream);
         if(!endTime.equals("")){
@@ -262,15 +265,15 @@ public class I4GMaryClient {
 	Document doc = dBuilder.parse(paramsXML);
 			
 	doc.getDocumentElement().normalize();
-        Node root = doc.getDocumentElement();
-        XPathFactory xFactory = XPathFactory.newInstance();
-        XPath xPath = xFactory.newXPath();
-        XPathExpression xExpress = xPath.compile("//ph[position() = last()]");
+    Node root = doc.getDocumentElement();
+    XPathFactory xFactory = XPathFactory.newInstance();
+    XPath xPath = xFactory.newXPath();
+    XPathExpression xExpress = xPath.compile("//ph[position() = last()]");
 	System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
 	NodeList nodes = (NodeList) xExpress.evaluate(root, XPathConstants.NODESET);
-        Node lastNode = nodes.item(nodes.getLength()-1);
-        String endTime = lastNode.getAttributes().item(1).getNodeValue();
-        return endTime;
+    Node lastNode = nodes.item(nodes.getLength()-1);
+    String endTime = lastNode.getAttributes().item(1).getNodeValue();
+    return endTime;
 
     }
     
@@ -282,16 +285,17 @@ public class I4GMaryClient {
         
     }
     
-    public void speak(String text)
+    public void speak(String text, VoiceName voice)
             throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
+
         /*MaryInterface marytts = new LocalMaryInterface();
-        Set<String> voices = marytts.getAvailableVoices();*/
+        Set<String> voices = marytts.getAvailableVoices(Locale.UK);*/
         
-        mLogger.message("Speak: \"" + text + "\"");
-        String rawMaryXml = getRawMaryXml("", text, Language_DE);
-        String acoustParams = getAcoustParams("", rawMaryXml, BITS3);
-        ByteArrayOutputStream audio = getAudio("", acoustParams, BITS3);
+        //mLogger.message("Speak: \"" + text + "\"");
+        String rawMaryXml = getRawMaryXml("", text, Language_EN);
+        String acoustParams = getAcoustParams("", rawMaryXml, voice);
+        ByteArrayOutputStream audio = getAudio("", acoustParams, voice);
         playAudio(audio);
         //this.clearWordList();
     }
@@ -300,8 +304,8 @@ public class I4GMaryClient {
             InterruptedException, Exception {
         String text = this.getPhrase();
         this.clearWordList();
-        mLogger.message("Speak: \"" + text + "\"");
-        String rawMaryXml = getRawMaryXml("", text, Language_DE);
+        //mLogger.message("Speak: \"" + text + "\"");
+        String rawMaryXml = getRawMaryXml("", text, Language_EN);
         String acoustParams = getAcoustParams("", rawMaryXml, BITS3);
         ByteArrayOutputStream audio = getAudio("", acoustParams, BITS3);
         playAudio(audio);
@@ -350,19 +354,6 @@ class AudioType {
     public static final AudioType AIFF = new AudioType("AIFF");
     public static final AudioType AIFC = new AudioType("AIFC");
     public static final AudioType MP3 = new AudioType("MP3");
-
-    public String toString() {
-        return this.name;
-    }
-}
-
-class VoiceName {
-
-    private String name;
-
-    public VoiceName(String name) {
-        this.name = name;
-    }
 
     public String toString() {
         return this.name;
