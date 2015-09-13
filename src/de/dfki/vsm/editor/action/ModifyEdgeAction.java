@@ -23,19 +23,15 @@ public class ModifyEdgeAction extends EdgeAction {
     public void run() {
         if (mGUIEdgeType == TYPE.TEDGE) {
             ModifyTEdgeAction action = new ModifyTEdgeAction(mGUIEdge, mWorkSpace);
-
             action.run();
         } else if (mGUIEdgeType == TYPE.PEDGE) {
             ModifyPEdgeAction action = new ModifyPEdgeAction(mGUIEdge, mWorkSpace);
-
             action.run();
         } else if (mGUIEdgeType == TYPE.CEDGE) {
             ModifyCEdgeAction action = new ModifyCEdgeAction(mGUIEdge, mWorkSpace);
-
             action.run();
         } else if (mGUIEdgeType == TYPE.IEDGE) {
             ModifyIEdgeAction action = new ModifyIEdgeAction(mGUIEdge, mWorkSpace);
-
             action.run();
         }
 

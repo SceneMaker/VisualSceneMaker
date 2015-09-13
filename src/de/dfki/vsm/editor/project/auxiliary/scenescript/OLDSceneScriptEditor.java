@@ -7,7 +7,6 @@ import de.dfki.vsm.editor.project.auxiliary.functions.FunctionsEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.project.auxiliary.AuxiliaryToolBar;
 import de.dfki.vsm.editor.project.auxiliary.dialogact.DialogActEditor;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -15,17 +14,22 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 import org.ujmp.core.collections.ArrayIndexList;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -34,6 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -59,7 +64,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     
     // The Script Editor Pane
     private final JScrollPane mScrollPane;
-    private final AuxiliaryToolBar mToolBar;
     private final JTabbedPane mTabPane;
 
     private final ScriptEditorPane mEditorPane;
@@ -83,7 +87,15 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
     // The current editor project
     private final EditorProject mProject;
+    private final JButton mPinButton;
+    //PIN icons
+    private final ImageIcon ICON_PIN_STANDARD = ResourceLoader.loadImageIcon("/res/img/pin.png");
+    private final ImageIcon ICON_PIN_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/pin_blue.png");
+    //PIN status
+    private boolean pinPricked;
     
+    //Editor configuration
+    private final EditorConfig mEditorConfig;
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -111,13 +123,14 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         // Initialize The Dialog Act Panel
         mDialogActEditor = new DialogActEditor(mProject);
-
+        //
+        mEditorConfig = mProject.getEditorConfig();
         // Initialize Tabbed Pane
      //   mTabPane = new JTabbedPane();
         
         mTabPane = new JTabbedPane();
         mTabPane.setUI(new BasicTabbedPaneUI());
-                
+        mTabPane.setOpaque(false);
         // Initialize The Scroll Pane
         mElementPane = new SceneElementDisplay(mProject);
 //        mObservable.addObserver(mElementPane);
@@ -165,16 +178,34 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         addTab("Functions     ", mFunctionEditor);
         addTab("DialogAct [Experimental]", mDialogActEditor);
 
-        // Initialize the Toolbar
-        mToolBar = new AuxiliaryToolBar(mProject);
-
         // Initialize The Components
-        setLayout(new BorderLayout());
+        setLayout(new OverlayLayout(this));
         setBorder(BorderFactory.createEmptyBorder());
-        add(mToolBar, BorderLayout.NORTH);
+        //add(mTabPane, BorderLayout.CENTER);
+        
+        mPinButton = new JButton();
+        setPin(pinPricked);
+        mPinButton.setContentAreaFilled(false);
+        //mPinButton.setMargin(new Insets(0, 10, 20, 10));
+        mPinButton.setFocusable(false);
+        mPinButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setPin(!pinPricked);
+            }
+        });
+        sanitizeTinyButton(mPinButton);
+        Box VpinBox = Box.createVerticalBox();
+        Box HpinBox = Box.createHorizontalBox();
+        HpinBox.add(Box.createHorizontalGlue());
+        HpinBox.add(mPinButton);
+        VpinBox.add(HpinBox);
+        VpinBox.add(Box.createVerticalGlue());
+        //add(Box.createHorizontalGlue());
+        add(VpinBox, BorderLayout.AFTER_LINE_ENDS);
         add(mTabPane, BorderLayout.CENTER);
         add(mStatusLabel, BorderLayout.SOUTH);
-
+        
         // Register As Event Listener
         mEventDispatcher.register(this);
 
@@ -195,7 +226,28 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
 
     }
+    // Set the pin pricked flag
+    public final void setPin(boolean state) {
+        pinPricked = state;
+        mPinButton.setIcon(pinPricked? ICON_PIN_ROLLOVER: ICON_PIN_STANDARD);
+        mPinButton.setRolloverIcon(pinPricked? ICON_PIN_STANDARD : ICON_PIN_ROLLOVER);
+        mEditorConfig.setProperty("autohidebottombar", String.valueOf(!pinPricked));
+    }
+    
+    private void sanitizeTinyButton(JButton b) {
+        Dimension bDim = new Dimension(30, 30);
 
+        b.setMinimumSize(bDim);
+        b.setMaximumSize(bDim);
+        b.setPreferredSize(bDim);
+        //b.setOpaque(false);
+
+//      b.setContentAreaFilled(false);
+//      b.setFocusable(false);
+        b.setBorder(BorderFactory.createEmptyBorder());
+    }
+    
+    //Adds a tab to the tabbedpane with a plus icon
     void addTab(String tabName, final JComponent content) {
         
         JEditorPane ep = new JEditorPane();
@@ -254,12 +306,12 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
     // Get the pin pricked flag
     public boolean isPinPricked() {
-        return mToolBar.isPinPricked();
+        return pinPricked;
     }
 //
 //    // Set the pin pricked flag
     public void setPinPricked() {
-        mToolBar.setPin(true); // true pricks the pin
+        setPin(true); // true pricks the pin
     }
 
     ////////////////////////////////////////////////////////////////////////////
