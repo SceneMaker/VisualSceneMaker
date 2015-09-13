@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
@@ -38,6 +39,10 @@ import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
 import de.dfki.vsm.editor.dialog.SaveFileDialog;
+import javax.swing.plaf.ScrollBarUI;
+import javax.swing.plaf.basic.BasicScrollBarUI;
+import javax.swing.plaf.metal.MetalScrollBarUI;
+import javax.swing.plaf.synth.SynthScrollBarUI;
 
 /**
  * @author Gregor Mehlmann
@@ -602,10 +607,13 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         mPathScrollPane = new JScrollPane(mPathDisplay);
         mPathScrollPane.setViewportBorder(BorderFactory.createLineBorder(Color.gray));
         mPathScrollPane.setMaximumSize(new Dimension(500, 40));
-        mPathScrollPane.setMinimumSize(new Dimension(300, 40));
+        mPathScrollPane.setMinimumSize(new Dimension(300, 30));
         mPathScrollPane.setBorder(BorderFactory.createEmptyBorder());
         mPathScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
-        mPathScrollBar.setPreferredSize(new Dimension(300, 8));
+        mPathScrollBar.setPreferredSize(new Dimension(300, 10));
+        mPathScrollBar.setUI(new WindowsScrollBarUI());
+        mPathScrollBar.setOpaque(false);
+        mPathScrollBar.setBorder(BorderFactory.createEmptyBorder());
         mPathScrollPane.setHorizontalScrollBar(mPathScrollBar);
     }
 
