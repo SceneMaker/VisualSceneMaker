@@ -422,7 +422,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
     }
 
     public void addNewFunction() {
-        FunDef usrCmdDef = new FunDef("Command Name", "java.lang.System.out", "println");
+        FunDef usrCmdDef = new FunDef("newCommand", "java.lang.System.out", "println");
 
         usrCmdDef.addParam(new ParamDef("text", "String"));
         updateArguments(usrCmdDef);
