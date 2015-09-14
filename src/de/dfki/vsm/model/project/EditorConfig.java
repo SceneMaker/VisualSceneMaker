@@ -83,11 +83,11 @@ public class EditorConfig {
         }
         
         if (!sPROPERTIES.containsKey("visualization")) {
-            sPROPERTIES.setProperty("visualization", "false");
+            sPROPERTIES.setProperty("visualization", "true");
         }
         
         if (!sPROPERTIES.containsKey("visualizationtrace")) {
-            sPROPERTIES.setProperty("visualizationtrace", "false");
+            sPROPERTIES.setProperty("visualizationtrace", "true");
         }
         
         if (!sPROPERTIES.containsKey("shownodeid")) {
@@ -327,11 +327,11 @@ public class EditorConfig {
         }
         
         if (!sPROPERTIES.containsKey("visualization")) {
-            sPROPERTIES.setProperty("visualization", "false");
+            sPROPERTIES.setProperty("visualization", "true");
         }
         
         if (!sPROPERTIES.containsKey("visualizationtrace")) {
-            sPROPERTIES.setProperty("visualizationtrace", "false");
+            sPROPERTIES.setProperty("visualizationtrace", "true");
         }
         
         if (!sPROPERTIES.containsKey("shownodeid")) {

@@ -44,7 +44,7 @@ public class GridManager {
     private boolean                  isSubgridEstablished = false;
     private int                      height               = 0;
     private int                      width                = 0;
-    private ArrayList<Point2D>       dockingPoints        = new ArrayList<Point2D>();
+    private final ArrayList<Point2D> dockingPoints        = new ArrayList<>();
     private final WorkSpacePanel     mWorkSpacePanel;
     private final EditorConfig       mEditorConfig;
     private ArrayList<Rectangle>     mNodeAreas;
@@ -224,31 +224,35 @@ public class GridManager {
         int w = 0;
         int h = 0;
 
-        if (mWorkSpacePanel.getSize().equals(new Dimension(0, 0))) {
-            for (de.dfki.vsm.model.sceneflow.Node n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
-                if (n.getGraphics().getPosition().getXPos() > w) {
-                    w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
-                }
-
-                if (n.getGraphics().getPosition().getYPos() > h) {
-                    h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
-                }
+        for (de.dfki.vsm.model.sceneflow.Node n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
+            if (n.getGraphics().getPosition().getXPos() > w) {
+                w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
             }
 
-            for (de.dfki.vsm.model.sceneflow.SuperNode n :
-                    mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getSuperNodeList()) {
-                if (n.getGraphics().getPosition().getXPos() > w) {
-                    w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
-                }
-
-                if (n.getGraphics().getPosition().getYPos() > h) {
-                    h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
-                }
+            if (n.getGraphics().getPosition().getYPos() > h) {
+                h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
             }
-        } else {
-            w = mWorkSpacePanel.getSize().width + mEditorConfig.sNODEWIDTH;
-            h = mWorkSpacePanel.getSize().height + mEditorConfig.sNODEWIDTH;
         }
+
+        for (de.dfki.vsm.model.sceneflow.SuperNode n :
+                mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getSuperNodeList()) {
+            if (n.getGraphics().getPosition().getXPos() > w) {
+                w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
+            }
+
+            if (n.getGraphics().getPosition().getYPos() > h) {
+                h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
+            }
+        }
+            
+        if(mWorkSpacePanel.getSize().height>h){
+            h = mWorkSpacePanel.getSize().height;
+        }
+
+        if(mWorkSpacePanel.getSize().width>w){
+            w = mWorkSpacePanel.getSize().width;
+        }
+    
 
         return new Dimension(w, h);
     }
