@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.project.auxiliary.functions;
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.EditorInstance;
@@ -90,6 +91,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
         mFunctionsPanel.setLayout(new BoxLayout(mFunctionsPanel, BoxLayout.Y_AXIS));
         displayFunctionPanels();
         mFunctionsScrollPanel = new JScrollPane(mFunctionsPanel);
+        mFunctionsScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mFunctionsScrollPanel.setOpaque(false);
         mFunctionsScrollPanel.getViewport().setOpaque(false);
         mFunctionsScrollPanel.setMinimumSize(new Dimension(2000, 200));
@@ -420,7 +422,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
     }
 
     public void addNewFunction() {
-        FunDef usrCmdDef = new FunDef("newCommand", "java.lang.System.out", "println");
+        FunDef usrCmdDef = new FunDef("Command Name", "java.lang.System.out", "println");
 
         usrCmdDef.addParam(new ParamDef("text", "String"));
         updateArguments(usrCmdDef);

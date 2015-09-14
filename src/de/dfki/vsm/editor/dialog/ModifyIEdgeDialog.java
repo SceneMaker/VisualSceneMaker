@@ -10,6 +10,7 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.Dialog.Button;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
@@ -29,7 +30,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 /**
  *
@@ -45,7 +45,7 @@ public class ModifyIEdgeDialog extends Dialog {
     private JPanel       mInputPanel;
     private JLabel       mInputLabel;
     private JPanel       mButtonPanel;
-    private JTextField   mInputTextField;
+    private HintTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
     private JPanel       mAltStartNodePanel;
@@ -110,6 +110,7 @@ public class ModifyIEdgeDialog extends Dialog {
         addComponent(finalBox, 10, 30, 480, 280);
 
         packComponents(520, 300);
+        mOkButton.requestFocus();
     }
 
     private void initInputPanel() {
@@ -117,7 +118,7 @@ public class ModifyIEdgeDialog extends Dialog {
         mInputLabel = new JLabel("Conditional Expression:");
         sanitizeComponent(mInputLabel, labelSize);
         // Input text field
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("(a < b)");
         sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
         mInputPanel = new JPanel();
@@ -341,7 +342,7 @@ public class ModifyIEdgeDialog extends Dialog {
         return mButtonPanel;
     }
 
-    public JTextField getInputTextField() {
+    public HintTextField getInputTextField() {
         return mInputTextField;
     }
 }

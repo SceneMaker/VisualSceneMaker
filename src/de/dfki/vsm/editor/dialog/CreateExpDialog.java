@@ -5,6 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 
@@ -18,7 +19,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import javax.swing.JTextField;
 
 /**
  *
@@ -30,7 +30,7 @@ public class CreateExpDialog extends Dialog {
     private Expression mExpression;
 
     //
-    private JTextField   mInputTextField;
+    private HintTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
     private JLabel errorMsg;
@@ -42,7 +42,7 @@ public class CreateExpDialog extends Dialog {
     }
 
     private void initComponents() {
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("Enter Expression");
         mInputTextField.setBounds(10, 10, 300, 20);
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -84,6 +84,7 @@ public class CreateExpDialog extends Dialog {
         
         addComponent(finalBox, 10, 10, 300, 160);
         packComponents(320, 180);
+        mOkButton.requestFocus();
     }
 
     public Expression run() {
