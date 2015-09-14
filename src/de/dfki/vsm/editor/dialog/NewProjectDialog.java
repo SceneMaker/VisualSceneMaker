@@ -4,6 +4,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -29,7 +30,7 @@ public class NewProjectDialog extends JDialog
     private CancelButton mCancelButton = null;
     
     // text fields
-    private JTextField mNameTextField = null;
+    private HintTextField mNameTextField = null;
     
     // Labels
     private JLabel errorMsg;
@@ -53,7 +54,7 @@ public class NewProjectDialog extends JDialog
         Dimension labelSize = new Dimension(100, 30);
 
         setBackground(Color.white);
-        mNameTextField = new JTextField();
+        mNameTextField = new HintTextField("Enter Project Name");
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
         
@@ -142,6 +143,7 @@ public class NewProjectDialog extends JDialog
 
         setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
                 getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
+        mOkButton.requestFocus();
     }
 
     protected void okActionPerformed() {

@@ -32,7 +32,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 import static java.awt.Component.CENTER_ALIGNMENT;
 import javax.swing.BorderFactory;
@@ -357,7 +356,7 @@ public class ModifyCEdgeDialog extends Dialog {
         return mButtonPanel;
     }
 
-    public JTextField getInputTextField() {
+    public HintTextField getInputTextField() {
         return mInputTextField;
     }
 }

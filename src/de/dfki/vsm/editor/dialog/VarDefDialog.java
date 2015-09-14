@@ -5,6 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -29,7 +30,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 /**
  * @author Not me
@@ -42,8 +42,8 @@ public class VarDefDialog extends Dialog {
     private JLabel               mNameLabel;
     private JLabel               mTypeDefLabel;
     private JLabel               mExpLabel;
-    private JTextField           mNameTextField;
-    private JTextField           mExpTextField;
+    private HintTextField           mNameTextField;
+    private HintTextField           mExpTextField;
     private JButton              mAddExpButton;
     private JComboBox            mTypeDefComboBox;
     private DefaultComboBoxModel mTypeDefComboBoxModel;
@@ -59,7 +59,7 @@ public class VarDefDialog extends Dialog {
         if (varDef != null) {
             mVarDef = varDef.getCopy();
         } else {
-            mVarDef = new VarDef("newVar", "Bool", new Bool(true));
+            mVarDef = new VarDef("Enter Name", "Bool", new Bool(true));
         }
 
         initComponents();
@@ -70,7 +70,7 @@ public class VarDefDialog extends Dialog {
 
         //
         mNameLabel     = new JLabel("Name:");
-        mNameTextField = new JTextField(mVarDef.getName());
+        mNameTextField = new HintTextField(mVarDef.getName());
         sanitizeComponent(mNameLabel, labelSize);
         sanitizeComponent(mNameTextField, textFielSize);
         //Name box
@@ -93,7 +93,7 @@ public class VarDefDialog extends Dialog {
         
         //
         mExpLabel     = new JLabel("Value:");
-        mExpTextField = new JTextField();
+        mExpTextField = new HintTextField("Enter Value");
         mExpTextField.setEditable(false);
         mAddExpButton = new JButton(ResourceLoader.loadImageIcon("/res/img/search_icon.png"));
         mAddExpButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/search_icon_blue.png"));
@@ -157,6 +157,7 @@ public class VarDefDialog extends Dialog {
         finalBox.add(mButtonPanel);
         addComponent(finalBox, 10, 20, 400, 290);
         packComponents(420, 300);
+        mOkButton.requestFocus();
     }
     /**
      * Set the correct size of the components

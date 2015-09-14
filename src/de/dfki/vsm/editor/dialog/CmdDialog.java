@@ -5,6 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import java.awt.Color;
@@ -17,7 +18,6 @@ import javax.swing.JPanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import javax.swing.JTextField;
 
 /**
  *
@@ -29,7 +29,7 @@ public class CmdDialog extends Dialog {
     private Command mCommand;
 
     // GUI-Components
-    private JTextField   mInputTextField;
+    private HintTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
     private JLabel errorMsg;
@@ -45,7 +45,7 @@ public class CmdDialog extends Dialog {
     }
 
     private void initComponents() {
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("System.out.println(var_x)");
         mInputTextField.setBounds(10, 10, 300, 20);
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -84,6 +84,7 @@ public class CmdDialog extends Dialog {
         
         addComponent(finalBox, 10, 10, 300, 160);
         packComponents(320, 180);
+        mOkButton.requestFocus();
     }
 
     public Command run() {

@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.project.auxiliary.dialogact;
 
 //~--- non-JDK imports --------------------------------------------------------
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
@@ -164,6 +165,7 @@ public final class DialogActEditor extends JPanel implements EventListener {
         container.setOpaque(false);
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         mPhasesListPanel = new JScrollPane(container);
+        mPhasesListPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mPhasesListPanel.setOpaque(false);
         mPhasesListPanel.getViewport().setOpaque(false);
         mPhasesListPanel.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
