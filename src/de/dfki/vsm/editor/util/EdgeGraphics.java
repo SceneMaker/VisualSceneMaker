@@ -3,7 +3,6 @@ package de.dfki.vsm.editor.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.model.project.EditorConfig;
 
@@ -202,9 +201,14 @@ public final class EdgeGraphics {
         mCurveControlPoints[2] = mCCrtl2;
         mCurveControlPoints[3] = mAbsoluteEndPos;
 
+        // make sure that edge is still in the limits of the workspace
+        if(mCurveControlPoints[1].y < 0){
+            mCurveControlPoints[1].y = mCurveControlPoints[2].y;
+        }
         // setup curve
-        mCurve = new CubicCurve2D.Double(mCurveControlPoints[0].x, mCurveControlPoints[0].y, mCurveControlPoints[1].x,
-                                         mCurveControlPoints[1].y, mCurveControlPoints[2].x, mCurveControlPoints[2].y,
+        mCurve = new CubicCurve2D.Double(mCurveControlPoints[0].x, mCurveControlPoints[0].y, 
+                                         mCurveControlPoints[1].x, mCurveControlPoints[1].y, 
+                                         mCurveControlPoints[2].x, mCurveControlPoints[2].y,
                                          mCurveControlPoints[3].x, mCurveControlPoints[3].y);
         mLeftCurve = (CubicCurve2D.Double) mCurve.clone();
         CubicCurve2D.subdivide(mCurve, mLeftCurve, null);

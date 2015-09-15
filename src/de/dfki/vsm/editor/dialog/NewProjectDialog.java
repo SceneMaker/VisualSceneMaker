@@ -10,6 +10,8 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
@@ -57,6 +59,13 @@ public class NewProjectDialog extends JDialog
         mNameTextField = new HintTextField("Enter Project Name");
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
+        
+        mNameTextField.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                okActionPerformed();
+            }
+        });
         
         mNameTextField.addKeyListener(new KeyAdapter() {
             @Override
