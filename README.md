@@ -1,15 +1,11 @@
-# Visual Scene Maker
+# Visual Scene Maker EXPERIMENTAL
 
 
 ######(c) 2003-15. All rights reserved
 ------------------------------------------------------------------------------
+Version of Visual **SceneMaker** that implements a Default Simple Character Player
 
-Visual **SceneMaker** is an authoring tool for the creation of interactive applications.
-It provides creative, non-programming experts with a simple scripting language for the creation of rich
-and compelling content.
-
-![alt tag](http://i.imgur.com/ecBnzHT.png "VisualSceneMaker")
-
+This version is experimental. **DO NOT USE**
 ------------------------------------------------------------------------------
 
 ##### For more information, visit the website 

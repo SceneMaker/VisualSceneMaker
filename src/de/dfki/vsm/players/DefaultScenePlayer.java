@@ -15,6 +15,7 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.model.scenescript.SceneWord;
+import de.dfki.vsm.players.util.SimpleCharacterPlayer;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -43,6 +44,8 @@ public final class DefaultScenePlayer implements RunTimePlayer {
     private PlayerConfig mPlayerConfig;
     // The project specific name
     private String mPlayerName;
+    
+    private SimpleCharacterPlayer mCharacterPlayer;
 
     // Construct the default scene player
     private DefaultScenePlayer() {
@@ -66,6 +69,9 @@ public final class DefaultScenePlayer implements RunTimePlayer {
         mPlayerName = project.getPlayerName(this);
         // Initialize the config
         mPlayerConfig = project.getPlayerConfig(mPlayerName);
+        
+        // Character Player
+        mCharacterPlayer = new SimpleCharacterPlayer(project.getSceneScript());
         // Print some information
         mLogger.message("Launching the default scene player '" + this + "' with configuration:\n" + mPlayerConfig);
         // Return true at success
@@ -120,6 +126,8 @@ public final class DefaultScenePlayer implements RunTimePlayer {
 
                 // Scene Visualization
                 mLogger.message("Executing scene:\r\n" + scene.getText());
+                mCharacterPlayer.displayText(scene.getText());
+              
                 EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
 
                 // Process The Turns
@@ -145,6 +153,7 @@ public final class DefaultScenePlayer implements RunTimePlayer {
 
                         // Utterance Visualization
                         mLogger.message("Executing utterance:" + utt.getText());
+                        mCharacterPlayer.speak(speaker, utt.getText());
                         EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
                         // Process the words of this utterance
@@ -159,6 +168,8 @@ public final class DefaultScenePlayer implements RunTimePlayer {
                                 // Visualization
                                 mLogger.message("Executing param:" + ((SceneParam) word).getText());
                             } else if (word instanceof ActionObject) {
+                                
+                                mCharacterPlayer.performAction(speaker,(ActionObject) word);
 
                                 // Visualization
                                 mLogger.message("Executing action:" + ((ActionObject) word).getText());
