@@ -33,214 +33,242 @@ import java.util.Map.Entry;
  */
 public final class DefaultScenePlayer implements RunTimePlayer {
 
-    // The singelton player instance
-    public static DefaultScenePlayer sInstance = null;
-    // The singelton logger instance
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
-    // The player's runtime project 
-    private RunTimeProject mProject;
-    // The project specific config
-    private PlayerConfig mPlayerConfig;
-    // The project specific name
-    private String mPlayerName;
-    
-    private SimpleCharacterPlayer mCharacterPlayer;
+	// The singelton player instance
+	public static DefaultScenePlayer sInstance = null;
+	// The singelton logger instance
+	private final LOGDefaultLogger mLogger
+	  = LOGDefaultLogger.getInstance();
+	// The player's runtime project 
+	private RunTimeProject mProject;
+	// The project specific config
+	private PlayerConfig mPlayerConfig;
+	// The project specific name
+	private String mPlayerName;
 
-    // Construct the default scene player
-    private DefaultScenePlayer() {
+	private SimpleCharacterPlayer mCharacterPlayer;
 
-    }
+	// Construct the default scene player
+	private DefaultScenePlayer() {
 
-    // Get the default scene player instance
-    public static synchronized DefaultScenePlayer getInstance() {
-        if (sInstance == null) {
-            sInstance = new DefaultScenePlayer();
-        }
-        return sInstance;
-    }
+	}
 
-    // Launch the default scene player
-    @Override
-    public final boolean launch(final RunTimeProject project) {
-        // Initialize the project
-        mProject = project;
-        // Initialize the name
-        mPlayerName = project.getPlayerName(this);
-        // Initialize the config
-        mPlayerConfig = project.getPlayerConfig(mPlayerName);
-        
-        // Character Player
-        mCharacterPlayer = new SimpleCharacterPlayer(project.getSceneScript());
-        // Print some information
-        mLogger.message("Launching the default scene player '" + this + "' with configuration:\n" + mPlayerConfig);
-        // Return true at success
-        return true;
-    }
+	// Get the default scene player instance
+	public static synchronized DefaultScenePlayer getInstance() {
+		if (sInstance == null) {
+			sInstance = new DefaultScenePlayer();
+		}
+		return sInstance;
+	}
 
-    // Unload the default scene player
-    @Override
-    public final boolean unload() {
-        // Print some information
-        mLogger.message("Unloading the default scene player '" + this + "' with configuration:\n" + mPlayerConfig);
-        // Return true at success
-        return true;
-    }
+	// Launch the default scene player
+	@Override
+	public final boolean launch(final RunTimeProject project) {
+		// Initialize the project
+		mProject = project;
+		// Initialize the name
+		mPlayerName = project.getPlayerName(this);
+		// Initialize the config
+		mPlayerConfig = project.getPlayerConfig(mPlayerName);
 
-    // Play some scene with the player
-    @Override
-    public final void play(final String name, final LinkedList<AbstractValue> args) {
-        // Print some information
-        mLogger.message("Playing '" + name + "' with the default scene player '" + this + "'");
-        //
-        final Process process = ((Process) Thread.currentThread());
-        final HashMap<String, String> mSceneParamMap = new HashMap<>();
-        // Process The Arguments
-        if ((args != null) && !args.isEmpty()) {
-            // Get The First Argument
-            final AbstractValue value = args.getFirst();
-            // Check The Argument Type
-            if (value.getType().equals(Type.STRUCT)) {
-                // Cast The Argument Type
-                final StructValue struct = (StructValue) value;
-                // Process Scene Arguments
-                for (final Entry<String, AbstractValue> entry : struct.getValueMap().entrySet()) {
-                    if (entry.getValue().getType() == Type.STRING) {
-                        mSceneParamMap.put(entry.getKey(), ((StringValue) entry.getValue()).getValue());
-                    } else {
-                        // Process Other Argument Types
-                    }
-                }
-            }
-        }
+		// Character Player
+		mCharacterPlayer = new SimpleCharacterPlayer(project.getSceneScript());
+		// Print some information
+		mLogger.message("Launching the default scene player '" + this + "' with configuration:\n" + mPlayerConfig);
+		// Return true at success
+		return true;
+	}
 
-        // Create The Player Task
-        Task task = new Task(process.getName() + name) {
-            @Override
-            public void run() {
+	// Unload the default scene player
+	@Override
+	public final boolean unload() {
+		// Print some information
+		mLogger.message("Unloading the default scene player '" + this + "' with configuration:\n" + mPlayerConfig);
+		// Return true at success
+		return true;
+	}
 
-                // Select The Scene
-                final SceneScript script = mProject.getSceneScript();
-                final SceneGroup group = script.getSceneGroup(name);
-                final SceneObject scene = group.select();
+	// Play some scene with the player
+	@Override
+	public final void play(final String name, final LinkedList<AbstractValue> args) {
+		// Print some information
+		mLogger.message("Playing '" + name + "' with the default scene player '" + this + "'");
+		//
+		final Process process = ((Process) Thread.currentThread());
+		final HashMap<String, String> mSceneParamMap = new HashMap<>();
+		// Process The Arguments
+		if ((args != null) && !args.isEmpty()) {
+			// Get The First Argument
+			final AbstractValue value = args.getFirst();
+			// Check The Argument Type
+			if (value.getType().equals(Type.STRUCT)) {
+				// Cast The Argument Type
+				final StructValue struct = (StructValue) value;
+				// Process Scene Arguments
+				for (final Entry<String, AbstractValue> entry : struct.getValueMap().entrySet()) {
+					if (entry.getValue().getType() == Type.STRING) {
+						mSceneParamMap.put(entry.getKey(), ((StringValue) entry.getValue()).getValue());
+					} else {
+						// Process Other Argument Types
+					}
+				}
+			}
+		}
 
-                // Scene Visualization
-                mLogger.message("Executing scene:\r\n" + scene.getText());
-                mCharacterPlayer.displayText(scene.getText());
-              
-                EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
+		// Create The Player Task
+		Task task = new Task(process.getName() + name) {
+			@Override
+			public void run() {
 
-                // Process The Turns
-                for (SceneTurn turn : scene.getTurnList()) {
+				// Select The Scene
+				final SceneScript script = mProject.getSceneScript();
+				final SceneGroup group = script.getSceneGroup(name);
+				final SceneObject scene = group.select();
 
-                    // Turn Visualization
-                    mLogger.message("Executing turn:" + turn.getText());
-                    EventDispatcher.getInstance().convey(new TurnExecutedEvent(this, turn));
+				// Scene Visualization
+				mLogger.message("Executing scene:\r\n" + scene.getText());
+				mCharacterPlayer.displayText(scene.getText());
 
-                    // Get The Turn Speaker
-                    final String speaker = turn.getSpeaker();
+				EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
 
-                    if (speaker == null) {
+				// Process The Turns
+				for (SceneTurn turn : scene.getTurnList()) {
 
-                        // Get The Default Speaker
-                    }
+					// Turn Visualization
+					mLogger.message("Executing turn:" + turn.getText());
+					EventDispatcher.getInstance().convey(new TurnExecutedEvent(this, turn));
 
-                    // Count The Word Number
-                    int wordCount = 0;
+					// Get The Turn Speaker
+					final String speaker = turn.getSpeaker();
 
-                    // Process Utterance
-                    for (SceneUttr utt : turn.getUttrList()) {
+					if (speaker == null) {
 
-                        // Utterance Visualization
-                        mLogger.message("Executing utterance:" + utt.getText());
-                        mCharacterPlayer.speak(speaker, utt.getText());
-                        EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
+						// Get The Default Speaker
+					}
 
-                        // Process the words of this utterance
-                        for (AbstractWord word : utt.getWordList()) {
-                            if (word instanceof SceneWord) {
+					// Count The Word Number
+					int wordCount = 0;
 
-                                // Visualization
-                                mLogger.message("Executing vocable:" + ((SceneWord) word).getText());
-                                wordCount = ((SceneWord) word).getText().length();
-                            } else if (word instanceof SceneParam) {
+					// Process Utterance
+					for (SceneUttr utt : turn.getUttrList()) {
 
-                                // Visualization
-                                mLogger.message("Executing param:" + ((SceneParam) word).getText());
-                            } else if (word instanceof ActionObject) {
-                                
-                                mCharacterPlayer.performAction(speaker,(ActionObject) word);
+						// Utterance Visualization
+						mLogger.message("Executing utterance:" + utt.getText());
 
-                                // Visualization
-                                mLogger.message("Executing action:" + ((ActionObject) word).getText());
-                            } else if (word instanceof SceneAbbrev) {
+						EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
-                                // Visualization
-                                mLogger.message("Executing abbreviation:" + ((SceneAbbrev) word).getText());
-                            }
-                        }
-                    }
+						String performedUtterance = "";
+						String lastWord = ((SceneWord) utt.getWordList().getLast()).getText();
+						String punctuation = utt.getPunct();
 
-                    // Utterance simulation
-                    try {
-                        Thread.sleep(wordCount * 100);
-                    } catch (InterruptedException exc) {
-                        mLogger.warning(exc.toString());
-                    }
+						//System.out.println("lastword " + lastWord);
+						//System.out.println("punctuation " + punctuation);
+						// Process the words of this utterance
+						for (AbstractWord word : utt.getWordList()) {
+							if (word instanceof SceneWord) {
+								String cWord = ((SceneWord) word).getText();
+								performedUtterance += cWord;
+								// add a space or the punctuation
+								performedUtterance += (cWord.equalsIgnoreCase(lastWord)) ? punctuation : " ";
 
-                    // Exit if interrupted
-                    if (isDone()) {
-                        return;
-                    }
-                }
-            }
-        };
+								// Visualization
+								mLogger.message("Executing vocable:" + ((SceneWord) word).getText());
+								
+								mCharacterPlayer.speak(speaker, performedUtterance);
 
-        // Start the player task
-        task.start();
-        // Wait for termination
-        boolean finished = false;
-        while (!finished) {
-            try {
-                // Join the player task
-                task.join();
-                // Stop waiting for task
-                finished = true;
-            } catch (final InterruptedException exc) {
-                // Print some warning
-                mLogger.warning("Warning: Interrupting process '" + process + "'");
-                // Terminate the task
-                task.abort();
-                // Interrupt the task
-                task.interrupt();
-            }
-        }
-    }
+								// Utterance simulation
+								try {
+									Thread.sleep(100);
 
-    /*
-     private boolean init() {
-     // Initialize the delay
-     try {
-     // Check if the config is null
-     if (mConfig != null) {
-     mDelay = Integer.parseInt(
-     mConfig.getProperty("delay"));
-     // Print an error message in this case
-     mLogger.message("Initializing the default scene player delay with '" + mDelay + "'");
-     // Return failure if it does not exist
-     return true;
-     } else {
-     // Print an error message in this case
-     mLogger.warning("Warning: Cannot read bad default scene player configuration");
-     // Return failure if it does not exist
-     return false;
-     }
-     } catch (final NumberFormatException exc) {
-     // Print an error message in this case
-     mLogger.failure("Error: Cannot initialize the default scene player delay");
-     // Return failure if it does not exist
-     return false;
-     }
-     }
-     */
+								} catch (InterruptedException exc) {
+									mLogger.warning(exc.toString());
+								}
+
+							} else if (word instanceof SceneParam) {
+
+								// Visualization
+								mLogger.message("Executing param:" + ((SceneParam) word).getText());
+							} else if (word instanceof ActionObject) {
+
+								mCharacterPlayer.performAction(speaker, (ActionObject) word);
+
+								// Visualization
+								mLogger.message("Executing action:" + ((ActionObject) word).getText());
+							} else if (word instanceof SceneAbbrev) {
+								String abbreviation = ((SceneAbbrev) word).getText();
+								performedUtterance += abbreviation;
+								// add a space or the punctuation
+								performedUtterance += (abbreviation.equalsIgnoreCase(lastWord)) ? punctuation : " ";
+
+								mCharacterPlayer.speak(speaker, performedUtterance);
+
+								// Visualization
+								mLogger.message("Executing abbreviation:" + ((SceneAbbrev) word).getText());
+
+								// Utterance simulation
+								try {
+									Thread.sleep(100);
+
+								} catch (InterruptedException exc) {
+									mLogger.warning(exc.toString());
+								}
+
+							}
+						}
+					}
+
+					// Exit if interrupted
+					if (isDone()) {
+						return;
+					}
+				}
+			}
+		};
+
+		// Start the player task
+		task.start();
+		// Wait for termination
+		boolean finished = false;
+		while (!finished) {
+			try {
+				// Join the player task
+				task.join();
+				// Stop waiting for task
+				finished = true;
+			} catch (final InterruptedException exc) {
+				// Print some warning
+				mLogger.warning("Warning: Interrupting process '" + process + "'");
+				// Terminate the task
+				task.abort();
+				// Interrupt the task
+				task.interrupt();
+			}
+		}
+	}
+
+	/*
+	 private boolean init() {
+	 // Initialize the delay
+	 try {
+	 // Check if the config is null
+	 if (mConfig != null) {
+	 mDelay = Integer.parseInt(
+	 mConfig.getProperty("delay"));
+	 // Print an error message in this case
+	 mLogger.message("Initializing the default scene player delay with '" + mDelay + "'");
+	 // Return failure if it does not exist
+	 return true;
+	 } else {
+	 // Print an error message in this case
+	 mLogger.warning("Warning: Cannot read bad default scene player configuration");
+	 // Return failure if it does not exist
+	 return false;
+	 }
+	 } catch (final NumberFormatException exc) {
+	 // Print an error message in this case
+	 mLogger.failure("Error: Cannot initialize the default scene player delay");
+	 // Return failure if it does not exist
+	 return false;
+	 }
+	 }
+	 */
 }

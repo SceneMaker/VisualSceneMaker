@@ -3,10 +3,12 @@ package de.dfki.vsm.players.util;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneTurn;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import javax.swing.*;
 
@@ -134,7 +136,7 @@ public final class SimpleCharacterPlayer extends JFrame {
     public void speak(String character,String msg){
         mCharacterList.get(character).speak(msg);
     }
-    
+	
     public void displayText(String text){
         mTextArea.setText("\n"+text);
     }
@@ -144,10 +146,17 @@ public final class SimpleCharacterPlayer extends JFrame {
         Set<String> speakersSet = new HashSet<>();
         
         for(SceneObject scene: scenescript.getSceneList()){
-            speakersSet.add(scene.getTurnList().getFirst().getSpeaker());
+            // Old: speakersSet.add(scene.getTurnList().getFirst().getSpeaker());
+			// PG replaced by this to catch _all_ speakers
+			LinkedList<SceneTurn> sturns = scene.getTurnList();
+			for (SceneTurn t : sturns) {
+				if (!speakersSet.contains(t.getSpeaker())) {
+					speakersSet.add(t.getSpeaker());
+				}
+			}
         }
         
-        System.out.println("there are " + speakersSet.size()+ " characters");
+        //System.out.println("there are " + speakersSet.size()+ " characters");
         
         return speakersSet;
     }
