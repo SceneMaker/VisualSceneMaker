@@ -157,8 +157,8 @@ public final class DefaultScenePlayer implements RunTimePlayer {
 						EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
 						String performedUtterance = "";
-						String lastWord = ((SceneWord) utt.getWordList().getLast()).getText();
-						String punctuation = utt.getPunct();
+                                                
+						
 
 						//System.out.println("lastword " + lastWord);
 						//System.out.println("punctuation " + punctuation);
@@ -166,6 +166,8 @@ public final class DefaultScenePlayer implements RunTimePlayer {
 						for (AbstractWord word : utt.getWordList()) {
 							if (word instanceof SceneWord) {
 								String cWord = ((SceneWord) word).getText();
+                                                                String lastWord = ((AbstractWord) utt.getWordList().getLast()).getText();
+                                                                String punctuation = utt.getPunct();
 								performedUtterance += cWord;
 								// add a space or the punctuation
 								performedUtterance += (cWord.equalsIgnoreCase(lastWord)) ? punctuation : " ";
@@ -196,6 +198,8 @@ public final class DefaultScenePlayer implements RunTimePlayer {
 							} else if (word instanceof SceneAbbrev) {
 								String abbreviation = ((SceneAbbrev) word).getText();
 								performedUtterance += abbreviation;
+                                                                String lastWord = ((SceneWord) utt.getWordList().getLast()).getText();
+                                                                String punctuation = utt.getPunct();
 								// add a space or the punctuation
 								performedUtterance += (abbreviation.equalsIgnoreCase(lastWord)) ? punctuation : " ";
 

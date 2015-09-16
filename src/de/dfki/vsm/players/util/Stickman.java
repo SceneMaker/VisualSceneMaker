@@ -1,6 +1,5 @@
 package de.dfki.vsm.players.util;
 
-import de.dfki.vsm.model.project.EditorConfig;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -123,7 +122,7 @@ public class Stickman extends JPanel {
 		mSpeakText_PosY = 30;
 
 		// PG added font-width calculatioin
-		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+		Map<TextAttribute, Object> map = new Hashtable<>();
 
 		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
 		map.put(TextAttribute.FAMILY, Font.SANS_SERIF);
@@ -133,7 +132,7 @@ public class Stickman extends JPanel {
 
 		// Derive the font from the attribute map
 		Font font = Font.getFont(map);
-        // Derive the node's font metrics from the font
+                // Derive the node's font metrics from the font
 		mFM = getFontMetrics(font);
 
 		// Set the output font to the updated font
@@ -383,7 +382,8 @@ public class Stickman extends JPanel {
 
 	/**
 	 * ********************************************************************
-	 * SPEAK *******************************************************************
+	 * SPEAK 
+         *******************************************************************
 	 */
 	public void speak(String msg) {
 

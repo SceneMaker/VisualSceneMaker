@@ -5,7 +5,6 @@ import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,7 +14,7 @@ import javax.swing.*;
  
 public final class SimpleCharacterPlayer extends JFrame {
     
-    private static SimpleCharacterPlayer instance    = null;
+    private static final SimpleCharacterPlayer instance    = null;
    
     private final int mHeight = 500;
     private final int mWidth = 800;
