@@ -6,8 +6,6 @@
 Version of Visual **SceneMaker** that implements a Default Simple Character Player
 
 
-![alt tag](http://i.imgur.com/7cJtZs8.png?1 "VisualSceneMaker")
-
 This version is experimental. **DO NOT USE**
 ------------------------------------------------------------------------------
 
