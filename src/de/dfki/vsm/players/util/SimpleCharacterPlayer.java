@@ -100,7 +100,7 @@ public final class SimpleCharacterPlayer extends JFrame {
         // Now we also need to now which character invokes the action
         // fot testing purposes I will assume the first character always
      
-        double intensity = 0.5;
+        double intensity = 1.0;
         
         switch(actionString){
             case "[happy]":
@@ -114,6 +114,12 @@ public final class SimpleCharacterPlayer extends JFrame {
                 break;
             case "[angry]":
                 mCharacterList.get(character).angry(intensity);
+                break;
+            case "[disgussed]":
+                mCharacterList.get(character).disgussed(intensity);
+                break;
+            case "[shame]":
+                mCharacterList.get(character).shame(intensity);
                 break;
             case "[box]":
                 mCharacterList.get(character).box();

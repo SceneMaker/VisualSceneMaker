@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.font.TextAttribute;
 import java.awt.geom.Arc2D;
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.RoundRectangle2D;
@@ -19,7 +20,10 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 public class Stickman extends JPanel {
-
+     
+        private boolean isScared;
+        private boolean isShame;
+        
 	private final int mWidth;
 	private final int mHeight;
 	private final String mCharacterName;
@@ -56,7 +60,17 @@ public class Stickman extends JPanel {
 	private Line2D mLeftUpperArm;
 	private Line2D mLeftForeArm;
 
-	private Arc2D mMouth;
+	//private Arc2D mMouth;
+        private CubicCurve2D mMouth;
+        private Ellipse2D mScaredMouth;
+        
+        //shame face lines
+        private Line2D.Double mLine1;
+        private Line2D.Double mLine2;
+        private Line2D.Double mLine3;
+        private Line2D.Double mLine4;
+        private Line2D.Double mLine5;
+        private Line2D.Double mLine6;
 
 	private int mHead_posX;
 	private int mHead_posY;
@@ -86,11 +100,19 @@ public class Stickman extends JPanel {
 
 	private int mMouth_X;
 	private int mMouth_Y;
-	private int mMouth_W;
-	private int mMouth_H;
-	private int mMouth_Start;
-	private int mMouth_Extend;
-	private int type;
+        private int mContr1_X;
+        private int mContr1_Y;
+        private int mContr2_X;
+        private int mContr2_Y;
+        private int mMouth_X1;
+        private int mMouth_Y1;
+        
+        private int mMouthSize;
+	//private int mMouth_W;
+	//private int mMouth_H;
+	//private int mMouth_Start;
+	//private int mMouth_Extend;
+	//private int type;
 
 	private final Color mForegroundColor = new Color(188, 188, 188);
 	private final Color mBackgroundColor = new Color(49, 49, 49);
@@ -111,6 +133,8 @@ public class Stickman extends JPanel {
 	}
 
 	private void initValues() {
+            
+                isScared = false;
 		mPosX = mWidth / 2;
 		mPosY = (int) (mHeight * .30);
 		mSize = (float) (0.8);
@@ -177,7 +201,18 @@ public class Stickman extends JPanel {
 		g2.draw(mRightEyeBrow);
 		g2.draw(mRightEye);
 		g2.draw(mLeftEye);
-		g2.draw(mMouth);
+               if(isScared){
+                   g2.draw(mScaredMouth);
+               }else{
+		g2.draw(mMouth);}
+               if(isShame){
+                   g2.draw(mLine1);
+                   g2.draw(mLine2);
+                   g2.draw(mLine3);
+                   g2.draw(mLine4);
+                   g2.draw(mLine5);
+                   g2.draw(mLine6);
+               }
 
 		// Character Name
 		g2.setColor(Color.red);
@@ -216,7 +251,7 @@ public class Stickman extends JPanel {
 		mForeArms_Y1 = (int) (mPosY + mStickHeight / 0.9);
 		mForeArms_Y2 = (int) (mPosY + mStickHeight / 2.5);
 		mUpperArms_Y2 = (int) (mPosY + mStickHeight / 1.5);
-		mArms_X = (int) (mStickHeight / 2.7);
+		mArms_X = (int) (mStickHeight / 3.0);
 
 		mLeftEyeBrow_X1 = (int) (mPosX - mHeadSize / 3.0);
 		mLeftEyeBrow_Y1 = (int) (mPosY - mHeadSize / 3.0);
@@ -232,14 +267,23 @@ public class Stickman extends JPanel {
 		mLeftEye_posX = (int) (mPosX - mHeadSize / 3.5);
 		mEyes_posY = (int) (mPosY - mHeadSize / 4);
 		mEyesSize = (int) mHeadSize / 7;
+                
+                mMouthSize = (int) mHeadSize / 9;
 
 		mMouth_X = (int) (mPosX - mHeadSize / 5.5);
 		mMouth_Y = (int) (mPosY + mHeadSize / 6);
-		mMouth_W = 25;
-		mMouth_H = 15;
-		mMouth_Start = 0;
-		mMouth_Extend = -180;
-		type = Arc2D.OPEN;
+                mContr1_X = (int) (mPosX - mHeadSize / 5.5 + 8.3);
+                mContr1_Y = (int) (mPosY + mHeadSize / 6 + 10);
+                mContr2_X = (int) (mPosX - mHeadSize / 5.5 + 16.6);
+                mContr2_Y = (int) (mPosY + mHeadSize / 6 + 10);
+                mMouth_X1 = (int) (mPosX - mHeadSize / 5.5 + 25);
+                mMouth_Y1 =(int) (mPosY + mHeadSize / 6);
+                       
+		//mMouth_W = 25;
+		//mMouth_H = 15;
+		//mMouth_Start = 0;
+		//mMouth_Extend = -180;
+		//type = Arc2D.OPEN;
 	}
 
 	private void drawBody() {
@@ -252,11 +296,13 @@ public class Stickman extends JPanel {
 		mLeftLeg = new Line2D.Double(mPosX, mLegs_Y1, (mPosX - mLegs_X), mLegs_Y2);
 
 		mRightUpperArm = new Line2D.Double(mPosX, mUpperArms_Y1, (mPosX + mArms_X), mUpperArms_Y2);
-		mRightElbow = new Ellipse2D.Double((mPosX + mArms_X * 0.95), mUpperArms_Y2 - 0.1, 10, 10);
+		mRightElbow = new Ellipse2D.Double((mPosX + mArms_X * 0.95), mUpperArms_Y2 - 0.1, 6, 6);
 		mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X * 1.5), mForeArms_Y1);
 		mLeftUpperArm = new Line2D.Double(mPosX, mUpperArms_Y1, (mPosX - mArms_X), mUpperArms_Y2);
-		mLeftElbow = new Ellipse2D.Double((mPosX - mArms_X * 1.1), mUpperArms_Y2 - 0.1, 10, 10);
+		mLeftElbow = new Ellipse2D.Double((mPosX - mArms_X * 1.1), mUpperArms_Y2 - 0.1, 6, 6);
 		mLeftForeArm = new Line2D.Double((mPosX - mArms_X), mUpperArms_Y2, (mPosX - mArms_X * 1.5), mForeArms_Y1);
+                
+                
 
 	}
 
@@ -275,10 +321,16 @@ public class Stickman extends JPanel {
 		 private int mRightEyeBrow_X2;
 		 private int mRightEyeBrow_Y2;*/
 		// TODO
+                mLine1 = new Line2D.Double(mPosX-mHeadSize/3,mPosY+mHeadSize / 6,mPosX-mHeadSize/3+3,mPosY+mHeadSize/12);
+                mLine2 = new Line2D.Double(mPosX-mHeadSize/3+3,mPosY+mHeadSize / 6,mPosX-mHeadSize/3+3+3,mPosY+mHeadSize/12);
+                mLine3 = new Line2D.Double(mPosX-mHeadSize/3+6,mPosY+mHeadSize / 6,mPosX-mHeadSize/3+3+3+3,mPosY+mHeadSize/12);
+                mLine4 = new Line2D.Double(mPosX+mHeadSize/3-3,mPosY+mHeadSize / 6,mPosX+mHeadSize/3,mPosY+mHeadSize/12);
+                mLine5 = new Line2D.Double(mPosX+mHeadSize/3-6,mPosY+mHeadSize / 6,mPosX+mHeadSize/3-3,mPosY+mHeadSize/12);
+                mLine6 = new Line2D.Double(mPosX+mHeadSize/3-9,mPosY+mHeadSize / 6,mPosX+mHeadSize/3-6,mPosY+mHeadSize/12);
 		mLeftEyeBrow = new Line2D.Double(mLeftEyeBrow_X1, mLeftEyeBrow_Y1, mLeftEyeBrow_X2, mLeftEyeBrow_Y2);
 		mRightEyeBrow = new Line2D.Double(mRightEyeBrow_X1, mRightEyeBrow_Y1, mRightEyeBrow_X2, mRightEyeBrow_Y2);
-		mMouth = new Arc2D.Double(mMouth_X, mMouth_Y, mMouth_W, mMouth_H, mMouth_Start, mMouth_Extend, type);
-
+		mMouth = new CubicCurve2D.Double(mMouth_X, mMouth_Y, mContr1_X, mContr1_Y, mContr2_X, mContr2_Y, mMouth_X1,mMouth_Y1);
+                mScaredMouth = new Ellipse2D.Double(mPosX-mMouthSize,mPosY + mHeadSize / 6, 2*mMouthSize, 2*mMouthSize);
 	}
 
 	private void update() {
@@ -298,33 +350,90 @@ public class Stickman extends JPanel {
 		// TODO: Modify face shapes based on the intensity value.
 		// I say we modify the variables that are in the  
 		// initCoordinates() method and then call drawFace()
+                isScared = false;
+                isShame = false;
+               
+                mEyesSize = (int) mHeadSize / 7;
+                mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 3.0);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 3.0);
+                mContr1_Y = (int) (mPosY + mHeadSize / 6 + 10 + intensity);
+         
+                mContr2_Y = (int) (mPosY + mHeadSize / 6 + 10 + intensity);
 		drawFace();
 		update();
 	}
 
 	public void sad(double intensity) {
-		mMouth_Extend = 180;
-		mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 2.0);
-		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 2.0);
+		//mMouth_Extend = 180;
+                isScared = false;
+                isShame = false;
+                
+                mContr1_Y = (int) (mPosY + mHeadSize / 6 - 10 -intensity);
+               
+                mContr2_Y = (int) (mPosY + mHeadSize / 6 - 10 - intensity);
+		mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 2.5 - intensity);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 2.5 -intensity);
 		mEyesSize = (int) mHeadSize / 10;
 		drawFace();
 		update();
 	}
+        
+        public void disgussed (double intensity){
+                isScared = false;
+                isShame = false;
+                
+                mContr1_Y = (int) (mPosY + mHeadSize / 6 + 15 +intensity);
+                mContr2_Y = (int) (mPosY + mHeadSize / 6 - 15 +intensity);
+                mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 2.5 -intensity);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 2.5 - intensity);
+		mEyesSize = (int) mHeadSize / 10;
+                drawFace();
+		update();
+        }
 
 	public void scared(double intensity) {
-		mMouth_Start = 90;
-		mMouth_Extend = 360;
-		mEyesSize = (int) mHeadSize / 6;
-		drawFace();
-		update();
+		//mMouth_Start = 90;
+		//mMouth_Extend = 360;
+                isScared = true;
+                isShame = false;
+                
+                mEyesSize = (int) (mHeadSize / 6.5+2*intensity);
+                mMouthSize = (int) (mHeadSize / 9+ 2*intensity);
+                mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 3.0);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 3.0);
+                drawFace();
+                update();
+                
+               
 	}
+        
+        public void shame(double intensity) {
+		
+                isScared = true;
+                isShame = true;
+                
+                mEyesSize = (int) (mHeadSize / 7);
+                mMouthSize = (int) (mHeadSize / 20);
+                mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 3.0);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 3.0);
+                drawFace();
+                update();
+                
+               
+	}
+        
 
 	public void angry(double intensity) {
-		mMouth_Start = 0;
-		mMouth_Extend = 180;
-		mMouth_H = 1;
-		mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 4.0);
-		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 4.0);
+		//mMouth_Start = 0;
+		//mMouth_Extend = 180;
+		//mMouth_H = 1;
+                isScared = false;
+                isShame = false;
+                mEyesSize = (int) mHeadSize / 7;
+                mContr1_Y = (int) (mPosY + mHeadSize / 6 );
+                mContr2_Y = (int) (mPosY + mHeadSize / 6 );
+		mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 4.0 -2*intensity);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 4.0 -2*intensity);
 		drawFace();
 		update();
 	}
@@ -363,21 +472,50 @@ public class Stickman extends JPanel {
 	}
 
 	public void cup() {
-		mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X), (mPosY + mStickHeight));
+		mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X), (mPosY + mStickHeight*1.1));
 		update();
+                try {
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Stickman.class.getName()).log(Level.SEVERE, null, ex);
+		}
+                mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X * 1.5), mForeArms_Y1);
+                update();
+                
 	}
 
 	public void scratch() {
 		mRightUpperArm = new Line2D.Double(mPosX, mUpperArms_Y1, (mPosX + mArms_X * 1.5), (mPosY + mStickHeight / 3.5));
-		mRightElbow = new Ellipse2D.Double((mPosX + mArms_X * 1.4), (mPosY + mStickHeight / 3.7), 10, 10);
+		mRightElbow = new Ellipse2D.Double((mPosX + mArms_X * 1.4), (mPosY + mStickHeight / 3.7), 6, 6);
 		mRightForeArm = new Line2D.Double((mPosX + mArms_X * 1.5), (mPosY + mStickHeight / 3.5), (mPosX + mArms_X * 0.5), (mPosY - mStickHeight / 7));
 		update();
+                
+                 try {
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Stickman.class.getName()).log(Level.SEVERE, null, ex);
+		}
+                 mRightUpperArm = new Line2D.Double(mPosX, mUpperArms_Y1, (mPosX + mArms_X), mUpperArms_Y2);
+                 mRightElbow = new Ellipse2D.Double((mPosX + mArms_X * 0.95), mUpperArms_Y2 - 0.1, 6, 6);
+                 mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X * 1.5), mForeArms_Y1);
+                 update();
+                 
 	}
 
 	public void box() {
 		mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X), (mPosY + mStickHeight));
 		mLeftForeArm = new Line2D.Double((mPosX - mArms_X), mUpperArms_Y2, (mPosX - mArms_X), (mPosY + mStickHeight));
 		update();
+                
+                  try {
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Stickman.class.getName()).log(Level.SEVERE, null, ex);
+		}
+                  
+                mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X * 1.5), mForeArms_Y1);
+                mLeftForeArm = new Line2D.Double((mPosX - mArms_X), mUpperArms_Y2, (mPosX - mArms_X * 1.5), mForeArms_Y1);
+                update();
 	}
 
 	/**
