@@ -5,8 +5,9 @@ import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import java.awt.*;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Set;
 import javax.swing.*;
@@ -17,7 +18,7 @@ public final class SimpleCharacterPlayer extends JFrame {
     private static final SimpleCharacterPlayer instance    = null;
    
     private final int mHeight = 500;
-    private final int mWidth = 800;
+    private int mWidth = 500;
     
     private final Color mForegroundColor = new Color(188, 188, 188);
     private final Color mTextBackgroundColor = new Color(49, 49, 49);
@@ -29,7 +30,7 @@ public final class SimpleCharacterPlayer extends JFrame {
     private final JTextArea mTextArea = new JTextArea();
         
     //private final ArrayList<Stickman> mCharacterList = new ArrayList<>();
-    private final HashMap<String, Stickman> mCharacterList = new HashMap<>();
+    private final LinkedHashMap<String, Stickman> mCharacterList = new LinkedHashMap<>();
     
     private final Set<String> mCharacterSet;
    
@@ -49,6 +50,10 @@ public final class SimpleCharacterPlayer extends JFrame {
         initPanel();
 
         frame.add(mMainPanel);
+        
+        if(mCharacterList.size()> 1){
+            mWidth = 250 * mCharacterList.size();
+        }
         frame.setSize(mWidth, mHeight);
         frame.setVisible(true);
     }
@@ -92,46 +97,83 @@ public final class SimpleCharacterPlayer extends JFrame {
     public void performAction(String character, ActionObject action){
         
         String actionString = ((ActionObject) action).getText();
-        // Here we have to take into account intensity, so we will receive
-        // something like [happy 0.3], we need to find a way to parse this
-        // and send it to Stickman, What about functions taking a parameter (double)?
-        // if no intensity is detected we go for 0.5, do you agree?
+        actionString = actionString.replace("[", "");
+        actionString = actionString.replace("]", "");
         
-        // Now we also need to now which character invokes the action
-        // fot testing purposes I will assume the first character always
+        String[] actionStringComponents = actionString.split(" ");
+        String actionName= actionStringComponents[0]; // action
+        String actionComponent2 = actionStringComponents[1]; // intensity=value
+        
+        String[] parametersStringComponents = actionComponent2.split("=");
+         
+        Double intensityValue = 1.0;
+        int objectiveDirection = 0;
+        
+        
+        if(parametersStringComponents[0].equals("intensity")){
+           intensityValue = Double.parseDouble(parametersStringComponents[1]);
+        }
+        
+        /*
+        if(parametersStringComponents[0].equals("name")){
+            
+            int positionCharacter= 0;
+            int positionObjective= 0;
+           
+            Iterator<Stickman> it = mCharacterList.values().iterator();
+            int index = 0;
+            while (it.hasNext())
+            {
+                Stickman currentUser = it.next();
+                if(currentUser.getName().equals(character)){
+                    positionCharacter = index;
+                }
+
+                if(currentUser.getName().equals(parametersStringComponents[1])){
+                    positionObjective = index;
+                }
+              
+                index++;
+            }
+          
+            objectiveDirection = (positionCharacter>positionObjective)? 1 : -1;
+            
+        }
+         */
      
-        double intensity = 1.0;
-        
-        switch(actionString){
-            case "[happy]":
-                mCharacterList.get(character).happy(intensity);
+        switch(actionName){
+            case "happy":
+                mCharacterList.get(character).happy(intensityValue);
                 break;
-            case "[sad]":
-                mCharacterList.get(character).sad(intensity);
+            case "sad":
+                mCharacterList.get(character).sad(intensityValue);
                 break;
-            case "[fear]":
-                mCharacterList.get(character).scared(intensity);
+            case "fear":
+                mCharacterList.get(character).scared(intensityValue);
                 break;
-            case "[angry]":
-                mCharacterList.get(character).angry(intensity);
+            case "angry":
+                mCharacterList.get(character).angry(intensityValue);
                 break;
-            case "[disgussed]":
-                mCharacterList.get(character).disgussed(intensity);
+            case "disgussed":
+                mCharacterList.get(character).disgusted(intensityValue);
                 break;
-            case "[shame]":
-                mCharacterList.get(character).shame(intensity);
+            case "shame":
+                mCharacterList.get(character).shame(intensityValue);
                 break;
-            case "[box]":
+            case "box":
                 mCharacterList.get(character).box();
                 break;
-            case "[wave]":
+            case "wave":
                 mCharacterList.get(character).wave();
                 break;
-            case "[cup]":
+            case "cup":
                 mCharacterList.get(character).cup();
                 break;
-            case "[scratch]":
+            case "scratch":
                 mCharacterList.get(character).scratch();
+                break;
+            case "lookTo":
+                mCharacterList.get(character).lookTo(objectiveDirection);
                 break;
             default:
                 break;

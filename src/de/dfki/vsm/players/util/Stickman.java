@@ -8,7 +8,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.font.TextAttribute;
-import java.awt.geom.Arc2D;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -378,7 +377,7 @@ public class Stickman extends JPanel {
 		update();
 	}
         
-        public void disgussed (double intensity){
+        public void disgusted (double intensity){
                 isScared = false;
                 isShame = false;
                 
@@ -499,6 +498,12 @@ public class Stickman extends JPanel {
                  mRightElbow = new Ellipse2D.Double((mPosX + mArms_X * 0.95), mUpperArms_Y2 - 0.1, 6, 6);
                  mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X * 1.5), mForeArms_Y1);
                  update();
+                 
+	}
+        
+        public void lookTo(int direction) {
+            // if direction = -1 look left
+            // if direction = 1 look right
                  
 	}
 
