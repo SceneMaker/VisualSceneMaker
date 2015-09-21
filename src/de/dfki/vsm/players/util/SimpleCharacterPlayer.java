@@ -7,7 +7,6 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import java.awt.*;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Set;
@@ -67,7 +66,7 @@ public final class SimpleCharacterPlayer extends JFrame {
         action.getFeatureList();
         
         double intensityValue;
-        int lookToPostion;
+        int objectivePostion;
                 
         switch(action.getName()){
             case "happy":
@@ -107,8 +106,12 @@ public final class SimpleCharacterPlayer extends JFrame {
                 mCharacterList.get(characterName).scratch();
                 break;
             case "lookTo":
-                lookToPostion = getLookToPosition(characterName, action.getFeatureList());
-                mCharacterList.get(characterName).lookTo(lookToPostion);
+                objectivePostion = getObjectivePosition(characterName, action.getFeatureList());
+                mCharacterList.get(characterName).lookTo(objectivePostion);
+                break;
+            case "pointTo":
+                objectivePostion = getObjectivePosition(characterName, action.getFeatureList());
+                mCharacterList.get(characterName).pointTo(objectivePostion);
                 break;
             default:
                 break;
@@ -156,7 +159,7 @@ public final class SimpleCharacterPlayer extends JFrame {
     }
     
     
-    private int getLookToPosition(String characterName, LinkedList<ActionFeature> attributes){
+    private int getObjectivePosition(String characterName, LinkedList<ActionFeature> attributes){
     
         if(attributes.size()>0){
             if(attributes.getFirst().getKey().equals("name")){

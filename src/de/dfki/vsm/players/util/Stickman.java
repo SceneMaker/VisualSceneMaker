@@ -502,18 +502,29 @@ public class Stickman extends JPanel {
 	}
         
         public void lookTo(int direction) {
-            
-           
-            if(direction==1){
-                System.out.println("Look to right ");
-            }
-            if(direction==-1){
-                System.out.println("Look to left ");
-            }
             // if direction = -1 look left
             // if direction = 1 look right
-                 
+           
+            if(direction==1){
+                System.out.println("Look right ");
+            }
+            if(direction==-1){
+                System.out.println("Look left ");
+            }
 	}
+        
+        public void pointTo(int direction) {
+            // if direction = -1 look left
+            // if direction = 1 look right
+           
+            if(direction==1){
+                System.out.println("Point right ");
+            }
+            if(direction==-1){
+                System.out.println("Point left ");
+            }
+	}
+
 
 	public void box() {
 		mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X), (mPosY + mStickHeight));
