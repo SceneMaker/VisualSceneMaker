@@ -502,6 +502,14 @@ public class Stickman extends JPanel {
 	}
         
         public void lookTo(int direction) {
+            
+           
+            if(direction==1){
+                System.out.println("Look to right ");
+            }
+            if(direction==-1){
+                System.out.println("Look to left ");
+            }
             // if direction = -1 look left
             // if direction = 1 look right
                  
