@@ -8,6 +8,7 @@ import de.dfki.vsm.editor.EditButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
 import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
@@ -34,7 +35,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTextField;
 
 /**
  * A dialog to create or edit a type definition.
@@ -55,7 +55,7 @@ public class TypeDefDialog extends Dialog {
     private JLabel           mFlavourLabel;
     private JComboBox        mFlavourComboBox;
     private JLabel           mNameLabel;
-    private JTextField       mNameTextField;
+    private HintTextField       mNameTextField;
     private JSeparator       mSeperator;
     private JLabel           mListTypeLabel;
     private JComboBox        mListTypeComboBox;
@@ -152,7 +152,7 @@ public class TypeDefDialog extends Dialog {
         flavourBox.add(mFlavourComboBox);
         //
         mNameLabel     = new JLabel("Name:");
-        mNameTextField = new JTextField();
+        mNameTextField = new HintTextField("Enter Name");
         sanitizeComponent(mNameLabel, labelSize);
         sanitizeComponent(mNameTextField, textFielSize);
         //Name box
@@ -264,6 +264,7 @@ public class TypeDefDialog extends Dialog {
         packComponents(400, 350);
         setListTypeComponentsVisible(false);
         setStructTypeComponentsVisible(true);
+        mOkButton.requestFocus();
     }
     /**
      * Set the correct size of the components

@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.project.auxiliary.functions;
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.EditorInstance;
@@ -90,6 +91,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
         mFunctionsPanel.setLayout(new BoxLayout(mFunctionsPanel, BoxLayout.Y_AXIS));
         displayFunctionPanels();
         mFunctionsScrollPanel = new JScrollPane(mFunctionsPanel);
+        mFunctionsScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mFunctionsScrollPanel.setOpaque(false);
         mFunctionsScrollPanel.getViewport().setOpaque(false);
         mFunctionsScrollPanel.setMinimumSize(new Dimension(2000, 200));
@@ -425,7 +427,6 @@ public class FunctionsEditor extends JPanel implements EventListener {
         usrCmdDef.addParam(new ParamDef("text", "String"));
         updateArguments(usrCmdDef);
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
-        EditorInstance.getInstance().refresh();
         EventDispatcher.getInstance().convey(new FunctionCreatedEvent(this, usrCmdDef));
         launchProjectChangedEvent();
     }
@@ -437,8 +438,9 @@ public class FunctionsEditor extends JPanel implements EventListener {
         if (funDef != null) {
             mSceneFlow.removeUsrCmdDef(funDef.getName());
             launchFunctionCreatedEvent(funDef);
-            EditorInstance.getInstance().refresh();
+          
             launchProjectChangedEvent();
+            this.repaint();
         }
 
         // Editor.getInstance().update();

@@ -7,7 +7,9 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -56,8 +58,8 @@ public class SceneActionDialog extends JDialog {
     private JButton                  mOkButton;
 
     // data variables
-    private JTextField       mActionName;
-    private JTextField       mArgument;
+    private HintTextField       mActionName;
+    private HintTextField       mArgument;
     private JTextArea        mDocuTextArea;
     private DefaultListModel mListModel;
     private JList            mList;
@@ -126,7 +128,7 @@ public class SceneActionDialog extends JDialog {
         namePanel.add(Box.createRigidArea(new Dimension(3, 0)));
         namePanel.add(new JLabel("Name"));
         namePanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        mActionName = new JTextField();
+        mActionName = new HintTextField("Enter Name");
         mActionName.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         mActionName.addKeyListener(new KeyAdapter() {
             @Override
@@ -216,7 +218,7 @@ public class SceneActionDialog extends JDialog {
             }
         });
 
-        JButton editButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/edit.png"));
+        JButton editButton = new JButton(Preferences.ICON_EDIT_STANDARD);
 
         editButton.setMinimumSize(new Dimension(20, 20));
         editButton.setMaximumSize(new Dimension(20, 20));
@@ -237,7 +239,7 @@ public class SceneActionDialog extends JDialog {
         argListPanel.add(Box.createHorizontalGlue());
         argAddPanel.setLayout(new BoxLayout(argAddPanel, BoxLayout.X_AXIS));
 
-        JButton addButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/minus.png"));
+        JButton addButton = new JButton(Preferences.ICON_MINUS_STANDARD);
 
         addButton.setMinimumSize(new Dimension(20, 20));
         addButton.setMaximumSize(new Dimension(20, 20));
@@ -254,7 +256,7 @@ public class SceneActionDialog extends JDialog {
             }
         });
         argAddPanel.add(Box.createRigidArea(new Dimension(3, 0)));
-        mArgument = new JTextField();
+        mArgument = new HintTextField("Enter Argument");
         mArgument.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         mArgument.addKeyListener(new KeyAdapter() {
             @Override

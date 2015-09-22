@@ -6,6 +6,7 @@ import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
@@ -31,10 +32,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 import static java.awt.Component.CENTER_ALIGNMENT;
-import static java.awt.Component.LEFT_ALIGNMENT;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 
@@ -54,7 +53,7 @@ public class ModifyCEdgeDialog extends Dialog {
     private JPanel       mInputPanel;
     private JLabel       mInputLabel;
     private JPanel       mButtonPanel;
-    private JTextField   mInputTextField;
+    private HintTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
     private JPanel       mAltStartNodePanel;
@@ -100,7 +99,6 @@ public class ModifyCEdgeDialog extends Dialog {
 
         // Init button panel
         initButtonPanel();
-
         // Init alternative start node panel
         initAltStartNodePanel();
         //Error message
@@ -117,10 +115,11 @@ public class ModifyCEdgeDialog extends Dialog {
         finalBox.add(errorMsg);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mButtonPanel);
-
+        
         addComponent(finalBox, 10, 30, 480, 280);
 
         packComponents(520, 300);
+        mOkButton.requestFocus();
     }
 
     private void initInputPanel() {
@@ -128,7 +127,8 @@ public class ModifyCEdgeDialog extends Dialog {
         mInputLabel = new JLabel("Conditional Expression:");
         sanitizeComponent(mInputLabel, labelSize);
         // Input text field
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("(a < b )");
+        //mInputTextField.tr();
         sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
         mInputPanel = new JPanel();
@@ -173,6 +173,7 @@ public class ModifyCEdgeDialog extends Dialog {
         mButtonPanel.add(Box.createHorizontalStrut(30));
         mButtonPanel.add(mOkButton);
         mButtonPanel.add(Box.createHorizontalStrut(30));
+        
     }
 
     protected void initAltStartNodePanel() {
@@ -355,7 +356,7 @@ public class ModifyCEdgeDialog extends Dialog {
         return mButtonPanel;
     }
 
-    public JTextField getInputTextField() {
+    public HintTextField getInputTextField() {
         return mInputTextField;
     }
 }

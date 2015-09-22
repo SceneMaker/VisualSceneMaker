@@ -87,7 +87,6 @@ public class SceneFlowPalettePanel extends JPanel {
         add(mTEdgeEntry);
         add(mIEdgeEntry);
         add(mCommentEntry);
-        //   
         ToolTipManager.sharedInstance().registerComponent(this);
     }
     
