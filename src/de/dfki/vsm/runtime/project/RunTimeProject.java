@@ -14,7 +14,7 @@ import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
 import de.dfki.vsm.runtime.dialogacts.DummyDialogAct;
 import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.plugins.RunTimePlugin;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.File;
 import java.io.IOException;
@@ -28,8 +28,8 @@ import java.util.Map.Entry;
 public class RunTimeProject {
 
     // The singelton logger instance
-    protected final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    protected final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
 
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
@@ -56,7 +56,7 @@ public class RunTimeProject {
     // Construct an empty runtime project
     public RunTimeProject() {
         // Print some information
-        mLogger.warning("Creating a new empty runtime project");
+        mLogger.message("Creating a new empty runtime project");
     }
 
     // Construct a project from a directory

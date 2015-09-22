@@ -8,7 +8,7 @@ import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.runtime.values.BooleanValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 public class EventObserver {
     private Interpreter mInterpreter;
@@ -33,14 +33,14 @@ public class EventObserver {
                             break;
                         }
                     } catch (InterpretException e) {
-                        LOGDefaultLogger.getInstance().warning("detecting abort in observer");
+                        LOGConsoleLogger.getInstance().warning("detecting abort in observer");
                         EventDispatcher.getInstance().convey(new AbortionEvent(this, e));
                         mInterpreter.abort();
-                        LOGDefaultLogger.getInstance().warning("returnning from observer after runtimeexception");
+                        LOGConsoleLogger.getInstance().warning("returnning from observer after runtimeexception");
 
                         return;
                     } catch (ClassCastException e) {
-                        LOGDefaultLogger.getInstance().warning("detecting abort in observer");
+                        LOGConsoleLogger.getInstance().warning("detecting abort in observer");
 
                         java.lang.String errorMsg = "An error occured while executing thread "
                                                     + Process.currentThread().toString() + " : " + "The condition '"
