@@ -14,7 +14,7 @@ import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
@@ -245,14 +245,19 @@ public class ModifyIEdgeDialog extends Dialog {
         if(mInputTextField.getText().length() == 0){
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
-
+            
             return false;
         }
         String inputString = mInputTextField.getText().trim();
+        
+        
+        
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
+            _SFSLParser_.parseResultType = _SFSLParser_.CND;//LOG;
             _SFSLParser_.run(inputString);
-            LogicalCond log = _SFSLParser_.logResult;
+            //LogicalCond log = _SFSLParser_.logResult;
+            Condition log = _SFSLParser_.cndResult;//logResult;
+            
 
             if ((log != null) &&!_SFSLParser_.errorFlag) {
                 mIEdge.setCondition(log);
