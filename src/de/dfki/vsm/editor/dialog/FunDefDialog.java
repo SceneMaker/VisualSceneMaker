@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
@@ -175,6 +176,7 @@ public class FunDefDialog extends Dialog {
         mArgList  = new JList();
         mArgList.setModel(new DefaultListModel());
         mArgScrollPane = new JScrollPane(mArgList);
+        mArgScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         sanitizeComponent(mArgLabel, labelSize);
         sanitizeComponent(mArgScrollPane, new Dimension(220, 110));
         

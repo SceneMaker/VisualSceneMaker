@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
@@ -311,6 +312,7 @@ public class ModifyPEdgeDialog extends Dialog {
         nodesPanel.setLayout(new BoxLayout(nodesPanel, BoxLayout.Y_AXIS));
         nodesPanel.setBorder(null);
         JScrollPane nodesScrollPanel = new JScrollPane(nodesPanel);
+        nodesScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         nodesScrollPanel.setPreferredSize(new Dimension(480, 90));
         nodesScrollPanel.setMinimumSize(new Dimension(480, 90));
         nodesScrollPanel.setMaximumSize(new Dimension(480, 90));

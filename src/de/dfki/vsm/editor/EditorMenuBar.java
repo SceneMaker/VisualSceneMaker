@@ -173,12 +173,11 @@ public final class EditorMenuBar extends JMenuBar {
                     String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
                     if (projectDirName != null) {
-                        Preferences.removeProperty("recentprojectdir" + i);
-                        Preferences.removeProperty("recentprojectdate" + i);
-                        Preferences.removeProperty("recentprojectname" + i);
+                        Preferences.removeProperty("recentproject." + i + ".path");
+                        Preferences.removeProperty("recentproject." + i + ".date");
+                        Preferences.removeProperty("recentproject." + i + ".name");
                     }
                 }
-
                 mEditorInstance.clearRecentProjects();
                 Preferences.save();
                 refreshRecentFileMenu();

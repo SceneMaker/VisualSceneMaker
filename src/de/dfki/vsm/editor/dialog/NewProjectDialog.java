@@ -4,11 +4,14 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.editor.util.HintTextField;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
@@ -29,7 +32,7 @@ public class NewProjectDialog extends JDialog
     private CancelButton mCancelButton = null;
     
     // text fields
-    private JTextField mNameTextField = null;
+    private HintTextField mNameTextField = null;
     
     // Labels
     private JLabel errorMsg;
@@ -37,7 +40,7 @@ public class NewProjectDialog extends JDialog
     
     
     // logger
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     
     public NewProjectDialog() {
@@ -53,9 +56,16 @@ public class NewProjectDialog extends JDialog
         Dimension labelSize = new Dimension(100, 30);
 
         setBackground(Color.white);
-        mNameTextField = new JTextField();
+        mNameTextField = new HintTextField("Enter Project Name");
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
+        
+        mNameTextField.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                okActionPerformed();
+            }
+        });
         
         mNameTextField.addKeyListener(new KeyAdapter() {
             @Override
@@ -142,6 +152,7 @@ public class NewProjectDialog extends JDialog
 
         setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
                 getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
+        mOkButton.requestFocus();
     }
 
     protected void okActionPerformed() {

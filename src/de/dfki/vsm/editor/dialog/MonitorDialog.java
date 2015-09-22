@@ -2,10 +2,12 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
@@ -30,7 +32,6 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 /**
@@ -44,7 +45,7 @@ public class MonitorDialog extends JDialog {
     private OKButton             mOkButton;
     private JPanel               mWorkPanel;
     private JList                mVariableList;
-    private JTextField           mInputTextField;
+    private HintTextField           mInputTextField;
     private JScrollPane          mVariableScrollPane;
     private Vector<VarDef>       mVarDefListData;
     private final EditorProject      mEditorProject;
@@ -72,8 +73,9 @@ public class MonitorDialog extends JDialog {
         mWorkPanel.setBorder(BorderFactory.createLoweredBevelBorder());
         mVariableList       = new JList(new DefaultListModel());
         mVariableScrollPane = new JScrollPane(mVariableList);
+        mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mVariableScrollPane.setBounds(20, 10, 360, 300);
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("Enter variable name");
         mInputTextField.setBounds(20, 320, 360, 30);
         mWorkPanel.add(mVariableScrollPane);
         mWorkPanel.add(mInputTextField);
@@ -154,6 +156,7 @@ public class MonitorDialog extends JDialog {
         setSize(new Dimension(400 + getInsets().left + getInsets().right, 440 + getInsets().top + getInsets().bottom));
         setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
                     getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
+        mOkButton.requestFocus();
     }
 
     private void initVariableList() {

@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.project.sceneflow.elements;
 
+import de.dfki.vsm.Preferences;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -26,11 +27,7 @@ import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 
 public final class SceneFlowPaletteItem extends JButton implements Transferable {
-
-    // TODO: get icons path from prefrences
-    private final String mIconsPath = "/res/img/workspace_toolbar/";
-    // TODO: do that to static preferences
-    private final Dimension mToolItemSize = new Dimension(61, 65);
+   
     private final String mToolTipText;
     private final ImageIcon mStandardIcon;
     private final ImageIcon mRollOverIcon;
@@ -63,9 +60,9 @@ public final class SceneFlowPaletteItem extends JButton implements Transferable 
         setVerticalTextPosition(SwingConstants.BOTTOM);
         setHorizontalTextPosition(SwingConstants.CENTER);
         setToolTipText(mToolTipText + ": " + info);
-        setPreferredSize(mToolItemSize);
-        setMinimumSize(mToolItemSize);
-        setMaximumSize(mToolItemSize);
+        setPreferredSize(Preferences.SF_PALETTEITEM_SIZE);
+        setMinimumSize(Preferences.SF_PALETTEITEM_SIZE);
+        setMaximumSize(Preferences.SF_PALETTEITEM_SIZE);
         mDragSourceListener = new DragSourceListener() {
             @Override
             public void dragEnter(DragSourceDragEvent dsde) {

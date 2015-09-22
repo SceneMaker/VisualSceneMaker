@@ -20,8 +20,6 @@ public final class AuxiliaryEditor extends JPanel {
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The tabbed pane of the editor
     private final JTabbedPane mEditorTabbedPane = new JTabbedPane();
-    // The components of the edior
-    private final AuxiliaryToolBar mAuxiliaryToolBar;
     private final FunctionsEditor mFunctionEditor;
     private final DialogActEditor mDialogActEditor;
     private final OLDSceneScriptEditor mSceneScriptEditor;
@@ -34,7 +32,6 @@ public final class AuxiliaryEditor extends JPanel {
         // Initialize the editor project
         mProject = project;
         // Initialize the auxiliary toolbar
-        mAuxiliaryToolBar = new AuxiliaryToolBar(mProject);
         // Initialize the function editor
         mFunctionEditor = new FunctionsEditor(mProject);
         // Initialize the dialogact editor
@@ -46,21 +43,9 @@ public final class AuxiliaryEditor extends JPanel {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder());
         // Add the GUI components
-        add(mAuxiliaryToolBar, BorderLayout.NORTH);
         add(mEditorTabbedPane, BorderLayout.CENTER);
         add(new JPanel(), BorderLayout.SOUTH);
     }
-
-    // Get the pin pricked flag
-    public boolean isPinPricked() {
-        return mAuxiliaryToolBar.isPinPricked();
-    }
-
-    // Set the pin pricked flag
-    public void setPinPricked() {
-        mAuxiliaryToolBar.setPin(true); //TRUE PRICKS THE PIN
-    }
-
     // Close the auxiliary editor
     public final void close() {
          // Print some information

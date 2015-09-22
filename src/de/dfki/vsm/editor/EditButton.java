@@ -8,7 +8,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.ResourceLoader;
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -17,7 +17,6 @@ import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
-import javax.swing.ImageIcon;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -28,15 +27,12 @@ import javax.swing.SwingConstants;
  */
 public class EditButton extends JLabel {
     private final Dimension buttonSize = new Dimension(20, 20);
-    //Icons
-    private final ImageIcon ICON_EDIT_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png");
-    private final ImageIcon ICON_EDIT_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit_blue.png");
     
     public EditButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(false);
         setBackground(Color.white);
-        setIcon(ICON_EDIT_STANDARD);
+        setIcon(Preferences.ICON_EDIT_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Edit");
         setIconTextGap(10);
@@ -50,10 +46,10 @@ public class EditButton extends JLabel {
 //              //savePreferences(true);
 //          }
             public void mouseEntered(MouseEvent me) {
-                setIcon(ICON_EDIT_ROLLOVER);
+                setIcon(Preferences.ICON_EDIT_ROLLOVER);
             }
             public void mouseExited(MouseEvent me) {
-                setIcon(ICON_EDIT_STANDARD);
+                setIcon(Preferences.ICON_EDIT_STANDARD);
             }
         });
     }
