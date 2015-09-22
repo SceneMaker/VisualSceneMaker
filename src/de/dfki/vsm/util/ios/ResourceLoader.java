@@ -2,7 +2,7 @@ package de.dfki.vsm.util.ios;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -19,7 +19,7 @@ import javax.swing.ImageIcon;
  * @author Peter Adolphs
  */
 public class ResourceLoader {
-    private final static LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final static LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
 //  public static File loadFile(String resource) {
 //      return loadFile(ResourceLoader.class, resource);

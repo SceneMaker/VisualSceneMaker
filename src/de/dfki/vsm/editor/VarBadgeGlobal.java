@@ -9,7 +9,7 @@ import de.dfki.vsm.model.sceneflow.graphics.node.Position;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -47,7 +47,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
     // TODO: Make format of variable badge as global preferences
     private final int              mPositionOffset = 10;
-    private final LOGDefaultLogger mLogger         = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger         = LOGConsoleLogger.getInstance();
 
     // The supernode
     private final SuperNode mSuperNode;

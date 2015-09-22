@@ -173,7 +173,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             mLogger.message("Agent #" + client.getAgentUaid() + " Receiving Data '" + input + "'");
 
             // Parse The Data To A New Message
-            final HCMEventMessage message = HCMEventMessage.getInstance(input);
+            final HCMEventObject message = HCMEventObject.getInstance(input);
 
             // Find The Message Task Identifier
             if (message.getUtid() != null) {
@@ -215,7 +215,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             final VSMAgentClient client) {
 
         // Construct Event Message
-        final HCMEventMessage message = HCMEventMessage.newInstance(type, utid, name, uaid, text, date, time);
+        final HCMEventObject message = HCMEventObject.newInstance(type, utid, name, uaid, text, date, time);
 
         // Send The New Command
         synchronized (mThreadQueue) {

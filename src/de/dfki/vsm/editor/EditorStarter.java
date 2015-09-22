@@ -4,7 +4,7 @@ import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -29,7 +29,7 @@ import javax.swing.JSeparator;
 public class EditorStarter extends JPanel {
 
     // The singelton logger instance   
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
     private final EditorInstance mEditorInstance;
@@ -333,7 +333,7 @@ public class EditorStarter extends JPanel {
 
             for (final File sampleDir : listDirs) {
                 
-                System.err.println(sampleDir);
+             
                 
                 final File sampleProj = new File(sampleDir.getPath() + "/vsm");
 

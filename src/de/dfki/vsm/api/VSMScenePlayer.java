@@ -11,8 +11,7 @@ import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.jpl.JPLUtility;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
-
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,28 +20,31 @@ import java.util.Map;
  */
 public abstract class VSMScenePlayer implements RunTimePlayer {
 
-    // The VSM runtime environment
-    protected final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
+    // The runtime environment
+    protected final RunTimeInstance mRunTime
+            = RunTimeInstance.getInstance();
     // The defaut system logger
-    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-
-    // The Waiting Tasks
-    protected final HashMap<String, Thread> mThreadQueue = new HashMap<>();
-    // The Agent Clients
-    protected HashMap<String, VSMAgentClient> mAgentMap = new HashMap<>();
-
-    // The Player Name
+    protected final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
+    // The quue of waiting tasks
+    protected final HashMap<String, Thread> mThreadQueue
+            = new HashMap<>();
+    // The map of agent clients 
+    protected HashMap<String, VSMAgentClient> mAgentMap
+            = new HashMap<>();
+    // The scene player name
     protected String mPlayerName;
-    // The ScenePlayer Config
+    // The scene player config
     protected PlayerConfig mPlayerConfig;
-    // The SceneMaker Project
+    // The runtime project data
     protected RunTimeProject mProject;
-    // The SceneMaker Project
+    // The sceneflow of the project
     protected SceneFlow mSceneFlow;
-
-    // The System Timer Thead
+    // The launch startup time
     protected volatile long mStartupTime;
+    // The current player time
     protected volatile long mCurrentTime;
+    // The system timer thread
     protected VSMSystemTimer mSystemTimer;
 
     // Construct the scene player
@@ -58,8 +60,9 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
         mProject = project;
         // Initialize the sceneflow
         mSceneFlow = mProject.getSceneFlow();
-        // Initialize player config
+        // Initialize player name
         mPlayerName = mProject.getPlayerName(this);
+        // Initialize player config
         mPlayerConfig = project.getPlayerConfig(mPlayerName);
 
         // Initialize all the clients
@@ -77,15 +80,14 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
             final String lport = mPlayerConfig.getProperty("vsm.agent." + i + ".local.port");
             // Print some information
             mLogger.message(""
-                    + "Agent #" + i + " Name        : '" + name + "'" + "\r\n"
-                    + "Agent #" + i + " Uaid        : '" + uaid + "'" + "\r\n"
-                    + "Agent #" + i + " Type        : '" + type + "'" + "\r\n"
-                    + "Agent #" + i + " Remote Host : '" + rhost + "'" + "\r\n"
-                    + "Agent #" + i + " Remote Port : '" + rport + "'" + "\r\n"
-                    + "Agent #" + i + " Remote Flag : '" + rflag + "'" + "\r\n"
-                    + "Agent #" + i + " Local Host  : '" + lhost + "'" + "\r\n"
-                    + "Agent #" + i + " Local Port  : '" + lport);
-
+                    + "Agent " + i + " Name        : '" + name + "'" + "\r\n"
+                    + "Agent " + i + " Uaid        : '" + uaid + "'" + "\r\n"
+                    + "Agent " + i + " Type        : '" + type + "'" + "\r\n"
+                    + "Agent " + i + " Remote Host : '" + rhost + "'" + "\r\n"
+                    + "Agent " + i + " Remote Port : '" + rport + "'" + "\r\n"
+                    + "Agent " + i + " Remote Flag : '" + rflag + "'" + "\r\n"
+                    + "Agent " + i + " Local Host  : '" + lhost + "'" + "\r\n"
+                    + "Agent " + i + " Local Port  : '" + lport);
             // Create a client of that type
             if (type.equals("tcp")) {
                 final VSMAgentClient client = new VSMTCPSockClient(
@@ -97,8 +99,8 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
                 client.start();
             } else if (type.equals("udp")) {
                 final VSMAgentClient client = new VSMUDPSockClient(
-                        this, name, uaid, lhost,
-                        Integer.parseInt(lport),
+                        this, name, uaid,
+                        lhost, Integer.parseInt(lport),
                         rhost, Integer.parseInt(rport),
                         Boolean.parseBoolean(rflag));
                 // Add the client to map
@@ -118,9 +120,9 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
         final String swirport = mPlayerConfig.getProperty("swi.handler.remote.port");
         final String swirconn = mPlayerConfig.getProperty("swi.handler.remote.flag");
         final String swilbase = mPlayerConfig.getProperty("swi.handler.local.base");
-
         // Print some information
-        mLogger.message("" + "SWI Query Handler Local Host  : '" + swilhost + "'" + "\r\n"
+        mLogger.message(""
+                + "SWI Query Handler Local Host  : '" + swilhost + "'" + "\r\n"
                 + "SWI Query Handler Remote Host : '" + swirhost + "'" + "\r\n"
                 + "SWI Query Handler Local Port  : '" + swilport + "'" + "\r\n"
                 + "SWI Query Handler Remote Port : '" + swirport + "'" + "\r\n"
@@ -145,96 +147,68 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
     // Unload the scene player
     @Override
     public boolean unload() {
-
         // Shutdown all agent clients
         for (final VSMAgentClient client : mAgentMap.values()) {
-
-            // Shutdown Agent Client
+            // Shutdown an agent client
             client.abort();
-            // Join With Agent Client
+            // Join with the agent client
             try {
                 client.join();
                 // Print some information
-                mLogger.message("Joining VSM Agent Client");
+                mLogger.message("Joining VSM Agent Client '" + client.getAgentName() + "'");
             } catch (Exception exc) {
                 // Print some information
                 mLogger.warning(exc.toString());
             }
         }
 
-        // Shutdown system timer
+        // Shutdown the system timer
         mSystemTimer.abort();
-        // Join with system timer
+        // Join with the system timer
         try {
             mSystemTimer.join();
-            // Print Debug Information
-            mLogger.message("Joining System Timer");
+            // Print some information
+            mLogger.message("Joining VSM System Timer");
         } catch (Exception exc) {
             // Print some information
             mLogger.warning(exc.toString());
         }
 
-        // Clear The Task Map
+        // Clear map of waiting tasks
         mThreadQueue.clear();
-        // Clear The Agents Map
+        // Clear map of agent clients
         mAgentMap.clear();
-        // Print Debug Information
+        // Print some information
         mLogger.message("Unloading VSM Scene Player");
         // Return true at success
         return true;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Initialize the startup time
     public final void setStartupTime(final long value) {
         mStartupTime = value;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get the player startup time
     public final long getStartupTime() {
         return mStartupTime;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Set the current player time
     public final void setCurrentTime(final long value) {
         mCurrentTime = value;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get the current player time
     public final long getCurrentTime() {
         return mCurrentTime;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final HashMap<String, Thread> getWaitingThreadQueue() {
-        return mThreadQueue;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final VSMAgentClient getAgentClient(final String name) {
-        return mAgentMap.get(name);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    // TODO: Does This Method Need To be Synchronized
-    // What Are The Advantaged If It Is Synchronized
+    // Execute a given JPL query
     public final /*synchronized*/ boolean query(final String querystr) {
+        // TODO: Does This Method Need To be Synchronized?
+        // What Are The Advantaged If It Is Synchronized?
 
-        // Print Debug Information
-        //System.err.println("Executing Query '" + querystr + "' In JPL Engine '" + JPLEngine.string() + "'");
         // Make The Query To The KB
         JPLResult result = JPLEngine.query(querystr);
 
@@ -264,7 +238,7 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
                         //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         //try {
                         // Initialize The Lock
-                        RunTimeInstance.getInstance().getLock(mProject).lock();
+                        mRunTime.getLock(mProject).lock();
                         //
                         environment.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
 

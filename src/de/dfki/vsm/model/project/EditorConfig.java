@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.project;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -25,7 +25,7 @@ import java.util.TreeSet;
 public class EditorConfig {
 
     // The Logger Instance
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     ////////////////////////////////////////////////////////////////////////////
     // SCENEMAKER PROPERTIES

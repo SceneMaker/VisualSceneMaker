@@ -2,7 +2,7 @@ package de.dfki.vsm.util.jpl;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 /**
  * @author Not me
@@ -10,7 +10,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 public class JPLLoader extends Thread {
 
     // The System File Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // The Prolog Source File
     private final String mSource;

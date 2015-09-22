@@ -2,7 +2,7 @@ package de.dfki.vsm.test;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -29,7 +29,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public class TestSSITCPLog {
 
     // The System Logger
-    private static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     // The Server Socket
     private static ServerSocket sServer;

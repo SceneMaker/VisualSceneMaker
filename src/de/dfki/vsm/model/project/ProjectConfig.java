@@ -2,7 +2,7 @@ package de.dfki.vsm.model.project;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -18,8 +18,8 @@ import org.w3c.dom.Element;
 public final class ProjectConfig implements ModelObject {
 
     // The singelton logger instance
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     // The name of the project  
     private String mProjectName;
     // The list of plugin configurations

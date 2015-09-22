@@ -9,7 +9,7 @@ import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Interpreter {
 
-    private final LOGDefaultLogger mLogger;
+    private final LOGConsoleLogger mLogger;
     private final EventDispatcher mEventMulticaster;
     private final SceneFlow mSceneFlow;
     private final EventObserver mEventObserver;
@@ -42,7 +42,7 @@ public class Interpreter {
         // TODO: We want only one scene player
         mScenePlayer = mRunTimeProject.getDefaultScenePlayer();
         mDialogPlayer = mRunTimeProject.getDefaultDialogPlayer();        //
-        mLogger = LOGDefaultLogger.getInstance();
+        mLogger = LOGConsoleLogger.getInstance();
         mEventMulticaster = EventDispatcher.getInstance();
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
@@ -169,7 +169,7 @@ public class Interpreter {
         if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
 
             // Print some information 
-            mLogger.message("Starting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
+            //mLogger.message("Starting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
 
             // Create a new thread
             mSceneFlowThread = new Process(mSceneFlow.getId(), null, // TODO: choose an adquate thread group and check if this group has died before
@@ -200,7 +200,7 @@ public class Interpreter {
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {    // TODO: This is insecure, cause the thread could start in the meantime
 
             // Print some information 
-            mLogger.message("Aborting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
+            //mLogger.message("Aborting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
 
             try {
                 lock();

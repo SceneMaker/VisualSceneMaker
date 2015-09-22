@@ -48427,3 +48427,121 @@ INFO to LOGFILE on Wed Sep 02 17:02:13 CEST 2015 by de.dfki.vsm.util.log.LOGDefa
 Loaded project editor configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\editorconfig.xml':
 {autohidebottombar=false, num_magnets=8, grid=true, node_width=90, showvariables=true, frame_posy=0, frame_posx=0, scriptfonttype=Monospaced, shownodeid=true, showsceneeditor=true, visualization=true, frame_height=600, showgestures=true, launchPlayer=false, frame_name=SceneFlowEditor, showelementproperties=true, sceneflow_sceneeditor_ratio=0.75, node_height=90, scriptfonsize=11, frame_width=800, visualizationtrace=false, grid_y=1, propertiesdividerlocation=790, grid_x=1, icon_file=res/img/icon.png, showsmartpathcalculations=false, showelements=true, frame_title=Visual SceneMaker, workspace_fontsize=11, showsceneelements=true, showscenefloweditor=true}
 
+WARNING to LOGFILE on Thu Sep 03 13:36:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.<init>(RunTimeProject.java:59)
+Creating a new empty runtime project
+
+INFO to LOGFILE on Thu Sep 03 13:36:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseProjectConfig(RunTimeProject.java:271)
+Loaded project configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\project.xml':
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="AOCReeti">
+  <Plugins>
+  </Plugins>
+  <Players>
+    <Player name="defaultsceneplayer" class="de.dfki.vsm.api.VSMDefaultPlayer">
+      <Feature key="vsm.agent.number" value="1"/>
+      <Feature key="vsm.agent.0.name" value="reeti"/>
+      <Feature key="vsm.agent.0.uaid" value="1"/>
+      <Feature key="vsm.agent.0.type" value="udp"/>
+      <Feature key="vsm.agent.0.local.host" value="137.250.171.125"/>
+      <Feature key="vsm.agent.0.local.port" value="1125"/>
+      <Feature key="vsm.agent.0.remote.host" value="137.250.171.124"/>
+      <Feature key="vsm.agent.0.remote.port" value="1124"/>
+      <Feature key="vsm.agent.0.remote.flag" value="true"/>
+      <Feature key="swi.handler.local.host" value="137.250.171.125"/>
+      <Feature key="swi.handler.local.port" value="1001"/>
+      <Feature key="swi.handler.remote.host" value="137.250.171.125"/>
+      <Feature key="swi.handler.remote.port" value="1002"/>
+      <Feature key="swi.handler.remote.flag" value="false"/>
+      <Feature key="swi.handler.local.base" value="res/prj/aor/swi"/>
+    </Player>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>
+
+INFO to LOGFILE on Thu Sep 03 13:36:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneFlow(RunTimeProject.java:332)
+Loaded sceneflow configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\sceneflow.xml':
+HelloWorld
+
+INFO to LOGFILE on Thu Sep 03 13:36:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseSceneScript(RunTimeProject.java:389)
+Loaded scenescript configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\scenescript.xml':
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="59" language="en" identifier="Hello">
+    <SceneTurn lower="16" upper="59" speaker="reeti">
+      <SceneUttr lower="23" upper="59" punct="!">
+        <SceneWord lower="23" upper="28" text="Hallo"/>
+        <SceneWord lower="29" upper="33" text="Welt"/>
+        <SceneWord lower="34" upper="35" text="d"/>
+        <SceneWord lower="36" upper="37" text="d"/>
+        <SceneWord lower="38" upper="39" text="d"/>
+        <SceneWord lower="40" upper="41" text="d"/>
+        <SceneWord lower="42" upper="44" text="dd"/>
+        <SceneWord lower="45" upper="46" text="d"/>
+        <SceneWord lower="47" upper="48" text="d"/>
+        <SceneWord lower="49" upper="51" text="dd"/>
+        <SceneWord lower="52" upper="54" text="dd"/>
+        <SceneWord lower="55" upper="56" text="d"/>
+        <SceneWord lower="57" upper="58" text="d"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
+
+INFO to LOGFILE on Thu Sep 03 13:36:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseActiconConfig(RunTimeProject.java:446)
+Loaded acticon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\acticon.xml':
+<Acticon>
+</Acticon>
+
+INFO to LOGFILE on Thu Sep 03 13:36:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseVisiconConfig(RunTimeProject.java:560)
+Loaded visicon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\visicon.xml':
+<Visicon>
+</Visicon>
+
+INFO to LOGFILE on Thu Sep 03 13:36:36 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.runtime.project.RunTimeProject.parseGesticonConfig(RunTimeProject.java:503)
+Loaded gesticon configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\gesticon.xml':
+<Gesticon>
+</Gesticon>
+
+INFO to LOGFILE on Thu Sep 03 13:36:37 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.load(EditorConfig.java:413)
+Loaded project editor configuration file 'D:\GitHubOrg\VisualSceneMaker\res\prj\test\vsm\editorconfig.xml':
+
+
+INFO to LOGFILE on Thu Sep 03 13:36:37 CEST 2015 by de.dfki.vsm.util.log.LOGDefaultLogger in Thread[AWT-EventQueue-0,6,main] at de.dfki.vsm.model.project.EditorConfig.load(EditorConfig.java:417)
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment/>
+<entry key="autohidebottombar">false</entry>
+<entry key="num_magnets">8</entry>
+<entry key="grid">true</entry>
+<entry key="node_width">90</entry>
+<entry key="showvariables">true</entry>
+<entry key="frame_posy">0</entry>
+<entry key="frame_posx">0</entry>
+<entry key="scriptfonttype">Monospaced</entry>
+<entry key="shownodeid">true</entry>
+<entry key="showsceneeditor">true</entry>
+<entry key="visualization">true</entry>
+<entry key="frame_height">600</entry>
+<entry key="showgestures">true</entry>
+<entry key="launchPlayer">false</entry>
+<entry key="frame_name">SceneFlowEditor</entry>
+<entry key="showelementproperties">true</entry>
+<entry key="sceneflow_sceneeditor_ratio">0.75</entry>
+<entry key="node_height">90</entry>
+<entry key="scriptfonsize">11</entry>
+<entry key="frame_width">800</entry>
+<entry key="visualizationtrace">false</entry>
+<entry key="grid_y">1</entry>
+<entry key="propertiesdividerlocation">790</entry>
+<entry key="grid_x">1</entry>
+<entry key="icon_file">res/img/icon.png</entry>
+<entry key="showsmartpathcalculations">false</entry>
+<entry key="showelements">true</entry>
+<entry key="frame_title">Visual SceneMaker</entry>
+<entry key="workspace_fontsize">11</entry>
+<entry key="showsceneelements">true</entry>
+<entry key="showscenefloweditor">true</entry>
+</properties>
+
+

@@ -7,7 +7,7 @@ import de.dfki.vsm.runtime.values.BooleanValue;
 import de.dfki.vsm.runtime.values.FloatValue;
 import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -20,8 +20,8 @@ public final class RunTimeInstance {
     private static RunTimeInstance sInstance = null;
 
     // The singelton logger instance
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
 
     // The map of maintainted projects
     private final HashMap<RunTimeProject, Interpreter> mProjectMap;
@@ -69,7 +69,7 @@ public final class RunTimeInstance {
             return false;
         } else {
             // Print some information 
-            mLogger.message("Loaded runtime objects of project '" + project + "'");
+            //mLogger.message("Loaded runtime objects of project '" + project + "'");
         }
         // Try to launch all runtime objects
         if (!project.launch()) {
@@ -79,14 +79,14 @@ public final class RunTimeInstance {
             return false;
         } else {
             // Print some information 
-            mLogger.message("Launched runtime objects of project '" + project + "'");
+            // mLogger.message("Launched runtime objects of project '" + project + "'");
         }
         // Create a new runtime interpreter
         final Interpreter interpreter = new Interpreter(project);
         // Register project with interpreter        
         mProjectMap.put(project, interpreter);
         // Print some information 
-        mLogger.message("Registered the new interpreter '" + interpreter + "' for project '" + project + "'");
+        // mLogger.message("Registered the new interpreter '" + interpreter + "' for project '" + project + "'");
         // Return true at success
         return true;
     }
@@ -108,13 +108,13 @@ public final class RunTimeInstance {
             return false;
         } else {
             // Print some information 
-            mLogger.message("Unloaded runtime objects of project '" + project + "'");
+            //mLogger.message("Unloaded runtime objects of project '" + project + "'");
         }
 
         // Remove project and interpreter
         final Interpreter interpreter = mProjectMap.remove(project);
         // Print some information 
-        mLogger.message("Deregistered the interpreter '" + interpreter + "' with project '" + project + "'");
+        //mLogger.message("Deregistered the interpreter '" + interpreter + "' with project '" + project + "'");
         // Return true at success
         return true;
     }
@@ -172,7 +172,7 @@ public final class RunTimeInstance {
         //mLogger.message("Check if running");
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
-            mLogger.warning("Warning: There is no interpreter registered for project '" + project + "'");
+            //mLogger.warning("Warning: There is no interpreter registered for project '" + project + "'");
             // Return false at error
             return false;
         }

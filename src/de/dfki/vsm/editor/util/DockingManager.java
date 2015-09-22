@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.util;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -28,7 +28,7 @@ public class DockingManager {
     private Vector<DockPoint>          mDockPoints           = new Vector<DockPoint>();
     private Hashtable<Edge, DockPoint> mEdgeDockPoints       = new Hashtable<Edge, DockPoint>();
     private Hashtable<Edge, DockPoint> mEdgeSecondDockPoints = new Hashtable<Edge, DockPoint>();
-    private final LOGDefaultLogger     mLogger               = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger     mLogger               = LOGConsoleLogger.getInstance();
     private EditorConfig         mEditorConfig;
 
     public DockingManager(Node node) {
