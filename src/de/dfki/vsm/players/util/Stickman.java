@@ -501,30 +501,73 @@ public class Stickman extends JPanel {
                  
 	}
         
-        public void lookTo(int direction) {
+      public void lookTo(int direction) {
             // if direction = -1 look left
             // if direction = 1 look right
            
             if(direction==1){
+                isScared = false;
+                isShame = false;
+               
+                mEyesSize = (int) mHeadSize / 7;
+                mRightEye_posX = (int) (mPosX + mHeadSize / 3.5 - (int) mHeadSize / 5 +3.8);
+		mLeftEye_posX = (int) (mPosX - mHeadSize / 3.5 + 3.8);
+                mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 3.0);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 3.0);
+                mContr1_Y = (int) (mPosY + mHeadSize / 6 + 10 );
+         
+                mContr2_Y = (int) (mPosY + mHeadSize / 6 + 10 );
+		drawFace();
+		update();
                 System.out.println("Look right ");
             }
             if(direction==-1){
+                  isScared = false;
+                isShame = false;
+               
+                mEyesSize = (int) mHeadSize / 7;
+                mRightEye_posX = (int) (mPosX + mHeadSize / 3.5 - (int) mHeadSize / 5 - 3.8);
+		mLeftEye_posX = (int) (mPosX - mHeadSize / 3.5 - 3.8);
+                mLeftEyeBrow_Y2 = (int) (mPosY - mHeadSize / 3.0);
+		mRightEyeBrow_Y1 = (int) (mPosY - mHeadSize / 3.0);
+                mContr1_Y = (int) (mPosY + mHeadSize / 6 + 10 );
+         
+                mContr2_Y = (int) (mPosY + mHeadSize / 6 + 10 );
+		drawFace();
+		update();
                 System.out.println("Look left ");
             }
 	}
         
         public void pointTo(int direction) {
-            // if direction = -1 look left
-            // if direction = 1 look right
+            // if direction = -1 point left
+            // if direction = 1 point right
            
             if(direction==1){
+                mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X * 2), mUpperArms_Y2);
+                update();
+                try {
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Stickman.class.getName()).log(Level.SEVERE, null, ex);
+		}
+                mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X * 1.5), mForeArms_Y1);
+                update();
                 System.out.println("Point right ");
             }
             if(direction==-1){
+                mLeftForeArm = new Line2D.Double((mPosX - mArms_X), mUpperArms_Y2, (mPosX - mArms_X * 2), mUpperArms_Y2);
+                update();
+                try {
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			Logger.getLogger(Stickman.class.getName()).log(Level.SEVERE, null, ex);
+		}
+                mLeftForeArm = new Line2D.Double((mPosX - mArms_X), mUpperArms_Y2, (mPosX - mArms_X * 1.5), mForeArms_Y1);
+                update();
                 System.out.println("Point left ");
             }
 	}
-
 
 	public void box() {
 		mRightForeArm = new Line2D.Double((mPosX + mArms_X), mUpperArms_Y2, (mPosX + mArms_X), (mPosY + mStickHeight));
