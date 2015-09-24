@@ -3,9 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/EditorStarter.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/Preferences.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/editor/EditorInstance.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/api/VSMScenePlayer.java</file>
+            <file>file:/D:/GitHubOrg/VisualSceneMaker/src/de/dfki/vsm/api/VSMSystemTimer.java</file>
         </group>
     </open-files>
 </project-private>
