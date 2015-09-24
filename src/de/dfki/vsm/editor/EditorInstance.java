@@ -236,6 +236,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     private void setUIBackgrounds() {
+
         UIManager.put("Frame.background", Color.WHITE);
         UIManager.put("Panel.background", Color.WHITE);
         UIManager.put("MenuBar.opaque", true);
@@ -250,6 +251,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("EditorPane.background", Color.WHITE);
         UIManager.put("ScrollPane.background", Color.WHITE);
         UIManager.put("Viewport.background", Color.WHITE);
+
     }
 
     public void clearRecentProjects() {
