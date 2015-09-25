@@ -3,7 +3,7 @@ package de.dfki.vsm.test;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.util.bin.BINUtilities;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 public class TestCMLClient {
 
     // The System Logger
-    private static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     // The Message Pattern
     // The Message Pattern

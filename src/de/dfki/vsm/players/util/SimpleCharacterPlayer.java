@@ -67,6 +67,8 @@ public final class SimpleCharacterPlayer extends JFrame {
         
         double intensityValue;
         int objectivePostion;
+        
+        setAllCharactersToDefaultPosition();
                 
         switch(action.getName()){
             case "happy":
@@ -143,6 +145,11 @@ public final class SimpleCharacterPlayer extends JFrame {
         return speakersSet;
     }
     
+    public void setAllCharactersToDefaultPosition(){
+        // TO DO
+    }
+	
+     
     private double getIntensityValue(LinkedList<ActionFeature> attributes){
         
         if(attributes.size()>0){

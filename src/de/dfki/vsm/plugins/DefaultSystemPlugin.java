@@ -4,7 +4,7 @@ import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.plugins.RunTimePlugin;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 /**
  * @author Gregor Mehlmann
@@ -14,8 +14,8 @@ public final class DefaultSystemPlugin implements RunTimePlugin {
     // The Singelton Instance
     public static DefaultSystemPlugin sInstance = null;
     // The Logger Instance
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     // The player's runtime project 
     private RunTimeProject mProject;
     // The project specific config

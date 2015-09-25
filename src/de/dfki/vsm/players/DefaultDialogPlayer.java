@@ -4,7 +4,7 @@ import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.values.AbstractValue;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.LinkedList;
 
 /**
@@ -15,8 +15,9 @@ public class DefaultDialogPlayer implements RunTimePlayer {
     // The singelton player instance
     public static DefaultDialogPlayer sInstance = null;
     // The singelton logger instance
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     // The player's runtime project 
     private RunTimeProject mProject;
     // The project specific config

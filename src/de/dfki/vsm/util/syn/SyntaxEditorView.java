@@ -3,7 +3,7 @@ package de.dfki.vsm.util.syn;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -45,7 +45,7 @@ public class SyntaxEditorView extends PlainView {
     private final SyntaxStylePolicy mPolicy = new SyntaxStylePolicy(Preferences.sSTYLESURL);
 
     // The Singelton Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

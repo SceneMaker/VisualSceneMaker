@@ -23,7 +23,7 @@ import de.dfki.vsm.runtime.values.AbstractValue.Type;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.runtime.values.StructValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
@@ -36,8 +36,8 @@ public final class DefaultScenePlayer implements RunTimePlayer {
 	// The singelton player instance
 	public static DefaultScenePlayer sInstance = null;
 	// The singelton logger instance
-	private final LOGDefaultLogger mLogger
-	  = LOGDefaultLogger.getInstance();
+	private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
 	// The player's runtime project 
 	private RunTimeProject mProject;
 	// The project specific config

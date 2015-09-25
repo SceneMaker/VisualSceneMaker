@@ -155,8 +155,8 @@ public class ScriptParser extends java_cup.runtime.lr_parser {
 
 
     // The System Logger
-    private final static LOGDefaultLogger mLogger 
-      = LOGDefaultLogger.getInstance();
+    private final static LOGConsoleLogger mLogger 
+      = LOGConsoleLogger.getInstance();
     // The Debugging Flag
     private boolean mDebugFlag = false;
     // Handle An Error 
@@ -209,7 +209,7 @@ public class ScriptParser extends java_cup.runtime.lr_parser {
             // Cast The Symbol Down
             if(symbol != null) {
                 if(symbol.value instanceof SceneScript) {
-                    mLogger.failure("Parsing Result:\n" + symbol.value);  
+                    mLogger.message("Parsing Result:\n" + symbol.value);  
                     return (SceneScript)symbol.value;
                 } else {
                     mLogger.failure("Error: Cannot Parse Scene Script");
@@ -232,8 +232,8 @@ class CUP$ScriptParser$actions {
 
 
     // The Singelton Logger
-    private final LOGDefaultLogger mLogger = 
-      LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = 
+      LOGConsoleLogger.getInstance();
     // The Debugging Flag
     private boolean mDebugFlag = false;
     // Set Debugging Flag

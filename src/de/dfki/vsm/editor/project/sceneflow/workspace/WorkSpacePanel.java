@@ -62,7 +62,7 @@ import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -158,7 +158,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
     //
     public final Observable mObservable = new Observable();
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     //
@@ -2048,35 +2048,56 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // if there is a specific selected c use it - much faster than checking all nodes
         if (mSelectedNode != null) {
-            if (mSelectedNode.containsPoint(event.getX(), event.getY())) {
+            
+            
+            if (mSelectedNode.mDragged) {
+                   Point p = mSelectedNode.getLocation();
 
-                // System.out.println(mSelectedNode.getDataNode().getName() + " released");
-                // tell c that it has been clicked
-                // let the gridmanager do a repositioning if c has been dragged
-                if (mSelectedNode.mDragged) {
-                    Point p = mSelectedNode.getLocation();
+                   mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
 
-                    mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
+                   // Update sceneflow with new node position
+                   mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(), mSelectedNode.getY());
 
-                    // Update sceneflow with new node position
-                    mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(), mSelectedNode.getY());
-
-                    // update workspace area - if dragged beyond current borders
-                    // sWorkSpaceDrawArea = getSize();
-                }
-
-                mSelectedNode.mouseReleased(event);
-                revalidate();
-                repaint();
-
-                // mGridManager.normalizeGridWeight();
-                return;
-            } else {
-
-                // System.out.println(mSelectedNode.getDataNode().getName() + " not released - deselected");
-                mSelectedNode.setDeselected();
-                mSelectedNode = null;
+                   // update workspace area - if dragged beyond current borders
+                   // sWorkSpaceDrawArea = getSize();
             }
+
+            mSelectedNode.mouseReleased(event);
+            revalidate();
+            repaint();
+                
+                
+//            if (mSelectedNode.containsPoint(event.getX(), event.getY())) {
+//
+//                // System.out.println(mSelectedNode.getDataNode().getName() + " released");
+//                // tell c that it has been clicked
+//                // let the gridmanager do a repositioning if c has been dragged
+//                if (mSelectedNode.mDragged) {
+//                    Point p = mSelectedNode.getLocation();
+//
+//                    mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
+//
+//                    // Update sceneflow with new node position
+//                    mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(), mSelectedNode.getY());
+//
+//                    // update workspace area - if dragged beyond current borders
+//                    // sWorkSpaceDrawArea = getSize();
+//                }
+//
+//                mSelectedNode.mouseReleased(event);
+//                revalidate();
+//                repaint();
+//
+//                // mGridManager.normalizeGridWeight();
+//                return;
+//            } else {
+//
+//                // System.out.println(mSelectedNode.getDataNode().getName() + " not released - deselected");
+//                
+//                
+//                mSelectedNode.setDeselected();
+//                mSelectedNode = null;
+//            }
         }
 
         // if there is a specific selected comment use it - much faster than checking all nodes
