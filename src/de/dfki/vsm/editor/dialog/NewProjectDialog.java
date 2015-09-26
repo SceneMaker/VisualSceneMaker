@@ -43,6 +43,7 @@ public class NewProjectDialog extends JDialog
     
     public NewProjectDialog() {
         super(EditorInstance.getInstance(), "New Project", true);
+        EditorInstance.getInstance().addEscapeListener(this);
         initComponents();
         setVisible(true);
     }

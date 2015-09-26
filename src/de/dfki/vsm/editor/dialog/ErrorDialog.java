@@ -41,6 +41,7 @@ public class ErrorDialog extends JDialog {
 
     private ErrorDialog() {
         super(EditorInstance.getInstance(), "Error Console", false);
+        EditorInstance.getInstance().addEscapeListener(this);
         initComponents();
     }
 

@@ -2,7 +2,6 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
@@ -101,6 +100,7 @@ public class OptionsDialog extends JDialog {
 
     private OptionsDialog() {
         super(EditorInstance.getInstance(), "Preferences", false);
+        EditorInstance.getInstance().addEscapeListener(this);
         mEditorConfig = mEditor.getSelectedProjectEditor().getEditorProject().getEditorConfig();     
         initComponents();
         initEditorConfig();

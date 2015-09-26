@@ -42,15 +42,15 @@ public class VarDefDialog extends Dialog {
     private JLabel               mNameLabel;
     private JLabel               mTypeDefLabel;
     private JLabel               mExpLabel;
-    private HintTextField           mNameTextField;
-    private HintTextField           mExpTextField;
+    private HintTextField        mNameTextField;
+    private HintTextField        mExpTextField;
     private JButton              mAddExpButton;
     private JComboBox            mTypeDefComboBox;
     private DefaultComboBoxModel mTypeDefComboBoxModel;
     private OKButton             mOkButton;
     private CancelButton         mCancelButton;
-    private Dimension            labelSize = new Dimension(75, 30);
-    private Dimension            textFielSize = new Dimension(250, 30);
+    private Dimension            labelSize      = new Dimension(75, 30);
+    private Dimension            textFielSize   = new Dimension(250, 30);
     private JLabel errorMsg;
     public VarDefDialog(Node node, VarDef varDef) {
         super(EditorInstance.getInstance(), "Create/Modify Variable Definition", true);
