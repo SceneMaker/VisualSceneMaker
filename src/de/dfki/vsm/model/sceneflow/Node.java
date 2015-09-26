@@ -278,7 +278,6 @@ public class Node extends Syntax {
 
     public Vector<VarDef> getCopyOfVarDefList() {
         Vector<VarDef> copy = new Vector<VarDef>();
-        System.out.println(mVarDefList+ " /////////////////////////////////////////////////////////////////////");
         for (VarDef varDef : mVarDefList) {
             copy.add(varDef.getCopy());
         }
