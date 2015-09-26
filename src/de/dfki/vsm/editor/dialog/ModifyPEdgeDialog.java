@@ -19,7 +19,6 @@ import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 

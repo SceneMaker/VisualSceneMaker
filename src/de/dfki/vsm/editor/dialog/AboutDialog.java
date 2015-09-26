@@ -91,7 +91,7 @@ public class AboutDialog extends JDialog {
     // Construction
     private AboutDialog() {
         super(EditorInstance.getInstance(), "About", false);
-
+        EditorInstance.getInstance().addEscapeListener(this);
         // Init close operation
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {

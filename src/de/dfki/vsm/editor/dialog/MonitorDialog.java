@@ -52,6 +52,7 @@ public class MonitorDialog extends JDialog {
 
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
+        EditorInstance.getInstance().addEscapeListener(this);
         mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         initComponents();
         //initVariableList(); Now this init is being called from the button calling the monitor -- by M. Fallas 07 2015 

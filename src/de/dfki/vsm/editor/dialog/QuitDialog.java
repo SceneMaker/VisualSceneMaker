@@ -61,6 +61,7 @@ public class QuitDialog extends JDialog {
     // Construction
     public QuitDialog(int quitType) {
         super(EditorInstance.getInstance(), "Quit", false);
+        EditorInstance.getInstance().addEscapeListener(this);
         if (quitType == EXIT_DIALOG)
         {
             exitMessage ="<html><body>This Project has been modified but not saved. <br> Do you want to save before quitting?</body></html>";
