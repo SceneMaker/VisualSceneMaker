@@ -48,7 +48,7 @@ public class MonitorDialog extends JDialog {
     private HintTextField           mInputTextField;
     private JScrollPane          mVariableScrollPane;
     private Vector<VarDef>       mVarDefListData;
-    private final EditorProject      mEditorProject;
+    private static EditorProject       mEditorProject;
 
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
@@ -58,6 +58,7 @@ public class MonitorDialog extends JDialog {
     }
 
     public static MonitorDialog getInstance() {
+        mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         if (sSingeltonInstance == null) {
             sSingeltonInstance = new MonitorDialog();
         }
@@ -159,9 +160,9 @@ public class MonitorDialog extends JDialog {
         mOkButton.requestFocus();
     }
 
-    private void initVariableList() {
+    public void initVariableList() {
         mVarDefListData = mEditorProject.getSceneFlow().getCopyOfVarDefList();
-
+        ((DefaultListModel) mVariableList.getModel()).removeAllElements();
         for (VarDef varDef : mVarDefListData) {
             ((DefaultListModel) mVariableList.getModel()).addElement(varDef.getType() + " " + varDef.getName());
         }

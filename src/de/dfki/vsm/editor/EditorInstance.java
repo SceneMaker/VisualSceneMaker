@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor;
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
@@ -204,7 +205,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("Button.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ToggleButton.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("RadioButton.font", new Font(defaultFont, Font.PLAIN, 14));
-
         UIManager.put("CheckBox.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ColorChooser.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ComboBox.font", new Font(defaultFont, Font.PLAIN, 14));
@@ -250,6 +250,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("EditorPane.background", Color.WHITE);
         UIManager.put("ScrollPane.background", Color.WHITE);
         UIManager.put("Viewport.background", Color.WHITE);
+        UIManager.put("ScrollBarUI", WindowsScrollBarUI.class.getName());
+        UIManager.put("ScrollBar.background", Color.GRAY);
+        UIManager.put("ScrollBar.thumb", Color.LIGHT_GRAY);
     }
 
     public void clearRecentProjects() {
@@ -725,7 +728,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Show the monitor dialog
     public final void showMonitor() {
         final MonitorDialog monitorDialog = MonitorDialog.getInstance();
-
+        monitorDialog.initVariableList();
         monitorDialog.setVisible(true);
     }
 

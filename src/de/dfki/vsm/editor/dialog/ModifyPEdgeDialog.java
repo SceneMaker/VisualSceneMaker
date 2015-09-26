@@ -38,6 +38,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -54,7 +55,7 @@ public class ModifyPEdgeDialog extends Dialog {
     //
     private HashMap<PEdge, JTextField> mPEdgeMap = new HashMap<PEdge, JTextField>();
     private final Dimension buttonSize = new Dimension(150, 30);
-
+    private final Dimension smallButtonSize = new Dimension(30, 30);
     // Data model components
     private final Node mSourceNode;
     private final Node mTargetNode;
@@ -195,64 +196,6 @@ public class ModifyPEdgeDialog extends Dialog {
 
     private void initButtonPanel() {
 
-        // Normalize button
-        mNormButton = new JLabel("Normalize");
-        mNormButton.setHorizontalAlignment(SwingConstants.RIGHT);
-        mNormButton.setOpaque(true);
-        mNormButton.setBackground(Color.white);
-        mNormButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        mNormButton.setToolTipText("Normalize");
-        mNormButton.setIcon(ICON_NORMALIZE_STANDARD);
-        mNormButton.setIconTextGap(20);
-        mNormButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
-        mNormButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        mNormButton.setPreferredSize(buttonSize);
-        mNormButton.setMinimumSize(buttonSize);
-        mNormButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                normalizeActionPerformed();
-            }
-
-            public void mouseEntered(MouseEvent me) {
-                mNormButton.setIcon(ICON_NORMALIZE_ROLLOVER);
-                mNormButton.setBackground(new Color(82, 127, 255));
-            }
-
-            public void mouseExited(MouseEvent me) {
-                mNormButton.setIcon(ICON_NORMALIZE_STANDARD);
-                mNormButton.setBackground(new Color(255, 255, 255));
-            }
-        });
-
-        // Uniform button
-        mUniButton = new JLabel("Uniform");
-        mUniButton.setHorizontalAlignment(SwingConstants.RIGHT);
-        mUniButton.setOpaque(true);
-        mUniButton.setBackground(Color.white);
-        mUniButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        mUniButton.setToolTipText("Uniform");
-        mUniButton.setIcon(ICON_UNIFORM_STANDARD);
-        mUniButton.setIconTextGap(20);
-        mUniButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
-        mUniButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        mUniButton.setPreferredSize(buttonSize);
-        mUniButton.setMinimumSize(buttonSize);
-        mUniButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                uniformActionPerformed();
-            }
-
-            public void mouseEntered(MouseEvent me) {
-                mUniButton.setIcon(ICON_UNIFORM_ROLLOVER);
-                mUniButton.setBackground(new Color(82, 127, 255));
-            }
-
-            public void mouseExited(MouseEvent me) {
-                mUniButton.setIcon(ICON_UNIFORM_STANDARD);
-                mUniButton.setBackground(new Color(255, 255, 255));
-            }
-        });
-
         // Ok button
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -268,15 +211,6 @@ public class ModifyPEdgeDialog extends Dialog {
                 cancelActionPerformed();
             }
         });
-
-        // Button panel
-        Box firstButtonBox = Box.createHorizontalBox();
-        firstButtonBox.add(Box.createHorizontalGlue());
-        firstButtonBox.add(mNormButton);
-        firstButtonBox.add(Box.createHorizontalStrut(30));
-        firstButtonBox.add(mUniButton);
-        firstButtonBox.add(Box.createHorizontalGlue());
-
         // Button panel
         Box secondButtonBox = Box.createHorizontalBox();
         secondButtonBox.add(Box.createHorizontalGlue());
@@ -289,8 +223,8 @@ public class ModifyPEdgeDialog extends Dialog {
         mButtonPanel.setOpaque(false);
         mButtonPanel.setMinimumSize(new Dimension(480, 80));
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.Y_AXIS));
-        mButtonPanel.add(firstButtonBox);
-        mButtonPanel.add(Box.createVerticalStrut(30));
+//        mButtonPanel.add(firstButtonBox);
+//        mButtonPanel.add(Box.createVerticalStrut(30));
         mButtonPanel.add(secondButtonBox);
 
     }
@@ -313,11 +247,14 @@ public class ModifyPEdgeDialog extends Dialog {
         nodesPanel.setBorder(null);
         JScrollPane nodesScrollPanel = new JScrollPane(nodesPanel);
         nodesScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
-        nodesScrollPanel.setPreferredSize(new Dimension(480, 90));
-        nodesScrollPanel.setMinimumSize(new Dimension(480, 90));
+        //nodesScrollPanel.setPreferredSize(new Dimension(480, 90));
+        nodesScrollPanel.setMinimumSize(new Dimension(340, 90));
         nodesScrollPanel.setMaximumSize(new Dimension(480, 90));
+        nodesScrollPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         nodesScrollPanel.setBorder(null);
         //
+        boolean requiresUniformAction = false;
+        
         for (PEdge pedge : mPEdgeMap.keySet()) {
 
             // Init description label
@@ -331,8 +268,15 @@ public class ModifyPEdgeDialog extends Dialog {
 
             if (prob == Integer.MIN_VALUE) {
                 prob = 100;
+                if (mPEdgeMap.size() >= 3)
+                {
+                    prob = 0;
+                }
+                else 
+                {
+                    requiresUniformAction = true;
+                }
             }
-
             // Init probability text field
             JTextField probField = new JTextField(new IntegerDocument(), String.valueOf(prob), 3);
             probField.setMinimumSize(new Dimension(40, 25));
@@ -363,23 +307,18 @@ public class ModifyPEdgeDialog extends Dialog {
             pedgePanel.add(pedgeDescription);
             pedgePanel.add(Box.createRigidArea(new Dimension(15, 0)));
             pedgePanel.add(probField);
-            pedgePanel.add(Box.createHorizontalGlue());
+            pedgePanel.add(Box.createHorizontalStrut(30));
             nodesPanel.add(pedgePanel);
 //            mEdgeProbPanel
 
         }
-        mEdgeProbPanel.add(nodesScrollPanel);
         
         // Init rest panel
         mRestPanel = new JPanel();
         mRestPanel.setOpaque(false);
         mRestPanel.setLayout(new BoxLayout(mRestPanel, BoxLayout.X_AXIS));
-
-        //
         mRestLabel = new JLabel("Rest:");
         sanitizeComponent(mRestLabel, labelSize);
-
-        //
         mRestField = new JTextField(3);
         mRestField.setMinimumSize(new Dimension(40, 25));
         mRestField.setPreferredSize(new Dimension(40, 25));
@@ -387,23 +326,90 @@ public class ModifyPEdgeDialog extends Dialog {
         mRestField.setDocument(new IntegerDocument());
         mRestField.setEditable(false);
         mRestField.setEnabled(false);
-
-        //
         mRestPanel.add(mRestLabel);
         mRestPanel.add(Box.createRigidArea(new Dimension(15, 0)));
-
-        // mRestPanel.add(Box.createHorizontalGlue());
         mRestPanel.add(mRestField);
         mRestPanel.add(Box.createHorizontalGlue());
+        
+        // Normalize button
+        mNormButton = new JLabel();
+        mNormButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        mNormButton.setOpaque(true);
+        mNormButton.setBackground(Color.white);
+        mNormButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        mNormButton.setToolTipText("Normalize");
+        mNormButton.setIcon(ICON_NORMALIZE_STANDARD);
+       // mNormButton.setIconTextGap(20);
+        //mNormButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        mNormButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        mNormButton.setPreferredSize(smallButtonSize);
+        mNormButton.setMinimumSize(smallButtonSize);
+        mNormButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                normalizeActionPerformed();
+            }
 
+            public void mouseEntered(MouseEvent me) {
+                mNormButton.setIcon(ICON_NORMALIZE_ROLLOVER);
+                mNormButton.setBackground(new Color(82, 127, 255));
+            }
+
+            public void mouseExited(MouseEvent me) {
+                mNormButton.setIcon(ICON_NORMALIZE_STANDARD);
+                mNormButton.setBackground(new Color(255, 255, 255));
+            }
+        });
+
+        // Uniform button
+        mUniButton = new JLabel();
+        mUniButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        mUniButton.setOpaque(true);
+        mUniButton.setBackground(Color.white);
+        mUniButton.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        mUniButton.setToolTipText("Uniform");
+        mUniButton.setIcon(ICON_UNIFORM_STANDARD);
+        //mUniButton.setIconTextGap(20);
+        //mUniButton.setFont(new Font("Helvetica", Font.PLAIN, 20));
+        mUniButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        mUniButton.setPreferredSize(smallButtonSize);
+        mUniButton.setMinimumSize(smallButtonSize);
+        mUniButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                uniformActionPerformed();
+            }
+
+            public void mouseEntered(MouseEvent me) {
+                mUniButton.setIcon(ICON_UNIFORM_ROLLOVER);
+                mUniButton.setBackground(new Color(82, 127, 255));
+            }
+
+            public void mouseExited(MouseEvent me) {
+                mUniButton.setIcon(ICON_UNIFORM_STANDARD);
+                mUniButton.setBackground(new Color(255, 255, 255));
+            }
+        });
+         // Button panel
+        Box topContainer = Box.createHorizontalBox();
+        Box probButtonsBox = Box.createVerticalBox();
+       // probButtonsBox.add(Box.createHorizontalGlue());
+        probButtonsBox.add(mNormButton);
+        probButtonsBox.add(Box.createVerticalStrut(20));
+        probButtonsBox.add(mUniButton);
+       // probButtonsBox.add(Box.createHorizontalGlue());
+        topContainer.add(nodesScrollPanel);
+        topContainer.add(Box.createHorizontalStrut(130));
+        topContainer.add(probButtonsBox);
         // Add the rest panel
-        mEdgeProbPanel.add(Box.createVerticalStrut(20));
+        mEdgeProbPanel.add(topContainer);
+        mEdgeProbPanel.add(Box.createVerticalStrut(40));
         mEdgeProbPanel.add(mRestPanel);
 
         // Highlight the prbability text field of the current edge
         mPEdgeMap.get(mPEdge).setCaretPosition(0);
-        mPEdgeMap.get(mPEdge).setForeground(Color.red);
-        mPEdgeMap.get(mPEdge).setForeground(Color.red);
+        if(requiresUniformAction)
+        {
+            uniformActionPerformed();
+        }
     }
 
     protected void initAltStartNodePanel() {
