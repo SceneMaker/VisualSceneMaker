@@ -13,19 +13,19 @@ import java.util.logging.Logger;
 /**
  * @author Gregor Mehlmann
  */
-public class LOGDefaultLogger {
+public class LOGConsoleLogger {
 
     // The Singelton Console Logger Instance
-    private static LOGDefaultLogger sInstance = null;
+    private static LOGConsoleLogger sInstance = null;
 
     // Construct The Java Console Logger
-    private static final Logger sLogger = Logger.getLogger(LOGDefaultLogger.class.getName());
+    private static final Logger sLogger = Logger.getLogger(LOGConsoleLogger.class.getName());
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Construct The Default Logger
-    private LOGDefaultLogger() {
+    private LOGConsoleLogger() {
 
         // Log The Messages From All Levels
         sLogger.setLevel(Level.ALL);
@@ -39,7 +39,7 @@ public class LOGDefaultLogger {
             install(new LOGConsoleHandler());
 
             // Install The Logfile Handler
-            install(new LOGLogFileHandler(Preferences.sLOGFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
+            //install(new LOGLogFileHandler(Preferences.sLOGFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
         } catch (Exception exc) {
             exc.printStackTrace();
             sLogger.severe(exc.toString());
@@ -50,9 +50,9 @@ public class LOGDefaultLogger {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Get The Singelton Logger Instance
-    public static synchronized LOGDefaultLogger getInstance() {
+    public static synchronized LOGConsoleLogger getInstance() {
         if (sInstance == null) {
-            sInstance = new LOGDefaultLogger();
+            sInstance = new LOGConsoleLogger();
         }
 
         return sInstance;
