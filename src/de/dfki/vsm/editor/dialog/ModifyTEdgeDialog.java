@@ -161,6 +161,7 @@ public class ModifyTEdgeDialog extends Dialog {
         sanitizeComponent(mInputLabel, labelSize);
         // Input text field
         mInputTextField = new HintTextField("1000");
+        mInputTextField.setText("1000");
         sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
         mInputPanel = new JPanel();

@@ -167,5 +167,5 @@ public class MonitorDialog extends JDialog {
         for (VarDef varDef : mVarDefListData) {
             ((DefaultListModel) mVariableList.getModel()).addElement(varDef.getType() + " " + varDef.getName());
         }
+           }
     }
-}
