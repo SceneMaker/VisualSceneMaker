@@ -91,7 +91,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     //List of scene elements
     private final ArrayList<TreeEntry> mSceneEntryList = new ArrayList<TreeEntry>();
     //Tree entry for scenes
-    private final TreeEntry mSceneFlowEntry = new TreeEntry("SceneFlow", null, null);
+    private final TreeEntry mSceneFlowEntry = new TreeEntry("Scenes", null, null);
     //Tree entry for functions
     private final TreeEntry mFunctionsEntry = new TreeEntry("Functions", null, null);
     //Tree entry for DialogActs
@@ -242,9 +242,10 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 //      for(int i = 0; i < mSceneListEntry.size(); i++) {
 //          mRootEntry.add(mSceneListEntry.get(i));
 //      }
+        mElementTree.add(mSceneFlowEntry);
         mElementTree.add(mFunctionsEntry);
         mElementTree.add(mDialogActsEntry);
-        mElementTree.add(mSceneFlowEntry);
+        
         //
         ((DefaultTreeModel) getModel()).setRoot(mElementTree);
         functionsAdd.addActionListener(this);
