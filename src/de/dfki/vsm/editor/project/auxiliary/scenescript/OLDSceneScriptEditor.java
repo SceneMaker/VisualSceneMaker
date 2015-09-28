@@ -15,7 +15,7 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 import org.ujmp.core.collections.ArrayIndexList;
 import java.awt.BorderLayout;
@@ -57,7 +57,7 @@ import javax.swing.text.JTextComponent;
 public final class OLDSceneScriptEditor extends JPanel implements DocumentListener, EventListener {
 
     // The system logger instance
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The event dispatcher instance
     private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
 

@@ -42,7 +42,7 @@ public final class VSMTCPSockClient extends VSMAgentClient {
         super(player, name, uaid, rhost, rport);
 
         // Debug Some Information
-        mVSM3Log.message("Creating TCP Agent Client For '" + name + "' With Id '" + uaid + "' On '" + rhost + ":"
+        mLogger.message("Creating TCP Agent Client For '" + name + "' With Id '" + uaid + "' On '" + rhost + ":"
                         + rport + "'");
     }
 
@@ -65,12 +65,12 @@ public final class VSMTCPSockClient extends VSMAgentClient {
             mWriter = new BufferedWriter(new OutputStreamWriter(mSocket.getOutputStream(), "UTF-8"));
 
             // Debug Some Information
-            mVSM3Log.message("Constructing TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
+            mLogger.message("Constructing TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
                             + mRemoteHost + ":" + mRemotePort + "'");
         } catch (final IOException exc) {
 
             // Debug Some Information
-            mVSM3Log.failure(exc.toString());
+            mLogger.failure(exc.toString());
         }
 
         // Start The Client Thread
@@ -95,7 +95,7 @@ public final class VSMTCPSockClient extends VSMAgentClient {
             } catch (final IOException exc) {
 
                 // Debug Some Information
-                mVSM3Log.warning(exc.toString());
+                mLogger.warning(exc.toString());
             }
         }
     }
@@ -107,7 +107,7 @@ public final class VSMTCPSockClient extends VSMAgentClient {
     public final void run() {
 
         // Debug Some Information
-        mVSM3Log.message("Starting TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
+        mLogger.message("Starting TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
                         + mRemoteHost + ":" + mRemotePort + "'");
 
         // Execute While Not Done
@@ -120,11 +120,11 @@ public final class VSMTCPSockClient extends VSMAgentClient {
         } catch (final Exception exc) {
 
             // Debug Some Information
-            mVSM3Log.failure(exc.toString());
+            mLogger.failure(exc.toString());
         }
 
         // Debug Some Information
-        mVSM3Log.message("Stopping TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
+        mLogger.message("Stopping TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
                         + mRemoteHost + ":" + mRemotePort + "'");
     }
 
@@ -145,7 +145,7 @@ public final class VSMTCPSockClient extends VSMAgentClient {
                 mOutput.flush();
 
                 // Debug Some Information
-                mVSM3Log.message("Sending Message '" + BINUtilities.BytesToHexString(bytes)
+                mLogger.message("Sending Message '" + BINUtilities.BytesToHexString(bytes)
                                 + "' Over TCP Agent Client '" + mAgentName + "' With Id '" + mAgentUaid + "'");
 
                 // Return At Success
@@ -153,12 +153,12 @@ public final class VSMTCPSockClient extends VSMAgentClient {
             } catch (Exception exc) {
 
                 // Debug Some Information
-                mVSM3Log.warning(exc.toString());
+                mLogger.warning(exc.toString());
             }
         } else {
 
             // Debug Some Information
-            mVSM3Log.warning("Cannot Send Over TCP Agent Client '" + mAgentName + "' With Id '" + mAgentUaid + "'");
+            mLogger.warning("Cannot Send Over TCP Agent Client '" + mAgentName + "' With Id '" + mAgentUaid + "'");
         }
 
         // Return At Failure
@@ -181,7 +181,7 @@ public final class VSMTCPSockClient extends VSMAgentClient {
                 mWriter.flush();
 
                 // Debug Some Information
-                mVSM3Log.message("Sending Message '" + string + "' Over TCP Agent Client '" + mAgentName + "' With Id '"
+                mLogger.message("Sending Message '" + string + "' Over TCP Agent Client '" + mAgentName + "' With Id '"
                                 + mAgentUaid + "'");
 
                 // Return At Success
@@ -189,12 +189,12 @@ public final class VSMTCPSockClient extends VSMAgentClient {
             } catch (Exception exc) {
 
                 // Debug Some Information
-                mVSM3Log.warning(exc.toString());
+                mLogger.warning(exc.toString());
             }
         } else {
 
             // Debug Some Information
-            mVSM3Log.warning("Cannot Send Over TCP Agent Client '" + mAgentName + "' With Id '" + mAgentUaid + "'");
+            mLogger.warning("Cannot Send Over TCP Agent Client '" + mAgentName + "' With Id '" + mAgentUaid + "'");
         }
 
         // Return At Failure
@@ -217,7 +217,7 @@ public final class VSMTCPSockClient extends VSMAgentClient {
                 mInput.readFully(bytes);
 
                 // Debug Some Information
-                mVSM3Log.message("Reading Message'" + BINUtilities.BytesToHexString(bytes) + "' From TCP Agent Client '"
+                mLogger.message("Reading Message'" + BINUtilities.BytesToHexString(bytes) + "' From TCP Agent Client '"
                                 + mAgentName + "' With Id '" + mAgentUaid + "'");
 
                 // Return The Notification
@@ -225,12 +225,12 @@ public final class VSMTCPSockClient extends VSMAgentClient {
             } catch (Exception exc) {
 
                 // Debug Some Information
-                mVSM3Log.warning(exc.toString());
+                mLogger.warning(exc.toString());
             }
         } else {
 
             // Debug Some Information
-            mVSM3Log.warning("Cannot Read From TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "'");
+            mLogger.warning("Cannot Read From TCP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "'");
         }
 
         // Otherwise Return Null
@@ -251,14 +251,14 @@ public final class VSMTCPSockClient extends VSMAgentClient {
                 final String line = mReader.readLine();
 
                 // Debug Some Information
-                mVSM3Log.message("Reading Message'" + line + "'");
+                mLogger.message("Reading Message'" + line + "'");
 
                 // Return The Notification
                 return line;
             } catch (Exception exc) {
 
                 // Debug Some Information
-                mVSM3Log.warning(exc.toString());
+                mLogger.warning(exc.toString());
             }
         }
 

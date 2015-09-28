@@ -1,239 +1,183 @@
 package de.dfki.vsm.api;
 
-//~--- JDK imports ------------------------------------------------------------
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.Arrays;
 
 /**
- * @author Not me
+ * @author Gregor
  */
 public final class VSMUDPSockClient extends VSMAgentClient {
 
-    // The Datagram Socket
+    // The datagram socket
     private DatagramSocket mSocket;
-
-    // The Local Address
+    // The local address
     private SocketAddress mLocalAddr;
-
-    // The Loacl Host
+    // The local host
     private final String mLocalHost;
-
-    // The Loacl Port
+    // The loacl port
     private final int mLocalPort;
-
-    // The Remote Address
+    // The remote address
     private SocketAddress mRemoteAddr;
-
-    // he Remote Flag
+    // The remote flag
     private final boolean mRemoteFlag;
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Construct the UDP client
     public VSMUDPSockClient(
             final VSMScenePlayer player,
             final String name, final String uaid,
             final String lhost, final int lport,
             final String rhost, final int rport,
             final boolean rflag) {
-
-        // Initialize The Client
+        // Initialize the VSM client
         super(player, name, uaid, rhost, rport);
-
-        // Initialize UDP Client
+        // Initialize the UDP client
         mLocalHost = lhost;
         mLocalPort = lport;
         mRemoteFlag = rflag;
-
-        // Debug Some Information
-        mVSM3Log.message("Creating UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":" + mLocalPort + "'");
+        // Print some information
+        mLogger.message("Creating UDP Agent Client" + " "
+                + "'" + mAgentName + "' With Id '" + mAgentUaid + "'"
+                + " " + "To '" + mRemoteHost + ":" + mRemotePort + "'"
+                + " " + "On '" + mLocalHost + ":" + mLocalPort + "'");
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Start the UDP client thread
     @Override
     public final void start() {
         try {
-
-            // Create The Addresses
+            // Create local addresses
             mLocalAddr = new InetSocketAddress(mLocalHost, mLocalPort);
-
-            // Create The UDP Socket
-            mSocket = new DatagramSocket(mLocalAddr);            
-           
-            // Connect The UDP Socket
+            // Create the UDP socket
+            mSocket = new DatagramSocket(mLocalAddr);
+            // Connect the UDP socket
             if (mRemoteFlag) {
-
-                // Create The Addresses
+                // Create remote address
                 mRemoteAddr = new InetSocketAddress(mRemoteHost, mRemotePort);
-
-                // Connect The UDP Socket
+                // Connect the UDP socket
                 mSocket.connect(mRemoteAddr);
-
-                // Debug Some Information
-                mVSM3Log.message("Connecting UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid
-                        + "' On '" + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":"
-                        + mLocalPort + "'");
+                // Print some information
+                mLogger.message("Connecting UDP Agent Client" + " "
+                        + "'" + mAgentName + "' With Id '" + mAgentUaid + "'"
+                        + " " + "To '" + mRemoteHost + ":" + mRemotePort + "'"
+                        + " " + "On '" + mLocalHost + ":" + mLocalPort + "'");
             }
-
-            // Debug Some Information
-            mVSM3Log.message("Starting UDP Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                    + mRemoteHost + ":" + mRemotePort + "' From '" + mLocalHost + ":" + mLocalPort + "'");
         } catch (final SocketException exc) {
-
-            // Debug Some Information
-            mVSM3Log.failure(exc.toString());
+            // Print some information
+            mLogger.failure(exc.toString());
         }
-
-        // Start The Client Thread
+        // Start the client thread 
         super.start();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Abort the client connection
     @Override
     public final void abort() {
-
         // Set Termination Flag
         mDone = true;
-
         // Close The Socket Now
         if ((mSocket != null) && !mSocket.isClosed()) {
             mSocket.close();
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Execute the client connection
     @Override
     public final void run() {
-
-        // Debug Some Information
-        mVSM3Log.message("Starting VSM Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                + mRemoteHost + ":" + mRemotePort + "'");
-
-        // Execute While Not Done
+        // Print some information
+        mLogger.message("Starting UDP Agent Client" + " "
+                + "'" + mAgentName + "' With Id '" + mAgentUaid + "'"
+                + " " + "To '" + mRemoteHost + ":" + mRemotePort + "'"
+                + " " + "On '" + mLocalHost + ":" + mLocalPort + "'");
+        // Execute while not done
         try {
             while (!mDone) {
-
-                // Constantly Handle Data
+                // Constantly handle data
                 mPlayer.handle(this);
             }
         } catch (final Exception exc) {
-
-            // Debug Some Information
-            mVSM3Log.failure(exc.toString());
+            // Print some information
+            mLogger.failure(exc.toString());
         }
-
-        // Debug Some Information
-        mVSM3Log.message("Stopping VSM Agent Client For '" + mAgentName + "' With Id '" + mAgentUaid + "' On '"
-                + mRemoteHost + ":" + mRemotePort + "'");
+        // Print some information
+        mLogger.message("Stopping UDP Agent Client" + " "
+                + "'" + mAgentName + "' With Id '" + mAgentUaid + "'"
+                + " " + "To '" + mRemoteHost + ":" + mRemotePort + "'"
+                + " " + "On '" + mLocalHost + ":" + mLocalPort + "'");
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Send some bytes via the client
     @Override
     public final boolean sendBytes(final byte[] bytes) {
-
-        // Return At Failure
+        // Return false at failure
         return false;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Send some string via the socket
     @Override
     public final boolean sendString(final String string) {
         try {
-            //
-            mVSM3Log.message("Sending '" + string + "'");
-            
-            //
+            // Create the byte buffer
             final byte[] buffer = string.getBytes("UTF-8");
-            //
-            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-            //
+            // Create the UDP packet
+            final DatagramPacket packet
+                    = new DatagramPacket(buffer, buffer.length);
+            // And send the UDP packet
             mSocket.send(packet);
-            //
+               // Return true at success
             return true;
-
         } catch (final Exception exc) {
-            mVSM3Log.failure(exc.toString());
+            // Print some information
+            mLogger.failure(exc.toString());
+            // Return false at failure 
+            return false;
         }
-        // Return At Failure
-        return false;
+
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Receive some bytes via the socket
     @Override
     public final byte[] recvBytes(final int size) {
-        if ((mSocket != null) && !mSocket.isClosed()) {
-            try {
-
-                // Create The Datagram Packet
-                final byte[] buffer = new byte[size];
-                
-                final DatagramPacket mPacket = new DatagramPacket(buffer, buffer.length);
-
-                // Receive The Data Packet
-                mSocket.receive(mPacket);
-
-                // Debug Some Information
-                mVSM3Log.message("VSM Agent Client Receiving Message:");
-
-                // Return The Message
-                return buffer;
-            } catch (Exception exc) {
-
-                // Debug Some Information
-                mVSM3Log.warning(exc.toString());
-
-                // Debug Some Information
-                mVSM3Log.warning("VSM Agent Client Has Bad State");
-            }
+        try {
+            // Construct a byte array
+            final byte[] buffer = new byte[size];
+            // Construct an UDP packet
+            final DatagramPacket packet
+                    = new DatagramPacket(buffer, buffer.length);
+            // Receive the UDP packet
+            mSocket.receive(packet);
+            // Return the buffer now
+            return Arrays.copyOf(buffer, packet.getLength());
+        } catch (final Exception exc) {
+            // Print some information
+            mLogger.warning(exc.toString());
+            // Return null at failure 
+            return null;
         }
-
-        // Otherwise Return Null
-        return null;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Receive some string via the socket
     @Override
     public final String recvString() {
-
-        // Receive The Byte Packet
-        final byte[] buffer = recvBytes(1024);
-
-        // Try To Read Byte PAcket
-        if (buffer != null) {
-            try {
-                final String message = new String(buffer, 0, buffer.length, "UTF-8");
-
-                //
+        try {
+            // Receive a byte buffer
+            final byte[] buffer = recvBytes(4096);
+            // Check the buffer content
+            if (buffer != null) {
+                // Construct a message
+                final String message
+                        = new String(buffer, 0, buffer.length, "UTF-8");
+                // And return message
                 return message;
-            } catch (final Exception exc) {
-
-                // Debug Some Information
-                mVSM3Log.warning(exc.toString());
-
-                // Debug Some Information
-                mVSM3Log.warning("VSM Agent Client Has Bad State");
             }
+        } catch (final Exception exc) {
+            // Print some information
+            mLogger.failure(exc.toString());
         }
-
-        // Otherwise Return Null
+        // Return null at failure 
         return null;
     }
 }

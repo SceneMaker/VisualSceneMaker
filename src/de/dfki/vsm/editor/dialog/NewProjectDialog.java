@@ -5,21 +5,22 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
 
-
 /**
  * @author Sergio Soto
  */
-public class NewProjectDialog extends JDialog
-{
+public class NewProjectDialog extends JDialog {
+
     // panels
     private JPanel mMainPanel = null;
     private JPanel mButtonsPanel = null;
@@ -28,26 +29,24 @@ public class NewProjectDialog extends JDialog
     // buttons
     private OKButton mOkButton = null;
     private CancelButton mCancelButton = null;
-    
+
     // text fields
     private HintTextField mNameTextField = null;
-    
+
     // Labels
     private JLabel errorMsg;
     private JLabel lblName;
-    
-    
-    // logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-    
+    // logger
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+
     public NewProjectDialog() {
         super(EditorInstance.getInstance(), "New Project", true);
         EditorInstance.getInstance().addEscapeListener(this);
         initComponents();
         setVisible(true);
     }
-    
+
     private void initComponents() {
 
         // create contentfields and set inital content
@@ -58,10 +57,17 @@ public class NewProjectDialog extends JDialog
         mNameTextField = new HintTextField("Enter Project Name");
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
-        
+
+        mNameTextField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                okActionPerformed();
+            }
+        });
+
         mNameTextField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) {             
+            public void keyReleased(KeyEvent e) {
             }
 
             @Override
@@ -92,7 +98,7 @@ public class NewProjectDialog extends JDialog
                 cancelActionPerformed();
             }
         });
-        
+
         // create config panel
         mConfigPanel = new JPanel();
         mConfigPanel.setOpaque(false);
@@ -109,7 +115,7 @@ public class NewProjectDialog extends JDialog
         namePanel.add(Box.createRigidArea(new Dimension(5, 0)));
         namePanel.add(mNameTextField);
         namePanel.add(Box.createRigidArea(new Dimension(50, 0)));
-        
+
         // compose config panel
         mConfigPanel.add(namePanel);
         mConfigPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -118,7 +124,6 @@ public class NewProjectDialog extends JDialog
         errorMsg.setForeground(Color.white);
         mConfigPanel.add(errorMsg);
 
-        
         // compose panels
         mButtonsPanel = new JPanel();
         mButtonsPanel.setOpaque(false);
@@ -153,11 +158,11 @@ public class NewProjectDialog extends JDialog
             dispose();
         }
     }
-    
+
     protected void cancelActionPerformed() {
         dispose();
     }
-    
+
     private boolean validateValues() {
         if (mNameTextField.getText().length() == 0) {
             mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));

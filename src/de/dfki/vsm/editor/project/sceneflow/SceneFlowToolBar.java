@@ -13,7 +13,7 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.datatransfer.Clipboard;
@@ -114,7 +114,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
      */
 
     // The singelton logger instance
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The singelton runtime instance
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
     // The singelton editor instance

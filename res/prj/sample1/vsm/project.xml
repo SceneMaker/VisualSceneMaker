@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="AOCReeti">
+  <Plugins>
+  </Plugins>
+  <Players>
+    <Player name="defaultsceneplayer" class="de.dfki.vsm.api.VSMDefaultPlayer">
+      <Feature key="vsm.agent.number" value="1"/>
+      <Feature key="vsm.agent.0.name" value="reeti"/>
+      <Feature key="vsm.agent.0.uaid" value="1"/>
+      <Feature key="vsm.agent.0.type" value="udp"/>
+      <Feature key="vsm.agent.0.local.host" value="137.250.171.125"/>
+      <Feature key="vsm.agent.0.local.port" value="1125"/>
+      <Feature key="vsm.agent.0.remote.host" value="137.250.171.124"/>
+      <Feature key="vsm.agent.0.remote.port" value="1124"/>
+      <Feature key="vsm.agent.0.remote.flag" value="true"/>
+      <Feature key="swi.handler.local.host" value="137.250.171.125"/>
+      <Feature key="swi.handler.local.port" value="1001"/>
+      <Feature key="swi.handler.remote.host" value="137.250.171.125"/>
+      <Feature key="swi.handler.remote.port" value="1002"/>
+      <Feature key="swi.handler.remote.flag" value="false"/>
+      <Feature key="swi.handler.local.base" value="res/prj/aor/swi"/>
+    </Player>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>

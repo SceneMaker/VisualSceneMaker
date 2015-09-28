@@ -2,7 +2,7 @@ package de.dfki.vsm.api.hcm;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -18,10 +18,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * @author Not me
  * @author Kathrin Janowski
  */
-public final class HCMEventMessage {
+public final class HCMEventObject {
 
     // The VSM Logger
-    private static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     // The Message Id
     private static long sId = 0;
@@ -53,7 +53,7 @@ public final class HCMEventMessage {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private HCMEventMessage(final String type, final String utid, final String name, final String uaid,
+    private HCMEventObject(final String type, final String utid, final String name, final String uaid,
                             final String text, final long umid, final long date, final long time) {
         mType = type;
         mUtid = utid;
@@ -77,20 +77,20 @@ public final class HCMEventMessage {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public static HCMEventMessage newInstance(final String type, final String utid, final String name,
+    public static HCMEventObject newInstance(final String type, final String utid, final String name,
             final String uaid, final String text, final long date, final long time) {
 
         // Get New Message Id
         final long umid = newId();
 
         // Return New Message
-        return new HCMEventMessage(type, utid, name, uaid, text, umid, date, time);
+        return new HCMEventObject(type, utid, name, uaid, text, umid, date, time);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public static HCMEventMessage getInstance(final String input) {
+    public static HCMEventObject getInstance(final String input) {
         try {
 
             // Parse the XML String
@@ -113,7 +113,7 @@ public final class HCMEventMessage {
             final String text = action.getTextContent();
 
             // Construct The Message
-            final HCMEventMessage message = new HCMEventMessage(type, utid, name, uaid, text, Long.parseLong(umid),
+            final HCMEventObject message = new HCMEventObject(type, utid, name, uaid, text, Long.parseLong(umid),
                                                 Long.parseLong(date), Long.parseLong(time));
 
             // Return The Message

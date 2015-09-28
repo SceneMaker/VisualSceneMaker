@@ -32,7 +32,7 @@ import de.dfki.vsm.util.RegularExpressions;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
@@ -521,7 +521,7 @@ public class ElementEditor extends JScrollPane implements EventListener {
 
     //
     // private final Observable mObservable = new Observable();
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     private final NodeEditor mNodeEditor;
     private final EdgeEditor mEdgeEditor;

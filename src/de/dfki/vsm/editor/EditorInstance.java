@@ -18,7 +18,7 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -60,7 +60,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The singelton runtime instance 
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
     // The singelton logger instance   
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The singelton event multicaster
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // The editor's GUI components
@@ -141,11 +141,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         Preferences.load();
 
         getContentPane().setBackground(Color.WHITE);
-        try {
+        /*try {
          UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
          } catch (final Exception e) {
          // If Nimbus is not available, you can set the GUI to another look and feel.
-         }
+         }*/
          // SET FONTS
          setUIFonts();
 
@@ -243,6 +243,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     private void setUIBackgrounds() {
+
         UIManager.put("Frame.background", Color.WHITE);
         UIManager.put("Panel.background", Color.WHITE);
         UIManager.put("MenuBar.opaque", true);
@@ -811,11 +812,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Launch the current project in the runtime
             if (mRunTime.launch(project)) {
                 // Print some information
-                mLogger.message("Launching project '" + project + "'");
+                //mLogger.message("Launching project '" + project + "'");
                 // Start the interpreter for that project
                 if (mRunTime.start(project)) {
                     // Print some information
-                    mLogger.message("Starting project '" + project + "'");
+                    //mLogger.message("Starting project '" + project + "'");
                     // Refresh the appearance
                     refresh();
                     // Return true at success
@@ -849,11 +850,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Abort the interpreter for that project
         if (mRunTime.abort(project)) {
             // Print some information
-            mLogger.message("Aborting project '" + project + "'");
+            //mLogger.message("Aborting project '" + project + "'");
             // Unload the current project in the runtime
             if (mRunTime.unload(project)) {
                 // Print some information
-                mLogger.message("Unloading project '" + project + "'");
+                //mLogger.message("Unloading project '" + project + "'");
                 // Launch event to unselect nodes and edges
                 mEventCaster.convey(new SceneStoppedEvent(this));
                 // Refresh the appearance
