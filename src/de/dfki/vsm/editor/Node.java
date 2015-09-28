@@ -15,7 +15,7 @@ import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import static de.dfki.vsm.Preferences.sBASIC_NODE_COLOR;
 import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
@@ -76,7 +76,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     public boolean mDragged  = false;
 
     //
-    private final LOGDefaultLogger           mLogger           = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger           mLogger           = LOGConsoleLogger.getInstance();
     private final EventDispatcher                mEventMulticaster = EventDispatcher.getInstance();
     private Type                             mType;
     private de.dfki.vsm.model.sceneflow.Node mDataNode;

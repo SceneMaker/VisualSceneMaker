@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -49,7 +49,7 @@ public class OptionsDialog extends JDialog {
     private static OptionsDialog sSingeltonInstance = null;
 
     // private JComboBox mScenePlayerComboBox;
-    private final LOGDefaultLogger mLogger         = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger         = LOGConsoleLogger.getInstance();
     private final EditorInstance           mEditor         = EditorInstance.getInstance();
     private final Dimension        mLabelDimension = new Dimension(100, 10);
     private final Dimension        buttonSize      = new Dimension(125, 30);

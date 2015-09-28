@@ -1,7 +1,7 @@
 package de.dfki.vsm;
 
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
@@ -254,7 +254,7 @@ public final class Preferences {
                 sPROPERTIES.storeToXML(fileOutputStream, "Properties for the Sceneflow Editor", "ISO8859_1");
             }
         } catch (IOException e) {
-            LOGDefaultLogger.getInstance().failure("Error: " + e.getMessage());
+            LOGConsoleLogger.getInstance().failure("Error: " + e.getMessage());
         }
         init();
     }
@@ -291,7 +291,7 @@ public final class Preferences {
                     sPROPERTIES.loadFromXML(in);
                 }
             } catch (IOException e) {
-                LOGDefaultLogger.getInstance().failure("Error: " + e.getMessage());
+                LOGConsoleLogger.getInstance().failure("Error: " + e.getMessage());
             }
         }
 
@@ -439,7 +439,7 @@ public final class Preferences {
                 setDockIconImage.invoke(app, new Object[]{Preferences.ICON_SCENEMAKER_DOC.getImage()});
             }
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException exc) {
-            LOGDefaultLogger.getInstance().failure("Error: " + exc.getMessage());
+            LOGConsoleLogger.getInstance().failure("Error: " + exc.getMessage());
         }
     }
 

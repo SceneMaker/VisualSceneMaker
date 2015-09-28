@@ -5,7 +5,7 @@ import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -28,7 +28,7 @@ import javax.swing.KeyStroke;
 public final class EditorMenuBar extends JMenuBar {
 
     // The singelton logger instance   
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The singelton  editor instance
     private final EditorInstance mEditorInstance;
 

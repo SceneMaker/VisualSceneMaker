@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="59" language="en" identifier="Hello">
+    <SceneTurn lower="16" upper="59" speaker="reeti">
+      <SceneUttr lower="23" upper="59" punct="!">
+        <SceneWord lower="23" upper="28" text="Hallo"/>
+        <SceneWord lower="29" upper="33" text="Welt"/>
+        <SceneWord lower="34" upper="35" text="d"/>
+        <SceneWord lower="36" upper="37" text="d"/>
+        <SceneWord lower="38" upper="39" text="d"/>
+        <SceneWord lower="40" upper="41" text="d"/>
+        <SceneWord lower="42" upper="44" text="dd"/>
+        <SceneWord lower="45" upper="46" text="d"/>
+        <SceneWord lower="47" upper="48" text="d"/>
+        <SceneWord lower="49" upper="51" text="dd"/>
+        <SceneWord lower="52" upper="54" text="dd"/>
+        <SceneWord lower="55" upper="56" text="d"/>
+        <SceneWord lower="57" upper="58" text="d"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

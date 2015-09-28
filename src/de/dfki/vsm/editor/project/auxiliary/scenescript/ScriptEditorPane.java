@@ -10,7 +10,7 @@ import de.dfki.vsm.model.visicon.VisiconViseme;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
@@ -41,7 +41,7 @@ import javax.swing.text.Document;
 public class ScriptEditorPane extends JEditorPane implements EventListener {
 
     // The System Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // The Event Caster
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();

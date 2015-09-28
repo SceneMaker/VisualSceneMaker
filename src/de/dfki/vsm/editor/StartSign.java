@@ -4,7 +4,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import static de.dfki.vsm.Preferences.sSTART_SIGN_COLOR;
 
@@ -27,7 +27,7 @@ import javax.swing.JComponent;
  * @author Not me
  */
 public class StartSign extends JComponent implements Observer {
-    private final LOGDefaultLogger   mLogger      = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger   mLogger      = LOGConsoleLogger.getInstance();
     private final EventDispatcher        mEventCaster = EventDispatcher.getInstance();
     private Point                    mRelPos      = new Point(0, 0);
     private final Color              mColor;

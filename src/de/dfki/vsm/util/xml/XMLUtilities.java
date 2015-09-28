@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.xml;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import org.w3c.dom.Document;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +23,7 @@ import org.xml.sax.SAXException;
 public final class XMLUtilities {
 
     // The singelton logger instance
-    private final static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private final static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     // Parse a parseable object from a stream
     public final static boolean parseFromXMLStream(final XMLParseable parsable, final InputStream stream) {

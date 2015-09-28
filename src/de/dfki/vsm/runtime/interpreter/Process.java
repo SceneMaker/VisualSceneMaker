@@ -23,7 +23,7 @@ import de.dfki.vsm.runtime.exceptions.TerminateException;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.runtime.values.BooleanValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -45,7 +45,7 @@ public class Process extends java.lang.Thread {
     private Edge                   mIncomingEdge            = null;
     private final Vector<Process>  mChildThreadList         = new Vector<Process>();
     private final Vector<Process>  mAddChildThreadList      = new Vector<Process>();
-    private final LOGDefaultLogger mLogger                  = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger                  = LOGConsoleLogger.getInstance();
     private final Configuration    mConfiguration;
     private final SystemHistory    mSystemHistory;
     private final Evaluator        mEvaluator;

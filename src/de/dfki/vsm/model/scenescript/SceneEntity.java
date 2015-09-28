@@ -4,7 +4,7 @@ package de.dfki.vsm.model.scenescript;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -19,7 +19,7 @@ import java.util.HashMap;
 public abstract class SceneEntity implements ModelObject {
 
     // The System Logger
-    protected LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    protected LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // The Lower Bound
     protected int mLower;

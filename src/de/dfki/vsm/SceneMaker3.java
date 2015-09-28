@@ -1,24 +1,21 @@
 package de.dfki.vsm;
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.io.BufferedReader;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import javax.swing.SwingUtilities;
 
 /**
  * @author Gregor Mehlmann
  */
-public class SceneMaker3 {
+public final class SceneMaker3 {
 
     // The logger instance of SceneMaker3
-    private final static LOGDefaultLogger sLogger
-            = LOGDefaultLogger.getInstance();
+    private final static LOGConsoleLogger sLogger
+            = LOGConsoleLogger.getInstance();
 
     // Start SceneMaker3 in a specific mode
     public static void main(final String[] args) {
@@ -88,7 +85,7 @@ public class SceneMaker3 {
         sEditor.openProject(file);
         // Show the singelton editor instance
         sEditor.setVisible(true);
-
+        /*
         // Do something for Patrick ...
         final Thread control = new Thread() {
             // Termination flag
@@ -161,9 +158,10 @@ public class SceneMaker3 {
         control.start();
         // Print some information
         System.err.println("Starting Editor Mode ...");
+        */
     }
 
-// Start the runtime with some project
+    // Start the runtime with some project
     private static void runtime(final File file) {
         // Get an editor project from file 
         final RunTimeProject data = new RunTimeProject(file);
@@ -195,7 +193,7 @@ public class SceneMaker3 {
         }
     }
 
-// Print usage when usage error happened
+    // Print usage when usage error happened
     private static void usage() {
         sLogger.failure("Error: Usage: [runtime|editor] [filename]");
     }

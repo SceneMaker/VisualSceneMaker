@@ -1,74 +1,78 @@
 package de.dfki.vsm.api;
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.io.Closeable;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 /**
  * @author Gregor Mehlmann
  */
 public abstract class VSMAgentClient extends Thread {
 
-    // The Singelton Logger Instance
-    protected final LOGDefaultLogger mVSM3Log = LOGDefaultLogger.getInstance();
-    // The Thread Termination Flag
+    // The singelton logger instance
+    protected final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
+    // The thread terminatioin flag
     protected volatile boolean mDone = false;
-    // The Scene Player
+    // The respective player instance
     protected final VSMScenePlayer mPlayer;
-
-    // The Agent Features
+    // The agent client's features
     protected final String mAgentName;
     protected final String mAgentUaid;
     protected final String mRemoteHost;
     protected final int mRemotePort;
-
-    // The Closeable
-    protected Closeable mClosable;
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+   
+    // Construct an agent client
     public VSMAgentClient(
             final VSMScenePlayer player,
             final String name, final String uaid,
             final String host, final int port) {
-
-        // Initialize The Client
+        // Initialize the player
         mPlayer = player;
-        // Initialize The Fields
+        // Initialize the fields
         mAgentName = name;
         mAgentUaid = uaid;
         mRemoteHost = host;
         mRemotePort = port;
         // Debug Some Information
-        mVSM3Log.message("Creating VSM Agent Client For '" + name + "' With Id '" + uaid + "' On '" + host + ":" + port + "'");
+        mLogger.message("Creating VSM Agent Client '"
+                + name + "' With Id '" + uaid + "' To '" + host + ":" + port + "'");
     }
 
+    // Get the agent client name
     public final String getAgentName() {
         return mAgentName;
     }
 
+    // Get the agent client id
     public final String getAgentUaid() {
         return mAgentUaid;
     }
 
+    // Get the agent client host
     public final String getRemoteHost() {
         return mRemoteHost;
     }
 
+    // Get the agent client port
     public final int getRemotePort() {
         return mRemotePort;
     }
 
+    // Run the client connection
     @Override
     public abstract void run();
 
+    // Abort the client connection
     public abstract void abort();
 
+    // Send some bytes via client
     public abstract boolean sendBytes(final byte[] bytes);
 
+    // Send some string via client
     public abstract boolean sendString(final String string);
 
+    // Receive some bytes via client
     public abstract byte[] recvBytes(final int size);
 
+    // Send some string via client
     public abstract String recvString();
 }
