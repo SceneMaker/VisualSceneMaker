@@ -92,7 +92,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final ImageIcon ICON_PIN_STANDARD = ResourceLoader.loadImageIcon("/res/img/pin.png");
     private final ImageIcon ICON_PIN_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/pin_blue.png");
     //PIN status
-    private boolean pinPricked;
+    private boolean pinPricked = false;
     
     //Editor configuration
     private final EditorConfig mEditorConfig;
@@ -174,7 +174,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mScriptTabPanel.add(bxTop);
         mScriptTabPanel.add(bxBottom);
 
-        addTab("Script        ", mScriptTabPanel);
+        addTab("Scenes        ", mScriptTabPanel);
         addTab("Functions     ", mFunctionEditor);
         addTab("DialogAct [Experimental]", mDialogActEditor);
 
@@ -184,6 +184,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         //add(mTabPane, BorderLayout.CENTER);
         
         mPinButton = new JButton();
+        pinPricked = mEditorConfig.sAUTOHIDE_BOTTOMPANEL;
         setPin(pinPricked);
         mPinButton.setContentAreaFilled(false);
         //mPinButton.setMargin(new Insets(0, 10, 20, 10));
@@ -228,10 +229,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     }
     // Set the pin pricked flag
     public final void setPin(boolean state) {
+        System.out.println("------------------------setting pin to : " + state);
         pinPricked = state;
         mPinButton.setIcon(pinPricked? ICON_PIN_ROLLOVER: ICON_PIN_STANDARD);
         mPinButton.setRolloverIcon(pinPricked? ICON_PIN_STANDARD : ICON_PIN_ROLLOVER);
-        mEditorConfig.setProperty("autohidebottombar", String.valueOf(!pinPricked));
+        mEditorConfig.setProperty("autohidebottombar", String.valueOf(pinPricked));
     }
     
     private void sanitizeTinyButton(JButton b) {
