@@ -379,7 +379,6 @@ public final class RunTimeInstance {
                 return mProjectMap.get(project).getValueOf(name);
             }
         }
-
         return null;
     }
 
