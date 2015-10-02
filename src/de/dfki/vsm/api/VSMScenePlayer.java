@@ -265,6 +265,16 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
         }
     }
 
+    // Get the runtime project data
+    public final RunTimeProject getProject() {
+        return mProject;
+    }
+
+    // Get the runtime project data
+    public final RunTimeInstance getRunTime() {
+        return mRunTime;
+    }
+
     // Handle a client connection
     protected abstract void handle(final VSMAgentClient client);
 }
