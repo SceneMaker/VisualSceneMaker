@@ -633,6 +633,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         for (Node node : mNodeSet) {
             node.mSelected = false;
         }
+        mSelectedNode = null;
 
         repaint();
     }
@@ -1872,6 +1873,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         for (Node node : mNodeSet) {
             if (node.containsPoint(event.getX(), event.getY())) {
                 mSelectedNode = node;
+                this.requestFocusInWindow();
                 deselectAllOtherComponents(mSelectedNode);
 
                 // System.out.println(mSelectedNode.getDataNode().getName() + " pressed - found and pressed");
