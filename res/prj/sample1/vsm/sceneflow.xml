@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="dom, 27 sep 2015 11:13:05" start="N1;N2;N8;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <Variable type="String" name ="SystemTime">
+      <String value="undefined"/>
+    </Variable>
+    <Variable type="String" name ="SomeValue">
+      <String value="undefined"/>
+    </Variable>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N3" name="Play Scene" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String value="Hello"/>
+      </PlaySceneGroup>
+    </Commands>
+    <TEdge target="N3" start="" timeout="1000">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="357" y-pos="392" control-x-pos="381" control-y-pos="306"/>
+        <Point x-pos="384" y-pos="412" control-x-pos="462" control-y-pos="366"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="300" y-pos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N8" name="Start Node" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="210" y-pos="435" control-x-pos="232" control-y-pos="435"/>
+        <Point x-pos="300" y-pos="435" control-x-pos="277" control-y-pos="435"/>
+      </Arrow>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position x-pos="120" y-pos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N1" name="Statistics" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <UserCommand name="query">
+        <String value="statistics."/>
+      </UserCommand>
+    </Commands>
+    <TEdge target="N1" start="" timeout="10000">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="357" y-pos="212" control-x-pos="381" control-y-pos="126"/>
+        <Point x-pos="384" y-pos="232" control-x-pos="462" control-y-pos="186"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="300" y-pos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="System Timer" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <UserCommand name="query">
+        <String value="now(SystemTime)."/>
+      </UserCommand>
+    </Commands>
+    <EEdge target="N2" start ="">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="177" y-pos="212" control-x-pos="201" control-y-pos="126"/>
+        <Point x-pos="204" y-pos="232" control-x-pos="282" control-y-pos="186"/>
+      </Arrow>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position x-pos="120" y-pos="210"/>
+    </Graphics>
+  </Node>
+  <UserCommands>
+    <UserCommand name="query" classname ="de.dfki.vsm.api.VSMDefaultPlayer.sInstance" method="query">
+      <Argument name="query" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

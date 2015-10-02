@@ -1,125 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="TestProject" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Di, 22 Sep 2015 13:05:26" start="S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mi, 2 Sep 2015 10:55:02" start="N1;N2;N8;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
-    <Variable type="Int" name ="X">
-      <Int value="1000"/>
+    <Variable type="String" name ="SystemTime">
+      <String value="undefined"/>
+    </Variable>
+    <Variable type="String" name ="SomeValue">
+      <String value="undefined"/>
     </Variable>
   </Declare>
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position x-pos="67" y-pos="18"/>
+    <Position x-pos="10" y-pos="10"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position x-pos="10" y-pos="10"/>
   </GlobalVariableBadge>
+  <Node id="N3" name="N3" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String value="Hello"/>
+      </PlaySceneGroup>
+    </Commands>
+    <TEdge target="N3" start="" timeout="1000">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="357" y-pos="302" control-x-pos="381" control-y-pos="216"/>
+        <Point x-pos="384" y-pos="322" control-x-pos="462" control-y-pos="276"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="300" y-pos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N8" name="N8" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="210" y-pos="345" control-x-pos="232" control-y-pos="345"/>
+        <Point x-pos="300" y-pos="345" control-x-pos="277" control-y-pos="345"/>
+      </Arrow>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position x-pos="120" y-pos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N1" name="N1" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <UserCommand name="query">
+        <String value="statistics."/>
+      </UserCommand>
+    </Commands>
+    <TEdge target="N1" start="" timeout="1000">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="357" y-pos="122" control-x-pos="381" control-y-pos="36"/>
+        <Point x-pos="384" y-pos="142" control-x-pos="462" control-y-pos="96"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="300" y-pos="120"/>
+    </Graphics>
+  </Node>
   <Node id="N2" name="N2" exhaustive="false" preserving="false" history="false">
     <Define>
     </Define>
     <Declare>
     </Declare>
     <Commands>
-      <Assign>
-        <Variable name="X"/>
-        <Expression>
-          <Add>
-            <Variable name="X"/>
-            <Int value="1000"/>
-          </Add>
-        </Expression>
-      </Assign>
+      <UserCommand name="query">
+        <String value="now(SystemTime)."/>
+      </UserCommand>
     </Commands>
-    <EEdge target="S1" start ="">
+    <EEdge target="N2" start ="">
     <Graphics>
       <Arrow>
-        <Point x-pos="482" y-pos="267" control-x-pos="417" control-y-pos="285"/>
-        <Point x-pos="300" y-pos="267" control-x-pos="367" control-y-pos="285"/>
+        <Point x-pos="537" y-pos="122" control-x-pos="561" control-y-pos="36"/>
+        <Point x-pos="564" y-pos="142" control-x-pos="642" control-y-pos="96"/>
       </Arrow>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position x-pos="480" y-pos="210"/>
+      <Position x-pos="480" y-pos="120"/>
     </Graphics>
   </Node>
-  <Node id="N4" name="N4" exhaustive="false" preserving="false" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <EEdge target="N4" start ="">
-    <Graphics>
-      <Arrow>
-        <Point x-pos="447" y-pos="122" control-x-pos="471" control-y-pos="36"/>
-        <Point x-pos="474" y-pos="142" control-x-pos="552" control-y-pos="96"/>
-      </Arrow>
-    </Graphics>
-    </EEdge>
-    <Graphics>
-      <Position x-pos="390" y-pos="120"/>
-    </Graphics>
-  </Node>
-  <SuperNode id="S1" name="S1" comment="" exhaustive="false" preserving="false" hideLocalVar="false" hideGlobalVar="false" start="N3;">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <IEdge target="N2" start="">
-      <Graphics>
-        <Arrow>
-          <Point x-pos="300" y-pos="255" control-x-pos="367" control-y-pos="255"/>
-          <Point x-pos="480" y-pos="255" control-x-pos="412" control-y-pos="255"/>
-        </Arrow>
-      </Graphics>
-      <TimeoutCondition>
-      <Variable name="X"/>
-      </TimeoutCondition>
-    </IEdge>
-    <Graphics>
-      <Position x-pos="210" y-pos="210"/>
-    </Graphics>
-    <LocalVariableBadge>
-      <Position x-pos="10" y-pos="10"/>
-    </LocalVariableBadge>
-    <GlobalVariableBadge>
-      <Position x-pos="10" y-pos="10"/>
-    </GlobalVariableBadge>
-    <Node id="N1" name="History" exhaustive="false" preserving="false" history="true">
-      <Define>
-      </Define>
-      <Declare>
-      </Declare>
-      <Commands>
-      </Commands>
-      <Graphics>
-        <Position x-pos="30" y-pos="30"/>
-      </Graphics>
-    </Node>
-    <Node id="N3" name="N3" exhaustive="false" preserving="false" history="false">
-      <Define>
-      </Define>
-      <Declare>
-      </Declare>
-      <Commands>
-      </Commands>
-      <EEdge target="N3" start ="">
-      <Graphics>
-        <Arrow>
-          <Point x-pos="357" y-pos="122" control-x-pos="381" control-y-pos="36"/>
-          <Point x-pos="384" y-pos="142" control-x-pos="462" control-y-pos="96"/>
-        </Arrow>
-      </Graphics>
-      </EEdge>
-      <Graphics>
-        <Position x-pos="300" y-pos="120"/>
-      </Graphics>
-    </Node>
-  </SuperNode>
+  <UserCommands>
+    <UserCommand name="query" classname ="de.dfki.vsm.api.VSMDefaultPlayer.sInstance" method="query">
+      <Argument name="query" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
   <ClassPath>
   </ClassPath>
   <InitContext></InitContext>

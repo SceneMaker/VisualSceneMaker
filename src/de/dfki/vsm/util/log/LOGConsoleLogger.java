@@ -2,7 +2,6 @@ package de.dfki.vsm.util.log;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -18,6 +17,7 @@ public class LOGConsoleLogger {
     // The Singelton Console Logger Instance
     private static LOGConsoleLogger sInstance = null;
 
+    
     // Construct The Java Console Logger
     private static final Logger sLogger = Logger.getLogger(LOGConsoleLogger.class.getName());
 

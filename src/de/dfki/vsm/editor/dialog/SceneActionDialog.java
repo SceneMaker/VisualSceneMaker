@@ -39,7 +39,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.WindowConstants;
 
@@ -67,6 +66,7 @@ public class SceneActionDialog extends JDialog {
 
     SceneActionDialog() {
         super(EditorInstance.getInstance(), "Scene Action Dialog", false);
+        EditorInstance.getInstance().addEscapeListener(this);
         initComponents();
     }
 
