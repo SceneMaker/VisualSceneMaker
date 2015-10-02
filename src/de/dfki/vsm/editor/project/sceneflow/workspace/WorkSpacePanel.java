@@ -2555,7 +2555,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             removeNode();
         }
 
-        EditorInstance.getInstance().refresh();
+        //EditorInstance.getInstance().refresh();
     }
 
     /**
