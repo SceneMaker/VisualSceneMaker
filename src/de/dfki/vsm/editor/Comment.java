@@ -79,7 +79,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;
-        mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
+        mEditorConfig = mWorkSpace.getEditorConfig();
         mDataComment = dataComment;
 
         // resize marker
