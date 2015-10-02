@@ -59,7 +59,7 @@ public class VarDefDialog extends Dialog {
         if (varDef != null) {
             mVarDef = varDef.getCopy();
         } else {
-            mVarDef = new VarDef("Enter Name", "Bool", new Bool(true));
+            mVarDef = new VarDef("NewVar", "Bool", new Bool(true));
         }
 
         initComponents();
@@ -70,7 +70,11 @@ public class VarDefDialog extends Dialog {
 
         //
         mNameLabel     = new JLabel("Name:");
-        mNameTextField = new HintTextField(mVarDef.getName());
+        mNameTextField = new HintTextField("Enter Name");
+        if(!mVarDef.getName().equals("NewVar"))
+        {
+            mNameTextField.setText(mVarDef.getName());
+        }
         sanitizeComponent(mNameLabel, labelSize);
         sanitizeComponent(mNameTextField, textFielSize);
         //Name box

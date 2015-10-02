@@ -156,7 +156,7 @@ public final class DialogActEditor extends JPanel implements EventListener {
         mDATitlePanel.setForeground(Color.WHITE);
         mDATitlePanel.add(mDATitleLabel);
         mDATitlePanel.add(Box.createHorizontalGlue());
-        mDATitlePanel.add(addButton);
+        //mDATitlePanel.add(addButton);
     }
 
     private void loadDialogActs() {
