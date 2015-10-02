@@ -2,6 +2,7 @@ package de.dfki.vsm.util.log;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -12,20 +13,19 @@ import java.util.logging.Logger;
 /**
  * @author Gregor Mehlmann
  */
-public class LOGConsoleLogger {
+public class LOGDefaultLogger {
 
     // The Singelton Console Logger Instance
-    private static LOGConsoleLogger sInstance = null;
+    private static LOGDefaultLogger sInstance = null;
 
-    
     // Construct The Java Console Logger
-    private static final Logger sLogger = Logger.getLogger(LOGConsoleLogger.class.getName());
+    private static final Logger sLogger = Logger.getLogger(LOGDefaultLogger.class.getName());
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Construct The Default Logger
-    private LOGConsoleLogger() {
+    private LOGDefaultLogger() {
 
         // Log The Messages From All Levels
         sLogger.setLevel(Level.ALL);
@@ -39,7 +39,7 @@ public class LOGConsoleLogger {
             install(new LOGConsoleHandler());
 
             // Install The Logfile Handler
-            //install(new LOGLogFileHandler(Preferences.sLOGFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
+            install(new LOGLogFileHandler(Preferences.sLOGFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
         } catch (Exception exc) {
             exc.printStackTrace();
             sLogger.severe(exc.toString());
@@ -50,9 +50,9 @@ public class LOGConsoleLogger {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Get The Singelton Logger Instance
-    public static synchronized LOGConsoleLogger getInstance() {
+    public static synchronized LOGDefaultLogger getInstance() {
         if (sInstance == null) {
-            sInstance = new LOGConsoleLogger();
+            sInstance = new LOGDefaultLogger();
         }
 
         return sInstance;

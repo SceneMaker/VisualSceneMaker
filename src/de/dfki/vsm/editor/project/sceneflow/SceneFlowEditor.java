@@ -206,7 +206,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         } else {
             mSplitPane.setDividerLocation(1d);
         }
-
+        mFooterLabel.setForeground(Color.red);
         add(mFooterLabel, BorderLayout.SOUTH);
     }
 
