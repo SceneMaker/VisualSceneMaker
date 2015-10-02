@@ -556,7 +556,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Close a specific project editor
-    private int close(final ProjectEditor editor, int DialogType) {
+    private int close(ProjectEditor editor, int DialogType) {
         
         // Check if the project has changed
         if (editor.getEditorProject().hasChanged()) {
@@ -585,6 +585,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
             // Refresh the appearance
             refresh();
+            editor = null;
+            System.gc();
             return exitMessage;
         }
         else{
@@ -592,6 +594,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             editor.close();
             // Remove the component 
             mProjectEditors.remove(editor);
+
             // Toggle the editor main screen
             if (mProjectEditors.getTabCount() == 0) {
                 // Show the project editors
@@ -601,6 +604,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
             // Refresh the appearance
             refresh();
+            editor = null;
+            System.gc();
             return QuitDialog.SAVE_AND_EXIT;
         }
         

@@ -300,7 +300,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             pnl.add(mAddButton);
             mTabPane.setTabComponentAt(mTabPane.getTabCount() - 1, pnl);
             mTabPane.setComponentAt(mTabPane.getTabCount() - 1, content);
-            mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
+            //mTabPane.setSelectedIndex(mTabPane.getTabCount() - 1);
         }
 
         tabCounter++;

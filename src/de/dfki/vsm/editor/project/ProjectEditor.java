@@ -30,7 +30,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
     // The singelton event multicaster
     private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
     // The editor project of this editor
-    private final EditorProject mEditorProject;
+    private EditorProject mEditorProject;
     // The sceneflow editor of this project
     private final SceneFlowEditor mSceneFlowEditor;
     // The auxiliary editor of this project
@@ -71,11 +71,14 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
 
     // Clean up the editor component
     public final void close() {
+        mEditorProject = null;
+        
         // Remove from event dispatcher
         mEventDispatcher.remove(this);
         // Close / Cleanup Members
         mSceneFlowEditor.close();
         mAuxiliaryEditor.close();
+        
     }
 
     // Initialize the GUI components
