@@ -47,6 +47,7 @@ public class RemoveNodesAction extends EditorAction {
         deleteNodes();
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
+        EditorInstance.getInstance().refresh();
     }
 
     private class Edit extends AbstractUndoableEdit {

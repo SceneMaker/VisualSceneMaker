@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -42,6 +43,7 @@ public class RemoveEdgeAction extends EdgeAction {
         RedoAction.getInstance().refreshRedoState();
         this.mWorkSpace.mGridManager.deleteDockingPoints(mSourceGUINodeDockPoint);
         this.mWorkSpace.mGridManager.deleteDockingPoints(mTargetGUINodeDockPoint);
+        EditorInstance.getInstance().refresh();
     }
 
     private class Edit extends AbstractUndoableEdit {
