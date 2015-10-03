@@ -1888,7 +1888,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             if (edge.mEg.curveContainsPoint(new Point(event.getX(), event.getY()))) {
                 mSelectedEdge = edge;
                 deselectAllOtherComponents(mSelectedEdge);
-
+                this.requestFocusInWindow();
                 // System.out.println(mSelectedEdge.getType() + " pressed - found and selected");
                 mSelectedEdge.mousePressed(event);
 
