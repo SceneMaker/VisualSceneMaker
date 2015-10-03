@@ -200,12 +200,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // init selection
         mAreaSelection = new Rectangle2D.Double();
-
-        // TODO: move to somewhere??!!
-        NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
-
-        mEventCaster.convey(e);
-
+        
         // Add the element editor to the event multicaster
         mEventCaster.register(this);
 
@@ -213,6 +208,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         showVariableBadges();
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
+        
     }
 
     //
@@ -1249,7 +1245,6 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
         showVariableBadges();
-
         // showVariablesOnWorkSpace(superNode);
         // Update the workspace
         // mGridManager.normalizeGridWeight();
@@ -1698,7 +1693,6 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
             if (!entityClicked) {
                 NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
-
                 mEventCaster.convey(e);
             }
         } else {

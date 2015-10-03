@@ -229,7 +229,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     }
     // Set the pin pricked flag
     public final void setPin(boolean state) {
-        System.out.println("------------------------setting pin to : " + state);
         pinPricked = state;
         mPinButton.setIcon(pinPricked? ICON_PIN_ROLLOVER: ICON_PIN_STANDARD);
         mPinButton.setRolloverIcon(pinPricked? ICON_PIN_STANDARD : ICON_PIN_ROLLOVER);
