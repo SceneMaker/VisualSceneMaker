@@ -10,9 +10,11 @@ import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -86,7 +88,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
     private final JPanel                mNewElementDisplay;
     private final JLabel                mFooterLabel;
     private final JSplitPane            mSplitPane;
-
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // Create a sceneflow editor
     public SceneFlowEditor(final EditorProject project) {
 
@@ -208,6 +210,10 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         }
         mFooterLabel.setForeground(Color.red);
         add(mFooterLabel, BorderLayout.SOUTH);
+        
+        //THIS EVENT IS CASTED ONLY TO ACTIVATE THE ELEMENT EDITOR WITH THE INFO OF THE CURRENT PROJECT
+        NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
+        mEventCaster.convey(e);
     }
 
     // Update the visualization
