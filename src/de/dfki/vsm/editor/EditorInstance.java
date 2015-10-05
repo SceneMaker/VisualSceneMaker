@@ -571,6 +571,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             if (exitMessage == QuitDialog.SAVE_AND_EXIT)
             {
                 save(editor);
+            }           
+            // Stop project execution if running
+            if (mRunTime.isRunning(editor.getEditorProject())){
+                stop(editor.getEditorProject());
             }
             // Close the project editor itself
             editor.close();
@@ -590,6 +594,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return exitMessage;
         }
         else{
+            // Stop project execution if running
+            if (mRunTime.isRunning(editor.getEditorProject())){
+                stop(editor.getEditorProject());
+            }
             // Close the project editor itself
             editor.close();
             // Remove the component 
