@@ -21,8 +21,6 @@ public class EditorProject extends RunTimeProject {
     public EditorProject() {
         // Initialize the project file
         mProjectFile = null;
-        // Initialize the initial hash
-        mInitialHash = getHashCode();
     }
 
     // Load the editor project

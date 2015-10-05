@@ -543,12 +543,13 @@ public class SceneFlow extends SuperNode {
                 ? 1
                 : 0);
 
+       
         // Add hash of existing user commands
         for (FunDef fundDef : mUserCmdDefMap.values()) {
             hashCode += fundDef.getName().hashCode() + fundDef.getClassName().hashCode()
                     + fundDef.getMethod().hashCode() + fundDef.getParamList().hashCode();
         }
-
+       
         // Add hash of all nodes on workspace
         for (int cntNode = 0; cntNode < mNodeList.size(); cntNode++) {
             hashCode += getNodeAt(cntNode).getHashCode();
@@ -558,19 +559,13 @@ public class SceneFlow extends SuperNode {
         for (int cntSNode = 0; cntSNode < mSuperNodeList.size(); cntSNode++) {
             hashCode += getSuperNodeAt(cntSNode).getHashCode();
         }
-
+        
         // Add hash of all commands on workspace
         for (int cntCommand = 0; cntCommand < getSizeOfCmdList(); cntCommand++) {
             hashCode += mCmdList.get(cntCommand).hashCode();
         }
-
-        // Add hash of all comments on workspace
-        for (int cntComment = 0; cntComment < getCommentList().size(); cntComment++) {
-            hashCode += mCommentList.get(cntComment).mGraphics.toString().hashCode();
-            hashCode += mCommentList.get(cntComment).mHTMLText.hashCode();
-        }
-
-        // Add hash of all TypeDef on workspace
+      
+         // Add hash of all TypeDef on workspace
         for (int cntType = 0; cntType < getSizeOfTypeDefList(); cntType++) {
             hashCode += mTypeDefList.get(cntType).hashCode() + mTypeDefList.get(cntType).getName().hashCode()
                     + mTypeDefList.get(cntType).toString().hashCode();
@@ -582,7 +577,13 @@ public class SceneFlow extends SuperNode {
                     + getVarDefList().get(cntVar).getType().hashCode()
                     + getVarDefList().get(cntVar).toString().hashCode();
         }
-
+        
+        // Add hash of all comments on workspace
+        for (int cntComment = 0; cntComment < getCommentList().size(); cntComment++) {          
+            hashCode += mCommentList.get(cntComment).mGraphics.getRect().hashCode();
+            //hashCode += mCommentList.get(cntComment).getHTMLText().hashCode();
+        }
+        
         return hashCode;
     }
 }
