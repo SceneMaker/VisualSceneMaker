@@ -101,12 +101,12 @@ public final class Preferences {
     //////////////////////////////////////////////////////////////////////////////
     // EDGE COLORS
     //////////////////////////////////////////////////////////////////////////////
-    public static final Color sFEDGE_COLOR                  = new Color(150, 192, 206);  //BLUE
+    public static final Color sFEDGE_COLOR                  = new Color(35, 77, 103);  //BLUE
     public static final Color sEEDGE_COLOR                  = new Color(130, 125, 120);  //GRAY
-    public static final Color sTEDGE_COLOR                  = new Color(200, 171, 101);  //BROWN
-    public static final Color sCEDGE_COLOR                  = new Color(238, 230, 11);   //YELLOW
-    public static final Color sPEDGE_COLOR                  = new Color(113, 178, 56);   //GREEN
-    public static final Color sIEDGE_COLOR                  = new Color(229, 61, 60);    //RED
+    public static final Color sTEDGE_COLOR                  = new Color(84, 63, 29);  //BROWN
+    public static final Color sCEDGE_COLOR                  = new Color(152, 142, 52);   //YELLOW
+    public static final Color sPEDGE_COLOR                  = new Color(42, 103, 35);   //GREEN
+    public static final Color sIEDGE_COLOR                  = new Color(152, 52, 52);    //RED
 
     //////////////////////////////////////////////////////////////////////////////
     // VISUALIZATION COLORS
