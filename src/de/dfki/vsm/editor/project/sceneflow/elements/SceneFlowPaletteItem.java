@@ -97,8 +97,7 @@ public final class SceneFlowPaletteItem extends JButton implements Transferable 
             @Override
             public void dragGestureRecognized(DragGestureEvent event) {
                 Image cursorIcon = mDragIcon.getImage();
-                Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(0, 0), mToolTipText);
-
+                Cursor cur = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon, new Point(10, 10), mToolTipText);
                 mDragSource.startDrag(event, cur, (SceneFlowPaletteItem) event.getComponent(), mDragSourceListener);
             }
         };
