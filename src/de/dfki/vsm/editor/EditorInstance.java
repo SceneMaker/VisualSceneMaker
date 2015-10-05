@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor;
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
@@ -26,17 +27,23 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
@@ -197,14 +204,14 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Register the editor as event listener
         mEventCaster.register(this);
     }
-
+    
+    
     private void setUIFonts() {
         String defaultFont = "Helvetica";    // DEFAULT FONT FOR ALL COMPONENTS
 
         UIManager.put("Button.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ToggleButton.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("RadioButton.font", new Font(defaultFont, Font.PLAIN, 14));
-
         UIManager.put("CheckBox.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ColorChooser.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ComboBox.font", new Font(defaultFont, Font.PLAIN, 14));
@@ -251,7 +258,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("EditorPane.background", Color.WHITE);
         UIManager.put("ScrollPane.background", Color.WHITE);
         UIManager.put("Viewport.background", Color.WHITE);
-
+        UIManager.put("ScrollBarUI", WindowsScrollBarUI.class.getName());
+        UIManager.put("ScrollBar.background", Color.GRAY);
+        UIManager.put("ScrollBar.thumb", Color.LIGHT_GRAY);
     }
 
     public void clearRecentProjects() {
@@ -547,7 +556,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Close a specific project editor
-    private int close(final ProjectEditor editor, int DialogType) {
+    private int close(ProjectEditor editor, int DialogType) {
         
         // Check if the project has changed
         if (editor.getEditorProject().hasChanged()) {
@@ -562,6 +571,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             if (exitMessage == QuitDialog.SAVE_AND_EXIT)
             {
                 save(editor);
+            }           
+            // Stop project execution if running
+            if (mRunTime.isRunning(editor.getEditorProject())){
+                stop(editor.getEditorProject());
             }
             // Close the project editor itself
             editor.close();
@@ -576,13 +589,20 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
             // Refresh the appearance
             refresh();
+            editor = null;
+            System.gc();
             return exitMessage;
         }
         else{
+            // Stop project execution if running
+            if (mRunTime.isRunning(editor.getEditorProject())){
+                stop(editor.getEditorProject());
+            }
             // Close the project editor itself
             editor.close();
             // Remove the component 
             mProjectEditors.remove(editor);
+
             // Toggle the editor main screen
             if (mProjectEditors.getTabCount() == 0) {
                 // Show the project editors
@@ -592,6 +612,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
             // Refresh the appearance
             refresh();
+            editor = null;
+            System.gc();
             return QuitDialog.SAVE_AND_EXIT;
         }
         
@@ -615,7 +637,19 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
         System.exit(0);
     }
+    
+    //ESCAPE LISTENER- Closes dialog with escape key
+    public static void addEscapeListener(final JDialog dialog)
+    {
+        ActionListener escListner = new ActionListener() {
 
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                dialog.dispose();
+            }
+        };
+        dialog.getRootPane().registerKeyboardAction(escListner, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+    }
     /*
 
      private final void refreshRecentProjects(final EditorProject project) throws ParseException {
@@ -727,7 +761,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Show the monitor dialog
     public final void showMonitor() {
         final MonitorDialog monitorDialog = MonitorDialog.getInstance();
-
+        monitorDialog.initVariableList();
         monitorDialog.setVisible(true);
     }
 

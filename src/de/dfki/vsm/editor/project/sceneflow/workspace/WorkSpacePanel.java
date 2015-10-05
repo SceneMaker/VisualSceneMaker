@@ -389,25 +389,13 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                 if (data instanceof Edge) {
                     Point pos = dtde.getLocation();
-
+                    dtde.acceptDrag(dtde.getDropAction());
+                    mSceneFlowEditor.setMessageLabelText("Drag edge on a node to select edge source");
                     for (Node node : mNodeSet) {
-                        if (node.containsPoint(pos.x, pos.y)) {
-                            mSceneFlowEditor.setMessageLabelText("");
-
-                            if (node.isEdgeAllowed(((Edge) data).getType())) {
-                                dtde.acceptDrag(dtde.getDropAction());
-                            } else {
-                                mSceneFlowEditor.setMessageLabelText("Edge is not allowed at this node");
-                            }
-
-                            return;
-                        } else {
-                            mSceneFlowEditor.setMessageLabelText("");
+                        if (node.containsPoint(pos.x, pos.y) && !node.isEdgeAllowed(((Edge) data).getType())) {
+                            mSceneFlowEditor.setMessageLabelText("Edge is not allowed at this node");
                         }
                     }
-
-                    mSceneFlowEditor.setMessageLabelText("Drag edge on a node to select edge source");
-                    dtde.rejectDrag();
                 }
             }
 
@@ -645,6 +633,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         for (Node node : mNodeSet) {
             node.mSelected = false;
         }
+        mSelectedNode = null;
 
         repaint();
     }
@@ -1884,6 +1873,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         for (Node node : mNodeSet) {
             if (node.containsPoint(event.getX(), event.getY())) {
                 mSelectedNode = node;
+                this.requestFocusInWindow();
                 deselectAllOtherComponents(mSelectedNode);
 
                 // System.out.println(mSelectedNode.getDataNode().getName() + " pressed - found and pressed");
@@ -1898,7 +1888,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             if (edge.mEg.curveContainsPoint(new Point(event.getX(), event.getY()))) {
                 mSelectedEdge = edge;
                 deselectAllOtherComponents(mSelectedEdge);
-
+                this.requestFocusInWindow();
                 // System.out.println(mSelectedEdge.getType() + " pressed - found and selected");
                 mSelectedEdge.mousePressed(event);
 

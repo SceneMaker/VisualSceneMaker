@@ -501,25 +501,15 @@ public class SuperNode extends Node {
     public int getHashCode() {
 
         // Add hash of General Attributes
-        int hashCode = ((mName == null)
-                        ? 0
-                        : mName.hashCode()) + ((mComment == null)
-                ? 0
-                : mComment.hashCode()) + ((mGraphics == null)
-                                          ? 0
-                                          : mGraphics.toString().hashCode()) + ((mHistoryNode == null)
-                ? 0
-                : mHistoryNode.hashCode()) + ((mLocalVariableBadge == null)
-                ? 0
-                : mLocalVariableBadge.hashCode()) + ((mGlobalVariableBadge == null)
-                ? 0
-                : mGlobalVariableBadge.hashCode()) + ((mHideLocalVarBadge == true)
-                ? 1
-                : 0) + ((mHideGlobalVarBadge == true)
-                        ? 1
-                        : 0);
+        int hashCode =  ((mName == null)? 0: mName.hashCode()) +
+                        ((mComment == null)? 0 : mComment.hashCode()) + 
+                        ((mGraphics == null)? 0: mGraphics.toString().hashCode()) +
+                        ((mHistoryNode == null)? 0: mHistoryNode.hashCode()) + 
+                        ((mLocalVariableBadge == null)? 0: mLocalVariableBadge.hashCode()) + 
+                        ((mGlobalVariableBadge == null)? 0: mGlobalVariableBadge.hashCode()) + 
+                        ((mHideLocalVarBadge == true)? 1: 0) + ((mHideGlobalVarBadge == true)? 1: 0);
 
-        // Add hash of all nommands inside SuperNode
+        // Add hash of all commands inside SuperNode
         for (int cntCommand = 0; cntCommand < getSizeOfCmdList(); cntCommand++) {
             hashCode += mCmdList.get(cntCommand).hashCode();
         }
@@ -579,6 +569,12 @@ public class SuperNode extends Node {
         // Check existing SuperNodes inside of this SuperNode
         for (int cntSNode = 0; cntSNode < mSuperNodeList.size(); cntSNode++) {
             hashCode += getSuperNodeAt(cntSNode).getHashCode();
+        }
+        
+        // Add hash of all comments on workspace
+        for (int cntComment = 0; cntComment < getCommentList().size(); cntComment++) {          
+            hashCode += mCommentList.get(cntComment).mGraphics.getRect().hashCode();
+            //hashCode += mCommentList.get(cntComment).getHTMLText().hashCode();
         }
 
         return hashCode;
