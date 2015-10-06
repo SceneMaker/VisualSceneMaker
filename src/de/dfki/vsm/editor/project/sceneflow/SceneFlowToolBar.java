@@ -59,6 +59,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
 
     private final ImageIcon ICON_STOP_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop.png");
     private final ImageIcon ICON_STOP_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop_blue.png");
+    private final ImageIcon ICON_STOP_DISABLED = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop_disabled.png");
 
     private final ImageIcon ICON_PAUSE_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/pause.png");
     private final ImageIcon ICON_PAUSE_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/pause_blue.png");
@@ -400,6 +401,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.play(mEditorProject);
+                mStopButton.setEnabled(true);
             }
         });
         mPlayButton.setIcon(ICON_PLAY_STANDARD);
@@ -411,12 +413,15 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             @Override
             public final void actionPerformed(ActionEvent e) {
                 mEditorInstance.stop(mEditorProject);
+                mStopButton.setEnabled(false);
             }
         });
         mStopButton.setRolloverIcon(ICON_STOP_ROLLOVER);
+        mStopButton.setDisabledIcon(ICON_STOP_DISABLED);
         mStopButton.setToolTipText("Stop Scene");
         // Format The Button As Tiny
         sanitizeButton(mStopButton, tinyButtonDim);
+        mStopButton.setEnabled(false);
 
         JButton b = add(new AbstractAction("ACTION_WINDOW", ICON_STACK_STANDARD) {
             @Override
