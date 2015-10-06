@@ -95,7 +95,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
         mFunctionsScrollPanel.setOpaque(false);
         mFunctionsScrollPanel.getViewport().setOpaque(false);
         mFunctionsScrollPanel.setMinimumSize(new Dimension(2000, 200));
-        mFunctionsScrollPanel.setBorder(null);
+//        mFunctionsScrollPanel.setBorder(null);
         mFunctionsScrollPanel.getVerticalScrollBar().setValue(0);
         add(mFunctionsScrollPanel);
     }

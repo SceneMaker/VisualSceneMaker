@@ -281,12 +281,12 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
                     if (content instanceof FunctionsEditor) {
                         ((FunctionsEditor) content).addNewFunction();
                     }
-                    if (content instanceof JPanel) {
+                    else if (content instanceof DialogActEditor) {
+                        //PLUS ACTION FOR DIALGOACTEDITOR
+                    }
+                    else {
                         mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n");
                         mEditorPane.requestFocusInWindow();
-                    }
-                    if (content instanceof DialogActEditor) {
-                        //PLUS ACTION FOR DIALGOACTEDITOR
                     }
 
                 }
