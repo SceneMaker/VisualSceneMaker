@@ -25,14 +25,13 @@ import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import java.awt.Dimension;
 
 import java.util.Vector;
-
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * @author Not me
@@ -44,7 +43,8 @@ public class MonitorDialog extends JDialog {
     private CancelButton         mCancelButton;
     private OKButton             mOkButton;
     private JPanel               mWorkPanel;
-    private JList                mVariableList;
+    //private JList                mVariableList;
+    private JTable               mVariableTable;
     private HintTextField           mInputTextField;
     private JScrollPane          mVariableScrollPane;
     private Vector<VarDef>       mVarDefListData;
@@ -55,7 +55,6 @@ public class MonitorDialog extends JDialog {
         EditorInstance.getInstance().addEscapeListener(this);
         mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         initComponents();
-        //initVariableList(); Now this init is being called from the button calling the monitor -- by M. Fallas 07 2015 
     }
 
     public static MonitorDialog getInstance() {
@@ -63,29 +62,42 @@ public class MonitorDialog extends JDialog {
         if (sSingeltonInstance == null) {
             sSingeltonInstance = new MonitorDialog();
         }
-        
         return sSingeltonInstance;
     }
 
     public void init(SceneFlow sceneFlow) {}
-
+    
+    public void resetView()
+    {
+        remove(mMainPanel);
+        mMainPanel = new JPanel(null);
+        initWorkPanel();
+        mMainPanel.add(mButtonsPanel);
+        mMainPanel.add(mWorkPanel);
+        add(mMainPanel);
+    }
     private void initWorkPanel() {
         mWorkPanel = new JPanel(null);
         mWorkPanel.setBounds(0, 0, 400, 400);
         mWorkPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-        mVariableList       = new JList(new DefaultListModel());
-        mVariableScrollPane = new JScrollPane(mVariableList);
+        
+        initVariableList();
+        mVariableScrollPane = new JScrollPane(mVariableTable);
         mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mVariableScrollPane.setBounds(20, 10, 360, 300);
-        mInputTextField = new HintTextField("Enter variable name");
+        mInputTextField = new HintTextField("Enter new value");
         mInputTextField.setBounds(20, 320, 360, 30);
         mWorkPanel.add(mVariableScrollPane);
+        if(!RunTimeInstance.getInstance().isRunning(mEditorProject))
+        {
+            mInputTextField.setEnabled(false);
+        }
         mWorkPanel.add(mInputTextField);
     }
 
     private boolean process() {
-        int selectedIndex = mVariableList.getSelectedIndex();
-
+        int selectedIndex = mVariableTable.getSelectedRow();
+        
         if (selectedIndex != -1) {
             VarDef           varDef      = mVarDefListData.get(selectedIndex);
             java.lang.String inputString = mInputTextField.getText().trim();
@@ -161,11 +173,24 @@ public class MonitorDialog extends JDialog {
         mOkButton.requestFocus();
     }
 
-    public void initVariableList() {
+    private void initVariableList() {
         mVarDefListData = mEditorProject.getSceneFlow().getCopyOfVarDefList();
-        ((DefaultListModel) mVariableList.getModel()).removeAllElements();
+        java.lang.String listofVars[][] = new java.lang.String[mVarDefListData.size()][2];
+        java.lang.String[] listOfColumns = {"Variable", "Value"};
+        int counter = 0;
         for (VarDef varDef : mVarDefListData) {
-            ((DefaultListModel) mVariableList.getModel()).addElement(varDef.getType() + " " + varDef.getName());
+            java.lang.String[] tempString = { varDef.getName(), varDef.getExp().toString()};
+            listofVars[counter] =  tempString;
+            counter++;
         }
-           }
+        mVariableTable = new JTable(new DefaultTableModel(listofVars, listOfColumns)
+        {
+
+            @Override
+            public boolean isCellEditable(int i, int i1) {
+                return false;
+            }
+            
+        });
     }
+  }
