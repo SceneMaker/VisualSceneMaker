@@ -252,7 +252,6 @@ public class Node extends Syntax {
     }
 
     public void addVarDef(VarDef value) {
-        System.out.println("VARIABLE ADDED ******************************************");
         mVarDefList.add(value);
     }
 
