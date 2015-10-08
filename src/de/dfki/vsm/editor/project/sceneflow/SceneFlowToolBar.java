@@ -39,10 +39,6 @@ import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
 import de.dfki.vsm.editor.dialog.SaveFileDialog;
-import javax.swing.plaf.ScrollBarUI;
-import javax.swing.plaf.basic.BasicScrollBarUI;
-import javax.swing.plaf.metal.MetalScrollBarUI;
-import javax.swing.plaf.synth.SynthScrollBarUI;
 
 /**
  * @author Gregor Mehlmann
@@ -440,6 +436,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         // Add Some Horizontal Space
         initPathDisplay();
         add(mPathScrollPane);
+        
         //UP TO PARENT NODE 
         b = add(new AbstractAction("ACTION_LEVEL_UP", ICON_UP_STANDARD) {
             @Override
@@ -604,15 +601,16 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
     private void initPathDisplay() {
         mPathDisplay = new JPanel();    // new FlowLayout(FlowLayout.LEFT, 0, 0));
         mPathDisplay.setLayout(new BoxLayout(mPathDisplay, BoxLayout.X_AXIS));
-        mPathDisplay.setMaximumSize(new Dimension(500, 22));
-        mPathDisplay.setMinimumSize(new Dimension(300, 22));
-        mPathDisplay.setPreferredSize(new Dimension(500, 22));
+        //mPathDisplay.setMaximumSize(new Dimension(500, 22));
+        mPathDisplay.setMinimumSize(new Dimension(500, 22));
+        //mPathDisplay.setPreferredSize(new Dimension(500, 22));
 
         // mPathDisplay.setBorder(BorderFactory.createEmptyBorder());
         mPathScrollPane = new JScrollPane(mPathDisplay);
         mPathScrollPane.setViewportBorder(BorderFactory.createLineBorder(Color.gray));
         mPathScrollPane.setMaximumSize(new Dimension(500, 40));
         mPathScrollPane.setMinimumSize(new Dimension(300, 30));
+        mPathScrollPane.setPreferredSize(new Dimension(300, 30));
         mPathScrollPane.setBorder(BorderFactory.createEmptyBorder());
         mPathScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         mPathScrollBar.setPreferredSize(new Dimension(300, 10));
@@ -658,14 +656,14 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             // Create a label with an arrow
             final JLabel arrow = new JLabel("\u2192");
             // Create a button with the name
-            final JButton label = new JButton(action);
-            label.setUI(new BasicButtonUI());
-            label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-            label.setMinimumSize(new Dimension(80, 18));
-            label.setMaximumSize(new Dimension(80, 18));
-            label.setPreferredSize(new Dimension(80, 18));
-            label.setBackground(new Color(intensity, intensity, intensity));
-            label.addMouseMotionListener(new MouseMotionAdapter() {
+            final JButton pathElement = new JButton(action);
+            pathElement.setUI(new BasicButtonUI());
+            pathElement.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            pathElement.setMinimumSize(new Dimension(80, 18));
+            pathElement.setMaximumSize(new Dimension(80, 18));
+            pathElement.setPreferredSize(new Dimension(80, 18));
+            pathElement.setBackground(new Color(intensity, intensity, intensity));
+            pathElement.addMouseMotionListener(new MouseMotionAdapter() {
                 // TODO: This does not work smouthly, please work over 
                 @Override
                 public void mouseDragged(MouseEvent e) {
@@ -682,7 +680,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             if (index > 0) {
                 mPathDisplay.add(arrow);
             }
-            mPathDisplay.add(label);
+            mPathDisplay.add(pathElement);
         }
         revalidate();
         repaint();
