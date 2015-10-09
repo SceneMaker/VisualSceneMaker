@@ -1198,11 +1198,13 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      */
     public void gobalAddVariableMenu(MouseEvent event) {
         JPopupMenu pop = new JPopupMenu();
-        JMenuItem item = new JMenuItem("Add Variable");
-        AddVariableAction addVariableAction = new AddVariableAction(getSceneFlowManager().getCurrentActiveSuperNode());
+        JMenuItem itemAddVariable = new JMenuItem("Add Variable");
+        
+        SuperNode currentSuperNode = getSceneFlowManager().getCurrentActiveSuperNode();
+        AddVariableAction addVariableAction = new AddVariableAction(currentSuperNode);
 
-        item.addActionListener(addVariableAction.getActionListener());
-        pop.add(item);
+        itemAddVariable.addActionListener(addVariableAction.getActionListener());
+        pop.add(itemAddVariable);
         pop.show(this, event.getX(), event.getY());
     }
 
