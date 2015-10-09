@@ -7,7 +7,6 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
-import javax.swing.SwingUtilities;
 
 /**
  * @author Not me
