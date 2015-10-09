@@ -265,9 +265,9 @@ public final class EditorMenuBar extends JMenuBar {
 
     private void initEditMenu() {
         mEditMenu = new JMenu("Edit");
+        
+        //COPY ACTION
         mCopyMenuItem = new JMenuItem("Copy");
-
-//      mCopyMenuItem.setIcon(new ImageIcon("data/img/copy.png"));
         mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mCopyMenuItem.addActionListener(new ActionListener() {
@@ -276,20 +276,31 @@ public final class EditorMenuBar extends JMenuBar {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes();
             }
         });
+        //TODO CUT ACTION NOT IMPLEMENTED
         mCutMenuItem = new JMenuItem("Cut");
-
-//      mCutMenuItem.setIcon(new ImageIcon("data/img/cut.png"));
         mCutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mCutMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().cutNodes();
+            }
+        });
+        //TODO PASTE ACTION NOT IMPLEMENTED
         mPasteMenuItem = new JMenuItem("Paste");
-
-//      mPasteMenuItem.setIcon(new ImageIcon("data/img/paste.png"));
         mPasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mPasteMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().pasteNodes();
+            }
+        });
+        //TODO DELETE ACTIONS
         mDeleteMenuItem = new JMenuItem("Delete");
-
-//      mDeleteMenuItem.setIcon(new ImageIcon("data/img/delete.png"));
-        mDeleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));    // , Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mDeleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+        
+        //NORMALIZE EDGES
         mNormalizeMenuItem = new JMenuItem("Normalize all Edges");
         mNormalizeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
@@ -299,6 +310,7 @@ public final class EditorMenuBar extends JMenuBar {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
             }
         });
+        //STRAIGHTEN EDGES
         mStraightenMenuItem = new JMenuItem("Straighen all Edges");
         mStraightenMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
@@ -307,18 +319,9 @@ public final class EditorMenuBar extends JMenuBar {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
             }
         });
-
-//      mFormatSceneDocument = new JMenuItem("Format Scene Document");
-//      mFormatSceneDocument.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
-//      mFormatSceneDocument.addActionListener(new ActionListener() {
-//
-//          public void actionPerformed(ActionEvent e) {
-//              mEditor.getProjectEditorList().getSelectedProjectEditor().getSceneDocumentEditor().formatSceneDocument();
-//          }
-//      });
+        
+        //***************************************OPTIONS********************************************************************
         mOptionsMenuItem = new JMenuItem("Options");
-
-//      mOptionsMenuItem.setIcon(new ImageIcon("data/img/options.png"));
         mOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
                 (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         mOptionsMenuItem.addActionListener(new ActionListener() {

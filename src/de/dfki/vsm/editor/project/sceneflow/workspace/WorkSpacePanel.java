@@ -1154,8 +1154,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             CopyNodesAction copyAction = new CopyNodesAction(this, mSelectedNode);
 
             mSceneFlowEditor.setMessageLabelText("Node copied");
-            copyAction.getActionListener();
-
+            copyAction.run();
             return;
         }
 
@@ -1166,7 +1165,30 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                     : "Node copied";
 
             mSceneFlowEditor.setMessageLabelText(mSelectedNodes.size() + message);
-            copyAction.getActionListener();
+            copyAction.run();
+        }
+    }
+    /**
+     * 
+     * 
+     */
+    public void cutNodes(){
+        if ((mSelectedNode != null) && (mSelectedNodes.isEmpty())) {
+            CutNodesAction cutAction = new CutNodesAction(this, mSelectedNode);
+
+            mSceneFlowEditor.setMessageLabelText("Node cut");
+            cutAction.run();
+            return;
+        }
+
+        if ((mSelectedNode == null) && (mSelectedNodes.size() > 0)) {
+            CutNodesAction cutAction = new CutNodesAction(this, mSelectedNodes);
+            String message = (mSelectedNodes.size() > 1)
+                    ? "Nodes cut"
+                    : "Node cut";
+
+            mSceneFlowEditor.setMessageLabelText(mSelectedNodes.size() + message);
+            cutAction.run();
         }
     }
 
@@ -1201,6 +1223,15 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         pop.show(this, evt.getX(), evt.getY());
     }
 
+    /**
+     * 
+     * 
+     */
+    
+    public void pasteNodes(){
+        PasteNodesAction pasteAction = new PasteNodesAction(this);
+        pasteAction.run();
+    }
     /**
      *
      *
