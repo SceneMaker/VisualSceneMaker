@@ -1510,7 +1510,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         }
 
         if ((!comp.equals(mSelectedCmdBadge)) && (mSelectedCmdBadge != null)) {
-            mSelectedCmdBadge.setDeselected();
+            mSelectedCmdBadge.endEditMode();
             mSelectedCmdBadge = null;
         }
 
@@ -1960,8 +1960,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             for (CmdBadge cmdBadge : mCmdBadgeList) {
                 if (cmdBadge.containsPoint(event.getX(), event.getY())) {
                     mSelectedCmdBadge = cmdBadge;
-                    cmdBadge.setSelected();
-
+                    EditCommandAction editCommandAction = new EditCommandAction(this, cmdBadge);
+                    editCommandAction.run();
                     return;
                 }
             }
@@ -1969,7 +1969,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // if there is a specific selected cmd diselect it
         if (mSelectedCmdBadge != null) {
-            mSelectedCmdBadge.setDeselected();
+            mSelectedCmdBadge.endEditMode();
             mSelectedCmdBadge = null;
         }
 

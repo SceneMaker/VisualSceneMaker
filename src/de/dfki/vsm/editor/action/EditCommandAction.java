@@ -3,7 +3,9 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CmdBadge;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.util.evt.EventDispatcher;
 
 /**
  * Sergio Soto
@@ -19,7 +21,8 @@ public class EditCommandAction extends EditorAction {
 
     @Override
     public void run() {
-        mCmdBadge.setSelected();
+        EventDispatcher.getInstance().convey(new NodeSelectedEvent(this, mCmdBadge.getNode().getDataNode()));
+        mCmdBadge.setEditMode();
         mCmdBadge.revalidate();
         mCmdBadge.repaint();
     }
