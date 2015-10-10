@@ -446,6 +446,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                                 }
                                 if(!exist) 
                                     mCmdBadgeList.add(mCmdBadgeMap.get(node));
+                                
+                                mEventCaster.convey(new NodeSelectedEvent(this, node.getDataNode()));
+                                
 
                                 // c.update();
                             } else {
@@ -471,6 +474,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                             if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
                                 createFunCall(node, ((FunDef) data).getName());
                                 
+                                dtde.acceptDrop(mAcceptableActions);
+                                dtde.getDropTargetContext().dropComplete(true);
+                                
                                 boolean exist = false;
                                 for(CmdBadge badge: mCmdBadgeList){
                                     if(badge.equals(mCmdBadgeMap.get(node))){
@@ -479,13 +485,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                                 }
                                 if(!exist) 
                                     mCmdBadgeList.add(mCmdBadgeMap.get(node));
-                                    
+                                 
                                 
+                                mEventCaster.convey(new NodeSelectedEvent(this, node.getDataNode()));
                                 
-                                dtde.acceptDrop(mAcceptableActions);
-                                dtde.getDropTargetContext().dropComplete(true);
-                                
-
                                 // c.update();
                             } else {
                                 mSceneFlowEditor.setMessageLabelText("");
