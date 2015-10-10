@@ -193,13 +193,16 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 DialogAct selectedDA = (DialogAct) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchDASelectedEvent(selectedDA);
-            } else if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.scenescript.SceneGroup.class)) {
+            } else if (lastPathComponent.getData()!=null){
+                
+                if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.scenescript.SceneGroup.class)) {
                 //mScriptEditorPanel.getTabPane().setSelectedIndex(0);
 
                 String sceneLanguageSelect = ((TreeEntry) parentPath.getLastPathComponent()).getText();
                 SceneGroup selectedScene = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);
+                }
             }
         }
     }
