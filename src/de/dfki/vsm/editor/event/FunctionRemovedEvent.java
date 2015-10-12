@@ -8,10 +8,10 @@ import de.dfki.vsm.util.evt.EventObject;
 /**
  * @author Sergio Soto
  */
-public class FunctionCreatedEvent extends EventObject {
+public class FunctionRemovedEvent extends EventObject {
     private final FunDef mFunDef;
 
-    public FunctionCreatedEvent(Object source, FunDef funDef) {
+    public FunctionRemovedEvent(Object source, FunDef funDef) {
         super(source);
         mFunDef = funDef;
     }
@@ -21,6 +21,6 @@ public class FunctionCreatedEvent extends EventObject {
     }
 
     public String getEventDescription() {
-        return "FunctionCreatedEvent(" + mFunDef.getName() + ")";
+        return "FunctionRemovedEvent(" + mFunDef.getName() + ")";
     }
 }
