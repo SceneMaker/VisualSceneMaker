@@ -25,6 +25,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -112,9 +113,9 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         pDown.addPoint(13, 0);
         pDown.addPoint(17, 4);
         pDown.addPoint(21, 0);
-        mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
+        mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         mSplitPane.setBorder(BorderFactory.createEmptyBorder());
-        //mSplitPane.setOneTouchExpandable(true);
+        mSplitPane.setContinuousLayout(true);
         mSplitPane.setUI(new BasicSplitPaneUI() {
             @Override
             public BasicSplitPaneDivider createDefaultDivider() {
@@ -131,25 +132,23 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
 
                         graphics.setColor(UIManager.getColor("Panel.background"));
                         graphics.fillRect(0, 0, r.width - 1, r.height);
-
-                        // graphics.setColor(new Color(100, 100, 100));
+//
+//                        // graphics.setColor(new Color(100, 100, 100));
                         graphics.fillRect((r.width / 2 - 25), 0, 50, r.height);
-                        graphics.drawPolygon(pUp);
-                        graphics.fillPolygon(pUp);
-                        graphics.drawPolygon(pDown);
-                        graphics.fillPolygon(pDown);
+//                        graphics.drawPolygon(pUp);
+//                        graphics.fillPolygon(pUp);
+//                        graphics.drawPolygon(pDown);
+//                        graphics.fillPolygon(pDown);
                     }
                     
                     @Override
                     protected void processMouseEvent(MouseEvent me) {
-                        //super.processMouseEvent(me);
+                        super.processMouseEvent(me);
                         switch (me.getID()) {
-                            
                             case MouseEvent.MOUSE_CLICKED:
                                 toggleElementEditor();
                                 ElementEditorToggledEvent ev = new ElementEditorToggledEvent(this);
-                                mEventCaster.convey(ev);
-                                
+                                mEventCaster.convey(ev); 
                         }
                     }
                 };
@@ -195,13 +194,15 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         mElementEditor.setVisible(Boolean.valueOf(Preferences.getProperty("showelementproperties"))
                                   ? true
                                   : false);
-
-//        JPanel editorPanel = new JPanel(new GridLayout());
-//
-//        editorPanel.add(mElementEditor);
+        
+        
+        //INITIALIZE THE SPLIT PANEL WITH WORK SPACE AND ELEMENTEDITOR
+        mWorkSpaceScrollPane.setMinimumSize(new Dimension(10, 10));
+        mWorkSpaceScrollPane.setMaximumSize(new Dimension(10000, 3000));
         mSplitPane.setLeftComponent(mWorkSpaceScrollPane);
+        mElementEditor.setMinimumSize(new Dimension(10, 10));
+        mElementEditor.setMaximumSize(new Dimension(10000, 3000));
         mSplitPane.setRightComponent(mElementEditor);
-        mSplitPane.setResizeWeight(1.0);
         if (Boolean.valueOf(Preferences.getProperty("showelementproperties"))) {
             
             mSplitPane.setDividerLocation(
