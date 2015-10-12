@@ -74,9 +74,9 @@ public class SceneFlowPalettePanel extends JPanel {
     public SceneFlowPalettePanel() {
         setLayout(new GridLayout(0, 3));
         setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(250, 330));
-        setMinimumSize(new Dimension(250, 330));
-        setMaximumSize(new Dimension(250, 330));
+        setPreferredSize(new Dimension(250, 200));
+        setMinimumSize(new Dimension(250, 200));
+        setMaximumSize(new Dimension(250, 200));
         setBorder(BorderFactory.createEtchedBorder());
         add(mSuperNodeEntry);
         add(mBasicNodeEntry);
