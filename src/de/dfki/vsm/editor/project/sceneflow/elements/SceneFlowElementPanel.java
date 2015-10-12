@@ -159,7 +159,8 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         ToolTipManager.sharedInstance().registerComponent(this);
 
         //
-        //expandAll();
+        expandAll();
+        
     }
 
     //
