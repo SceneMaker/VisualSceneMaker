@@ -437,6 +437,18 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                                 createPSG(node, ((SceneGroup) data).getName());
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
+                                
+                                boolean exist = false;
+                                for(CmdBadge badge: mCmdBadgeList){
+                                    if(badge.equals(mCmdBadgeMap.get(node))){
+                                       exist = true;
+                                    }                               
+                                }
+                                if(!exist) 
+                                    mCmdBadgeList.add(mCmdBadgeMap.get(node));
+                                
+                                mEventCaster.convey(new NodeSelectedEvent(this, node.getDataNode()));
+                                
 
                                 // c.update();
                             } else {
@@ -461,9 +473,22 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                         for (Node node : mNodeSet) {
                             if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
                                 createFunCall(node, ((FunDef) data).getName());
+                                
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
-
+                                
+                                boolean exist = false;
+                                for(CmdBadge badge: mCmdBadgeList){
+                                    if(badge.equals(mCmdBadgeMap.get(node))){
+                                       exist = true;
+                                    }                               
+                                }
+                                if(!exist) 
+                                    mCmdBadgeList.add(mCmdBadgeMap.get(node));
+                                 
+                                
+                                mEventCaster.convey(new NodeSelectedEvent(this, node.getDataNode()));
+                                
                                 // c.update();
                             } else {
                                 mSceneFlowEditor.setMessageLabelText("");
@@ -683,7 +708,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         UsrCmd cmd = new UsrCmd();
 
         cmd.setName(name);
-
+       
 //      Command newCmd = new CmdDialog(cmd).run();
 //      if (newCmd != null) {
         node.getDataNode().addCmd(cmd);
@@ -1510,7 +1535,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         }
 
         if ((!comp.equals(mSelectedCmdBadge)) && (mSelectedCmdBadge != null)) {
-            mSelectedCmdBadge.setDeselected();
+            mSelectedCmdBadge.endEditMode();
             mSelectedCmdBadge = null;
         }
 
@@ -1960,8 +1985,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             for (CmdBadge cmdBadge : mCmdBadgeList) {
                 if (cmdBadge.containsPoint(event.getX(), event.getY())) {
                     mSelectedCmdBadge = cmdBadge;
-                    cmdBadge.setSelected();
-
+                    EditCommandAction editCommandAction = new EditCommandAction(this, cmdBadge);
+                    editCommandAction.run();
                     return;
                 }
             }
@@ -1969,7 +1994,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // if there is a specific selected cmd diselect it
         if (mSelectedCmdBadge != null) {
-            mSelectedCmdBadge.setDeselected();
+            mSelectedCmdBadge.endEditMode();
             mSelectedCmdBadge = null;
         }
 

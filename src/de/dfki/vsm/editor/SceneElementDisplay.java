@@ -56,7 +56,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
 
         //
         setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(250, 200));
+        setPreferredSize(new Dimension( 250, 200));
         setBorder(BorderFactory.createEtchedBorder());
         setViewportView(mSceneElementTree);
     }
@@ -137,10 +137,6 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
         }
 
         /**
-         *
-         *
-         *
-         *
          *
          */
         public SceneElementTree() {
