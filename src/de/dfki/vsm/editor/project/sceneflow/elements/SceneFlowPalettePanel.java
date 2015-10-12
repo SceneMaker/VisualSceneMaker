@@ -72,21 +72,21 @@ public class SceneFlowPalettePanel extends JPanel {
     
     // Construct the tool panel
     public SceneFlowPalettePanel() {
-        setLayout(new GridLayout(0, 2));
+        setLayout(new GridLayout(0, 3));
         setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(250, 330));
-        setMinimumSize(new Dimension(250, 330));
-        setMaximumSize(new Dimension(250, 330));
+        setPreferredSize(new Dimension(250, 200));
+        setMinimumSize(new Dimension(250, 200));
+        setMaximumSize(new Dimension(250, 200));
         setBorder(BorderFactory.createEtchedBorder());
         add(mSuperNodeEntry);
         add(mBasicNodeEntry);
+        add(mCommentEntry);
         add(mEEdgeEntry);
         add(mPEdgeEntry);
         add(mFEdgeEntry);
         add(mCEdgeEntry);
         add(mTEdgeEntry);
         add(mIEdgeEntry);
-        add(mCommentEntry);
         ToolTipManager.sharedInstance().registerComponent(this);
     }
     
