@@ -10,7 +10,9 @@ import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
@@ -33,6 +35,7 @@ import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 import java.beans.PropertyChangeEvent;
@@ -111,7 +114,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         pDown.addPoint(21, 0);
         mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
         mSplitPane.setBorder(BorderFactory.createEmptyBorder());
-        mSplitPane.setOneTouchExpandable(true);
+        //mSplitPane.setOneTouchExpandable(true);
         mSplitPane.setUI(new BasicSplitPaneUI() {
             @Override
             public BasicSplitPaneDivider createDefaultDivider() {
@@ -135,6 +138,19 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
                         graphics.fillPolygon(pUp);
                         graphics.drawPolygon(pDown);
                         graphics.fillPolygon(pDown);
+                    }
+                    
+                    @Override
+                    protected void processMouseEvent(MouseEvent me) {
+                        //super.processMouseEvent(me);
+                        switch (me.getID()) {
+                            
+                            case MouseEvent.MOUSE_CLICKED:
+                                toggleElementEditor();
+                                ElementEditorToggledEvent ev = new ElementEditorToggledEvent(this);
+                                mEventCaster.convey(ev);
+                                
+                        }
                     }
                 };
             }
@@ -180,40 +196,43 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
                                   ? true
                                   : false);
 
-        JPanel editorPanel = new JPanel(new GridLayout());
-
-        editorPanel.add(mElementEditor);
+//        JPanel editorPanel = new JPanel(new GridLayout());
+//
+//        editorPanel.add(mElementEditor);
         mSplitPane.setLeftComponent(mWorkSpaceScrollPane);
-        mSplitPane.setRightComponent(editorPanel);
-        mSplitPane.setResizeWeight(1);
+        mSplitPane.setRightComponent(mElementEditor);
+        mSplitPane.setResizeWeight(1.0);
+        if (Boolean.valueOf(Preferences.getProperty("showelementproperties"))) {
+            
+            mSplitPane.setDividerLocation(
+                Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
+            //THIS EVENT IS CASTED ONLY TO ACTIVATE THE ELEMENT EDITOR WITH THE INFO OF THE CURRENT PROJECT
+        } 
+        else {
+            mSplitPane.setDividerLocation(1.0d);
+        }
         add(mSplitPane, BorderLayout.CENTER);
+        
         mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-
+                
                 // solve issue here
                 if (Preferences.getProperty("showelementproperties").equals("true")) {
-                    mEditorProject.getEditorConfig().setProperty("propertiesdividerlocation",
-                            "" + mSplitPane.getDividerLocation());
-
-                    // mProject.getEditorConfig().save(/*mScriptEditorPanel.getPreferencesFileName()*/);
-//                  Preferences.save();
+                    mEditorProject.getEditorConfig().setProperty("propertiesdividerlocation","" + mSplitPane.getDividerLocation());
                 }
             }
         });
 
-        if (Preferences.getProperty("showelementproperties").equals("true")) {
-            mSplitPane.setDividerLocation(
-                Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
-        } else {
-            mSplitPane.setDividerLocation(1d);
-        }
+        //ACTIVATE THE CONTENT OF THE ElementEditor
+        NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
+        mEventCaster.convey(e);
+        
+        //
         mFooterLabel.setForeground(Color.red);
         add(mFooterLabel, BorderLayout.SOUTH);
         
-        //THIS EVENT IS CASTED ONLY TO ACTIVATE THE ELEMENT EDITOR WITH THE INFO OF THE CURRENT PROJECT
-        NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
-        mEventCaster.convey(e);
+        
     }
 
     // Update the visualization
@@ -233,8 +252,8 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
      *
      *
      */
-    public void showElementEditor() {
-        if (mElementEditor.isVisible()) {
+    public void toggleElementEditor() {
+        if (Boolean.valueOf(Preferences.getProperty("showelementproperties"))) {
             mElementEditor.setVisible(false);
             Preferences.setProperty("showelementproperties", "false");
             Preferences.save();
@@ -246,6 +265,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
             mSplitPane.setDividerLocation(
                 Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
         }
+        
     }
 
     public boolean isElementEditorVisible() {
