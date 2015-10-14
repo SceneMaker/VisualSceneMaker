@@ -138,6 +138,7 @@ public final class Node extends JComponent implements EventListener, Observer {
 
         // Init the visualization timer
         mVisuTimer = new Timer("Node(" + mDataNode.getId() + ")-Visualization-Timer");
+		
 
         // Set initial position
         Point pos = new Point(mDataNode.getGraphics().getPosition().getXPos(),
@@ -348,7 +349,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     public void update(EventObject event) {
         if (mEditorConfig.sVISUALISATION) {
             if (event instanceof SceneStoppedEvent) {
-                mVisualisationTask = null;
+                mVisualisationTask.cancel();// = null;
                 repaint();
             } else if (event instanceof NodeStartedEvent) {
                 if ((((NodeStartedEvent) event).getNode().equals(mDataNode))
@@ -373,8 +374,10 @@ public final class Node extends JComponent implements EventListener, Observer {
                         mVisualisationTask.cancel();
                     }
 
-                    mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
-                    mVisuTimer.schedule(mVisualisationTask, 0, 15);
+                    //mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
+					//mVisuTimer = new Timer("Node(" + mDataNode.getId() + ")-Visualization-Timer");
+                    //mVisuTimer.schedule(mVisualisationTask, 0, 15);
+					repaint();
                 }
             } else if (event instanceof NodeTerminatedEvent) {
                 mIsActive = false;
@@ -385,9 +388,10 @@ public final class Node extends JComponent implements EventListener, Observer {
                         mVisualisationTask.cancel();
                     }
 
-                    mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this,
-                            new Color(0, 0, 0, 100));
-                    mVisuTimer.schedule(mVisualisationTask, 0, 15);
+                    //mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this,
+                    //        new Color(0, 0, 0, 100));
+                    //mVisuTimer.schedule(mVisualisationTask, 0, 15);
+					repaint();
                 }
             }
         }
@@ -795,11 +799,11 @@ public final class Node extends JComponent implements EventListener, Observer {
     }
 
     public void stopVisualisation() {
-        mVisuTimer.purge();
         mVisuTimer.cancel();
-
+		mVisuTimer.purge();
+        
         // TODO: why null?
-        mVisuTimer = null;
+        //mVisuTimer = null;
     }
 
     public void hightlightNode() {
