@@ -70,13 +70,15 @@ public class SceneFlowPalettePanel extends JPanel {
     //
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     
+    //
+    private final int paletteDimension = 230;
     // Construct the tool panel
     public SceneFlowPalettePanel() {
         setLayout(new GridLayout(0, 3));
         setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(250, 200));
-        setMinimumSize(new Dimension(250, 200));
-        setMaximumSize(new Dimension(250, 200));
+        setPreferredSize(new Dimension(paletteDimension, paletteDimension));
+        setMinimumSize(new Dimension(paletteDimension, paletteDimension));
+        setMaximumSize(new Dimension(paletteDimension, paletteDimension));
         setBorder(BorderFactory.createEtchedBorder());
         add(mSuperNodeEntry);
         add(mBasicNodeEntry);
