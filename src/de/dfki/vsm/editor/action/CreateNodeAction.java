@@ -12,6 +12,8 @@ import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
 
 import static de.dfki.vsm.editor.Node.Type.BasicNode;
 import static de.dfki.vsm.editor.Node.Type.SuperNode;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.util.evt.EventDispatcher;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -98,6 +100,10 @@ public class CreateNodeAction extends NodeAction {
 
         // Create the command badge of the GUI-Node
         mCmdBadge = new CmdBadge(mGUINode);
+        
+        // Make newly created node selected
+        EventDispatcher.getInstance().convey(new NodeSelectedEvent(this, mDataNode));
+                         
     }
 
     public void run() {
