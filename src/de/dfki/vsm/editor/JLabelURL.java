@@ -84,7 +84,7 @@ class JLabelURL extends JLabel {
                       ? "<u>" + text + "</u>"
                       : text;
 
-        super.setText("<html><span style=\"color: #000099;\">" + link + "</span><br> Build date - 25.3.2015</html>");
+        super.setText("<html><span style=\"color: #000099;\">" + link);
         this.text = text;
     }
 
