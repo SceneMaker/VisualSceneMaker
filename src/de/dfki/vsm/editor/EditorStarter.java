@@ -11,25 +11,21 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.plaf.basic.BasicScrollBarUI;
 
 /**
+ * 
  * @author mfallas, Patrick Gebhard
  *
- * Class implements welcome screen with link list of recent projects
+ * Class implements welcome screen with link list of recent projects and sample projects
  *
  */
 public class EditorStarter extends JPanel {
@@ -41,16 +37,17 @@ public class EditorStarter extends JPanel {
 	private final static Color sMENUHEADLINECOLOR = new Color(255, 255, 255, 182);
 	private final static Color sMENUITEMBACKBGROUNDCOLOR = new Color(255, 255, 255, 128);
 	private final static Color sHIGHLIGHTCOLOR = new Color(82, 127, 255, 182);
+	private final static Color sTEXTCOLOR = new Color(16, 16, 16, 182);
 	private final static Font sMENUHEADLINEFONT = new Font("Helvetica", Font.PLAIN, 24);
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
-
-	// The singelton logger instance   
-	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
 	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
 
 	private final EditorInstance mEditorInstance;
 	private final Box mRecentProjects;
+
+	// The singelton logger instance   
+	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
 	private class CoolSeparator extends JSeparator {
 
@@ -64,9 +61,11 @@ public class EditorStarter extends JPanel {
 
 		@Override
 		public void paintComponent(Graphics g) {
+			Graphics2D g2 = (Graphics2D) g;
 
-			for (int x = 0; x < size.width; x += 15) {
-				g.drawLine(x, 0, x + 10, 0);
+			g2.setColor(sMENUHEADLINECOLOR);
+			for (int x = 0; x < size.width; x += 10) {
+				g2.drawLine(x, 0, x + 5, 0);
 			}
 		}
 	}
@@ -80,12 +79,14 @@ public class EditorStarter extends JPanel {
 
 		titleLabel.setOpaque(false);
 		titleLabel.setFont(sMENUHEADLINEFONT);
+		titleLabel.setForeground(sTEXTCOLOR);
 
 		JLabel msgLabel = new JLabel("<html>This welcome screen provides quick starting actions, like a new project, <br> open a recent project, open a example project, and check news and documentation</html>");
 
 		msgLabel.setOpaque(false);
 		msgLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
 		msgLabel.setFont(new Font("Helvetica", Font.PLAIN, 18));
+		msgLabel.setForeground(sTEXTCOLOR);
 		msgLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
 		mRecentProjects = Box.createVerticalBox();
 		mRecentProjects.setOpaque(false);
@@ -136,14 +137,14 @@ public class EditorStarter extends JPanel {
 	 * Creates open and new project buttons
 	 */
 	private void createMenuButtons() {
-
 		// PROJECTS SECTION
-		JLabel actionMenu = new JLabel(" Projects");
+		JLabel actionMenu = new JLabel(" General");
 
 		actionMenu.setMaximumSize(new Dimension(buttonSize));
 		actionMenu.setPreferredSize(new Dimension(buttonSize));
 		actionMenu.setOpaque(true);
 		actionMenu.setBackground(sMENUHEADLINECOLOR);
+		actionMenu.setForeground(sTEXTCOLOR);
 		actionMenu.setFont(sMENUHEADLINEFONT);
 		mRecentProjects.add(actionMenu);
 
@@ -159,6 +160,7 @@ public class EditorStarter extends JPanel {
 		mNewProjMenu.setFont(sMENUITEMFONT);
 		mNewProjMenu.setOpaque(true);
 		mNewProjMenu.setBackground(sMENUITEMBACKBGROUNDCOLOR);
+		mNewProjMenu.setForeground(sTEXTCOLOR);
 		mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -192,6 +194,7 @@ public class EditorStarter extends JPanel {
 		mOpenProjectMenu.setPreferredSize(new Dimension(buttonSize));
 		mOpenProjectMenu.setOpaque(true);
 		mOpenProjectMenu.setBackground(sMENUITEMBACKBGROUNDCOLOR);
+		mOpenProjectMenu.setForeground(sTEXTCOLOR);
 		mOpenProjectMenu.setFont(sMENUITEMFONT);
 		mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -219,13 +222,14 @@ public class EditorStarter extends JPanel {
 		// *********************************************************************
 		// LIST OF RECENT PROJECTS
 		// *********************************************************************
-		JLabel titleMenu = new JLabel(" Open Recent Project");
+		JLabel titleMenu = new JLabel((Preferences.sMAX_RECENT_FILE_COUNT > 1) ? " Recent Projects" : " Recent Project");
 
 		titleMenu.setBorder(null);
 		titleMenu.setFont(sMENUHEADLINEFONT);
 		mRecentProjects.add(titleMenu);
 		titleMenu.setOpaque(true);
 		titleMenu.setBackground(sMENUHEADLINECOLOR);
+		titleMenu.setForeground(sTEXTCOLOR);
 		titleMenu.setMaximumSize(new Dimension(buttonSize));
 		titleMenu.setPreferredSize(new Dimension(buttonSize));
 
@@ -235,7 +239,7 @@ public class EditorStarter extends JPanel {
 		recentPanel.setOpaque(false);
 		recentPanel.setLayout(new BoxLayout(recentPanel, BoxLayout.Y_AXIS));
 
-		int filesConsidered = (Preferences.sMAX_RECENT_FILE_COUNT < 5) ?  Preferences.sMAX_RECENT_FILE_COUNT : 4;
+		int filesConsidered = (Preferences.sMAX_RECENT_FILE_COUNT < 5) ? Preferences.sMAX_RECENT_FILE_COUNT : 4;
 		for (int i = 0; i <= filesConsidered; i++) {
 			String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
 			String projectName = Preferences.getProperty("recentproject." + i + ".name");
@@ -258,6 +262,7 @@ public class EditorStarter extends JPanel {
 					projectList[i].setLayout(new BoxLayout(projectList[i], BoxLayout.X_AXIS));
 					projectList[i].setOpaque(true);
 					projectList[i].setBackground(sMENUITEMBACKBGROUNDCOLOR);
+					projectList[i].setForeground(sTEXTCOLOR);
 					projectList[i].setMaximumSize(new Dimension(buttonSize));
 					projectList[i].setPreferredSize(new Dimension(buttonSize));
 					projectList[i].setFont(sMENUITEMFONT);
@@ -299,17 +304,23 @@ public class EditorStarter extends JPanel {
 	 * Creates link list of sample projects
 	 */
 	private void listOfSampleProjects() {
-
 		// *********************************************************************
 		// LIST OF SAMPLE PROJECTS
 		// *********************************************************************
-		JLabel exampleMenu = new JLabel(" Sample Projects");
+
+		int sampleProjCnt = 0;
+		if (SampleProjFolder.exists()) {
+			sampleProjCnt = SampleProjFolder.listFiles().length;
+		}
+		System.out.println(sampleProjCnt);
+		JLabel exampleMenu = new JLabel((sampleProjCnt > 1) ? " Sample Projects" : " Sample Project");
 
 		exampleMenu.setBorder(null);
 		exampleMenu.setMaximumSize(new Dimension(buttonSize));
 		exampleMenu.setPreferredSize(new Dimension(buttonSize));
 		exampleMenu.setOpaque(true);
 		exampleMenu.setBackground(sMENUHEADLINECOLOR);
+		exampleMenu.setForeground(sTEXTCOLOR);
 		exampleMenu.setFont(sMENUHEADLINEFONT);
 		mRecentProjects.add(exampleMenu);
 
@@ -340,6 +351,7 @@ public class EditorStarter extends JPanel {
 					newSampleProj.setFont(sMENUITEMFONT);
 					newSampleProj.setOpaque(true);
 					newSampleProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
+					newSampleProj.setForeground(sTEXTCOLOR);
 					newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
 					newSampleProj.addMouseListener(new MouseAdapter() {
 						@Override
@@ -367,21 +379,12 @@ public class EditorStarter extends JPanel {
 			}
 		}
 
+		// remove last separator
 		if (sampleProjPanel.getComponentCount() > 0) {
 			sampleProjPanel.remove(sampleProjPanel.getComponentCount() - 1);
 		}
 
-		JScrollPane jsSample = new JScrollPane(sampleProjPanel);
-
-		jsSample.setOpaque(false);
-		jsSample.setMaximumSize(new Dimension(buttonSize));
-		jsSample.setPreferredSize(new Dimension(buttonSize));
-		jsSample.setBorder(null);
-		jsSample.getViewport().setOpaque(false);
-		jsSample.setMaximumSize(halfScreenDimension);
 		mRecentProjects.add(sampleProjPanel);
-
-		mRecentProjects.add(new CoolSeparator());
 	}
 
 	/**
@@ -399,6 +402,7 @@ public class EditorStarter extends JPanel {
 		mDocuMenu.setPreferredSize(new Dimension(buttonSize));
 		mDocuMenu.setOpaque(true);
 		mDocuMenu.setBackground(sMENUHEADLINECOLOR);
+		mDocuMenu.setForeground(sTEXTCOLOR);
 		mDocuMenu.setFont(sMENUHEADLINEFONT);
 		mRecentProjects.add(mDocuMenu);
 
@@ -410,6 +414,7 @@ public class EditorStarter extends JPanel {
 		link.setPreferredSize(new Dimension(buttonSize));
 		link.setOpaque(true);
 		link.setBackground(sMENUITEMBACKBGROUNDCOLOR);
+		link.setForeground(sTEXTCOLOR);
 		link.setFont(sMENUITEMFONT);
 		link.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
