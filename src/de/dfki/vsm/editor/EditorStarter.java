@@ -341,9 +341,8 @@ public class EditorStarter extends JPanel {
 		if (SampleProjFolder.exists()) {
 			sampleProjCnt = SampleProjFolder.listFiles().length;
 		}
-		System.out.println(sampleProjCnt);
-		JLabel exampleMenu = new JLabel((sampleProjCnt > 1) ? " Sample Projects" : " Sample Project");
 
+		JLabel exampleMenu = new JLabel((sampleProjCnt > 1) ? " Sample Projects" : " Sample Project");
 		exampleMenu.setBorder(null);
 		exampleMenu.setMaximumSize(new Dimension(buttonSize));
 		exampleMenu.setPreferredSize(new Dimension(buttonSize));
