@@ -14,18 +14,22 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.InputStream;
+import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 /**
- * 
+ *
  * @author mfallas, Patrick Gebhard
  *
- * Class implements welcome screen with link list of recent projects and sample projects
+ * Class implements welcome screen with link list of recent projects and sample
+ * projects
  *
  */
 public class EditorStarter extends JPanel {
@@ -97,6 +101,31 @@ public class EditorStarter extends JPanel {
 		add(msgLabel);
 
 		add(mRecentProjects);
+
+		// acquire the build details
+		try {
+			InputStream versionInfo = Preferences.sVSM_VERSIONURL.openStream();
+			Properties vProp = new Properties();
+			vProp.load(versionInfo);
+			versionInfo.close();
+			String vStr = (String) vProp.getProperty("build.version");
+			String bStr = (String) vProp.getProperty("build.number");
+			String dStr = (String) vProp.getProperty("build.date");
+			
+			JLabel versionLabel = new JLabel("Version: " + vStr + "  Build Number: " + bStr + "  Build Date: " + dStr);
+			versionLabel.setHorizontalAlignment(SwingConstants.LEFT);
+			versionLabel.setOpaque(false);
+			versionLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
+			versionLabel.setFont(new Font("Helvetica", Font.PLAIN, 18));
+			versionLabel.setForeground(sTEXTCOLOR);
+			Dimension d = new Dimension(0, 30);
+
+			add(Box.createRigidArea(d));
+			add(versionLabel);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		setMaximumSize(mEditorInstance.getSize());
 		setPreferredSize(mEditorInstance.getSize());
 		//setOpaque(true);
