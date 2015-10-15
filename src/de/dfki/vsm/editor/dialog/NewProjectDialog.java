@@ -10,6 +10,8 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -67,20 +69,11 @@ public class NewProjectDialog extends JDialog {
 
         mNameTextField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) {
-            }
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
-            @Override
             public void keyPressed(KeyEvent e) {
-                mNameTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                //mNameTextField.setBorder(BorderFactory.createLineBorder(Color.blue));
                 errorMsg.setForeground(Color.white);
             }
         });
-
         // create buttons
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -135,7 +128,6 @@ public class NewProjectDialog extends JDialog {
         mButtonsPanel.add(mOkButton);
         mButtonsPanel.add(Box.createRigidArea(new Dimension(30, 0)));
         mMainPanel = new JPanel();
-
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
         mMainPanel.setOpaque(false);
         mMainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -143,6 +135,37 @@ public class NewProjectDialog extends JDialog {
         mMainPanel.add(Box.createVerticalGlue());
         mMainPanel.add(mButtonsPanel);
         mMainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mNameTextField.hasFocus())
+                    {
+                        mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
+                        mNameTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
+        addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+                System.out.println(e.getKeyChar());
+                System.out.println(e.isConsumed());
+                System.out.println(e.isActionKey());
+                System.out.println(e.getKeyLocation());
+                if(e.isActionKey())
+                {
+                    System.out.println("is action key");
+                }
+            }
+        });
         add(mMainPanel);
         setResizable(false);
         pack();

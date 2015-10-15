@@ -72,7 +72,7 @@ public final class SceneFlowElementPanel extends JScrollPane {
         setBackground(Color.WHITE);
         setViewportView(mElementTree);
         setBorder(BorderFactory.createEtchedBorder());
-        setPreferredSize(new Dimension(250, 200));
+        setPreferredSize(new Dimension(230, 200));
     }
 
     // Refresh the element display
