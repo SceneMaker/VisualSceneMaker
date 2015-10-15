@@ -1221,34 +1221,46 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      *
      */
-    public void gobalAddVariableMenu(MouseEvent event) {
+    public void gobalAddVariableMenu(int eventX, int eventY) {
         JPopupMenu pop = new JPopupMenu();
-        JMenuItem itemAddVariable = new JMenuItem("Add Variable");
         
+        //ADD VARIABLE MENU ITEM
+        JMenuItem itemAddVariable = new JMenuItem("Add Variable");
         SuperNode currentSuperNode = getSceneFlowManager().getCurrentActiveSuperNode();
         AddVariableAction addVariableAction = new AddVariableAction(currentSuperNode);
-
         itemAddVariable.addActionListener(addVariableAction.getActionListener());
         pop.add(itemAddVariable);
-        pop.show(this, event.getX(), event.getY());
+        //PASTE NODES MENU ITEM
+        int nc = mClipboard.size();
+        if(nc > 0)
+        {
+            JMenuItem itemPasteNodes = new JMenuItem((nc > 1)
+                ? "Paste " + nc + " Nodes"
+                : "Paste Node");
+            PasteNodesAction pasteAction = new PasteNodesAction(this);
+            itemPasteNodes.addActionListener(pasteAction.getActionListener());
+            pop.add(itemPasteNodes);
+        }
+        
+        pop.show(this, eventX, eventY);
     }
 
     /**
      *
      *
      */
-    public void gobalContextMenu(MouseEvent evt) {
-        JPopupMenu pop = new JPopupMenu();
-        int nc = mClipboard.size();
-        JMenuItem item = new JMenuItem((nc > 1)
-                ? "Paste " + nc + " Nodes"
-                : "Paste Node");
-        PasteNodesAction pasteAction = new PasteNodesAction(this);
-
-        item.addActionListener(pasteAction.getActionListener());
-        pop.add(item);
-        pop.show(this, evt.getX(), evt.getY());
-    }
+//    public void gobalContextMenu(MouseEvent evt) {
+//        JPopupMenu pop = new JPopupMenu();
+//        int nc = mClipboard.size();
+//        JMenuItem item = new JMenuItem((nc > 1)
+//                ? "Paste " + nc + " Nodes"
+//                : "Paste Node");
+//        PasteNodesAction pasteAction = new PasteNodesAction(this);
+//
+//        item.addActionListener(pasteAction.getActionListener());
+//        pop.add(item);
+//        pop.show(this, evt.getX(), evt.getY());
+//    }
 
     /**
      * 
@@ -1764,11 +1776,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // enable global context menu for clipbaord actions
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
-            gobalAddVariableMenu(event);
-
-            if (mClipboard.size() > 0) {
-                gobalContextMenu(event);
-            }
+            gobalAddVariableMenu(event.getX(), event.getY());
+//            if (mClipboard.size() > 0) {
+//                gobalContextMenu(event);
+//            }
         }
     }
 
@@ -2002,11 +2013,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // enable global context menu for clipbaord actions
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
-            gobalAddVariableMenu(event);
-
-            if (mClipboard.size() > 0) {
-                gobalContextMenu(event);
-            }
+            gobalAddVariableMenu(event.getX(), event.getY());
+//            if (mClipboard.size() > 0) {
+//                gobalContextMenu(event);
+//            }
 
             return;
         }
