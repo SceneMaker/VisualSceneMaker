@@ -349,7 +349,10 @@ public final class Node extends JComponent implements EventListener, Observer {
     public void update(EventObject event) {
         if (mEditorConfig.sVISUALISATION) {
             if (event instanceof SceneStoppedEvent) {
-                mVisualisationTask.cancel();// = null;
+                    // Cancel the visualization the previous
+                    if (mVisualisationTask != null) {
+                        mVisualisationTask.cancel();
+                    }
                 repaint();
             } else if (event instanceof NodeStartedEvent) {
                 if ((((NodeStartedEvent) event).getNode().equals(mDataNode))
