@@ -268,6 +268,10 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         }
         
     }
+    
+    public void expandTree(){
+        mDynamicElementsPanel.expandTree();
+    }
 
     public boolean isElementEditorVisible() {
         return mElementEditor.isVisible();
