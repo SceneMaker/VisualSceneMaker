@@ -423,6 +423,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             mLogger.message("Opening project editor from file '" + file + "'");
             // Refresh the appearance
             refresh();
+            projectEditor.expandTree();
             // Return true at success
             return true;
         } else {

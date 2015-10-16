@@ -58,6 +58,11 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
         // Initialize the GUI components
         initComponents();
     }
+    
+    public void expandTree(){
+        mSceneFlowEditor.expandTree();
+        
+    }
 
     // Get the sceneflow editor 
     public final SceneFlowEditor getSceneFlowEditor() {

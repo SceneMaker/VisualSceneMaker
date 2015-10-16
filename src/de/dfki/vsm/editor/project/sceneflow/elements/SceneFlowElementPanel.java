@@ -36,6 +36,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -73,6 +75,10 @@ public final class SceneFlowElementPanel extends JScrollPane {
         setViewportView(mElementTree);
         setBorder(BorderFactory.createEtchedBorder());
         setPreferredSize(new Dimension(230, 200));
+    }
+    
+    public void expandTree(){
+        mElementTree.expandAllRecursive();
     }
 
     // Refresh the element display
@@ -159,7 +165,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         ToolTipManager.sharedInstance().registerComponent(this);
 
         //
-        expandAll();
+        //expandAll();
         
     }
 
@@ -218,6 +224,46 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         }
 
         updateUI();
+    }
+    
+    public void expandAllRecursive(){
+        TreeNode root = (TreeNode)this.getModel().getRoot();
+        if (root!=null) {   
+            // Traverse tree from root
+            expandAll(new TreePath(root), "Dialog Acts");
+        }
+        
+    }
+    
+
+    /**
+     * @return Whether an expandPath was called for the last node in the parent path
+     */
+    private boolean expandAll(TreePath parent, String skip) {
+        // Traverse children
+        // Variable skip is to indicate that we dont want to expand certain node
+        TreeNode node = (TreeNode)parent.getLastPathComponent();
+        if(((TreeEntry)node).getText().equals(skip)){
+            return false;
+        }
+        if (node.getChildCount() > 0) {
+            boolean childExpandCalled = false;
+            for (Enumeration e=node.children(); e.hasMoreElements(); ) {
+                TreeNode n = (TreeNode)e.nextElement();
+                TreePath path = parent.pathByAddingChild(n);
+                childExpandCalled = expandAll(path, skip) || childExpandCalled; // the OR order is important here, don't let childExpand first. func calls will be optimized out !
+            }
+
+            if (!childExpandCalled) { // only if one of the children hasn't called already expand
+                // Expansion or collapse must be done bottom-up, BUT only for non-leaf nodes
+                
+                this.expandPath(parent);
+                
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
