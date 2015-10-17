@@ -1935,6 +1935,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         // look if mouse pressed (without a click) was on a c
         for (Node node : mNodeSet) {
             if (node.containsPoint(event.getX(), event.getY())) {
+                deselectAllNodes();
                 mSelectedNode = node;
                 this.requestFocusInWindow();
                 deselectAllOtherComponents(mSelectedNode);
