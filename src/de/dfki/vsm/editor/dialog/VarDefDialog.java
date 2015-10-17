@@ -10,7 +10,10 @@ import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
+import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
+import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
@@ -20,6 +23,8 @@ import java.awt.Dimension;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -36,7 +41,7 @@ import javax.swing.JPanel;
  */
 public class VarDefDialog extends Dialog {
     private final Node   mNode;
-    private final VarDef mVarDef;
+    private VarDef mVarDef;
 
     // GUI Components
     private JLabel               mNameLabel;
@@ -87,6 +92,7 @@ public class VarDefDialog extends Dialog {
         mTypeDefLabel         = new JLabel("Type:");
         mTypeDefComboBoxModel = new DefaultComboBoxModel();
         mTypeDefComboBox      = new JComboBox(mTypeDefComboBoxModel);
+        
         sanitizeComponent(mTypeDefLabel, labelSize);
         sanitizeComponent(mTypeDefComboBox, textFielSize);
         //Exp box
@@ -119,6 +125,52 @@ public class VarDefDialog extends Dialog {
         expBox.add(mExpTextField);
         expBox.add(Box.createHorizontalStrut(20));
         expBox.add(mAddExpButton);
+        
+        mTypeDefComboBox.addItemListener(new ItemListener(){
+
+            @Override
+            @SuppressWarnings("empty-statement")
+            public void itemStateChanged(ItemEvent e) {
+                
+                switch((String)e.getItem()){
+                    case  "Int": 
+                        mVarDef = new VarDef("NewVar", "Int", new Int(0));
+                        break;
+                    case "Bool":
+                        mVarDef = new VarDef("NewVar", "Bool", new Bool(true));;
+                        break;
+                    case "Float":
+                        mVarDef = new VarDef("NewVar", "Float", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float(0));;
+                        break;
+                    case "String":
+                        mVarDef = new VarDef("NewVar", "String", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(""));;
+                        break;
+                                           
+                        
+                    case "Object":
+                        mVarDef = new VarDef("NewVar", "Object", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object());;
+                        break;
+                    default:
+                        String a = "";
+                        // Look in the definition list for the data type
+                        for (TypeDef def : mNode.getTypeDefList()) {
+                            if(def.getName().equals((String)e.getItem())){
+                                if(def instanceof  ListTypeDef){
+                                    mVarDef = new VarDef("NewVar", "List", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List());; 
+                                }
+                                else if(def instanceof  StructTypeDef){
+                                    mVarDef = new VarDef("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct());; 
+                                }
+                            }
+                           
+                        }
+
+                        break;
+                }
+                mExpTextField.setText(mVarDef.getExp().getAbstractSyntax());
+            }
+            
+        });
         
         //
         mOkButton = new OKButton();
