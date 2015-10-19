@@ -7,6 +7,8 @@ Version of Visual **SceneMaker** that implements a Default Simple Character Play
 
 
 This version is experimental. **DO NOT USE**
+
+For a stable version check our [RELEASE BRANCH](https://github.com/SceneMaker/VisualSceneMaker/tree/RELEASE)
 ------------------------------------------------------------------------------
 
 ##### For more information, visit the website 
