@@ -3,7 +3,7 @@
 
 ######(c) 2003-15. All rights reserved
 ------------------------------------------------------------------------------
-Branch of Visual **SceneMaker** reserved for bleeding edge bug fixes and enhancements.
+Branch of Visual **SceneMaker** that implements dialog acts interaction.
 
 This version is experimental. **DO NOT USE**
 ------------------------------------------------------------------------------
