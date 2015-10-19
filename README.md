@@ -7,7 +7,7 @@ Branch of Visual **SceneMaker** reserved for bleeding edge bug fixes and enhance
 
 This version is experimental. **DO NOT USE**
 
-For a stable version check out [RELEASE BRANCH](https://github.com/SceneMaker/VisualSceneMaker/tree/RELEASE)
+For a stable version check our [RELEASE BRANCH](https://github.com/SceneMaker/VisualSceneMaker/tree/RELEASE)
 ------------------------------------------------------------------------------
 
 ##### For more information, visit the website 
