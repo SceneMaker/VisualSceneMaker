@@ -3,7 +3,7 @@
 
 ######(c) 2003-15. All rights reserved
 ------------------------------------------------------------------------------
-Brancg of Visual **SceneMaker** reserved for bleeding edge bug fixes and enhancements.
+Branch of Visual **SceneMaker** reserved for bleeding edge bug fixes and enhancements.
 
 This version is experimental. **DO NOT USE**
 ------------------------------------------------------------------------------
