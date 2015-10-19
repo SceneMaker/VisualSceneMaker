@@ -1,45 +1,13 @@
+# Visual Scene Maker EXPERIMENTAL
+
+
+######(c) 2003-15. All rights reserved
 ------------------------------------------------------------------------------
-			The VSM Framework
+Branch of Visual **SceneMaker** that implements dialog act interaction.
+
+This version is experimental. **DO NOT USE**
 ------------------------------------------------------------------------------
 
-(c) 2003-14, All rights reserved
-
-	Patrick Gebhard
-	DFKI GmbH
-	Saarland University
-	gebhard@dfki.de
-	http://www.dfki.de
-	
-	Gregor Ulrich Mehlmann
-	Human Centered Multimedia 
-	Augsburg University
-	mehlmann@hcm-lab.de
-	http://www.hcm-lab.de
-
-	Bernd Kiefer
-	DFKI GmbH
-	kiefer@dfki.de
-        http://www.dfki.de
-        
-        Kathrin Janowski
-	Human Centered Multimedia 
-	Augsburg University
-	kathrin.janowski@informatik.uni-augsburg.de
-	http://www.hcm-lab.de
-
-	Souza Nurafrianto
-	Saarland University
-        souza_nurafrianto.windiartono@dfki.de
-
-	Daniel Lovasko
-	Saarland University
-        _@stud.uni-saarland.de
-
-	Sergio Soto
-	Saarland University
-	s9sesoto@stud.uni-saarland.de
-
-	
-    The VSM Framework is published under the Creative Commons Attribution-NonCommercial 4.0 International License. 
-    To view a copy of this license, visit http://creativecommons.org/licenses/by-nc/4.0/.
-
+##### For more information, visit the website 
+##[scenemaker.dfki.de](http://scenemaker.dfki.de)
+------------------------------------------------------------------------------
