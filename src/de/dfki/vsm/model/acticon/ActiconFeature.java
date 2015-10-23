@@ -1,9 +1,7 @@
 package de.dfki.vsm.model.acticon;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
@@ -26,7 +24,7 @@ public final class ActiconFeature implements ModelObject {
     public ActiconFeature() {
 
         // Initialize The Members
-        mKey   = null;
+        mKey = null;
         mValue = null;
     }
 
@@ -36,7 +34,7 @@ public final class ActiconFeature implements ModelObject {
     public ActiconFeature(final String key, final String value) {
 
         // Initialize The Members
-        mKey   = key;
+        mKey = key;
         mValue = value;
     }
 
@@ -65,7 +63,7 @@ public final class ActiconFeature implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.print("<Feature key=\"" + mKey + "\" value=\"" + mValue + "\"/>");
         stream.flush();
     }
@@ -75,7 +73,7 @@ public final class ActiconFeature implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
-        mKey   = element.getAttribute("key");
+        mKey = element.getAttribute("key");
         mValue = element.getAttribute("value");
     }
 

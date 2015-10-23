@@ -8,7 +8,7 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -21,9 +21,9 @@ import java.awt.event.ActionListener;
  */
 public class ShortestEdgeAction {
     private de.dfki.vsm.editor.Edge mGUIEdge = null;
-    private WorkSpace               mWorkSpace;
+    private WorkSpacePanel               mWorkSpace;
 
-    public ShortestEdgeAction(WorkSpace workSpace, de.dfki.vsm.editor.Edge edge) {
+    public ShortestEdgeAction(WorkSpacePanel workSpace, de.dfki.vsm.editor.Edge edge) {
         mWorkSpace = workSpace;
         mGUIEdge   = edge;
     }

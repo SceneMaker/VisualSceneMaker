@@ -5,15 +5,16 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.Dialog.Button;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
@@ -29,11 +30,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 /**
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class ModifyIEdgeDialog extends Dialog {
 
@@ -45,7 +45,7 @@ public class ModifyIEdgeDialog extends Dialog {
     private JPanel       mInputPanel;
     private JLabel       mInputLabel;
     private JPanel       mButtonPanel;
-    private JTextField   mInputTextField;
+    private HintTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
     private JPanel       mAltStartNodePanel;
@@ -60,7 +60,7 @@ public class ModifyIEdgeDialog extends Dialog {
     private JLabel errorMsg;
 
     public ModifyIEdgeDialog(IEdge iedge) {
-        super(Editor.getInstance(), "Modify Interruptive Edge", true);
+        super(EditorInstance.getInstance(), "Modify Interruptive Edge", true);
         mIEdge = iedge;
         // TODO: move to EdgeDialog
         mAltStartNodeManager = new AltStartNodeManager(mIEdge);
@@ -71,7 +71,7 @@ public class ModifyIEdgeDialog extends Dialog {
     }
 
     public ModifyIEdgeDialog(Node sourceNode, Node targetNode) {
-        super(Editor.getInstance(), "Create Interruptive Edge", true);
+        super(EditorInstance.getInstance(), "Create Interruptive Edge", true);
         // Init edge data
         mIEdge = new IEdge();
         mIEdge.setTarget(targetNode.getId());
@@ -110,6 +110,7 @@ public class ModifyIEdgeDialog extends Dialog {
         addComponent(finalBox, 10, 30, 480, 280);
 
         packComponents(520, 300);
+        mOkButton.requestFocus();
     }
 
     private void initInputPanel() {
@@ -117,7 +118,7 @@ public class ModifyIEdgeDialog extends Dialog {
         mInputLabel = new JLabel("Conditional Expression:");
         sanitizeComponent(mInputLabel, labelSize);
         // Input text field
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("(a < b)");
         sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
         mInputPanel = new JPanel();
@@ -231,7 +232,7 @@ public class ModifyIEdgeDialog extends Dialog {
         }
         else{
             mInputTextField.setForeground(Color.red);
-            Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
         }
     }
 
@@ -244,14 +245,19 @@ public class ModifyIEdgeDialog extends Dialog {
         if(mInputTextField.getText().length() == 0){
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
-
+            
             return false;
         }
         String inputString = mInputTextField.getText().trim();
+        
+        
+        
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
+            _SFSLParser_.parseResultType = _SFSLParser_.CND;//LOG;
             _SFSLParser_.run(inputString);
-            LogicalCond log = _SFSLParser_.logResult;
+            //LogicalCond log = _SFSLParser_.logResult;
+            Condition log = _SFSLParser_.cndResult;//logResult;
+            
 
             if ((log != null) &&!_SFSLParser_.errorFlag) {
                 mIEdge.setCondition(log);
@@ -341,7 +347,7 @@ public class ModifyIEdgeDialog extends Dialog {
         return mButtonPanel;
     }
 
-    public JTextField getInputTextField() {
+    public HintTextField getInputTextField() {
         return mInputTextField;
     }
 }

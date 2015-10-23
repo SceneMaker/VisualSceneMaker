@@ -1,15 +1,13 @@
-# Visual Scene Maker
+# Visual Scene Maker EXPERIMENTAL
 
 
 ######(c) 2003-15. All rights reserved
 ------------------------------------------------------------------------------
+Branch of Visual **SceneMaker** reserved for bleeding edge bug fixes and enhancements.
 
-Visual **SceneMaker** is an authoring tool for the creation of interactive applications.
-It provides creative, non-programming experts with a simple scripting language for the creation of rich
-and compelling content.
+This version is experimental. **DO NOT USE**
 
-![alt tag](http://i.imgur.com/ecBnzHT.png "VisualSceneMaker")
-
+For a stable version check our [RELEASE BRANCH](https://github.com/SceneMaker/VisualSceneMaker/tree/RELEASE)
 ------------------------------------------------------------------------------
 
 ##### For more information, visit the website 

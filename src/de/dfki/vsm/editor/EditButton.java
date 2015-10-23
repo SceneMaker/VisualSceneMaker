@@ -8,7 +8,7 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.ResourceLoader;
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -32,7 +32,7 @@ public class EditButton extends JLabel {
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(false);
         setBackground(Color.white);
-        setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png"));
+        setIcon(Preferences.ICON_EDIT_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Edit");
         setIconTextGap(10);
@@ -46,10 +46,10 @@ public class EditButton extends JLabel {
 //              //savePreferences(true);
 //          }
             public void mouseEntered(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit_blue.png"));
+                setIcon(Preferences.ICON_EDIT_ROLLOVER);
             }
             public void mouseExited(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png"));
+                setIcon(Preferences.ICON_EDIT_STANDARD);
             }
         });
     }

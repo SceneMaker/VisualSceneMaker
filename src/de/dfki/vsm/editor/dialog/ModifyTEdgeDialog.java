@@ -2,13 +2,15 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
@@ -31,10 +33,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  *
  */
@@ -50,7 +51,7 @@ public class ModifyTEdgeDialog extends Dialog {
     private JPanel       mInputPanel;
     private JLabel       mInputLabel;
     private JPanel       mButtonPanel;
-    private JTextField   mInputTextField;
+    private HintTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
     private JPanel       mAltStartNodePanel;
@@ -65,7 +66,7 @@ public class ModifyTEdgeDialog extends Dialog {
     private JLabel errorMsg;
 
     public ModifyTEdgeDialog(Node sourceNode, Node targetNode) {
-        super(Editor.getInstance(), "Create Timeout Edge", true);
+        super(EditorInstance.getInstance(), "Create Timeout Edge", true);
 
         // Set the edge data
         mTEdge = new TEdge();
@@ -81,7 +82,7 @@ public class ModifyTEdgeDialog extends Dialog {
     }
     
     public ModifyTEdgeDialog(TEdge tedge) {
-        super(Editor.getInstance(), "Modify Timeout Edge:", true);
+        super(EditorInstance.getInstance(), "Modify Timeout Edge:", true);
         mTEdge = tedge;
 
         // TODO: move to EdgeDialog
@@ -105,7 +106,6 @@ public class ModifyTEdgeDialog extends Dialog {
 
         // Init input panel
         initInputPanel();
-        mInputTextField.setText("1000");
         
         //Error message
         errorMsg = new JLabel("Information Required");
@@ -132,6 +132,7 @@ public class ModifyTEdgeDialog extends Dialog {
         addComponent(finalBox, 10, 30, 480, 280);
 
         packComponents(520, 300);
+        mOkButton.requestFocus();
     }
 
     public JPanel getInputPanel() {
@@ -150,7 +151,7 @@ public class ModifyTEdgeDialog extends Dialog {
         return mAltStartNodePanel;
     }
 
-    public JTextField getInputTextField() {
+    public HintTextField getInputTextField() {
         return mInputTextField;
     }
 
@@ -159,7 +160,8 @@ public class ModifyTEdgeDialog extends Dialog {
         mInputLabel = new JLabel("Timeout Value: ");
         sanitizeComponent(mInputLabel, labelSize);
         // Input text field
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("1000");
+        mInputTextField.setText("1000");
         sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
         mInputPanel = new JPanel();
@@ -212,6 +214,7 @@ public class ModifyTEdgeDialog extends Dialog {
         // Init alternative start node list
         mAltStartNodeList       = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
+        mAltStartNodeScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         Dimension tfSize = new Dimension(200, 110);
         mAltStartNodeScrollPane.setPreferredSize(tfSize);
         mAltStartNodeScrollPane.setMinimumSize(tfSize);

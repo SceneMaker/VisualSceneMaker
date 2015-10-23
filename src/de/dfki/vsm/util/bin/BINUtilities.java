@@ -2,14 +2,14 @@ package de.dfki.vsm.util.bin;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class BINUtilities {
 

@@ -6,7 +6,7 @@ import de.dfki.vsm.model.sceneflow.Edge;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class EdgeExecutedEvent extends EventObject {
     private Edge mEdge;
@@ -21,8 +21,8 @@ public class EdgeExecutedEvent extends EventObject {
     }
 
     public String getEventDescription() {
-        System.err.println(mEdge.getSourceNode());
-        System.err.println(mEdge.getTargetNode());
+        //System.err.println(mEdge.getSourceNode());
+        //System.err.println(mEdge.getTargetNode());
 
         return "EdgeEvent(" /* + mEdge.getSourceNode().getId() + "," + mEdge.getTargetNode().getId() */ + ")";
     }

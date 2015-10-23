@@ -2,13 +2,13 @@ package de.dfki.vsm.model.sceneflow.command.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class HistoryValueOf extends Expression {
     private String mNode;
@@ -61,7 +61,7 @@ public class HistoryValueOf extends Expression {
         return new HistoryValueOf(mNode, mVariable, mDepth);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<HistoryValueOf node=\"" + mNode + "\" var=\"" + mVariable + "\" depth=\"" + mDepth
                     + "\"/>").push();
     }

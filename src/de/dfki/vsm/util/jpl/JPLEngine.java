@@ -1,36 +1,26 @@
 package de.dfki.vsm.util.jpl;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.util.HashMap;
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.sys.SYSUtilities;
-
-import jpl.JPL;
-import jpl.Query;
-import jpl.Term;
-import jpl.Variable;
+import java.util.Map;
+import org.jpl7.JPL;
+import org.jpl7.Query;
+import org.jpl7.Term;
+import org.jpl7.Variable;
 
 //~--- JDK imports ------------------------------------------------------------
-
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class JPLEngine {
 
     // The System File Logger
-    private static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     // The Liveliness Flag
     private static volatile boolean sAlive;
-
-    // Load Default Source Files
-    public static void load() {
-        load(SYSUtilities.sPROLOG_FILE_BASE);
-    }
 
     // Load A Prolog Source File
     public static void load(final String source) {
@@ -56,8 +46,8 @@ public final class JPLEngine {
     // Get String Representation
     public static synchronized String string() {
         if (sAlive) {
-            String[] arg    = JPL.getActualInitArgs();
-            String   argstr = JPL.version_string();
+            String[] arg = JPL.getActualInitArgs();
+            String argstr = JPL.version_string();
 
             argstr += ",[";
 
@@ -95,8 +85,6 @@ public final class JPLEngine {
     // Call A Query On The Engine
     public static synchronized JPLResult query(final String strquery) {
 
-        // Print Debug Information
-        // sLogger.message("Executing Query '" + strquery + "' In JPL Engine '" + JPLEngine.string() + "'");
         // Eventually Initialize JPL
         init();
 
@@ -123,8 +111,9 @@ public final class JPLEngine {
             // Process All Solutions
             while (jplquery.hasMoreElements()) {
 
+               
                 // Get Next Possible Solution
-                Hashtable solution = (Hashtable) jplquery.nextElement();
+                HashMap solution = (HashMap) jplquery.nextElement();
 
                 // Create The Substitutions
                 HashMap<String, String> substitutions = new HashMap<String, String>();
@@ -170,12 +159,11 @@ public final class JPLEngine {
 
             // Close The New Query
             if (jplquery != null) {
-                jplquery.rewind();
+                //jplquery.rewind();
+                //jplquery.remove();
                 jplquery.close();
             }
-
-            // Print Debug Information
-            // sLogger.message("Terminating Query '" + strquery + "' In JPL Engine '" + JPLEngine.string() + "'");
+            //System.err.println(result);
             // Always Return Result
             return result;
         }

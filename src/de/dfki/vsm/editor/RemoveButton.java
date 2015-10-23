@@ -17,6 +17,7 @@ import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
+import javax.swing.ImageIcon;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -27,12 +28,15 @@ import javax.swing.SwingConstants;
  */
 public class RemoveButton extends JLabel {
     private final Dimension buttonSize = new Dimension(20, 20);
+    //Icons
+    private final ImageIcon ICON_REMOVE_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove.png");
+    private final ImageIcon ICON_REMOVE_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_blue.png");
     
     public RemoveButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(false);
         setBackground(Color.white);
-        setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove.png"));
+        setIcon(ICON_REMOVE_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Remove");
         setIconTextGap(10);
@@ -46,10 +50,10 @@ public class RemoveButton extends JLabel {
 //              //savePreferences(true);
 //          }
             public void mouseEntered(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_blue.png"));
+                setIcon(ICON_REMOVE_ROLLOVER);
             }
             public void mouseExited(MouseEvent me) {
-                setIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove.png"));
+                setIcon(ICON_REMOVE_STANDARD);
             }
         });
     }

@@ -2,9 +2,10 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
 
@@ -26,7 +27,7 @@ public class ChangeNodeTypeAction extends NodeAction {
     Vector<RemoveEdgeAction> mRemoveEdgeActionList = new Vector<>();
     Vector<CreateEdgeAction> mCreateEdgeActionList = new Vector<>();
 
-    public ChangeNodeTypeAction(WorkSpace workSpace, Node node) {
+    public ChangeNodeTypeAction(WorkSpacePanel workSpace, Node node) {
         mWorkSpace        = workSpace;
         mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
         mSceneFlowManager = mWorkSpace.getSceneFlowManager();
@@ -39,7 +40,7 @@ public class ChangeNodeTypeAction extends NodeAction {
         mDataNode         = node.getDataNode();
         mParentDataNode   = mDataNode.getParentNode();
         mDataNodeId       = mDataNode.getId();
-
+        
         // store all connected edge
         mConnectedEdges = mGUINode.getConnectedEdges();
 
@@ -83,6 +84,7 @@ public class ChangeNodeTypeAction extends NodeAction {
 
         // create new gui node with new data node
         mGUINode = new de.dfki.vsm.editor.Node(mWorkSpace, mDataNode);
+        mCmdBadge = new CmdBadge(mGUINode);
         create();
 
         // overview old values with new

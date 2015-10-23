@@ -3,8 +3,8 @@ package de.dfki.vsm.util.syn;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
@@ -17,12 +17,12 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class SyntaxTokenStyle implements Comparable, ModelObject {
 
     // The System Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private String                 mName   = null;
     private Color                  mBCol   = null;
     private Color                  mFCol   = null;
@@ -181,7 +181,7 @@ public final class SyntaxTokenStyle implements Comparable, ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.print("<TokenStyle " + "name=\"" + mName + "\" " + "fcol=\"#" + getFHex() + "\" " + "bcol=\"#"
                      + getBHex() + "\" " + "bold=\"" + mBold + "\" " + "emph=\"" + mEmph + "\" " + "undl=\"" + mUndl
                      + "\"/>");
@@ -219,7 +219,7 @@ public final class SyntaxTokenStyle implements Comparable, ModelObject {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Initialize The Indent Writer
-        final IndentWriter stream = new IndentWriter(buffer);
+        final IOSIndentWriter stream = new IOSIndentWriter(buffer);
 
         try {
 

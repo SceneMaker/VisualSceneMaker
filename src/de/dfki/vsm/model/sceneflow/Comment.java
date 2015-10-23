@@ -2,15 +2,14 @@ package de.dfki.vsm.model.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
 
-import static de.dfki.vsm.editor.util.Preferences.sWORKSPACEFONTSIZE;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -21,10 +20,10 @@ import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
-public class Comment extends Object {
+public class Comment extends Syntax {
     protected SuperNode mParentNode = null;
     protected String    mHTMLText   = "";
     protected Graphics  mGraphics;
@@ -72,8 +71,7 @@ public class Comment extends Object {
 
     private void formatHTML() {
         mFontSize =
-            Editor.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getPreferences()
-                .sWORKSPACEFONTSIZE;
+            EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
 
         if (mTextEditor == null) {
             mTextEditor = new JEditorPane();
@@ -109,21 +107,21 @@ public class Comment extends Object {
         });
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<Comment>").push();
 
         if (mGraphics != null) {
             mGraphics.writeXML(out);
         }
 
-        out.println("<Text>").push();
+        out.println("<Text style=\"color:blue\">").push();
         formatHTML();
         out.println(mHTMLText.trim());
         out.pop().println("</Text>");
         out.pop().println("</Comment>");
     }
 
-    public Object getCopy() {
+    public Syntax getCopy() {
         return null;
     }
 }

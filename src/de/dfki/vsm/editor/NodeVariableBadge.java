@@ -2,7 +2,8 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -22,13 +23,13 @@ import java.util.ArrayList;
 import javax.swing.JComponent;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class NodeVariableBadge extends JComponent {
     LocationType                                  mLocation          = LocationType.RIGHT;
     Node                                          mNode              = null;
-    WorkSpace                                     mWorkSpace         = null;
+    WorkSpacePanel                                     mWorkSpace         = null;
     de.dfki.vsm.model.sceneflow.Node              mDataNode          = null;
     Point                                         mRelPos            = null;
     ArrayList<TPLTuple<String, AttributedString>> mLocalVarDefList   = null;
@@ -40,16 +41,16 @@ public class NodeVariableBadge extends JComponent {
     int                                           mPositionOffset    = 10;
     int                                           mBeautyXOffSet     = 0;
     int                                           mBeautyYOffSet     = 0;
-    ProjectPreferences                            mPreferences;
+    EditorConfig                            mEditorConfig;
 
     static enum LocationType { TOP, BOTTOM, LEFT, RIGHT }
 
     ;
-    public NodeVariableBadge(Node node, WorkSpace workSpace, ArrayList<String> localVarDefList,
+    public NodeVariableBadge(Node node, WorkSpacePanel workSpace, ArrayList<String> localVarDefList,
                              ArrayList<String> globalVarDefList, ArrayList<String> localTypeDefList,
                              ArrayList<String> globalTypeDefList) {
         mNode              = node;
-        mPreferences       = node.getWorkSpace().getPreferences();
+        mEditorConfig       = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
         mDataNode          = node.getDataNode();
         mWorkSpace         = workSpace;
         mLocalVarDefList   = TextFormat.getPairList(localVarDefList);
@@ -81,28 +82,28 @@ public class NodeVariableBadge extends JComponent {
         // check where variable badge can be placed
         int leftX   = mRelPos.x - width - mPositionOffset;
         int topY    = mRelPos.y - height - mPositionOffset;
-        int rightX  = mRelPos.x + mPreferences.sNODEWIDTH + mPositionOffset;
-        int bottomY = mRelPos.x + mPreferences.sNODEHEIGHT + mPositionOffset;
+        int rightX  = mRelPos.x + mEditorConfig.sNODEWIDTH + mPositionOffset;
+        int bottomY = mRelPos.x + mEditorConfig.sNODEHEIGHT + mPositionOffset;
 
         if (rightX + width < wSWidth) {              // right
             mRelPos.x = rightX;
-            mRelPos.y = mRelPos.y - ((height - mPreferences.sNODEHEIGHT) / 2);
+            mRelPos.y = mRelPos.y - ((height - mEditorConfig.sNODEHEIGHT) / 2);
             mLocation = LocationType.RIGHT;
         } else if (leftX > 0) {                      // left
             mRelPos.x = leftX;
-            mRelPos.y = mRelPos.y - ((height - mPreferences.sNODEHEIGHT) / 2);
+            mRelPos.y = mRelPos.y - ((height - mEditorConfig.sNODEHEIGHT) / 2);
             mLocation = LocationType.LEFT;
         } else if (bottomY + height < wSHeight) {    // bottom
-            mRelPos.x = mRelPos.x - ((width - mPreferences.sNODEWIDTH) / 2);
+            mRelPos.x = mRelPos.x - ((width - mEditorConfig.sNODEWIDTH) / 2);
             mRelPos.y = bottomY;
             mLocation = LocationType.BOTTOM;
         } else if (topY > 0) {                       // top
-            mRelPos.x = mRelPos.x - ((width - mPreferences.sNODEWIDTH) / 2);
+            mRelPos.x = mRelPos.x - ((width - mEditorConfig.sNODEWIDTH) / 2);
             mRelPos.y = topY;
             mLocation = LocationType.TOP;
         } else {                                     // left - default
             mRelPos.x = leftX;
-            mRelPos.y = mRelPos.y - ((height - mPreferences.sNODEHEIGHT) / 2);
+            mRelPos.y = mRelPos.y - ((height - mEditorConfig.sNODEHEIGHT) / 2);
             mLocation = LocationType.LEFT;
         }
 

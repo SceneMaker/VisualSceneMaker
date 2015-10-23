@@ -1,15 +1,10 @@
-
-/*
-* To change this template, choose Tools | Templates
-* and open the template in the editor.
- */
 package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -53,7 +48,7 @@ public final class EdgeGraphics {
 
     // general flags
     boolean                          mPointingToSameNode = false;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig mEditorConfig;
     public double                    mArrowDir;
     double                           mArrow1Point;
     double                           mArrow2Point;
@@ -62,7 +57,7 @@ public final class EdgeGraphics {
         mDataEdge    = e.getDataEdge();
         mSourceNode  = e.getSourceNode();
         mTargetNode  = e.getTargetNode();
-        mPreferences = mSourceNode.getWorkSpace().getPreferences();
+        mEditorConfig = mSourceNode.getWorkSpace().getEditorConfig();
 
         // check if edge has already graphic information in data model
         if (mDataEdge.getGraphics() != null) {
@@ -189,7 +184,7 @@ public final class EdgeGraphics {
         double distance      = Point.distance(sNC.x, sNC.y, tNC.x, tNC.y);
         double scalingFactor = (mPointingToSameNode)
                                ? 3
-                               : ((distance / mPreferences.sNODEHEIGHT) - 0.5d);
+                               : ((distance / mEditorConfig.sNODEHEIGHT) - 0.5d);
 
         scalingFactor = (scalingFactor < 1.0d)
                         ? 1.25d
@@ -206,9 +201,14 @@ public final class EdgeGraphics {
         mCurveControlPoints[2] = mCCrtl2;
         mCurveControlPoints[3] = mAbsoluteEndPos;
 
+        // make sure that edge is still in the limits of the workspace
+        if(mCurveControlPoints[1].y < 0){
+            mCurveControlPoints[1].y = mCurveControlPoints[2].y;
+        }
         // setup curve
-        mCurve = new CubicCurve2D.Double(mCurveControlPoints[0].x, mCurveControlPoints[0].y, mCurveControlPoints[1].x,
-                                         mCurveControlPoints[1].y, mCurveControlPoints[2].x, mCurveControlPoints[2].y,
+        mCurve = new CubicCurve2D.Double(mCurveControlPoints[0].x, mCurveControlPoints[0].y, 
+                                         mCurveControlPoints[1].x, mCurveControlPoints[1].y, 
+                                         mCurveControlPoints[2].x, mCurveControlPoints[2].y,
                                          mCurveControlPoints[3].x, mCurveControlPoints[3].y);
         mLeftCurve = (CubicCurve2D.Double) mCurve.clone();
         CubicCurve2D.subdivide(mCurve, mLeftCurve, null);
@@ -283,7 +283,7 @@ public final class EdgeGraphics {
 
             // let the start and end point bet placed at least one third of the mean
             // of width and height od nodes away from each other
-            double minDist = (mPreferences.sNODEHEIGHT + mPreferences.sNODEWIDTH) / 2 / 3;
+            double minDist = (mEditorConfig.sNODEHEIGHT + mEditorConfig.sNODEWIDTH) / 2 / 3;
 
             for (Point p : freeSourceNodeDockPoints) {
                 for (Point q : freeSourceNodeDockPoints) {

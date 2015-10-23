@@ -2,8 +2,8 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
-import de.dfki.vsm.runtime.event.AbortEvent;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.runtime.events.AbortionEvent;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -25,7 +25,7 @@ import javax.swing.JTextArea;
 import javax.swing.WindowConstants;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class ErrorDialog extends JDialog {
@@ -40,7 +40,8 @@ public class ErrorDialog extends JDialog {
     private int                mNum;
 
     private ErrorDialog() {
-        super(Editor.getInstance(), "Error Console", false);
+        super(EditorInstance.getInstance(), "Error Console", false);
+        EditorInstance.getInstance().addEscapeListener(this);
         initComponents();
     }
 
@@ -52,7 +53,7 @@ public class ErrorDialog extends JDialog {
         return sSingeltonInstance;
     }
 
-    public void addError(AbortEvent event) {
+    public void addError(AbortionEvent event) {
 
         //
         // TODO: clear old error list
@@ -61,7 +62,7 @@ public class ErrorDialog extends JDialog {
 
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        textArea.setText(event.getEventDescription());
+        textArea.setText(event.getMessage());
         textArea.setBorder(BorderFactory.createEtchedBorder());
         textArea.getRows();
 

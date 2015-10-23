@@ -2,8 +2,8 @@ package de.dfki.vsm.util.syn;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.sys.SYSUtilities;
+import de.dfki.vsm.Preferences;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -25,7 +25,7 @@ import javax.swing.text.Segment;
 import javax.swing.text.ViewFactory;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class SyntaxEditorView extends PlainView {
     private static RenderingHints sRendHints = null;
@@ -42,10 +42,10 @@ public class SyntaxEditorView extends PlainView {
     }
 
     // The Syntax Style Policy
-    private final SyntaxStylePolicy mPolicy = new SyntaxStylePolicy(SYSUtilities.sSTYLESURL);
+    private final SyntaxStylePolicy mPolicy = new SyntaxStylePolicy(Preferences.sSTYLESURL);
 
     // The Singelton Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////

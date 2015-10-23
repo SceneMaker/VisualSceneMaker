@@ -2,9 +2,9 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -21,9 +21,9 @@ import javax.swing.undo.CannotUndoException;
 public class RemoveNodesAction extends EditorAction {
     Set<Node>             mNodes             = new HashSet<Node>();
     Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<RemoveNodeAction>();
-    WorkSpace             mWorkSpace         = null;
+    WorkSpacePanel             mWorkSpace         = null;
 
-    public RemoveNodesAction(WorkSpace workSpace, Set<Node> nodes) {
+    public RemoveNodesAction(WorkSpacePanel workSpace, Set<Node> nodes) {
         mWorkSpace = workSpace;
         mNodes     = nodes;
     }
@@ -47,6 +47,7 @@ public class RemoveNodesAction extends EditorAction {
         deleteNodes();
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
+        EditorInstance.getInstance().refresh();
     }
 
     private class Edit extends AbstractUndoableEdit {

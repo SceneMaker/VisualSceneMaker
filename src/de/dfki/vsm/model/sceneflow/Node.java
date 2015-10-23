@@ -7,7 +7,7 @@ import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
 import de.dfki.vsm.util.cpy.CopyTool;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -19,10 +19,10 @@ import org.w3c.dom.Element;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
-public class Node extends Object {
+public class Node extends Syntax {
     protected String          mId            = new String();
     protected String          mName          = new String();
     protected String          mComment       = new String();
@@ -39,7 +39,11 @@ public class Node extends Object {
     protected Graphics        mGraphics      = null;
     protected SuperNode       mParentNode    = null;
     protected boolean         mIsHistoryNode = false;
-
+    
+    public Byte              hasNone        = new Byte("0");
+    public Byte              hasOne         = new Byte("1");
+    public Byte              hasMany        = new Byte("2");
+    
     public enum FLAVOUR {
         NONE, ENODE, TNODE, CNODE, PNODE, INODE, FNODE
     }
@@ -159,7 +163,28 @@ public class Node extends Object {
 
         return false;
     }
-
+    /**
+     * Tells if the node has more than 0 Probabilistic edge
+     * in case true, it is necessary to reorganise the values of probabilities
+     * Used when deleting an edge
+     * @return 
+     */
+    public byte hasPEdges()
+    {
+        if(mPEdgeList.size() == 1)
+        {
+            return hasOne;
+        }
+        if(mPEdgeList.size() > 1)
+        {
+            return hasMany;
+        }
+        return hasNone;
+    }
+    public PEdge getFirstPEdge()
+    {
+        return mPEdgeList.get(0);
+    }
     public boolean hasDEdge() {
         return (mDEdge != null);
     }
@@ -252,11 +277,9 @@ public class Node extends Object {
 
     public Vector<VarDef> getCopyOfVarDefList() {
         Vector<VarDef> copy = new Vector<VarDef>();
-
         for (VarDef varDef : mVarDefList) {
             copy.add(varDef.getCopy());
         }
-
         return copy;
     }
 
@@ -328,7 +351,7 @@ public class Node extends Object {
 
     public Vector<TypeDef> getCopyOfTypeDefList() {
         Vector<TypeDef> copy = new Vector<TypeDef>();
-
+        
         for (TypeDef def : mTypeDefList) {
             copy.add(def.getCopy());
         }
@@ -522,7 +545,7 @@ public class Node extends Object {
         return (Node) CopyTool.copy(this);
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<Node id=\"" + mId + "\" name=\"" + mName + "\" exhaustive=\"" + mExhaustive + "\" preserving=\""
                     + mPreserving + "\" history=\"" + mIsHistoryNode + "\">").push();
 

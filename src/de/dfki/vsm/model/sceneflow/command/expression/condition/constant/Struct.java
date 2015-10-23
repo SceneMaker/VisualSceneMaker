@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.Assignment;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -17,7 +17,7 @@ import java.util.Vector;
 /**
  * A struct constant.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Struct extends Constant {
 
@@ -102,7 +102,7 @@ public class Struct extends Constant {
         return new Struct( /* mType, */getCopyOfExpList());
     }
 
-    public void writeXML(IndentWriter out) throws XMLWriteError {
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
 
         // out.println("<Struct type=\"" + mType + "\">").push();
         out.println("<Struct>").push();

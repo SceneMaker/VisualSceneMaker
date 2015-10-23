@@ -2,7 +2,7 @@ package de.dfki.vsm.util.log;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.sys.SYSUtilities;
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -11,7 +11,7 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class LOGLogFileFormat extends Formatter {
 
@@ -41,8 +41,8 @@ public class LOGLogFileFormat extends Formatter {
                          + " at " + method;
 
         // Append The User Message
-        message += SYSUtilities.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
-                   + SYSUtilities.sSYSPROPS_LINE_SEPR + SYSUtilities.sSYSPROPS_LINE_SEPR;
+        message += Preferences.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
+                   + Preferences.sSYSPROPS_LINE_SEPR + Preferences.sSYSPROPS_LINE_SEPR;
 
         // return The Final Log Message
         return message;

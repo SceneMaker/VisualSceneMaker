@@ -7,12 +7,14 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.acticon.ActiconAction;
-import de.dfki.vsm.model.acticon.ActiconObject;
-import de.dfki.vsm.model.script.ActionFeature;
+import de.dfki.vsm.model.acticon.ActiconConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -37,7 +39,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.WindowConstants;
 
@@ -46,8 +47,8 @@ import javax.swing.WindowConstants;
  */
 public class SceneActionDialog extends JDialog {
     private static SceneActionDialog sInstance = null;
-    private final LOGDefaultLogger   mLogger   = LOGDefaultLogger.getInstance();
-    private final Editor             mEditor   = Editor.getInstance();
+    private final LOGConsoleLogger   mLogger   = LOGConsoleLogger.getInstance();
+    private final EditorInstance             mEditor   = EditorInstance.getInstance();
     private JPanel                   mMainPanel;
     private JPanel                   mActionPanel;
     private JPanel                   mButtonsPanel;
@@ -56,15 +57,16 @@ public class SceneActionDialog extends JDialog {
     private JButton                  mOkButton;
 
     // data variables
-    private JTextField       mActionName;
-    private JTextField       mArgument;
+    private HintTextField       mActionName;
+    private HintTextField       mArgument;
     private JTextArea        mDocuTextArea;
     private DefaultListModel mListModel;
     private JList            mList;
     private JLabel           mPreviewLabel;
 
     SceneActionDialog() {
-        super(Editor.getInstance(), "Scene Action Dialog", false);
+        super(EditorInstance.getInstance(), "Scene Action Dialog", false);
+        EditorInstance.getInstance().addEscapeListener(this);
         initComponents();
     }
 
@@ -126,7 +128,7 @@ public class SceneActionDialog extends JDialog {
         namePanel.add(Box.createRigidArea(new Dimension(3, 0)));
         namePanel.add(new JLabel("Name"));
         namePanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        mActionName = new JTextField();
+        mActionName = new HintTextField("Enter Name");
         mActionName.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         mActionName.addKeyListener(new KeyAdapter() {
             @Override
@@ -216,7 +218,7 @@ public class SceneActionDialog extends JDialog {
             }
         });
 
-        JButton editButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/edit.png"));
+        JButton editButton = new JButton(Preferences.ICON_EDIT_STANDARD);
 
         editButton.setMinimumSize(new Dimension(20, 20));
         editButton.setMaximumSize(new Dimension(20, 20));
@@ -237,7 +239,7 @@ public class SceneActionDialog extends JDialog {
         argListPanel.add(Box.createHorizontalGlue());
         argAddPanel.setLayout(new BoxLayout(argAddPanel, BoxLayout.X_AXIS));
 
-        JButton addButton = new JButton(ResourceLoader.loadImageIcon("/res/img/new/minus.png"));
+        JButton addButton = new JButton(Preferences.ICON_MINUS_STANDARD);
 
         addButton.setMinimumSize(new Dimension(20, 20));
         addButton.setMaximumSize(new Dimension(20, 20));
@@ -254,7 +256,7 @@ public class SceneActionDialog extends JDialog {
             }
         });
         argAddPanel.add(Box.createRigidArea(new Dimension(3, 0)));
-        mArgument = new JTextField();
+        mArgument = new HintTextField("Enter Argument");
         mArgument.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         mArgument.addKeyListener(new KeyAdapter() {
             @Override
@@ -326,7 +328,7 @@ public class SceneActionDialog extends JDialog {
     }
 
     private void saveActions() {
-        ActiconObject            asd  = Editor.getInstance().getSelectedProjectEditor().getProject().getSceneActions();
+        ActiconConfig            asd  = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
         ArrayList<ActionFeature> args = new ArrayList<ActionFeature>();
 
         for (Object o : mListModel.toArray()) {
@@ -345,8 +347,9 @@ public class SceneActionDialog extends JDialog {
 
         // SM3SceneAction a = new SM3SceneAction("", mActionName.getText(), args, null);
         // asd.addAction(a);
-        Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
-        Editor.getInstance().update();
+        // TODO: Why do we save this here?
+        //Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
+        EditorInstance.getInstance().refresh();
     }
 
     private class StripedCellRenderer extends JLabel implements ListCellRenderer {

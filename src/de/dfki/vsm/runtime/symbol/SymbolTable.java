@@ -2,8 +2,8 @@ package de.dfki.vsm.runtime.symbol;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.runtime.error.RunTimeException;
-import de.dfki.vsm.runtime.value.AbstractValue;
+import de.dfki.vsm.runtime.exceptions.InterpretException;
+import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class SymbolTable implements Copyable {
 
@@ -74,14 +74,14 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void create(final String symbol, final AbstractValue value) throws RunTimeException {
+    public final void create(final String symbol, final AbstractValue value) throws InterpretException {
         mSymbolTable.put(symbol, new SymbolEntry(symbol, value));
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue write(final String symbol, final AbstractValue value) throws RunTimeException {
+    public final AbstractValue write(final String symbol, final AbstractValue value) throws InterpretException {
         return mSymbolTable.get(symbol).write(value);
     }
 
@@ -89,7 +89,7 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final AbstractValue write(final String symbol, final int index, final AbstractValue value)
-            throws RunTimeException {
+            throws InterpretException {
         return mSymbolTable.get(symbol).write(value, index);
     }
 
@@ -97,7 +97,7 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final AbstractValue write(final String symbol, final String member, final AbstractValue value)
-            throws RunTimeException {
+            throws InterpretException {
         return mSymbolTable.get(symbol).write(value, member);
     }
 
@@ -111,14 +111,14 @@ public final class SymbolTable implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue read(final String symbol, final int index) throws RunTimeException {
+    public final AbstractValue read(final String symbol, final int index) throws InterpretException {
         return mSymbolTable.get(symbol).read(index);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final AbstractValue read(final String symbol, final String member) throws RunTimeException {
+    public final AbstractValue read(final String symbol, final String member) throws InterpretException {
         return mSymbolTable.get(symbol).read(member);
     }
 

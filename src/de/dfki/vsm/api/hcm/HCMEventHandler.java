@@ -3,7 +3,7 @@ package de.dfki.vsm.api.hcm;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.util.jpl.JPLEngine;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -24,7 +24,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class HCMEventHandler extends Thread {
 
@@ -32,7 +32,7 @@ public class HCMEventHandler extends Thread {
     private volatile boolean mDone = false;
 
     // The System Logger Instance
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // The Datagram Socket For Events
     private DatagramSocket mSocket;

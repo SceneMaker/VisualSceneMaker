@@ -2,9 +2,12 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
@@ -14,7 +17,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.RunTime;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -22,18 +25,16 @@ import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import java.awt.Dimension;
 
 import java.util.Vector;
-
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.JTable;
 import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class MonitorDialog extends JDialog {
     private static MonitorDialog sSingeltonInstance = null;
@@ -42,45 +43,61 @@ public class MonitorDialog extends JDialog {
     private CancelButton         mCancelButton;
     private OKButton             mOkButton;
     private JPanel               mWorkPanel;
-    private JList                mVariableList;
-    private JTextField           mInputTextField;
+    //private JList                mVariableList;
+    private JTable               mVariableTable;
+    private HintTextField           mInputTextField;
     private JScrollPane          mVariableScrollPane;
     private Vector<VarDef>       mVarDefListData;
-    private final SceneFlow      mSceneFlow;
+    private static EditorProject       mEditorProject;
 
     private MonitorDialog() {
-        super(Editor.getInstance(), "Run Monitor", true);
-        mSceneFlow = Editor.getInstance().getProjectEditorList().getSelectedProject().getSceneFlow();
+        super(EditorInstance.getInstance(), "Run Monitor", true);
+        EditorInstance.getInstance().addEscapeListener(this);
+        mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         initComponents();
-        initVariableList();
     }
 
     public static MonitorDialog getInstance() {
+        mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         if (sSingeltonInstance == null) {
             sSingeltonInstance = new MonitorDialog();
         }
-
         return sSingeltonInstance;
     }
 
     public void init(SceneFlow sceneFlow) {}
-
+    
+    public void resetView()
+    {
+        remove(mMainPanel);
+        mMainPanel = new JPanel(null);
+        initWorkPanel();
+        mMainPanel.add(mButtonsPanel);
+        mMainPanel.add(mWorkPanel);
+        add(mMainPanel);
+    }
     private void initWorkPanel() {
         mWorkPanel = new JPanel(null);
         mWorkPanel.setBounds(0, 0, 400, 400);
         mWorkPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-        mVariableList       = new JList(new DefaultListModel());
-        mVariableScrollPane = new JScrollPane(mVariableList);
+        
+        initVariableList();
+        mVariableScrollPane = new JScrollPane(mVariableTable);
+        mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mVariableScrollPane.setBounds(20, 10, 360, 300);
-        mInputTextField = new JTextField();
+        mInputTextField = new HintTextField("Enter new value");
         mInputTextField.setBounds(20, 320, 360, 30);
         mWorkPanel.add(mVariableScrollPane);
+        if(!RunTimeInstance.getInstance().isRunning(mEditorProject))
+        {
+            mInputTextField.setEnabled(false);
+        }
         mWorkPanel.add(mInputTextField);
     }
 
     private boolean process() {
-        int selectedIndex = mVariableList.getSelectedIndex();
-
+        int selectedIndex = mVariableTable.getSelectedRow();
+        
         if (selectedIndex != -1) {
             VarDef           varDef      = mVarDefListData.get(selectedIndex);
             java.lang.String inputString = mInputTextField.getText().trim();
@@ -93,25 +110,25 @@ public class MonitorDialog extends JDialog {
 
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
                     if (exp instanceof Bool) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Bool) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
                     } else if (exp instanceof Int) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), ((Int) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
                     } else if (exp instanceof Float) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
                                 ((Float) exp).getValue());
                     } else if (exp instanceof String) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(),
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
                                 ((String) exp).getValue());
                     } else if (exp instanceof List) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
                         // Evaluator eval = interpreter.getEvaluator();
                         // Environment env = interpreter.getEnvironment();
                         // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
                     } else if (exp instanceof Struct) {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     } else {
-                        return RunTime.getInstance().setVariable(mSceneFlow, mSceneFlow.getId(), varDef.getName(), exp);
+                        //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     }
                 }
             } catch (Exception e) {
@@ -130,9 +147,8 @@ public class MonitorDialog extends JDialog {
         mOkButton.setBounds(205, 0, 125, 30);
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (process()) {
-                    dispose();
-                }
+                boolean varAssigned = process();
+                dispose();
             }
         });
         mCancelButton = new CancelButton();
@@ -154,13 +170,27 @@ public class MonitorDialog extends JDialog {
         setSize(new Dimension(400 + getInsets().left + getInsets().right, 440 + getInsets().top + getInsets().bottom));
         setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
                     getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
+        mOkButton.requestFocus();
     }
 
     private void initVariableList() {
-        mVarDefListData = mSceneFlow.getCopyOfVarDefList();
-
+        mVarDefListData = mEditorProject.getSceneFlow().getCopyOfVarDefList();
+        java.lang.String listofVars[][] = new java.lang.String[mVarDefListData.size()][2];
+        java.lang.String[] listOfColumns = {"Variable", "Value"};
+        int counter = 0;
         for (VarDef varDef : mVarDefListData) {
-            ((DefaultListModel) mVariableList.getModel()).addElement(varDef.getType() + " " + varDef.getName());
+            java.lang.String[] tempString = { varDef.getName(), varDef.getExp().toString()};
+            listofVars[counter] =  tempString;
+            counter++;
         }
+        mVariableTable = new JTable(new DefaultTableModel(listofVars, listOfColumns)
+        {
+
+            @Override
+            public boolean isCellEditable(int i, int i1) {
+                return false;
+            }
+            
+        });
     }
-}
+  }

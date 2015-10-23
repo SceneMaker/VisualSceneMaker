@@ -3,13 +3,17 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
+import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
+import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
@@ -19,6 +23,8 @@ import java.awt.Dimension;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -29,37 +35,36 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class VarDefDialog extends Dialog {
     private final Node   mNode;
-    private final VarDef mVarDef;
+    private VarDef mVarDef;
 
     // GUI Components
     private JLabel               mNameLabel;
     private JLabel               mTypeDefLabel;
     private JLabel               mExpLabel;
-    private JTextField           mNameTextField;
-    private JTextField           mExpTextField;
+    private HintTextField        mNameTextField;
+    private HintTextField        mExpTextField;
     private JButton              mAddExpButton;
     private JComboBox            mTypeDefComboBox;
     private DefaultComboBoxModel mTypeDefComboBoxModel;
     private OKButton             mOkButton;
     private CancelButton         mCancelButton;
-    private Dimension            labelSize = new Dimension(75, 30);
-    private Dimension            textFielSize = new Dimension(250, 30);
+    private Dimension            labelSize      = new Dimension(75, 30);
+    private Dimension            textFielSize   = new Dimension(250, 30);
     private JLabel errorMsg;
     public VarDefDialog(Node node, VarDef varDef) {
-        super(Editor.getInstance(), "Create/Modify Variable Definition", true);
+        super(EditorInstance.getInstance(), "Create/Modify Variable Definition", true);
         mNode = node;
 
         if (varDef != null) {
             mVarDef = varDef.getCopy();
         } else {
-            mVarDef = new VarDef("newVar", "Bool", new Bool(true));
+            mVarDef = new VarDef("NewVar", "Bool", new Bool(true));
         }
 
         initComponents();
@@ -70,7 +75,11 @@ public class VarDefDialog extends Dialog {
 
         //
         mNameLabel     = new JLabel("Name:");
-        mNameTextField = new JTextField(mVarDef.getName());
+        mNameTextField = new HintTextField("Enter Name");
+        if(!mVarDef.getName().equals("NewVar"))
+        {
+            mNameTextField.setText(mVarDef.getName());
+        }
         sanitizeComponent(mNameLabel, labelSize);
         sanitizeComponent(mNameTextField, textFielSize);
         //Name box
@@ -83,6 +92,7 @@ public class VarDefDialog extends Dialog {
         mTypeDefLabel         = new JLabel("Type:");
         mTypeDefComboBoxModel = new DefaultComboBoxModel();
         mTypeDefComboBox      = new JComboBox(mTypeDefComboBoxModel);
+        
         sanitizeComponent(mTypeDefLabel, labelSize);
         sanitizeComponent(mTypeDefComboBox, textFielSize);
         //Exp box
@@ -93,7 +103,7 @@ public class VarDefDialog extends Dialog {
         
         //
         mExpLabel     = new JLabel("Value:");
-        mExpTextField = new JTextField();
+        mExpTextField = new HintTextField("Enter Value");
         mExpTextField.setEditable(false);
         mAddExpButton = new JButton(ResourceLoader.loadImageIcon("/res/img/search_icon.png"));
         mAddExpButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/search_icon_blue.png"));
@@ -116,6 +126,52 @@ public class VarDefDialog extends Dialog {
         expBox.add(Box.createHorizontalStrut(20));
         expBox.add(mAddExpButton);
         
+        mTypeDefComboBox.addItemListener(new ItemListener(){
+
+            @Override
+            @SuppressWarnings("empty-statement")
+            public void itemStateChanged(ItemEvent e) {
+                
+                switch((String)e.getItem()){
+                    case  "Int": 
+                        mVarDef = new VarDef("NewVar", "Int", new Int(0));
+                        break;
+                    case "Bool":
+                        mVarDef = new VarDef("NewVar", "Bool", new Bool(true));;
+                        break;
+                    case "Float":
+                        mVarDef = new VarDef("NewVar", "Float", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float(0));;
+                        break;
+                    case "String":
+                        mVarDef = new VarDef("NewVar", "String", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(""));;
+                        break;
+                                           
+                        
+                    case "Object":
+                        mVarDef = new VarDef("NewVar", "Object", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object());;
+                        break;
+                    default:
+                        String a = "";
+                        // Look in the definition list for the data type
+                        for (TypeDef def : mNode.getTypeDefList()) {
+                            if(def.getName().equals((String)e.getItem())){
+                                if(def instanceof  ListTypeDef){
+                                    mVarDef = new VarDef("NewVar", "List", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List());; 
+                                }
+                                else if(def instanceof  StructTypeDef){
+                                    mVarDef = new VarDef("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct());; 
+                                }
+                            }
+                           
+                        }
+
+                        break;
+                }
+                mExpTextField.setText(mVarDef.getExp().getAbstractSyntax());
+            }
+            
+        });
+        
         //
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -133,6 +189,7 @@ public class VarDefDialog extends Dialog {
         // Button panel
         JPanel mButtonPanel = new JPanel();
         mButtonPanel.setLayout(new BoxLayout(mButtonPanel, BoxLayout.X_AXIS));
+        mButtonPanel.setBackground(Color.WHITE);
         mButtonPanel.add(Box.createHorizontalGlue());
         mButtonPanel.add(mCancelButton);
         mButtonPanel.add(Box.createHorizontalStrut(30));
@@ -156,6 +213,7 @@ public class VarDefDialog extends Dialog {
         finalBox.add(mButtonPanel);
         addComponent(finalBox, 10, 20, 400, 290);
         packComponents(420, 300);
+        mOkButton.requestFocus();
     }
     /**
      * Set the correct size of the components

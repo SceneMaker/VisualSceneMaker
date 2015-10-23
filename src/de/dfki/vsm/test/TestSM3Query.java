@@ -2,7 +2,7 @@ package de.dfki.vsm.test;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -17,12 +17,12 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TestSM3Query {
 
     // The System Logger
-    private static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     // The Message Pattern
     private static Pattern sPattern = Pattern.compile("<query type=\"(.*?)\">(.*?)</query>");

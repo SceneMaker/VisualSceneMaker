@@ -3,10 +3,10 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge.TYPE;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Flavour;
-import de.dfki.vsm.editor.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.AStarEdgeFinder;
 import de.dfki.vsm.editor.util.grid.BezierFit;
 import de.dfki.vsm.editor.util.grid.BezierPoint;
@@ -27,6 +27,7 @@ import static de.dfki.vsm.editor.Edge.TYPE.EEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.TEDGE;
+import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -39,12 +40,12 @@ import java.util.Set;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public abstract class EdgeAction extends EditorAction {
     protected UndoManager             mUndoManager                = null;
     protected SceneFlowEditor         mSceneFlowPane              = null;
-    protected WorkSpace               mWorkSpace                  = null;
+    protected WorkSpacePanel               mWorkSpace                  = null;
     protected de.dfki.vsm.editor.Node mSourceGUINode              = null;
     protected de.dfki.vsm.editor.Node mTargetGUINode              = null;
     protected de.dfki.vsm.editor.Node mLastTargetGUINode          = null;
@@ -134,8 +135,7 @@ public abstract class EdgeAction extends EditorAction {
         // Connect GUI Edge to Target GUI node
         // TODO: Recompute the appearance of the source GUI node
         if (mGUIEdge == null) {
-            mGUIEdge = new de.dfki.vsm.editor.Edge(mWorkSpace, mDataEdge, mGUIEdgeType, mSourceGUINode, mTargetGUINode,
-                    mWorkSpace.getPreferences());
+            mGUIEdge = new de.dfki.vsm.editor.Edge(mWorkSpace, mDataEdge, mGUIEdgeType, mSourceGUINode, mTargetGUINode);
         } else {
             if (mSourceGUINode.equals(mTargetGUINode)) {
 
@@ -151,7 +151,7 @@ public abstract class EdgeAction extends EditorAction {
         }
 
         // mSourceGUINode.update();
-        Editor.getInstance().update();
+        EditorInstance.getInstance().refresh();
         mWorkSpace.add(mGUIEdge);
         mWorkSpace.revalidate();
         mWorkSpace.repaint();
@@ -366,7 +366,6 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint     = mSourceGUINode.disconnectEdge(mGUIEdge);
             mLastTargetGUINodeDockPoint = mGUIEdge.mLastTargetNodeDockPoint;
         }
-
         cleanUpData();
     }
 
@@ -380,8 +379,16 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINodeDockPoint = mSourceGUINode.disconnectEdge(mGUIEdge);
             mTargetGUINodeDockPoint = mTargetGUINode.disconnectEdge(mGUIEdge);
         }
-
         cleanUpData();
+        if(mGUIEdgeType.equals(PEDGE) && mSourceGUINode.getDataNode().hasPEdges() == mSourceGUINode.getDataNode().hasMany) //TODO VALUES OF hasMany SHOULD BE GLOBAL
+        {
+            ModifyPEdgeDialog mPEdgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode().getFirstPEdge()); //OPEN EDITION DIALOG TO ASSING NEW PROBABILITIES
+            mPEdgeDialog.run();
+        }
+        if(mSourceGUINode.getDataNode().hasPEdges() == mSourceGUINode.getDataNode().hasOne) //HAS ONLY ONE EDGE LEFT
+        {
+            mSourceGUINode.getDataNode().getFirstPEdge().setProbability(100);// ASSIGN 100% PROBABILITY AUTOMATICALLY
+        }
     }
 
     private void cleanUpData() {
@@ -457,7 +464,7 @@ public abstract class EdgeAction extends EditorAction {
 
         // Remove the GUI-Edge from the workspace and
         // update the source node appearance
-        Editor.getInstance().update();
+        EditorInstance.getInstance().refresh();
         mWorkSpace.remove(mGUIEdge);
         mWorkSpace.revalidate();
         mWorkSpace.repaint();

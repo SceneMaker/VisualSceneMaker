@@ -4,7 +4,7 @@ package de.dfki.vsm.api;
 
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class VSMQueryHandler extends Thread {
 
@@ -28,7 +28,7 @@ public class VSMQueryHandler extends Thread {
     private final DatagramPacket mPacket = new DatagramPacket(mBuffer, mBuffer.length);
 
     // Get The System logger
-    public final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    public final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // The Message Pattern
     private final Pattern mPattern = Pattern.compile("<query type=\"(.*?)\">(.*?)</query>");

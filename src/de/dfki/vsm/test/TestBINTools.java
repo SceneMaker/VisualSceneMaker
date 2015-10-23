@@ -3,15 +3,15 @@ package de.dfki.vsm.test;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.util.bin.BINUtilities;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class TestBINTools {
 
     // Get The System logger
-    private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private static final LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ public class TestBINTools {
     public static void test(String args[]) {
 
         // The System Logger
-        final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+        final LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
         //
         short s = 3645;

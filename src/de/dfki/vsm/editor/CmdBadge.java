@@ -2,16 +2,19 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.event.FunctionCreatedEvent;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.util.VisualisationTask;
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.TextFormat;
-import de.dfki.vsm.util.evt.EventCaster;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -40,29 +43,31 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class CmdBadge extends JComponent implements EventListener, Observer {
 
     //
-    private final LOGDefaultLogger mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster      mEventCaster = EventCaster.getInstance();
+    private final LOGConsoleLogger mLogger      = LOGConsoleLogger.getInstance();
+    private final EventDispatcher  mEventCaster = EventDispatcher.getInstance();
 
     // edit
     private boolean      mEditMode = false;
     private final Action wrapper   = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            setDeselected();
+            endEditMode();
         }
     };
 
     // The node to which the badge is connected
     private final Node               mNode;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig       mEditorConfig;
     private final Timer              mVisuTimer;
 
     // The maintained list
@@ -73,54 +78,78 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
     /**
      *
      *
-     *
-     *
-     *
      */
     public CmdBadge(Node node) {
-        mNode        = node;
-        mPreferences = node.getWorkSpace().getPreferences();
-        mVisuTimer   = new Timer("Command-Badge-Visualization-Timer");
+        mNode           = node;
+        mEditorConfig   = mNode.getWorkSpace().getEditorConfig();
+        mVisuTimer      = new Timer("Command-Badge-Visualization-Timer");
+        mFont           = new Font("Monospaced", 
+                                    Font.ITALIC, 
+                                    mEditorConfig.sWORKSPACEFONTSIZE);
+        mCmdEditors     = new ArrayList<>();
+        
         setSize(new Dimension(1, 1));
         setLocation(0, 0);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        mFont       = new Font("SansSerif", Font.ITALIC,    /* (mWorkSpace != null) ? */
-                               mPreferences.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
-        mCmdEditors = new ArrayList<>();
         update();
     }
 
-    /**
-     *
-     *
-     *
-     *
-     *
-     */
     @Override
-    public void update(java.util.Observable obs, Object obj) {
+    public void paintComponent(java.awt.Graphics g) {
+        
+        super.paintComponent(g);
+        Graphics2D graphics = (Graphics2D) g;
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Dimension dimension;
+            
+        if (mEditMode) {
+            
+            dimension = new Dimension((int) (10 + getEditorWidth() * mFont.getSize()/1.5), (int) (30 * (mCmdEditors.size())));
+            // draw background
+            graphics.setColor(new Color(155, 155, 155, 100));
+             
+        } else {
+            
+            dimension = computeTextRectSize(graphics);
+            // draw background
+            graphics.setColor(new Color(100, 100, 100, 100));
 
-        // mLogger.message("CmdBadge.update(" + obj + ")");
-        update();
-    }
+            //
+            // if (mVisualisationTask != null) {
+            // if (mVisualisationTask.getActivityTime() > 20) {
+            // graphics.setColor(new Color(246, 0, 0, 100));
+            // graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+            // } else {
+            // graphics.setColor(new Color(246, 0, 0, 100 - (100 - 5 * mVisualisationTask.getActivityTime())));
+            // graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+            // }
+            // }
 
-    private void update() {
-        ArrayList<String> strings      = new ArrayList<>();
-        Vector<Command>   nodeCommands = mNode.getDataNode().getCmdList();
+            // Draw Type Definitions and Variable Definition
+            int currentDrawingOffset = 0;
 
-        if ((nodeCommands != null) && (nodeCommands.size() > 0)) {
-            for (Command cmd : nodeCommands) {
-                strings.add(((Command) cmd).getFormattedSyntax());
+            for (TPLTuple<String, AttributedString> pair : mStringList) {
+                AttributedString attributedString = pair.getSecond();
+                TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
+                                                        graphics.getFontRenderContext());
+
+                currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
+                graphics.drawString(attributedString.getIterator(), 5, 5 + currentDrawingOffset);
+                currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
+                                       + (int) textLayout.getDescent();
             }
         }
-
-        // Update the string list
-        mStringList = TextFormat.getPairList(strings);
-
-        // Sets visibility of the component to true only if there is something to display
-        setVisible(!mStringList.isEmpty());
+        
+        setSize(dimension);
+        setLocation( mNode.getLocation().x + (mEditorConfig.sNODEWIDTH / 2) - (dimension.width / 2),
+                     mNode.getLocation().y + mEditorConfig.sNODEHEIGHT);
+        graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+        graphics.setStroke(new BasicStroke(1.5f));
+        graphics.setColor(Color.BLACK);
+          
     }
 
+    
     private Dimension computeTextRectSize(Graphics2D graphics) {
         int width  = 0,
             height = 0;
@@ -142,7 +171,125 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
         return new Dimension(width + 2 * 5, height + 2 * 5);
     }
 
-    /**
+  
+    private int getEditorWidth(){
+        int width = 0;
+        for(JTextArea i: mCmdEditors){
+            if(i.getText().length()>width){
+                width = i.getText().length();
+            }  
+        }
+        return width;
+    }
+    
+    public void setEditMode() {
+        mEditMode = true;
+ 
+        for (TPLTuple<String, AttributedString> s : mStringList) {
+            addCmdEditor(s.getFirst());
+        }
+
+        for (JTextArea editor : mCmdEditors) {
+            add(editor, BorderLayout.CENTER);
+        }
+        mEventCaster.convey(new NodeSelectedEvent(this, mNode.getDataNode()));
+        mCmdEditors.get(0).requestFocusInWindow();
+    }
+    
+     /*
+     * Resets badge to its default visual behavior
+     */
+    public synchronized void endEditMode() {
+ 
+        Vector<Command> copyOfCmdList = new Vector<>();
+
+        if (mEditMode) {
+            for (int i = 0; i < mStringList.size(); i++) {
+                String text = mCmdEditors.get(i).getText();
+
+                if (!text.equals("")) {
+                    Command command;
+
+                    try {
+                        _SFSLParser_.parseResultType = _SFSLParser_.CMD;
+                        _SFSLParser_.run(text);
+
+                        Command cmd = _SFSLParser_.cmdResult;
+
+                        if ((cmd != null) &&!_SFSLParser_.errorFlag) {
+                            command = cmd;
+                        } else {
+                            return;
+                        }
+                    } catch (Exception e) {
+                        mCmdEditors.get(i).setForeground(Color.red);
+                        return;
+                    }
+
+                    copyOfCmdList.add(command);
+                }
+            }
+
+            for (JTextArea editor : mCmdEditors) {
+                remove(editor);
+            }
+
+            mCmdEditors.removeAll(mCmdEditors);
+            mNode.getDataNode().setCmdList(copyOfCmdList);
+            mEventCaster.convey(new ProjectChangedEvent(this));
+            mEventCaster.convey(new NodeSelectedEvent(this, mNode.getDataNode()));
+            mEditMode = false;
+          
+            
+        }
+
+        repaint();
+        update();
+    }
+    
+     
+    private void addCmdEditor(String text) {
+        JTextArea cmdEditor = new JTextArea();
+        
+        cmdEditor.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                cmdEditor.setForeground(Color.black);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                cmdEditor.setForeground(Color.black);
+             }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                
+            }
+    });
+
+        cmdEditor.setFont(mFont);
+        cmdEditor.setText(text);
+        cmdEditor.setOpaque(false);
+        cmdEditor.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+
+        KeyStroke keyStroke = KeyStroke.getKeyStroke("ENTER");
+        Object    actionKey = cmdEditor.getInputMap(JComponent.WHEN_FOCUSED).get(keyStroke);
+
+        cmdEditor.getActionMap().put(actionKey, wrapper);
+        mCmdEditors.add(cmdEditor);
+    }
+
+    
+
+    public boolean containsPoint(int x, int y) {
+        return getBounds().contains(x, y);
+    }
+
+   
+    
+     /**
      * Nullifies the VisalisationTimer thread
      */
     public void stopVisualisation() {
@@ -151,7 +298,37 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
         // mVisuTimer = null;
     }
+    
+     /**
+     *
+     *
+     */
+    @Override
+    public void update(java.util.Observable obs, Object obj) {
+        update();
+    }
+    
+    /**
+     *
+     *
+     */
+    private void update() {
+        ArrayList<String> strings      = new ArrayList<>();
+        Vector<Command>   nodeCommands = mNode.getDataNode().getCmdList();
 
+        if ((nodeCommands != null) && (nodeCommands.size() > 0)) {
+            for (Command cmd : nodeCommands) {
+                strings.add(((Command) cmd).getFormattedSyntax());
+            }
+        }
+
+        // Update the string list
+        mStringList = TextFormat.getPairList(strings);
+
+        // Sets visibility of the component to true only if there is something to display
+        setVisible(!mStringList.isEmpty());
+    }
+    
     /*
      * Implements ActivityListener
      */
@@ -172,159 +349,14 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
                 }
 
                 if (contained) {
-                    VisualisationTask visuTask = new VisualisationTask(mPreferences.sVISUALISATIONTIME, this);
-
+                    VisualisationTask visuTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
                     mVisuTimer.schedule(visuTask, 0, 25);
                 }
             }
         }
     }
-
-    @Override
-    public void paintComponent(java.awt.Graphics g) {
-        if (mEditMode) {
-            super.paintComponent(g);
-
-            Graphics2D graphics = (Graphics2D) g;
-
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            Dimension dimension = computeTextRectSize(graphics);
-
-            dimension = new Dimension((int) (dimension.width * 1.2), (int) (22 * (mCmdEditors.size())));
-            setSize(dimension);
-            setLocation(mNode.getLocation().x + (mPreferences.sNODEWIDTH / 2) - (dimension.width / 2),
-                        mNode.getLocation().y + mPreferences.sNODEHEIGHT);
-
-            // draw background
-            graphics.setColor(new Color(155, 155, 155, 100));
-            graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
-            graphics.setStroke(new BasicStroke(1.5f));
-            graphics.setColor(Color.BLACK);
-        } else {
-
-            // System.err.println("Painting badge");
-            super.paintComponent(g);
-
-            Graphics2D graphics = (Graphics2D) g;
-
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            Dimension dimension = computeTextRectSize(graphics);
-
-            setSize(dimension);
-            setLocation(mNode.getLocation().x + (mPreferences.sNODEWIDTH / 2) - (dimension.width / 2),
-                        mNode.getLocation().y + mPreferences.sNODEHEIGHT);
-
-            // draw background
-            graphics.setColor(new Color(100, 100, 100, 100));
-            graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
-
-            //
-            // if (mVisualisationTask != null) {
-            // if (mVisualisationTask.getActivityTime() > 20) {
-            // graphics.setColor(new Color(246, 0, 0, 100));
-            // graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
-            // } else {
-            // graphics.setColor(new Color(246, 0, 0, 100 - (100 - 5 * mVisualisationTask.getActivityTime())));
-            // graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
-            // }
-            // }
-            graphics.setStroke(new BasicStroke(1.5f));
-            graphics.setColor(Color.BLACK);
-
-            // Draw Type Definitions and Variable Definition
-            int currentDrawingOffset = 0;
-
-            for (TPLTuple<String, AttributedString> pair : mStringList) {
-                AttributedString attributedString = pair.getSecond();
-                TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
-                                                        graphics.getFontRenderContext());
-
-                currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
-                graphics.drawString(attributedString.getIterator(), 5, 5 + currentDrawingOffset);
-                currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
-                                       + (int) textLayout.getDescent();
-            }
-        }
-    }
-
-    private void addCmdEditor(String text) {
-        JTextArea cmdEditor = new JTextArea();
-
-        cmdEditor.setFont(mFont);
-        cmdEditor.setText(text);
-        cmdEditor.setOpaque(false);
-        cmdEditor.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-
-        KeyStroke keyStroke = KeyStroke.getKeyStroke("ENTER");
-        Object    actionKey = cmdEditor.getInputMap(JComponent.WHEN_FOCUSED).get(keyStroke);
-
-        cmdEditor.getActionMap().put(actionKey, wrapper);
-        mCmdEditors.add(cmdEditor);
-    }
-
-    public void setSelected() {
-        mEditMode = true;
-
-        for (TPLTuple<String, AttributedString> s : mStringList) {
-            addCmdEditor(s.getFirst());
-        }
-
-        for (JTextArea editor : mCmdEditors) {
-            add(editor, BorderLayout.CENTER);
-        }
-
-        mCmdEditors.get(0).requestFocusInWindow();
-    }
-
-    public boolean containsPoint(int x, int y) {
-        return getBounds().contains(x, y);
-    }
-
-    /*
-     * Resets the badge to its default visual behavior
-     */
-    public synchronized void setDeselected() {
-        String          text;
-        Vector<Command> copyOfCmdList = new Vector<>();
-
-        if (mEditMode) {
-            for (int i = 0; i < mStringList.size(); i++) {
-                text = mCmdEditors.get(i).getText();
-
-                if (!text.equals("")) {
-                    Command command;
-
-                    try {
-                        _SFSLParser_.parseResultType = _SFSLParser_.CMD;
-                        _SFSLParser_.run(text);
-
-                        Command cmd = _SFSLParser_.cmdResult;
-
-                        if ((cmd != null) &&!_SFSLParser_.errorFlag) {
-                            command = cmd;
-                        } else {
-                            return;
-                        }
-                    } catch (Exception e) {
-                        return;
-                    }
-
-                    copyOfCmdList.add(command);
-                }
-            }
-
-            for (JTextArea editor : mCmdEditors) {
-                remove(editor);
-            }
-
-            mCmdEditors.removeAll(mCmdEditors);
-            mNode.getDataNode().setCmdList(copyOfCmdList);
-            mEditMode = false;
-        }
-
-        repaint();
-        update();
+    
+    public Node getNode(){
+        return mNode;
     }
 }

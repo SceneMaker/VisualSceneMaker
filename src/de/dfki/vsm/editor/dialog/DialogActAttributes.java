@@ -3,10 +3,10 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CancelButton;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.runtime.dialogact.DialogActInterface;
+import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -28,20 +28,20 @@ public class DialogActAttributes extends Dialog {
 
     // GUI-Components
     private JPanel       mAttributePanel;
-    private JPanel       mValuesPanel;
+//    private JPanel       mValuesPanel;
     private JLabel       mAttributeLabel;
     private ButtonGroup  mDifficulyGroup;
     private JPanel       mButtonPanel;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
-    private JPanel       mNamePanel;
+//    private JPanel       mNamePanel;
     private JLabel       mNameLabel;
     private JTextField   mNameText;
     DialogActInterface   mDialogAct;
     String               mName;
 
     public DialogActAttributes(DialogActInterface dialogAct, String name) {
-        super(Editor.getInstance(), "Dialog Act Attributes", true);
+        super(EditorInstance.getInstance(), "Dialog Act Attributes", true);
         mDialogAct = dialogAct;
         mName      = name;
 
@@ -83,9 +83,9 @@ public class DialogActAttributes extends Dialog {
 //          mMainPanel.add(mAttributePanel);
         }
 
-        int buttonPos   = (initial > 220)
-                          ? initial + 30
-                          : 240;
+//        int buttonPos   = (initial > 220)
+//                          ? initial + 30
+//                          : 240;
         int finalHeight = (initial > 220)
                           ? Math.abs(300 - 220) + 300
                           : 300;
@@ -106,8 +106,6 @@ public class DialogActAttributes extends Dialog {
         finalBox.add(mButtonPanel);
         
         addComponent(finalBox, 10, 10, 380, finalHeight-20);
-        
-        
         packComponents(420, finalHeight);
     }
 
@@ -130,7 +128,6 @@ public class DialogActAttributes extends Dialog {
             mAttributePanel.add(Box.createRigidArea(new Dimension(5, 5)));
             mAttributePanel.add(newButton);
         }
-
         mAttributePanel.add(Box.createRigidArea(new Dimension(15, 5)));
     }
 

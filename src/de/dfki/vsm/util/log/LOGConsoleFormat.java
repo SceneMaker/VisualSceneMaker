@@ -2,16 +2,17 @@ package de.dfki.vsm.util.log;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.sys.SYSUtilities;
+import de.dfki.vsm.Preferences;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.util.Date;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class LOGConsoleFormat extends Formatter {
 
@@ -36,13 +37,23 @@ public class LOGConsoleFormat extends Formatter {
         // Create The Method Name
         Object method = trace[2];
 
+        String message = "";
+        if (record.getLevel() == Level.SEVERE) {
+            message += "\033[31m";
+        } else if (record.getLevel() == Level.WARNING) {
+            message += "\033[1;33m";
+        } else if (record.getLevel() == Level.INFO) {
+            message += "\033[1;36m";
+        } else {
+            message += "\033[1;37m";
+        }
         // Create The String For Logging
-        String message = record.getLevel() + " to " + "STDERR" + " on " + date + " by " + name + " in " + thread
+        message += record.getLevel() + " to " + "STDERR" + " on " + date + " by " + name + " in " + thread
                          + " at " + method;
 
         // Append The User Message
-        message += SYSUtilities.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
-                   + SYSUtilities.sSYSPROPS_LINE_SEPR + SYSUtilities.sSYSPROPS_LINE_SEPR;
+        message += Preferences.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
+                   + Preferences.sSYSPROPS_LINE_SEPR + Preferences.sSYSPROPS_LINE_SEPR + "\033[0m";;
 
         // return The Final Log Message
         return message;

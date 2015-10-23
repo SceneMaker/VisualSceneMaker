@@ -2,12 +2,12 @@ package de.dfki.vsm.model.sceneflow.command;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class UnblockAllSceneGroups extends Command {
     private boolean mNonAbstract;
@@ -48,7 +48,7 @@ public class UnblockAllSceneGroups extends Command {
         return new UnblockAllSceneGroups(mNonAbstract);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<UnblockAllSceneGroups non-abstract=\"" + mNonAbstract + "\"/>");
     }
 

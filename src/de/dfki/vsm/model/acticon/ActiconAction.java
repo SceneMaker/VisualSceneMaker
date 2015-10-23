@@ -1,19 +1,14 @@
 package de.dfki.vsm.model.acticon;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
-
 import org.w3c.dom.Element;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.io.ByteArrayOutputStream;
-
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 /**
@@ -21,170 +16,125 @@ import java.util.ArrayList;
  */
 public final class ActiconAction implements ModelObject {
 
-    // The Action Entry Name
+    // The action name
     private String mActionName;
 
-    // The Key Value Pairs
+    // The feature list
     private final ArrayList<ActiconFeature> mFeatureList;
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Construct an action
     public ActiconAction() {
-        mActionName  = null;
+        // Initialize the action name
+        mActionName = null;
+        // Initialize the feature list
         mFeatureList = new ArrayList<>();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Construct An Action
     public ActiconAction(final String name, final ArrayList<ActiconFeature> list) {
-        mActionName  = name;
+        // Initialize The Action Name
+        mActionName = name;
+        // Initialize The Feature List
         mFeatureList = list;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get The Action Name
     public final String getActionName() {
         return mActionName;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Append A Feature
     public final void append(final ActiconFeature feature) {
         mFeatureList.add(feature);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Remove A Feature
     public final void remove(final ActiconFeature feature) {
         mFeatureList.remove(feature);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get Feature List
     public final ArrayList<ActiconFeature> getFeatureList() {
         return mFeatureList;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Copy Feature List
     public final ArrayList<ActiconFeature> copyFeatureList() {
-
         // Construct A List Copy
         final ArrayList<ActiconFeature> copy = new ArrayList<>();
-
         // Copy Each Single Member
         for (final ActiconFeature feature : mFeatureList) {
             copy.add(feature.getCopy());
         }
-
-        // Return The Final Clone
+        // Return The Final Copy
         return copy;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get Script Representation
     public final String toScript() {
         String text = "[ action " + mActionName + " ";
-
+        // Append The Features 
         for (final ActiconFeature feature : mFeatureList) {
             text += feature.toScript() + " ";
         }
-
         return text + "]";
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Write Action To XML
     @Override
-    public final void writeXML(final IndentWriter stream) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<Action name=\"" + mActionName + "\">");
         stream.push();
-
+        // Write The Feature List
         for (final ActiconFeature feature : mFeatureList) {
             feature.writeXML(stream);
             stream.endl();
         }
-
         stream.pop();
         stream.print("</Action>");
         stream.flush();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Parse Action From XML
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
-
-        // Parse The Name
+        // Parse The Action Name
         mActionName = element.getAttribute("name");
-
-        // Parse The Features
+        // Parse The Feature List
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(final Element element) throws XMLParseError {
+                // Get The Tag Name
                 final String tag = element.getTagName();
-
+                // Check The Tag Name
                 if (tag.equals("Feature")) {
-
-                    // Construct New
+                    // Construct A New Feature
                     final ActiconFeature feature = new ActiconFeature();
-
-                    // Parse The Feature
+                    // Parse The New Feature
                     feature.parseXML(element);
-
-                    // Append The Feature
+                    // Append The New Feature
                     append(feature);
                 }
             }
         });
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get the string representation 
     @Override
     public final String toString() {
-
-        // Create A Byte Array Stream
+        // Create a new byte array stream buffer
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-        // Initialize The Indent Writer
-        final IndentWriter stream = new IndentWriter(buffer);
-
-        try {
-
-            // Write Object
-            writeXML(stream);
-        } catch (XMLWriteError exc) {
-
-            // mLogger.failure(exc.toString());
-        }
-
-        // Cleanup Stream and Writer
-        stream.flush();
-        stream.close();
-
-        // Return String Representation
+        // Try to write the project to the stream
+        XMLUtilities.writeToXMLStream(this, buffer);
+        // Return the stream string representation
         try {
             return buffer.toString("UTF-8");
-        } catch (Exception exc) {
-            return buffer.toString();
+        } catch (final UnsupportedEncodingException exc) {
+            return exc.getMessage();
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Get A Copy Of The Action
     @Override
     public final ActiconAction getCopy() {
         return new ActiconAction(mActionName, copyFeatureList());

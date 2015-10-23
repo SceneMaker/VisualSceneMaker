@@ -3,14 +3,17 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.CmdBadge;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Type;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
 
 import static de.dfki.vsm.editor.Node.Type.BasicNode;
 import static de.dfki.vsm.editor.Node.Type.SuperNode;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.util.evt.EventDispatcher;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -21,11 +24,11 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class CreateNodeAction extends NodeAction {
-    public CreateNodeAction(WorkSpace workSpace, de.dfki.vsm.model.sceneflow.Node node) {
+    public CreateNodeAction(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.Node node) {
         mWorkSpace        = workSpace;
         mCoordinate       = new Point(node.getGraphics().getPosition().getXPos(),
                                       node.getGraphics().getPosition().getYPos());
@@ -50,11 +53,10 @@ public class CreateNodeAction extends NodeAction {
         mGUINode.resetLocation(mWorkSpace.mGridManager.getNodeLocation(mCoordinate));
     }
 
-    public CreateNodeAction(WorkSpace workSpace, Point coordinate, Type type) {
+    public CreateNodeAction(WorkSpacePanel workSpace, Point coordinate, Type type) {
         mWorkSpace        = workSpace;
         mCoordinate       = coordinate;
         mGUINodeType      = type;
-        mPreferences      = mWorkSpace.getPreferences();
         mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();
         mSceneFlowManager = mWorkSpace.getSceneFlowManager();
         mUndoManager      = mSceneFlowPane.getUndoManager();
@@ -98,6 +100,10 @@ public class CreateNodeAction extends NodeAction {
 
         // Create the command badge of the GUI-Node
         mCmdBadge = new CmdBadge(mGUINode);
+        
+        // Make newly created node selected
+        EventDispatcher.getInstance().convey(new NodeSelectedEvent(this, mDataNode));
+                         
     }
 
     public void run() {

@@ -9,10 +9,8 @@ import de.dfki.vsm.model.sceneflow.graphics.node.Position;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
-
-import static de.dfki.vsm.editor.util.Preferences.sSHOW_VARIABLE_BADGE_ON_WORKSPACE;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -39,7 +37,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  * @author Patrick Gebhard
  */
 public class VarBadgeGlobal extends JComponent implements EventListener, ActionListener, Observer {
@@ -49,7 +47,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
     // TODO: Make format of variable badge as global preferences
     private final int              mPositionOffset = 10;
-    private final LOGDefaultLogger mLogger         = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger         = LOGConsoleLogger.getInstance();
 
     // The supernode
     private final SuperNode mSuperNode;
@@ -124,7 +122,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     public synchronized void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
 
-        if (sSHOW_VARIABLE_BADGE_ON_WORKSPACE &&!mEntryList.isEmpty()) {
+        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE &&!mEntryList.isEmpty()) {
             if (mIsHidden) {
 
                 // Enable antialiasing
@@ -183,6 +181,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
     private void updateVariable(TPLTuple<String, String> varVal) {
 
+        synchronized(mEntryList) {
         // System.err.println("updateVariable");
         for (Entry entry : mEntryList) {
             String var = entry.getVarName();    // the name of the current variable
@@ -196,6 +195,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 entry.mAttributed = formatedPair.getSecond();
                 entry.mHasChanged = true;
             }
+        }
         }
     }
 

@@ -2,14 +2,13 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.DefaultEditor;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.SImageView;
 
 import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
-import static de.dfki.vsm.editor.util.Preferences.sABOUT_FILE;
-import static de.dfki.vsm.editor.util.Preferences.sSCENEMAKER_LOGO;
+import static de.dfki.vsm.Preferences.sABOUT_FILE;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -23,8 +22,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -36,7 +33,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -54,7 +50,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class AboutDialog extends JDialog {
 
@@ -94,8 +90,8 @@ public class AboutDialog extends JDialog {
 
     // Construction
     private AboutDialog() {
-        super(Editor.getInstance(), "About", false);
-
+        super(EditorInstance.getInstance(), "About", false);
+        EditorInstance.getInstance().addEscapeListener(this);
         // Init close operation
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -110,9 +106,9 @@ public class AboutDialog extends JDialog {
         JPanel logoPanel = new JPanel();
 
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS));
-        logoPanel.add(new JLabel(sSCENEMAKER_LOGO));
+        logoPanel.add(new JLabel(Preferences.ICON_SCENEMAKER_LOGO));
 
-        int logoXSize = sSCENEMAKER_LOGO.getIconWidth();
+        int logoXSize = Preferences.ICON_SCENEMAKER_LOGO.getIconWidth();
 
         mAboutPane = new MyEditorPane();
         mAboutPane.setEditorKit(editorKit);

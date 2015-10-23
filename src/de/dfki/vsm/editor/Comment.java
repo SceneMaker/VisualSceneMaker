@@ -2,7 +2,8 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.configs.ProjectPreferences;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -14,8 +15,6 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -23,8 +22,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -33,8 +30,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -44,7 +39,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class Comment extends JComponent implements EventListener, Observer, MouseListener, MouseMotionListener {
     private JEditorPane mTextEditor = null;
@@ -59,8 +54,8 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
     // edit
     private boolean            mEditMode = false;
-    private WorkSpace          mWorkSpace;
-    private ProjectPreferences mPreferences;
+    private WorkSpacePanel          mWorkSpace;
+    private EditorConfig mEditorConfig;
 
     // image
     private Image                               mResizeMarker;
@@ -80,11 +75,11 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mDataComment = null;
     }
 
-    public Comment(WorkSpace ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
+    public Comment(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;
-        mPreferences = mWorkSpace.getPreferences();
+        mEditorConfig = mWorkSpace.getEditorConfig();
         mDataComment = dataComment;
 
         // resize marker
@@ -92,7 +87,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
         // font setup
         mFont = new Font("SansSerif", Font.ITALIC,    /* (mWorkSpace != null) ? */
-                         mPreferences.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
+                         mEditorConfig.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
 
         // size setup
         Rectangle rect = new Rectangle(mDataComment.getGraphics().getRect().getXPos(),
@@ -123,54 +118,21 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // first put it in the editor, then back in the label
         mTextEditor.setText(mDataComment.getHTMLText());
         mTextLabel.setText(mTextEditor.getText());
-        JButton colourPicker = new JButton();
-        colourPicker.setHorizontalAlignment(SwingConstants.RIGHT);
-        colourPicker.setOpaque(false);
-        colourPicker.setContentAreaFilled(false);
-        colourPicker.setBorder(null);
-        colourPicker.setIcon(ResourceLoader.loadImageIcon("/res/img/colour_picker_small.png"));
-        colourPicker.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        colourPicker.setToolTipText("Select Font Color");
-        colourPicker.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        colourPicker.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Color color = JColorChooser.showDialog(mWorkSpace, "Colours", Color.yellow);
-                mTextEditor.selectAll();
-                mTextEditor.setForeground(color); // color of selected text
-                mTextLabel.setForeground(color);
-//                mTextEditor.setSelectionColor(color); // background of selected text
-                mTextEditor.requestFocusInWindow();
-            }
-        });
-        colourPicker.setMaximumSize(new Dimension(30, 20));
-        colourPicker.setPreferredSize(new Dimension(30, 20));
-        colourPicker.setMinimumSize(new Dimension(30, 20));
-        add(colourPicker, BorderLayout.PAGE_END);
         add(mTextLabel, BorderLayout.CENTER);
     }
 
     @Override
-    public void update(EventObject event) {
+    public void update(EventObject event) {   }
 
-//      System.err.println("Updating comment" + this);
-//      mFont = new Font("SansSerif", Font.PLAIN, /*(mWorkSpace != null) ?*/ sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
-//      String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
-//      ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
-//
-//      repaint();
-    }
-
-    /**
-     *
-     *
-     */
+    
     @Override
     public void update(Observable o, Object obj) {
         update();
     }
-
+    
+    
     public void update() {
-        mFont = new Font("SansSerif", Font.ITALIC, mPreferences.sWORKSPACEFONTSIZE);
+        mFont = new Font("SansSerif", Font.ITALIC, mEditorConfig.sWORKSPACEFONTSIZE);
         mTextLabel.setFont(mFont);
         mTextEditor.setFont(mFont);
 

@@ -3,8 +3,8 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.SceneFlowEditor;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -22,15 +22,15 @@ public class CutNodesAction extends EditorAction {
     Set<Node>             mNodes             = new HashSet<Node>();
     Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<RemoveNodeAction>();
     CopyNodesAction       mCopyNodesAction   = null;
-    WorkSpace             mWorkSpace         = null;
+    WorkSpacePanel             mWorkSpace         = null;
     SceneFlowEditor       mSceneFlowEditor;
 
-    public CutNodesAction(WorkSpace workSpace, Node node) {
+    public CutNodesAction(WorkSpacePanel workSpace, Node node) {
         mWorkSpace = workSpace;
         mNodes.add(node);
     }
 
-    public CutNodesAction(WorkSpace workSpace, Set<Node> nodes) {
+    public CutNodesAction(WorkSpacePanel workSpace, Set<Node> nodes) {
         mWorkSpace       = workSpace;
         mNodes           = nodes;
         mSceneFlowEditor = mWorkSpace.getSceneFlowEditor();

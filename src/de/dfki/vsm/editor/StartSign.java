@@ -2,12 +2,11 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.configs.ProjectPreferences;
-import de.dfki.vsm.model.project.ProjectData;
-import de.dfki.vsm.util.evt.EventCaster;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.model.project.EditorConfig;
+import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
-import static de.dfki.vsm.editor.util.Preferences.sSTART_SIGN_COLOR;
+import static de.dfki.vsm.Preferences.sSTART_SIGN_COLOR;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -25,34 +24,37 @@ import javax.swing.JComponent;
 
 /**
  * @author Patrick Gebhard
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class StartSign extends JComponent implements Observer {
-    private final LOGDefaultLogger   mLogger      = LOGDefaultLogger.getInstance();
-    private final EventCaster        mEventCaster = EventCaster.getInstance();
+    private final LOGConsoleLogger   mLogger      = LOGConsoleLogger.getInstance();
+    private final EventDispatcher        mEventCaster = EventDispatcher.getInstance();
     private Point                    mRelPos      = new Point(0, 0);
     private final Color              mColor;
     private final Node               mNode;
     private final boolean            mOutline;
-    private final ProjectPreferences mPreferences;
+    private final EditorConfig       mEditorConfig;
     private Polygon                  mHead;
     private int                      mHalfHeight;
     private int                      mWidth;
     private int                      mStrokeSize;
 
     public StartSign(Node node, Point point) {
-        mPreferences = node.getWorkSpace().getPreferences();
-        SetProjectPreferences();
-        mColor   = sSTART_SIGN_COLOR;
         mNode    = node;
+        mEditorConfig = mNode.getWorkSpace().getEditorConfig();
+        
+        SetEditorConfig();
+        
+        mColor   = sSTART_SIGN_COLOR;
+      
         mRelPos  = point;
         mOutline = false;
         update();
     }
 
     public StartSign(Node node, Point point, boolean mode) {
-        mPreferences = node.getWorkSpace().getPreferences();
-        SetProjectPreferences();
+        mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
+        SetEditorConfig();
         mColor   = sSTART_SIGN_COLOR;
         mOutline = mode;
         mNode    = node;
@@ -61,8 +63,8 @@ public class StartSign extends JComponent implements Observer {
     }
 
     public StartSign(Node node, Point point, boolean mode, Color color) {
-        mPreferences = node.getWorkSpace().getPreferences();
-        SetProjectPreferences();
+        mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
+        SetEditorConfig();
         mColor   = color;
         mOutline = mode;
         mNode    = node;
@@ -77,11 +79,11 @@ public class StartSign extends JComponent implements Observer {
     }
 
     public void update() {
-        mHalfHeight = mPreferences.sNODEWIDTH / 6;
-        mWidth      = mPreferences.sNODEWIDTH / 8;
-        mStrokeSize = ((mPreferences.sNODEWIDTH / 50) < 2
+        mHalfHeight = mEditorConfig.sNODEWIDTH / 6;
+        mWidth      = mEditorConfig.sNODEWIDTH / 8;
+        mStrokeSize = ((mEditorConfig.sNODEWIDTH / 50) < 2
                        ? 2
-                       : (mPreferences.sNODEWIDTH / 50));
+                       : (mEditorConfig.sNODEWIDTH / 50));
         mHead       = new Polygon();
         mHead.addPoint(2 * mStrokeSize, 2 * mStrokeSize);
         mHead.addPoint(mWidth + 2 * mStrokeSize, mHalfHeight + 2 * mStrokeSize);
@@ -93,12 +95,12 @@ public class StartSign extends JComponent implements Observer {
         mRelPos = mNode.mDockingManager.occupyDockPointForStartSign();
     }
 
-    private void SetProjectPreferences() {
-        mHalfHeight = mPreferences.sNODEWIDTH / 6;
-        mWidth      = mPreferences.sNODEWIDTH / 8;
-        mStrokeSize = ((mPreferences.sNODEWIDTH / 50) < 2
+    private void SetEditorConfig() {
+        mHalfHeight = mEditorConfig.sNODEWIDTH / 6;
+        mWidth      = mEditorConfig.sNODEWIDTH / 8;
+        mStrokeSize = ((mEditorConfig.sNODEWIDTH / 50) < 2
                        ? 2
-                       : (mPreferences.sNODEWIDTH / 50));
+                       : (mEditorConfig.sNODEWIDTH / 50));
     }
 
     @Override
@@ -111,7 +113,7 @@ public class StartSign extends JComponent implements Observer {
 
         //
         setLocation(mNode.getLocation().x - mWidth - 2 * mStrokeSize,
-                    mNode.getLocation().y + mPreferences.sNODEWIDTH / 2 - mHalfHeight - 2 * mStrokeSize);
+                    mNode.getLocation().y + mEditorConfig.sNODEWIDTH / 2 - mHalfHeight - 2 * mStrokeSize);
 
         /*
          * mNode.getLocation().x - mRelPos.x - mWidth - 2 * mStrokeSize,

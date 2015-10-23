@@ -8,7 +8,7 @@ package de.dfki.vsm.editor.action;
 //import java.awt.event.ActionListener;
 //
 ///**
-// * @author Gregor Mehlmann
+// * @author Not me
 // */
 //public class ModifySceneFlowAction {
 //

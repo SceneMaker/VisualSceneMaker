@@ -3,17 +3,17 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.Editor;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.Node.Flavour;
-import de.dfki.vsm.editor.WorkSpace;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.EEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -27,9 +27,9 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class DeflectEdgeAction extends EdgeAction {
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public DeflectEdgeAction(WorkSpace workSpace, Edge edge, Node newTargetNode, Point newDropPoint) {
+    public DeflectEdgeAction(WorkSpacePanel workSpace, Edge edge, Node newTargetNode, Point newDropPoint) {
         mWorkSpace         = workSpace;
         mGUIEdge           = edge;
         mDataEdge          = edge.getDataEdge();
@@ -141,7 +141,7 @@ public class DeflectEdgeAction extends EdgeAction {
 //        mTargetGUINodeDockPoint = mTargetGUINode.connectEdgetAtTargetNode(mGUIEdge, mTargetGUINodeDockPoint);
 //      }
         // mSourceGUINode.update();
-        Editor.getInstance().update();
+        EditorInstance.getInstance().refresh();
         mWorkSpace.add(mGUIEdge);
 
         // straighten the edge ...

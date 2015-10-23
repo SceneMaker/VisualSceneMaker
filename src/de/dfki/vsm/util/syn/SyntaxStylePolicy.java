@@ -1,19 +1,17 @@
 package de.dfki.vsm.util.syn;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.util.ios.IndentWriter;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLParseTools;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Font;
 import java.awt.Graphics;
 
@@ -31,12 +29,12 @@ import javax.swing.text.TabExpander;
 import javax.swing.text.Utilities;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class SyntaxStylePolicy implements ModelObject {
 
     // The Singelton Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // The Token Style Map
     private final HashMap<String, SyntaxTokenStyle> mStyleMap = new HashMap<>();
@@ -48,21 +46,25 @@ public final class SyntaxStylePolicy implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public SyntaxStylePolicy(final URL url) {
-
         // Initialize The URL
         mURL = url;
-
-        //
+        // Parse The Policy
         try {
-
             // Parse The Policy From An URL
-            XMLParseTools.parseFromXMLURL(this, mURL);
+            if (XMLUtilities.parseFromXMLURL(this, mURL)) {
 
-            // Print Some Debug Information
-            mLogger.message("Loading Style Policy:\n" + toString());
+                // Print Some Debug Information
+                mLogger.message("Success: Loading Style Policy URL:\n" + toString());
+            } else {
+                // Print Some Information
+                mLogger.failure("Failure: Cannot Parse Style Policy URL '"
+                        + mURL.toString() + "'");
+            }
         } catch (Exception exc) {
-
-            // Print Some Debug Information
+            // Print Some Information
+            mLogger.failure("Failure: Cannot Parse Style Policy URL '"
+                    + mURL.toString() + "'");
+            // Print Some Information
             mLogger.failure(exc.toString());
         }
     }
@@ -80,7 +82,7 @@ public final class SyntaxStylePolicy implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final int drawStyle(Segment segment, int x, int y, Graphics graphics, TabExpander e, int offset,
-                               final String token) {
+            final String token) {
 
         // Get The Syntax Style Entry
         final SyntaxTokenStyle entry = mStyleMap.get(token);
@@ -89,8 +91,8 @@ public final class SyntaxStylePolicy implements ModelObject {
         final Font font = graphics.getFont().deriveFont((entry.isEmph()
                 ? Font.ITALIC
                 : Font.PLAIN) | (entry.isBold()
-                                 ? Font.BOLD
-                                 : Font.PLAIN));
+                ? Font.BOLD
+                : Font.PLAIN));
 
         // Set The New Font
         graphics.setFont(font);
@@ -106,7 +108,7 @@ public final class SyntaxStylePolicy implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void writeXML(final IndentWriter writer) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
         writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         writer.println("<StylePolicy>").push();
 
@@ -164,7 +166,7 @@ public final class SyntaxStylePolicy implements ModelObject {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Initialize The Indent Writer
-        final IndentWriter stream = new IndentWriter(buffer);
+        final IOSIndentWriter stream = new IOSIndentWriter(buffer);
 
         try {
 

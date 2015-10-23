@@ -1,94 +1,71 @@
 package de.dfki.vsm.api;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 /**
  * @author Gregor Mehlmann
  */
 public final class VSMSystemTimer extends Thread {
 
-    // Termination Flag
+    // The singelton system togger
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    // The thread termination flag
     private volatile boolean mDone = false;
-
-    // The System Logger
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-
-    // The Scene Player
+    // The scene player reference
     private final VSMScenePlayer mPlayer;
-
-    // The Wait Interval
+    // The timer wait interval
     private final long mTimerInterval;
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Construct the system timer
     public VSMSystemTimer(final VSMScenePlayer player, final long interval) {
-
-        // Initialize The Player
+        super("VSMSystemTimer");
+        // Initialize the player
         mPlayer = player;
-
-        // Initialize The Interval
+        // Initialize the interval
         mTimerInterval = interval;
-
-        // Debug Some Information
+        // Print some Information
         mLogger.message("Creating VSM System Timer");
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Abort the system timer
     public final void abort() {
-
-        // Debug Some Information
+        // Print some Information
         mLogger.message("Aborting VSM System Timer");
-
-        // Set Termination Flag
+        // Set termination flag
         mDone = true;
-
-        // Interrupt Thread State
+        // Interrupt thread state
         interrupt();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Execute the system timer
     @Override
     public final void run() {
-
-        // Debug Some Information
+        // Print some Information
         mLogger.message("Starting VSM System Timer");
-
-        // Initialize Startup Time
+        // Set the player start time
         mPlayer.setStartupTime(System.currentTimeMillis());
-
-        // Update The Current Time
+        // Then update the player time
         while (!mDone) {
-
-            // Sleep For Some Time
+            // Sleep for some very short time
             try {
+                // Eventually change interval 
                 Thread.sleep(mTimerInterval);
-            } catch (InterruptedException exc) {
-
-                // Debug Some Information
+            } catch (final Exception exc) {
+                // Print some Information
                 mLogger.warning(exc.toString());
-
-                // Debug Some Information
-                mLogger.warning("Interrupting VSM System Timer");
-
-                // Exit On An Interrupt
+                // Print some Information
+                //mLogger.warning("Interrupting VSM System Timer");
+                // Exit on an interrupt
                 mDone = true;
             }
-
-            // Update The Current Time
-            mPlayer.setCurrentTime(System.currentTimeMillis() - mPlayer.getStartupTime());
-
-            // Assert The New Time
-            mPlayer.query("retractall(now(_))," + " assertz(now(" + mPlayer.getCurrentTime() + ")).");
+            // Update the player time
+            mPlayer.setCurrentTime(
+                    System.currentTimeMillis() - mPlayer.getStartupTime());
+            // Assert the new time now
+            mPlayer.query("retractall(now(_)),"
+                    + " assertz(now(" + mPlayer.getCurrentTime() + ")).");
         }
-
-        // Print Some Information
+        // Print some information
         mLogger.message("Stopping VSM System Timer");
     }
 }

@@ -1,29 +1,24 @@
-package de.dfki.vsm.api.hcm;
-
-//~--- non-JDK imports --------------------------------------------------------
+ package de.dfki.vsm.api.hcm;
 
 import de.dfki.vsm.api.VSMAgentClient;
 import de.dfki.vsm.api.VSMScenePlayer;
-import de.dfki.vsm.model.project.ProjectData;
-import de.dfki.vsm.model.script.AbstractWord;
-import de.dfki.vsm.model.script.SceneGroup;
-import de.dfki.vsm.model.script.SceneObject;
-import de.dfki.vsm.model.script.SceneScript;
-import de.dfki.vsm.model.script.SceneTurn;
-import de.dfki.vsm.model.script.SceneUttr;
-import de.dfki.vsm.runtime.Process;
-import de.dfki.vsm.runtime.value.AbstractValue;
-import de.dfki.vsm.runtime.value.StringValue;
-import de.dfki.vsm.runtime.value.StructValue;
-
-//~--- JDK imports ------------------------------------------------------------
-
+import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.runtime.interpreter.Process;
+import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.values.StringValue;
+import de.dfki.vsm.runtime.values.StructValue;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public final class HCMScenePlayer extends VSMScenePlayer {
 
@@ -39,21 +34,19 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private HCMScenePlayer(final ProjectData project) {
+    private HCMScenePlayer() {
 
-        // Initialize The Scene Player
-        super(project);
 
         // Print Some Debug Information
-        mVSM3Log.message("Creating HCM Scene Player");
+        mLogger.message("Creating HCM Scene Player");
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public static synchronized HCMScenePlayer getInstance(final ProjectData project) {
+    public static synchronized HCMScenePlayer getInstance() {
         if (sInstance == null) {
-            sInstance = new HCMScenePlayer(project);
+            sInstance = new HCMScenePlayer();
         }
 
         return sInstance;
@@ -63,27 +56,27 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void launch() {
+    public final boolean launch(final RunTimeProject project) {
 
         // Load Parent Scene Player
-        super.launch();
+        super.launch(project);
 
         // Initialize Scene Player
         try {
 
             // Initialize Event Handler
-            final String lhost = mPlayerConfig.property("hcm.handler.local.host");
-            final String rhost = mPlayerConfig.property("hcm.handler.remote.host");
-            final String lport = mPlayerConfig.property("hcm.handler.local.port");
-            final String rport = mPlayerConfig.property("hcm.handler.remote.port");
-            final String rflag = mPlayerConfig.property("hcm.handler.remote.flag");
+            final String lhost = mPlayerConfig.getProperty("hcm.handler.local.host");
+            final String rhost = mPlayerConfig.getProperty("hcm.handler.remote.host");
+            final String lport = mPlayerConfig.getProperty("hcm.handler.local.port");
+            final String rport = mPlayerConfig.getProperty("hcm.handler.remote.port");
+            final String rflag = mPlayerConfig.getProperty("hcm.handler.remote.flag");
 
             // Debug Some Information
-            mVSM3Log.message("" + "HCM Event Handler Local Host  : '" + lhost + "'" + "\r\n"
-                             + "HCM Event Handler Local Port  : '" + lport + "'" + "\r\n"
-                             + "HCM Event Handler Remote Host : '" + rhost + "'" + "\r\n"
-                             + "HCM Event Handler Remote Port : '" + rport + "'" + "\r\n"
-                             + "HCM Event Handler Remote Flag : '" + rflag + "'");
+            mLogger.message("" + "HCM Event Handler Local Host  : '" + lhost + "'" + "\r\n"
+                    + "HCM Event Handler Local Port  : '" + lport + "'" + "\r\n"
+                    + "HCM Event Handler Remote Host : '" + rhost + "'" + "\r\n"
+                    + "HCM Event Handler Remote Port : '" + rport + "'" + "\r\n"
+                    + "HCM Event Handler Remote Flag : '" + rflag + "'");
 
             // Construct Event Handler
             mEventHandler = new HCMEventHandler(this);
@@ -96,24 +89,26 @@ public final class HCMScenePlayer extends VSMScenePlayer {
         } catch (final NumberFormatException exc) {
 
             // Debug Some Information
-            mVSM3Log.failure(exc.toString());
+            mLogger.failure(exc.toString());
 
             // Debug Some Information
-            mVSM3Log.message("Failed Launching HCM Scene Player");
+            mLogger.message("Failed Launching HCM Scene Player");
         }
 
         // Create User Interface
         mUserInterface = new HCMUserInterface(this);
 
         // Print Debug Information
-        mVSM3Log.message("Launching HCM Scene Player");
+        mLogger.message("Launching HCM Scene Player");
+        
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public final void unload() {
+    public final boolean unload() {
 
         // Unload Parent Scene Player
         super.unload();
@@ -131,15 +126,17 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             mEventHandler.join();
 
             // Print Debug Information
-            mVSM3Log.message("Joining HCM Event Handler");
+            mLogger.message("Joining HCM Event Handler");
         } catch (Exception exc) {
 
             // Print Debug Information
-            mVSM3Log.warning(exc.toString());
+            mLogger.warning(exc.toString());
         }
 
         // Print Debug Information
-        mVSM3Log.message("Unloading HCM Scene Player");
+        mLogger.message("Unloading HCM Scene Player");
+        
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -173,10 +170,10 @@ public final class HCMScenePlayer extends VSMScenePlayer {
         if (input != null) {
 
             // Debug Some Information
-            mVSM3Log.message("Agent #" + client.getAgentUaid() + " Receiving Data '" + input + "'");
+            mLogger.message("Agent #" + client.getAgentUaid() + " Receiving Data '" + input + "'");
 
             // Parse The Data To A New Message
-            final HCMEventMessage message = HCMEventMessage.getInstance(input);
+            final HCMEventObject message = HCMEventObject.getInstance(input);
 
             // Find The Message Task Identifier
             if (message.getUtid() != null) {
@@ -185,24 +182,24 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                 final String utid = message.getUtid();
 
                 // Notify The Right Waiting Thread
-                synchronized (mWaitingThreadQueue) {
+                synchronized (mThreadQueue) {
 
                     // Remove Respective Task
-                    final Thread task = mWaitingThreadQueue.remove(utid);
+                    final Thread task = mThreadQueue.remove(utid);
 
                     // Debug Some Information
-                    mVSM3Log.message("Removing The Waiting Thread '" + task + "' With Id '" + utid + "'");
+                    mLogger.message("Removing The Waiting Thread '" + task + "' With Id '" + utid + "'");
 
                     // Debug Some Information
-                    mVSM3Log.message("Notifying All Waiting Threads");
+                    mLogger.message("Notifying All Waiting Threads");
 
                     // Notify Waiting Tasks
-                    mWaitingThreadQueue.notifyAll();
+                    mThreadQueue.notifyAll();
                 }
             } else {
 
                 // Debug Some Information
-                mVSM3Log.warning("Message Has Wrong Format '" + input + "'");
+                mLogger.warning("Message Has Wrong Format '" + input + "'");
             }
         } else {
 
@@ -214,43 +211,43 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final void request(final String type, final String utid, final String name, final String uaid,
-                              final String text, final long date, final long time, final Thread task,
-                              final VSMAgentClient client) {
+            final String text, final long date, final long time, final Thread task,
+            final VSMAgentClient client) {
 
         // Construct Event Message
-        final HCMEventMessage message = HCMEventMessage.newInstance(type, utid, name, uaid, text, date, time);
+        final HCMEventObject message = HCMEventObject.newInstance(type, utid, name, uaid, text, date, time);
 
         // Send The New Command
-        synchronized (mWaitingThreadQueue) {
+        synchronized (mThreadQueue) {
             if (client.sendString(message.toString())) {
 
                 // Print Information
-                mVSM3Log.message("Enqueuing Waiting Thread '" + task + "' With Id '" + utid + "'");
+                mLogger.message("Enqueuing Waiting Thread '" + task + "' With Id '" + utid + "'");
 
                 // Enqueue The Waiting Thread
-                mWaitingThreadQueue.put(utid, Thread.currentThread());
+                mThreadQueue.put(utid, Thread.currentThread());
 
                 // And Await The Notification
-                while (mWaitingThreadQueue.containsKey(utid)) {
+                while (mThreadQueue.containsKey(utid)) {
 
                     // Print Information
-                    mVSM3Log.message("Awaiting Notification For '" + task + "' With Id '" + utid + "'");
+                    mLogger.message("Awaiting Notification For '" + task + "' With Id '" + utid + "'");
 
                     // Print Information
                     try {
-                        mWaitingThreadQueue.wait();
+                        mThreadQueue.wait();
                     } catch (final InterruptedException exc) {
 
                         // Print Information
-                        mVSM3Log.message("Interrupting Waiting Task '" + task + "' With Id '" + utid + "'");
+                        mLogger.message("Interrupting Waiting Task '" + task + "' With Id '" + utid + "'");
                     }
 
                     // Print Information
-                    mVSM3Log.message("Searching Notification For '" + task + "' With Id '" + utid + "'");
+                    mLogger.message("Searching Notification For '" + task + "' With Id '" + utid + "'");
                 }
 
                 // Print Information
-                mVSM3Log.message("Received Notification For '" + task + "' With Id '" + utid + "'");
+                mLogger.message("Received Notification For '" + task + "' With Id '" + utid + "'");
             }
         }
     }
@@ -263,12 +260,12 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
         // Initialize Parameter Data
         final Process process = (Process) Thread.currentThread();
-        final String  utid    = process.getName() + "::" + sceneName;
+        final String utid = process.getName() + "::" + sceneName;
 
         // And Process Scene Arguments
         final HashMap<String, String> argMap = new HashMap<>();
 
-        if ((sceneArgs != null) &&!sceneArgs.isEmpty()) {
+        if ((sceneArgs != null) && !sceneArgs.isEmpty()) {
             final AbstractValue value = sceneArgs.getFirst();
 
             if (value.getType().equals(AbstractValue.Type.STRUCT)) {
@@ -290,7 +287,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             public void run() {
 
                 // Select A Scene From Script
-                final SceneScript sceneScript = mProjectData.getSceneScript();
+                final SceneScript sceneScript = mProject.getSceneScript();
 
                 // Select Default Scene Group
                 final SceneGroup sceneGroup = sceneScript.getSceneGroup(sceneName);
@@ -300,8 +297,8 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
                 // Select A Scene From Group
                 final SceneObject selectedScene = (langGroup != null)
-                                                  ? (langGroup.select())
-                                                  : (sceneGroup.select());
+                        ? (langGroup.select())
+                        : (sceneGroup.select());
 
                 // Infer The Final Scene Language
                 // final String selectedLang = selectedScene.getLanguage();
@@ -341,7 +338,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                         if (name != null) {
 
                             // Get The Adequate Agent
-                            final VSMAgentClient client = mAgentClientMap.get(name);
+                            final VSMAgentClient client = mAgentMap.get(name);
 
                             // Check if The Client Exists
                             if (client != null) {
@@ -366,29 +363,29 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                             } else {
 
                                 // Get The Default Speaker
-                                mVSM3Log.failure("Agent '" + name + "'Does Not Exist");
+                                mLogger.failure("Agent '" + name + "'Does Not Exist");
                             }
                         } else {
 
                             // Get The Default Speaker
-                            mVSM3Log.failure("Turn Has No Speaker Definition");
+                            mLogger.failure("Turn Has No Speaker Definition");
                         }
 
                         // Exit If Interrupted After Utterance
-                        if (mIsDone) {
+                        if (isDone()) {
 
                             // Print Information
-                            mVSM3Log.message("Finishing Task '" + utid + "' After Utterance");
+                            mLogger.message("Finishing Task '" + utid + "' After Utterance");
 
                             return;
                         }
                     }
 
                     // Exit If Interrupted After Turn
-                    if (mIsDone) {
+                    if (isDone()) {
 
                         // Print Information
-                        mVSM3Log.message("Finishing Task '" + utid + "' After Turn");
+                        mLogger.message("Finishing Task '" + utid + "' After Turn");
 
                         return;
                     }
@@ -413,12 +410,10 @@ public final class HCMScenePlayer extends VSMScenePlayer {
             } catch (InterruptedException exc) {
 
                 // Print Information
-                mVSM3Log.warning("Interrupting '" + Thread.currentThread().getName()
-                                 + "' During The Execution Of Scene '" + sceneName + "'");
-
+                mLogger.warning("Interrupting '" + Thread.currentThread().getName()
+                        + "' During The Execution Of Scene '" + sceneName + "'");
                 // Terminate The Task
-                task.mIsDone = true;
-
+                task.abort();
                 // Interrupt The Task
                 task.interrupt();
             }

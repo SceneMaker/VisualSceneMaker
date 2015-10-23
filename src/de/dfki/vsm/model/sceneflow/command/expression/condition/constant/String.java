@@ -3,14 +3,14 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.util.TextFormat;
-import de.dfki.vsm.util.ios.IndentWriter;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
 /**
  * A string constant.
  *
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class String extends Constant {
     private java.lang.String mValue;
@@ -51,7 +51,7 @@ public class String extends Constant {
         return new String(mValue);
     }
 
-    public void writeXML(IndentWriter out) {
+    public void writeXML(IOSIndentWriter out) {
         out.println("<String value=\"" + mValue + "\"/>");
     }
 

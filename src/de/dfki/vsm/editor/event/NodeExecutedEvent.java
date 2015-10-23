@@ -6,7 +6,7 @@ import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Not me
  */
 public class NodeExecutedEvent extends EventObject {
     private Node mNode;
