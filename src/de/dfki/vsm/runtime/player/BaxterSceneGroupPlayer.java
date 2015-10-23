@@ -175,7 +175,7 @@ public class BaxterSceneGroupPlayer implements SceneGroupPlayer, EventListener {
                             } else if (word instanceof ActionObject) {
 
 
-                                //speakerVoice = I4GMaryClient.MALE;
+                                   actionManager.addAction(word);
 
                                 // Visualization
                                 //mLogger.message("Executing action:" + ((ActionObject) word).getText());

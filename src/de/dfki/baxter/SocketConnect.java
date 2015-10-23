@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  * Client to connect to baxter via tpc/ip
  */
 public class SocketConnect {
-    private static String tcp_ip = "127.0.0.1";
+    private static String tcp_ip = "192.168.0.10";
     private static int tcp_port = 1313;
     private static Socket socket = null;
     private static DataInputStream is = null;
