@@ -799,10 +799,21 @@ class NameEditor extends JPanel implements EventListener {
     }
 
     private void save() {
-        mDataNode.setName(mNameField.getText().trim());
+        
+        mDataNode.setName(sanitizeString(mNameField.getText().trim()));
+    }
+    //ESCAPES STRINGS
+    private String sanitizeString(String st)
+    {
+        String output = st;
+        output = output.replaceAll("'", "");
+        output = output.replaceAll("\"", "");
+        return output;
     }
 }
 
+
+    
 /**
  *
  *
@@ -973,8 +984,11 @@ class ProbabilityEditor extends JPanel implements EventListener {
  */
 class StartNodeEditor extends AttributeEditor {
 
-    public StartNodeEditor() {
+    public StartNodeEditor() 
+    {
         super("Edit Start Nodes:");
+        disableAddButton();
+        disableUpDownButtons();
     }
 
     @Override
