@@ -3,6 +3,8 @@ package de.dfki.vsm.editor.project.sceneflow.attributes;
 //~--- non-JDK imports --------------------------------------------------------
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.action.RedoAction;
+import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.dialog.CmdDialog;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
@@ -799,10 +801,21 @@ class NameEditor extends JPanel implements EventListener {
     }
 
     private void save() {
-        mDataNode.setName(mNameField.getText().trim());
+        
+        mDataNode.setName(sanitizeString(mNameField.getText().trim()));
+    }
+    //ESCAPES STRINGS
+    private String sanitizeString(String st)
+    {
+        String output = st;
+        output = output.replaceAll("'", "");
+        output = output.replaceAll("\"", "");
+        return output;
     }
 }
 
+
+    
 /**
  *
  *
@@ -973,8 +986,11 @@ class ProbabilityEditor extends JPanel implements EventListener {
  */
 class StartNodeEditor extends AttributeEditor {
 
-    public StartNodeEditor() {
+    public StartNodeEditor() 
+    {
         super("Edit Start Nodes:");
+        disableAddButton();
+        disableUpDownButtons();
     }
 
     @Override
@@ -1020,9 +1036,13 @@ class StartNodeEditor extends AttributeEditor {
 
             // Get the new start node
             Node oldStartNode = ((SuperNode) mDataNode).getChildNodeById(id);
-
+            
             ((SuperNode) mDataNode).removeStartNode(oldStartNode);
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getNode(id).removeStartSign();
             mListModel.removeElement(value);
+            EditorInstance.getInstance().refresh();
+            UndoAction.getInstance().refreshUndoState();
+            RedoAction.getInstance().refreshRedoState();
         }
 
         // Reload the current start node list of the supernode
