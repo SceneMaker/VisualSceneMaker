@@ -70,7 +70,6 @@ public class Comment extends Syntax {
     }
 
     private void formatHTML() {
-        System.out.println("EXECUTING FORMATHTML ON SCENEFLOW/COMMENT.JAVA ------------------------------------------------------------");
         mFontSize =
             EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
 

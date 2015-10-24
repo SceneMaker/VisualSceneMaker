@@ -133,7 +133,6 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     
     public void update() {
         
-        System.out.println("EXECUTING UPDATE ON EDITOR/COMMENT.JAVA ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         mFont = new Font("SansSerif", Font.ITALIC, mEditorConfig.sWORKSPACEFONTSIZE);
         mTextLabel.setFont(mFont);
         mTextEditor.setFont(mFont);
