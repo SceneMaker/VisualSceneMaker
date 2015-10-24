@@ -6,10 +6,10 @@
 package de.dfki.vsm.model.acticon;
 
 import de.dfki.baxter.BaxterPlayer;
-import de.dfki.vsm.model.script.AbstractWord;
-import de.dfki.vsm.model.script.ActionFeature;
-import de.dfki.vsm.model.script.ActionObject;
-import de.dfki.vsm.model.script.SceneWord;
+import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.ActionFeature;
+import de.dfki.vsm.model.scenescript.ActionObject;
+import de.dfki.vsm.model.scenescript.SceneWord;
 import de.dfki.vsm.util.tts.I4GMaryClient;
 import de.dfki.vsm.util.tts.VoiceName;
 import java.io.IOException;
