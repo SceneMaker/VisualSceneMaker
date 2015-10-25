@@ -286,7 +286,7 @@ class CmdEditor extends AttributeEditor {
 
             // Update the selected node
             mDataNode = ((NodeSelectedEvent) event).getNode();
-
+            
             // Reload the command execution list
             mListModel.clear();
 
@@ -301,6 +301,8 @@ class CmdEditor extends AttributeEditor {
 
     @Override
     protected void add() {
+        de.dfki.vsm.editor.Node currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getNode(mDataNode.getId());
+        EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().deselectAllOtherComponents(currentNode);
         Command cmd = new CmdDialog(null).run();
 
         if (cmd != null) {
