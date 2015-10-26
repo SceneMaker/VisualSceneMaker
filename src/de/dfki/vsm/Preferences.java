@@ -232,12 +232,22 @@ public final class Preferences {
     //PLUS ICON
     public static final ImageIcon ICON_PLUS_STANDARD            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png");
     public static final ImageIcon ICON_PLUS_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png");
+    public static final ImageIcon ICON_PLUS_DISABLED            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_disabled.png");
     //MINUS ICON
     public static final ImageIcon ICON_MINUS_STANDARD           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove.png");
     public static final ImageIcon ICON_MINUS_ROLLOVER           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_blue.png");
+    public static final ImageIcon ICON_MINUS_DISABLED           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_disabled.png");
     //EDIT ICON
     public static final ImageIcon ICON_EDIT_STANDARD           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png");
     public static final ImageIcon ICON_EDIT_ROLLOVER           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit_blue.png");
+    //UP ICON 
+    public static final ImageIcon ICON_UP_STANDARD             = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20.png");
+    public static final ImageIcon ICON_UP_ROLLOVER             = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_blue.png");
+    public static final ImageIcon ICON_UP_DISABLED             = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_disabled.png");
+    //DOWN ICON
+    public static final ImageIcon ICON_DOWN_STANDARD           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down.png");
+    public static final ImageIcon ICON_DOWN_ROLLOVER           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_blue.png");
+    public static final ImageIcon ICON_DOWN_DISABLED           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_disabled.png");
     //BACKGROUND WELCOME 
     public static final Image     BACKGROUND_IMAGE             = ResourceLoader.loadImageIcon("/res/img/icon_big.png").getImage();   // Background for the welcome screen
     /**

@@ -5,7 +5,6 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -58,6 +57,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         // Init the button panel
         mAddButton = new JButton(Preferences.ICON_PLUS_STANDARD);
         mAddButton.setRolloverIcon(Preferences.ICON_PLUS_ROLLOVER);
+        mAddButton.setDisabledIcon(Preferences.ICON_PLUS_DISABLED);
         mAddButton.setMaximumSize(new Dimension(22, 22));
         mAddButton.setPreferredSize(new Dimension(22, 22));
         mAddButton.setMinimumSize(new Dimension(22, 22));
@@ -76,6 +76,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         //
         mRemoveButton = new JButton(Preferences.ICON_MINUS_STANDARD);
         mRemoveButton.setRolloverIcon(Preferences.ICON_MINUS_ROLLOVER);
+        mRemoveButton.setDisabledIcon(Preferences.ICON_MINUS_DISABLED);
         mRemoveButton.setMinimumSize(new Dimension(22, 22));
         mRemoveButton.setMaximumSize(new Dimension(22, 22));
         mRemoveButton.setPreferredSize(new Dimension(22, 22));
@@ -110,8 +111,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mUpButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20.png"));
-        mUpButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_blue.png"));
+        mUpButton = new JButton(Preferences.ICON_UP_STANDARD);
+        mUpButton.setRolloverIcon(Preferences.ICON_UP_ROLLOVER);
+        mUpButton.setDisabledIcon(Preferences.ICON_UP_DISABLED);
         mUpButton.setMinimumSize(new Dimension(20, 20));
         mUpButton.setMaximumSize(new Dimension(20, 20));
         mUpButton.setPreferredSize(new Dimension(20, 20));
@@ -128,8 +130,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mDownButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_20.png"));
-        mDownButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_20_blue.png"));
+        mDownButton = new JButton(Preferences.ICON_DOWN_STANDARD);
+        mDownButton.setRolloverIcon(Preferences.ICON_DOWN_ROLLOVER);
+        mDownButton.setDisabledIcon(Preferences.ICON_DOWN_DISABLED);
         mDownButton.setMinimumSize(new Dimension(22, 22));
         mDownButton.setMaximumSize(new Dimension(22, 22));
         mDownButton.setPreferredSize(new Dimension(22, 22));
@@ -175,20 +178,20 @@ abstract class AttributeEditor extends JPanel implements EventListener {
     }
     //Removes addButton if is not needed
     public void disableAddButton(){
-        mButtonPanel.remove(mAddButton);
+        mAddButton.setEnabled(false);
     }
     //Removes removeButton
     public void disableRemoveButton(){
-        mButtonPanel.remove(mRemoveButton);
+        mRemoveButton.setEnabled(false);
     }
     //Removes editButton
     public void disableEditButton(){
-        mButtonPanel.remove(mEditButton);
+        mEditButton.setEnabled(false);
     }
     //Removes removeButton
     public void disableUpDownButtons(){
-        mButtonPanel.remove(mUpButton);
-        mButtonPanel.remove(mDownButton);
+        mUpButton.setEnabled(false);
+        mDownButton.setEnabled(false);
     }
     
     protected abstract void add();
