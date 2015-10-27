@@ -118,7 +118,7 @@
 			<manifest>
 				<attribute name="Built-By" value="DFKI GmbH"/>
 				<attribute name="Signature_version" value="2.0"/>
-				<attribute name="Main-Class" value="de.dfki.vsm.SceneMakerEditor"/>
+				<attribute name="Main-Class" value="de.dfki.vsm.SceneMaker3"/>
 			</manifest>
 		</jar>
 	</target>  
