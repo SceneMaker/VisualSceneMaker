@@ -173,7 +173,24 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         // Add the attribute editor to the event multicaster
         EventDispatcher.getInstance().register(this);
     }
-
+    //Removes addButton if is not needed
+    public void disableAddButton(){
+        mButtonPanel.remove(mAddButton);
+    }
+    //Removes removeButton
+    public void disableRemoveButton(){
+        mButtonPanel.remove(mRemoveButton);
+    }
+    //Removes editButton
+    public void disableEditButton(){
+        mButtonPanel.remove(mEditButton);
+    }
+    //Removes removeButton
+    public void disableUpDownButtons(){
+        mButtonPanel.remove(mUpButton);
+        mButtonPanel.remove(mDownButton);
+    }
+    
     protected abstract void add();
 
     protected abstract void edit();
