@@ -1527,10 +1527,11 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     }
 
     /**
-     *
-     *
+     * Changed to public method by M. Fallas
+     * due to issue 126
+     * https://github.com/SceneMaker/VisualSceneMaker/issues/126
      */
-    private void deselectAllOtherComponents(JComponent comp) {
+    public void deselectAllOtherComponents(JComponent comp) {
         if ((!comp.equals(mSelectedLocalVariableBadge)) && (mSelectedLocalVariableBadge != null)) {
             mSelectedLocalVariableBadge.deSelect();
             mSelectedLocalVariableBadge = null;
