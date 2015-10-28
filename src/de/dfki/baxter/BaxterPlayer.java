@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 package de.dfki.baxter;
+import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,16 +19,28 @@ public class BaxterPlayer {
     private String variable;
      public  static BaxterPlayer sInstance = null;
      private static final Logger log = Logger.getLogger( "CharamelLogger");
-     private static SocketConnect connection = new SocketConnect();
-     public synchronized static BaxterPlayer getInstance() {
-        if (sInstance == null) {
-            sInstance = new BaxterPlayer();
+     private static SocketConnect connection ;
+     private final PlayerConfig mPlayerConfig;
+     
+    public BaxterPlayer(PlayerConfig playerConfig){
+        this.variable = "Hello Baxter";
+        mPlayerConfig = playerConfig;
+        String lhost = mPlayerConfig.getProperty("vsm.agent.remote.host");
+        String lport = mPlayerConfig.getProperty("vsm.agent.remote.port");
+        
+        connection = new SocketConnect();
+        if(lhost != null){
+           SocketConnect.setIp(lhost);
         }
-
-        return sInstance;
+        if(lport != null){
+            SocketConnect.setPort(Integer.parseInt(lport));
+        }
     }
+    
     public BaxterPlayer(){
         this.variable = "Hello Baxter";
+        mPlayerConfig = null;
+        connection = new SocketConnect();
     }
     
     public void closeBaxterConnection(){

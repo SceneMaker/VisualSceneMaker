@@ -130,7 +130,7 @@ public final class BaxterSceneGroupPlayer implements RunTimePlayer, EventListene
                 // Scene Visualization
                 mLogger.message("Executing scene:\r\n" + scene.getText());
                 EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
-
+                BaxterActionManager actionManager =   new BaxterActionManager(mPlayerConfig);
                 // Process The Turns
                 for (SceneTurn turn : scene.getTurnList()) {
 
@@ -148,7 +148,8 @@ public final class BaxterSceneGroupPlayer implements RunTimePlayer, EventListene
 
                     // Count The Word Number
                     int wordCount = 0;
-                    BaxterActionManager actionManager =   BaxterActionManager.getInstance();
+                    
+
                     VoiceName speakerVoice = I4GMaryClient.FEMALE;
                     // Process Utterance
                     for (SceneUttr utt : turn.getUttrList()) {
@@ -192,11 +193,7 @@ public final class BaxterSceneGroupPlayer implements RunTimePlayer, EventListene
                         speakerVoice = I4GMaryClient.FEMALE;
                     }
 
-                    BaxterActionManager.getInstance().executeActionQueue(speakerVoice);
-
-
-                    
-                    
+                    actionManager.executeActionQueue(speakerVoice);
 
                     // Exit if interrupted
                     if (isDone()) {

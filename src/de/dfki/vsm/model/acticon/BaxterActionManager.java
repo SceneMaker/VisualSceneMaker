@@ -6,10 +6,12 @@
 package de.dfki.vsm.model.acticon;
 
 import de.dfki.baxter.BaxterPlayer;
+import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.scenescript.AbstractWord;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneWord;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.tts.I4GMaryClient;
 import de.dfki.vsm.util.tts.VoiceName;
 import java.io.IOException;
@@ -35,31 +37,35 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class BaxterActionManager {
     private AbstractWord mAction;
     private BaxterPlayer mBaxter;
-    private static BaxterActionManager instance = new BaxterActionManager();
+    
     private Queue<AbstractWord> actionQueue;
     private long previous_time = 0;
     private boolean actionDone = true;
     private Object monitor = new Object();
 
+
     public BaxterActionManager(){
         mAction = null;
-        mBaxter = BaxterPlayer.getInstance();
         actionQueue = new LinkedList<AbstractWord>();
+        mBaxter = new BaxterPlayer();
 
     }
     
     public BaxterActionManager(ActionObject action){
         mAction = action;
-        mBaxter = BaxterPlayer.getInstance();
+        mBaxter = new BaxterPlayer();
+        actionQueue = new LinkedList<AbstractWord>();
+    }
+    
+    public BaxterActionManager(PlayerConfig playerConfig){
+        actionQueue = new LinkedList<AbstractWord>();
+        mBaxter = new BaxterPlayer(playerConfig);
     }
     
     public void closeConnection(){
         mBaxter.closeBaxterConnection();
     }
     
-    public static BaxterActionManager getInstance(){
-      return instance;
-   }
     
     public void setAction(AbstractWord action){
         mAction = action;
@@ -78,6 +84,8 @@ public class BaxterActionManager {
         }
         return 0;
     }
+    
+    
     
     public void executeActionQueue(VoiceName speakerVoice){
         Timer actionTimer = new Timer();

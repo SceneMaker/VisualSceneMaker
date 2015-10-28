@@ -29,6 +29,13 @@ public class SocketConnect {
 
     }
     
+    public static void setIp(String ip){
+        tcp_ip = ip;
+    }
+    public static void setPort(int port){
+        tcp_port = port;
+    }
+    
     public static SocketConnect getInstance(){
         if(socket == null ){
             
