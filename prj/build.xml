@@ -115,6 +115,7 @@
 		<copy file="prj/version.ini" todir="${tmpdir}/res"/>
 		<!-- Build JAR File -->
 		<jar jarfile="${jarfile}" basedir="${tmpdir}" destfile="${jarfile}" includes="de/**/*.class,**/*.*">
+			<zipgroupfileset dir="${libdir}" includes="*.jar"/>
 			<manifest>
 				<attribute name="Built-By" value="DFKI GmbH"/>
 				<attribute name="Signature_version" value="2.0"/>
