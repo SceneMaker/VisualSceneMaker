@@ -54,6 +54,6 @@ class CommunicationSocket(object):
 
 if __name__ == '__main__':
     communication = CommunicationSocket()
-    print "Hola"
+
 
 
