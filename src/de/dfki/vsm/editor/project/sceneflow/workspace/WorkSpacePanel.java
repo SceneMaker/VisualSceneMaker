@@ -2420,8 +2420,13 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             Point nodeLoc = node.getLocation();
 
             mGridManager.freeGridPosition(nodeLoc);
+            
             node.updateLocation(moveVec);
-
+            for(CmdBadge badge: mCmdBadgeList){
+                if(badge.equals(mCmdBadgeMap.get(node))){
+                   badge.updateLocation(moveVec);
+                }
+            }
             if ((event.getModifiersEx() == 1024)) {
                 node.mDragged = true;
             }

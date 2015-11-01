@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.font.TextLayout;
@@ -96,7 +97,6 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     @Override
     public void paintComponent(java.awt.Graphics g) {
-        
         super.paintComponent(g);
         
 //        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
@@ -287,7 +287,12 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
     }
 
     
-
+    public void updateLocation(Point vector) {
+        Point location = getLocation();
+        setLocation(location.x + vector.x, location.y + vector.y);
+    }
+    
+    
     public boolean containsPoint(int x, int y) {
         return getBounds().contains(x, y);
     }
