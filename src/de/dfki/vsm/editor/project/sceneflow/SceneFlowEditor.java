@@ -30,6 +30,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -92,6 +93,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
     private final JPanel                mNewElementDisplay;
     private final JLabel                mFooterLabel;
     private final JSplitPane            mSplitPane;
+    private final JScrollPane           mWorkSpaceScrollPane;
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // Create a sceneflow editor
     public SceneFlowEditor(final EditorProject project) {
@@ -161,7 +163,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         mWorkSpacePanel = new WorkSpacePanel(this, mEditorProject);
         mWorkSpacePanel.setTransferHandler(new SceneFlowImage());
 
-        JScrollPane mWorkSpaceScrollPane = new JScrollPane(mWorkSpacePanel);
+        mWorkSpaceScrollPane = new JScrollPane(mWorkSpacePanel);
         mWorkSpaceScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mWorkSpaceScrollPane.getHorizontalScrollBar().setUI(new WindowsScrollBarUI());
         mWorkSpaceScrollPane.setBorder(BorderFactory.createEtchedBorder());
@@ -235,7 +237,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         
         
     }
-
+    
     // Update the visualization
     @Override
     public final void update(final EventObject event) {
@@ -244,6 +246,11 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
                 setMessageLabelText("SceneFlow is running", false);
             }
         }
+    }
+    
+    public void setViewPosition(Point p)
+    {
+        mWorkSpaceScrollPane.getViewport().setViewPosition(p);
     }
 
     /**

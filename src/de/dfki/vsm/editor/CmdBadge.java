@@ -98,6 +98,13 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
     public void paintComponent(java.awt.Graphics g) {
         
         super.paintComponent(g);
+        
+//        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+//        for(StackTraceElement st: stackTraceElements)
+//        {
+//            System.out.println(st.getClassName()+ "-----" + st.getFileName()+"-----"+st.getme+"-----"+st.getLineNumber());
+//        }
+        
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Dimension dimension;
@@ -184,7 +191,6 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
     
     public void setEditMode() {
         mEditMode = true;
- 
         for (TPLTuple<String, AttributedString> s : mStringList) {
             addCmdEditor(s.getFirst());
         }
@@ -200,7 +206,6 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      * Resets badge to its default visual behavior
      */
     public synchronized void endEditMode() {
- 
         Vector<Command> copyOfCmdList = new Vector<>();
 
         if (mEditMode) {
