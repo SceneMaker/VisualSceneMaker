@@ -68,6 +68,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -147,8 +148,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     private final AttributedString sEdgeCreationHint = new AttributedString("Select Target Node");
 
     //
-    private boolean mIgnoreMouseInput       = false;
-    private boolean mSelectTargetNodeMode   = false;
+    private boolean mIgnoreMouseInput = false;
+    private boolean mSelectTargetNodeMode = false;
     private boolean mEdgeSourceNodeReassign = false;
     private boolean mEdgeTargetNodeReassign = false;
     private Node mReassignNode = null;
@@ -200,21 +201,17 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // init selection
         mAreaSelection = new Rectangle2D.Double();
-        
+
         // Add the element editor to the event multicaster
         mEventCaster.register(this);
-
-        // display components
-        showVariableBadges();
-        showNodesOnWorkSpace();
-        showEdgesOnWorkSpace();
-        
+        //show all elements
+        showCurrentWorkSpace();
     }
 
     //
     public void refresh() {
         // Print some information
-       // mLogger.message("Refreshing '" + this + "'");
+        // mLogger.message("Refreshing '" + this + "'");
         // mLogger.message("WorkSpace.update(" + obj + ")");
         mObservable.update(null);
 
@@ -231,6 +228,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         revalidate();
         repaint();
     }
+
     /**
      *
      *
@@ -245,28 +243,28 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     private void checkChangesOnWorkspace() {
         //mLogger.message("Checking changes on workspace");
         // checkHash
-        if(EditorInstance.getInstance().getSelectedProjectEditor()!= null){
+        if (EditorInstance.getInstance().getSelectedProjectEditor() != null) {
             if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject() != null) {
                 if (mProject.hasChanged()) {
-                    
+
                     int selectecTabIndex = EditorInstance.getInstance().getProjectEditors().getSelectedIndex();
-                   
-                    if(!EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex).contains("*")){
-                          EditorInstance.getInstance().getProjectEditors().setTitleAt(selectecTabIndex, 
-                            EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex)
-                            + "*");   
+
+                    if (!EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex).contains("*")) {
+                        EditorInstance.getInstance().getProjectEditors().setTitleAt(selectecTabIndex,
+                                EditorInstance.getInstance().getProjectEditors().getTitleAt(selectecTabIndex)
+                                + "*");
                     }
-                   
+
                     //mLogger.message("Changes on workspace detected");
                 }
             }
         }
     }
+
     /**
-     * 
+     *
      */
-    private void launchProjectChangedEvent()
-    {
+    private void launchProjectChangedEvent() {
         if (mProject.hasChanged()) {
             ProjectChangedEvent ev = new ProjectChangedEvent(this);
             mEventCaster.convey(ev);
@@ -437,18 +435,18 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                                 createPSG(node, ((SceneGroup) data).getName());
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
-                                
+
                                 boolean exist = false;
-                                for(CmdBadge badge: mCmdBadgeList){
-                                    if(badge.equals(mCmdBadgeMap.get(node))){
-                                       exist = true;
-                                    }                               
+                                for (CmdBadge badge : mCmdBadgeList) {
+                                    if (badge.equals(mCmdBadgeMap.get(node))) {
+                                        exist = true;
+                                    }
                                 }
-                                if(!exist) 
+                                if (!exist) {
                                     mCmdBadgeList.add(mCmdBadgeMap.get(node));
-                                
+                                }
+
                                 mEventCaster.convey(new NodeSelectedEvent(this, node.getDataNode()));
-                                
 
                                 // c.update();
                             } else {
@@ -473,22 +471,22 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                         for (Node node : mNodeSet) {
                             if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
                                 createFunCall(node, ((FunDef) data).getName());
-                                
+
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
-                                
+
                                 boolean exist = false;
-                                for(CmdBadge badge: mCmdBadgeList){
-                                    if(badge.equals(mCmdBadgeMap.get(node))){
-                                       exist = true;
-                                    }                               
+                                for (CmdBadge badge : mCmdBadgeList) {
+                                    if (badge.equals(mCmdBadgeMap.get(node))) {
+                                        exist = true;
+                                    }
                                 }
-                                if(!exist) 
+                                if (!exist) {
                                     mCmdBadgeList.add(mCmdBadgeMap.get(node));
-                                 
-                                
+                                }
+
                                 mEventCaster.convey(new NodeSelectedEvent(this, node.getDataNode()));
-                                
+
                                 // c.update();
                             } else {
                                 mSceneFlowEditor.setMessageLabelText("");
@@ -708,7 +706,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         UsrCmd cmd = new UsrCmd();
 
         cmd.setName(name);
-       
+
 //      Command newCmd = new CmdDialog(cmd).run();
 //      if (newCmd != null) {
         node.getDataNode().addCmd(cmd);
@@ -1193,11 +1191,12 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             copyAction.run();
         }
     }
+
     /**
-     * 
-     * 
+     *
+     *
      */
-    public void cutNodes(){
+    public void cutNodes() {
         if ((mSelectedNode != null) && (mSelectedNodes.isEmpty())) {
             CutNodesAction cutAction = new CutNodesAction(this, mSelectedNode);
 
@@ -1223,7 +1222,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      */
     public void gobalAddVariableMenu(int eventX, int eventY) {
         JPopupMenu pop = new JPopupMenu();
-        
+
         //ADD VARIABLE MENU ITEM
         JMenuItem itemAddVariable = new JMenuItem("Add Variable");
         SuperNode currentSuperNode = getSceneFlowManager().getCurrentActiveSuperNode();
@@ -1232,16 +1231,15 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         pop.add(itemAddVariable);
         //PASTE NODES MENU ITEM
         int nc = mClipboard.size();
-        if(nc > 0)
-        {
+        if (nc > 0) {
             JMenuItem itemPasteNodes = new JMenuItem((nc > 1)
-                ? "Paste " + nc + " Nodes"
-                : "Paste Node");
+                    ? "Paste " + nc + " Nodes"
+                    : "Paste Node");
             PasteNodesAction pasteAction = new PasteNodesAction(this);
             itemPasteNodes.addActionListener(pasteAction.getActionListener());
             pop.add(itemPasteNodes);
         }
-        
+
         pop.show(this, eventX, eventY);
     }
 
@@ -1261,16 +1259,15 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 //        pop.add(item);
 //        pop.show(this, evt.getX(), evt.getY());
 //    }
-
     /**
-     * 
-     * 
+     *
+     *
      */
-    
-    public void pasteNodes(){
+    public void pasteNodes() {
         PasteNodesAction pasteAction = new PasteNodesAction(this);
         pasteAction.run();
     }
+
     /**
      *
      *
@@ -1279,48 +1276,17 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // Reset mouse interaction
         mIgnoreMouseInput = true;
-
-//      synchronized (ActivityEventMulticaster.getInstance().mActivityEventListenerListLock) {
-        removeEventListeners();
-        mObservable.deleteObservers();
-
-//      }
-        // Clear the list of currently shown nodes and edges and
-        // remove all components from the workspace. Additionally
-        // clear the selected edges and nodes of the workspace.
-        mNodeSet.clear();
-        mEdgeSet.clear();
-        mCmtSet.clear();
-        mCmdBadgeMap.clear();
-        removeAll();
-        mSelectedEdge = null;
-        mSelectedNode = null;
-        mSelectedComment = null;
-        mSelectedLocalVariableBadge = null;
-        mSelectedGlobalVariableBadge = null;
-
-        // Push the current active supernode to the list
-        // of active supernodes and add it's name to the path
+        
+        clearCurrentWorkspace();
+        
         SuperNode superNode = (SuperNode) node.getDataNode();
 
         getSceneFlowManager().addActiveSuperNode(superNode);
         mSceneFlowEditor.addPathComponent(superNode);
-        //TODO: adding not explicit but via refresh method
 
-        // Create a new Gridmanager for the workspace
         mGridManager.update();
 
-        // Show the nodes and supernodes on the workspace.
-        // Show the edges on the workspace.
-        // Show the variables on workspace.
-        showNodesOnWorkSpace();
-        showEdgesOnWorkSpace();
-        showVariableBadges();
-        // showVariablesOnWorkSpace(superNode);
-        // Update the workspace
-        // mGridManager.normalizeGridWeight();
-        revalidate();
-        repaint();
+        showCurrentWorkSpace();
     }
 
     /**
@@ -1344,6 +1310,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             decreaseWorkSpaceLevel();
             parent = getSceneFlowManager().getCurrentActiveSuperNode();
         }
+        //showCurrentWorkSpace();
     }
 
     /**
@@ -1356,10 +1323,13 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         }
 
         clearCurrentWorkspace();
-
+        // Pop the current active supernode from the list of
+        // active supernodes and remove it's name from the path
+        SuperNode s = getSceneFlowManager().removeActiveSuperNode();
+        SuperNode sn = mSceneFlowEditor.removePathComponent();
         NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
-
         mEventCaster.convey(e);
+        showCurrentWorkSpace();
     }
 
     /**
@@ -1377,35 +1347,33 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         mEdgeSet.clear();
         mCmtSet.clear();
         mCmdBadgeMap.clear();
+        mCmdBadgeList.removeAllElements();
+        mCmtSet.clear();
         removeAll();
+        super.removeAll();
         mSelectedEdge = null;
         mSelectedNode = null;
         mSelectedComment = null;
         mSelectedLocalVariableBadge = null;
         mSelectedGlobalVariableBadge = null;
-
-        // Pop the current active supernode from the list of
-        // active supernodes and remove it's name from the path
-        SuperNode s = getSceneFlowManager().removeActiveSuperNode();
-        SuperNode sn = mSceneFlowEditor.removePathComponent();
-             //TODO: adding not explicit but via refresh method
-
         // Create a new Gridmanager for the workspace
         mGridManager.update();
+        revalidate();
+        repaint();
+        // TODO: Refresh here!
+    }
 
+    //reset components on works space
+
+    private void showCurrentWorkSpace() {
         // Show the nodes and supernodes on the workspace.
         // Show the edges on the workspace.
         // Show the variables on workspace.
         showNodesOnWorkSpace();
         showEdgesOnWorkSpace();
         showVariableBadges();
-
-        // mGridManager.normalizeGridWeight();
-        // Update the workspace
         revalidate();
         repaint();
-
-        // TODO: Refresh here!
     }
 
     /**
@@ -1527,8 +1495,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     }
 
     /**
-     * Changed to public method by M. Fallas
-     * due to issue 126
+     * Changed to public method by M. Fallas due to issue 126
      * https://github.com/SceneMaker/VisualSceneMaker/issues/126
      */
     public void deselectAllOtherComponents(JComponent comp) {
@@ -1718,6 +1685,14 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                     return;
                 }
             }
+//            for(CmdBadge badge: mCmdBadgeList){
+//                if(badge.containsPoint(event.getX(), event.getY())){
+//                    EditCommandAction editCommandAction = new EditCommandAction(this, badge);
+//                    editCommandAction.run();
+//                    entityClicked = true;
+//                    return;
+//                }                               
+//            }
 
             // look if mouse click was on a edge
             for (Edge edge : mEdgeSet) {
@@ -2102,25 +2077,24 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // if there is a specific selected c use it - much faster than checking all nodes
         if (mSelectedNode != null) {
-            
-            
+
             if (mSelectedNode.mDragged) {
-                   Point p = mSelectedNode.getLocation();
+                Point p = mSelectedNode.getLocation();
 
-                   mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
+                mSelectedNode.resetLocation(mGridManager.getNodeLocation(p));
 
-                   // Update sceneflow with new node position
-                   mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(), mSelectedNode.getY());
+                // Update sceneflow with new node position
+                mSelectedNode.getDataNode().getGraphics().setPosition(mSelectedNode.getX(), mSelectedNode.getY());
 
                    // update workspace area - if dragged beyond current borders
-                   // sWorkSpaceDrawArea = getSize();
+                // sWorkSpaceDrawArea = getSize();
             }
-
+            //mSceneFlowEditor.setViewPosition(new Point(event.getX(), event.getY()));
             mSelectedNode.mouseReleased(event);
+            refresh();
             revalidate();
             repaint();
-                
-                
+
 //            if (mSelectedNode.containsPoint(event.getX(), event.getY())) {
 //
 //                // System.out.println(mSelectedNode.getDataNode().getName() + " released");
@@ -2451,7 +2425,6 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             if ((event.getModifiersEx() == 1024)) {
                 node.mDragged = true;
             }
-
             // sWorkSpaceDrawArea = getSize();
             revalidate();
             repaint();
@@ -2731,6 +2704,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         g2d.setColor(indicator);
         g2d.setStroke(new BasicStroke(3.0f));
         g2d.drawRect(1, 1, getSize().width - 3, getSize().height - 4);
+        //scrollRectToVisible(new Rectangle(mLastMousePosition));
 
         // draw line between source c and current mouse position
         if (mSelectTargetNodeMode) {

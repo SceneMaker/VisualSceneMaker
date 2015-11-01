@@ -190,7 +190,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         {
             updateElementEditorButton();
         }
-        //refreshButtons();
+        refreshButtons();
     }
 
     private void initPreferences() {
@@ -295,7 +295,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         sanitizeButton(mTogglePallete, tinyButtonDim);
         add(Box.createHorizontalGlue());
         //Preferences
-        mPreferences = add(new AbstractAction("ACTION_SAVEPROJECT", ICON_SETTINGS_STANDARD) {
+        mPreferences = add(new AbstractAction("ACTION_SHOW_OPTIONS", ICON_SETTINGS_STANDARD) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.showOptions();
