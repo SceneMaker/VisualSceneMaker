@@ -340,6 +340,11 @@ public final class Node extends JComponent implements EventListener, Observer {
         // Update the bounds if the node's size has changed
         setBounds(getX(), getY(), mEditorConfig.sNODEWIDTH, mEditorConfig.sNODEHEIGHT);
     }
+    @Override
+    public String getName()
+    {
+        return mDisplayName;
+    }
 
     /**
      *
