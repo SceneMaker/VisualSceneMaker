@@ -52,6 +52,7 @@ public final class EdgeGraphics {
     public double                    mArrowDir;
     double                           mArrow1Point;
     double                           mArrow2Point;
+    private int                      mCCtrminY   = 15; //MIN POSITION OF THE CONTROLPOINTS OF THE EDGE
 
     public EdgeGraphics(Edge e, Point sourceDockpoint, Point targetDockpoint) {
         mDataEdge    = e.getDataEdge();
@@ -313,6 +314,8 @@ public final class EdgeGraphics {
             mCCrtl2.x = mCCrtl2.x + xOffset;
             mCCrtl2.y = mCCrtl2.y + yOffset;
         }
+        mCCrtl1.y = (mCCrtl1.y < mCCtrminY)? mCCtrminY: mCCrtl1.y;
+        mCCrtl2.y = (mCCrtl2.y < mCCtrminY)? mCCtrminY: mCCrtl2.y;
     }
 
     public boolean controlPointHandlerContainsPoint(Point point, int threshold) {
