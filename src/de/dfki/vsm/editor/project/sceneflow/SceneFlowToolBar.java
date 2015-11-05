@@ -40,6 +40,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
 import de.dfki.vsm.editor.dialog.SaveFileDialog;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
+import de.dfki.vsm.runtime.events.AbortionEvent;
 
 /**
  * @author Gregor Mehlmann
@@ -559,6 +560,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             mPlayButton.setIcon(ICON_PLAY_STANDARD);
             mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
             mPlayButton.setToolTipText("Start the execution of the sceneflow");
+            mStopButton.setEnabled(false);
         }
         //*************************************
         // Refresh the element display buttons

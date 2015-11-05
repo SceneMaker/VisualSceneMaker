@@ -754,8 +754,13 @@ public class Evaluator {
         // USER COMMAND EXECUTION
         ////////////////////////////////////////////////////////////////////
         else if (exp instanceof UsrCmd) {
-            java.lang.Object result = executeUsrCmd((UsrCmd) exp, env);
-
+            java.lang.Object result = null;
+            try {
+                result = executeUsrCmd((UsrCmd) exp, env);
+            } catch (Exception e) {
+                
+                throw new InterpretException(exp, "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
+            }
             if (result instanceof Boolean) {
                 return new BooleanValue((Boolean) result);
             } else if (result instanceof Character) {
@@ -775,11 +780,10 @@ public class Evaluator {
             } else if (result instanceof java.lang.String) {
                 return new StringValue((java.lang.String) result);
             } else {
-                java.lang.String errorMsg = "An error occured while executing thread "
-                        + Process.currentThread().toString() + " : " + "The return value '"
-                        + result + "' of the user command call '" + exp.getConcreteSyntax()
-                        + "' has an invalid type.";
-
+//                java.lang.String errorMsg = "An error occured while executing thread "
+//                        + Process.currentThread().toString() + " : " + "The return value '"
+//                        + result + "' of the user command call '" + exp.getConcreteSyntax()
+//                        + "' has an invalid type.";    /// TODO NOT BEING USED
                 // throw new RunTimeException(exp, errorMsg);
                 return new ObjectValue(result);
             }
@@ -831,7 +835,7 @@ public class Evaluator {
      * Execute a user command
      *
      */
-    private java.lang.Object executeUsrCmd(UsrCmd cmd, Environment env) throws InterpretException {
+    private java.lang.Object executeUsrCmd(UsrCmd cmd, Environment env) throws InterpretException, Exception {
 
         // Get the name of the command
         java.lang.String cmdName = ((UsrCmd) cmd).getName();
@@ -1033,36 +1037,9 @@ public class Evaluator {
                 // Aquire The Lock
                 mInterpreter.lock();
             }
-        } catch (SecurityException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (StringIndexOutOfBoundsException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
+        } catch (Exception e) {
+            throw e;
         }
-
-        return null;
+        //return null;
     }
 }
