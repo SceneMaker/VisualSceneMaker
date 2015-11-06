@@ -142,7 +142,7 @@
 			<!-- <arg line="runtime res/prj/test"/>-->
 			<!-- <arg line="editor res/prj/test"/>-->
 			<classpath refid="clspath"/>
-		</java>
+	</java>
 	</target>
 	<!-- Execute Project -->
 	<!--    <target name="exec">

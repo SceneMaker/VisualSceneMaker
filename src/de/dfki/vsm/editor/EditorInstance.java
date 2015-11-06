@@ -748,7 +748,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         // save properties
         Preferences.save();
-        mWelcomePanel.createListOfRecentProj();
+        mWelcomePanel.createRecentAndSamplePrjList();
         mEditorMenuBar.refreshRecentFileMenu();
     }
 
