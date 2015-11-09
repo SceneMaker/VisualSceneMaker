@@ -7,8 +7,6 @@ import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.geom.Point2D;
-
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;

@@ -31,8 +31,8 @@ public abstract class NodeAction extends EditorAction {
     // Common data
     protected UndoManager        mUndoManager      = null;
     protected SceneFlowEditor    mSceneFlowPane    = null;
-    protected WorkSpacePanel          mWorkSpace        = null;
-    protected EditorConfig mPreferences      = null;
+    protected WorkSpacePanel     mWorkSpace        = null;
+    protected EditorConfig       mPreferences      = null;
     protected Point              mCoordinate       = null;
     protected Type               mGUINodeType      = null;
     protected SceneFlowManager   mSceneFlowManager = null;
@@ -58,7 +58,8 @@ public abstract class NodeAction extends EditorAction {
         if (mGUINodeType == BasicNode) {
             mParentDataNode.removeNode(mDataNode);
         } else if (mGUINodeType == SuperNode) {
-            mParentDataNode.removeSuperNode((SuperNode) mDataNode);
+           // mParentDataNode.removeSuperNode((SuperNode) mDataNode);
+             mParentDataNode.removeNode(mDataNode);
         }
 
         // Check the start node status of the removed node
@@ -139,7 +140,9 @@ public abstract class NodeAction extends EditorAction {
         if (mGUINodeType == BasicNode) {
             mParentDataNode.addNode(mDataNode);
         } else if (mGUINodeType == SuperNode) {
-            mParentDataNode.addSuperNode((SuperNode) mDataNode);
+            if(!mParentDataNode.getSuperNodeList().contains((SuperNode)mDataNode)){
+                mParentDataNode.addSuperNode((SuperNode) mDataNode);
+            }
         }
 
         // TODO: Take the grid position!!!!!!!!!!!
