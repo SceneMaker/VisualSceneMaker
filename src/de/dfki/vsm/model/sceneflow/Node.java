@@ -133,6 +133,11 @@ public class Node extends Syntax {
     }
 
     public boolean hasEdge() {
+        
+        if (mDEdge != null) {
+            return true;
+        }
+
         if (mCEdgeList != null) {
             if (mCEdgeList.size() > 0) {
                 return true;
@@ -157,10 +162,7 @@ public class Node extends Syntax {
             }
         }
 
-        if (mDEdge != null) {
-            return true;
-        }
-
+       
         return false;
     }
     /**
