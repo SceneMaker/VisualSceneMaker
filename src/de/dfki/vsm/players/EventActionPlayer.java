@@ -34,19 +34,19 @@ public class EventActionPlayer extends ActionPlayer {
 	}
 
 	public void runActionAtTimeMark(String timemark) {
-		mLogger.message("Executing actions at timemark " + timemark);
-		mLogger.message("Actions in queue " + mActionList.size());
-		for (Action a : mActionList) {
-			mLogger.message("\taction " + a.mName);
-			mLogger.message("\ttimemark " + a.mTimeMark);
-		}
+//		mLogger.message("Executing actions at timemark " + timemark);
+//		mLogger.message("Actions in queue " + mActionList.size());
+//		for (Action a : mActionList) {
+//			mLogger.message("\taction " + a.mName);
+//			mLogger.message("\ttimemark " + a.mTimeMark);
+//		}
 
 		for (Action a : mActionList) {
 			// if the timestamp is reached, play all actions that should be played at that timemark immediately
 			if (a.mTimeMark != null) {
 				if (a.mTimeMark.equalsIgnoreCase(timemark)) {
 					a.mStartTime = 0;
-					mLogger.message("\taction " + a.toString());
+					//mLogger.message("\taction " + a.toString());
 					mActionScheduler.schedule(a, 0, TimeUnit.MILLISECONDS);
 				}
 			}
