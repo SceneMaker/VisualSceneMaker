@@ -165,12 +165,12 @@ public class Interpreter {
 	// Start the execution of the project
 	public final boolean start() {
 
-        // TODO: This is insecure, cause the thread could die in the meantime
+		// TODO: This is insecure, cause the thread could die in the meantime
 		// alive is not the right condition
 		// PathLogger.startLogging();
 		if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
 
-            // Print some information 
+			// Print some information 
 			//mLogger.message("Starting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
 			// Create a new thread
 			mSceneFlowThread = new Process(mSceneFlow.getId(), null, // TODO: choose an adquate thread group and check if this group has died before
@@ -200,7 +200,7 @@ public class Interpreter {
 	public boolean abort() {
 		if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {    // TODO: This is insecure, cause the thread could start in the meantime
 
-            // Print some information 
+			// Print some information 
 			//mLogger.message("Aborting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
 			try {
 				lock();
@@ -210,7 +210,7 @@ public class Interpreter {
 				unlock();
 			}
 
-            // Wait here until terminated and clear data structures
+			// Wait here until terminated and clear data structures
 			// /** Clean up the data structures of the interpreter */
 			// mSystemHistory.clear();
 			// mConfiguration.clear();
@@ -275,7 +275,17 @@ public class Interpreter {
 		}
 	}
 
-    ////////////////////////////////////////////////////////////////////////////
+	public boolean wasExecuted() {
+		try {
+			lock();
+
+			return mSceneFlowThread.wasExecuted();
+		} finally {
+			unlock();
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////
 	//
 	////////////////////////////////////////////////////////////////////////////
 	public boolean execute(String nodeId, Command cmd) {

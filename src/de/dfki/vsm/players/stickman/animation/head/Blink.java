@@ -7,7 +7,7 @@ package de.dfki.vsm.players.stickman.animation.head;
 
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.BodyAnimation;
+import de.dfki.vsm.players.stickman.animation.AnimationContent;
 import java.util.ArrayList;
 
 /**
@@ -24,16 +24,16 @@ public class Blink extends Animation {
 	@Override
 	public void playAnimation() {
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEye, "shape", "BLINK"));
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEye, "shape", "BLINK"));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEye, "shape", "BLINK"));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEye, "shape", "BLINK"));
 		playAnimationPart(20);
 		
 		pauseAnimation(300);
 
 		// blink up
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEye, "shape", "DEFAULT"));
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEye, "shape", "DEFAULT"));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEye, "shape", "DEFAULT"));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEye, "shape", "DEFAULT"));
 		playAnimationPart(20);
 	}
 }
