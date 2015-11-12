@@ -70,7 +70,7 @@ public class Animator {
 		//ArrayList<Integer> clusterTiming = new ArrayList<>();
 
 		for (ArrayList<Entry> cluster : mWTS.getClusters()) {
-			mStickman.mLogger.info("Cluster is a " + WordTimeMarkSequence.getClusterType(cluster).name());
+			//mStickman.mLogger.info("Cluster is a " + WordTimeMarkSequence.getClusterType(cluster).name());
 			if (WordTimeMarkSequence.getClusterType(cluster) == Entry.TYPE.WORD) {
 				String text = "";
 
@@ -92,7 +92,7 @@ public class Animator {
 				mRenderPauseDuration = new Float(duration / sMAX_ANIM_STEPS).intValue();
 				mRenderPauseDuration = (mRenderPauseDuration < 1) ? 1 : mRenderPauseDuration; // minimum delay is 1 millisecond
 
-				mStickman.mLogger.info("Animator - animation " + mAnimation + " render pause " + mRenderPauseDuration + " duration " + duration);
+				//mStickman.mLogger.info("Animator - animation " + mAnimation + " render pause " + mRenderPauseDuration + " duration " + duration);
 
 				render();
 			}
