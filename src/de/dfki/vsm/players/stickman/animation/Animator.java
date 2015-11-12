@@ -1,7 +1,11 @@
 package de.dfki.vsm.players.stickman.animation;
 
+import de.dfki.vsm.players.EventActionPlayer;
+import de.dfki.vsm.players.action.sequence.Entry;
+import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.body.BodyPart;
+import de.dfki.vsm.players.stickman.util.TimingInfo;
 import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
@@ -13,17 +17,18 @@ import java.util.concurrent.Semaphore;
  */
 public class Animator {
 
-	public static final int sMAX_ANIM_STEPS = 20;
+	public static int sMAX_ANIM_STEPS = 20;
 	public int mCurrentStep = sMAX_ANIM_STEPS;
 	private final Stickman mStickman;
 	private final Animation mAnimation;
-	private ArrayList<BodyAnimation> mAnimationComponents = new ArrayList<>();
+	private ArrayList<AnimationContent> mAnimationComponents = new ArrayList<>();
 	private String mDescription = "";
+	public WordTimeMarkSequence mWTS;
 	private int mRenderPauseDuration = 0;
 	public Semaphore mRenderingPause = new Semaphore(0);
 
 	//private long mPreparationTime = 0;
-	public Animator(Stickman sm, Animation a, ArrayList<BodyAnimation> animComps) {
+	public Animator(Stickman sm, Animation a, ArrayList<AnimationContent> animComps) {
 		mStickman = sm;
 		mAnimation = a;
 		mAnimationComponents = animComps;
@@ -33,7 +38,7 @@ public class Animator {
 		render();
 	}
 
-	public Animator(Stickman sm, Animation a, ArrayList<BodyAnimation> animComps, int duration) {
+	public Animator(Stickman sm, Animation a, ArrayList<AnimationContent> animComps, int duration) {
 		//mPreparationTime = System.currentTimeMillis();
 		mStickman = sm;
 		mAnimation = a;
@@ -42,22 +47,79 @@ public class Animator {
 
 		mRenderPauseDuration = new Float(duration / sMAX_ANIM_STEPS).intValue();
 		mRenderPauseDuration = (mRenderPauseDuration < 1) ? 1 : mRenderPauseDuration; // minimum delay is 1 millisecond
-		
+
 		render();
+	}
+
+	public Animator(Stickman sm, Animation a, ArrayList<AnimationContent> animComps, WordTimeMarkSequence wts) {
+		//mPreparationTime = System.currentTimeMillis();
+		mStickman = sm;
+		mAnimation = a;
+		mAnimationComponents = animComps;
+		mWTS = wts;
+		mDescription = mAnimation.getClass().getSimpleName() + " (" + mAnimation.mID + "), " + mAnimation.toString();
+
+		renderEventAnimation();
+	}
+
+	private void renderEventAnimation() {
+		// the animations duration is determined entirely by the animation itself!
+
+		//mStickman.mLogger.info("Number of clusters " + mWTS.getNumberofClusters());
+		//sMAX_ANIM_STEPS = mWTS.getNumberofClusters();
+		//ArrayList<Integer> clusterTiming = new ArrayList<>();
+
+		for (ArrayList<Entry> cluster : mWTS.getClusters()) {
+			mStickman.mLogger.info("Cluster is a " + WordTimeMarkSequence.getClusterType(cluster).name());
+			if (WordTimeMarkSequence.getClusterType(cluster) == Entry.TYPE.WORD) {
+				String text = "";
+
+				for (Entry e : cluster) {
+					//mStickman.mLogger.info("entry " + e.mContent);
+					text += e.mContent + " ";
+				}
+				text = text.trim();
+				
+				mStickman.mSpeechBubble.mText = mWTS.getText();
+				mStickman.mSpeechBubble.mCurrentlySpokenText = text;
+				
+				//clusterTiming.add(TimingInfo.spokenStringDuration(text));
+
+				//mStickman.mLogger.info("utterance " + text);
+				// do the rendering ...
+				int duration = TimingInfo.spokenStringDuration(text);
+
+				mRenderPauseDuration = new Float(duration / sMAX_ANIM_STEPS).intValue();
+				mRenderPauseDuration = (mRenderPauseDuration < 1) ? 1 : mRenderPauseDuration; // minimum delay is 1 millisecond
+
+				mStickman.mLogger.info("Animator - animation " + mAnimation + " render pause " + mRenderPauseDuration + " duration " + duration);
+
+				render();
+			}
+
+			if (WordTimeMarkSequence.getClusterType(cluster) == Entry.TYPE.TIMEMARK) {
+				// here we have to spread the word that a specific timemark has been reached
+				// the interface is the runActionAtTimemark method in the EventActionPlayer
+				for (Entry e : cluster) {
+					EventActionPlayer.getInstance().runActionAtTimeMark(e.mContent);
+				}
+			}
+		}
 	}
 
 	private void render() {
 		mCurrentStep = sMAX_ANIM_STEPS;
 		while (mCurrentStep > 0) {
 			//for (mCurrentStep = sMAX_ANIM_STEPS; mCurrentStep > 0; mCurrentStep--) {
+			// DEBUG mStickman.mLogger.info("currentstep " + mCurrentStep + " max steps " + sMAX_ANIM_STEPS);
 			if (mCurrentStep == sMAX_ANIM_STEPS) {
 				//mStickman.mLogger.info("\t\t\tpreparing " + mDescription);
-				// prepare animation components
-				mAnimationComponents.stream().forEach((ba) -> {
-					BodyPart bodypart = ba.mBodyPart;
-					String action = ba.mAction;
-					int param = ba.mParam;
-					String paramString = ba.mParamString;
+				// renderEventAnimatione animation components
+				mAnimationComponents.stream().forEach((comp) -> {
+					BodyPart bodypart = comp.mBodyPart;
+					String action = comp.mAction;
+					int param = comp.mParam;
+					String paramString = comp.mParamString;
 					if (action.equalsIgnoreCase("rotate")) {
 						bodypart.setRotation(param);
 					}
@@ -74,7 +136,7 @@ public class Animator {
 			}
 
 			if (mCurrentStep > 1) {
-				for (BodyAnimation ba : mAnimationComponents) {
+				for (AnimationContent ba : mAnimationComponents) {
 					BodyPart bodypart = ba.mBodyPart;
 					String action = ba.mAction;
 
@@ -107,7 +169,7 @@ public class Animator {
 			}
 
 			if (mCurrentStep == 1) {
-				for (BodyAnimation ba : mAnimationComponents) {
+				for (AnimationContent ba : mAnimationComponents) {
 					String action = ba.mAction;
 					BodyPart bodypart = ba.mBodyPart;
 
@@ -154,7 +216,7 @@ public class Animator {
 		public void run() {
 			// directly go to sleep
 			try {
-				
+
 				sleep(mSleepTime, 0);
 			} catch (InterruptedException ex) {
 				mStickman.mLogger.severe(ex.getMessage());
