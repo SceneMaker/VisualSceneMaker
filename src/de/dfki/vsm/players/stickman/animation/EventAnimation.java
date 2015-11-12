@@ -5,33 +5,26 @@
  */
 package de.dfki.vsm.players.stickman.animation;
 
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
-import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
+import java.util.List;
 
 /**
  *
  * @author Patrick Gebhard
  *
  */
-public abstract class Animation extends Thread {
+public abstract class EventAnimation extends Animation {
 
-	public ArrayList<AnimationContent> mAnimationPart = new ArrayList<>();
-	public Semaphore mAnimationPartStart = new Semaphore(0);
-	public Semaphore mAnimationStart = new Semaphore(1);
-	public Animator mAnimator;
-	public AnimationPause mAnimationPause;
-	public Stickman mStickman;
-	public boolean mBlocking = false;
-	public int mDuration = -1;
-	public String mID;
+	public SceneUttr mUtterance;
+	public List<Long> mTimepoints;
+	public WordTimeMarkSequence mWTS;
 
-	public Animation(Stickman sm, int duration, boolean block) {
-		setName(sm.mName + "'s Animation " + getClass().getSimpleName());
-		mStickman = sm;
-		mID = mStickman.getID();
-		mBlocking = block;
-		mDuration = duration;
+	public EventAnimation(Stickman sm, int duration, WordTimeMarkSequence wts, boolean block) {
+		super(sm, duration, block);
+		mWTS = wts;
+		setName(sm.mName + "'s Event Animation " + getClass().getSimpleName());
 	}
 
 	public void waitForClearance() {
@@ -63,6 +56,16 @@ public abstract class Animation extends Thread {
 		// place animation code here
 	}
 
+	public void playEventAnimationPart() {
+		mAnimator = new Animator(mStickman, this, mAnimationPart, mWTS);
+
+		try {
+			mAnimationPartStart.acquire();
+		} catch (InterruptedException ex) {
+			mStickman.mLogger.severe(ex.getMessage());
+		}
+	}
+
 	public void playAnimationPart(int duration) {
 		mAnimator = new Animator(mStickman, this, mAnimationPart, duration);
 
@@ -71,7 +74,6 @@ public abstract class Animation extends Thread {
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.severe(ex.getMessage());
 		}
-
 	}
 
 	public void pauseAnimation(int duration) {
@@ -105,7 +107,7 @@ public abstract class Animation extends Thread {
 		finalizeAnimation();
 	}
 
-	public String toSting() {
+	public String toString() {
 		return getClass().getSimpleName() + ", " + getName();
 	}
 }

@@ -15,11 +15,14 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.model.scenescript.SceneWord;
-import de.dfki.vsm.players.ScheduledActionPlayer;
+import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.action.ActionListener;
+import de.dfki.vsm.players.action.sequence.TimeMark;
+import de.dfki.vsm.players.action.sequence.Word;
+import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.action.StickmanAction;
-import de.dfki.vsm.players.stickman.util.TimingInfo;
+import de.dfki.vsm.players.stickman.action.StickmanEventAction;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -53,13 +56,16 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 	// The project specific name
 	private String mPlayerName;
 	// The ScheduledActionPlayer
-	private ScheduledActionPlayer mActionPlayer;
+	//private ScheduledActionPlayer mActionPlayer;
+	private EventActionPlayer mActionPlayer;
 	// Synchronisation with the action player
 	private Semaphore mAllActionSync;
 	private Semaphore mAllEndSync;
 	//private final SynchronousQueue<String> mAllActionsPlayed = new SynchronousQueue<>();
 	// The StickmanStage
 	private final static StickmanStage mStickmanStage = StickmanStage.getInstance();
+	// time mark stuff
+	private long mTimeMarkCnt = 0;
 
 	// Construct the StickmanScene player
 	private StickmanScenePlayer() {
@@ -102,15 +108,15 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 		mPlayerConfig = project.getPlayerConfig(mPlayerName);
 		// Print some information
 		mLogger.message("Launching the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
-		// launch ScheduledActionPlayer
-		mActionPlayer = new ScheduledActionPlayer();
-		mActionPlayer.start();
-		// tell ScheduledActionPlayer that StickmanScenePlayer is interested in upates
+		// launch ActionPlayer
+		mActionPlayer = EventActionPlayer.getInstance();
+		// tell the ActionPlayer that StickmanScenePlayer is interested in upates
 		mActionPlayer.addListener(this);
+		mActionPlayer.start();
 		// build the Stage
-		for (String c : getCharacters(mProject.getSceneScript())) {
+		getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
 			StickmanStage.addStickman(c);
-		}
+		});
 		// configure blocking mechanism 
 		mAllActionSync = new Semaphore(0);
 		// configure clean shutdown mechanism
@@ -125,7 +131,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 		mLogger.message("Unloading the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
 		// remove action player
 		mActionPlayer.removeListener(this);
-		// stop the ScheduledActionPlayer
+		// stop the ActionPlayer
 		mActionPlayer.end();
 		// do not wait for the end of any actions
 		mAllActionSync.release();
@@ -148,6 +154,11 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 			}
 		}
 		return speakersSet;
+	}
+
+	private String getTimeMark() {
+		String mark = "#TM" + mTimeMarkCnt++;
+		return mark;
 	}
 
 	// Play some scene with the player
@@ -198,65 +209,93 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 						// Get The Default Speaker
 					}
 
-					mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "environment", "Speaking", 3000, turn.getCleanText(), false));
-					// add mouth open
-					mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "face", "Mouth_O", 200, "", true));
-					// add mounth closed
-					mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 190, "face", "Mouth_Default", 10, "", false));
-
 					// Count The Word Number
 					int wordCount = 0;
 					String alreadyUttered = "";
 
 					// Process Utterance
 					for (SceneUttr utt : turn.getUttrList()) {
+						// create a new word time mark sequence based on the current utterance
+						WordTimeMarkSequence wts = new WordTimeMarkSequence(utt.getCleanText());
+						StickmanEventAction stickmanEventAction = new StickmanEventAction(StickmanStage.getStickman(speaker), 0, "environment", "Speaking", 3000, wts, false);
+						mActionPlayer.addAction(stickmanEventAction);
+						// add mouth open
+						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "face", "Mouth_O", 200, "", true));
+						// add mounth closed
+						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 190, "face", "Mouth_Default", 10, "", false));
 
 						EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
 						// Process the words of this utterance
+						// remember timemark
+						String tm = getTimeMark();
 						for (AbstractWord word : utt.getWordList()) {
 
 							if (word instanceof SceneWord) {
-								wordCount = ((SceneWord) word).getText().length();
-								alreadyUttered += ((SceneWord) word).getText();
+								String w = ((SceneWord) word).getText();
+								// add word to the word time mark sequence
+								wts.add(new Word(w));
+								// generate a new time mark after each word
+								tm = getTimeMark();
+
+								wordCount = w.length();
+
+								alreadyUttered += w;
 							} else if (word instanceof SceneParam) {
 								// Visualization
 								//mLogger.message("Executing param:" + ((SceneParam) word).getText());
 							} else if (word instanceof ActionObject) {
 								ActionObject ao = ((ActionObject) word);
-								ao.getName();
 
 								if (ao.getName().equalsIgnoreCase("waveleft")) {
-									mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "gesture", ao.getName(), 1000, "", false));
+									// give time mark to general event action
+									stickmanEventAction.addTimeMark(tm);
+									// create action
+									StickmanAction sa = new StickmanAction(StickmanStage.getStickman(speaker), -1, "gesture", ao.getName(), 1000, "", false);
+									// set time mark to action
+									sa.setTimeMark(tm);
+									// add time mark action to action player - to be played at the specfic timemark
+									mActionPlayer.addTimeMarkAction(sa);
+									// add time mark to word time mark sequence
+									wts.add(new TimeMark(tm));
 								}
-								if (ao.getName().equalsIgnoreCase("tiltleft")) {
-									mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "head", ao.getName(), 1000, "", true));
-								}
-								if (ao.getName().equalsIgnoreCase("tiltleftback")) {
-									mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "head", ao.getName(), 1000, "", true));
-								}
+//								if (ao.getName().equalsIgnoreCase("tiltleft")) {
+//									mActionPlayer.addTimeMarkAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "head", ao.getName(), 1000, "", true));
+//								}
+//								if (ao.getName().equalsIgnoreCase("tiltleftback")) {
+//									mActionPlayer.addTimeMarkAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "head", ao.getName(), 1000, "", true));
+//								}
 								if (ao.getName().equalsIgnoreCase("smile")) {
-									mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "face", ao.getName(), 200, "", false));
+									stickmanEventAction.addTimeMark(tm);
+									// create action
+									StickmanAction sa = new StickmanAction(StickmanStage.getStickman(speaker), -1, "face", ao.getName(), 200, "", false);
+									// set time mark to action
+									sa.setTimeMark(tm);
+									// add time mark action to action player - to be played at the specfic timemark
+									mActionPlayer.addTimeMarkAction(sa);
+									// add time mark to word time mark sequence
+									wts.add(new TimeMark(tm));
 								}
-								if (ao.getName().equalsIgnoreCase("sad")) {
-									mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "face", ao.getName(), 200, "", false));
-								}
+//								if (ao.getName().equalsIgnoreCase("sad")) {
+//									mActionPlayer.addTimeMarkAction(new StickmanAction(StickmanStage.getStickman(speaker), TimingInfo.spokenStringDuration(alreadyUttered), "face", ao.getName(), 200, "", false));
+//								}
 							} else if (word instanceof SceneAbbrev) {
 								// Visualization
 								//mLogger.message("Executing abbreviation:" + ((SceneAbbrev) word).getText());
 							}
 						}
+
+						// play all actions of an utterance
+						mActionPlayer.play();
+
+						// wait for all actions to be played
+						try {
+							mAllActionSync.acquire();
+						} catch (InterruptedException ex) {
+							mLogger.failure(ex.getMessage());
+						}
 					}
 
-					// play all actions of a turn
-					mActionPlayer.play();
-					
-					// wait for all actions to be played
-					try {
-						mAllActionSync.acquire();
-					} catch (InterruptedException ex) {
-						mLogger.failure(ex.getMessage());
-					}
 					// Exit if interrupted
 					if (isDone()) {
 						return;
@@ -272,7 +311,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 		while (!finished) {
 			try {
 				// Join the player task
-				task.join();
+				task.join();				
 				// Stop waiting for task
 				finished = true;
 			} catch (final InterruptedException exc) {

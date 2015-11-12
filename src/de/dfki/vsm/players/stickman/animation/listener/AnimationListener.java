@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.players.stickman.animation;
+package de.dfki.vsm.players.stickman.animation.listener;
+
+import de.dfki.vsm.players.stickman.animation.Animation;
 
 /**
  *

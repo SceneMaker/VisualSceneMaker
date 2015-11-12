@@ -2,7 +2,7 @@ package de.dfki.vsm.players.stickman.animation.face;
 
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.BodyAnimation;
+import de.dfki.vsm.players.stickman.animation.AnimationContent;
 import java.util.ArrayList;
 
 /**
@@ -20,7 +20,7 @@ public class Smile extends Animation {
 	public void playAnimation() {
 		// smile
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mMouth, "shape", "SMILE"));
+		mAnimationPart.add(new AnimationContent(mStickman.mMouth, "shape", "SMILE"));
 		
 		playAnimationPart(20);
 		
@@ -28,7 +28,7 @@ public class Smile extends Animation {
 		
 		// no smile
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mMouth, "shape", "DEFAULT"));
+		mAnimationPart.add(new AnimationContent(mStickman.mMouth, "shape", "DEFAULT"));
 		
 		playAnimationPart(20);
 	}
