@@ -11,6 +11,9 @@ import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
 import de.dfki.vsm.model.sceneflow.EEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
+import de.dfki.vsm.model.sceneflow.PEdge;
+import de.dfki.vsm.model.sceneflow.command.Command;
+import java.util.Vector;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -41,7 +44,7 @@ public class CreateEdgeAction extends EdgeAction {
         mSourceGUINode = sourceNode;
         mDataEdge      = dataEdge;
 
-        // TODO check data edge integrity (i.e. pedges!)
+        // TODO check data edge integrity (i.e. pedges!)      
         mGUIEdgeType   = type;
         mSceneFlowPane = mWorkSpace.getSceneFlowEditor();
         mUndoManager   = mSceneFlowPane.getUndoManager();
@@ -78,10 +81,17 @@ public class CreateEdgeAction extends EdgeAction {
                 break;
 
             case PEDGE :
-                ModifyPEdgeDialog pedgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode(),
-                                                    mTargetGUINode.getDataNode());
+                if(mSourceGUINode.getDataNode().getPEdgeList().isEmpty()){
+                    mDataEdge = new PEdge();
+                    ((PEdge)mDataEdge).setProbability(100);
+                }
+                else
+                {
+                    ModifyPEdgeDialog pedgeDialog = new ModifyPEdgeDialog(mSourceGUINode.getDataNode(),
+                                                        mTargetGUINode.getDataNode());
 
-                mDataEdge = pedgeDialog.run();
+                    mDataEdge = pedgeDialog.run();
+                }
 
                 break;
 

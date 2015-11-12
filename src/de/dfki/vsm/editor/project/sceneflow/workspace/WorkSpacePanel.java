@@ -2422,10 +2422,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             mGridManager.freeGridPosition(nodeLoc);
             
             node.updateLocation(moveVec);
-            for(CmdBadge badge: mCmdBadgeList){
-                if(badge.equals(mCmdBadgeMap.get(node))){
-                   badge.updateLocation(moveVec);
-                }
+            CmdBadge badge = mCmdBadgeMap.get(node);
+            if(badge != null){
+               badge.updateLocation(moveVec);
             }
             if ((event.getModifiersEx() == 1024)) {
                 node.mDragged = true;
@@ -2554,7 +2553,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                 mGridManager.freeGridPosition(nodeLoc);
                 node.updateLocation(moveVec);
-
+                CmdBadge badge = mCmdBadgeMap.get(node);
+                if(badge != null){
+                   badge.updateLocation(moveVec);
+                }
                 if ((event.getModifiersEx() == 1024)) {
                     node.mDragged = true;
                 }
