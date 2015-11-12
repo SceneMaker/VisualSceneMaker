@@ -40,6 +40,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
 import de.dfki.vsm.editor.dialog.SaveFileDialog;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
+import de.dfki.vsm.editor.event.ExceptionThrownEvent;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 
 /**
@@ -190,6 +191,12 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         if(event instanceof ElementEditorToggledEvent)
         {
             updateElementEditorButton();
+        }
+        if(event instanceof ExceptionThrownEvent)
+        {
+            if (mRunTime.isRunning(mEditorProject)) {
+                mEditorInstance.stop(mEditorProject);
+            }
         }
         refreshButtons();
     }

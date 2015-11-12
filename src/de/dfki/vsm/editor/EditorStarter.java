@@ -405,7 +405,6 @@ public class EditorStarter extends JPanel {
 		if (SampleProjFolder.exists()) {
 			sampleProjCnt = SampleProjFolder.listFiles().length;
 		}
-                System.out.println("--------------------------"+SampleProjFolder+"---------"+sampleProjCnt);
 		if (sampleProjCnt == 0) {
 			return;
 		}
