@@ -22,10 +22,11 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class ChangeNodeTypeAction extends NodeAction {
-    Node                     mOldGUINode           = null;
-    Set<Edge>                mConnectedEdges       = null;
-    Vector<RemoveEdgeAction> mRemoveEdgeActionList = new Vector<>();
-    Vector<CreateEdgeAction> mCreateEdgeActionList = new Vector<>();
+    private Node                     mOldGUINode           = null;
+    private Set<Edge>                mConnectedEdges       = null;
+    private Vector<Edge>             mConnectedEdgesVector = new Vector<>();
+    private Vector<RemoveEdgeAction> mRemoveEdgeActionList = new Vector<>();
+    private Vector<CreateEdgeAction> mCreateEdgeActionList = new Vector<>();
 
     public ChangeNodeTypeAction(WorkSpacePanel workSpace, Node node) {
         mWorkSpace        = workSpace;
@@ -43,9 +44,10 @@ public class ChangeNodeTypeAction extends NodeAction {
         
         // store all connected edge
         mConnectedEdges = mGUINode.getConnectedEdges();
-
+ 
         // prepare all edges to be removed
         for (Edge edge : mConnectedEdges) {
+            mConnectedEdgesVector.add(edge); // This is needed because mConnectedEdges is a shallow copy
             mRemoveEdgeActionList.add(new RemoveEdgeAction(workSpace, edge));
         }
     }
@@ -62,14 +64,21 @@ public class ChangeNodeTypeAction extends NodeAction {
         }
 
         delete();
-
+        
         // overwrite stored data node with new value
-        mDataNode   = newDataNode;
+        mDataNode   = newDataNode.getCopy();
         mDataNodeId = mIDManager.getNextFreeSuperNodeID();
         mDataNode.setNameAndId(mDataNodeId);
         mDataNode.setExhaustive(false);
         mDataNode.setPreserving(false);
-
+       
+       
+        if(newDataNode.getDedge()!=null){
+            if(newDataNode.getDedge().getTarget().equals(newDataNode.getId())){
+                mDataNode.getDedge().setTarget(mDataNode.getId());
+            }
+        }
+       
         de.dfki.vsm.model.sceneflow.Node mHistoryDataNode = new de.dfki.vsm.model.sceneflow.Node();
 
         mHistoryDataNode.setHistoryNodeFlag(true);
@@ -85,6 +94,7 @@ public class ChangeNodeTypeAction extends NodeAction {
         // create new gui node with new data node
         mGUINode = new de.dfki.vsm.editor.Node(mWorkSpace, mDataNode);
         mCmdBadge = new CmdBadge(mGUINode);
+        
         create();
 
         // overview old values with new
@@ -94,15 +104,13 @@ public class ChangeNodeTypeAction extends NodeAction {
         mDataNodeId     = mDataNode.getId();
 
         // recreate all edges
-        for (Edge edge : mConnectedEdges) {
-            Edge.TYPE                        newEdgeType      = edge.getType();
+        
+        for (Edge edge : mConnectedEdgesVector) {
+            
             de.dfki.vsm.model.sceneflow.Edge newDataEdge      = edge.getDataEdge().getCopy();
-            Node                             newSourceGUINode = (edge.getSourceNode().equals(mOldGUINode))
-                    ? mGUINode
-                    : edge.getSourceNode();
-            Node                             newTargetGUINode = (edge.getTargetNode().equals(mOldGUINode))
-                    ? mGUINode
-                    : edge.getTargetNode();
+            Edge.TYPE newEdgeType      = edge.getType();
+            Node      newSourceGUINode = (edge.getSourceNode().equals(mOldGUINode))? mGUINode : edge.getSourceNode();
+            Node      newTargetGUINode = (edge.getTargetNode().equals(mOldGUINode))? mGUINode : edge.getTargetNode();
 
             newDataEdge.setSource(newSourceGUINode.getDataNode().getId());
             newDataEdge.setSourceNode(newSourceGUINode.getDataNode());
@@ -115,6 +123,7 @@ public class ChangeNodeTypeAction extends NodeAction {
         for (CreateEdgeAction action : mCreateEdgeActionList) {
             action.create();
         }
+     
     }
 
     protected void unchangeNodeType() {
@@ -125,6 +134,9 @@ public class ChangeNodeTypeAction extends NodeAction {
         changeNodeType();
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
+               
+        // Navigate into new supernode
+        mWorkSpace.increaseWorkSpaceLevel(mGUINode);
     }
 
     private class Edit extends AbstractUndoableEdit {

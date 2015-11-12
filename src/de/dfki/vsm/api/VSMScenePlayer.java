@@ -239,7 +239,9 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
                         //try {
                         // Initialize The Lock
                         mRunTime.getLock(mProject).lock();
-                        //
+                        
+                        
+                        // This call returns nothing if the variable exists and and throws an exeption
                         environment.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
 
                     } catch (Exception exc) {
