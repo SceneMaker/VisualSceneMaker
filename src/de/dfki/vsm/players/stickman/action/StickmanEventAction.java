@@ -1,34 +1,40 @@
 package de.dfki.vsm.players.stickman.action;
 
+import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.action.ActionListener;
 import de.dfki.vsm.players.action.Action;
+import de.dfki.vsm.players.action.EventAction;
+import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.animation.Animation;
 import de.dfki.vsm.players.stickman.animation.listener.AnimationListener;
+import java.util.ArrayList;
 
 /**
  *
  * @author Patrick Gebhard
  *
  */
-public class StickmanAction extends Action implements AnimationListener {
+public class StickmanEventAction extends EventAction implements AnimationListener {
 
 	private final Stickman mStickman;
 	public String mType;
 	int mDuration;
-	public String mText;
+	public WordTimeMarkSequence mWTS;
 	boolean mBlocking;
 	public Animation mAnimation;
 
-	public StickmanAction(Stickman stickman, int starttime, String type, String name, int dur, String text, boolean block) {
-		Thread.currentThread().setName("Stickman action " + name);
+	public StickmanEventAction(Stickman stickman, int starttime, String type, String name, int dur, WordTimeMarkSequence wts, boolean block) {
+		Thread.currentThread().setName("Stickman event action " + name);
 		mStickman = stickman;
 		mStartTime = starttime;
 		mType = type;
 		mName = name;
 		mDuration = dur;
-		mText = text;
+		mWTS = wts;
 		mBlocking = block;
+		//timestamps when to call other actions
+		mSynchronizedActionTimeMarks = new ArrayList<>();
 	}
 
 	@Override
@@ -43,10 +49,11 @@ public class StickmanAction extends Action implements AnimationListener {
 		try {
 			mActionPlayer.notifyListenersAboutAction(this, ActionListener.STATE.ACTION_STARTED);
 
-			mAnimation = mStickman.doAnimation(mType, mName, mDuration, mText, mBlocking);
+			// mStickman.mLogger.info("Starting event action - animation" + mType + ".event." + mName);
+			mAnimation = mStickman.doEventFeedbackAnimation(mType, mName, mDuration, mWTS, mBlocking);
 
 			if (mAnimation == null) {
-				mStickman.mLogger.severe("animation " + mType + " " + mName + " is not known by Stickman ...");
+				mStickman.mLogger.severe("animation " + mType + ".event." + mName + " is not known by Stickman ...");
 				mActionPlayer.notifyListenersAboutAction(this, ActionListener.STATE.ACTION_UNKNOWN);
 			} else {
 				// tell Stickman to update Action about the animation status

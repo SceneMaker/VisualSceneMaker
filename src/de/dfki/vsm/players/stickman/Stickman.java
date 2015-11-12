@@ -1,8 +1,11 @@
 package de.dfki.vsm.players.stickman;
 
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.AnimationListener;
+import de.dfki.vsm.players.stickman.animation.listener.AnimationListener;
 import de.dfki.vsm.players.stickman.animation.AnimationScheduler;
+import de.dfki.vsm.players.stickman.animation.EventAnimation;
 import de.dfki.vsm.players.stickman.body.Body;
 import de.dfki.vsm.players.stickman.body.Head;
 import de.dfki.vsm.players.stickman.body.LeftEye;
@@ -34,6 +37,7 @@ import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.logging.ConsoleHandler;
@@ -204,6 +208,28 @@ public class Stickman extends JComponent {
 		} else {
 			mOrientation = ORIENTATION.FRONT;
 		}
+	}
+
+	public Animation doEventFeedbackAnimation(String type, String name, int duration, WordTimeMarkSequence wts, boolean block) {
+
+//		if (type.equalsIgnoreCase("environment")) {
+//			if (name.equalsIgnoreCase("Speaking")) {
+//				mSpeechBubble.mText = utterance.getText();
+//			}
+//		}
+		
+		EventAnimation a = AnimationLoader.getInstance().load(this, type, name, wts, duration, block);
+
+		if (a != null) {
+			try {
+				mAnimationLaunchControl.acquire();
+				a.start();
+			} catch (InterruptedException ex) {
+				mLogger.severe(ex.getMessage());
+			}
+		}
+
+		return a;
 	}
 
 	public Animation doAnimation(String type, String name, int duration, String text, boolean block) {

@@ -2,7 +2,7 @@ package de.dfki.vsm.players.stickman.animation.gesture;
 
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.BodyAnimation;
+import de.dfki.vsm.players.stickman.animation.AnimationContent;
 import java.util.ArrayList;
 
 /**
@@ -24,20 +24,20 @@ public class CoverMouth extends Animation {
 
 		// bring upper arm and fore arm in position
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftShoulder, "rotate", -rotationUnit * 3));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftUpperArm, "rotate", rotationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftForeArm, "rotate", rotationUnit * 9));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftHand, "rotate", rotationUnit * 9));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftShoulder, "rotate", -rotationUnit * 3));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftUpperArm, "rotate", rotationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftForeArm, "rotate", rotationUnit * 9));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftHand, "rotate", rotationUnit * 9));
 		playAnimationPart(200);
 
 		pauseAnimation(1200);
 
 		// go back in the default position
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftShoulder, "rotate", +rotationUnit * 3));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftUpperArm, "rotate", -rotationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftForeArm, "rotate", -rotationUnit * 9));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftHand, "rotate", -rotationUnit * 9));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftShoulder, "rotate", +rotationUnit * 3));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftUpperArm, "rotate", -rotationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftForeArm, "rotate", -rotationUnit * 9));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftHand, "rotate", -rotationUnit * 9));
 		playAnimationPart(300);
 	}
 }
