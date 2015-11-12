@@ -25,7 +25,7 @@ public class TestVSMProject {
         */
      
          final EditorProject eproject = new EditorProject();
-         eproject.parse(new File(args[0]));
+         eproject.parse(new File(args[0]).getPath());
          eproject.write(new File("_editor1"));
          eproject.setProjectName("other");
          eproject.write(new File("_editor2"));
