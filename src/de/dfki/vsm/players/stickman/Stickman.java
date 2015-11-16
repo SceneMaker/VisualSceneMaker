@@ -208,7 +208,8 @@ public class Stickman extends JComponent {
 		}
 	}
 
-	public Animation doEventFeedbackAnimation(String type, String name, int duration, WordTimeMarkSequence wts, boolean block) {		
+	public Animation doEventFeedbackAnimation(String name, int duration, WordTimeMarkSequence wts, boolean block) {
+
 		EventAnimation a = AnimationLoader.getInstance().load(this, name, wts, duration, block);
 
 		if (a != null) {
@@ -223,32 +224,22 @@ public class Stickman extends JComponent {
 		return a;
 	}
 
-	public Animation doAnimation(String type, String name, int duration, String text, boolean block) {
-		if (type.equalsIgnoreCase("environment")) {
-			if (name.equalsIgnoreCase("Speaking")) {
-				mSpeechBubble.mText = text;
-			}
-		}
-
-		return doAnimation(type, name, duration, block);
+	public Animation doAnimation(String name, int duration, boolean block) {
+		return doAnimation(name, duration, "", block);
 	}
 
-	public Animation doAnimation(String type, String name, String text, boolean block) {
-		if (type.equalsIgnoreCase("environment")) {
-			if (name.equalsIgnoreCase("Speaking")) {
-				mSpeechBubble.mText = text;
-			}
-		}
-
-		return doAnimation(type, name, -1, block);
+	public Animation doAnimation(String name, String param, boolean block) {
+		return doAnimation(name, -1, param, block);
 	}
 
-	public Animation doAnimation(String type, String name, boolean block) {
-		return doAnimation(type, name, -1, block);
+	public Animation doAnimation(String name, boolean block) {
+		return doAnimation(name, -1, "", block);
 	}
 
-	public Animation doAnimation(String type, String name, int duration, boolean block) {
+	public Animation doAnimation(String name, int duration, String param, boolean block) {
 		Animation a = AnimationLoader.getInstance().load(this, name, duration, block);
+
+		a.setParameter(param); // this is for now onyl used by the Speech Bubble
 
 		if (a != null) {
 			try {

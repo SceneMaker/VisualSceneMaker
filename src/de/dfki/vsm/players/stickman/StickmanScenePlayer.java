@@ -217,12 +217,12 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 					for (SceneUttr utt : turn.getUttrList()) {
 						// create a new word time mark sequence based on the current utterance
 						WordTimeMarkSequence wts = new WordTimeMarkSequence(utt.getCleanText());
-						StickmanEventAction stickmanEventAction = new StickmanEventAction(StickmanStage.getStickman(speaker), 0, "environment", "Speaking", 3000, wts, false);
+						StickmanEventAction stickmanEventAction = new StickmanEventAction(StickmanStage.getStickman(speaker), 0, "Speaking", 3000, wts, false);
 						mActionPlayer.addAction(stickmanEventAction);
 						// add mouth open
-						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "face", "Mouth_O", 200, "", true));
+						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "Mouth_O", 200, "", true));
 						// add mounth closed
-						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 190, "face", "Mouth_Default", 10, "", false));
+						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 190, "Mouth_Default", 10, "", false));
 
 						EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
@@ -251,7 +251,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 									// give time mark to general event action
 									stickmanEventAction.addTimeMark(tm);
 									// create action
-									StickmanAction sa = new StickmanAction(StickmanStage.getStickman(speaker), -1, "gesture", ao.getName(), 1000, "", false);
+									StickmanAction sa = new StickmanAction(StickmanStage.getStickman(speaker), -1, ao.getName(), 1000, "", false);
 									// set time mark to action
 									sa.setTimeMark(tm);
 									// add time mark action to action player - to be played at the specfic timemark
@@ -268,7 +268,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 								if (ao.getName().equalsIgnoreCase("smile")) {
 									stickmanEventAction.addTimeMark(tm);
 									// create action
-									StickmanAction sa = new StickmanAction(StickmanStage.getStickman(speaker), -1, "face", ao.getName(), 200, "", false);
+									StickmanAction sa = new StickmanAction(StickmanStage.getStickman(speaker), -1, ao.getName(), 200, "", false);
 									// set time mark to action
 									sa.setTimeMark(tm);
 									// add time mark action to action player - to be played at the specfic timemark
