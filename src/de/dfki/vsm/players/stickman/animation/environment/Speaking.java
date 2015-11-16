@@ -24,11 +24,12 @@ public class Speaking extends Animation {
 
 	@Override
 	public void playAnimation() {
-		// smile
+		mStickman.mSpeechBubble.mText = mParameter;
+
 		mAnimationPart = new ArrayList<>();
 		mAnimationPart.add(new AnimationContent(mStickman.mSpeechBubble, "shape", SpeechBubble.SHAPE.SPEAK.name()));
 		playAnimationPart(mDuration);
-		
+
 		mAnimationPart.add(new AnimationContent(mStickman.mSpeechBubble, "shape", SpeechBubble.SHAPE.DEFAULT.name()));
 		playAnimationPart(20);
 

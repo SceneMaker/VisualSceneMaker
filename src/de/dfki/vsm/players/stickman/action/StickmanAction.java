@@ -14,17 +14,16 @@ import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
 public class StickmanAction extends Action implements AnimationListener {
 
 	private final Stickman mStickman;
-	public String mType;
+
 	int mDuration;
 	public String mText;
 	boolean mBlocking;
 	public Animation mAnimation;
 
-	public StickmanAction(Stickman stickman, int starttime, String type, String name, int dur, String text, boolean block) {
+	public StickmanAction(Stickman stickman, int starttime, String name, int dur, String text, boolean block) {
 		Thread.currentThread().setName("Stickman action " + name);
 		mStickman = stickman;
 		mStartTime = starttime;
-		mType = type;
 		mName = name;
 		mDuration = dur;
 		mText = text;
@@ -43,10 +42,10 @@ public class StickmanAction extends Action implements AnimationListener {
 		try {
 			mActionPlayer.notifyListenersAboutAction(this, ActionListener.STATE.ACTION_STARTED);
 
-			mAnimation = mStickman.doAnimation(mType, mName, mDuration, mText, mBlocking);
+			mAnimation = mStickman.doAnimation(mName, mDuration, mText, mBlocking);
 
 			if (mAnimation == null) {
-				mStickman.mLogger.severe("animation " + mType + " " + mName + " is not known by Stickman ...");
+				mStickman.mLogger.severe("animation " + mName + " is not known by Stickman ...");
 				mActionPlayer.notifyListenersAboutAction(this, ActionListener.STATE.ACTION_UNKNOWN);
 			} else {
 				// tell Stickman to update Action about the animation status

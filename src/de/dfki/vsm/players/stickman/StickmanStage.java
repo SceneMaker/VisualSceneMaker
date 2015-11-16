@@ -116,7 +116,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 	
 	public static void animate(String stickmanname, String type, String name, int duration, String text, boolean block) {
 		Stickman sm = getStickman(stickmanname);
-		sm.doAnimation(type, name, duration, text, block);
+		sm.doAnimation(name, duration, text, block);
 	}
 
 	/**
