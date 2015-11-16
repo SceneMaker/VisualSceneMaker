@@ -5,7 +5,7 @@
  */
 package de.dfki.vsm.players.stickman.body;
 
-import de.dfki.vsm.players.stickman.animation.Animator;
+import de.dfki.vsm.players.stickman.animationlogic.Animator;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;

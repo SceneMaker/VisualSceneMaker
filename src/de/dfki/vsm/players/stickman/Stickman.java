@@ -1,11 +1,10 @@
 package de.dfki.vsm.players.stickman;
 
-import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.listener.AnimationListener;
-import de.dfki.vsm.players.stickman.animation.AnimationScheduler;
-import de.dfki.vsm.players.stickman.animation.EventAnimation;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationScheduler;
+import de.dfki.vsm.players.stickman.animationlogic.EventAnimation;
 import de.dfki.vsm.players.stickman.body.Body;
 import de.dfki.vsm.players.stickman.body.Head;
 import de.dfki.vsm.players.stickman.body.LeftEye;
@@ -25,7 +24,7 @@ import de.dfki.vsm.players.stickman.body.RightLeg;
 import de.dfki.vsm.players.stickman.body.RightShoulder;
 import de.dfki.vsm.players.stickman.body.RightUpperArm;
 import de.dfki.vsm.players.stickman.environment.SpeechBubble;
-import de.dfki.vsm.players.stickman.util.AnimationLoader;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -37,7 +36,6 @@ import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.logging.ConsoleHandler;
@@ -63,13 +61,13 @@ public class Stickman extends JComponent {
 		FRONT, LEFT, RIGHT
 	};
 
-	public static enum GENDER {
+	public static enum TYPE {
 
 		FEMALE, MALE
 	};
 
 	static public final Color sFOREGROUND = new Color(188, 188, 188, 128);
-	public GENDER mGender = GENDER.FEMALE;
+	public TYPE mType = TYPE.FEMALE;
 	public String mName = "Stickman";
 	public ORIENTATION mOrientation = ORIENTATION.FRONT;
 	public float mScale = 1.0f;
@@ -111,14 +109,14 @@ public class Stickman extends JComponent {
 	// id
 	private long mID = 0;
 
-	public Stickman(String name, GENDER gender, float scale) {
+	public Stickman(String name, TYPE gender, float scale) {
 		this(name, gender);
 		mScale = scale;
 	}
 
-	public Stickman(String name, GENDER gender) {
+	public Stickman(String name, TYPE gender) {
 		mName = name;
-		mGender = gender;
+		mType = gender;
 
 		mHead = new Head(this);
 		mLeftEyebrow = new LeftEyebrow(mHead);
@@ -210,15 +208,8 @@ public class Stickman extends JComponent {
 		}
 	}
 
-	public Animation doEventFeedbackAnimation(String type, String name, int duration, WordTimeMarkSequence wts, boolean block) {
-
-//		if (type.equalsIgnoreCase("environment")) {
-//			if (name.equalsIgnoreCase("Speaking")) {
-//				mSpeechBubble.mText = utterance.getText();
-//			}
-//		}
-		
-		EventAnimation a = AnimationLoader.getInstance().load(this, type, name, wts, duration, block);
+	public Animation doEventFeedbackAnimation(String type, String name, int duration, WordTimeMarkSequence wts, boolean block) {		
+		EventAnimation a = AnimationLoader.getInstance().load(this, name, wts, duration, block);
 
 		if (a != null) {
 			try {
@@ -257,7 +248,7 @@ public class Stickman extends JComponent {
 	}
 
 	public Animation doAnimation(String type, String name, int duration, boolean block) {
-		Animation a = AnimationLoader.getInstance().load(this, type, name, duration, block);
+		Animation a = AnimationLoader.getInstance().load(this, name, duration, block);
 
 		if (a != null) {
 			try {

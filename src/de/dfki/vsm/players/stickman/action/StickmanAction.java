@@ -3,8 +3,8 @@ package de.dfki.vsm.players.stickman.action;
 import de.dfki.vsm.players.action.ActionListener;
 import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.listener.AnimationListener;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
 
 /**
  *
