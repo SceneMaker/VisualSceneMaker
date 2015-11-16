@@ -41,7 +41,7 @@ public class Body extends JComponent {
 	public Body(Neck neck) {
 		mNeck = neck;
 		mStart = mNeck.getBodyStartPosition();
-		mColor = (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) ? mFemaleColor : mMaleColor;
+		mColor = (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) ? mFemaleColor : mMaleColor;
 		init();
 	}
 
@@ -106,7 +106,7 @@ public class Body extends JComponent {
 			return new Point(mStart.x + mHalfSizeX - mDrawOffset, mSize.height);
 		} else {
 			return new Point(mStart.x + mHalfSizeX - mDrawOffset,
-			  (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) ? mSize.height + 3 : mSize.height);
+			  (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) ? mSize.height + 3 : mSize.height);
 		}
 	}
 
@@ -115,12 +115,12 @@ public class Body extends JComponent {
 			return new Point(mStart.x, mSize.height);
 		} else {
 			return new Point(mStart.x - mHalfSizeX + mDrawOffset,
-			  (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) ? mSize.height + 5 : mSize.height);
+			  (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) ? mSize.height + 5 : mSize.height);
 		}
 	}
 
 	private void paintLeftOrientation(Graphics2D g2) {
-		if (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.fill(mFemaleBodyLeft);
 		} else {
 			g2.fill(mMaleBodyLeft);
@@ -130,7 +130,7 @@ public class Body extends JComponent {
 		g2.setColor(g2.getColor().darker());
 		g2.setStroke(new BasicStroke(2));
 
-		if (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.draw(mFemaleBodyLeft);
 		} else {
 			g2.draw(mMaleBodyLeft);
@@ -138,7 +138,7 @@ public class Body extends JComponent {
 	}
 
 	private void paintRightOrientation(Graphics2D g2) {
-		if (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.fill(mFemaleBodyRight);
 		} else {
 			g2.fill(mMaleBodyRight);
@@ -148,7 +148,7 @@ public class Body extends JComponent {
 		g2.setColor(g2.getColor().darker());
 		g2.setStroke(new BasicStroke(2));
 
-		if (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.draw(mFemaleBodyRight);
 		} else {
 			g2.draw(mMaleBodyRight);
@@ -156,7 +156,7 @@ public class Body extends JComponent {
 	}
 
 	private void paintFrontOrientation(Graphics2D g2) {
-		if (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.fill(mFemaleBodyFront);
 		} else {
 			g2.fill(mMaleBodyFront);
@@ -166,7 +166,7 @@ public class Body extends JComponent {
 		g2.setColor(g2.getColor().darker());
 		g2.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-		if (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.draw(mFemaleBodyFront);
 		} else {
 			g2.draw(mMaleBodyFront);
@@ -182,7 +182,7 @@ public class Body extends JComponent {
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		if (mNeck.mHead.mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mNeck.mHead.mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.setColor(mFemaleColor);
 		} else {
 			g2.setColor(mMaleColor);

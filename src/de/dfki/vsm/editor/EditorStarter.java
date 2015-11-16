@@ -47,7 +47,7 @@ public class EditorStarter extends JPanel {
 	private final static Color sTEXTCOLOR = new Color(16, 16, 16, 182);
 	private final static Font sMENUHEADLINEFONT = new Font("Helvetica", Font.PLAIN, 24);
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
-	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.GENDER.FEMALE : Stickman.GENDER.MALE, 1.5f);
+	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
 
 	private final File SampleProjFolder = new File( Preferences.sSAMPLE_PROJECTS);
 
@@ -156,8 +156,8 @@ public class EditorStarter extends JPanel {
 		this.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				mWelcomeStickman.doAnimation("head", "Blink", 100, false);
-				mWelcomeStickman.doAnimation("face", "Smile", 500, false);
+				mWelcomeStickman.doAnimation("Blink", 100, false);
+				mWelcomeStickman.doAnimation("Smile", 500, false);
 			}
 		});
 
@@ -176,12 +176,12 @@ public class EditorStarter extends JPanel {
 		  new java.util.TimerTask() {
 			  @Override
 			  public void run() {
-				  mWelcomeStickman.doAnimation("environment", "Speaking", 2000, "Welcome!", false);
-				  mWelcomeStickman.doAnimation("face", "Mouth_O", 20, true);
-				  mWelcomeStickman.doAnimation("face", "Smile", 1000, false);
-				  mWelcomeStickman.doAnimation("head", "TiltLeft", 300, false);
-				  mWelcomeStickman.doAnimation("gesture", "WaveLeft", 2000, true);
-				  mWelcomeStickman.doAnimation("head", "TiltLeftBack", 300, false);
+				  mWelcomeStickman.doAnimation("Speaking", 2000, "Welcome!", false);
+				  mWelcomeStickman.doAnimation("Mouth_O", 20, true);
+				  mWelcomeStickman.doAnimation("Smile", 1000, false);
+				  mWelcomeStickman.doAnimation("TiltLeft", 300, false);
+				  mWelcomeStickman.doAnimation("WaveLeft", 2000, true);
+				  mWelcomeStickman.doAnimation("TiltLeftBack", 300, false);
 			  }
 		  },
 		  1000

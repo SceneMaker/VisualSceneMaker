@@ -1,4 +1,4 @@
-package de.dfki.vsm.players.stickman.animation;
+package de.dfki.vsm.players.stickman.animationlogic;
 
 import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.action.sequence.Entry;

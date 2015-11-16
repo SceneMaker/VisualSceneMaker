@@ -1,6 +1,6 @@
 package de.dfki.vsm.players.stickman.environment;
 
-import de.dfki.vsm.players.stickman.animation.Animator;
+import de.dfki.vsm.players.stickman.animationlogic.Animator;
 import de.dfki.vsm.players.stickman.body.BodyPart;
 import de.dfki.vsm.players.stickman.body.Head;
 import java.awt.BasicStroke;

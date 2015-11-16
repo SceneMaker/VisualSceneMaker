@@ -1,8 +1,8 @@
 package de.dfki.vsm.players.stickman.animation.gesture;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.AnimationContent;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
 import java.util.ArrayList;
 
 /**

@@ -3,16 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.players.stickman.util;
+package de.dfki.vsm.players.stickman.animationlogic;
 
-import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.EventAnimation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -21,7 +20,8 @@ import java.util.List;
  */
 public class AnimationLoader {
 
-	private final static String SANIMATIONPATH = "de.dfki.vsm.players.stickman.animation.";
+	private final static String sANIMATIONPATH = "de.dfki.vsm.players.stickman";
+	private static final Set<String> sAnimationSubPackages = new HashSet<>(Arrays.asList("head", "face", "gesture", "environment"));
 	private static AnimationLoader sInstance = null;
 
 	private AnimationLoader() {
@@ -35,11 +35,45 @@ public class AnimationLoader {
 		return sInstance;
 	}
 
-	public Animation load(Stickman sm, String type, String name, int duration, boolean block) {
+	private String getAnimationClasspath(Stickman.TYPE stickmantype, String name) {
+		String classPath = "";
+
+		for (String s : sAnimationSubPackages) {
+			classPath = sANIMATIONPATH /*+ stickmantype.name().toLowerCase()*/ + ".animation." + s + "." + name;
+
+			try {
+				Class.forName(classPath);
+				break;
+			} catch (ClassNotFoundException ex) {
+				// be silent
+			}
+		}
+		return classPath;
+	}
+
+	private String getEventAnimationClasspath(Stickman.TYPE stickmantype, String name) {
+		String classPath = "";
+
+		for (String s : sAnimationSubPackages) {
+			classPath = sANIMATIONPATH /*+ stickmantype.name().toLowerCase()*/ + ".animation." + s + ".event." + name;
+
+			try {
+				Class.forName(classPath);
+				break;
+			} catch (ClassNotFoundException ex) {
+				// be silent
+			}
+		}
+		return classPath;
+	}
+
+	public Animation load(Stickman sm, String name, int duration, boolean block) {
 		Animation a = null;
 
+		String cp = getAnimationClasspath(sm.mType, name);
+
 		try {
-			Class c = Class.forName(SANIMATIONPATH + type + "." + name);
+			Class c = Class.forName(cp);
 			Constructor[] constructors = c.getConstructors();
 			for (Constructor con : constructors) {
 				Class[] params = con.getParameterTypes();
@@ -53,19 +87,20 @@ public class AnimationLoader {
 
 			}
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-			sm.mLogger.severe("Animation type \"" + type + "\" name \"" + name + "\" cannot be found in " + SANIMATIONPATH + type + "." + name);
+			sm.mLogger.severe("Animation \"" + name + "\" cannot be found in " + cp);
 		}
 
 		return a;
 	}
 
-	public EventAnimation load(Stickman sm, String type, String name, WordTimeMarkSequence wts, int duration, boolean block) {
+	public EventAnimation load(Stickman sm, String name, WordTimeMarkSequence wts, int duration, boolean block) {
 		EventAnimation a = null;
 
-		try {
-			Class c = Class.forName(SANIMATIONPATH + type + ".event." + name);
+		String cp = getEventAnimationClasspath(sm.mType, name);
 
-			// TODO - Hier weiter ...
+		try {
+			Class c = Class.forName(cp);
+
 			Constructor[] constructors = c.getConstructors();
 			for (Constructor con : constructors) {
 				Class[] params = con.getParameterTypes();
@@ -80,7 +115,7 @@ public class AnimationLoader {
 
 			}
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-			sm.mLogger.severe("Event animation type \"" + type + "\" name \"" + name + "\" cannot be found in " + SANIMATIONPATH + type + "." + name);
+			sm.mLogger.severe("Animation \"" + name + "\" cannot be found in " + cp);
 		}
 
 		return a;

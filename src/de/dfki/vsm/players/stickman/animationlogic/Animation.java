@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.players.stickman.animation;
+package de.dfki.vsm.players.stickman.animationlogic;
 
 import de.dfki.vsm.players.stickman.Stickman;
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ public abstract class Animation extends Thread {
 	public boolean mBlocking = false;
 	public int mDuration = -1;
 	public String mID;
+	public String mParameter = "";
 
 	public Animation(Stickman sm, int duration, boolean block) {
 		setName(sm.mName + "'s Animation " + getClass().getSimpleName());
@@ -32,6 +33,10 @@ public abstract class Animation extends Thread {
 		mID = mStickman.getID();
 		mBlocking = block;
 		mDuration = duration;
+	}
+
+	public void setParameter(String p) {
+		mParameter = p;
 	}
 
 	public void waitForClearance() {
