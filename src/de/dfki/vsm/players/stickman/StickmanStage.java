@@ -61,19 +61,19 @@ public class StickmanStage extends JFrame implements MouseListener {
 	}
 	
 	public static void addStickman(String name) {
-		Stickman.GENDER gender = null;
+		Stickman.TYPE gender = null;
 		if (Names.sFemaleNames.contains(name.toLowerCase())) {
-			gender = Stickman.GENDER.FEMALE;
+			gender = Stickman.TYPE.FEMALE;
 		}
 		
 		if (Names.sMaleNames.contains(name.toLowerCase())) {
-			gender = (gender == null) ? Stickman.GENDER.MALE : gender;
+			gender = (gender == null) ? Stickman.TYPE.MALE : gender;
 		}
 		
 		addStickman(name, gender);
 	}
 	
-	public static void addStickman(String name, Stickman.GENDER gender) {
+	public static void addStickman(String name, Stickman.TYPE gender) {
 		if (!sStickmansOnStage.containsKey(name.toLowerCase())) {
 			sStickmansOnStage.put(name.toLowerCase(), new Stickman(name, gender));
 			sStickmanPanel.add(getStickman(name));
@@ -116,7 +116,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 	
 	public static void animate(String stickmanname, String type, String name, int duration, String text, boolean block) {
 		Stickman sm = getStickman(stickmanname);
-		sm.doAnimation(type, name, duration, text, block);
+		sm.doAnimation(name, duration, text, block);
 	}
 
 	/**

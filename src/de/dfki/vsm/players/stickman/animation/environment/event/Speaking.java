@@ -7,8 +7,8 @@ package de.dfki.vsm.players.stickman.animation.environment.event;
 
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.AnimationContent;
-import de.dfki.vsm.players.stickman.animation.EventAnimation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
+import de.dfki.vsm.players.stickman.animationlogic.EventAnimation;
 import de.dfki.vsm.players.stickman.environment.SpeechBubble;
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package de.dfki.vsm.players.stickman.animation;
+package de.dfki.vsm.players.stickman.animationlogic;
 
 import de.dfki.vsm.players.stickman.Stickman;
 import java.util.concurrent.LinkedBlockingQueue;

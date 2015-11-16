@@ -6,8 +6,8 @@
 package de.dfki.vsm.players.stickman.animation.environment;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.AnimationContent;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
 import de.dfki.vsm.players.stickman.environment.SpeechBubble;
 import java.util.ArrayList;
 
@@ -24,11 +24,12 @@ public class Speaking extends Animation {
 
 	@Override
 	public void playAnimation() {
-		// smile
+		mStickman.mSpeechBubble.mText = mParameter;
+
 		mAnimationPart = new ArrayList<>();
 		mAnimationPart.add(new AnimationContent(mStickman.mSpeechBubble, "shape", SpeechBubble.SHAPE.SPEAK.name()));
 		playAnimationPart(mDuration);
-		
+
 		mAnimationPart.add(new AnimationContent(mStickman.mSpeechBubble, "shape", SpeechBubble.SHAPE.DEFAULT.name()));
 		playAnimationPart(20);
 

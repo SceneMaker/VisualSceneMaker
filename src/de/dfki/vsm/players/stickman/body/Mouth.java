@@ -1,7 +1,7 @@
 package de.dfki.vsm.players.stickman.body;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animator;
+import de.dfki.vsm.players.stickman.animationlogic.Animator;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -28,7 +28,7 @@ public class Mouth extends BodyPart {
 		mLength = 20;
 		mSize = new Dimension(mLength * 2, 5);
 		mDefaultRotationPoint = mHead.mDefaultRotationPoint;
-		mColor = new Color(mHead.mStickman.mGender == Stickman.GENDER.FEMALE ? 64 : 32, 0, 0, 128);
+		mColor = new Color(mHead.mStickman.mType == Stickman.TYPE.FEMALE ? 64 : 32, 0, 0, 128);
 
 		init();
 	}
