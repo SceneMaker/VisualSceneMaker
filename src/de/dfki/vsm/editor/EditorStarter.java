@@ -47,7 +47,7 @@ public class EditorStarter extends JPanel {
 	private final static Color sTEXTCOLOR = new Color(16, 16, 16, 182);
 	private final static Font sMENUHEADLINEFONT = new Font("Helvetica", Font.PLAIN, 24);
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
-	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.GENDER.FEMALE : Stickman.GENDER.MALE, 1.5f);
+	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
 
 	private final File SampleProjFolder = new File( Preferences.sSAMPLE_PROJECTS);
 

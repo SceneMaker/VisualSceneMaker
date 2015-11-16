@@ -6,8 +6,8 @@
 package de.dfki.vsm.players.stickman.animation.environment;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.AnimationContent;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
 import de.dfki.vsm.players.stickman.environment.SpeechBubble;
 import java.util.ArrayList;
 

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.players.stickman.animation;
+package de.dfki.vsm.players.stickman.animationlogic;
 
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;

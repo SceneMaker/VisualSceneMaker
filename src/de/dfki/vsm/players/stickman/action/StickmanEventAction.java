@@ -6,8 +6,8 @@ import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.action.EventAction;
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.listener.AnimationListener;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
 import java.util.ArrayList;
 
 /**

@@ -158,7 +158,7 @@ public class Head extends BodyPart {
 		g2.draw(mRightEar);
 
 		// hair
-		if (mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.setColor(new Color(240, 212, 0, 255));
 			g2.fill(mFemaleHair);
 			// draw outlines
