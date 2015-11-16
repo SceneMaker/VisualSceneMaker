@@ -58,8 +58,8 @@ public abstract class NodeAction extends EditorAction {
         if (mGUINodeType == BasicNode) {
             mParentDataNode.removeNode(mDataNode);
         } else if (mGUINodeType == SuperNode) {
-           // mParentDataNode.removeSuperNode((SuperNode) mDataNode);
-             mParentDataNode.removeNode(mDataNode);
+            mParentDataNode.removeSuperNode((SuperNode) mDataNode);
+//             mParentDataNode.removeNode(mDataNode);
         }
 
         // Check the start node status of the removed node
