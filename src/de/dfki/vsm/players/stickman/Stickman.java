@@ -104,7 +104,7 @@ public class Stickman extends JComponent {
 	public SpeechBubble mSpeechBubble;
 
 	// logging
-	public Logger mLogger = Logger.getAnonymousLogger();
+	public final Logger mLogger = Logger.getAnonymousLogger();
 
 	// id
 	private long mID = 0;
@@ -175,14 +175,19 @@ public class Stickman extends JComponent {
 	}
 
 	public void removeListener(AnimationListener al) {
-		if (mAnimationListeners.contains(al)) {
-			mAnimationListeners.remove(al);
+		synchronized (mAnimationListeners) {
+			if (mAnimationListeners.contains(al)) {
+				mAnimationListeners.remove(al);
+			}
 		}
 	}
 
 	public void notifyListeners(Animation a) {
 		synchronized (mAnimationListeners) {
 			mAnimationListeners.stream().forEach((al) -> {
+
+				//mLogger.info("Listener information about Animation " + a.toString() + " with id " + a.mID);
+
 				al.update(a);
 			});
 		}
@@ -210,15 +215,15 @@ public class Stickman extends JComponent {
 
 	public Animation doEventFeedbackAnimation(String name, int duration, WordTimeMarkSequence wts, boolean block) {
 
-		EventAnimation a = AnimationLoader.getInstance().load(this, name, wts, duration, block);
+		EventAnimation a = AnimationLoader.getInstance().loadEventAnimation(this, name, duration, block);
 
-		if (a != null) {
-			try {
-				mAnimationLaunchControl.acquire();
-				a.start();
-			} catch (InterruptedException ex) {
-				mLogger.severe(ex.getMessage());
-			}
+		a.setParameter(wts);
+
+		try {
+			mAnimationLaunchControl.acquire();
+			a.start();
+		} catch (InterruptedException ex) {
+			mLogger.severe(ex.getMessage());
 		}
 
 		return a;
@@ -228,7 +233,7 @@ public class Stickman extends JComponent {
 		return doAnimation(name, duration, "", block);
 	}
 
-	public Animation doAnimation(String name, String param, boolean block) {
+	public Animation doAnimation(String name, Object param, boolean block) {
 		return doAnimation(name, -1, param, block);
 	}
 
@@ -236,21 +241,30 @@ public class Stickman extends JComponent {
 		return doAnimation(name, -1, "", block);
 	}
 
-	public Animation doAnimation(String name, int duration, String param, boolean block) {
-		Animation a = AnimationLoader.getInstance().load(this, name, duration, block);
+	public Animation doAnimation(String name, int duration, Object param, boolean block) {
+		Animation a = AnimationLoader.getInstance().loadAnimation(this, name, duration, block);
 
 		a.setParameter(param); // this is for now onyl used by the Speech Bubble
 
-		if (a != null) {
-			try {
-				mAnimationLaunchControl.acquire();
-				a.start();
-			} catch (InterruptedException ex) {
-				mLogger.severe(ex.getMessage());
-			}
+		try {
+			mAnimationLaunchControl.acquire();
+			a.start();
+		} catch (InterruptedException ex) {
+			mLogger.severe(ex.getMessage());
 		}
 
 		return a;
+	}
+
+	public void playAnimation(Animation a) {
+		try {
+			//mLogger.info("Waiting for allowance to play animation " + a.toString());
+			mAnimationLaunchControl.acquire();
+			//mLogger.info("\tgranted!");
+			a.start();
+		} catch (InterruptedException ex) {
+			mLogger.severe(ex.getMessage());
+		}
 	}
 
 	@Override

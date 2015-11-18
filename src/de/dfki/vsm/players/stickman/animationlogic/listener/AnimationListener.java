@@ -13,7 +13,7 @@ import de.dfki.vsm.players.stickman.animationlogic.Animation;
  *
  */
 public interface AnimationListener {
-
+	
 	public void update(final Animation a);
 
 }

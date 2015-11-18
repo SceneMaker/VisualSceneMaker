@@ -2,7 +2,7 @@
 // Start User Code /////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // Package Definition
-package de.dfki.vsm.model.script;
+package de.dfki.vsm.model.scenescript;
 // Java System Imports
 import java.io.*;
 import java.util.*;
@@ -361,6 +361,20 @@ word ::=
         RESULT = new ActionObject(
                 header.getLower(), 
                 footer.getUpper(),
+                null,
+                idenifier.getValue(), 
+                sequence);
+    :}
+  | ACTIONHEAD:header 
+    IDENTIFIER:character 
+    IDENTIFIER:idenifier 
+    feature_sequence_opt:sequence 
+    ACTIONFOOT:footer
+    {:
+        RESULT = new ActionObject(
+                header.getLower(), 
+                footer.getUpper(),
+                character.getValue(),
                 idenifier.getValue(), 
                 sequence);
     :}

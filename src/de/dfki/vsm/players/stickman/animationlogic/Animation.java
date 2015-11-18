@@ -25,35 +25,43 @@ public abstract class Animation extends Thread {
 	public boolean mBlocking = false;
 	public int mDuration = -1;
 	public String mID;
-	public String mParameter = "";
+	public Object mParameter = "";
 
 	public Animation(Stickman sm, int duration, boolean block) {
 		setName(sm.mName + "'s Animation " + getClass().getSimpleName());
 		mStickman = sm;
-		mID = mStickman.getID();
+		mID = mStickman.getID(); // default ID;
 		mBlocking = block;
 		mDuration = duration;
 	}
 
-	public void setParameter(String p) {
+	public void setParameter(Object p) {
 		mParameter = p;
 	}
 
+	public void setID(String id) {
+		mID = id;
+	}
+
 	public void waitForClearance() {
+		//mStickman.mLogger.info("Introducing " + this.toString() + " to Animationcheduler");
 		mStickman.mAnimationScheduler.introduce(this);
+		//mStickman.mLogger.info("\tdone.");
 
 		// block this animation for animation - AnimationSheduler will unblock 
 		try {
+			//mStickman.mLogger.info("Block - give Animation Scheduler control when to start the animation" + this.toString());
 			mAnimationStart.acquire(1);
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.severe(ex.getMessage());
 		}
 
 		// tell Stickman this animation has been scheduled and a next one can come
+		//mStickman.mLogger.info("Releasing launch for next animations");
 		mStickman.mAnimationLaunchControl.release();
 	}
 
-	private void play() {
+	public void play() {
 		// wait until AnimationScheduler says go!
 		try {
 			mAnimationStart.acquire(1);
@@ -90,6 +98,7 @@ public abstract class Animation extends Thread {
 	}
 
 	public void finalizeAnimation() {
+		//mStickman.mLogger.info(mStickman.mName + "'s Animation " + getClass().getSimpleName() + " with id " + mID + " has ended - notify Listeners!");
 		// unblock AnimationScheduler if animation is a blocking animation
 		if (mBlocking) {
 			//mStickman.mLogger.info("unblocking AnimationScheduler");
@@ -103,14 +112,17 @@ public abstract class Animation extends Thread {
 
 	@Override
 	public void run() {
+		//mStickman.mLogger.info(mStickman.mName + "'s Animation " + getClass().getSimpleName() + " wait for clearance.");
 		waitForClearance();
 
+		//mStickman.mLogger.info(mStickman.mName + "'s Animation " + getClass().getSimpleName() + " play.");
 		play();
 
+		//mStickman.mLogger.info(mStickman.mName + "'s Animation " + getClass().getSimpleName() + " finalize.");
 		finalizeAnimation();
 	}
 
-	public String toSting() {
+	public String toString() {
 		return getClass().getSimpleName() + ", " + getName();
 	}
 }

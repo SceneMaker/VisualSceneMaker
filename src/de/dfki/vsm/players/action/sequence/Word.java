@@ -20,9 +20,15 @@ public class Word extends Entry {
 		mContent = content;
 	}
 
+	@Override
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
 		out.println("<WordEntry>").push();
 		out.println(mContent);
 		out.pop().println("</WordEntry>");
+	}
+
+	@Override
+	public String toString() {
+		return mContent;
 	}
 }

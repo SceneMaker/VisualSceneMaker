@@ -20,10 +20,15 @@ public class TimeMark extends Entry {
 		mContent = content;
 	}
 
+	@Override
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
 		out.println("<TimeMarkEntry>").push();
 		out.println(mContent);
 		out.pop().println("</TimeMarkEntry>");
+	}
 
+	@Override
+	public String toString() {
+		return mContent;
 	}
 }

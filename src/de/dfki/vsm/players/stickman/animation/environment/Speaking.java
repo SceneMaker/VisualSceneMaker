@@ -24,7 +24,9 @@ public class Speaking extends Animation {
 
 	@Override
 	public void playAnimation() {
-		mStickman.mSpeechBubble.mText = mParameter;
+		if (mParameter instanceof String) {
+			mStickman.mSpeechBubble.mText = (String) mParameter;
+		}
 
 		mAnimationPart = new ArrayList<>();
 		mAnimationPart.add(new AnimationContent(mStickman.mSpeechBubble, "shape", SpeechBubble.SHAPE.SPEAK.name()));
