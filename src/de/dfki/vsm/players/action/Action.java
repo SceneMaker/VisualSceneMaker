@@ -12,6 +12,9 @@ public abstract class Action implements Runnable {
 
 	// the name of the action
 	public String mName;
+	
+	// the unique id 
+	public String mID = "none";
 
 	// the action layer that actually executes this action
 	public ActionPlayer mActionPlayer;

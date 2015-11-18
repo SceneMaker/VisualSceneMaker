@@ -21,39 +21,9 @@ public abstract class EventAnimation extends Animation {
 	public List<Long> mTimepoints;
 	public WordTimeMarkSequence mWTS;
 
-	public EventAnimation(Stickman sm, int duration, WordTimeMarkSequence wts, boolean block) {
+	public EventAnimation(Stickman sm, int duration, boolean block) {
 		super(sm, duration, block);
-		mWTS = wts;
 		setName(sm.mName + "'s Event Animation " + getClass().getSimpleName());
-	}
-
-	public void waitForClearance() {
-		mStickman.mAnimationScheduler.introduce(this);
-
-		// block this animation for animation - AnimationSheduler will unblock 
-		try {
-			mAnimationStart.acquire(1);
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
-		}
-
-		// tell Stickman this animation has been scheduled and a next one can come
-		mStickman.mAnimationLaunchControl.release();
-	}
-
-	private void play() {
-		// wait until AnimationScheduler says go!
-		try {
-			mAnimationStart.acquire(1);
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
-		}
-
-		playAnimation();
-	}
-
-	public void playAnimation() {
-		// place animation code here
 	}
 
 	public void playEventAnimationPart() {
@@ -64,50 +34,5 @@ public abstract class EventAnimation extends Animation {
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.severe(ex.getMessage());
 		}
-	}
-
-	public void playAnimationPart(int duration) {
-		mAnimator = new Animator(mStickman, this, mAnimationPart, duration);
-
-		try {
-			mAnimationPartStart.acquire();
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
-		}
-	}
-
-	public void pauseAnimation(int duration) {
-		mAnimationPause = new AnimationPause(mStickman, this, duration);
-
-		try {
-			mAnimationPartStart.acquire();
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
-		}
-	}
-
-	public void finalizeAnimation() {
-		// unblock AnimationScheduler if animation is a blocking animation
-		if (mBlocking) {
-			//mStickman.mLogger.info("unblocking AnimationScheduler");
-			mStickman.mAnimationScheduler.proceed(this);
-		} else {
-			mStickman.mAnimationScheduler.removeAnimation(this);
-		}
-		// send event that Animation is ended
-		mStickman.notifyListeners(this);
-	}
-
-	@Override
-	public void run() {
-		waitForClearance();
-
-		play();
-
-		finalizeAnimation();
-	}
-
-	public String toString() {
-		return getClass().getSimpleName() + ", " + getName();
 	}
 }

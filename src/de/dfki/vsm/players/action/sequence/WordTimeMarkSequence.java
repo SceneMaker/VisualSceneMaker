@@ -28,7 +28,22 @@ public class WordTimeMarkSequence {
 	}
 
 	public void add(Entry e) {
-		mWordsAndTimemarks.add(e);
+		boolean add = true;
+		synchronized (mWordsAndTimemarks) {
+			for (Entry entry : mWordsAndTimemarks) {
+				if (entry.mType == Entry.TYPE.TIMEMARK && e.mType == Entry.TYPE.TIMEMARK) {
+					if (entry.mContent.equalsIgnoreCase(e.mContent)) {
+						add = false;
+						break;
+					}
+				}
+			}
+			// only add unique timemarks
+			if (add) {
+				mWordsAndTimemarks.add(e);
+			}
+		}
+
 	}
 
 	public String getText() {
@@ -98,5 +113,17 @@ public class WordTimeMarkSequence {
 		out.pop().println("</Entries>");
 
 		out.pop().println("</WordTimeMarkSequence >");
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+
+		sb.append("WordTimeMarkSequence for ").append(mText).append("\n");
+		sb.append("\t");
+		for (Entry e : mWordsAndTimemarks) {
+			sb.append(e).append(",");
+		}
+		sb.append("\n");
+		return sb.toString();
 	}
 }

@@ -30,4 +30,7 @@ public class Entry {
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
 	}
 
+	public String toString() {
+       return "entry";
+	}
 }
