@@ -23,7 +23,7 @@
 	<!-- Define Build Properties-File -->
 	<property name="prpfile" value="${prjdir}${file.separator}build.properties"/>    
 	<!-- Define Destination Directory For Parser -->
-	<property name="scngendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}script"/>
+	<property name="scngendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}scenescript"/>
 	<!-- Define Script Lex File -->
 	<property name="scnlexfile" value="${scngendir}${file.separator}lexxer.jflex"/>
 	<!-- Define Script Cup File -->
