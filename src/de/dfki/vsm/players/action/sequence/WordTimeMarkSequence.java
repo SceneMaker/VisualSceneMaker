@@ -7,8 +7,11 @@ package de.dfki.vsm.players.action.sequence;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.xml.XMLParseAction;
+import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -21,6 +24,10 @@ public class WordTimeMarkSequence {
 	protected ArrayList<Entry> mWordsAndTimemarks;
 	// The singelton logger instance
 	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+
+	public WordTimeMarkSequence() {
+		mWordsAndTimemarks = new ArrayList<>();
+	}
 
 	public WordTimeMarkSequence(String text) {
 		mText = text;
@@ -101,6 +108,50 @@ public class WordTimeMarkSequence {
 		}
 
 		return type;
+	}
+	
+	
+	public final void parseXML(final Element element) throws XMLParseError {
+
+		mText = element.getAttribute("text");
+
+		// Process The Child Nodes
+		XMLParseAction.processChildNodes(element, new XMLParseAction() {
+			@Override
+			public void run(final Element element) throws XMLParseError {
+
+				// Get The Child Tag Name
+				final String name = element.getTagName();
+
+				// Check The Child Tag Name
+				if (name.equals("Entries")) {
+					XMLParseAction.processChildNodes(element, new XMLParseAction() {
+						@Override
+						public void run(Element element) throws XMLParseError {
+							
+							// Get The Child Tag Name
+							final String name = element.getTagName();
+							
+							if (name.equalsIgnoreCase("WordEntry")) {
+								Word word = new Word();
+								
+								word.parseXML(element);
+								
+								mWordsAndTimemarks.add(word);
+							}
+							
+							if (name.equalsIgnoreCase("TimeMarkEntry")) {
+								TimeMark timemark = new TimeMark();
+								
+								timemark.parseXML(element);
+								
+								mWordsAndTimemarks.add(timemark);
+							}
+						}
+					});
+				}
+			}
+		});
 	}
 
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {

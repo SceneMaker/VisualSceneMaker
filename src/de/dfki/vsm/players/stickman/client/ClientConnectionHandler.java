@@ -25,6 +25,7 @@ public class ClientConnectionHandler extends Thread {
 	private BufferedReader mIn;
 
 	private boolean mRunning = true;
+	public boolean mConnected = false;
 
 	public ClientConnectionHandler() {
 		super.setName("StickmanStage Socket Connection Handler");
@@ -36,12 +37,15 @@ public class ClientConnectionHandler extends Thread {
 			mSocket.shutdownOutput();
 			mSocket.close();
 			mRunning = false;
+			mConnected = false;
 		} catch (IOException ex) {
 			StickmanStage.mLogger.severe("Error closing socket to " + mHost + ", " + mPort);
 		}
 	}
 
 	public void sendToServer(String message) {
+		StickmanStage.mLogger.info("Sending " + message);
+		
 		if (mSocket.isConnected()) {
 			mOut.println(message);
 			mOut.flush();
@@ -49,6 +53,7 @@ public class ClientConnectionHandler extends Thread {
 	}
 
 	public void connect() {
+		StickmanStage.mLogger.info("StickmanStage tries to connect with control application...");
 		try {
 			InetAddress inteAddress = InetAddress.getByName(mHost);
 			SocketAddress socketAddress = new InetSocketAddress(inteAddress, mPort);
@@ -63,6 +68,9 @@ public class ClientConnectionHandler extends Thread {
 		} catch (IOException e) {
 			StickmanStage.mLogger.severe(mHost + " i/o exception - aborting!");
 		}
+		mConnected = true;
+		StickmanStage.mLogger.info("StickmanStage connected to control application at " + mSocket.toString());
+		start();
 	}
 
 	public void run() {
@@ -75,7 +83,7 @@ public class ClientConnectionHandler extends Thread {
 				if (input != null) {
 					input = input.trim();
 					if (!input.isEmpty()) {
-						StickmanStage.getInstance().parseStickmanMLCmd(input);
+						StickmanStage.parseStickmanMLCmd(input);
 					}
 				}
 			} catch (IOException ex) {

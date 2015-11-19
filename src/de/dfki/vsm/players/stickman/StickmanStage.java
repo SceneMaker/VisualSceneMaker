@@ -32,7 +32,8 @@ public class StickmanStage extends JFrame implements MouseListener {
 	static private StickmanStage sInstance;
 	private static double sScale = 1.0d;
 	// network interface
-	private static ClientConnectionHandler mConnection;
+	public static ClientConnectionHandler mConnection;
+	public static boolean mUsingNetwork = false;
 	// logging
 	public static final Logger mLogger = Logger.getAnonymousLogger();
 
@@ -61,19 +62,26 @@ public class StickmanStage extends JFrame implements MouseListener {
 
 		ConsoleHandler ch = new ConsoleHandler();
 		ch.setFormatter(new StickmanStageLogFormatter());
-		
-		mConnection = new ClientConnectionHandler();
-		mConnection.connect();
-		mConnection.start();
+
+		if (mUsingNetwork) {
+			mConnection = new ClientConnectionHandler();
+			mConnection.connect();
+		}
 
 		addMouseListener(this);
 	}
 
 	public static StickmanStage getInstance() {
+
 		if (sInstance == null) {
 			sInstance = new StickmanStage();
 		}
 		return sInstance;
+	}
+
+	public static StickmanStage getNetworkInstance() {
+		mUsingNetwork = true;
+		return getInstance();
 	}
 
 	public static void addStickman(String name) {
@@ -128,9 +136,11 @@ public class StickmanStage extends JFrame implements MouseListener {
 		// resize the stuff ...
 		StickmanStage.getInstance().pack();
 		StickmanStage.getInstance().setVisible(false);
-		
-		mConnection.end();
-		
+
+		if (mUsingNetwork) {
+			mConnection.end();
+		}
+
 		sInstance = null;
 	}
 
@@ -138,13 +148,21 @@ public class StickmanStage extends JFrame implements MouseListener {
 		Stickman sm = getStickman(stickmanname);
 		sm.doAnimation(name, duration, text, block);
 	}
-	
+
 	public static void parseStickmanMLCmd(String cmd) {
 		mLogger.info("StickmanStage got " + cmd + " as input");
 	}
-	
+
 	public static void sendTimeMarkInformation(String timemark) {
-		mConnection.sendToServer(timemark);
+		if (mConnection.mConnected) {
+			mConnection.sendToServer(timemark);
+		}
+	}
+
+	public static void sendAnimationUpdate(String state, String id) {
+		if (mConnection.mConnected) {
+			mConnection.sendToServer("#ANIM#" + state + "#" + id);
+		}
 	}
 
 	/**

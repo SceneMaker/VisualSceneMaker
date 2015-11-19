@@ -74,12 +74,11 @@ public class Animator {
 					text += e.mContent + " ";
 				}
 				text = text.trim();
-				
+
 				mStickman.mSpeechBubble.mText = mWTS.getText();
 				mStickman.mSpeechBubble.mCurrentlySpokenText = text;
-				
-				//clusterTiming.add(TimingInfo.spokenStringDuration(text));
 
+				//clusterTiming.add(TimingInfo.spokenStringDuration(text));
 				//mStickman.mLogger.info("utterance " + text);
 				// do the rendering ...
 				int duration = TimingInfo.spokenStringDuration(text);
@@ -88,7 +87,6 @@ public class Animator {
 				mRenderPauseDuration = (mRenderPauseDuration < 1) ? 1 : mRenderPauseDuration; // minimum delay is 1 millisecond
 
 				//mStickman.mLogger.info("Animator - animation " + mAnimation + " render pause " + mRenderPauseDuration + " duration " + duration);
-
 				render();
 			}
 
@@ -99,9 +97,13 @@ public class Animator {
 					// we have 2 options!
 					// 1) API Call
 					// 2) send to Player
-					
-					//EventActionPlayer.getInstance().runActionAtTimeMark(e.mContent);
-					StickmanStage.sendTimeMarkInformation(e.mContent);
+
+					// API or TCP-Interface
+					if (!StickmanStage.mUsingNetwork) {
+						EventActionPlayer.getInstance().runActionAtTimeMark(e.mContent);
+					} else {
+						StickmanStage.sendTimeMarkInformation(e.mContent);
+					}
 				}
 			}
 		}

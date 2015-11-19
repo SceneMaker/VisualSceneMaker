@@ -1,5 +1,6 @@
 package de.dfki.vsm.players.server;
 
+import de.dfki.vsm.players.ActionPlayer;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -7,6 +8,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
 
 /**
  *
@@ -21,6 +23,7 @@ public class TCPActionServer extends Thread {
 	private static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 	private static TCPActionServer sInstance = null;
 	private static List<ServerConnectionHandler> sClientConnections = Collections.synchronizedList(new ArrayList());
+	private final ArrayList<AnimationListener> mAnimationListeners = new ArrayList<>();
 	private boolean mRunning = true;
 
 	private TCPActionServer() {
@@ -34,6 +37,27 @@ public class TCPActionServer extends Thread {
 		return sInstance;
 	}
 
+	public void addListener(AnimationListener al) {
+		mAnimationListeners.add(al);
+	}
+
+	public void removeListener(AnimationListener al) {
+		synchronized (mAnimationListeners) {
+			if (mAnimationListeners.contains(al)) {
+				mAnimationListeners.remove(al);
+			}
+		}
+	}
+
+	public void notifyListeners(String animID) {
+		synchronized (mAnimationListeners) {
+			mAnimationListeners.stream().forEach((al) -> {
+				//mLogger.info("Listener information about Animation " + a.toString() + " with id " + a.mID);
+				al.update(animID);
+			});
+		}
+	}
+
 	public void end() {
 		sClientConnections.stream().forEach((c) -> {
 			c.end();
@@ -43,8 +67,10 @@ public class TCPActionServer extends Thread {
 		try {
 			mServerSocket.close();
 		} catch (IOException ex) {
-			mLogger.message(ex.getMessage());
+			mLogger.warning(ex.getMessage());
 		}
+
+		ActionPlayer.mActionServerRunning = false;
 
 		sInstance = null;
 	}
@@ -59,7 +85,8 @@ public class TCPActionServer extends Thread {
 	public void run() {
 		try {
 			mServerSocket = new ServerSocket(mServerPort);
-			//mLogger.message(getName() + " starts listening ..." + mRunning);
+			mLogger.message(getName() + " starts listening ...");
+			ActionPlayer.mActionServerRunning = true;
 
 			while (mRunning) {
 				Socket clientSocket = mServerSocket.accept();
@@ -68,7 +95,7 @@ public class TCPActionServer extends Thread {
 				sClientConnections.add(c);
 			}
 		} catch (IOException ex) {
-			mLogger.message(ex.getMessage());
+			mLogger.warning(ex.getMessage());
 		}
 	}
 }
