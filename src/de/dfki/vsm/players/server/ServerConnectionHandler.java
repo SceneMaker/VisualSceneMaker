@@ -55,7 +55,7 @@ public class ServerConnectionHandler extends Thread {
 
 	@Override
 	public void run() {
-		mLogger.message("VSM ActionServer listening to ...");
+		mLogger.message("VSM ActionServer listening to " + mClientSocket.toString());
 
 		String input = "";
 
@@ -66,10 +66,15 @@ public class ServerConnectionHandler extends Thread {
 				if (input != null) {
 					input = input.trim();
 					if (!input.isEmpty()) {
-						//mLogger.message("VSM ActionServer got -----------------------------------------" + input);
-						
+						mLogger.message("Receiving " + input);
+
 						if (input.contains("#TM")) {
 							EventActionPlayer.getInstance().runActionAtTimeMark(input);
+						}
+						if (input.contains("#ANIM")) {
+							int start = input.lastIndexOf("#") + 1;
+							String id = input.substring(start);
+							TCPActionServer.getInstance().notifyListeners(id);
 						}
 					}
 				}

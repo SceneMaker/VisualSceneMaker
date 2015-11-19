@@ -5,9 +5,16 @@
  */
 package de.dfki.vsm.players.stickman.animationlogic;
 
+import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
+import de.dfki.vsm.players.stickman.StickmanStage;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.xml.XMLParseAction;
+import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -107,7 +114,51 @@ public abstract class Animation extends Thread {
 			mStickman.mAnimationScheduler.removeAnimation(this);
 		}
 		// send event that Animation is ended
-		mStickman.notifyListeners(this);
+
+		// API or TCP-Interface
+		if (!StickmanStage.mUsingNetwork) {
+			mStickman.notifyListeners(mID);
+		} else {
+			StickmanStage.sendAnimationUpdate("end", mID);
+		}
+	}
+
+	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+		out.println("<StickmanAnimation name=\"" + getClass().getSimpleName() + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+
+		if (mParameter instanceof WordTimeMarkSequence) {
+			((WordTimeMarkSequence) mParameter).writeXML(out);
+		}
+
+		if (mParameter instanceof String) {
+			out.println((String) mParameter);
+		}
+
+		out.pop().println("</StickmanAnimation >");
+	}
+
+	public void parseXML(final Element element) throws XMLParseError {
+
+		mDuration = Integer.parseInt(element.getAttribute("duration"));
+		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
+
+		// Process The Child Nodes
+		XMLParseAction.processChildNodes(element, new XMLParseAction() {
+			@Override
+			public void run(final Element element) throws XMLParseError {
+
+				// Get The Child Tag Name
+				final String name = element.getTagName();
+
+				if (name.equalsIgnoreCase("WordTimeMarkSequence")) {
+					mParameter = new WordTimeMarkSequence();
+
+					((WordTimeMarkSequence) mParameter).parseXML(element);
+				} else {
+					mParameter = element.getTextContent();
+				}
+			}
+		});
 	}
 
 	@Override

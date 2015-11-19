@@ -71,6 +71,8 @@ public class Stickman extends JComponent {
 	public String mName = "Stickman";
 	public ORIENTATION mOrientation = ORIENTATION.FRONT;
 	public float mScale = 1.0f;
+	public float mGeneralXTranslation = 0;
+	public float mGeneralYTranslation = 0;
 
 	public static Dimension mSize = new Dimension(400, 600);
 	FontMetrics mFontMetrics;
@@ -182,13 +184,10 @@ public class Stickman extends JComponent {
 		}
 	}
 
-	public void notifyListeners(Animation a) {
+	public void notifyListeners(String animationId) {
 		synchronized (mAnimationListeners) {
 			mAnimationListeners.stream().forEach((al) -> {
-
-				//mLogger.info("Listener information about Animation " + a.toString() + " with id " + a.mID);
-
-				al.update(a);
+				al.update(animationId);
 			});
 		}
 	}
@@ -290,7 +289,9 @@ public class Stickman extends JComponent {
 
 		// draw everthing in the middle and scaled
 		AffineTransform at = g2.getTransform();
-		at.translate(mSize.width / 2 - mHead.mSize.width * mScale, getBounds().height - 470 * mScale);
+		mGeneralXTranslation = mSize.width / 2 - mHead.mSize.width * mScale;
+		mGeneralYTranslation = getBounds().height - 470 * mScale;
+		at.translate(mGeneralXTranslation, mGeneralYTranslation);
 		at.scale(mScale, mScale);
 		g2.setTransform(at);
 

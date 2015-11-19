@@ -49,7 +49,7 @@ public class EditorStarter extends JPanel {
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
 	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
 
-	private final File SampleProjFolder = new File( Preferences.sSAMPLE_PROJECTS);
+	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
 
 	private final EditorInstance mEditorInstance;
 	private final Box mRecentAndSampleProjectBox;
@@ -110,7 +110,7 @@ public class EditorStarter extends JPanel {
 
 		createRecentAndSamplePrjList();
 		content.add(mRecentAndSampleProjectBox);
-                
+
 		// acquire the build details
 		try {
 			Properties vProp;
@@ -156,8 +156,15 @@ public class EditorStarter extends JPanel {
 		this.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				mWelcomeStickman.doAnimation("Blink", 100, false);
-				mWelcomeStickman.doAnimation("Smile", 500, false);
+				if (mWelcomeStickman.mHead.getBounds().contains(evt.getX(), evt.getY())) {
+					mWelcomeStickman.doAnimation("Speaking", 500, "My head!", false);
+					mWelcomeStickman.doAnimation("Blink", 100, false);
+					mWelcomeStickman.doAnimation("Mouth_O", 40, true);
+					mWelcomeStickman.doAnimation("Mouth_Default", 20, true);
+				} else {
+					mWelcomeStickman.doAnimation("Blink", 100, false);
+					mWelcomeStickman.doAnimation("Smile", 500, false);
+				}
 			}
 		});
 
@@ -423,54 +430,54 @@ public class EditorStarter extends JPanel {
 
 		sampleProjPanel.setOpaque(false);
 		sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
-                File listDirs[] = SampleProjFolder.listFiles();
+		File listDirs[] = SampleProjFolder.listFiles();
 
-                for (final File sampleDir : listDirs) {
+		for (final File sampleDir : listDirs) {
 
-                        final File sampleProj = new File(sampleDir.getPath());
+			final File sampleProj = new File(sampleDir.getPath());
 
-                        if (sampleProj.exists()) {
-                                //File projectPath = new File(sampleDir.getPath() + "project.xml" );
-                                EditorProject project = new EditorProject();
+			if (sampleProj.exists()) {
+				//File projectPath = new File(sampleDir.getPath() + "project.xml" );
+				EditorProject project = new EditorProject();
 
-                                project.parse(sampleProj);
+				project.parse(sampleProj);
 
-                                JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
-                                  + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
+				JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
+				  + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
 
-                                newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
-                                newSampleProj.setMaximumSize(new Dimension(buttonSize));
-                                newSampleProj.setPreferredSize(new Dimension(buttonSize));
-                                newSampleProj.setFont(sMENUITEMFONT);
-                                newSampleProj.setOpaque(true);
-                                newSampleProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
-                                newSampleProj.setForeground(sTEXTCOLOR);
-                                newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-                                newSampleProj.addMouseListener(new MouseAdapter() {
-                                        @Override
-                                        public void mouseClicked(MouseEvent me) {
-                                                // mEditorInstance.toggleProjectEditorList(true);
-                                                mEditorInstance.openProject(sampleProj);
-                                                mWelcomeStickman.setVisible(false);
-                                        }
+				newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
+				newSampleProj.setMaximumSize(new Dimension(buttonSize));
+				newSampleProj.setPreferredSize(new Dimension(buttonSize));
+				newSampleProj.setFont(sMENUITEMFONT);
+				newSampleProj.setOpaque(true);
+				newSampleProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
+				newSampleProj.setForeground(sTEXTCOLOR);
+				newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+				newSampleProj.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent me) {
+						// mEditorInstance.toggleProjectEditorList(true);
+						mEditorInstance.openProject(sampleProj);
+						mWelcomeStickman.setVisible(false);
+					}
 
-                                        @Override
-                                        public void mouseEntered(MouseEvent me) {
-                                                me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-                                                EditorStarter.this.repaint();
-                                        }
+					@Override
+					public void mouseEntered(MouseEvent me) {
+						me.getComponent().setBackground(sHIGHLIGHTCOLOR);
+						EditorStarter.this.repaint();
+					}
 
-                                        @Override
-                                        public void mouseExited(MouseEvent me) {
-                                                me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-                                                EditorStarter.this.repaint();
-                                        }
-                                });
-                                sampleProjPanel.add(newSampleProj);
+					@Override
+					public void mouseExited(MouseEvent me) {
+						me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
+						EditorStarter.this.repaint();
+					}
+				});
+				sampleProjPanel.add(newSampleProj);
 
-                                sampleProjPanel.add(new CoolSeparator());
-                        }
-                }
+				sampleProjPanel.add(new CoolSeparator());
+			}
+		}
 
 		// remove last separator
 		if (sampleProjPanel.getComponentCount() > 0) {
@@ -495,7 +502,7 @@ public class EditorStarter extends JPanel {
 //		} catch (URISyntaxException ex) {
 //			Logger.getLogger(EditorStarter.class.getName()).log(Level.SEVERE, null, ex);
 //		}
-		
+
 //		   if (dirURL.getProtocol().equals("jar")) {
 //        /* A JAR path */
 //        String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!")); //strip out only the JAR file
@@ -516,13 +523,11 @@ public class EditorStarter extends JPanel {
 //        }
 //        return result.toArray(new String[result.size()]);
 //      } 
-		
 //		System.out.println("     " + bIPDir);
 //		if (bIPDir.exists()) {
 //					System.out.println("     " + buildInSampleProjCnt);
 //			buildInSampleProjCnt = SampleProjFolder.listFiles().length;
 //		}
-		
 		if (buildInSampleProjCnt == 0) {
 			return;
 		}

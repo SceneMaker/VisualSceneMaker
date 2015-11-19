@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import static de.dfki.vsm.players.ActionPlayer.notifyListenersAboutAction;
 import static de.dfki.vsm.players.ActionPlayer.actionEnded;
+import de.dfki.vsm.players.server.TCPActionServer;
 
 /**
  *
@@ -40,11 +41,11 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 	}
 
 	@Override
-	public void update(Animation a) {
+	public void update(String animationId) {
 //		mStickman.mLogger.info("Event Action (" + mID + ") that holds " + a.getName() + " (" + a.mID + ") got update ...");
 //		mStickman.mLogger.info("\twaiting for update from animation with id " + mAnimation.mID);
 
-		if (a.mID.equalsIgnoreCase(mAnimation.mID)) {
+		if (animationId.equalsIgnoreCase(mAnimation.mID)) {
 			//mStickman.mLogger.info("\tsuccessfully ended ...");
 			mActionEndSync.release();
 		}
@@ -72,15 +73,15 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 				// TCP Cmd EventActionPlayer.getInstance().sendCmd(mAnimation.toString());
 				mStickman.playAnimation(mAnimation);
 
-				//mStickman.mLogger.info("Action " + mName + " register for updates");
 				// tell Stickman to update Action about the animation status
-				mStickman.addListener(this);
+				//mStickman.addListener(this);
+				TCPActionServer.getInstance().addListener(this);
 
-				//mStickman.mLogger.severe("Action " + mName + " wait for end");
 				// wait for action end   
 				mActionEndSync.acquire();
 
-				mStickman.removeListener(this);
+				//mStickman.removeListener(this);
+				TCPActionServer.getInstance().removeListener(this);
 			}
 			//mStickman.mLogger.info("\ttelling action player event action (" + mID + ") has ended ...");
 

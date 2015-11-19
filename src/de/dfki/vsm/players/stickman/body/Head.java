@@ -79,6 +79,11 @@ public class Head extends BodyPart {
 		t.translate(0, mTranslation);
 		mHead.transform(t);
 
+		setBounds(mHead.getBounds().x + new Float(mStickman.mGeneralXTranslation).intValue(),
+		  mHead.getBounds().y + new Float(mStickman.mGeneralYTranslation).intValue(),
+		  new Float(mHead.getBounds().width * mStickman.mScale).intValue(),
+		  new Float(mHead.getBounds().height * mStickman.mScale).intValue());
+
 		//left ear
 		mLeftEar = new GeneralPath();
 		mLeftEar.moveTo(10, mSize.height / 2 + 10);

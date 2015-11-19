@@ -15,6 +15,7 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.model.scenescript.SceneWord;
+import de.dfki.vsm.players.ActionPlayer;
 import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.action.ActionListener;
@@ -37,6 +38,8 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -107,16 +110,38 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 		mPlayerConfig = project.getPlayerConfig(mPlayerName);
 		// Print some information
 		mLogger.message("Launching the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
-		// tell the ActionPlayer that StickmanScenePlayer is interested in upates
+		
+		// Start the Action Player
+		mLogger.message("Starting Action Player ...");
 		mActionPlayer = EventActionPlayer.getInstance();
+		// Tell the ActionPlayer that StickmanScenePlayer is interested in upates
 		mActionPlayer.addListener(this);
 		mActionPlayer.start();
-		// start the stickmanstage
-		mStickmanStage = StickmanStage.getInstance();
-		// build the Stage
+		while (!ActionPlayer.mActionServerRunning) {
+			try {
+				mLogger.message("Waiting for ActionPlayer's network server is ready ...");
+				Thread.sleep(250);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(StickmanScenePlayer.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+
+		// Start the client application - in this case the Stickmanstage
+		mLogger.message("Starting Client Application ...");
+		mStickmanStage = StickmanStage.getNetworkInstance();
+		while (!mStickmanStage.mConnection.mConnected) {
+			try {
+				mLogger.message("Waiting for connection to control application ...");
+				Thread.sleep(250);
+			} catch (InterruptedException ex) {
+				Logger.getLogger(StickmanScenePlayer.class.getName()).log(Level.SEVERE, null, ex);
+			}
+		}
+		// put all characters on the stage
 		getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
 			StickmanStage.addStickman(c);
 		});
+		
 		// configure blocking mechanism 
 		mAllActionSync = new Semaphore(0);
 		// configure clean shutdown mechanism
@@ -129,14 +154,15 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 	public final boolean unload() {
 		// Print some information
 		mLogger.message("Unloading the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
+		// clear the stage
+		StickmanStage.clearStage();
 		// remove action player
 		mActionPlayer.removeListener(this);
 		// stop the ActionPlayer
 		mActionPlayer.end();
 		// do not wait for the end of any actions
 		mAllActionSync.release();
-		// clear the stage
-		StickmanStage.clearStage();
+
 		// Return true at success
 		return true;
 	}
@@ -225,7 +251,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "Mouth_O", 200, "", true));
 						// add mounth closed
 						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 190, "Mouth_Default", 20, "", false));
-						
+
 						EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
 						// Process the words of this utterance
@@ -248,7 +274,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 								//mLogger.message("Executing param:" + ((SceneParam) word).getText());
 							} else if (word instanceof ActionObject) {
 								ActionObject ao = ((ActionObject) word);
-								
+
 								String agent = ao.getAgentName();
 								agent = (agent == null || agent.trim().isEmpty()) ? speaker : agent;
 

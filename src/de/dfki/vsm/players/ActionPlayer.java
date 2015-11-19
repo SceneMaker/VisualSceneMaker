@@ -36,6 +36,8 @@ public class ActionPlayer extends Thread {
 	public boolean mRunning = true;
 	static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 	private static long sID = 0;
+	
+	public static boolean mActionServerRunning = false;
 
 	ActionPlayer() {
 		initialize();
@@ -43,7 +45,7 @@ public class ActionPlayer extends Thread {
 
 	public String getNextID() {
 		sID++;
-		return "a" + sID;
+		return "action" + sID;
 	}
 
 	public final void initialize() {
