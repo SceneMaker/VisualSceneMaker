@@ -7,8 +7,10 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
+import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
@@ -19,6 +21,9 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.evt.EventListener;
+import de.dfki.vsm.util.evt.EventObject;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -36,7 +41,7 @@ import javax.swing.table.DefaultTableModel;
 /**
  * @author Not me
  */
-public class MonitorDialog extends JDialog {
+public class MonitorDialog extends JDialog implements  EventListener{
     private static MonitorDialog sSingeltonInstance = null;
     private JPanel               mMainPanel;
     private JPanel               mButtonsPanel;
@@ -49,12 +54,14 @@ public class MonitorDialog extends JDialog {
     private JScrollPane          mVariableScrollPane;
     private Vector<VarDef>       mVarDefListData;
     private static EditorProject       mEditorProject;
-
+    
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
         EditorInstance.getInstance().addEscapeListener(this);
         mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
         initComponents();
+        // Add the sceneflowtoolbar to the event multicaster
+        EventDispatcher.getInstance().register(this);
     }
 
     public static MonitorDialog getInstance() {
@@ -114,11 +121,9 @@ public class MonitorDialog extends JDialog {
                     } else if (exp instanceof Int) {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
                     } else if (exp instanceof Float) {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
-                                ((Float) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                     } else if (exp instanceof String) {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(),
-                                ((String) exp).getValue());
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((String) exp).getValue());
                     } else if (exp instanceof List) {
                         //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
@@ -179,7 +184,7 @@ public class MonitorDialog extends JDialog {
         java.lang.String[] listOfColumns = {"Variable", "Value"};
         int counter = 0;
         for (VarDef varDef : mVarDefListData) {
-            java.lang.String[] tempString = { varDef.getName(), varDef.getExp().toString()};
+            java.lang.String[] tempString = { varDef.getName(), varDef.getExp().toString(), varDef.getFormattedSyntax()};
             listofVars[counter] =  tempString;
             counter++;
         }
@@ -192,5 +197,20 @@ public class MonitorDialog extends JDialog {
             }
             
         });
+    }
+
+    @Override
+    public void update(EventObject event) {
+        if( event instanceof VarBadgeUpdatedEvent)
+        {
+            VariableEntry tempEntry = ((VarBadgeUpdatedEvent)event).getVarEntry();
+            for (int i = 0; i < mVariableTable.getRowCount(); i++) {
+                
+                if(mVariableTable.getValueAt(i, 0).equals(tempEntry.getVarName()))
+                {
+                    mVariableTable.setValueAt(tempEntry.getVarValue(), i, 1);
+                }
+            }
+        }
     }
   }
