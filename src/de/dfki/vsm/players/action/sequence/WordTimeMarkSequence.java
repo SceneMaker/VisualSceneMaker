@@ -9,7 +9,9 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import de.dfki.vsm.util.xml.XMLWriteable;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 
@@ -18,7 +20,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class WordTimeMarkSequence {
+public class WordTimeMarkSequence implements XMLParseable, XMLWriteable{
 
 	protected String mText = "";
 	protected ArrayList<Entry> mWordsAndTimemarks;
@@ -155,25 +157,31 @@ public class WordTimeMarkSequence {
 	}
 
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+		System.out.println("WTS 1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		out.println("<WordTimeMarkSequence text=\"" + mText + "\">").push();
 
+		System.out.println("WTS 2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		out.println("<Entries>").push();
 		for (Entry e : mWordsAndTimemarks) {
 			e.writeXML(out);
 		}
+		System.out.println("WTS 3 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		out.pop().println("</Entries>");
 
+		System.out.println("WTS 4 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		out.pop().println("</WordTimeMarkSequence >");
 	}
 
+	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		sb.append("WordTimeMarkSequence for ").append(mText).append("\n");
 		sb.append("\t");
 		for (Entry e : mWordsAndTimemarks) {
 			sb.append(e).append(",");
 		}
+		sb.deleteCharAt(sb.length() - 1);
 		sb.append("\n");
 		return sb.toString();
 	}

@@ -1,14 +1,22 @@
 package de.dfki.vsm.players.stickman;
 
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
 import de.dfki.vsm.players.stickman.client.ClientConnectionHandler;
 import de.dfki.vsm.players.stickman.util.Names;
 import de.dfki.vsm.players.stickman.util.StickmanStageLayout;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -150,7 +158,26 @@ public class StickmanStage extends JFrame implements MouseListener {
 	}
 
 	public static void parseStickmanMLCmd(String cmd) {
+			
 		mLogger.info("StickmanStage got " + cmd + " as input");
+		
+		Animation a = new Animation();
+		
+		boolean r = XMLUtilities.parseFromXMLStream(a, new ByteArrayInputStream(cmd.getBytes(Charset.forName("UTF-8"))));
+		
+		mLogger.info("Could be parsed " + r);
+		
+//		String stickmanname = "";
+//		String animationname = "";
+//		int duration = 0;
+//		boolean blocking = false;
+//		Object parameter = null;
+//		
+//		a = AnimationLoader.getInstance().loadEventAnimation(getStickman(stickmanname), animationname, duration, blocking);
+//		a.mParameter = parameter;
+//		
+//		getStickman(stickmanname).playAnimation(a);
+	
 	}
 
 	public static void sendTimeMarkInformation(String timemark) {

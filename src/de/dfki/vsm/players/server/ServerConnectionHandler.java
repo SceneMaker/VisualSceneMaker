@@ -35,6 +35,8 @@ public class ServerConnectionHandler extends Thread {
 	}
 
 	public void sendToApplication(String message) {
+		mLogger.message("Sending " + message);
+		
 		if (mClientSocket.isConnected()) {
 			mOut.println(message);
 			mOut.flush();

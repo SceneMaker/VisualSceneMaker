@@ -11,7 +11,9 @@ import de.dfki.vsm.players.stickman.StickmanStage;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import de.dfki.vsm.util.xml.XMLWriteable;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import org.w3c.dom.Element;
@@ -21,8 +23,9 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public abstract class Animation extends Thread {
+public class Animation extends Thread implements XMLParseable, XMLWriteable {
 
+	public String mName = "";
 	public ArrayList<AnimationContent> mAnimationPart = new ArrayList<>();
 	public Semaphore mAnimationPartStart = new Semaphore(0);
 	public Semaphore mAnimationStart = new Semaphore(1);
@@ -34,8 +37,12 @@ public abstract class Animation extends Thread {
 	public String mID;
 	public Object mParameter = "";
 
+	public Animation() {
+	}
+
 	public Animation(Stickman sm, int duration, boolean block) {
-		setName(sm.mName + "'s Animation " + getClass().getSimpleName());
+		mName = getClass().getSimpleName();
+		setName(sm.mName + "'s Animation " + mName);
 		mStickman = sm;
 		mID = mStickman.getID(); // default ID;
 		mBlocking = block;
@@ -48,6 +55,23 @@ public abstract class Animation extends Thread {
 
 	public void setID(String id) {
 		mID = id;
+	}
+
+	public void setStickman(Stickman stickman) {
+		mStickman = stickman;
+		setName(mStickman + "'s Animation " + mName);
+	}
+	
+	public void setAnimationName(String animationName) {
+		mName = animationName;
+	}
+
+	public void setDuration(int duration) {
+		mDuration = duration;
+	}
+
+	public void setBlocking(boolean blocking) {
+		mBlocking = blocking;
 	}
 
 	public void waitForClearance() {
@@ -124,7 +148,7 @@ public abstract class Animation extends Thread {
 	}
 
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-		out.println("<StickmanAnimation name=\"" + getClass().getSimpleName() + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+		out.println("<StickmanAnimation name=\"" + mName + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
 
 		if (mParameter instanceof WordTimeMarkSequence) {
 			((WordTimeMarkSequence) mParameter).writeXML(out);
@@ -139,6 +163,7 @@ public abstract class Animation extends Thread {
 
 	public void parseXML(final Element element) throws XMLParseError {
 
+		mName = element.getAttribute("name");
 		mDuration = Integer.parseInt(element.getAttribute("duration"));
 		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
 
@@ -173,7 +198,8 @@ public abstract class Animation extends Thread {
 		finalizeAnimation();
 	}
 
+	@Override
 	public String toString() {
-		return getClass().getSimpleName() + ", " + getName();
+		return mName + ", " + getName();
 	}
 }
