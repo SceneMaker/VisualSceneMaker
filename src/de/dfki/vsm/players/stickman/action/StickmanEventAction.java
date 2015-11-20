@@ -10,7 +10,15 @@ import java.util.ArrayList;
 
 import static de.dfki.vsm.players.ActionPlayer.notifyListenersAboutAction;
 import static de.dfki.vsm.players.ActionPlayer.actionEnded;
+import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.server.TCPActionServer;
+import de.dfki.vsm.players.stickman.StickmanStage;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.util.xml.XMLWriteError;
+import java.io.ByteArrayOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -71,6 +79,14 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 
 				//mStickman.mLogger.info("Action " + mName + " play");
 				// TCP Cmd EventActionPlayer.getInstance().sendCmd(mAnimation.toString());
+				
+				IOSIndentWriter iosw = new IOSIndentWriter(new ByteArrayOutputStream());
+				StickmanStage.mLogger.info("BEFORE >>>>>>>>>>>>>>>>>>>>>>>>>>");
+				
+				boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
+				StickmanStage.mLogger.info("AFTER >>>>>>>>>>>>>>>>>>>>>>>>>>");
+					//EventActionPlayer.getInstance().sendCmd(out.toString());
+				
 				mStickman.playAnimation(mAnimation);
 
 				// tell Stickman to update Action about the animation status

@@ -20,10 +20,15 @@ public abstract class EventAnimation extends Animation {
 	public SceneUttr mUtterance;
 	public List<Long> mTimepoints;
 	public WordTimeMarkSequence mWTS;
+	
+	public EventAnimation() {
+		super();
+	}
 
 	public EventAnimation(Stickman sm, int duration, boolean block) {
 		super(sm, duration, block);
-		setName(sm.mName + "'s Event Animation " + getClass().getSimpleName());
+		mName = getClass().getSimpleName();
+		setName(sm.mName + "'s Event Animation " + mName);
 	}
 
 	public void playEventAnimationPart() {
