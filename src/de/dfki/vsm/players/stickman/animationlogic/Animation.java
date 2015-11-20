@@ -32,6 +32,7 @@ public class Animation extends Thread implements XMLParseable, XMLWriteable {
 	public Animator mAnimator;
 	public AnimationPause mAnimationPause;
 	public Stickman mStickman;
+	public String mStickmanName;
 	public boolean mBlocking = false;
 	public int mDuration = -1;
 	public String mID;
@@ -42,8 +43,9 @@ public class Animation extends Thread implements XMLParseable, XMLWriteable {
 
 	public Animation(Stickman sm, int duration, boolean block) {
 		mName = getClass().getSimpleName();
-		setName(sm.mName + "'s Animation " + mName);
 		mStickman = sm;
+		mStickmanName = mStickman.mName;
+		setName(mStickmanName + "'s Animation " + mName);
 		mID = mStickman.getID(); // default ID;
 		mBlocking = block;
 		mDuration = duration;
@@ -57,11 +59,12 @@ public class Animation extends Thread implements XMLParseable, XMLWriteable {
 		mID = id;
 	}
 
-	public void setStickman(Stickman stickman) {
-		mStickman = stickman;
-		setName(mStickman + "'s Animation " + mName);
+	public void setStickmanName(String stickmanName) {
+		mStickmanName = stickmanName;
+		mStickman = StickmanStage.getStickman(mStickmanName);
+		setName(mStickmanName + "'s Animation " + mName);
 	}
-	
+
 	public void setAnimationName(String animationName) {
 		mName = animationName;
 	}
@@ -140,30 +143,35 @@ public class Animation extends Thread implements XMLParseable, XMLWriteable {
 		// send event that Animation is ended
 
 		// API or TCP-Interface
-		if (!StickmanStage.mUsingNetwork) {
+		if (!StickmanStage.mUseNetwork) {
 			mStickman.notifyListeners(mID);
 		} else {
 			StickmanStage.sendAnimationUpdate("end", mID);
 		}
 	}
 
+	@Override
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-		out.println("<StickmanAnimation name=\"" + mName + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+		out.println("<StickmanAnimation stickmanname = \"" + mStickmanName + "\" name=\"" + mName + "\" id=\"" + mID + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+		if (mParameter != null) {
 
-		if (mParameter instanceof WordTimeMarkSequence) {
-			((WordTimeMarkSequence) mParameter).writeXML(out);
+			if (mParameter instanceof WordTimeMarkSequence) {
+				((WordTimeMarkSequence) mParameter).writeXML(out);
+			}
+
+			if (mParameter instanceof String) {
+				out.println((String) mParameter);
+			}
 		}
-
-		if (mParameter instanceof String) {
-			out.println((String) mParameter);
-		}
-
-		out.pop().println("</StickmanAnimation >");
+		out.pop().println("</StickmanAnimation>");
 	}
 
+	@Override
 	public void parseXML(final Element element) throws XMLParseError {
 
+		mStickmanName = element.getAttribute("stickmanname");
 		mName = element.getAttribute("name");
+		mID = element.getAttribute("id");
 		mDuration = Integer.parseInt(element.getAttribute("duration"));
 		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
 
@@ -180,7 +188,7 @@ public class Animation extends Thread implements XMLParseable, XMLWriteable {
 
 					((WordTimeMarkSequence) mParameter).parseXML(element);
 				} else {
-					mParameter = element.getTextContent();
+					mParameter = (String) element.getTextContent();
 				}
 			}
 		});

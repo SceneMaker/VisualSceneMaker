@@ -48,55 +48,45 @@ public class Speaking extends EventAnimation {
 
 	}
 
-	@Override
-	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-		System.out.println("HIER 1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		
-		
-		out.println("<StickmanAnimation name=\"" + getClass().getSimpleName() + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+//	@Override
+//	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+//		out.println("<StickmanAnimation name=\"" + getClass().getSimpleName() + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+//
+//		if (mParameter instanceof WordTimeMarkSequence) {
+//			((WordTimeMarkSequence)mParameter).writeXML(out);
+//		}
+//		
+//		if (mParameter instanceof String) {
+//			out.println((String) mParameter);
+//		}
+//
+//		out.pop().println("</StickmanAnimation>");
+//	}
 
-		System.out.println("HIER 2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		
-		if (mParameter instanceof WordTimeMarkSequence) {
-			System.out.println("HIER 2a >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " + (WordTimeMarkSequence)mParameter);
-			((WordTimeMarkSequence)mWTS).writeXML(out);
-			System.out.println("HIER 2b >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		}
-		
-		System.out.println("HIER 3 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
-		if (mParameter instanceof String) {
-			out.println((String) mParameter);
-		}
-System.out.println("HIER 4 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		
-		out.pop().println("</StickmanAnimation >");
-	}
-
-	@Override
-	public final void parseXML(final Element element) throws XMLParseError {
-
-		mName = element.getAttribute("name");
-		mDuration = Integer.parseInt(element.getAttribute("duration"));
-		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
-
-		// Process The Child Nodes
-		XMLParseAction.processChildNodes(element, new XMLParseAction() {
-			@Override
-			public void run(final Element element) throws XMLParseError {
-
-				// Get The Child Tag Name
-				final String name = element.getTagName();
-
-				if (name.equalsIgnoreCase("WordTimeMarkSequence")) {
-					mWTS = new WordTimeMarkSequence();
-					mParameter = mWTS;
-
-					mWTS.parseXML(element);
-				} else {
-					mParameter = element.getTextContent();
-				}
-			}
-		});
-	}
+//	@Override
+//	public final void parseXML(final Element element) throws XMLParseError {
+//
+//		mName = element.getAttribute("name");
+//		mDuration = Integer.parseInt(element.getAttribute("duration"));
+//		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
+//
+//		// Process The Child Nodes
+//		XMLParseAction.processChildNodes(element, new XMLParseAction() {
+//			@Override
+//			public void run(final Element element) throws XMLParseError {
+//
+//				// Get The Child Tag Name
+//				final String name = element.getTagName();
+//
+//				if (name.equalsIgnoreCase("WordTimeMarkSequence")) {
+//					mWTS = new WordTimeMarkSequence();
+//					mParameter = mWTS;
+//
+//					mWTS.parseXML(element);
+//				} else {
+//					mParameter = element.getTextContent();
+//				}
+//			}
+//		});
+//	}
 }

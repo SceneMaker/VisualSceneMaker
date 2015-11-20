@@ -113,30 +113,15 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 		
 		// Start the Action Player
 		mLogger.message("Starting Action Player ...");
-		mActionPlayer = EventActionPlayer.getInstance();
+		mActionPlayer = EventActionPlayer.getNetworkInstance();
 		// Tell the ActionPlayer that StickmanScenePlayer is interested in upates
 		mActionPlayer.addListener(this);
 		mActionPlayer.start();
-		while (!ActionPlayer.mActionServerRunning) {
-			try {
-				mLogger.message("Waiting for ActionPlayer's network server is ready ...");
-				Thread.sleep(250);
-			} catch (InterruptedException ex) {
-				Logger.getLogger(StickmanScenePlayer.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
 
 		// Start the client application - in this case the Stickmanstage
 		mLogger.message("Starting Client Application ...");
 		mStickmanStage = StickmanStage.getNetworkInstance();
-		while (!mStickmanStage.mConnection.mConnected) {
-			try {
-				mLogger.message("Waiting for connection to control application ...");
-				Thread.sleep(250);
-			} catch (InterruptedException ex) {
-				Logger.getLogger(StickmanScenePlayer.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
+
 		// put all characters on the stage
 		getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
 			StickmanStage.addStickman(c);

@@ -35,10 +35,11 @@ public class ServerConnectionHandler extends Thread {
 	}
 
 	public void sendToApplication(String message) {
-		mLogger.message("Sending " + message);
+		//mLogger.message("Sending " + message);
 		
 		if (mClientSocket.isConnected()) {
-			mOut.println(message);
+			mOut.println(message.replace("\n", ""));
+			
 			mOut.flush();
 		}
 	}
@@ -68,7 +69,7 @@ public class ServerConnectionHandler extends Thread {
 				if (input != null) {
 					input = input.trim();
 					if (!input.isEmpty()) {
-						mLogger.message("Receiving " + input);
+						//mLogger.message("Receiving " + input);
 
 						if (input.contains("#TM")) {
 							EventActionPlayer.getInstance().runActionAtTimeMark(input);

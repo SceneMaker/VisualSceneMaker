@@ -6,7 +6,6 @@
 package de.dfki.vsm.players.action.sequence;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -36,16 +35,9 @@ public class TimeMark extends Entry implements XMLParseable, XMLWriteable {
 		out.pop().println("</TimeMarkEntry>");
 	}
 	
+	@Override
 	public final void parseXML(final Element element) throws XMLParseError {
-		// Process The Child Nodes
-		XMLParseAction.processChildNodes(element, new XMLParseAction() {
-			@Override
-			public void run(final Element element) throws XMLParseError {
-
-				// this is (should be text), so ...
-				mContent = element.getTextContent();
-			}
-		});
+		mContent = element.getTextContent().trim();
 	}
 
 	@Override

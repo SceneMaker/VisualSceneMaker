@@ -52,7 +52,6 @@ public class TCPActionServer extends Thread {
 	public void notifyListeners(String animID) {
 		synchronized (mAnimationListeners) {
 			mAnimationListeners.stream().forEach((al) -> {
-				//mLogger.info("Listener information about Animation " + a.toString() + " with id " + a.mID);
 				al.update(animID);
 			});
 		}
