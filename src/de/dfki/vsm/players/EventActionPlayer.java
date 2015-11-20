@@ -23,6 +23,11 @@ public class EventActionPlayer extends ActionPlayer {
 		return (EventActionPlayer) sInstance;
 	}
 
+	public static EventActionPlayer getNetworkInstance() {
+		mUseNetwork = true;
+		return getInstance();
+	}
+
 	public void addTimeMarkAction(Action a) {
 		// tell the action which player executes it
 		a.mActionPlayer = this;
@@ -33,11 +38,11 @@ public class EventActionPlayer extends ActionPlayer {
 
 	public void runActionAtTimeMark(String timemark) {
 		synchronized (sActionList) {
-			//mLogger.message("Executing actions at timemark " + timemark);
-			//mLogger.message("Actions in queue " + sActionList.size());
-			//for (Action a : sActionList) {
-				//mLogger.message("\taction " + a.mName + " with id " + a.mID + " with timemark " + a.mTimeMark);
-			//}
+//			mLogger.message("Executing actions at timemark " + timemark);
+//			mLogger.message("Actions in queue " + sActionList.size());
+//			for (Action a : sActionList) {
+//			mLogger.message("\taction " + a.mName + " with id " + a.mID + " with timemark " + a.mTimeMark);
+//			}
 
 			for (Action a : sActionList) {
 				if (mRunning) {
@@ -63,7 +68,6 @@ public class EventActionPlayer extends ActionPlayer {
 				sActionPlaySync.acquire();
 
 				//mLogger.message("Action Player is working  ...");
-
 				// now schedule all existing actions - actions that shoudl be played directly;
 				// one of them should contain information for the player about timestamps when to trigger other actions
 				if (mRunning) {
@@ -71,7 +75,7 @@ public class EventActionPlayer extends ActionPlayer {
 						// start all actions  which do not have a timemark start condition
 						if (a.mStartTime != -1) {
 							//mLogger.message("Action " + a.mName + " is scheduled ...");
-							
+
 							sActionScheduler.schedule(a, a.mStartTime, TimeUnit.MILLISECONDS);
 						}
 					});
@@ -79,8 +83,7 @@ public class EventActionPlayer extends ActionPlayer {
 
 				// wait for all actions ended
 				sActionPlaySync.acquire();
-				//mLogger.warning("Event ActionPlayer played all actions");
-			} catch (InterruptedException ex) {
+				} catch (InterruptedException ex) {
 				mLogger.warning("Event ActionPlayer got interrupted " + ex.getMessage());
 			}
 

@@ -1,5 +1,7 @@
 package de.dfki.vsm.players.stickman.action;
 
+import de.dfki.vsm.players.ActionPlayer;
+import static de.dfki.vsm.players.ActionPlayer.actionEnded;
 import static de.dfki.vsm.players.ActionPlayer.notifyListenersAboutAction;
 import de.dfki.vsm.players.action.ActionListener;
 import de.dfki.vsm.players.action.Action;
@@ -8,6 +10,10 @@ import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.animationlogic.Animation;
 import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
 import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.xml.XMLUtilities;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  *
@@ -37,9 +43,8 @@ public class StickmanAction extends Action implements AnimationListener {
 	
 	@Override
 	public void update(String animationId) {
-//		mStickman.mLogger.info("Action (" + mID + ") - Animation hat holds " + a.getName() + " (" + a.mID + ") got update ...");
-//		mStickman.mLogger.info("\twaiting for update from animation with id " + mAnimation.mID);
-
+		//mStickman.mLogger.info("Action (" + mID + ") - that holds Animation " + mAnimation + " with id (" + mAnimation.mID + ") got update from Animation with ID " + animationId + " ...");
+		
 //		if (a.equals(mAnimation)) {
 //			mActionEndSync.release();
 //		}
@@ -54,29 +59,70 @@ public class StickmanAction extends Action implements AnimationListener {
 	public void run() {
 		try {
 			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_STARTED);
+			//mStickman.mLogger.severe("Action " + mName + " started");
 
 			if (mAnimation == null) {
-				mStickman.mLogger.severe("animation " + mName + " is not known by Stickman ...");
+				//mStickman.mLogger.severe("animation" + mName + " is not known by Stickman ...");
 				notifyListenersAboutAction(this, ActionListener.STATE.ACTION_UNKNOWN);
 			} else {
-				mStickman.playAnimation(mAnimation);
+				// Here we have 2 possibilities 
+				if (ActionPlayer.mUseNetwork) {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					IOSIndentWriter iosw = new IOSIndentWriter(out);
+					boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
 
-				// tell Stickman to update Action about the animation status
-				//mStickman.addListener(this);
-				TCPActionServer.getInstance().addListener(this);
+					try {
+						TCPActionServer.getInstance().send(new String(out.toByteArray(), "UTF-8"));
+					} catch (UnsupportedEncodingException ex) {
+						mStickman.mLogger.warning(ex.getMessage());
+					}
+					// tell TCPActionServer to update Action about the animation status
+					TCPActionServer.getInstance().addListener(this);
+				} else {
+					mStickman.playAnimation(mAnimation);
+					// tell Stickman to update Action about the animation status
+					mStickman.addListener(this);
+				}
 
 				// wait for action end   
 				mActionEndSync.acquire();
 
-				//mStickman.removeListener(this);
-				TCPActionServer.getInstance().removeListener(this);
+				if (ActionPlayer.mUseNetwork) {
+					TCPActionServer.getInstance().removeListener(this);
+				} else {
+					mStickman.removeListener(this);
+				}
 			}
+			//mStickman.mLogger.info("\ttelling action player event action (" + mID + ") has ended ...");
+
+			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_FINISHED);
 
 			// notify Action Player
-			//mStickman.mLogger.info("\ttelling action player action (" + mID + ") has ended ...");
-			
-			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_FINISHED);
-			mActionPlayer.actionEnded(this);
+			actionEnded(this);
+//			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_STARTED);
+//
+//			if (mAnimation == null) {
+//				mStickman.mLogger.severe("animation " + mName + " is not known by Stickman ...");
+//				notifyListenersAboutAction(this, ActionListener.STATE.ACTION_UNKNOWN);
+//			} else {
+//				mStickman.playAnimation(mAnimation);
+//
+//				// tell Stickman to update Action about the animation status
+//				//mStickman.addListener(this);
+//				TCPActionServer.getInstance().addListener(this);
+//
+//				// wait for action end   
+//				mActionEndSync.acquire();
+//
+//				//mStickman.removeListener(this);
+//				TCPActionServer.getInstance().removeListener(this);
+//			}
+//
+//			// notify Action Player
+//			//mStickman.mLogger.info("\ttelling action player action (" + mID + ") has ended ...");
+//			
+//			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_FINISHED);
+//			mActionPlayer.actionEnded(this);
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.warning("Action " + mName + " got interrupted");
 		}

@@ -36,7 +36,8 @@ public class ActionPlayer extends Thread {
 	public boolean mRunning = true;
 	static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 	private static long sID = 0;
-	
+	public static boolean mUseNetwork = false;
+
 	public static boolean mActionServerRunning = false;
 
 	ActionPlayer() {
@@ -53,8 +54,19 @@ public class ActionPlayer extends Thread {
 		sActionScheduler = Executors.newScheduledThreadPool(10, new ActionThreadFactory());
 		sActionPlaySync = new Semaphore(0);
 
-		sActionServer = TCPActionServer.getInstance();
-		sActionServer.start();
+		if (mUseNetwork) {
+			sActionServer = TCPActionServer.getInstance();
+			sActionServer.start();
+
+			while (!mActionServerRunning) {
+				try {
+					mLogger.message("Waiting for ActionPlayer's network server is ready ...");
+					Thread.sleep(250);
+				} catch (InterruptedException ex) {
+					mLogger.failure(ex.getMessage());
+				}
+			}
+		}
 	}
 
 	public void addAction(Action a) {
@@ -72,14 +84,9 @@ public class ActionPlayer extends Thread {
 //		for (Action ac : sActionList) {
 //			mLogger.message("\t" + ac.mName);
 //		}
-
 		sActionPlaySync.release();
 
 		//mLogger.message("Released ...");
-	}
-
-	public void sendCmd(String cmd) {
-		sActionServer.send(cmd);
 	}
 
 	public synchronized void end() {

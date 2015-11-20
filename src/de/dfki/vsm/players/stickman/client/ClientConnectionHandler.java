@@ -44,8 +44,8 @@ public class ClientConnectionHandler extends Thread {
 	}
 
 	public void sendToServer(String message) {
-		StickmanStage.mLogger.info("Sending " + message);
-		
+		//StickmanStage.mLogger.info("Sending " + message);
+
 		if (mSocket.isConnected()) {
 			mOut.println(message);
 			mOut.flush();
@@ -62,7 +62,7 @@ public class ClientConnectionHandler extends Thread {
 			mSocket.connect(socketAddress, 2000); // wait max. 2000ms
 
 			mOut = new PrintWriter(mSocket.getOutputStream(), true);
-			mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+			mIn = new BufferedReader(new InputStreamReader(mSocket.getInputStream(), "UTF-8"));
 		} catch (UnknownHostException e) {
 			StickmanStage.mLogger.severe(mHost + " is unknown - aborting!");
 		} catch (IOException e) {
@@ -73,19 +73,15 @@ public class ClientConnectionHandler extends Thread {
 		start();
 	}
 
+	@Override
 	public void run() {
-		String input = "";
-		
+		String inputLine = "";
+
 		while (mRunning) {
 			try {
-				input = mIn.readLine();
-
-				if (input != null) {
-					input = input.trim();
-					if (!input.isEmpty()) {
-						StickmanStage.parseStickmanMLCmd(input);
-					}
-				}
+				inputLine = mIn.readLine();
+				
+				StickmanStage.parseStickmanMLCmd(inputLine);
 			} catch (IOException ex) {
 				StickmanStage.mLogger.severe(mHost + " i/o exception - aborting!");
 			}

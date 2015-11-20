@@ -42,31 +42,31 @@ public class Speaking extends Animation {
 
 	}
 
-	@Override
-	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-		out.println("<StickmanAnimation name=\"" + getClass().getSimpleName() + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
-
-		if (mParameter instanceof String) {
-			out.println((String) mParameter);
-		}
-
-		out.pop().println("</StickmanAnimation >");
-	}
-
-	@Override
-	public final void parseXML(final Element element) throws XMLParseError {
-
-				mName = element.getAttribute("name");
-		mDuration = Integer.parseInt(element.getAttribute("duration"));
-		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
-
-		// Process The Child Nodes
-		XMLParseAction.processChildNodes(element, new XMLParseAction() {
-			@Override
-			public void run(final Element element) throws XMLParseError {
-
-				mParameter = (String)element.getTextContent();
-			}
-		});
-	}
+//	@Override
+//	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+//		out.println("<StickmanAnimation name=\"" + getClass().getSimpleName() + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+//
+//		if (mParameter instanceof String) {
+//			out.println((String) mParameter);
+//		}
+//
+//		out.pop().println("</StickmanAnimation>");
+//	}
+//
+//	@Override
+//	public final void parseXML(final Element element) throws XMLParseError {
+//
+//				mName = element.getAttribute("name");
+//		mDuration = Integer.parseInt(element.getAttribute("duration"));
+//		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
+//
+//		// Process The Child Nodes
+//		XMLParseAction.processChildNodes(element, new XMLParseAction() {
+//			@Override
+//			public void run(final Element element) throws XMLParseError {
+//
+//				mParameter = (String)element.getTextContent();
+//			}
+//		});
+//	}
 }

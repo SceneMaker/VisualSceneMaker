@@ -113,6 +113,7 @@ public class WordTimeMarkSequence implements XMLParseable, XMLWriteable{
 	}
 	
 	
+	@Override
 	public final void parseXML(final Element element) throws XMLParseError {
 
 		mText = element.getAttribute("text");
@@ -124,13 +125,12 @@ public class WordTimeMarkSequence implements XMLParseable, XMLWriteable{
 
 				// Get The Child Tag Name
 				final String name = element.getTagName();
-
+				
 				// Check The Child Tag Name
 				if (name.equals("Entries")) {
 					XMLParseAction.processChildNodes(element, new XMLParseAction() {
 						@Override
-						public void run(Element element) throws XMLParseError {
-							
+						public void run(Element element) throws XMLParseError {							
 							// Get The Child Tag Name
 							final String name = element.getTagName();
 							
@@ -157,19 +157,15 @@ public class WordTimeMarkSequence implements XMLParseable, XMLWriteable{
 	}
 
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-		System.out.println("WTS 1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		out.println("<WordTimeMarkSequence text=\"" + mText + "\">").push();
 
-		System.out.println("WTS 2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		out.println("<Entries>").push();
 		for (Entry e : mWordsAndTimemarks) {
 			e.writeXML(out);
 		}
-		System.out.println("WTS 3 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		out.pop().println("</Entries>");
 
-		System.out.println("WTS 4 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		out.pop().println("</WordTimeMarkSequence >");
+		out.pop().println("</WordTimeMarkSequence>");
 	}
 
 	@Override

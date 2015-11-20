@@ -2,6 +2,7 @@ package de.dfki.vsm.players.stickman;
 
 import de.dfki.vsm.players.stickman.animationlogic.Animation;
 import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
+import de.dfki.vsm.players.stickman.animationlogic.EventAnimation;
 import de.dfki.vsm.players.stickman.client.ClientConnectionHandler;
 import de.dfki.vsm.players.stickman.util.Names;
 import de.dfki.vsm.players.stickman.util.StickmanStageLayout;
@@ -12,11 +13,8 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,7 +39,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 	private static double sScale = 1.0d;
 	// network interface
 	public static ClientConnectionHandler mConnection;
-	public static boolean mUsingNetwork = false;
+	public static boolean mUseNetwork = false;
 	// logging
 	public static final Logger mLogger = Logger.getAnonymousLogger();
 
@@ -71,9 +69,18 @@ public class StickmanStage extends JFrame implements MouseListener {
 		ConsoleHandler ch = new ConsoleHandler();
 		ch.setFormatter(new StickmanStageLogFormatter());
 
-		if (mUsingNetwork) {
+		if (mUseNetwork) {
 			mConnection = new ClientConnectionHandler();
 			mConnection.connect();
+
+			while (!mConnection.mConnected) {
+				try {
+					mLogger.info("Waiting for connection to control application ...");
+					Thread.sleep(250);
+				} catch (InterruptedException ex) {
+					mLogger.severe(ex.getMessage());
+				}
+			}
 		}
 
 		addMouseListener(this);
@@ -88,7 +95,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 	}
 
 	public static StickmanStage getNetworkInstance() {
-		mUsingNetwork = true;
+		mUseNetwork = true;
 		return getInstance();
 	}
 
@@ -145,7 +152,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 		StickmanStage.getInstance().pack();
 		StickmanStage.getInstance().setVisible(false);
 
-		if (mUsingNetwork) {
+		if (mUseNetwork) {
 			mConnection.end();
 		}
 
@@ -158,26 +165,26 @@ public class StickmanStage extends JFrame implements MouseListener {
 	}
 
 	public static void parseStickmanMLCmd(String cmd) {
-			
-		mLogger.info("StickmanStage got " + cmd + " as input");
-		
-		Animation a = new Animation();
-		
+		// TODO cut the crap with the two animation types ...
+		Animation a = (cmd.contains("StickmanEventAnimation")) ? new EventAnimation() : new Animation();
+
 		boolean r = XMLUtilities.parseFromXMLStream(a, new ByteArrayInputStream(cmd.getBytes(Charset.forName("UTF-8"))));
-		
-		mLogger.info("Could be parsed " + r);
-		
-//		String stickmanname = "";
-//		String animationname = "";
-//		int duration = 0;
-//		boolean blocking = false;
-//		Object parameter = null;
-//		
-//		a = AnimationLoader.getInstance().loadEventAnimation(getStickman(stickmanname), animationname, duration, blocking);
-//		a.mParameter = parameter;
-//		
-//		getStickman(stickmanname).playAnimation(a);
-	
+
+		String stickmanname = a.mStickmanName;
+		String animationname = a.mName;
+		String id = a.mID;
+		int duration = a.mDuration;
+		boolean blocking = a.mBlocking;
+		Object parameter = a.mParameter;
+
+		a = (a instanceof EventAnimation)
+		  ? AnimationLoader.getInstance().loadEventAnimation(getStickman(stickmanname), animationname, duration, blocking)
+		  : AnimationLoader.getInstance().loadAnimation(getStickman(stickmanname), animationname, duration, blocking);
+
+		a.setID(id); // give the animation the same id (TODO - This is bad design and caused that the animation has to be "reloaded"
+		a.mParameter = parameter;
+
+		a.mStickman.playAnimation(a);
 	}
 
 	public static void sendTimeMarkInformation(String timemark) {

@@ -127,7 +127,7 @@ public class SpeechBubble extends BodyPart {
 			g2.setColor(new Color(0, 0, 0, 172));
 
 			FontRenderContext fontRenderContext = g2.getFontRenderContext();
-
+			
 			int startB = mText.indexOf(mCurrentlySpokenText);
 			int endB = startB + mCurrentlySpokenText.length();
 

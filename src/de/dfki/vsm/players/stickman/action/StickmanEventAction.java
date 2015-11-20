@@ -1,5 +1,6 @@
 package de.dfki.vsm.players.stickman.action;
 
+import de.dfki.vsm.players.ActionPlayer;
 import de.dfki.vsm.players.action.ActionListener;
 import de.dfki.vsm.players.action.EventAction;
 import de.dfki.vsm.players.stickman.Stickman;
@@ -8,17 +9,14 @@ import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
 import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
 import java.util.ArrayList;
 
-import static de.dfki.vsm.players.ActionPlayer.notifyListenersAboutAction;
-import static de.dfki.vsm.players.ActionPlayer.actionEnded;
-import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.server.TCPActionServer;
-import de.dfki.vsm.players.stickman.StickmanStage;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.util.xml.XMLWriteError;
 import java.io.ByteArrayOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.UnsupportedEncodingException;
+
+import static de.dfki.vsm.players.ActionPlayer.notifyListenersAboutAction;
+import static de.dfki.vsm.players.ActionPlayer.actionEnded;
 
 /**
  *
@@ -74,30 +72,32 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 				notifyListenersAboutAction(this, ActionListener.STATE.ACTION_UNKNOWN);
 			} else {
 				// Here we have 2 possibilities 
-				// 1) Send command over tcp connection
-				// 2) api call
+				if (ActionPlayer.mUseNetwork) {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					IOSIndentWriter iosw = new IOSIndentWriter(out);
+					boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
 
-				//mStickman.mLogger.info("Action " + mName + " play");
-				// TCP Cmd EventActionPlayer.getInstance().sendCmd(mAnimation.toString());
-				
-				IOSIndentWriter iosw = new IOSIndentWriter(new ByteArrayOutputStream());
-				StickmanStage.mLogger.info("BEFORE >>>>>>>>>>>>>>>>>>>>>>>>>>");
-				
-				boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
-				StickmanStage.mLogger.info("AFTER >>>>>>>>>>>>>>>>>>>>>>>>>>");
-					//EventActionPlayer.getInstance().sendCmd(out.toString());
-				
-				mStickman.playAnimation(mAnimation);
-
-				// tell Stickman to update Action about the animation status
-				//mStickman.addListener(this);
-				TCPActionServer.getInstance().addListener(this);
+					try {
+						TCPActionServer.getInstance().send(new String(out.toByteArray(), "UTF-8"));
+					} catch (UnsupportedEncodingException ex) {
+						mStickman.mLogger.warning(ex.getMessage());
+					}
+					// tell TCPActionServer to update Action about the animation status
+					TCPActionServer.getInstance().addListener(this);
+				} else {
+					mStickman.playAnimation(mAnimation);
+					// tell Stickman to update Action about the animation status
+					mStickman.addListener(this);
+				}
 
 				// wait for action end   
 				mActionEndSync.acquire();
 
-				//mStickman.removeListener(this);
-				TCPActionServer.getInstance().removeListener(this);
+				if (ActionPlayer.mUseNetwork) {
+					TCPActionServer.getInstance().removeListener(this);
+				} else {
+					mStickman.removeListener(this);
+				}
 			}
 			//mStickman.mLogger.info("\ttelling action player event action (" + mID + ") has ended ...");
 
@@ -105,7 +105,6 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 
 			// notify Action Player
 			actionEnded(this);
-
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.warning("Action " + mName + " got interrupted");
 		}

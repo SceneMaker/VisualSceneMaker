@@ -99,7 +99,7 @@ public class Animator {
 					// 2) send to Player
 
 					// API or TCP-Interface
-					if (!StickmanStage.mUsingNetwork) {
+					if (!StickmanStage.mUseNetwork) {
 						EventActionPlayer.getInstance().runActionAtTimeMark(e.mContent);
 					} else {
 						StickmanStage.sendTimeMarkInformation(e.mContent);
