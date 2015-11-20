@@ -6,6 +6,7 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -26,6 +27,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 
 /**
  *
@@ -48,11 +51,14 @@ public class EditorStarter extends JPanel {
 	private final static Font sMENUHEADLINEFONT = new Font("Helvetica", Font.PLAIN, 24);
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
 	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
+        
 
-	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
+	private final File SampleProjFolder = new File( Preferences.sSAMPLE_PROJECTS);
 
 	private final EditorInstance mEditorInstance;
-	private final Box mRecentAndSampleProjectBox;
+	private final Box mCenterProjectBox;
+        private final Box mLeftProjectBox;//Recent Projects
+        private final Box mRightProjectBox;
 
 	// The singelton logger instance   
 	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -80,37 +86,77 @@ public class EditorStarter extends JPanel {
 
 	public EditorStarter(final EditorInstance mParent) {
 		mEditorInstance = mParent;
+                
 		JPanel content = new JPanel();
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		content.setOpaque(false);
 
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		setBorder(BorderFactory.createEmptyBorder(paddingSize, 280, paddingSize, paddingSize));
+		setBorder(BorderFactory.createEmptyBorder(paddingSize, 180, paddingSize, paddingSize));
 
-		JLabel titleLabel = new JLabel("Welcome to Visual SceneMaker");
-
+		
+                
+                JLabel titleLabel = new JLabel("Welcome to Visual SceneMaker");
 		titleLabel.setOpaque(false);
+                titleLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
 		titleLabel.setFont(sMENUHEADLINEFONT);
 		titleLabel.setForeground(sTEXTCOLOR);
-
+                
+                JPanel titlePanel = new JPanel();
+                titlePanel.setOpaque(false);
+                titlePanel.setLayout(new BorderLayout(0, 0));
+                titlePanel.add(titleLabel, BorderLayout.CENTER);
+                titlePanel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() ), 30));
+                titlePanel.setBorder(new EmptyBorder(10, 0, 10, 10));
+                
+    
+         
 		JLabel msgLabel = new JLabel("<html>This welcome screen provides quick starting actions, like create a new project, <br> open a recent project, open a example project, and check news and documentation</html>");
 
 		msgLabel.setOpaque(false);
 		msgLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
 		msgLabel.setFont(new Font("Helvetica", Font.PLAIN, 18));
 		msgLabel.setForeground(sTEXTCOLOR);
-		msgLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
-		mRecentAndSampleProjectBox = Box.createVerticalBox();
-		mRecentAndSampleProjectBox.setOpaque(false);
+                
+                JPanel messagePanel = new JPanel();
+                messagePanel.setOpaque(false);
+                messagePanel.setLayout(new BorderLayout(0, 0));
+                messagePanel.add(msgLabel, BorderLayout.CENTER);
+                messagePanel.setBorder(new EmptyBorder(10, 0, 10, 10));
+                
+                
+		mLeftProjectBox = Box.createVerticalBox();
+                mRightProjectBox = Box.createVerticalBox();
+                
+                mCenterProjectBox = Box.createHorizontalBox();
+                
+		mLeftProjectBox.setOpaque(false);
+                mRightProjectBox.setOpaque(false);
+                mCenterProjectBox.setOpaque(false);
 
-		mRecentAndSampleProjectBox.setMaximumSize(halfScreenDimension);
+		mLeftProjectBox.setMaximumSize(halfScreenDimension);
+                mLeftProjectBox.setPreferredSize(halfScreenDimension);
+                mRightProjectBox.setMaximumSize(halfScreenDimension);
+                mRightProjectBox.setPreferredSize(mLeftProjectBox.getSize());
+                mLeftProjectBox.setBorder(new EmptyBorder(0, 0, 0, 5));
+                
 
-		content.add(titleLabel);
-		content.add(msgLabel);
+                mCenterProjectBox.add(mLeftProjectBox);
+                content.add(titlePanel);
+		content.add(messagePanel);
+                
+                msgLabel.setAlignmentX(LEFT_ALIGNMENT);
+                titleLabel.setAlignmentX(LEFT_ALIGNMENT);
+                mCenterProjectBox.add(mRightProjectBox);
+                
+                Dimension centerSize = mCenterProjectBox.getMaximumSize();
+                
+                titlePanel.setMaximumSize(new Dimension((int) centerSize.getWidth(), 30));
+                messagePanel.setMaximumSize(new Dimension((int) centerSize.getWidth(), 150));
 
 		createRecentAndSamplePrjList();
-		content.add(mRecentAndSampleProjectBox);
-
+		content.add(mCenterProjectBox);
+            
 		// acquire the build details
 		try {
 			Properties vProp;
@@ -129,7 +175,7 @@ public class EditorStarter extends JPanel {
 			versionLabel.setFont(new Font("Helvetica", Font.PLAIN, 18));
 			versionLabel.setForeground(sTEXTCOLOR);
 			Dimension d = new Dimension(0, 30);
-
+                        
 			content.add(Box.createRigidArea(d));
 			content.add(versionLabel);
 		} catch (Exception e) {
@@ -156,15 +202,8 @@ public class EditorStarter extends JPanel {
 		this.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				if (mWelcomeStickman.mHead.getBounds().contains(evt.getX(), evt.getY())) {
-					mWelcomeStickman.doAnimation("Speaking", 500, "My head!", false);
-					mWelcomeStickman.doAnimation("Blink", 100, false);
-					mWelcomeStickman.doAnimation("Mouth_O", 40, true);
-					mWelcomeStickman.doAnimation("Mouth_Default", 20, true);
-				} else {
-					mWelcomeStickman.doAnimation("Blink", 100, false);
-					mWelcomeStickman.doAnimation("Smile", 500, false);
-				}
+				mWelcomeStickman.doAnimation("Blink", 100, false);
+				mWelcomeStickman.doAnimation("Smile", 500, false);
 			}
 		});
 
@@ -220,9 +259,9 @@ public class EditorStarter extends JPanel {
 	 * Creates the list of recent projects
 	 */
 	public void createRecentAndSamplePrjList() {
-		mRecentAndSampleProjectBox.removeAll();
-		mRecentAndSampleProjectBox.revalidate();
-		mRecentAndSampleProjectBox.repaint();
+		mLeftProjectBox.removeAll();
+		mLeftProjectBox.revalidate();
+		mLeftProjectBox.repaint();
 		createMenuButtons();
 		listOfRecentProjects();
 		listOfSampleProjects();
@@ -243,7 +282,7 @@ public class EditorStarter extends JPanel {
 		actionMenu.setBackground(sMENUHEADLINECOLOR);
 		actionMenu.setForeground(sTEXTCOLOR);
 		actionMenu.setFont(sMENUHEADLINEFONT);
-		mRecentAndSampleProjectBox.add(actionMenu);
+		mLeftProjectBox.add(actionMenu);
 
 		// *********************************************************************
 		// NEW PROJECT BUTTON
@@ -278,8 +317,8 @@ public class EditorStarter extends JPanel {
 				EditorStarter.this.repaint();
 			}
 		});
-		mRecentAndSampleProjectBox.add(mNewProjMenu);
-		mRecentAndSampleProjectBox.add(new CoolSeparator());
+		mLeftProjectBox.add(mNewProjMenu);
+		mLeftProjectBox.add(new CoolSeparator());
 
 		// *********************************************************************
 		// OPEN PROJECT BUTTON
@@ -310,7 +349,7 @@ public class EditorStarter extends JPanel {
 				EditorStarter.this.repaint();
 			}
 		});
-		mRecentAndSampleProjectBox.add(mOpenProjectMenu);
+		mLeftProjectBox.add(mOpenProjectMenu);
 	}
 
 	/**
@@ -325,7 +364,7 @@ public class EditorStarter extends JPanel {
 
 		titleMenu.setBorder(null);
 		titleMenu.setFont(sMENUHEADLINEFONT);
-		mRecentAndSampleProjectBox.add(titleMenu);
+		mLeftProjectBox.add(titleMenu);
 		titleMenu.setOpaque(true);
 		titleMenu.setBackground(sMENUHEADLINECOLOR);
 		titleMenu.setForeground(sTEXTCOLOR);
@@ -366,6 +405,7 @@ public class EditorStarter extends JPanel {
 					projectList[i].setPreferredSize(new Dimension(buttonSize));
 					projectList[i].setFont(sMENUITEMFONT);
 					projectList[i].setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+                                        
 					projectList[i].addMouseListener(new MouseAdapter() {
 						@Override
 						public void mouseClicked(MouseEvent me) {
@@ -397,7 +437,7 @@ public class EditorStarter extends JPanel {
 			recentPanel.remove(recentPanel.getComponentCount() - 1);
 		}
 
-		mRecentAndSampleProjectBox.add(recentPanel);
+		mLeftProjectBox.add(recentPanel);
 	}
 
 	/**
@@ -424,67 +464,67 @@ public class EditorStarter extends JPanel {
 		exampleMenu.setBackground(sMENUHEADLINECOLOR);
 		exampleMenu.setForeground(sTEXTCOLOR);
 		exampleMenu.setFont(sMENUHEADLINEFONT);
-		mRecentAndSampleProjectBox.add(exampleMenu);
+		mRightProjectBox.add(exampleMenu);
 
 		JPanel sampleProjPanel = new JPanel();
 
 		sampleProjPanel.setOpaque(false);
 		sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
-		File listDirs[] = SampleProjFolder.listFiles();
+                File listDirs[] = SampleProjFolder.listFiles();
 
-		for (final File sampleDir : listDirs) {
+                for (final File sampleDir : listDirs) {
 
-			final File sampleProj = new File(sampleDir.getPath());
+                        final File sampleProj = new File(sampleDir.getPath());
 
-			if (sampleProj.exists()) {
-				//File projectPath = new File(sampleDir.getPath() + "project.xml" );
-				EditorProject project = new EditorProject();
+                        if (sampleProj.exists()) {
+                                //File projectPath = new File(sampleDir.getPath() + "project.xml" );
+                                EditorProject project = new EditorProject();
 
-				project.parse(sampleProj);
+                                project.parse(sampleProj);
 
-				JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
-				  + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
+                                JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
+                                  + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
 
-				newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
-				newSampleProj.setMaximumSize(new Dimension(buttonSize));
-				newSampleProj.setPreferredSize(new Dimension(buttonSize));
-				newSampleProj.setFont(sMENUITEMFONT);
-				newSampleProj.setOpaque(true);
-				newSampleProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
-				newSampleProj.setForeground(sTEXTCOLOR);
-				newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-				newSampleProj.addMouseListener(new MouseAdapter() {
-					@Override
-					public void mouseClicked(MouseEvent me) {
-						// mEditorInstance.toggleProjectEditorList(true);
-						mEditorInstance.openProject(sampleProj);
-						mWelcomeStickman.setVisible(false);
-					}
+                                newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
+                                newSampleProj.setMaximumSize(new Dimension(buttonSize));
+                                newSampleProj.setPreferredSize(new Dimension(buttonSize));
+                                newSampleProj.setFont(sMENUITEMFONT);
+                                newSampleProj.setOpaque(true);
+                                newSampleProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
+                                newSampleProj.setForeground(sTEXTCOLOR);
+                                newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+                                newSampleProj.addMouseListener(new MouseAdapter() {
+                                        @Override
+                                        public void mouseClicked(MouseEvent me) {
+                                                // mEditorInstance.toggleProjectEditorList(true);
+                                                mEditorInstance.openProject(sampleProj);
+                                                mWelcomeStickman.setVisible(false);
+                                        }
 
-					@Override
-					public void mouseEntered(MouseEvent me) {
-						me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-						EditorStarter.this.repaint();
-					}
+                                        @Override
+                                        public void mouseEntered(MouseEvent me) {
+                                                me.getComponent().setBackground(sHIGHLIGHTCOLOR);
+                                                EditorStarter.this.repaint();
+                                        }
 
-					@Override
-					public void mouseExited(MouseEvent me) {
-						me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-						EditorStarter.this.repaint();
-					}
-				});
-				sampleProjPanel.add(newSampleProj);
+                                        @Override
+                                        public void mouseExited(MouseEvent me) {
+                                                me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
+                                                EditorStarter.this.repaint();
+                                        }
+                                });
+                                sampleProjPanel.add(newSampleProj);
 
-				sampleProjPanel.add(new CoolSeparator());
-			}
-		}
+                                sampleProjPanel.add(new CoolSeparator());
+                        }
+                }
 
 		// remove last separator
 		if (sampleProjPanel.getComponentCount() > 0) {
 			sampleProjPanel.remove(sampleProjPanel.getComponentCount() - 1);
 		}
 
-		mRecentAndSampleProjectBox.add(sampleProjPanel);
+		mRightProjectBox.add(sampleProjPanel);
 	}
 
 	/**
@@ -502,7 +542,7 @@ public class EditorStarter extends JPanel {
 //		} catch (URISyntaxException ex) {
 //			Logger.getLogger(EditorStarter.class.getName()).log(Level.SEVERE, null, ex);
 //		}
-
+		
 //		   if (dirURL.getProtocol().equals("jar")) {
 //        /* A JAR path */
 //        String jarPath = dirURL.getPath().substring(5, dirURL.getPath().indexOf("!")); //strip out only the JAR file
@@ -523,11 +563,13 @@ public class EditorStarter extends JPanel {
 //        }
 //        return result.toArray(new String[result.size()]);
 //      } 
+		
 //		System.out.println("     " + bIPDir);
 //		if (bIPDir.exists()) {
 //					System.out.println("     " + buildInSampleProjCnt);
 //			buildInSampleProjCnt = SampleProjFolder.listFiles().length;
 //		}
+		
 		if (buildInSampleProjCnt == 0) {
 			return;
 		}
@@ -540,7 +582,7 @@ public class EditorStarter extends JPanel {
 		exampleMenu.setBackground(sMENUHEADLINECOLOR);
 		exampleMenu.setForeground(sTEXTCOLOR);
 		exampleMenu.setFont(sMENUHEADLINEFONT);
-		mRecentAndSampleProjectBox.add(exampleMenu);
+		mLeftProjectBox.add(exampleMenu);
 
 		JPanel sampleProjPanel = new JPanel();
 
@@ -603,7 +645,7 @@ public class EditorStarter extends JPanel {
 			sampleProjPanel.remove(sampleProjPanel.getComponentCount() - 1);
 		}
 
-		mRecentAndSampleProjectBox.add(sampleProjPanel);
+		mLeftProjectBox.add(sampleProjPanel);
 	}
 
 	/**
@@ -623,7 +665,7 @@ public class EditorStarter extends JPanel {
 		mDocuMenu.setBackground(sMENUHEADLINECOLOR);
 		mDocuMenu.setForeground(sTEXTCOLOR);
 		mDocuMenu.setFont(sMENUHEADLINEFONT);
-		mRecentAndSampleProjectBox.add(mDocuMenu);
+		mRightProjectBox.add(mDocuMenu);
 
 		JLabelURL link = new JLabelURL("Visual SceneMaker Online", "http://scenemaker.dfki.de/");
 
@@ -649,7 +691,7 @@ public class EditorStarter extends JPanel {
 			}
 		});
 
-		mRecentAndSampleProjectBox.add(link);
+		mRightProjectBox.add(link);
 	}
 
 	public void refresh() {
