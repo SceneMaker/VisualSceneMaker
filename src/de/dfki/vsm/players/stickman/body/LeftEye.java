@@ -4,7 +4,7 @@ import de.dfki.vsm.players.stickman.Stickman;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.geom.GeneralPath;
-import static de.dfki.vsm.players.stickman.animation.util.Interpolator.linear;
+import static de.dfki.vsm.players.stickman.animationlogic.util.Interpolator.linear;
 import java.awt.BasicStroke;
 
 /**
@@ -26,9 +26,9 @@ public class LeftEye extends BodyPart {
 		mHead = head;
 		mLength = 5;
 		mDefaultRotationPoint = mHead.mDefaultRotationPoint;
-		mColor = new Color(mHead.mStickman.mGender == Stickman.GENDER.FEMALE ? 22 : 0,
-		  mHead.mStickman.mGender == Stickman.GENDER.FEMALE ? 40 : 0,
-		  mHead.mStickman.mGender == Stickman.GENDER.FEMALE ? 65 : 0, 144);
+		mColor = new Color(mHead.mStickman.mType == Stickman.TYPE.FEMALE ? 22 : 0,
+		  mHead.mStickman.mType == Stickman.TYPE.FEMALE ? 40 : 0,
+		  mHead.mStickman.mType == Stickman.TYPE.FEMALE ? 65 : 0, 144);
 		mStroke = new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
 		init();

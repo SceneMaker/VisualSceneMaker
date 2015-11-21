@@ -131,6 +131,12 @@ public class Head extends BodyPart {
 		t.rotate(Math.toRadians(mRotation), mDefaultRotationPoint.x, mDefaultRotationPoint.y);
 		t.translate(0, 2 + mTranslation);
 		mMaleHair.transform(t);
+
+		// TODO - This schould be done in all bodyparts
+		setBounds(mHead.getBounds().x + new Float(mStickman.mGeneralXTranslation).intValue(),
+		  mHead.getBounds().y + new Float(mStickman.mGeneralYTranslation).intValue(),
+		  new Float(mHead.getBounds().width * mStickman.mScale).intValue(),
+		  new Float(mHead.getBounds().height * mStickman.mScale).intValue());
 	}
 
 	@Override
@@ -158,7 +164,7 @@ public class Head extends BodyPart {
 		g2.draw(mRightEar);
 
 		// hair
-		if (mStickman.mGender == Stickman.GENDER.FEMALE) {
+		if (mStickman.mType == Stickman.TYPE.FEMALE) {
 			g2.setColor(new Color(240, 212, 0, 255));
 			g2.fill(mFemaleHair);
 			// draw outlines

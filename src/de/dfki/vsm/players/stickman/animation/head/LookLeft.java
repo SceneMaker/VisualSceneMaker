@@ -1,8 +1,8 @@
 package de.dfki.vsm.players.stickman.animation.head;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.BodyAnimation;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
 import java.util.ArrayList;
 
 /**
@@ -22,14 +22,14 @@ public class LookLeft extends Animation {
 
 		// look left
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEye, "shape", "LOOKLEFT"));
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEye, "shape", "LOOKLEFT"));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEye, "shape", "LOOKLEFT"));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEye, "shape", "LOOKLEFT"));
 		playAnimationPart(20);
 
 //		// blink up
 //		mAnimationPart = new ArrayList<>();
-//		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEye, "shape", "DEFAULT"));
-//		mAnimationPart.add(new BodyAnimation(mStickman.mRightEye, "shape", "DEFAULT"));
+//		mAnimationPart.add(new AnimationContent(mStickman.mLeftEye, "shape", "DEFAULT"));
+//		mAnimationPart.add(new AnimationContent(mStickman.mRightEye, "shape", "DEFAULT"));
 //		playAnimationPart(2);
 	}
 }

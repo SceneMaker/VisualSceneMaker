@@ -40,7 +40,6 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
 import de.dfki.vsm.editor.dialog.SaveFileDialog;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
-import de.dfki.vsm.runtime.events.AbortionEvent;
 
 /**
  * @author Gregor Mehlmann
@@ -54,6 +53,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
      */
     private final ImageIcon ICON_PLAY_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play.png");
     private final ImageIcon ICON_PLAY_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_blue.png");
+    private final ImageIcon ICON_PLAY_DISABLED = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/play_disabled.png");
 
     private final ImageIcon ICON_STOP_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop.png");
     private final ImageIcon ICON_STOP_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/stop_blue.png");
@@ -187,10 +187,14 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
 
     @Override
     public void update(EventObject event) {
-        if(event instanceof ElementEditorToggledEvent)
-        {
+        if (event instanceof ElementEditorToggledEvent) {
             updateElementEditorButton();
         }
+//        if (event instanceof ExceptionThrownEvent) {
+//            if (mRunTime.isRunning(mEditorProject)) {
+//                mEditorInstance.stop(mEditorProject);
+//            }
+//        }
         refreshButtons();
     }
 
@@ -283,8 +287,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
          */
         mTogglePallete = add(new AbstractAction("ACTION_SHOW_ELEMENTS",
                 Boolean.valueOf(Preferences.getProperty("showelements"))
-                ? ICON_MORE_STANDARD
-                : ICON_LESS_STANDARD) {
+                        ? ICON_MORE_STANDARD
+                        : ICON_LESS_STANDARD) {
                     public void actionPerformed(ActionEvent evt) {
                         mSceneFlowEditor.showElementDisplay();
                         refreshButtons();
@@ -400,7 +404,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         });
         mPlayButton.setIcon(ICON_PLAY_STANDARD);
         mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
-        mPlayButton.setToolTipText("Start the execution of the sceneflow");
+        mPlayButton.setDisabledIcon(ICON_PLAY_DISABLED);
+        mPlayButton.setToolTipText("Initialize project/Start the execution of the sceneflow");
         sanitizeButton(mPlayButton, tinyButtonDim);
         // The Stop SceneFlow Button
         mStopButton = add(new AbstractAction("ACTION_STOP", ICON_STOP_STANDARD) {
@@ -412,7 +417,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         });
         mStopButton.setRolloverIcon(ICON_STOP_ROLLOVER);
         mStopButton.setDisabledIcon(ICON_STOP_DISABLED);
-        mStopButton.setToolTipText("Stop the execution of the sceneflow");
+        mStopButton.setToolTipText("Shutdown project/stop the execution of the sceneflow");
         // Format The Button As Tiny
         sanitizeButton(mStopButton, tinyButtonDim);
         mStopButton.setEnabled(false);
@@ -434,7 +439,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         // Add Some Horizontal Space
         initPathDisplay();
         add(mPathScrollPane);
-        
+
         //UP TO PARENT NODE 
         b = add(new AbstractAction("ACTION_LEVEL_UP", ICON_UP_STANDARD) {
             @Override
@@ -504,12 +509,12 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         add(Box.createHorizontalGlue());
         mToggleElementEditor = add(new AbstractAction("ACTION_SHOW_ELEMENTPROP",
                 Boolean.valueOf(Preferences.getProperty("showelementproperties"))
-                ? ICON_LESS_STANDARD
-                : ICON_MORE_STANDARD) {
+                        ? ICON_LESS_STANDARD
+                        : ICON_MORE_STANDARD) {
                     public void actionPerformed(ActionEvent evt) {
                         mSceneFlowEditor.toggleElementEditor();
                         updateElementEditorButton();
-                        
+
                     }
                 });
         mToggleElementEditor.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
@@ -530,13 +535,14 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         //mLogger.message("Refreshing Buttons Of '" + this + "'");
         //*************************************
         //Refresh the buttons SAVE, UNDO and REDO when project have been changed
+        
         mSaveProject.setEnabled(mEditorProject.hasChanged());
 
         mUndo.setEnabled(undoAction.isEnabled());
 
         mRedo.setEnabled(redoAction.isEnabled());
         //*************************************
-         //mLogger.message("Check execution status '" + this + "'");
+        //mLogger.message("Check execution status '" + this + "'");
         //refresh the play button when running the scene player
         if (mRunTime.isRunning(mEditorProject)) {
             // Print some information
@@ -559,22 +565,30 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             //mLogger.message("Not Running");
             mPlayButton.setIcon(ICON_PLAY_STANDARD);
             mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
-            mPlayButton.setToolTipText("Start the execution of the sceneflow");
-            mStopButton.setEnabled(false);
+            
+            mPlayButton.setToolTipText("Initialize project/Start the execution of the sceneflow");
+            // if an execution has been ended disable the play button
+            if (mRunTime.wasExecuted(mEditorProject) && mStopButton.isEnabled()) {
+                mPlayButton.setEnabled(false);
+            } else if (!mRunTime.isRunning(mEditorProject)){
+                mPlayButton.setEnabled(true);
+                mStopButton.setEnabled(false);
+            }
+
         }
         //*************************************
         // Refresh the element display buttons
         mTogglePallete.setIcon(mSceneFlowEditor.isElementDisplayVisible()
-                ?ICON_MORE_STANDARD:ICON_LESS_STANDARD);
+                ? ICON_MORE_STANDARD : ICON_LESS_STANDARD);
         mTogglePallete.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showelements"))
                 ? ICON_MORE_ROLLOVER : ICON_LESS_ROLLOVER);
     }
 
     private void updateElementEditorButton() {
         mToggleElementEditor.setIcon(mSceneFlowEditor.isElementEditorVisible()
-                ? ICON_LESS_STANDARD:ICON_MORE_STANDARD);
+                ? ICON_LESS_STANDARD : ICON_MORE_STANDARD);
         mToggleElementEditor.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showelementproperties"))
-                ? ICON_LESS_ROLLOVER:ICON_MORE_ROLLOVER);
+                ? ICON_LESS_ROLLOVER : ICON_MORE_ROLLOVER);
     }
 
     private void updateShowVarsButtons() {

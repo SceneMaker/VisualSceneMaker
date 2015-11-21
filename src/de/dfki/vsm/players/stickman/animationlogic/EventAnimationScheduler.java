@@ -1,4 +1,4 @@
-package de.dfki.vsm.players.stickman.animation;
+package de.dfki.vsm.players.stickman.animationlogic;
 
 import de.dfki.vsm.players.stickman.Stickman;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -11,20 +11,22 @@ import java.util.logging.Logger;
  * @author Patrick Gebhard
  *
  */
-public class AnimationScheduler extends Thread {
+public class EventAnimationScheduler extends Thread {
 
 	Stickman mStickman;
 	boolean mRunning = true;
 	public LinkedBlockingQueue<Animation> mAnimationQueue = new LinkedBlockingQueue<>();
 	public Semaphore mTheBlockOfHell = new Semaphore(1);
 
-	public AnimationScheduler(Stickman s) {
-		setName(s.mName + "'s AnimationScheduler");
+	public EventAnimationScheduler(Stickman s) {
+		setName(s.mName + "'s Event AnimationScheduler");
 		mStickman = s;
 	}
 
 	public void introduce(Animation a) {
 		try {
+			mStickman.mLogger.info("Animation " + a + " added to event animation scheduler");
+
 			mAnimationQueue.put(a);
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.severe(ex.getMessage());
@@ -42,12 +44,13 @@ public class AnimationScheduler extends Thread {
 
 	public synchronized void end() {
 		mRunning = false;
-		
+
 		// throw in a last animation that unblocks the scheduler letting him end
 		try {
-			mAnimationQueue.put(new Animation(mStickman, 1, false) { });
+			mAnimationQueue.put(new Animation(mStickman, 1, false) {
+			});
 		} catch (InterruptedException ex) {
-			Logger.getLogger(AnimationScheduler.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(EventAnimationScheduler.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 

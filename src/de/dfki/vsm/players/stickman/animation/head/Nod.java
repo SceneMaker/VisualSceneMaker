@@ -6,8 +6,8 @@
 package de.dfki.vsm.players.stickman.animation.head;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.BodyAnimation;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
 import java.util.ArrayList;
 
 /**
@@ -27,22 +27,22 @@ public class Nod extends Animation {
 
 		// head down
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEyebrow, "translate", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEye, "translate", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEyebrow, "translate", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEye, "translate", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mHead, "translate", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mMouth, "translate", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEyebrow, "translate", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEye, "translate", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEyebrow, "translate", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEye, "translate", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mHead, "translate", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mMouth, "translate", translationUnit));
 		playAnimationPart(200);
 
 		// head up
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEyebrow, "translate", -translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEye, "translate", -translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEyebrow, "translate", -translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEye, "translate", -translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mHead, "translate", -translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mMouth, "translate", -translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEyebrow, "translate", -translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEye, "translate", -translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEyebrow, "translate", -translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEye, "translate", -translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mHead, "translate", -translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mMouth, "translate", -translationUnit));
 
 		playAnimationPart(200);
 	}

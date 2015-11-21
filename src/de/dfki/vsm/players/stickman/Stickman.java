@@ -1,8 +1,10 @@
 package de.dfki.vsm.players.stickman;
 
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.AnimationListener;
-import de.dfki.vsm.players.stickman.animation.AnimationScheduler;
+import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationScheduler;
+import de.dfki.vsm.players.stickman.animationlogic.EventAnimation;
 import de.dfki.vsm.players.stickman.body.Body;
 import de.dfki.vsm.players.stickman.body.Head;
 import de.dfki.vsm.players.stickman.body.LeftEye;
@@ -22,7 +24,7 @@ import de.dfki.vsm.players.stickman.body.RightLeg;
 import de.dfki.vsm.players.stickman.body.RightShoulder;
 import de.dfki.vsm.players.stickman.body.RightUpperArm;
 import de.dfki.vsm.players.stickman.environment.SpeechBubble;
-import de.dfki.vsm.players.stickman.util.AnimationLoader;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -59,16 +61,18 @@ public class Stickman extends JComponent {
 		FRONT, LEFT, RIGHT
 	};
 
-	public static enum GENDER {
+	public static enum TYPE {
 
 		FEMALE, MALE
 	};
 
 	static public final Color sFOREGROUND = new Color(188, 188, 188, 128);
-	public GENDER mGender = GENDER.FEMALE;
+	public TYPE mType = TYPE.FEMALE;
 	public String mName = "Stickman";
 	public ORIENTATION mOrientation = ORIENTATION.FRONT;
 	public float mScale = 1.0f;
+	public float mGeneralXTranslation = 0;
+	public float mGeneralYTranslation = 0;
 
 	public static Dimension mSize = new Dimension(400, 600);
 	FontMetrics mFontMetrics;
@@ -102,19 +106,19 @@ public class Stickman extends JComponent {
 	public SpeechBubble mSpeechBubble;
 
 	// logging
-	public Logger mLogger = Logger.getAnonymousLogger();
+	public final Logger mLogger = Logger.getAnonymousLogger();
 
 	// id
 	private long mID = 0;
 
-	public Stickman(String name, GENDER gender, float scale) {
+	public Stickman(String name, TYPE gender, float scale) {
 		this(name, gender);
 		mScale = scale;
 	}
 
-	public Stickman(String name, GENDER gender) {
+	public Stickman(String name, TYPE gender) {
 		mName = name;
-		mGender = gender;
+		mType = gender;
 
 		mHead = new Head(this);
 		mLeftEyebrow = new LeftEyebrow(mHead);
@@ -173,15 +177,17 @@ public class Stickman extends JComponent {
 	}
 
 	public void removeListener(AnimationListener al) {
-		if (mAnimationListeners.contains(al)) {
-			mAnimationListeners.remove(al);
+		synchronized (mAnimationListeners) {
+			if (mAnimationListeners.contains(al)) {
+				mAnimationListeners.remove(al);
+			}
 		}
 	}
 
-	public void notifyListeners(Animation a) {
+	public void notifyListeners(String animationId) {
 		synchronized (mAnimationListeners) {
 			mAnimationListeners.stream().forEach((al) -> {
-				al.update(a);
+				al.update(animationId);
 			});
 		}
 	}
@@ -206,43 +212,58 @@ public class Stickman extends JComponent {
 		}
 	}
 
-	public Animation doAnimation(String type, String name, int duration, String text, boolean block) {
-		if (type.equalsIgnoreCase("environment")) {
-			if (name.equalsIgnoreCase("Speaking")) {
-				mSpeechBubble.mText = text;
-			}
-		}
+	public Animation doEventFeedbackAnimation(String name, int duration, WordTimeMarkSequence wts, boolean block) {
 
-		return doAnimation(type, name, duration, block);
-	}
+		EventAnimation a = AnimationLoader.getInstance().loadEventAnimation(this, name, duration, block);
 
-	public Animation doAnimation(String type, String name, String text, boolean block) {
-		if (type.equalsIgnoreCase("environment")) {
-			if (name.equalsIgnoreCase("Speaking")) {
-				mSpeechBubble.mText = text;
-			}
-		}
+		a.setParameter(wts);
 
-		return doAnimation(type, name, -1, block);
-	}
-
-	public Animation doAnimation(String type, String name, boolean block) {
-		return doAnimation(type, name, -1, block);
-	}
-
-	public Animation doAnimation(String type, String name, int duration, boolean block) {
-		Animation a = AnimationLoader.getInstance().load(this, type, name, duration, block);
-
-		if (a != null) {
-			try {
-				mAnimationLaunchControl.acquire();
-				a.start();
-			} catch (InterruptedException ex) {
-				mLogger.severe(ex.getMessage());
-			}
+		try {
+			mAnimationLaunchControl.acquire();
+			a.start();
+		} catch (InterruptedException ex) {
+			mLogger.severe(ex.getMessage());
 		}
 
 		return a;
+	}
+
+	public Animation doAnimation(String name, int duration, boolean block) {
+		return doAnimation(name, duration, "", block);
+	}
+
+	public Animation doAnimation(String name, Object param, boolean block) {
+		return doAnimation(name, -1, param, block);
+	}
+
+	public Animation doAnimation(String name, boolean block) {
+		return doAnimation(name, -1, "", block);
+	}
+
+	public Animation doAnimation(String name, int duration, Object param, boolean block) {
+		Animation a = AnimationLoader.getInstance().loadAnimation(this, name, duration, block);
+
+		a.setParameter(param); // this is for now onyl used by the Speech Bubble
+
+		try {
+			mAnimationLaunchControl.acquire();
+			a.start();
+		} catch (InterruptedException ex) {
+			mLogger.severe(ex.getMessage());
+		}
+
+		return a;
+	}
+
+	public void playAnimation(Animation a) {
+		try {
+			//mLogger.info("Waiting for allowance to play animation " + a.toString());
+			mAnimationLaunchControl.acquire();
+			//mLogger.info("\tgranted!");
+			a.start();
+		} catch (InterruptedException ex) {
+			mLogger.severe(ex.getMessage());
+		}
 	}
 
 	@Override
@@ -268,7 +289,9 @@ public class Stickman extends JComponent {
 
 		// draw everthing in the middle and scaled
 		AffineTransform at = g2.getTransform();
-		at.translate(mSize.width / 2 - mHead.mSize.width * mScale, getBounds().height - 470 * mScale);
+		mGeneralXTranslation = mSize.width / 2 - mHead.mSize.width * mScale;
+		mGeneralYTranslation = getBounds().height - 470 * mScale;
+		at.translate(mGeneralXTranslation, mGeneralYTranslation);
 		at.scale(mScale, mScale);
 		g2.setTransform(at);
 
