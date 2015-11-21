@@ -6,8 +6,8 @@
 package de.dfki.vsm.players.stickman.animation.head;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.BodyAnimation;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
 import java.util.ArrayList;
 
 /**
@@ -28,12 +28,12 @@ public class TiltLeft extends Animation {
 		// head down
 		mAnimationPart = new ArrayList<>();
 		// which bodyparts are involved - check dependencies
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEye, "tilt", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mRightEyebrow, "tilt", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEye, "tilt", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mLeftEyebrow, "tilt", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mHead, "tilt", translationUnit));
-		mAnimationPart.add(new BodyAnimation(mStickman.mMouth, "tilt", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEye, "tilt", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mRightEyebrow, "tilt", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEye, "tilt", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mLeftEyebrow, "tilt", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mHead, "tilt", translationUnit));
+		mAnimationPart.add(new AnimationContent(mStickman.mMouth, "tilt", translationUnit));
 
 		playAnimationPart(300);
 	}

@@ -1,6 +1,6 @@
 package de.dfki.vsm.players.stickman.environment;
 
-import de.dfki.vsm.players.stickman.animation.Animator;
+import de.dfki.vsm.players.stickman.animationlogic.Animator;
 import de.dfki.vsm.players.stickman.body.BodyPart;
 import de.dfki.vsm.players.stickman.body.Head;
 import java.awt.BasicStroke;
@@ -35,6 +35,7 @@ public class SpeechBubble extends BodyPart {
 	Head mHead;
 	public SpeechBubble.SHAPE mShape = SpeechBubble.SHAPE.DEFAULT;
 	public String mText = "";
+	public String mCurrentlySpokenText = "";
 	int mLength = 120;
 	int mHeight = 30;
 	Point mBubbleCenter = new Point(0, 0);
@@ -112,7 +113,7 @@ public class SpeechBubble extends BodyPart {
 		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g;
-		
+
 		g2.setColor(mColor);
 
 		g2.fill(mBubble);
@@ -126,9 +127,18 @@ public class SpeechBubble extends BodyPart {
 			g2.setColor(new Color(0, 0, 0, 172));
 
 			FontRenderContext fontRenderContext = g2.getFontRenderContext();
+			
+			int startB = mText.indexOf(mCurrentlySpokenText);
+			int endB = startB + mCurrentlySpokenText.length();
 
 			AttributedString attributedString = new AttributedString(mText);
 			attributedString.addAttribute(TextAttribute.FONT, mFont);
+			if (endB > startB) {
+				//mHead.mStickman.mLogger.info("total >" + mText + "< current >" + mCurrentlySpokenText + "< start " + startB + " end " + endB);
+				//attributedString.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON, startB, endB);
+				//attributedString.addAttribute(TextAttribute.INPUT_METHOD_UNDERLINE, TextAttribute.UNDERLINE_LOW_TWO_PIXEL, startB, endB);
+				attributedString.addAttribute(TextAttribute.FOREGROUND, new Color(92, 31, 32), startB, endB);
+			}
 			LineBreakMeasurer textBreak = new LineBreakMeasurer(attributedString.getIterator(), fontRenderContext);
 
 			// get lines ...
@@ -162,7 +172,11 @@ public class SpeechBubble extends BodyPart {
 			}
 		}
 
-		g2.setColor(new Color(0, 0, 0, 64 - (Animator.sMAX_ANIM_STEPS - (new Double(mShapeAnimationStep)).intValue()) * 3));
+		if (mCurrentlySpokenText.isEmpty()) {
+			g2.setColor(new Color(0, 0, 0, 64 - (Animator.sMAX_ANIM_STEPS - (new Double(mShapeAnimationStep)).intValue()) * 3));
+		} else {
+			g2.setColor(new Color(0, 0, 0, 64));
+		}
 		g2.setStroke(new BasicStroke(3));
 
 		g2.draw(mBubble);

@@ -6,8 +6,8 @@
 package de.dfki.vsm.players.stickman.animation.face;
 
 import de.dfki.vsm.players.stickman.Stickman;
-import de.dfki.vsm.players.stickman.animation.Animation;
-import de.dfki.vsm.players.stickman.animation.BodyAnimation;
+import de.dfki.vsm.players.stickman.animationlogic.Animation;
+import de.dfki.vsm.players.stickman.animationlogic.AnimationContent;
 import java.util.ArrayList;
 
 /**
@@ -25,7 +25,7 @@ public class Mouth_O extends Animation {
 	public void playAnimation() {
 		// smile
 		mAnimationPart = new ArrayList<>();
-		mAnimationPart.add(new BodyAnimation(mStickman.mMouth, "shape", "O"));
+		mAnimationPart.add(new AnimationContent(mStickman.mMouth, "shape", "O"));
 		playAnimationPart(20);
 	}
 }

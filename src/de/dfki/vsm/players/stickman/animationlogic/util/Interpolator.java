@@ -1,6 +1,6 @@
-package de.dfki.vsm.players.stickman.animation.util;
+package de.dfki.vsm.players.stickman.animationlogic.util;
 
-import static de.dfki.vsm.players.stickman.animation.Animator.sMAX_ANIM_STEPS;
+import static de.dfki.vsm.players.stickman.animationlogic.Animator.sMAX_ANIM_STEPS;
 
 /**
  *

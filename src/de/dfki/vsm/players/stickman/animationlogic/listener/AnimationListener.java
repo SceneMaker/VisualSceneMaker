@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.players.stickman.animation;
+package de.dfki.vsm.players.stickman.animationlogic.listener;
 
 /**
  *
@@ -11,7 +11,7 @@ package de.dfki.vsm.players.stickman.animation;
  *
  */
 public interface AnimationListener {
-
-	public void update(final Animation a);
+	
+	public void update(String animationId);
 
 }

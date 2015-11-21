@@ -180,6 +180,20 @@ public final class RunTimeInstance {
         // Check activity status with the interpreter
         return mProjectMap.get(project).isRunning();
     }
+	
+	    // Check activity status of the project
+    public final /* synchronized */ boolean wasExecuted(final RunTimeProject project) {
+        //mLogger.message("Check if running");
+        if (!mProjectMap.containsKey(project)) {
+            // Print an error message
+            //mLogger.warning("Warning: There is no interpreter registered for project '" + project + "'");
+            // Return false at error
+            return false;
+        }
+        //mLogger.message("Check really running '" + this + "'");
+        // Check activity status with the interpreter
+        return mProjectMap.get(project).wasExecuted();
+    }
 
     // Check paused status of the project
     public final /* synchronized */ boolean isPaused(final RunTimeProject project) {

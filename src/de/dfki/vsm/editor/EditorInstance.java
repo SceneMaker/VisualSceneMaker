@@ -826,7 +826,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                     // Print some information
                     //mLogger.message("Starting project '" + project + "'");
                     // Refresh the appearance
-                    refresh();
+                    
+                    
+                    //refresh(); // TODO WHY IS THIS CALL HERE?
                     // Return true at success
                     return true;
                 } else {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="StickmanWorld" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Do, 5 Nov 2015 19:11:11" start="N2;N3;N6;N7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="Stickman" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Fr, 20 Nov 2015 10:32:42" start="N2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -22,16 +22,16 @@
         <String value="ByeBye"/>
       </PlaySceneGroup>
     </Commands>
-    <TEdge target="N2" start="" timeout="1000">
+    <EEdge target="N2" start ="">
     <Graphics>
       <Arrow>
-        <Point x-pos="234" y-pos="67" control-x-pos="178" control-y-pos="81"/>
-        <Point x-pos="92" y-pos="67" control-x-pos="147" control-y-pos="81"/>
+        <Point x-pos="304" y-pos="67" control-x-pos="219" control-y-pos="89"/>
+        <Point x-pos="92" y-pos="67" control-x-pos="177" control-y-pos="89"/>
       </Arrow>
     </Graphics>
-    </TEdge>
+    </EEdge>
     <Graphics>
-      <Position x-pos="233" y-pos="23"/>
+      <Position x-pos="303" y-pos="23"/>
     </Graphics>
   </Node>
   <Node id="N2" name="N2" exhaustive="false" preserving="false" history="false">
@@ -44,14 +44,14 @@
         <String value="Welcome"/>
       </PlaySceneGroup>
     </Commands>
-    <TEdge target="N1" start="" timeout="1000">
+    <EEdge target="N1" start ="">
     <Graphics>
       <Arrow>
-        <Point x-pos="93" y-pos="58" control-x-pos="150" control-y-pos="58"/>
-        <Point x-pos="233" y-pos="58" control-x-pos="175" control-y-pos="58"/>
+        <Point x-pos="93" y-pos="58" control-x-pos="180" control-y-pos="58"/>
+        <Point x-pos="303" y-pos="58" control-x-pos="215" control-y-pos="58"/>
       </Arrow>
     </Graphics>
-    </TEdge>
+    </EEdge>
     <Graphics>
       <Position x-pos="23" y-pos="23"/>
     </Graphics>
@@ -90,7 +90,7 @@
         <Bool value="false"/>
       </UserCommand>
     </Commands>
-    <TEdge target="N4" start="" timeout="500">
+    <TEdge target="N4" start="" timeout="1500">
     <Graphics>
       <Arrow>
         <Point x-pos="277" y-pos="164" control-x-pos="295" control-y-pos="96"/>
@@ -117,7 +117,7 @@
         <Bool value="false"/>
       </UserCommand>
     </Commands>
-    <TEdge target="N5" start="" timeout="1000">
+    <TEdge target="N5" start="" timeout="2000">
     <Graphics>
       <Arrow>
         <Point x-pos="277" y-pos="304" control-x-pos="295" control-y-pos="236"/>
