@@ -270,6 +270,10 @@ public class EditorStarter extends JPanel {
 		mLeftProjectBox.removeAll();
 		mLeftProjectBox.revalidate();
 		mLeftProjectBox.repaint();
+                
+                mRightProjectBox.removeAll();
+		mRightProjectBox.revalidate();
+		mRightProjectBox.repaint();
 		createMenuButtons();
 		listOfRecentProjects();
 		//listOfSampleProjects();
