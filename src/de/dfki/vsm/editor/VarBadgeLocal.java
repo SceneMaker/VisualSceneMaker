@@ -256,7 +256,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
     private  void updateVariable(TPLTuple<String, String> varVal) {
         synchronized(mEntryList) {
-         System.out.println("updateVariable");
         for (VariableEntry entry : mEntryList) {
             String var = entry.getVarName();    // the name of the current variable
             String typ = entry.getVarType();
