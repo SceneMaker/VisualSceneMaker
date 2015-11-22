@@ -6,14 +6,19 @@
 package de.dfki.vsm.players.action.sequence;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.xml.XMLParseAction;
+import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import de.dfki.vsm.util.xml.XMLWriteable;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Patrick Gebhard
  *
  */
-public class Entry {
+public class Entry  {
 
 	public static enum TYPE {
 
@@ -30,4 +35,7 @@ public class Entry {
 	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
 	}
 
+	public String toString() {
+       return "entry";
+	}
 }

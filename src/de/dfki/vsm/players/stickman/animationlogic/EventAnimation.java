@@ -8,52 +8,32 @@ package de.dfki.vsm.players.stickman.animationlogic;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.xml.XMLParseAction;
+import de.dfki.vsm.util.xml.XMLParseError;
+import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.List;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Patrick Gebhard
  *
  */
-public abstract class EventAnimation extends Animation {
+public class EventAnimation extends Animation {
 
 	public SceneUttr mUtterance;
 	public List<Long> mTimepoints;
 	public WordTimeMarkSequence mWTS;
+	
+	public EventAnimation() {
+		super();
+	}
 
-	public EventAnimation(Stickman sm, int duration, WordTimeMarkSequence wts, boolean block) {
+	public EventAnimation(Stickman sm, int duration, boolean block) {
 		super(sm, duration, block);
-		mWTS = wts;
-		setName(sm.mName + "'s Event Animation " + getClass().getSimpleName());
-	}
-
-	public void waitForClearance() {
-		mStickman.mAnimationScheduler.introduce(this);
-
-		// block this animation for animation - AnimationSheduler will unblock 
-		try {
-			mAnimationStart.acquire(1);
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
-		}
-
-		// tell Stickman this animation has been scheduled and a next one can come
-		mStickman.mAnimationLaunchControl.release();
-	}
-
-	private void play() {
-		// wait until AnimationScheduler says go!
-		try {
-			mAnimationStart.acquire(1);
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
-		}
-
-		playAnimation();
-	}
-
-	public void playAnimation() {
-		// place animation code here
+		mName = getClass().getSimpleName();
+		setName(sm.mName + "'s Event Animation " + mName);
 	}
 
 	public void playEventAnimationPart() {
@@ -65,49 +45,48 @@ public abstract class EventAnimation extends Animation {
 			mStickman.mLogger.severe(ex.getMessage());
 		}
 	}
+	
+	@Override
+	public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+		out.println("<StickmanEventAnimation stickmanname = \"" + mStickmanName + "\" name=\"" + mName + "\" id=\"" + mID + "\" duration=\"" + mDuration + "\" blocking=\"" + mBlocking + "\">").push();
+		if (mParameter != null) {
 
-	public void playAnimationPart(int duration) {
-		mAnimator = new Animator(mStickman, this, mAnimationPart, duration);
+			if (mParameter instanceof WordTimeMarkSequence) {
+				((WordTimeMarkSequence) mParameter).writeXML(out);
+			}
 
-		try {
-			mAnimationPartStart.acquire();
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
+			if (mParameter instanceof String) {
+				out.println((String) mParameter);
+			}
 		}
-	}
-
-	public void pauseAnimation(int duration) {
-		mAnimationPause = new AnimationPause(mStickman, this, duration);
-
-		try {
-			mAnimationPartStart.acquire();
-		} catch (InterruptedException ex) {
-			mStickman.mLogger.severe(ex.getMessage());
-		}
-	}
-
-	public void finalizeAnimation() {
-		// unblock AnimationScheduler if animation is a blocking animation
-		if (mBlocking) {
-			//mStickman.mLogger.info("unblocking AnimationScheduler");
-			mStickman.mAnimationScheduler.proceed(this);
-		} else {
-			mStickman.mAnimationScheduler.removeAnimation(this);
-		}
-		// send event that Animation is ended
-		mStickman.notifyListeners(this);
+		out.pop().println("</StickmanEventAnimation>");
 	}
 
 	@Override
-	public void run() {
-		waitForClearance();
+	public void parseXML(final Element element) throws XMLParseError {
 
-		play();
+		mStickmanName = element.getAttribute("stickmanname");
+		mName = element.getAttribute("name");
+		mID = element.getAttribute("id");
+		mDuration = Integer.parseInt(element.getAttribute("duration"));
+		mBlocking = Boolean.parseBoolean(element.getAttribute("blocking"));
 
-		finalizeAnimation();
-	}
+		// Process The Child Nodes
+		XMLParseAction.processChildNodes(element, new XMLParseAction() {
+			@Override
+			public void run(final Element element) throws XMLParseError {
 
-	public String toString() {
-		return getClass().getSimpleName() + ", " + getName();
+				// Get The Child Tag Name
+				final String name = element.getTagName();
+
+				if (name.equalsIgnoreCase("WordTimeMarkSequence")) {
+					mParameter = new WordTimeMarkSequence();
+
+					((WordTimeMarkSequence) mParameter).parseXML(element);
+				} else {
+					mParameter = (String) element.getTextContent();
+				}
+			}
+		});
 	}
 }

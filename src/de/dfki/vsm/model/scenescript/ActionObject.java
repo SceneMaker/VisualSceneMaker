@@ -22,6 +22,9 @@ public final class ActionObject extends AbstractWord {
     // The Action Arguments
     private LinkedList<ActionFeature> mFeatureList = new LinkedList<>();
 
+	// The Name Of The Agent
+	private String mAgentName;
+	
     // The Name Of The Action
     private String mName;
 
@@ -29,31 +32,39 @@ public final class ActionObject extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ActionObject() {
+		mAgentName = null;
         mName = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ActionObject(final int lower, final int upper, final String name, final LinkedList<ActionFeature> list) {
+    public ActionObject(final int lower, final int upper, final String agent, final String name, final LinkedList<ActionFeature> list) {
 
         // Initialize The Boundary
         super(lower, upper);
-
+		
         // Initialize The Members
-        mName = name;
+        mAgentName = agent;
+		
+		mName = name;
 
         // Initialize Fature List
         mFeatureList = list;
     }
-
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final String getAgentName() {
+        return mAgentName;
+    }
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public final String getName() {
         return mName;
     }
-
+	
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -111,8 +122,10 @@ public final class ActionObject extends AbstractWord {
     @Override
     public final String getText() {
 
-        // Append The Identifier
-        String result = "[" + mName;
+        // Append The Identifiers
+		String agentname = (mAgentName == null || mAgentName.isEmpty()) ? "" : mAgentName + " ";
+		
+        String result = "[" + agentname + mName;
 
         if (!mFeatureList.isEmpty()) {
             result += " ";
@@ -138,8 +151,10 @@ public final class ActionObject extends AbstractWord {
     @Override
     public final String getText(final HashMap<String, String> args) {
 
-        // Append The Identifier
-        String result = "[" + mName;
+        // Append The Identifiers
+		String agentname = (mAgentName == null || mAgentName.isEmpty()) ? "" : mAgentName + " ";
+		
+        String result = "[" + agentname + mName;
 
         if (!mFeatureList.isEmpty()) {
             result += " ";
@@ -164,7 +179,10 @@ public final class ActionObject extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.println("<ActionObject " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "name=\"" + mName
+		
+		//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AGENTNAME " + mAgentName);
+		
+        stream.println("<ActionObject " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "agentname=\""+ ((mAgentName == null) ? "" : mAgentName) + "\" "+ "name=\"" + mName
                        + "\">");
         stream.push();
 
@@ -192,7 +210,8 @@ public final class ActionObject extends AbstractWord {
 
         // Parse The Members
         mName = element.getAttribute("name");
-
+		mAgentName = element.getAttribute("agentname");
+		
         // Process The Child Nodes
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
@@ -232,6 +251,6 @@ public final class ActionObject extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final ActionObject getCopy() {
-        return new ActionObject(mLower, mUpper, mName, copyFeatureList());
+        return new ActionObject(mLower, mUpper, mAgentName, mName, copyFeatureList());
     }
 }

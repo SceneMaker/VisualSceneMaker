@@ -5,15 +5,13 @@
  */
 package de.dfki.vsm.players.stickman.animationlogic.listener;
 
-import de.dfki.vsm.players.stickman.animationlogic.Animation;
-
 /**
  *
  * @author Patrick Gebhard
  *
  */
 public interface AnimationListener {
-
-	public void update(final Animation a);
+	
+	public void update(String animationId);
 
 }

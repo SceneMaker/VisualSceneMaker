@@ -126,12 +126,12 @@ public final class XMLUtilities {
 
     // Write a writeable object to an indent writer
     public final static boolean writeToXMLWriter(final XMLWriteable writeable, final IOSIndentWriter writer) {
-        try {
+		try {
             // Write the XML header line to the stream
             writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            // Write the writeable object to the stream
+			// Write the writeable object to the stream
             writeable.writeXML(writer);
-            // Flush and close the writer and the stream
+			// Flush and close the writer and the stream
             writer.flush();
             writer.close();
             // Return true if writing was successfull
