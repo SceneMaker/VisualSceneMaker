@@ -12,6 +12,7 @@ import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
@@ -108,18 +109,23 @@ public class MonitorDialog extends JDialog implements  EventListener{
         if (selectedIndex != -1) {
             VarDef           varDef      = mVarDefListData.get(selectedIndex);
             java.lang.String inputString = mInputTextField.getText().trim();
-
+            
             try {
                 _SFSLParser_.parseResultType = _SFSLParser_.EXP;
                 _SFSLParser_.run(inputString);
 
                 Expression exp = _SFSLParser_.expResult;
-
+                
+                //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
                     if (exp instanceof Bool) {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
                     } else if (exp instanceof Int) {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
+                    } else if (exp instanceof UnaryExp) {
+                        if ( ((UnaryExp)exp).getExp() instanceof Int) {
+                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((Int)((UnaryExp) exp).getExp()).getValue());
+                        }
                     } else if (exp instanceof Float) {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                     } else if (exp instanceof String) {
@@ -133,11 +139,15 @@ public class MonitorDialog extends JDialog implements  EventListener{
                     } else if (exp instanceof Struct) {
                         //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     } else {
+                        System.out.println("Expression could not be parsed");
                         //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     }
                 }
             } catch (Exception e) {
                 System.err.println(e.toString());
+                for (StackTraceElement st : e.getStackTrace()) {
+                    System.out.println(st);
+                }
             }
         }
 
