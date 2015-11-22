@@ -7,7 +7,7 @@ package de.dfki.vsm.players;
 
 import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.action.ActionListener;
-import de.dfki.vsm.players.stickman.StickmanStage;
+import de.dfki.vsm.players.server.TCPActionServer;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,45 +24,100 @@ import java.util.concurrent.ThreadFactory;
  */
 public class ActionPlayer extends Thread {
 
-	static ScheduledExecutorService mActionScheduler;
-	static List<Action> mActionList;
-	static Semaphore mActionPlaySync;
+	static ScheduledExecutorService sActionScheduler;
+	static List<Action> sActionList;
+	static Semaphore sActionPlaySync;
+	static TCPActionServer sActionServer;
+	static ActionPlayer sInstance;
 
 	// for components that are interested in what's happening here
 	static final ArrayList<ActionListener> mActionListeners = new ArrayList<>();
 
-	boolean mRunning = true;
+	public boolean mRunning = true;
 	static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+	private static long sID = 0;
+	public static boolean mUseNetwork = false;
 
-	protected ActionPlayer() {
+	public static boolean mActionServerRunning = false;
+
+	ActionPlayer() {
 		initialize();
 	}
 
+	public String getNextID() {
+		sID++;
+		return "action" + sID;
+	}
+
 	public final void initialize() {
-		mActionList = Collections.synchronizedList(new ArrayList());
-		mActionScheduler = Executors.newScheduledThreadPool(10, new ActionThreadFactory());
-		mActionPlaySync = new Semaphore(0);
+		sActionList = Collections.synchronizedList(new ArrayList());
+		sActionScheduler = Executors.newScheduledThreadPool(10, new ActionThreadFactory());
+		sActionPlaySync = new Semaphore(0);
+
+		if (mUseNetwork) {
+			sActionServer = TCPActionServer.getInstance();
+			sActionServer.start();
+
+			while (!mActionServerRunning) {
+				try {
+					mLogger.message("Waiting for ActionPlayer's network server is ready ...");
+					Thread.sleep(250);
+				} catch (InterruptedException ex) {
+					mLogger.failure(ex.getMessage());
+				}
+			}
+		}
 	}
 
 	public void addAction(Action a) {
 		// tell the action which player executes it
 		a.mActionPlayer = this;
+		// give unique id;
+		a.mID = getNextID();
 		// add action to the list of to be executed actions
-		mActionList.add(a);
+		sActionList.add(a);
 	}
 
 	public void play() {
-		mActionPlaySync.release();
+		//mLogger.message("Releasing ... Actions in Queue");
+
+//		for (Action ac : sActionList) {
+//			mLogger.message("\t" + ac.mName);
+//		}
+		sActionPlaySync.release();
+
+		//mLogger.message("Released ...");
+	}
+
+	public synchronized void end() {
+		sActionServer.end();
+		sActionServer = null;
+		mRunning = false;
+		sInstance = null;
+
+		List<Runnable> scheduledTasks = sActionScheduler.shutdownNow();
+
+		sActionPlaySync.release(2);
 	}
 
 	public static void actionEnded(Action a) {
-		synchronized (mActionList) {
-			notifyListenersAboutAction(a, ActionListener.STATE.ACTION_FINISHED);
-			mActionList.remove(a);
+		synchronized (sActionList) {
+			//mLogger.message("Action " + a.mName + " with id (" + a.mID + ") has ended. " + sActionList.size() + " in queue...");
+			Action aToRemove = null;
+			for (Action ac : sActionList) {
+				//mLogger.message("\tchecking if Action " + ac.mName + " with id (" + ac.mID + ") is in queue ...");
+				aToRemove = (ac.mID == a.mID) ? ac : null;
+				if (aToRemove != null) {
+					//mLogger.message("\t\tYes! Wonderful!");
+					sActionList.remove(aToRemove);
+					break;
+				}
+			}
 
-			// if all actions are ended - reset ScheduledActionPlayer
-			if (mActionList.isEmpty()) {
-				mActionPlaySync.release();
+			// if all actions are ended - reset ActionPlayer
+			if (sActionList.isEmpty()) {
+				//mLogger.message("All actions played ... ending action sequence");
+				sActionPlaySync.release();
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.action.sequence.Entry;
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
+import de.dfki.vsm.players.stickman.StickmanStage;
 import de.dfki.vsm.players.stickman.body.BodyPart;
 import de.dfki.vsm.players.stickman.util.TimingInfo;
 import static java.lang.Thread.sleep;
@@ -63,12 +64,6 @@ public class Animator {
 	}
 
 	private void renderEventAnimation() {
-		// the animations duration is determined entirely by the animation itself!
-
-		//mStickman.mLogger.info("Number of clusters " + mWTS.getNumberofClusters());
-		//sMAX_ANIM_STEPS = mWTS.getNumberofClusters();
-		//ArrayList<Integer> clusterTiming = new ArrayList<>();
-
 		for (ArrayList<Entry> cluster : mWTS.getClusters()) {
 			//mStickman.mLogger.info("Cluster is a " + WordTimeMarkSequence.getClusterType(cluster).name());
 			if (WordTimeMarkSequence.getClusterType(cluster) == Entry.TYPE.WORD) {
@@ -79,12 +74,11 @@ public class Animator {
 					text += e.mContent + " ";
 				}
 				text = text.trim();
-				
+
 				mStickman.mSpeechBubble.mText = mWTS.getText();
 				mStickman.mSpeechBubble.mCurrentlySpokenText = text;
-				
-				//clusterTiming.add(TimingInfo.spokenStringDuration(text));
 
+				//clusterTiming.add(TimingInfo.spokenStringDuration(text));
 				//mStickman.mLogger.info("utterance " + text);
 				// do the rendering ...
 				int duration = TimingInfo.spokenStringDuration(text);
@@ -93,7 +87,6 @@ public class Animator {
 				mRenderPauseDuration = (mRenderPauseDuration < 1) ? 1 : mRenderPauseDuration; // minimum delay is 1 millisecond
 
 				//mStickman.mLogger.info("Animator - animation " + mAnimation + " render pause " + mRenderPauseDuration + " duration " + duration);
-
 				render();
 			}
 
@@ -101,7 +94,16 @@ public class Animator {
 				// here we have to spread the word that a specific timemark has been reached
 				// the interface is the runActionAtTimemark method in the EventActionPlayer
 				for (Entry e : cluster) {
-					EventActionPlayer.getInstance().runActionAtTimeMark(e.mContent);
+					// we have 2 options!
+					// 1) API Call
+					// 2) send to Player
+
+					// API or TCP-Interface
+					if (!StickmanStage.mUseNetwork) {
+						EventActionPlayer.getInstance().runActionAtTimeMark(e.mContent);
+					} else {
+						StickmanStage.sendTimeMarkInformation(e.mContent);
+					}
 				}
 			}
 		}

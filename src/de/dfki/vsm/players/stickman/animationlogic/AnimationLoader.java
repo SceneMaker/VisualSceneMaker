@@ -5,7 +5,6 @@
  */
 package de.dfki.vsm.players.stickman.animationlogic;
 
-import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.Stickman;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -23,6 +22,7 @@ public class AnimationLoader {
 	private final static String sANIMATIONPATH = "de.dfki.vsm.players.stickman";
 	private static final Set<String> sAnimationSubPackages = new HashSet<>(Arrays.asList("head", "face", "gesture", "environment"));
 	private static AnimationLoader sInstance = null;
+	private static long sID = 0;
 
 	private AnimationLoader() {
 	}
@@ -33,6 +33,11 @@ public class AnimationLoader {
 		}
 
 		return sInstance;
+	}
+	
+	public String getNextID() {
+		sID++;
+		return "a"+sID;
 	}
 
 	private String getAnimationClasspath(Stickman.TYPE stickmantype, String name) {
@@ -67,7 +72,7 @@ public class AnimationLoader {
 		return classPath;
 	}
 
-	public Animation load(Stickman sm, String name, int duration, boolean block) {
+	public Animation loadAnimation(Stickman sm, String name, int duration, boolean block) {
 		Animation a = null;
 
 		String cp = getAnimationClasspath(sm.mType, name);
@@ -79,7 +84,8 @@ public class AnimationLoader {
 				Class[] params = con.getParameterTypes();
 
 				if (params.length == 3) {
-					if (params[0].getSimpleName().equalsIgnoreCase("stickman") && params[1].getSimpleName().equalsIgnoreCase("int")
+					if (params[0].getSimpleName().equalsIgnoreCase("stickman") 
+					  && params[1].getSimpleName().equalsIgnoreCase("int")
 					  && params[2].getSimpleName().equalsIgnoreCase("boolean")) {
 						a = (Animation) c.getDeclaredConstructor(params).newInstance(sm, duration, block);
 					}
@@ -90,10 +96,11 @@ public class AnimationLoader {
 			sm.mLogger.severe("Animation \"" + name + "\" cannot be found in " + cp);
 		}
 
+		a.mID = getNextID();
 		return a;
 	}
 
-	public EventAnimation load(Stickman sm, String name, WordTimeMarkSequence wts, int duration, boolean block) {
+	public EventAnimation loadEventAnimation(Stickman sm, String name, int duration, boolean block) {
 		EventAnimation a = null;
 
 		String cp = getEventAnimationClasspath(sm.mType, name);
@@ -105,11 +112,11 @@ public class AnimationLoader {
 			for (Constructor con : constructors) {
 				Class[] params = con.getParameterTypes();
 
-				if (params.length == 4) {
-					if (params[0].getSimpleName().equalsIgnoreCase("stickman") && params[1].getSimpleName().equalsIgnoreCase("WordTimeMarkSequence")
-					  && params[2].getSimpleName().equalsIgnoreCase("int")
-					  && params[3].getSimpleName().equalsIgnoreCase("boolean")) {
-						a = (EventAnimation) c.getDeclaredConstructor(params).newInstance(sm, wts, duration, block);
+				if (params.length == 3) {
+					if (params[0].getSimpleName().equalsIgnoreCase("stickman") 
+					  && params[1].getSimpleName().equalsIgnoreCase("int")
+					  && params[2].getSimpleName().equalsIgnoreCase("boolean")) {
+						a = (EventAnimation) c.getDeclaredConstructor(params).newInstance(sm, duration, block);
 					}
 				}
 
@@ -118,6 +125,8 @@ public class AnimationLoader {
 			sm.mLogger.severe("Animation \"" + name + "\" cannot be found in " + cp);
 		}
 
+		a.mID = getNextID();
+		
 		return a;
 	}
 }

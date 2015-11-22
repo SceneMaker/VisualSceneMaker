@@ -1,16 +1,14 @@
 package de.dfki.vsm.model.project;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Dimension;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 
 import java.util.Properties;
 import java.util.SortedSet;
@@ -249,35 +247,47 @@ public class EditorConfig {
         
     }
     
-    public synchronized boolean load(final File base) {
+    public synchronized boolean load(final String path) {
 
-        // Create the project configuration file
-        final File file = new File(base, "editorconfig.xml");
+        InputStream inputStream = null;
+        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "editorconfig.xml");
+            if (inputStream == null) {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find gesticon configuration file  ");
+                // Return failure if it does not exist
+                return false;
+            }
 
-        // Check if the  configuration does exist
-        if (!file.exists()) {
-
-            // Print an error message if this case
-            mLogger.failure("Error: Cannot find project editor configuration file '" + file + "'");
-
-            // Return failure if it does not exist
+        }
+        else {
+            final File file = new File(path, "editorconfig.xml");
+            // Check if the configuration file does exist
+            if (!file.exists()) {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find editor configuration file '" + file + "'");
+                // Return failure if it does not exist
+                return false;
+            }
+            try {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                mLogger.failure("Error: Cannot find editor configuration file '" + file + "'");
+            }
+        }
+        if(!XMLUtilities.parseFromXMLStream(sPROPERTIES, inputStream)){
+            mLogger.failure("Error: Cannot parse editor configuration file  in path" + path);
             return false;
         }
 
-        // Parse the project configuration file
-        if (!XMLUtilities.parseFromXMLFile(sPROPERTIES, file)) {
 
-            // Print an error message if this case
-            mLogger.failure("Error: Cannot parse project editor configuration file '" + file + "'");
 
-            // Return failure if it does not exist
-            return false;
-        }
+
         
         try {
-            try (FileInputStream in = new FileInputStream(file)) {
-                sPROPERTIES.loadFromXML(in);
-            }
+
+                sPROPERTIES.loadFromXML(inputStream);
+
         } catch (IOException e) {
             e.printStackTrace(System.out);
         }
@@ -410,7 +420,7 @@ public class EditorConfig {
         init();
 
         // Print an information message if this case
-        mLogger.message("Loaded project editor configuration file '" + file + "':\n");
+        mLogger.message("Loaded project editor configuration file in path'" + path+ "':\n");
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         if (XMLUtilities.writeToXMLStream(sPROPERTIES, stream)) {
             try {
