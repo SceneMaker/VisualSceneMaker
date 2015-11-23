@@ -57,8 +57,8 @@ public class EditorConfig {
     public boolean sSHOW_VARIABLE_BADGE_ON_WORKSPACE = true;
     public boolean sSHOW_SMART_PATH_DEBUG = false;
     public boolean sSHOWIDSOFNODES = true;
-    public String sSCRIPT_FONT_TYPE = "Arial";
-    public int sSCRIPT_FONT_SIZE = 11;
+    public String sSCRIPT_FONT_TYPE = "Monospaced";
+    public int sSCRIPT_FONT_SIZE = 16;
     public boolean sSHOWSCENE_ELEMENTS = true;
     public boolean sAUTOHIDE_BOTTOMPANEL = true; // Saves the pricked pin of the bottom panel of the editor
 
@@ -147,11 +147,11 @@ public class EditorConfig {
         }
         
         if (!sPROPERTIES.containsKey("scriptfonsize")) {
-            sPROPERTIES.setProperty("scriptfonsize", "11");
+            sPROPERTIES.setProperty("scriptfonsize", "16");
         }
         
         if (!sPROPERTIES.containsKey("scriptfonttype")) {
-            sPROPERTIES.setProperty("scriptfonttype", "Arial");
+            sPROPERTIES.setProperty("scriptfonttype", "Monospaced");
         }
         
         if (!sPROPERTIES.containsKey("launchPlayer")) {
@@ -284,13 +284,13 @@ public class EditorConfig {
 
 
         
-        try {
+        /*try {
 
                 sPROPERTIES.loadFromXML(inputStream);
 
         } catch (IOException e) {
             e.printStackTrace(System.out);
-        }
+        }*/
         
         if (!sPROPERTIES.containsKey("frame_title")) {
             sPROPERTIES.setProperty("frame_title", "Visual SceneMaker");
