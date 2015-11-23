@@ -60,8 +60,7 @@ public class EditorStarter extends JPanel {
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
 	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
 
-
-	private final File SampleProjFolder = new File( Preferences.sSAMPLE_PROJECTS);
+	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
 
 	private final EditorInstance mEditorInstance;
 	private final Box mCenterProjectBox;
@@ -102,8 +101,6 @@ public class EditorStarter extends JPanel {
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(paddingSize, 180, paddingSize, paddingSize));
 
-
-
 		JLabel titleLabel = new JLabel("Welcome to Visual SceneMaker");
 		titleLabel.setOpaque(false);
 		titleLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
@@ -114,10 +111,8 @@ public class EditorStarter extends JPanel {
 		titlePanel.setOpaque(false);
 		titlePanel.setLayout(new BorderLayout(0, 0));
 		titlePanel.add(titleLabel, BorderLayout.CENTER);
-		titlePanel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() ), 30));
+		titlePanel.setMaximumSize(new Dimension((int) (screenDimension.getWidth()), 30));
 		titlePanel.setBorder(new EmptyBorder(10, 0, 10, 10));
-
-
 
 		JLabel msgLabel = new JLabel("<html>This welcome screen provides quick starting actions, like create a new project, <br> open a recent project, open a example project, and check news and documentation</html>");
 
@@ -131,7 +126,6 @@ public class EditorStarter extends JPanel {
 		messagePanel.setLayout(new BorderLayout(0, 0));
 		messagePanel.add(msgLabel, BorderLayout.CENTER);
 		messagePanel.setBorder(new EmptyBorder(10, 0, 10, 10));
-
 
 		mLeftProjectBox = Box.createVerticalBox();
 		mRightProjectBox = Box.createVerticalBox();
@@ -147,7 +141,6 @@ public class EditorStarter extends JPanel {
 		mRightProjectBox.setMaximumSize(halfScreenDimension);
 		mRightProjectBox.setPreferredSize(mLeftProjectBox.getSize());
 		mLeftProjectBox.setBorder(new EmptyBorder(0, 0, 0, 1));
-
 
 		mCenterProjectBox.add(mLeftProjectBox);
 		content.add(titlePanel);
@@ -210,8 +203,15 @@ public class EditorStarter extends JPanel {
 		this.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				mWelcomeStickman.doAnimation("Blink", 100, false);
-				mWelcomeStickman.doAnimation("Smile", 500, false);
+				if (mWelcomeStickman.mHead.getBounds().contains(evt.getX(), evt.getY())) {
+					mWelcomeStickman.doAnimation("Speaking", 500, "My head!", false);
+					mWelcomeStickman.doAnimation("Blink", 100, false);
+					mWelcomeStickman.doAnimation("Mouth_O", 40, true);
+					mWelcomeStickman.doAnimation("Mouth_Default", 20, true);
+				} else {
+					mWelcomeStickman.doAnimation("Blink", 100, false);
+					mWelcomeStickman.doAnimation("Smile", 500, false);
+				}
 			}
 		});
 
@@ -227,18 +227,18 @@ public class EditorStarter extends JPanel {
 
 		// Let the user welcome
 		new java.util.Timer().schedule(
-				new java.util.TimerTask() {
-					@Override
-					public void run() {
-						mWelcomeStickman.doAnimation("Speaking", 2000, "Welcome!", false);
-						mWelcomeStickman.doAnimation("Mouth_O", 20, true);
-						mWelcomeStickman.doAnimation("Smile", 1000, false);
-						mWelcomeStickman.doAnimation("TiltLeft", 300, false);
-						mWelcomeStickman.doAnimation("WaveLeft", 2000, true);
-						mWelcomeStickman.doAnimation("TiltLeftBack", 300, false);
-					}
-				},
-				1000
+		  new java.util.TimerTask() {
+			  @Override
+			  public void run() {
+				  mWelcomeStickman.doAnimation("Speaking", 2000, "Welcome!", false);
+				  mWelcomeStickman.doAnimation("Mouth_O", 20, true);
+				  mWelcomeStickman.doAnimation("Smile", 1000, false);
+				  mWelcomeStickman.doAnimation("TiltLeft", 300, false);
+				  mWelcomeStickman.doAnimation("WaveLeft", 2000, true);
+				  mWelcomeStickman.doAnimation("TiltLeftBack", 300, false);
+			  }
+		  },
+		  1000
 		);
 
 	}
@@ -270,8 +270,8 @@ public class EditorStarter extends JPanel {
 		mLeftProjectBox.removeAll();
 		mLeftProjectBox.revalidate();
 		mLeftProjectBox.repaint();
-                
-                mRightProjectBox.removeAll();
+
+		mRightProjectBox.removeAll();
 		mRightProjectBox.revalidate();
 		mRightProjectBox.repaint();
 		createMenuButtons();
@@ -494,7 +494,7 @@ public class EditorStarter extends JPanel {
 				project.parse(sampleProj.getPath());
 
 				JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
-						+ Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
+				  + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
 
 				newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
 				newSampleProj.setMaximumSize(new Dimension(buttonSize));
@@ -546,15 +546,14 @@ public class EditorStarter extends JPanel {
 		// LIST OF SAMPLE PROJECTS
 		// *********************************************************************
 
-
 		CodeSource src = SceneMaker3.class.getProtectionDomain().getCodeSource();
 		List<String> listDirs = new ArrayList<String>();
 		String path = "res/prj";
-		if( src != null ) {
+		if (src != null) {
 			URL jar = src.getLocation();
 			ZipInputStream zip = null;
 			try {
-				zip = new ZipInputStream( jar.openStream());
+				zip = new ZipInputStream(jar.openStream());
 			} catch (IOException ex) {
 				mLogger.failure("Error reading resource");
 
@@ -562,17 +561,17 @@ public class EditorStarter extends JPanel {
 			ZipEntry ze = null;
 
 			try {
-				while( ( ze = zip.getNextEntry() ) != null ) {
+				while ((ze = zip.getNextEntry()) != null) {
 					String entryName = ze.getName();
-					if( entryName.startsWith(path) && ze.isDirectory() ) {
-						String entry = entryName.substring(path.length()+1);
+					if (entryName.startsWith(path) && ze.isDirectory()) {
+						String entry = entryName.substring(path.length() + 1);
 						int checkSubdir = entry.indexOf("/");
 						if (checkSubdir >= 0) {
 							// if it is a subdirectory, we just return the directory name
 							entry = entry.substring(0, checkSubdir);
 						}
-						if(!listDirs.contains(entry) && !entry.equals("")){
-							listDirs.add( path + "/" + entry  );
+						if (!listDirs.contains(entry) && !entry.equals("")) {
+							listDirs.add(path + "/" + entry);
 							System.out.println(entry);
 						}
 					}
@@ -584,11 +583,9 @@ public class EditorStarter extends JPanel {
 		}
 		int buildInSampleProjCnt = listDirs.size();
 
-
 		if (buildInSampleProjCnt == 0) {
 			return;
 		}
-
 
 		JLabel exampleMenu = new JLabel((buildInSampleProjCnt > 1) ? " Built-in Sample Projects" : " Built-in Sample Project");
 		exampleMenu.setBorder(null);
@@ -605,19 +602,13 @@ public class EditorStarter extends JPanel {
 		sampleProjPanel.setOpaque(false);
 		sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
 
-
-
-
 		for (final String sampleDir : listDirs) {
-
 
 			EditorProject project = new EditorProject();
 
 			project.parse(sampleDir);
 
-
 			JLabel newSampleProj = new JLabel(project.getProjectName() + "                         ");
-
 
 			newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
 			newSampleProj.setMaximumSize(new Dimension(buttonSize));
@@ -652,7 +643,6 @@ public class EditorStarter extends JPanel {
 			sampleProjPanel.add(new CoolSeparator());
 
 		}
-
 
 		// remove last separator
 		if (sampleProjPanel.getComponentCount() > 0) {
