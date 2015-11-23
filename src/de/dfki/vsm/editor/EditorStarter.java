@@ -114,7 +114,7 @@ public class EditorStarter extends JPanel {
 		titlePanel.setMaximumSize(new Dimension((int) (screenDimension.getWidth()), 30));
 		titlePanel.setBorder(new EmptyBorder(10, 0, 10, 10));
 
-		JLabel msgLabel = new JLabel("<html>This welcome screen provides quick starting actions, like create a new project, <br> open a recent project, open a example project, and check news and documentation</html>");
+		JLabel msgLabel = new JLabel("<html>This welcome screen provides quick starting actions, like create a new project, <br> open a recent project, open an example project, and check news and documentation</html>");
 
 		msgLabel.setOpaque(false);
 		msgLabel.setMaximumSize(new Dimension((int) (screenDimension.getWidth() / 2), 30));
