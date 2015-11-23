@@ -15,7 +15,6 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.model.scenescript.SceneWord;
-import de.dfki.vsm.players.ActionPlayer;
 import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.action.ActionListener;
@@ -118,7 +117,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 		mActionPlayer.addListener(this);
 		mActionPlayer.start();
 
-		// Start the client application - in this case the Stickmanstage
+		// Start the client application - in this case the StickmanStage
 		mLogger.message("Starting Client Application ...");
 		mStickmanStage = StickmanStage.getNetworkInstance();
 

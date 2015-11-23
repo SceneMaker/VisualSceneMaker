@@ -104,11 +104,6 @@ public class SpeechBubble extends BodyPart {
 	}
 
 	@Override
-	public void calculate(int step) {
-		createShape();
-	}
-
-	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
