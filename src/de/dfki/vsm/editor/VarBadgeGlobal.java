@@ -2,11 +2,14 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.graphics.node.Position;
 import de.dfki.vsm.util.TextFormat;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -43,7 +46,7 @@ import javax.swing.JPopupMenu;
 public class VarBadgeGlobal extends JComponent implements EventListener, ActionListener, Observer {
 
     //
-    private final Vector<Entry> mEntryList = new Vector<Entry>();
+    private final Vector<VariableEntry> mEntryList = new Vector<VariableEntry>();
 
     // TODO: Make format of variable badge as global preferences
     private final int              mPositionOffset = 10;
@@ -76,7 +79,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
             Vector<VarDef> varDefList = parentNode.getVarDefList();
 
             for (VarDef varDef : varDefList) {
-                mEntryList.add(new Entry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
                                          TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
             }
 
@@ -98,7 +101,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         int width  = 0,
             height = 0;
 
-        for (Entry entry : mEntryList) {
+        for (VariableEntry entry : mEntryList) {
             TextLayout textLayout = new TextLayout(entry.mAttributed.getIterator(), graphics.getFontRenderContext());
             int        advance    = (int) textLayout.getVisibleAdvance();
 
@@ -164,7 +167,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 // Draw Type Definitions and Variable Definition
                 int currentDrawingOffset = 0;
 
-                for (VarBadgeGlobal.Entry entry : mEntryList) {
+                for (VariableEntry entry : mEntryList) {
                     AttributedString attributedString = entry.mAttributed;
                     TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
                                                             graphics.getFontRenderContext());
@@ -183,7 +186,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
         synchronized(mEntryList) {
         // System.err.println("updateVariable");
-        for (Entry entry : mEntryList) {
+        for (VariableEntry entry : mEntryList) {
             String var = entry.getVarName();    // the name of the current variable
             String typ = entry.getVarType();
 
@@ -194,13 +197,14 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 entry.mFormatted  = formatedPair.getFirst();
                 entry.mAttributed = formatedPair.getSecond();
                 entry.mHasChanged = true;
+                EventDispatcher.getInstance().convey(new VarBadgeUpdatedEvent(this, entry));
             }
         }
         }
     }
 
     private boolean containsEntryFor(String varName) {
-        for (Entry entry : mEntryList) {
+        for (VariableEntry entry : mEntryList) {
             if (entry.getVarName().equals(varName)) {
                 return true;
             }
@@ -223,7 +227,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 String varName = varDef.getName();
 
                 // if (!containsEntryFor(varName)) {
-                mEntryList.add(new Entry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
                                          TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
 
                 // }
@@ -306,42 +310,5 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
         // Set the location on data model
         mSuperNode.getGlobalVariableBadge().setPosition(new Position(getLocation().x, getLocation().y));
-    }
-
-    public static class Entry {
-        public SuperNode        mSuperNode;
-        public boolean          mHasChanged;
-        public String           mConcrete;
-        public String           mFormatted;
-        public AttributedString mAttributed;
-
-        public Entry(SuperNode superNode, boolean hasChanged, String concrete, String formatted,
-                     AttributedString attributed) {
-            mSuperNode  = superNode;
-            mHasChanged = hasChanged;
-            mConcrete   = concrete;
-            mFormatted  = formatted;
-            mAttributed = attributed;
-        }
-
-        public String getVarName() {
-            String[] s = mConcrete.split(" ");
-
-            if (s.length > 2) {
-                return s[1];
-            } else {
-                return "";
-            }
-        }
-
-        public String getVarType() {
-            String[] s = mConcrete.split(" ");
-
-            if (s.length > 2) {
-                return s[0];
-            } else {
-                return "";
-            }
-        }
     }
 }

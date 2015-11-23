@@ -82,7 +82,7 @@ public final class SceneMaker3 {
         // Get the singelton editor instance
         final EditorInstance sEditor = EditorInstance.getInstance();
         // Get an editor project from file 
-        sEditor.openProject(file);
+        sEditor.openProject(file.getPath());
         // Show the singelton editor instance
         sEditor.setVisible(true);
         /*
