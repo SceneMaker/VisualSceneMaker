@@ -15,6 +15,8 @@ import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.JComponent;
 
 /**
@@ -48,7 +50,8 @@ public abstract class BodyPart extends JComponent {
 	public double mToDegree = mDefaultRotation;
 	public double mRotationStep = 0.0f;
 
-	ArrayList<GeneralPath> mGraphicPaths = new ArrayList<>();
+	List<GeneralPath> mGraphicPaths = Collections.synchronizedList(new ArrayList());
+
 	public Color mColor = new Color(0, 0, 0);
 	public BasicStroke mStroke = new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
@@ -64,7 +67,7 @@ public abstract class BodyPart extends JComponent {
 		mTranslationStep = Math.abs(Math.abs(mTranslation) - Math.abs(mToTranslation)) / Animator.sMAX_ANIM_STEPS * (length / Math.abs(length));
 	}
 
-	public void calculateTranslation(int step) {
+	public synchronized void calculateTranslation(int step) {
 		mTranslation += mTranslationStep;
 		mTranslation = (double) Math.round(mTranslation * 1000d) / 1000d; // the poor man's round method
 
@@ -92,7 +95,7 @@ public abstract class BodyPart extends JComponent {
 		mRotationStep = Math.abs(Math.abs(mRotation) - Math.abs(mToDegree)) / Animator.sMAX_ANIM_STEPS * (degree / Math.abs(degree));
 	}
 
-	public void calculateRotation(int step) {
+	public synchronized void calculateRotation(int step) {
 		mRotation += mRotationStep;
 		mRotation = (double) Math.round(mRotation * 1000d) / 1000d; // the poor man's round method
 
@@ -111,7 +114,7 @@ public abstract class BodyPart extends JComponent {
 		// create the shape
 	}
 
-	public void calculateShape(int step) {
+	public synchronized void calculateShape(int step) {
 		mShapeAnimationStep = step;
 
 		calculate(step);
@@ -129,15 +132,17 @@ public abstract class BodyPart extends JComponent {
 		mGraphicPaths.add(gp);
 	}
 
-	public void calculate(int step) {
+	public synchronized void calculate(int step) {
 		createShape();
 
 		AffineTransform t = new AffineTransform();
 		t.translate(0, mTranslation);
 		t.rotate(Math.toRadians(mRotation), mDefaultRotationPoint.x, mDefaultRotationPoint.y);
+
 		for (GeneralPath gp : mGraphicPaths) {
 			gp.transform(t);
 		}
+
 	}
 
 	@Override
