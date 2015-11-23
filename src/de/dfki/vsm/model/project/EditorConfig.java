@@ -284,13 +284,13 @@ public class EditorConfig {
 
 
         
-        try {
+        /*try {
 
                 sPROPERTIES.loadFromXML(inputStream);
 
         } catch (IOException e) {
             e.printStackTrace(System.out);
-        }
+        }*/
         
         if (!sPROPERTIES.containsKey("frame_title")) {
             sPROPERTIES.setProperty("frame_title", "Visual SceneMaker");
