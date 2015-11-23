@@ -35,6 +35,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.JComponent;
@@ -375,7 +378,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Get the chooser's selected file 
             final File file = chooser.getSelectedFile();
             // And try to open the file then
-            return openProject(file);
+            return openProject(file.getPath());
         } else {
             // Print an error message
             mLogger.warning("Warning: Canceled opening of a project file");
@@ -384,26 +387,17 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
-    // Open an project editor from a file
-    public final boolean openProject(final File file) {
-        // Check if the file is null
-        if (file == null) {
-            // Print an error message
-            mLogger.failure("Error: Cannot open editor project from a bad file");
+
+
+    public final boolean openProject(String path){
+        if(path == null){
+            mLogger.failure("Error: Cannot open editor project from a bad Stream");
             // And return failure here
             return false;
         }
-        // Check if the file exists
-        if (!file.exists()) {
-            // Print an error message
-            mLogger.failure("Error: Cannot find editor project file '" + file + "'");
-            // And return failure here
-            return false;
-        }
-        // Create a new editor project 
         final EditorProject project = new EditorProject();
         // Try to load it from the file
-        if (project.parse(file)) {
+        if (project.parse(path)) {
             // Toggle the editor main screen
             if (mProjectEditors.getTabCount() == 0) {
                 // Show the project editors
@@ -413,14 +407,14 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
             // Create a new project editor from project
             final ProjectEditor projectEditor = new ProjectEditor(project);
-            // Add the project editor to list of project 
+            // Add the project editor to list of project
             // editors and select it in the tabbed pane
             mProjectEditors.addTab(project.getProjectName(), projectEditor);
             mProjectEditors.setSelectedComponent(projectEditor);
             // Update the recent project list
             updateRecentProjects(project);
             // Print some info message
-            mLogger.message("Opening project editor from file '" + file + "'");
+            mLogger.message("Opening project editor from Stream");
             // Refresh the appearance
             refresh();
             projectEditor.expandTree();
@@ -428,7 +422,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return true;
         } else {
             // Print an error message
-            mLogger.failure("Error: Cannot load editor project from file '" + file + "'");
+            mLogger.failure("Error: Cannot load editor project from Stream");
             // Return false at failure
             return false;
         }
@@ -721,7 +715,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 recentProjectNames.add(index, projectName);
             }
         } else {
-            if(!projectPath.contains(Preferences.sSAMPLE_PROJECTS))
+            if(projectPath != null && !projectPath.contains(Preferences.sSAMPLE_PROJECTS))
             {
                 // case: project not in recent list
                 recentProjectPaths.add(0, projectPath);

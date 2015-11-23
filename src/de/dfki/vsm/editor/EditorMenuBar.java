@@ -119,7 +119,7 @@ public final class EditorMenuBar extends JMenuBar {
                             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                     recentFileMenuItem.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            mEditorInstance.openProject(projectDir);
+                            mEditorInstance.openProject(projectDir.getPath());
                         }
                     });
                     mOpenRecentFileMenu.add(recentFileMenuItem);

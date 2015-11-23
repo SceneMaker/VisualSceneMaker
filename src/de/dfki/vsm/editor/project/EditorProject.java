@@ -1,8 +1,10 @@
 package de.dfki.vsm.editor.project;
 
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * @author Gregor Mehlmann
@@ -23,7 +25,7 @@ public class EditorProject extends RunTimeProject {
         mProjectFile = null;
     }
 
-    // Load the editor project
+    /*// Load the editor project
     @Override
     public final boolean parse(final File file) {
         // Check if the file is null
@@ -46,7 +48,52 @@ public class EditorProject extends RunTimeProject {
         mProjectFile = base;
         // And then load the project
         return parse();
+    }*/
+    @Override
+    public final boolean parse(final String path) {
+        // Check if the file is null
+        if (path == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot parse editor project from a bad file");
+            // Return false at error
+            return false;
+        }
+        // Get the absolute file for this directory
+        //final File base = file.getAbsoluteFile();
+        // Check if the project directory does exist
+        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
+             if (super.parse(path)
+                && mEditorConfig.load(path)) {
+            // Set the initial hash code
+            mInitialHash = getHashCode();
+            // Return true if project is saved
+            return true;
+        } else {
+            // Return false when saving failed
+            return false;
+        }
+            
+            
+        }
+        File file = new File(path);
+        final File base = file.getAbsoluteFile();
+        
+        if(!file.exists()){
+            mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
+        }
+        if (!base.exists()) {
+            // Print an error message
+            mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
+            // Return false at error
+            return false;
+        }
+        // First set the project file
+        mProjectFile = base;
+        // And then load the project
+        return parse();
     }
+
+
 
     // Save the editor project
     @Override
@@ -95,8 +142,8 @@ public class EditorProject extends RunTimeProject {
             return false;
         }
         // Load the project data
-        if (super.parse(mProjectFile)
-                && mEditorConfig.load(mProjectFile)) {
+        if (super.parse(mProjectFile.getPath())
+                && mEditorConfig.load(mProjectFile.getPath())) {
             // Set the initial hash code
             mInitialHash = getHashCode();
             // Return true if project is saved
