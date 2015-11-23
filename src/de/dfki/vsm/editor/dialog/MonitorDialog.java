@@ -126,6 +126,10 @@ public class MonitorDialog extends JDialog implements  EventListener{
                         if ( ((UnaryExp)exp).getExp() instanceof Int) {
                             return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((Int)((UnaryExp) exp).getExp()).getValue());
                         }
+                        if ( ((UnaryExp)exp).getExp() instanceof Float) {
+                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((Float)((UnaryExp) exp).getExp()).getValue());
+                        }
+                        
                     } else if (exp instanceof Float) {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                     } else if (exp instanceof String) {
