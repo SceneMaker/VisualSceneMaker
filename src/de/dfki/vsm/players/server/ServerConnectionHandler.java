@@ -19,6 +19,7 @@ public class ServerConnectionHandler extends Thread {
 	private PrintWriter mOut;
 	private BufferedReader mIn;
 	private boolean mRunning = true;
+	public String mClientId = "";
 
 	private static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -36,10 +37,10 @@ public class ServerConnectionHandler extends Thread {
 
 	public void sendToApplication(String message) {
 		//mLogger.message("Sending " + message);
-		
+
 		if (mClientSocket.isConnected()) {
 			mOut.println(message.replace("\n", ""));
-			
+
 			mOut.flush();
 		}
 	}
@@ -70,14 +71,18 @@ public class ServerConnectionHandler extends Thread {
 					input = input.trim();
 					if (!input.isEmpty()) {
 						//mLogger.message("Receiving " + input);
+						if (input.contains("CLIENTID")) {
+							int start = input.lastIndexOf("#") + 1;
+							mClientId = input.substring(start);
+						}
 
 						if (input.contains("#TM")) {
 							EventActionPlayer.getInstance().runActionAtTimeMark(input);
 						}
 						if (input.contains("#ANIM")) {
 							int start = input.lastIndexOf("#") + 1;
-							String id = input.substring(start);
-							TCPActionServer.getInstance().notifyListeners(id);
+							String animId = input.substring(start);
+							TCPActionServer.getInstance().notifyListeners(animId);
 						}
 					}
 				}

@@ -7,5 +7,17 @@
     </Player>
   </Players>
   <Agents>
+    <Agent name="Anna" player="StickmanStage">
+      <Feature key="host" value="localhost"/>
+      <Feature key="port" value="7777"/>
+    </Agent>
+    <Agent name="Bob" player="StickmanStage">
+      <Feature key="host" value="localhost"/>
+      <Feature key="port" value="7777"/>
+    </Agent>
+    <Agent name="Valerie" player="StickmanStage">
+      <Feature key="host" value="localhost"/>
+      <Feature key="port" value="7777"/>
+    </Agent>
   </Agents>
 </Project>

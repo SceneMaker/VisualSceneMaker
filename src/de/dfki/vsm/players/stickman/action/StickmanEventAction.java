@@ -78,7 +78,7 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 					boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
 
 					try {
-						TCPActionServer.getInstance().send(new String(out.toByteArray(), "UTF-8"));
+						TCPActionServer.getInstance().sendToAll(new String(out.toByteArray(), "UTF-8"));
 					} catch (UnsupportedEncodingException ex) {
 						mStickman.mLogger.warning(ex.getMessage());
 					}

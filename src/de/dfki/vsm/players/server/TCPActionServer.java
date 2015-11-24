@@ -74,10 +74,27 @@ public class TCPActionServer extends Thread {
 		sInstance = null;
 	}
 
-	public void send(String message) {
+	public void sendToAll(String message) {
 		sClientConnections.stream().forEach((c) -> {
 			c.sendToApplication(message);
 		});
+	}
+
+	public void sendToClient(String id, String message) {
+		sClientConnections.stream().forEach((c) -> {
+			if (c.mClientId.equalsIgnoreCase(id)) {
+				c.sendToApplication(message);
+			}
+		});
+	}
+
+	public boolean hasClient(String id) {
+		for (ServerConnectionHandler c : sClientConnections) {
+			if (c.mClientId.equalsIgnoreCase(id)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

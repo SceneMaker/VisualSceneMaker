@@ -1,5 +1,6 @@
 package de.dfki.vsm.players;
 
+import de.dfki.vsm.Preferences;
 import static de.dfki.vsm.players.ActionPlayer.sActionScheduler;
 import de.dfki.vsm.players.action.Action;
 import java.util.concurrent.TimeUnit;
@@ -10,6 +11,9 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class EventActionPlayer extends ActionPlayer {
+
+	// time mark stuff
+	private static long mTimeMarkCnt = 0;
 
 	private EventActionPlayer() {
 		super();
@@ -26,6 +30,17 @@ public class EventActionPlayer extends ActionPlayer {
 	public static EventActionPlayer getNetworkInstance() {
 		mUseNetwork = true;
 		return getInstance();
+	}
+
+	public static EventActionPlayer getNetworkInstance(int port) {
+		mUseNetwork = true;
+		sPort = port;
+		return getInstance();
+	}
+
+	public String getTimeMark() {
+		String mark = "#TM" + mTimeMarkCnt++;
+		return mark;
 	}
 
 	public void addTimeMarkAction(Action a) {
@@ -83,7 +98,7 @@ public class EventActionPlayer extends ActionPlayer {
 
 				// wait for all actions ended
 				sActionPlaySync.acquire();
-				} catch (InterruptedException ex) {
+			} catch (InterruptedException ex) {
 				mLogger.warning("Event ActionPlayer got interrupted " + ex.getMessage());
 			}
 

@@ -37,8 +37,6 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -65,8 +63,6 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 	private Semaphore mAllEndSync;
 	// RENDERER: The StickmanStage
 	private static StickmanStage mStickmanStage;
-	// time mark stuff
-	private long mTimeMarkCnt = 0;
 
 	// Construct the StickmanScene player
 	private StickmanScenePlayer() {
@@ -112,14 +108,14 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 		
 		// Start the Action Player
 		mLogger.message("Starting Action Player ...");
-		mActionPlayer = EventActionPlayer.getNetworkInstance();
-		// Tell the ActionPlayer that StickmanScenePlayer is interested in upates
+		mActionPlayer = EventActionPlayer.getNetworkInstance(8000);
+		// Tell the ActionPlayer that this ScenePlayer is interested in updates
 		mActionPlayer.addListener(this);
 		mActionPlayer.start();
 
 		// Start the client application - in this case the StickmanStage
 		mLogger.message("Starting Client Application ...");
-		mStickmanStage = StickmanStage.getNetworkInstance();
+		mStickmanStage = StickmanStage.getNetworkInstance("127.0.0.1", 8000);
 
 		// put all characters on the stage
 		getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
@@ -164,11 +160,6 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 			}
 		}
 		return speakersSet;
-	}
-
-	private String getTimeMark() {
-		String mark = "#TM" + mTimeMarkCnt++;
-		return mark;
 	}
 
 	// Play some scene with the player
@@ -221,8 +212,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 
 					// Count The Word Number
 					int wordCount = 0;
-					String alreadyUttered = "";
-
+					
 					// Process Utterance
 					for (SceneUttr utt : turn.getUttrList()) {
 						mLogger.message("Executing utterance:" + utt.getText());
@@ -240,7 +230,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 
 						// Process the words of this utterance
 						// remember timemark
-						String tm = getTimeMark();
+						String tm = mActionPlayer.getTimeMark();
 						for (AbstractWord word : utt.getWordList()) {
 
 							if (word instanceof SceneWord) {
@@ -248,11 +238,9 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 								// add word to the word time mark sequence
 								wts.add(new Word(w));
 								// generate a new time mark after each word
-								tm = getTimeMark();
+								tm = mActionPlayer.getTimeMark();
 
 								wordCount = w.length();
-
-								alreadyUttered += w;
 							} else if (word instanceof SceneParam) {
 								// Visualization
 								//mLogger.message("Executing param:" + ((SceneParam) word).getText());
