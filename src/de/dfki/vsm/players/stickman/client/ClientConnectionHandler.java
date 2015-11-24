@@ -23,6 +23,7 @@ public class ClientConnectionHandler extends Thread {
 	private int mPort = 7777;
 	private PrintWriter mOut;
 	private BufferedReader mIn;
+	private static String sIDENTIFIER = "StickmanStage";
 
 	private boolean mRunning = true;
 	public boolean mConnected = false;
@@ -52,6 +53,12 @@ public class ClientConnectionHandler extends Thread {
 		}
 	}
 
+	public void connect(String host, int port) {
+		mHost = host;
+		mPort = port;
+		connect();
+	}
+	
 	public void connect() {
 		StickmanStage.mLogger.info("StickmanStage tries to connect with control application...");
 		try {
@@ -70,6 +77,8 @@ public class ClientConnectionHandler extends Thread {
 		}
 		mConnected = true;
 		StickmanStage.mLogger.info("StickmanStage connected to control application at " + mSocket.toString());
+		// register at server
+		sendToServer("CLIENTID#" + sIDENTIFIER);
 		start();
 	}
 

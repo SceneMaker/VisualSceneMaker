@@ -40,6 +40,8 @@ public class StickmanStage extends JFrame implements MouseListener {
 	// network interface
 	public static ClientConnectionHandler mConnection;
 	public static boolean mUseNetwork = false;
+	private static String sHost = "127.0.0.1";
+	private static int sPort = 7777;
 	// logging
 	public static final Logger mLogger = Logger.getAnonymousLogger();
 
@@ -71,7 +73,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 
 		if (mUseNetwork) {
 			mConnection = new ClientConnectionHandler();
-			mConnection.connect();
+			mConnection.connect(sHost, sPort);
 
 			while (!mConnection.mConnected) {
 				try {
@@ -95,6 +97,14 @@ public class StickmanStage extends JFrame implements MouseListener {
 	}
 
 	public static StickmanStage getNetworkInstance() {
+		mUseNetwork = true;
+		return getInstance();
+	}
+
+	public static StickmanStage getNetworkInstance(String host, int port) {
+		sHost = host;
+		sPort = port;
+		
 		mUseNetwork = true;
 		return getInstance();
 	}

@@ -72,7 +72,7 @@ public class StickmanAction extends Action implements AnimationListener {
 					boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
 
 					try {
-						TCPActionServer.getInstance().send(new String(out.toByteArray(), "UTF-8"));
+						TCPActionServer.getInstance().sendToAll(new String(out.toByteArray(), "UTF-8"));
 					} catch (UnsupportedEncodingException ex) {
 						mStickman.mLogger.warning(ex.getMessage());
 					}
@@ -99,30 +99,6 @@ public class StickmanAction extends Action implements AnimationListener {
 
 			// notify Action Player
 			actionEnded(this);
-//			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_STARTED);
-//
-//			if (mAnimation == null) {
-//				mStickman.mLogger.severe("animation " + mName + " is not known by Stickman ...");
-//				notifyListenersAboutAction(this, ActionListener.STATE.ACTION_UNKNOWN);
-//			} else {
-//				mStickman.playAnimation(mAnimation);
-//
-//				// tell Stickman to update Action about the animation status
-//				//mStickman.addListener(this);
-//				TCPActionServer.getInstance().addListener(this);
-//
-//				// wait for action end   
-//				mActionEndSync.acquire();
-//
-//				//mStickman.removeListener(this);
-//				TCPActionServer.getInstance().removeListener(this);
-//			}
-//
-//			// notify Action Player
-//			//mStickman.mLogger.info("\ttelling action player action (" + mID + ") has ended ...");
-//			
-//			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_FINISHED);
-//			mActionPlayer.actionEnded(this);
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.warning("Action " + mName + " got interrupted");
 		}

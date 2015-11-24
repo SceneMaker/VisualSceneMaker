@@ -24,21 +24,27 @@ import java.util.concurrent.ThreadFactory;
  */
 public class ActionPlayer extends Thread {
 
+	// Internal stuff
 	static ScheduledExecutorService sActionScheduler;
 	static List<Action> sActionList;
 	static Semaphore sActionPlaySync;
-	static TCPActionServer sActionServer;
 	static ActionPlayer sInstance;
+	private static long sID = 0;
 
-	// for components that are interested in what's happening here
+	// For components that are interested in what's happening here
 	static final ArrayList<ActionListener> mActionListeners = new ArrayList<>();
 
+    // Network stuff
+	static TCPActionServer sActionServer;
+	public static int sPort = 7777;
+    public static boolean mUseNetwork = false;
+	
+	// Global running flags
 	public boolean mRunning = true;
-	static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-	private static long sID = 0;
-	public static boolean mUseNetwork = false;
-
 	public static boolean mActionServerRunning = false;
+
+	// Logger
+	static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
 	ActionPlayer() {
 		initialize();
@@ -56,6 +62,7 @@ public class ActionPlayer extends Thread {
 
 		if (mUseNetwork) {
 			sActionServer = TCPActionServer.getInstance();
+			sActionServer.mServerPort = sPort;
 			sActionServer.start();
 
 			while (!mActionServerRunning) {
