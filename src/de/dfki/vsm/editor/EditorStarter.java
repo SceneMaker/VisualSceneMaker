@@ -1,5 +1,7 @@
 package de.dfki.vsm.editor;
 
+import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+import com.sun.javafx.css.Rule;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
@@ -13,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagLayout;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
@@ -27,14 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
@@ -66,6 +62,7 @@ public class EditorStarter extends JPanel {
 	private final Box mCenterProjectBox;
 	private final Box mLeftProjectBox;//Recent Projects
 	private final Box mRightProjectBox;
+        private Border blackline = BorderFactory.createLineBorder(Color.black);
 
 	// The singelton logger instance
 	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -139,8 +136,12 @@ public class EditorStarter extends JPanel {
 		mLeftProjectBox.setMaximumSize(halfScreenDimension);
 		mLeftProjectBox.setPreferredSize(halfScreenDimension);
 		mRightProjectBox.setMaximumSize(halfScreenDimension);
-		mRightProjectBox.setPreferredSize(mLeftProjectBox.getSize());
-		mLeftProjectBox.setBorder(new EmptyBorder(0, 0, 0, 1));
+		mLeftProjectBox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                mRightProjectBox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                mCenterProjectBox.setBorder(new EmptyBorder(0, 0, 0, 0));
+                mRightProjectBox.setAlignmentX(LEFT_ALIGNMENT);
+                
+                
 
 		mCenterProjectBox.add(mLeftProjectBox);
 		content.add(titlePanel);
@@ -475,7 +476,7 @@ public class EditorStarter extends JPanel {
 		exampleMenu.setBackground(sMENUHEADLINECOLOR);
 		exampleMenu.setForeground(sTEXTCOLOR);
 		exampleMenu.setFont(sMENUHEADLINEFONT);
-		mRightProjectBox.add(exampleMenu);
+		
 
 		JPanel sampleProjPanel = new JPanel();
 
@@ -536,6 +537,7 @@ public class EditorStarter extends JPanel {
 		}
 
 		mRightProjectBox.add(sampleProjPanel);
+                
 	}
 
 	/**
@@ -596,11 +598,20 @@ public class EditorStarter extends JPanel {
 		exampleMenu.setForeground(sTEXTCOLOR);
 		exampleMenu.setFont(sMENUHEADLINEFONT);
 		mRightProjectBox.add(exampleMenu);
-
-		JPanel sampleProjPanel = new JPanel();
-
+               
+		JPanel sampleProjPanel = new JPanel();            
 		sampleProjPanel.setOpaque(false);
 		sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
+
+		JScrollPane mScrollPanel = new JScrollPane(sampleProjPanel);
+		mScrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		mScrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                mScrollPanel.setViewportView(sampleProjPanel);
+                mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+                mScrollPanel.setViewportBorder(new EmptyBorder(0, -10, 0, 0));
+		mScrollPanel.setOpaque(false);
+		mScrollPanel.getViewport().setOpaque(false);
+                mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
 
 		for (final String sampleDir : listDirs) {
 
@@ -649,7 +660,8 @@ public class EditorStarter extends JPanel {
 			sampleProjPanel.remove(sampleProjPanel.getComponentCount() - 1);
 		}
 
-		mRightProjectBox.add(sampleProjPanel);
+		mRightProjectBox.add(mScrollPanel);
+                mScrollPanel.setMaximumSize(sampleProjPanel.getMaximumSize());
 	}
 
 	/**
