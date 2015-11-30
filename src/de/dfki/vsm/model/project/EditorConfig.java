@@ -59,8 +59,9 @@ public class EditorConfig {
     public boolean sSHOWIDSOFNODES = true;
     public String sSCRIPT_FONT_TYPE = "Monospaced";
     public int sSCRIPT_FONT_SIZE = 16;
-    public boolean sSHOWSCENE_ELEMENTS = true;
+    public boolean sSHOWSCENE_ELEMENTS = false;
     public boolean sAUTOHIDE_BOTTOMPANEL = true; // Saves the pricked pin of the bottom panel of the editor
+    public String sMAINSUPERNODENAME = "default"; 
 
     public EditorConfig() {
         
@@ -101,7 +102,7 @@ public class EditorConfig {
         }
         
         if (!sPROPERTIES.containsKey("showsceneelements")) {
-            sPROPERTIES.setProperty("showsceneelements", "true");
+            sPROPERTIES.setProperty("showsceneelements", "false");
         }
 
         // default values for editor appearance
@@ -160,6 +161,10 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("autohidebottombar")) { //state of the bottom bar (pricked pin)
             sPROPERTIES.setProperty("autohidebottombar", "true");
         }
+        if (!sPROPERTIES.containsKey("defaultsupernodename")) { //state of the bottom bar (pricked pin)
+            sPROPERTIES.setProperty("defaultsupernodename", "default");
+        }
+        
     }
 
     /**
@@ -192,6 +197,7 @@ public class EditorConfig {
         sGRID_YSPACE = sNODEHEIGHT * sGRID_YSCALE;
         sXOFFSET = sGRID_NODEWIDTH / 3;
         sYOFFSET = sGRID_NODEHEIGHT / 3;
+        sMAINSUPERNODENAME = String.valueOf(sPROPERTIES.getProperty("defaultsupernodename"));
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -292,6 +298,10 @@ public class EditorConfig {
             e.printStackTrace(System.out);
         }*/
         
+        if (!sPROPERTIES.containsKey("defaultsupernodename")) { 
+            sPROPERTIES.setProperty("defaultsupernodename", "default");
+        }
+           
         if (!sPROPERTIES.containsKey("frame_title")) {
             sPROPERTIES.setProperty("frame_title", "Visual SceneMaker");
         }
@@ -357,7 +367,7 @@ public class EditorConfig {
         }
         
         if (!sPROPERTIES.containsKey("showsceneelements")) {
-            sPROPERTIES.setProperty("showsceneelements", "true");
+            sPROPERTIES.setProperty("showsceneelements", "false");
         }
 
         // default values for editor appearance
@@ -416,6 +426,8 @@ public class EditorConfig {
         if (!sPROPERTIES.containsKey("autohidebottombar")) { // load state of the pin of the bottom bar
             sPROPERTIES.setProperty("autohidebottombar", "true");
         }
+        
+        
         //
         init();
 
