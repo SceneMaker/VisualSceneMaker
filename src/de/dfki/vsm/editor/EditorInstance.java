@@ -320,6 +320,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     public final boolean newProject(String projectName) {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();
+        
+        // Set default name  main superNode
+        editor.getSceneFlowEditor().getSceneFlow().setName(editor.getEditorProject().getEditorConfig().sMAINSUPERNODENAME);
 
         // Add the new project editor 
         addProjectTab(projectName, editor);

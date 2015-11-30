@@ -96,6 +96,7 @@ public final class Preferences {
     public static final String sUSER_HOME                   = System.getProperty("user.home");
     public static final String sUSER_DIR                    = System.getProperty("user.dir");
     public static final String sSAMPLE_PROJECTS             = "res" + System.getProperty("file.separator") + "prj";
+    public static final String sTUTORIALS_PROJECTS             = "res" + System.getProperty("file.separator") + "tutorials";
     //////////////////////////////////////////////////////////////////////////////
     // NODE COLORS
     //////////////////////////////////////////////////////////////////////////////

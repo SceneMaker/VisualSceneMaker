@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mon, 30 Nov 2015 04:35:37" start="S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <Variable type="Int" name ="x">
+      <Int value="0"/>
+    </Variable>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </GlobalVariableBadge>
+  <Comment>
+    <Graphics>
+      <Rect x-pos="213" y-pos="108" width="233" height="51"/>
+    </Graphics>
+    <Text style="color:blue">
+      <html>
+        <head>
+          <style type="text/css">
+            <!--
+              body { font-family: SansSerif; font-size: 12pt }
+            -->
+          </style>
+          
+        </head>
+        <body>
+          For detailed instructions, visit http://scenemaker.dfki.de/tutorial.html
+        </body>
+      </html>
+    </Text>
+  </Comment>
+  <Comment>
+    <Graphics>
+      <Rect x-pos="117" y-pos="341" width="160" height="59"/>
+    </Graphics>
+    <Text style="color:blue">
+      <html>
+        <head>
+          <style type="text/css">
+            <!--
+              body { font-family: SansSerif; font-size: 12pt }
+            -->
+          </style>
+          
+        </head>
+        <body>
+          Double click SuperNode to access it
+        </body>
+      </html>
+    </Text>
+  </Comment>
+  <SuperNode id="S1" name="S1" comment="" exhaustive="false" preserving="false" hideLocalVar="false" hideGlobalVar="false" start="N3;">
+    <Define>
+    </Define>
+    <Declare>
+      <Variable type="Int" name ="internalVariable">
+        <Int value="0"/>
+      </Variable>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="S2" start="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="233" y-pos="283" control-x-pos="308" control-y-pos="283"/>
+          <Point x-pos="433" y-pos="283" control-x-pos="358" control-y-pos="283"/>
+        </Arrow>
+      </Graphics>
+      <Gt>
+        <Variable name="x"/>
+        <Int value="5"/>
+      </Gt>
+    </IEdge>
+    <Graphics>
+      <Position x-pos="133" y-pos="233"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position x-pos="20" y-pos="169"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position x-pos="21" y-pos="129"/>
+    </GlobalVariableBadge>
+    <Comment>
+      <Graphics>
+        <Rect x-pos="373" y-pos="143" width="314" height="50"/>
+      </Graphics>
+      <Text style="color:blue">
+        <html>
+          <head>
+            <style type="text/css">
+              <!--
+                body { font-family: SansSerif; font-size: 12pt }
+              -->
+            </style>
+            
+          </head>
+          <body>
+            Nodes and edges inside a SuperNode are executed as long as the SuperNode 
+            is active in the main SceneFlow
+          </body>
+        </html>
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Rect x-pos="17" y-pos="52" width="266" height="65"/>
+      </Graphics>
+      <Text style="color:blue">
+        <html>
+          <head>
+            <style type="text/css">
+              <!--
+                body { font-family: SansSerif; font-size: 12pt }
+              -->
+            </style>
+            
+          </head>
+          <body>
+            Global variables from higher hierarchies are automatically part of the 
+            SuperNode's sceneflow. It is also posible to create local variables
+          </body>
+        </html>
+      </Text>
+    </Comment>
+    <Node id="N1" name="History" exhaustive="false" preserving="false" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position x-pos="30" y-pos="300"/>
+      </Graphics>
+    </Node>
+    <Node id="N3" name="N3" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <CEdge target="N7" start="">
+        <Graphics>
+          <Arrow>
+            <Point x-pos="345" y-pos="300" control-x-pos="345" control-y-pos="322"/>
+            <Point x-pos="345" y-pos="390" control-x-pos="345" control-y-pos="367"/>
+          </Arrow>
+        </Graphics>
+        <Gt>
+          <Variable name="internalVariable"/>
+          <Int value="3"/>
+        </Gt>
+      </CEdge>
+      <TEdge target="N4" start="" timeout="50">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="390" y-pos="255" control-x-pos="502" control-y-pos="255"/>
+          <Point x-pos="660" y-pos="255" control-x-pos="547" control-y-pos="255"/>
+        </Arrow>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position x-pos="300" y-pos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N4" name="N4" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <Assign>
+          <Variable name="internalVariable"/>
+          <Expression>
+            <Add>
+              <Variable name="internalVariable"/>
+              <Int value="1"/>
+            </Add>
+          </Expression>
+        </Assign>
+      </Commands>
+      <TEdge target="N3" start="" timeout="50">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="662" y-pos="267" control-x-pos="554" control-y-pos="297"/>
+          <Point x-pos="388" y-pos="267" control-x-pos="495" control-y-pos="297"/>
+        </Arrow>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position x-pos="660" y-pos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N7" name="N7" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <Assign>
+          <Variable name="internalVariable"/>
+          <Expression>
+            <Int value="0"/>
+          </Expression>
+        </Assign>
+        <Assign>
+          <Variable name="x"/>
+          <Expression>
+            <Add>
+              <Variable name="x"/>
+              <Int value="1"/>
+            </Add>
+          </Expression>
+        </Assign>
+      </Commands>
+      <TEdge target="N3" start="" timeout="1000">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="302" y-pos="423" control-x-pos="175" control-y-pos="372"/>
+          <Point x-pos="313" y-pos="287" control-x-pos="269" control-y-pos="309"/>
+        </Arrow>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position x-pos="300" y-pos="390"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S2" name="S2" comment="" exhaustive="false" preserving="false" hideLocalVar="false" hideGlobalVar="false" start="N5;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="S1" start="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="433" y-pos="296" control-x-pos="358" control-y-pos="315"/>
+          <Point x-pos="233" y-pos="296" control-x-pos="308" control-y-pos="315"/>
+        </Arrow>
+      </Graphics>
+      <Eq>
+        <Variable name="x"/>
+        <Int value="0"/>
+      </Eq>
+    </IEdge>
+    <Graphics>
+      <Position x-pos="433" y-pos="233"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position x-pos="10" y-pos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position x-pos="10" y-pos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N2" name="History" exhaustive="false" preserving="false" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position x-pos="30" y-pos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N5" name="N5" exhaustive="false" preserving="false" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <Assign>
+          <Variable name="x"/>
+          <Expression>
+            <Sub>
+              <Variable name="x"/>
+              <Int value="1"/>
+            </Sub>
+          </Expression>
+        </Assign>
+      </Commands>
+      <TEdge target="N5" start="" timeout="500">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="357" y-pos="122" control-x-pos="381" control-y-pos="36"/>
+          <Point x-pos="384" y-pos="142" control-x-pos="462" control-y-pos="96"/>
+        </Arrow>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position x-pos="300" y-pos="120"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
