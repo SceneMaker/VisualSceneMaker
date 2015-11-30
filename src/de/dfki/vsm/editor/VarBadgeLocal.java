@@ -64,7 +64,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
         // Initialize the entry list
         SuperNode parentNode = mSuperNode;
-        System.out.println("nuevo varbadgelocal");
         mEntryList.clear();
 
         Vector<VarDef> varDefList = parentNode.getVarDefList();
