@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mon, 30 Nov 2015 04:35:03" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </GlobalVariableBadge>
+  <Comment>
+    <Graphics>
+      <Rect x-pos="43" y-pos="25" width="431" height="50"/>
+    </Graphics>
+    <Text style="color:blue">
+      <html>
+        <head>
+          <style type="text/css">
+            <!--
+              body { font-family: SansSerif; font-size: 11pt }
+            -->
+          </style>
+          
+        </head>
+        <body>
+          For detailed instructions, visit http://scenemaker.dfki.de/tutorial.html
+        </body>
+      </html>
+    </Text>
+  </Comment>
+  <Node id="N1" name="Start" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="1000">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="120" y-pos="165" control-x-pos="205" control-y-pos="170"/>
+        <Point x-pos="390" y-pos="165" control-x-pos="315" control-y-pos="170"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="30" y-pos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="End" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <UserCommand name="printString">
+        <String value="Hello World"/>
+      </UserCommand>
+      <PlaySceneGroup>
+        <String value="Hello"/>
+      </PlaySceneGroup>
+    </Commands>
+    <TEdge target="N1" start="" timeout="1000">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="392" y-pos="177" control-x-pos="320" control-y-pos="202"/>
+        <Point x-pos="118" y-pos="177" control-x-pos="200" control-y-pos="202"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="390" y-pos="120"/>
+    </Graphics>
+  </Node>
+  <UserCommands>
+    <UserCommand name="printString" classname ="java.lang.System.out" method="println">
+      <Argument name="Arg0" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

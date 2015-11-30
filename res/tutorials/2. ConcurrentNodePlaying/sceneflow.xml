@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mon, 30 Nov 2015 04:36:10" start="N1;N3;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <Variable type="Int" name ="x">
+      <Int value="0"/>
+    </Variable>
+    <Variable type="Int" name ="y">
+      <Int value="0"/>
+    </Variable>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position x-pos="288" y-pos="125"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </GlobalVariableBadge>
+  <Comment>
+    <Graphics>
+      <Rect x-pos="33" y-pos="28" width="233" height="50"/>
+    </Graphics>
+    <Text style="color:blue">
+      <html>
+        <head>
+          <style type="text/css">
+            <!--
+              body { font-family: SansSerif; font-size: 11pt }
+            -->
+          </style>
+          
+        </head>
+        <body>
+          For detailed instructions, visit http://scenemaker.dfki.de/tutorial.html
+        </body>
+      </html>
+    </Text>
+  </Comment>
+  <Node id="N1" name="N1" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="500">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="146" y-pos="186" control-x-pos="81" control-y-pos="246"/>
+        <Point x-pos="146" y-pos="346" control-x-pos="110" control-y-pos="292"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="106" y-pos="106"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assign>
+        <Variable name="x"/>
+        <Expression>
+          <Add>
+            <Variable name="x"/>
+            <Int value="2"/>
+          </Add>
+        </Expression>
+      </Assign>
+      <Assign>
+        <Variable name="y"/>
+        <Expression>
+          <Add>
+            <Variable name="y"/>
+            <Int value="2"/>
+          </Add>
+        </Expression>
+      </Assign>
+    </Commands>
+    <TEdge target="N1" start="" timeout="500">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="156" y-pos="347" control-x-pos="171" control-y-pos="288"/>
+        <Point x-pos="156" y-pos="185" control-x-pos="171" control-y-pos="243"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="106" y-pos="346"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N4" start="" timeout="500">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="466" y-pos="186" control-x-pos="422" control-y-pos="244"/>
+        <Point x-pos="466" y-pos="346" control-x-pos="401" control-y-pos="284"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="426" y-pos="106"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="N4" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assign>
+        <Variable name="x"/>
+        <Expression>
+          <Sub>
+            <Variable name="x"/>
+            <Int value="1"/>
+          </Sub>
+        </Expression>
+      </Assign>
+      <Assign>
+        <Variable name="y"/>
+        <Expression>
+          <Sub>
+            <Variable name="y"/>
+            <Int value="1"/>
+          </Sub>
+        </Expression>
+      </Assign>
+    </Commands>
+    <TEdge target="N3" start="" timeout="500">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="476" y-pos="347" control-x-pos="491" control-y-pos="288"/>
+        <Point x-pos="476" y-pos="185" control-x-pos="491" control-y-pos="243"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="426" y-pos="346"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
