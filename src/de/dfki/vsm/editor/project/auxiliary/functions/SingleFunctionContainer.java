@@ -124,6 +124,7 @@ public class SingleFunctionContainer extends JPanel {
         mSceneFlow = sceneflow;
         initComponents();
         fillComponents();
+        initParams();
         
         JPanel functionContent = createPanel();
         setOpaque(false);
@@ -139,6 +140,26 @@ public class SingleFunctionContainer extends JPanel {
         add(functionContent);
     }
 
+    private void initParams() {
+
+        String newSelectedMethodName = getSelectedMethod().getName().trim();
+
+        mFunDef.setMethod(newSelectedMethodName);
+        getFunDef().setMethod(newSelectedMethodName);
+        mFunDef.getParamList().clear();
+
+        Enumeration args = ((DefaultListModel) getArgList().getModel()).elements();
+
+        while (args.hasMoreElements()) {
+            String argString = (String) args.nextElement();
+
+            mFunDef.addParam(new ParamDef(getNameMap().get(argString),
+                    getTypeMap().get(argString)));
+        }
+
+        EditorInstance.getInstance().refresh();
+    }   
+        
     private void initComponents() {
 
         mNameLabel     = new JLabel("Name:");
