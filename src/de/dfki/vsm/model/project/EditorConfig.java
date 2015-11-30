@@ -59,7 +59,7 @@ public class EditorConfig {
     public boolean sSHOWIDSOFNODES = true;
     public String sSCRIPT_FONT_TYPE = "Monospaced";
     public int sSCRIPT_FONT_SIZE = 16;
-    public boolean sSHOWSCENE_ELEMENTS = true;
+    public boolean sSHOWSCENE_ELEMENTS = false;
     public boolean sAUTOHIDE_BOTTOMPANEL = true; // Saves the pricked pin of the bottom panel of the editor
     public String sMAINSUPERNODENAME = "default"; 
 
@@ -102,7 +102,7 @@ public class EditorConfig {
         }
         
         if (!sPROPERTIES.containsKey("showsceneelements")) {
-            sPROPERTIES.setProperty("showsceneelements", "true");
+            sPROPERTIES.setProperty("showsceneelements", "false");
         }
 
         // default values for editor appearance
@@ -367,7 +367,7 @@ public class EditorConfig {
         }
         
         if (!sPROPERTIES.containsKey("showsceneelements")) {
-            sPROPERTIES.setProperty("showsceneelements", "true");
+            sPROPERTIES.setProperty("showsceneelements", "false");
         }
 
         // default values for editor appearance
