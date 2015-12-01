@@ -183,6 +183,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     private void updateVariable(TPLTuple<String, String> varVal) {
+       
 
         synchronized(mEntryList) {
         // System.err.println("updateVariable");
@@ -197,10 +198,11 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 entry.mFormatted  = formatedPair.getFirst();
                 entry.mAttributed = formatedPair.getSecond();
                 entry.mHasChanged = true;
-                EventDispatcher.getInstance().convey(new VarBadgeUpdatedEvent(this, entry));
+              //  EventDispatcher.getInstance().convey(new VarBadgeUpdatedEvent(this, entry));
             }
         }
         }
+       
     }
 
     private boolean containsEntryFor(String varName) {
