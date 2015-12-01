@@ -141,9 +141,9 @@ public class SingleFunctionContainer extends JPanel {
     }
 
     private void initParams() {
-
+        try {
         String newSelectedMethodName = getSelectedMethod().getName().trim();
-
+        
         mFunDef.setMethod(newSelectedMethodName);
         getFunDef().setMethod(newSelectedMethodName);
         mFunDef.getParamList().clear();
@@ -156,7 +156,10 @@ public class SingleFunctionContainer extends JPanel {
             mFunDef.addParam(new ParamDef(getNameMap().get(argString),
                     getTypeMap().get(argString)));
         }
-
+        
+        } catch (Exception ex){
+            System.err.println("The function created does not exist in the enviroment \n"+ ex.getMessage());
+        }
         EditorInstance.getInstance().refresh();
     }   
         
@@ -567,8 +570,9 @@ public class SingleFunctionContainer extends JPanel {
 
         selectedMethod = selectedMethod.replaceAll("\\s+", "");
         mMethodComboBox.setSelectedItem(selectedMethod);
+        
         mSelectedMethod = mMethodMap.get(selectedMethod);
-
+        System.out.println(mSelectedMethod);
         // Resize the argument name list to the size of the parameter
         // list of the selected method and fill the argument name list
         // with the parameter names of the user command definition.
