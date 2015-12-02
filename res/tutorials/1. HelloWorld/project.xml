@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Hello World">
+  <Plugins>
+  </Plugins>
+  <Players>
+    <Player name="defaultsceneplayer" class="de.dfki.vsm.players.stickman.StickmanScenePlayer">
+    </Player>
+  </Players>
+  <Agents>
+  </Agents>
+</Project>

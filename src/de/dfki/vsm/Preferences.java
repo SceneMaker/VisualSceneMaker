@@ -96,6 +96,7 @@ public final class Preferences {
     public static final String sUSER_HOME                   = System.getProperty("user.home");
     public static final String sUSER_DIR                    = System.getProperty("user.dir");
     public static final String sSAMPLE_PROJECTS             = "res" + System.getProperty("file.separator") + "prj";
+    public static final String sTUTORIALS_PROJECTS             = "res" + System.getProperty("file.separator") + "tutorials";
     //////////////////////////////////////////////////////////////////////////////
     // NODE COLORS
     //////////////////////////////////////////////////////////////////////////////
@@ -248,6 +249,15 @@ public final class Preferences {
     public static final ImageIcon ICON_DOWN_STANDARD           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down.png");
     public static final ImageIcon ICON_DOWN_ROLLOVER           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_blue.png");
     public static final ImageIcon ICON_DOWN_DISABLED           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_disabled.png");
+    //CANCEL ICONS
+    public static final ImageIcon ICON_CANCEL_STANDARD        = ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png");
+    public static final ImageIcon ICON_CANCEL_ROLLOVER        = ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png");
+    public static final ImageIcon ICON_CANCEL_STANDARD_TINY   = ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray_tiny.png");
+    public static final ImageIcon ICON_CANCEL_ROLLOVER_TINY   = ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue_tiny.png");
+    //OK ICONS
+    public static final ImageIcon ICON_OK_STANDARD            = ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png");
+    public static final ImageIcon ICON_OK_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png");
+    
     //BACKGROUND WELCOME 
     public static final Image     BACKGROUND_IMAGE             = ResourceLoader.loadImageIcon("/res/img/icon_big.png").getImage();   // Background for the welcome screen
     /**

@@ -32,18 +32,19 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
@@ -319,10 +320,14 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     public final boolean newProject(String projectName) {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();
+        
+        // Set default name  main superNode
+        editor.getSceneFlowEditor().getSceneFlow().setName(editor.getEditorProject().getEditorConfig().sMAINSUPERNODENAME);
 
         // Add the new project editor 
-        mProjectEditors.addTab(projectName, editor);
-        mProjectEditors.setSelectedComponent(editor);
+        addProjectTab(projectName, editor);
+//        mProjectEditors.addTab(projectName, editor);
+//        mProjectEditors.setSelectedComponent(editor);
         // Show the editor projects now
         if (mProjectEditors.getTabCount() == 1) {
             // Show the project editors
@@ -409,8 +414,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             final ProjectEditor projectEditor = new ProjectEditor(project);
             // Add the project editor to list of project
             // editors and select it in the tabbed pane
-            mProjectEditors.addTab(project.getProjectName(), projectEditor);
-            mProjectEditors.setSelectedComponent(projectEditor);
+            addProjectTab(project.getProjectName(), projectEditor);
+//            mProjectEditors.setSelectedComponent(projectEditor);
             // Update the recent project list
             updateRecentProjects(project);
             // Print some info message
@@ -449,7 +454,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         // Refresh the title of the project tab
                         final int index = mProjectEditors.getSelectedIndex();
                         final String title = mProjectEditors.getTitleAt(index);
-                        mProjectEditors.setTitleAt(index, title.replace("*", ""));
+                        setTabNameSaved();
                         // Update rectent project list
                         updateRecentProjects(project);
                         // Refresh the appearance
@@ -479,7 +484,69 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return false;
         }
     }
+    
+    //ADD NEW PROJECT TAB
+    void addProjectTab(String tabName, final JComponent content) {
+        
+        JEditorPane ep = new JEditorPane();
+        ep.setEditable(false);
+        mProjectEditors.addTab(null, new JScrollPane(ep));
+        
+        JLabel tabLabel = new JLabel(tabName);
+       
+        // Create an AddButton
+        final AddButton mCloseButton = new AddButton();
+        mCloseButton.setIcon(Preferences.ICON_CANCEL_STANDARD_TINY);
+        mCloseButton.setTabPos(mProjectEditors.getTabCount() - 1);
+        mCloseButton.removeMouseListener(mCloseButton.getMouseListeners()[1]);
+        mCloseButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                mCloseButton.setIcon(Preferences.ICON_CANCEL_ROLLOVER_TINY);
+            }
 
+            @Override
+            public void mouseExited(MouseEvent me) {
+                mCloseButton.setIcon(Preferences.ICON_CANCEL_STANDARD_TINY);
+            }
+
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                close((ProjectEditor)content, QuitDialog.CLOSE_PROJ_DIALOG);
+            }
+        });
+        if (mProjectEditors.getTabCount() > 0) {
+            JPanel pnl = new JPanel();
+            pnl.setOpaque(false);
+            pnl.add(tabLabel);
+            pnl.add(mCloseButton);
+            mProjectEditors.setTabComponentAt(mProjectEditors.getTabCount() - 1, pnl);
+            mProjectEditors.setComponentAt(mProjectEditors.getTabCount() - 1, content);
+            mProjectEditors.setSelectedIndex(mProjectEditors.getTabCount() - 1);
+        }
+
+    }
+    // SETS A SYMBOL TO SHOW THAT THE PROJECT WAS MODIFIED
+    public void setTabNameModified()
+    {
+        JPanel pnl = (JPanel)mProjectEditors.getTabComponentAt(mProjectEditors.getSelectedIndex());
+        String tabName = ((JLabel)pnl.getComponent(0)).getText();
+        if(!tabName.endsWith("*"))
+        {
+            ((JLabel)pnl.getComponent(0)).setText(tabName+"*");
+        }
+    }
+    //REMOVES MODIFIED SYMBOL
+    public void setTabNameSaved()
+    {
+        JPanel pnl = (JPanel)mProjectEditors.getTabComponentAt(mProjectEditors.getSelectedIndex());
+        String tabName = ((JLabel)pnl.getComponent(0)).getText();
+        if(tabName.endsWith("*"))
+        {
+            tabName = tabName.substring(0, tabName.length()-1);
+            ((JLabel)pnl.getComponent(0)).setText(tabName);
+        }
+    }
     // Save the selected project editor 
     public final boolean saveAs() {
         return saveAs(getSelectedProjectEditor());
@@ -511,7 +578,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                     if (project.write(file)) {
                         // Refresh the title of the project tab
                         final int index = mProjectEditors.getSelectedIndex();
-                        mProjectEditors.setTitleAt(index, project.getProjectName());
+                        setTabNameSaved();
                         // Update rectent project list
                         updateRecentProjects(project);
                         // Refresh the appearance
