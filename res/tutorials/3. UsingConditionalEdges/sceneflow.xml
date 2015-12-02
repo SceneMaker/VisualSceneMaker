@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mon, 30 Nov 2015 04:35:21" start="N1;N3;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <Variable type="Int" name ="x">
+      <Int value="0"/>
+    </Variable>
+    <Variable type="Int" name ="y">
+      <Int value="0"/>
+    </Variable>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position x-pos="10" y-pos="10"/>
+  </GlobalVariableBadge>
+  <Comment>
+    <Graphics>
+      <Rect x-pos="397" y-pos="13" width="233" height="51"/>
+    </Graphics>
+    <Text style="color:blue">
+      <html>
+        <head>
+          <style type="text/css">
+            <!--
+              body { font-family: SansSerif; font-size: 11pt }
+            -->
+          </style>
+          
+        </head>
+        <body>
+          For detailed instructions, visit http://scenemaker.dfki.de/tutorial.html
+        </body>
+      </html>
+    </Text>
+  </Comment>
+  <Comment>
+    <Graphics>
+      <Rect x-pos="231" y-pos="450" width="377" height="50"/>
+    </Graphics>
+    <Text style="color:blue">
+      <html>
+        <head>
+          <style type="text/css">
+            <!--
+              body { font-family: SansSerif; font-size: 11pt }
+            -->
+          </style>
+          
+        </head>
+        <body>
+          The main characteristic of interruptive edges is, as its name states, that 
+          interrupts execution of whatever the node is doing at certain point in 
+          time once the condition is fulfilled.
+        </body>
+      </html>
+    </Text>
+  </Comment>
+  <Node id="N1" name="N1" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assign>
+        <Variable name="x"/>
+        <Expression>
+          <Add>
+            <Variable name="x"/>
+            <Int value="1"/>
+          </Add>
+        </Expression>
+      </Assign>
+      <Assign>
+        <Variable name="x"/>
+        <Expression>
+          <Add>
+            <Variable name="x"/>
+            <Int value="1"/>
+          </Add>
+        </Expression>
+      </Assign>
+    </Commands>
+    <CEdge target="N2" start="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="300" y-pos="165" control-x-pos="367" control-y-pos="165"/>
+          <Point x-pos="480" y-pos="165" control-x-pos="412" control-y-pos="165"/>
+        </Arrow>
+      </Graphics>
+      <Gt>
+        <Variable name="x"/>
+        <Int value="10"/>
+      </Gt>
+    </CEdge>
+    <TEdge target="N1" start="" timeout="100">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="267" y-pos="122" control-x-pos="291" control-y-pos="36"/>
+        <Point x-pos="294" y-pos="142" control-x-pos="372" control-y-pos="96"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="210" y-pos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position x-pos="480" y-pos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assign>
+        <Variable name="y"/>
+        <Expression>
+          <Add>
+            <Variable name="y"/>
+            <Int value="1"/>
+          </Add>
+        </Expression>
+      </Assign>
+      <Assign>
+        <Variable name="y"/>
+        <Expression>
+          <Add>
+            <Variable name="y"/>
+            <Int value="1"/>
+          </Add>
+        </Expression>
+      </Assign>
+    </Commands>
+    <TEdge target="N3" start="" timeout="100">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="267" y-pos="302" control-x-pos="291" control-y-pos="216"/>
+        <Point x-pos="294" y-pos="322" control-x-pos="372" control-y-pos="276"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <IEdge target="N4" start="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="300" y-pos="345" control-x-pos="367" control-y-pos="345"/>
+          <Point x-pos="480" y-pos="345" control-x-pos="412" control-y-pos="345"/>
+        </Arrow>
+      </Graphics>
+      <Gt>
+        <Variable name="y"/>
+        <Int value="10"/>
+      </Gt>
+    </IEdge>
+    <Graphics>
+      <Position x-pos="210" y-pos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="N4" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position x-pos="480" y-pos="300"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

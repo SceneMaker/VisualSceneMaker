@@ -10,6 +10,7 @@ import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.ProjectEditor;
@@ -207,8 +208,10 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
         mSplitPane.setRightComponent(mElementEditor);
         if (Boolean.valueOf(Preferences.getProperty("showelementproperties"))) {
             
-            mSplitPane.setDividerLocation(
-                Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
+            mSplitPane.setDividerLocation((int)(EditorInstance.getInstance().getWidth()-520));
+            
+            //mSplitPane.setDividerLocation(
+            //    Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
             //THIS EVENT IS CASTED ONLY TO ACTIVATE THE ELEMENT EDITOR WITH THE INFO OF THE CURRENT PROJECT
         } 
         else {

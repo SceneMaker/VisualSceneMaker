@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment/>
+<entry key="autohidebottombar">true</entry>
+<entry key="num_magnets">8</entry>
+<entry key="grid">true</entry>
+<entry key="node_width">90</entry>
+<entry key="showvariables">true</entry>
+<entry key="frame_posy">0</entry>
+<entry key="frame_posx">0</entry>
+<entry key="scriptfonttype">Arial</entry>
+<entry key="shownodeid">true</entry>
+<entry key="showsceneeditor">true</entry>
+<entry key="visualization">true</entry>
+<entry key="frame_height">600</entry>
+<entry key="showgestures">true</entry>
+<entry key="launchPlayer">false</entry>
+<entry key="frame_name">SceneFlowEditor</entry>
+<entry key="showelementproperties">true</entry>
+<entry key="sceneflow_sceneeditor_ratio">0.75</entry>
+<entry key="node_height">90</entry>
+<entry key="scriptfonsize">11</entry>
+<entry key="frame_width">800</entry>
+<entry key="defaultsupernodename">default</entry>
+<entry key="visualizationtrace">true</entry>
+<entry key="grid_y">1</entry>
+<entry key="propertiesdividerlocation">1133</entry>
+<entry key="grid_x">1</entry>
+<entry key="icon_file">res/img/icon.png</entry>
+<entry key="showsmartpathcalculations">false</entry>
+<entry key="showelements">true</entry>
+<entry key="frame_title">Visual SceneMaker</entry>
+<entry key="workspace_fontsize">11</entry>
+<entry key="showsceneelements">true</entry>
+<entry key="showscenefloweditor">true</entry>
+</properties>

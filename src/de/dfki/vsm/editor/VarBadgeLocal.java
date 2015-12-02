@@ -64,7 +64,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
         // Initialize the entry list
         SuperNode parentNode = mSuperNode;
-        System.out.println("nuevo varbadgelocal");
         mEntryList.clear();
 
         Vector<VarDef> varDefList = parentNode.getVarDefList();
@@ -267,7 +266,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                 entry.mFormatted  = formatedPair.getFirst();
                 entry.mAttributed = formatedPair.getSecond();
                 entry.mHasChanged = true;
-                EventDispatcher.getInstance().convey(new VarBadgeUpdatedEvent(this, entry));
+                //EventDispatcher.getInstance().convey(new VarBadgeUpdatedEvent(this, entry));
             }
         }
         }

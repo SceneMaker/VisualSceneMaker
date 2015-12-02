@@ -124,6 +124,7 @@ public class SingleFunctionContainer extends JPanel {
         mSceneFlow = sceneflow;
         initComponents();
         fillComponents();
+        initParams();
         
         JPanel functionContent = createPanel();
         setOpaque(false);
@@ -139,6 +140,29 @@ public class SingleFunctionContainer extends JPanel {
         add(functionContent);
     }
 
+    private void initParams() {
+        try {
+        String newSelectedMethodName = getSelectedMethod().getName().trim();
+        
+        mFunDef.setMethod(newSelectedMethodName);
+        getFunDef().setMethod(newSelectedMethodName);
+        mFunDef.getParamList().clear();
+
+        Enumeration args = ((DefaultListModel) getArgList().getModel()).elements();
+
+        while (args.hasMoreElements()) {
+            String argString = (String) args.nextElement();
+
+            mFunDef.addParam(new ParamDef(getNameMap().get(argString),
+                    getTypeMap().get(argString)));
+        }
+        
+        } catch (Exception ex){
+            System.err.println("The function created does not exist in the enviroment \n"+ ex.getMessage());
+        }
+        EditorInstance.getInstance().refresh();
+    }   
+        
     private void initComponents() {
 
         mNameLabel     = new JLabel("Name:");
@@ -546,8 +570,9 @@ public class SingleFunctionContainer extends JPanel {
 
         selectedMethod = selectedMethod.replaceAll("\\s+", "");
         mMethodComboBox.setSelectedItem(selectedMethod);
+        
         mSelectedMethod = mMethodMap.get(selectedMethod);
-
+        System.out.println(mSelectedMethod);
         // Resize the argument name list to the size of the parameter
         // list of the selected method and fill the argument name list
         // with the parameter names of the user command definition.
