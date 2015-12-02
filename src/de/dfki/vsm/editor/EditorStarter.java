@@ -15,7 +15,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagLayout;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.MouseAdapter;
@@ -57,12 +56,12 @@ public class EditorStarter extends JPanel {
 	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
 
 	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
+        private final File TutorialsProjFolder = new File(Preferences.sTUTORIALS_PROJECTS);
 
 	private final EditorInstance mEditorInstance;
 	private final Box mCenterProjectBox;
 	private final Box mLeftProjectBox;//Recent Projects
 	private final Box mRightProjectBox;
-        private Border blackline = BorderFactory.createLineBorder(Color.black);
 
 	// The singelton logger instance
 	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -136,12 +135,8 @@ public class EditorStarter extends JPanel {
 		mLeftProjectBox.setMaximumSize(halfScreenDimension);
 		mLeftProjectBox.setPreferredSize(halfScreenDimension);
 		mRightProjectBox.setMaximumSize(halfScreenDimension);
-		mLeftProjectBox.setBorder(new EmptyBorder(0, 0, 0, 0));
-                mRightProjectBox.setBorder(new EmptyBorder(0, 0, 0, 0));
-                mCenterProjectBox.setBorder(new EmptyBorder(0, 0, 0, 0));
-                mRightProjectBox.setAlignmentX(LEFT_ALIGNMENT);
-                
-                
+		mRightProjectBox.setPreferredSize(mLeftProjectBox.getSize());
+		mLeftProjectBox.setBorder(new EmptyBorder(0, 0, 0, 1));
 
 		mCenterProjectBox.add(mLeftProjectBox);
 		content.add(titlePanel);
@@ -277,7 +272,7 @@ public class EditorStarter extends JPanel {
 		mRightProjectBox.repaint();
 		createMenuButtons();
 		listOfRecentProjects();
-		//listOfSampleProjects();
+		listOfTutorials();
 		listOfBuildInProjects();
 		newsAndDoc();
 	}
@@ -455,61 +450,61 @@ public class EditorStarter extends JPanel {
 	/**
 	 * Creates link list of sample projects
 	 */
-	private void listOfSampleProjects() {
+	private void listOfTutorials() {
 		// *********************************************************************
-		// LIST OF SAMPLE PROJECTS
+		// LIST OF TUTORIALS PROJECTS
 		// *********************************************************************
 
-		int sampleProjCnt = 0;
-		if (SampleProjFolder.exists()) {
-			sampleProjCnt = SampleProjFolder.listFiles().length;
+		int tutorialProjCnt = 0;
+		if (TutorialsProjFolder.exists()) {
+			tutorialProjCnt = TutorialsProjFolder.listFiles().length;
 		}
-		if (sampleProjCnt == 0) {
+		if (tutorialProjCnt == 0) {
 			return;
 		}
 
-		JLabel exampleMenu = new JLabel((sampleProjCnt > 1) ? " Sample Projects" : " Sample Project");
-		exampleMenu.setBorder(null);
-		exampleMenu.setMaximumSize(new Dimension(buttonSize));
-		exampleMenu.setPreferredSize(new Dimension(buttonSize));
-		exampleMenu.setOpaque(true);
-		exampleMenu.setBackground(sMENUHEADLINECOLOR);
-		exampleMenu.setForeground(sTEXTCOLOR);
-		exampleMenu.setFont(sMENUHEADLINEFONT);
-		
+		JLabel tutorialsMenu = new JLabel((tutorialProjCnt > 1) ? " Tutorials" : " Tutorial");
+		tutorialsMenu.setBorder(null);
+		tutorialsMenu.setMaximumSize(new Dimension(buttonSize));
+		tutorialsMenu.setPreferredSize(new Dimension(buttonSize));
+		tutorialsMenu.setOpaque(true);
+		tutorialsMenu.setBackground(sMENUHEADLINECOLOR);
+		tutorialsMenu.setForeground(sTEXTCOLOR);
+		tutorialsMenu.setFont(sMENUHEADLINEFONT);
+		mRightProjectBox.add(tutorialsMenu);
 
-		JPanel sampleProjPanel = new JPanel();
+		JPanel tutorialProjPanel = new JPanel();
 
-		sampleProjPanel.setOpaque(false);
-		sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
-		File listDirs[] = SampleProjFolder.listFiles();
+		tutorialProjPanel.setOpaque(false);
+		tutorialProjPanel.setLayout(new BoxLayout(tutorialProjPanel, BoxLayout.Y_AXIS));
+		File listDirs[] = TutorialsProjFolder.listFiles();
 
-		for (final File sampleDir : listDirs) {
+		for (final File tutorialDir : listDirs) {
 
-			final File sampleProj = new File(sampleDir.getPath());
+			final File tutorialProj = new File(tutorialDir.getPath());
 
-			if (sampleProj.exists()) {
+			if (tutorialProj.exists()) {
 				//File projectPath = new File(sampleDir.getPath() + "project.xml" );
 				EditorProject project = new EditorProject();
 
-				project.parse(sampleProj.getPath());
+				project.parse(tutorialProj.getPath());
 
-				JLabel newSampleProj = new JLabel(project.getProjectName() + ", last edited: "
-				  + Preferences.sDATE_FORMAT.format(sampleProj.lastModified()));
+				JLabel newTutorialProj = new JLabel(project.getProjectName());// + ", last edited: "
+				 // + Preferences.sDATE_FORMAT.format(tutorialProj.lastModified()));
 
-				newSampleProj.setLayout(new BoxLayout(newSampleProj, BoxLayout.X_AXIS));
-				newSampleProj.setMaximumSize(new Dimension(buttonSize));
-				newSampleProj.setPreferredSize(new Dimension(buttonSize));
-				newSampleProj.setFont(sMENUITEMFONT);
-				newSampleProj.setOpaque(true);
-				newSampleProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
-				newSampleProj.setForeground(sTEXTCOLOR);
-				newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-				newSampleProj.addMouseListener(new MouseAdapter() {
+				newTutorialProj.setLayout(new BoxLayout(newTutorialProj, BoxLayout.X_AXIS));
+				newTutorialProj.setMaximumSize(new Dimension(buttonSize));
+				newTutorialProj.setPreferredSize(new Dimension(buttonSize));
+				newTutorialProj.setFont(sMENUITEMFONT);
+				newTutorialProj.setOpaque(true);
+				newTutorialProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
+				newTutorialProj.setForeground(sTEXTCOLOR);
+				newTutorialProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+				newTutorialProj.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent me) {
 						// mEditorInstance.toggleProjectEditorList(true);
-						mEditorInstance.openProject(sampleProj.getPath());
+						mEditorInstance.openProject(tutorialProj.getPath());
 						mWelcomeStickman.setVisible(false);
 					}
 
@@ -525,19 +520,18 @@ public class EditorStarter extends JPanel {
 						EditorStarter.this.repaint();
 					}
 				});
-				sampleProjPanel.add(newSampleProj);
+				tutorialProjPanel.add(newTutorialProj);
 
-				sampleProjPanel.add(new CoolSeparator());
+				tutorialProjPanel.add(new CoolSeparator());
 			}
 		}
 
 		// remove last separator
-		if (sampleProjPanel.getComponentCount() > 0) {
-			sampleProjPanel.remove(sampleProjPanel.getComponentCount() - 1);
+		if (tutorialProjPanel.getComponentCount() > 0) {
+			tutorialProjPanel.remove(tutorialProjPanel.getComponentCount() - 1);
 		}
 
-		mRightProjectBox.add(sampleProjPanel);
-                
+		mRightProjectBox.add(tutorialProjPanel);
 	}
 
 	/**
@@ -598,20 +592,20 @@ public class EditorStarter extends JPanel {
 		exampleMenu.setForeground(sTEXTCOLOR);
 		exampleMenu.setFont(sMENUHEADLINEFONT);
 		mRightProjectBox.add(exampleMenu);
-               
-		JPanel sampleProjPanel = new JPanel();            
+
+		JPanel sampleProjPanel = new JPanel();
 		sampleProjPanel.setOpaque(false);
 		sampleProjPanel.setLayout(new BoxLayout(sampleProjPanel, BoxLayout.Y_AXIS));
 
 		JScrollPane mScrollPanel = new JScrollPane(sampleProjPanel);
 		mScrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		mScrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-                mScrollPanel.setViewportView(sampleProjPanel);
-                mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
-                mScrollPanel.setViewportBorder(new EmptyBorder(0, -10, 0, 0));
+		mScrollPanel.setViewportView(sampleProjPanel);
+		mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+		mScrollPanel.setViewportBorder(new EmptyBorder(0, -10, 0, 0));
 		mScrollPanel.setOpaque(false);
 		mScrollPanel.getViewport().setOpaque(false);
-                mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
+		mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
 
 		for (final String sampleDir : listDirs) {
 
@@ -661,7 +655,7 @@ public class EditorStarter extends JPanel {
 		}
 
 		mRightProjectBox.add(mScrollPanel);
-                mScrollPanel.setMaximumSize(sampleProjPanel.getMaximumSize());
+		mScrollPanel.setMaximumSize(sampleProjPanel.getMaximumSize());
 	}
 
 	/**
