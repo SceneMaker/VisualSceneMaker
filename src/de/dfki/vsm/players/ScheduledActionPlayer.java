@@ -29,15 +29,17 @@ public class ScheduledActionPlayer extends ActionPlayer {
 				// wait for go
 				sActionPlaySync.acquire();
 
-				// now schedule all actions
-				if (mRunning) {
-					for (Action a : sActionList) {
-						sActionScheduler.schedule(a, a.mStartTime, TimeUnit.MILLISECONDS);
+				if (sActionList.size() > 0) {
+					// now schedule all actions
+					if (mRunning) {
+						for (Action a : sActionList) {
+							sActionScheduler.schedule(a, a.mStartTime, TimeUnit.MILLISECONDS);
+						}
 					}
-				}
 
-				// wait for all actions ended
-				sActionPlaySync.acquire();
+					// wait for all actions ended
+					sActionPlaySync.acquire();
+				}
 			} catch (InterruptedException ex) {
 				mLogger.warning("ActionPlayer got interrupted " + ex.getMessage());
 			}

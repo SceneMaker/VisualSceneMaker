@@ -3,9 +3,11 @@ package de.dfki.vsm.players.stickman;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneAbbrev;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -18,6 +20,7 @@ import de.dfki.vsm.model.scenescript.SceneWord;
 import de.dfki.vsm.players.EventActionPlayer;
 import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.action.ActionListener;
+import de.dfki.vsm.players.action.EventAction;
 import de.dfki.vsm.players.action.sequence.TimeMark;
 import de.dfki.vsm.players.action.sequence.Word;
 import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
@@ -45,295 +48,337 @@ import java.util.concurrent.Semaphore;
  */
 public final class StickmanScenePlayer implements RunTimePlayer, ActionListener {
 
-	// The singelton player instance
-	public static StickmanScenePlayer sInstance = null;
-	// The singelton logger instance
-	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-	// The player's runtime project 
-	private RunTimeProject mProject;
-	// The project specific config
-	private PlayerConfig mPlayerConfig;
-	// The project specific name
-	private String mPlayerName;
-	// OUTPUT MANAGER: The Actionplay 
-	// ScheduledActionPlayer mActionPlayer;
-	private static EventActionPlayer mActionPlayer;
-	// Synchronisation with the action player
-	private Semaphore mAllActionSync;
-	private Semaphore mAllEndSync;
-	// RENDERER: The StickmanStage
-	private static StickmanStage mStickmanStage;
+    // The singelton player instance
+    public static StickmanScenePlayer sInstance = null;
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    // The player's runtime project 
+    private RunTimeProject mProject;
+    // The project specific config
+    private PlayerConfig mPlayerConfig;
+    // The project specific name
+    private String mPlayerName;
+    // OUTPUT MANAGER: The Actionplay 
+    // ScheduledActionPlayer mActionPlayer;
+    private static EventActionPlayer mActionPlayer;
+    // Synchronisation with the action player
+    private Semaphore mAllActionSync;
+    private Semaphore mAllEndSync;
+    // RENDERER: The StickmanStage
+    private static StickmanStage mStickmanStage;
+    // Some memory about who belongs to what
+    private static HashMap<String, String> mRelationAgentPlayer = new HashMap<>();
 
-	// Construct the StickmanScene player
-	private StickmanScenePlayer() {
-	}
+    // Construct the StickmanScene player
+    private StickmanScenePlayer() {
+    }
 
-	// Get the StickmanScenePlayer instance
-	public static synchronized StickmanScenePlayer getInstance() {
-		if (sInstance == null) {
-			sInstance = new StickmanScenePlayer();
-		}
-		return sInstance;
-	}
+    // Get the StickmanScenePlayer instance
+    public static synchronized StickmanScenePlayer getInstance() {
+        if (sInstance == null) {
+            sInstance = new StickmanScenePlayer();
+        }
+        return sInstance;
+    }
 
-	@Override
-	public void update(Action a, ActionListener.STATE actionState) {
-		if (actionState == ActionListener.STATE.ACTION_STARTED) {
-			//mLogger.message(((StickmanAction) a).mName + " started");
-		}
+    @Override
+    public void update(Action a, ActionListener.STATE actionState) {
+        if (actionState == ActionListener.STATE.ACTION_STARTED) {
+            //mLogger.message(((StickmanAction) a).mName + " started");
+        }
 
-		if (actionState == ActionListener.STATE.ACTION_FINISHED) {
-			//mLogger.message(((StickmanAction) a).mName + " finished");
-		}
-	}
+        if (actionState == ActionListener.STATE.ACTION_FINISHED) {
+            //mLogger.message(((StickmanAction) a).mName + " finished");
+        }
+    }
 
-	@Override
-	public void update(ActionListener.STATE actionState) {
-		if (actionState == ActionListener.STATE.ALL_ACTIONS_FINISHED) {
-			mAllActionSync.release();
-		}
-	}
+    @Override
+    public void update(ActionListener.STATE actionState) {
+        if (actionState == ActionListener.STATE.ALL_ACTIONS_FINISHED) {
+            mAllActionSync.release();
+        }
+    }
+    
+    // Launch the StickmanScenePlayer
+    @Override
+    public final boolean launch(final RunTimeProject project) {
+        // Initialize the project
+        mProject = project;
+        // Initialize the name
+        mPlayerName = project.getPlayerName(this);
+        // Initialize the config
+        mPlayerConfig = project.getPlayerConfig(mPlayerName);
+        // Print some information
+        mLogger.message("Launching the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
 
-	// Launch the StickmanScenePlayer
-	@Override
-	public final boolean launch(final RunTimeProject project) {
-		// Initialize the project
-		mProject = project;
-		// Initialize the name
-		mPlayerName = project.getPlayerName(this);
-		// Initialize the config
-		mPlayerConfig = project.getPlayerConfig(mPlayerName);
-		// Print some information
-		mLogger.message("Launching the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
-		
-		// Start the Action Player
-		mLogger.message("Starting Action Player ...");
-		mActionPlayer = EventActionPlayer.getNetworkInstance(8000);
-		// Tell the ActionPlayer that this ScenePlayer is interested in updates
-		mActionPlayer.addListener(this);
-		mActionPlayer.start();
+        // Start the Action Player
+        mLogger.message("Starting Action Player ...");
+        mActionPlayer = EventActionPlayer.getNetworkInstance(8000);
+        // Tell the ActionPlayer that this ScenePlayer is interested in updates
+        mActionPlayer.addListener(this);
+        mActionPlayer.start();
 
-		// Start the client application - in this case the StickmanStage
-		mLogger.message("Starting Client Application ...");
-		mStickmanStage = StickmanStage.getNetworkInstance("127.0.0.1", 8000);
+        // Start the StickmanStage client application 
+        mLogger.message("Starting StickmanStage Client Application ...");
+        mStickmanStage = StickmanStage.getNetworkInstance("127.0.0.1", 8000);
 
-		// put all characters on the stage
-		getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
-			StickmanStage.addStickman(c);
-		});
-		
-		// configure blocking mechanism 
-		mAllActionSync = new Semaphore(0);
-		// configure clean shutdown mechanism
-		mAllEndSync = new Semaphore(0);
-		return true;
-	}
+        // collect and prepare information which agent belongs to which player
+        getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
+            AgentConfig ac = mProject.getAgentConfig(c);
+            if (ac != null) {
+                mRelationAgentPlayer.put(c, ac.getClassName());
+            }
+        });
 
-	// Unload the StickmanScenePlayer
-	@Override
-	public final boolean unload() {
-		// Print some information
-		mLogger.message("Unloading the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
-		// clear the stage
-		StickmanStage.clearStage();
-		// remove action player
-		mActionPlayer.removeListener(this);
-		// stop the ActionPlayer
-		mActionPlayer.end();
-		// do not wait for the end of any actions
-		mAllActionSync.release();
+        // put all stickman characters on the stickman stage
+        mRelationAgentPlayer.keySet().stream().forEach((c) -> {
+            if (mRelationAgentPlayer.get(c).equalsIgnoreCase("stickmanstage")) {
+                StickmanStage.addStickman(c);
+            } else {
+                mLogger.warning("No AgentConfig found for Agent " + c + "!");
+            }
+        });
 
-		// Return true at success
-		return true;
-	}
+        // configure blocking mechanism 
+        mAllActionSync = new Semaphore(0);
+        // configure shutdown mechanism
+        mAllEndSync = new Semaphore(0);
+        return true;
+    }
 
-	private Set<String> getCharacters(SceneScript scenescript) {
-		Set<String> speakersSet = new HashSet<>();
+    // Unload the StickmanScenePlayer
+    @Override
+    public final boolean unload() {
+        // Print some information
+        mLogger.message("Unloading the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
+        // clear the stage
+        StickmanStage.clearStage();
+        // remove action player
+        mActionPlayer.removeListener(this);
+        // stop the ActionPlayer
+        mActionPlayer.end();
+        // do not wait for the end of any actions
+        mAllActionSync.release();
+        // Return true at success
+        return true;
+    }
 
-		for (SceneObject scene : scenescript.getSceneList()) {
-			LinkedList<SceneTurn> sturns = scene.getTurnList();
+    private Set<String> getCharacters(SceneScript scenescript) {
+        Set<String> speakersSet = new HashSet<>();
 
-			for (SceneTurn t : sturns) {
-				if (!speakersSet.contains(t.getSpeaker())) {
-					speakersSet.add(t.getSpeaker());
-				}
-			}
-		}
-		return speakersSet;
-	}
+        for (SceneObject scene : scenescript.getSceneList()) {
+            LinkedList<SceneTurn> sturns = scene.getTurnList();
 
-	// Play some scene with the player
-	@Override
-	public final void play(final String name, final LinkedList<AbstractValue> args) {
-		final Process process = ((Process) Thread.currentThread());
-		final HashMap<String, String> mSceneParamMap = new HashMap<>();
-		// Process The Arguments
-		if ((args != null) && !args.isEmpty()) {
-			// Get The First Argument
-			final AbstractValue value = args.getFirst();
-			// Check The Argument Type
-			if (value.getType().equals(Type.STRUCT)) {
-				// Cast The Argument Type
-				final StructValue struct = (StructValue) value;
-				// Process Scene Arguments
-				for (final Entry<String, AbstractValue> entry : struct.getValueMap().entrySet()) {
-					if (entry.getValue().getType() == Type.STRING) {
-						mSceneParamMap.put(entry.getKey(), ((StringValue) entry.getValue()).getValue());
-					} else {
-						// Process Other Argument Types
-					}
-				}
-			}
-		}
+            for (SceneTurn t : sturns) {
+                if (!speakersSet.contains(t.getSpeaker())) {
+                    speakersSet.add(t.getSpeaker());
+                }
 
-		// Create The Player Task
-		Task task = new Task(process.getName() + name + " StickManScenePlayer") {
-			@Override
-			public void run() {
-				// Select The Scene
-				final SceneScript script = mProject.getSceneScript();
-				final SceneGroup group = script.getSceneGroup(name);
-				final SceneObject scene = group.select();
+                LinkedList<SceneUttr> suttr = t.getUttrList();
 
-				// Scene Visualization
-				EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
-				// Process The Turns
-				for (SceneTurn turn : scene.getTurnList()) {
-					// Turn Visualization
-					mLogger.message("Executing turn:" + turn.getText());
-					EventDispatcher.getInstance().convey(new TurnExecutedEvent(this, turn));
+                for (SceneUttr u : suttr) {
+                    LinkedList<AbstractWord> words = u.getWordList();
 
-					// Get The Turn Speaker
-					final String speaker = turn.getSpeaker();
+                    for (AbstractWord word : words) {
+                        if (word instanceof ActionObject) {
+                            ActionObject ao = ((ActionObject) word);
 
-					if (speaker == null) {
-						// Get The Default Speaker
-					}
+                            String agent = ao.getAgentName();
 
-					// Count The Word Number
-					int wordCount = 0;
-					
-					// Process Utterance
-					for (SceneUttr utt : turn.getUttrList()) {
-						mLogger.message("Executing utterance:" + utt.getText());
-						// create a new word time mark sequence based on the current utterance
-						WordTimeMarkSequence wts = new WordTimeMarkSequence(utt.getCleanText());
-						// Create the master action that controlas all
-						StickmanEventAction stickmanEventAction = new StickmanEventAction(StickmanStage.getStickman(speaker), 0, "Speaking", 3000, wts, false);
-						mActionPlayer.addAction(stickmanEventAction);
-						// add mouth open
-						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "Mouth_O", 200, "", true));
-						// add mounth closed
-						mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 190, "Mouth_Default", 20, "", false));
+                            if ((agent != null) && !agent.trim().isEmpty()) {
+                                if (!speakersSet.contains(agent)) {
+                                    speakersSet.add(agent);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return speakersSet;
+    }
 
-						EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
+    // Play some scene with the player
+    @Override
+    public final void play(final String name,
+            final LinkedList<AbstractValue> args
+    ) {
+        final Process process = ((Process) Thread.currentThread());
+        final HashMap<String, String> mSceneParamMap = new HashMap<>();
+        // Process The Arguments
+        if ((args != null) && !args.isEmpty()) {
+            // Get The First Argument
+            final AbstractValue value = args.getFirst();
+            // Check The Argument Type
+            if (value.getType().equals(Type.STRUCT)) {
+                // Cast The Argument Type
+                final StructValue struct = (StructValue) value;
+                // Process Scene Arguments
+                for (final Entry<String, AbstractValue> entry : struct.getValueMap().entrySet()) {
+                    if (entry.getValue().getType() == Type.STRING) {
+                        mSceneParamMap.put(entry.getKey(), ((StringValue) entry.getValue()).getValue());
+                    } else {
+                        // Process Other Argument Types
+                    }
+                }
+            }
+        }
 
-						// Process the words of this utterance
-						// remember timemark
-						String tm = mActionPlayer.getTimeMark();
-						for (AbstractWord word : utt.getWordList()) {
+        // Create The Player Task
+        Task task = new Task(process.getName() + name + " StickManScenePlayer") {
+            @Override
+            public void run() {
+                // Select The Scene
+                final SceneScript script = mProject.getSceneScript();
+                final SceneGroup group = script.getSceneGroup(name);
+                final SceneObject scene = group.select();
 
-							if (word instanceof SceneWord) {
-								String w = ((SceneWord) word).getText();
-								// add word to the word time mark sequence
-								wts.add(new Word(w));
-								// generate a new time mark after each word
-								tm = mActionPlayer.getTimeMark();
+                // Scene Visualization
+                EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
+                // Process The Turns
+                for (SceneTurn turn : scene.getTurnList()) {
+                    // Turn Visualization
+                    mLogger.message("Executing turn:" + turn.getText());
+                    EventDispatcher.getInstance().convey(new TurnExecutedEvent(this, turn));
 
-								wordCount = w.length();
-							} else if (word instanceof SceneParam) {
-								// Visualization
-								//mLogger.message("Executing param:" + ((SceneParam) word).getText());
-							} else if (word instanceof ActionObject) {
-								ActionObject ao = ((ActionObject) word);
+                    // Get The Turn Speaker
+                    final String speaker = turn.getSpeaker();
 
-								String agent = ao.getAgentName();
-								agent = (agent == null || agent.trim().isEmpty()) ? speaker : agent;
+                    if (speaker == null) {
+                        // Get The Default Speaker
+                    }
 
-								StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), -1, ao.getName(), 1000, "", false);
-								if (sa.mAnimation != null) {
-									// give time mark to general event action
-									stickmanEventAction.addTimeMark(tm);
-									// set time mark to action
-									sa.setTimeMark(tm);
-									// add time mark action to action player - to be played at the specfic timemark
-									mActionPlayer.addTimeMarkAction(sa);
-									// add time mark to word time mark sequence
-									wts.add(new TimeMark(tm));
-								}
+                    // Count The Word Number
+                    int wordCount = 0;
 
-							} else if (word instanceof SceneAbbrev) {
-								// Visualization
-								//mLogger.message("Executing abbreviation:" + ((SceneAbbrev) word).getText());
-							}
-						}
+                    // Process Utterance
+                    for (SceneUttr utt : turn.getUttrList()) {
+                        mLogger.message("Executing utterance:" + utt.getText());
+                        EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
-						// play all actions of an utterance
-						//mLogger.message("go ...........");
-						mActionPlayer.play();
+                        // create a new word time mark sequence based on the current utterance
+                        WordTimeMarkSequence wts = new WordTimeMarkSequence(utt.getCleanText());
 
-						// wait for all actions to be played
-						try {
-							mAllActionSync.acquire();
-						} catch (InterruptedException ex) {
-							mLogger.warning("Execution of scene " + group.getName() + " got interrupted!");
-						}
-					}
+                        if (!(utt.getCleanText().length() == 0) && !utt.getCleanText().equalsIgnoreCase(utt.getPunct())) {
+                            if (mRelationAgentPlayer.get(speaker).equalsIgnoreCase("stickmanstage")) {
+                                // Create and add the master event action that controlas all other actions
+                                mActionPlayer.addMasterEventAction(new StickmanEventAction(StickmanStage.getStickman(speaker), 0, "Speaking", 3000, wts, false));
+                                // add mouth open
+                                mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 0, "Mouth_O", 200, "", true));
+                                // add mounth closed
+                                mActionPlayer.addAction(new StickmanAction(StickmanStage.getStickman(speaker), 190, "Mouth_Default", 20, "", false));
+                            }
+                        }
 
-					// Exit if interrupted
-					if (isDone()) {
-						return;
-					}
-				}
-			}
-		};
+                        // Process the words of this utterance
+                        // remember timemark
+                        String tm = mActionPlayer.getTimeMark();
+                        for (AbstractWord word : utt.getWordList()) {
+                            if (word instanceof SceneWord) {
+                                String w = ((SceneWord) word).getText();
+                                // add word to the word time mark sequence
+                                wts.add(new Word(w));
+                                // generate a new time mark after each word
+                                tm = mActionPlayer.getTimeMark();
 
-		// Start the player task
-		task.start();
-		// Wait for termination
-		boolean finished = false;
-		while (!finished) {
-			try {
-				// Join the player task
-				task.join();
-				// Stop waiting for task
-				finished = true;
-			} catch (final InterruptedException exc) {
-				// Print some warning
-				mLogger.warning("Warning: Interrupting process '" + process + "'");
-				// Terminate the task
-				task.abort();
-				// Interrupt the task
-				task.interrupt();
+                                wordCount = w.length();
+                            } else if (word instanceof SceneParam) {
+                                // Visualization
+                                //mLogger.message("Executing param:" + ((SceneParam) word).getText());
+                            } else if (word instanceof ActionObject) {
+                                ActionObject ao = ((ActionObject) word);
 
-			}
-		}
-	}
+                                String agent = ao.getAgentName();
+                                agent = (agent == null || agent.trim().isEmpty()) ? speaker : agent;
 
-	/*
-	 private boolean init() {
-	 // Initialize the delay
-	 try {
-	 // Check if the config is null
-	 if (mConfig != null) {
-	 mDelay = Integer.parseInt(
-	 mConfig.getProperty("delay"));
-	 // Print an error message in this case
-	 mLogger.message("Initializing the default scene player delay with '" + mDelay + "'");
-	 // Return failure if it does not exist
-	 return true;
-	 } else {
-	 // Print an error message in this case
-	 mLogger.warning("Warning: Cannot read bad default scene player configuration");
-	 // Return failure if it does not exist
-	 return false;
-	 }
-	 } catch (final NumberFormatException exc) {
-	 // Print an error message in this case
-	 mLogger.failure("Error: Cannot initialize the default scene player delay");
-	 // Return failure if it does not exist
-	 return false;
-	 }
-	 }
-	 */
+                                if (mRelationAgentPlayer.get(agent).equalsIgnoreCase("stickmanstage")) {
+                                    // if there is a master event action, let it decide when to play the action, else play it at timecode 0
+                                    StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), mActionPlayer.hasMasterEventAction() ? -1 : 0, ao.getName(), 1000, "", false);
+                                    if (mActionPlayer.hasMasterEventAction()) {
+                                        // give time mark to the master event action
+                                        ((EventAction) mActionPlayer.getMasterEventAction()).addTimeMark(tm);
+                                        // set time mark to action
+                                        sa.setTimeMark(tm);
+                                        // add time mark action to action player - to be played at the specfic timemark
+                                        mActionPlayer.addTimeMarkAction(sa);
+                                        // add time mark to word time mark sequence
+                                        wts.add(new TimeMark(tm));
+                                    } else {
+                                        mActionPlayer.addAction(sa);
+                                    }
+                                }
+                            } else if (word instanceof SceneAbbrev) {
+                                // Visualization
+                                //mLogger.message("Executing abbreviation:" + ((SceneAbbrev) word).getText());
+                            }
+                        }
+
+                        // play all actions of an utterance
+                        //mLogger.message("go ...........");
+                        mActionPlayer.play();
+
+                        // wait for all actions to be played
+                        try {
+                            mAllActionSync.acquire();
+                        } catch (InterruptedException ex) {
+                            mLogger.warning("Execution of scene " + group.getName() + " got interrupted!");
+                        }
+                    }
+
+                    // Exit if interrupted
+                    if (isDone()) {
+                        return;
+                    }
+                }
+            }
+        };
+
+        // Start the player task
+        task.start();
+        // Wait for termination
+        boolean finished = false;
+        while (!finished) {
+            try {
+                // Join the player task
+                task.join();
+                // Stop waiting for task
+                finished = true;
+            } catch (final InterruptedException exc) {
+                // Print some warning
+                mLogger.warning("Warning: Interrupting process '" + process + "'");
+                // Terminate the task
+                task.abort();
+                // Interrupt the task
+                task.interrupt();
+
+            }
+        }
+    }
+
+    /*
+     private boolean init() {
+     // Initialize the delay
+     try {
+     // Check if the config is null
+     if (mConfig != null) {
+     mDelay = Integer.parseInt(
+     mConfig.getProperty("delay"));
+     // Print an error message in this case
+     mLogger.message("Initializing the default scene player delay with '" + mDelay + "'");
+     // Return failure if it does not exist
+     return true;
+     } else {
+     // Print an error message in this case
+     mLogger.warning("Warning: Cannot read bad default scene player configuration");
+     // Return failure if it does not exist
+     return false;
+     }
+     } catch (final NumberFormatException exc) {
+     // Print an error message in this case
+     mLogger.failure("Error: Cannot initialize the default scene player delay");
+     // Return failure if it does not exist
+     return false;
+     }
+     }
+     */
 }

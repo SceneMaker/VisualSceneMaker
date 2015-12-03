@@ -268,23 +268,26 @@ public class Stickman extends JComponent {
 
 	@Override
 	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
+		//super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+		int width = new Float(mSize.width * mScale).intValue();
+		int height = new Float(mSize.height * mScale).intValue();
+		
 		if (!mName.equalsIgnoreCase("")) {
 			g2.setColor(sFOREGROUND);
-			g2.fillRect(0, 0, mSize.width, mSize.height);
+			g2.fillRect(0, 0, width , height);
 
 			// draw Stickman's name
 			final int hOffset = mFontMetrics.getAscent() + mFontMetrics.getDescent();
 			final int wOffset = mFontMetrics.stringWidth(mName);
 
 			g2.setColor(sFOREGROUND.darker());
-			g2.fillRect(0, mSize.height - hOffset * 4, mSize.width, mSize.height);
+			g2.fillRect(0, height - hOffset * 4, width, height);
 			g2.setColor(mBody.mColor.darker());
-			g2.drawString(mName, 10, mSize.height - hOffset);
+			g2.drawString(mName, 10, height - hOffset);
 		}
 
 		// draw everthing in the middle and scaled

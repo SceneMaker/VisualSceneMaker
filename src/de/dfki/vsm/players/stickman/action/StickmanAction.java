@@ -1,7 +1,6 @@
 package de.dfki.vsm.players.stickman.action;
 
 import de.dfki.vsm.players.ActionPlayer;
-import static de.dfki.vsm.players.ActionPlayer.actionEnded;
 import static de.dfki.vsm.players.ActionPlayer.notifyListenersAboutAction;
 import de.dfki.vsm.players.action.ActionListener;
 import de.dfki.vsm.players.action.Action;
@@ -72,7 +71,7 @@ public class StickmanAction extends Action implements AnimationListener {
 					boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
 
 					try {
-						TCPActionServer.getInstance().sendToAll(new String(out.toByteArray(), "UTF-8"));
+						TCPActionServer.getInstance().sendToClient("StickmanStage", new String(out.toByteArray(), "UTF-8"));
 					} catch (UnsupportedEncodingException ex) {
 						mStickman.mLogger.warning(ex.getMessage());
 					}
@@ -98,7 +97,7 @@ public class StickmanAction extends Action implements AnimationListener {
 			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_FINISHED);
 
 			// notify Action Player
-			actionEnded(this);
+			mActionPlayer.actionEnded(this);
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.warning("Action " + mName + " got interrupted");
 		}
