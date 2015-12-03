@@ -1,6 +1,5 @@
 package de.dfki.vsm.players;
 
-import de.dfki.vsm.Preferences;
 import static de.dfki.vsm.players.ActionPlayer.sActionScheduler;
 import de.dfki.vsm.players.action.Action;
 import java.util.concurrent.TimeUnit;
@@ -14,10 +13,12 @@ public class EventActionPlayer extends ActionPlayer {
 
 	// time mark stuff
 	private static long mTimeMarkCnt = 0;
+	private static Action mMasterEventAction = null;
 
 	private EventActionPlayer() {
 		super();
 		super.setName("VisualSceneMaker Event Action Player");
+		mMasterEventAction = null;
 	}
 
 	public static EventActionPlayer getInstance() {
@@ -36,6 +37,28 @@ public class EventActionPlayer extends ActionPlayer {
 		mUseNetwork = true;
 		sPort = port;
 		return getInstance();
+	}
+
+	public void addMasterEventAction(Action a) {
+		if (mMasterEventAction == null) {
+			// tell the action which player executes it
+			a.mActionPlayer = this;
+			// give unique id;
+			a.mID = getNextID();
+			// add action to the list of to be executed actions
+			mMasterEventAction = a;
+			sActionList.add(a);
+		} else {
+			mLogger.failure("Event Action Player already has a Master Event Action - check code!");
+		}
+	}
+	
+	public boolean hasMasterEventAction() {
+		return (mMasterEventAction != null);
+	}
+	
+	public Action getMasterEventAction() {
+		return mMasterEventAction;
 	}
 
 	public String getTimeMark() {
@@ -83,25 +106,28 @@ public class EventActionPlayer extends ActionPlayer {
 				sActionPlaySync.acquire();
 
 				//mLogger.message("Action Player is working  ...");
-				// now schedule all existing actions - actions that shoudl be played directly;
+				// now schedule all existing actions - actions that should be played directly;
 				// one of them should contain information for the player about timestamps when to trigger other actions
-				if (mRunning) {
-					sActionList.stream().forEach((a) -> {
-						// start all actions  which do not have a timemark start condition
-						if (a.mStartTime != -1) {
-							//mLogger.message("Action " + a.mName + " is scheduled ...");
+				if (sActionList.size() > 0) {
+					if (mRunning) {
+						sActionList.stream().forEach((a) -> {
+							// start all actions  which do not have a timemark start condition
+							if (a.mStartTime != -1) {
+								//mLogger.message("Action " + a.mName + " is scheduled ...");
+								sActionScheduler.schedule(a, a.mStartTime, TimeUnit.MILLISECONDS);
+							}
+						});
+					}
 
-							sActionScheduler.schedule(a, a.mStartTime, TimeUnit.MILLISECONDS);
-						}
-					});
+					// wait for all actions ended
+					sActionPlaySync.acquire();
 				}
-
-				// wait for all actions ended
-				sActionPlaySync.acquire();
 			} catch (InterruptedException ex) {
 				mLogger.warning("Event ActionPlayer got interrupted " + ex.getMessage());
 			}
 
+			mMasterEventAction = null;
+			
 			notifyListenersAllActionsFinished();
 		}
 	}

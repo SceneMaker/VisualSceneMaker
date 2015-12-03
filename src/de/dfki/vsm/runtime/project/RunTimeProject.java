@@ -4,6 +4,7 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
@@ -86,6 +87,12 @@ public class RunTimeProject {
         return mProjectConfig.getPluginConfig(name);
     }
 
+	// Get a specific config from the map of plugins
+    public final AgentConfig getAgentConfig(final String name) {
+        return mProjectConfig.getAgentConfig(name);
+    }
+
+	
     // Get the project specific name of a player
     public final String getPlayerName(final RunTimePlayer player) {
         for (final Entry<String, RunTimePlayer> entry : mPlayerMap.entrySet()) {

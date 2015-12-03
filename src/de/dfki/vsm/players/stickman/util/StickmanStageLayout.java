@@ -19,17 +19,17 @@ public class StickmanStageLayout implements LayoutManager {
 	private int preferredWidth = 0, preferredHeight = 0;
 	private boolean sizeUnknown = true;
 
-	public StickmanStageLayout(double scale) {
-		sScale = scale;
+	public StickmanStageLayout() {
+		//sScale = scale;
 	}
 
-	public void setScale(double scale) {
-		sScale = scale;
-	}
-
-	private int scale(int input) {
-		return new Double(input * sScale).intValue();
-	}
+//	public void setScale(double scale) {
+//		sScale = scale;
+//	}
+//
+//	private int scale(int input) {
+//		return new Double(input * sScale).intValue();
+//	}
 
 	@Override
 	public void addLayoutComponent(String name, Component comp) {
@@ -50,8 +50,8 @@ public class StickmanStageLayout implements LayoutManager {
 		for (Component c : parent.getComponents()) {
 			if (c.isVisible()) {
 				d = c.getPreferredSize();
-				preferredWidth += scale(d.width);
-				preferredHeight = Math.max(scale(d.height), preferredHeight);
+				preferredWidth += d.width;
+				preferredHeight = Math.max(d.height, preferredHeight);
 
 				minWidth = preferredWidth;
 				minHeight = preferredHeight;
@@ -103,7 +103,8 @@ public class StickmanStageLayout implements LayoutManager {
 					x += previousWidth;
 				}
 
-				c.setBounds(x, y, (sScale > 1.0d) ? scale(d.width) : d.width, (sScale > 1.0d) ? scale(d.height) : d.height);
+				//c.setBounds(x, y, (sScale > 1.0d) ? scale(d.width) : d.width, (sScale > 1.0d) ? scale(d.height) : d.height);
+				c.setBounds(x, y, d.width, d.height);
 
 				previousWidth = d.width;
 				previousHeight = d.height;
