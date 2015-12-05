@@ -47,7 +47,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 
 	private StickmanStage() {
 		super("Stickman Stage");
-		setResizable(false);
+		//setResizable(false);
 
 		sStickmanPanel = new JPanel() {
 			@Override
@@ -63,7 +63,7 @@ public class StickmanStage extends JFrame implements MouseListener {
 			}
 		};
 
-		sStickmanPanel.setLayout(new StickmanStageLayout(sScale));
+		sStickmanPanel.setLayout(new StickmanStageLayout());
 		add(sStickmanPanel);
 
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
