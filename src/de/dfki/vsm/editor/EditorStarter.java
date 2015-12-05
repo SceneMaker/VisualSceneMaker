@@ -472,11 +472,23 @@ public class EditorStarter extends JPanel {
 		tutorialsMenu.setForeground(sTEXTCOLOR);
 		tutorialsMenu.setFont(sMENUHEADLINEFONT);
 		mRightProjectBox.add(tutorialsMenu);
-
-		JPanel tutorialProjPanel = new JPanel();
+                
+                JPanel tutorialProjPanel = new JPanel();
 
 		tutorialProjPanel.setOpaque(false);
 		tutorialProjPanel.setLayout(new BoxLayout(tutorialProjPanel, BoxLayout.Y_AXIS));
+
+		JScrollPane mScrollPanel = new JScrollPane(tutorialProjPanel);
+		mScrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		mScrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		mScrollPanel.setViewportView(tutorialProjPanel);
+		mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+		mScrollPanel.setViewportBorder(new EmptyBorder(0, -10, 0, 0));
+		mScrollPanel.setOpaque(false);
+		mScrollPanel.getViewport().setOpaque(false);
+		mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
+
+		
 		File listDirs[] = TutorialsProjFolder.listFiles();
 
 		for (final File tutorialDir : listDirs) {
@@ -530,8 +542,11 @@ public class EditorStarter extends JPanel {
 		if (tutorialProjPanel.getComponentCount() > 0) {
 			tutorialProjPanel.remove(tutorialProjPanel.getComponentCount() - 1);
 		}
+                
+                mRightProjectBox.add(mScrollPanel);
+		mScrollPanel.setMaximumSize(tutorialProjPanel.getMaximumSize());
 
-		mRightProjectBox.add(tutorialProjPanel);
+		
 	}
 
 	/**

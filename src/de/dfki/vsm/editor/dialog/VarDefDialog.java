@@ -8,13 +8,19 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.command.expression.BinaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
+import de.dfki.vsm.runtime.interpreter.Environment;
+import de.dfki.vsm.runtime.interpreter.Process;
+import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -35,6 +41,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import jdk.nashorn.internal.runtime.JSType;
 
 /**
  * @author Not me
@@ -278,7 +285,7 @@ public class VarDefDialog extends Dialog {
         }
     }
 
-    @Override
+     @Override
     protected void okActionPerformed() {
         if(mNameTextField.getText().length() == 0){
             mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
@@ -286,9 +293,37 @@ public class VarDefDialog extends Dialog {
         }
         else
         {
-            mVarDef.setName(mNameTextField.getText().trim());
-            mVarDef.setType((String) mTypeDefComboBoxModel.getSelectedItem());
-            dispose(Button.OK);
+            
+            String type       = mVarDef.getType();
+            boolean rightType = true;
+            
+            Expression expression = mVarDef.getExp();
+            String textValue  = expression.getConcreteSyntax();
+            
+            String expFullClass = expression.getClass().getName();
+            int lastIndex = expFullClass.lastIndexOf('.');
+            String regularClass = expFullClass;
+            if(lastIndex >=0){
+                regularClass = expFullClass.substring( lastIndex+1);
+            }
+            
+            //Just made for the regular datatypes
+
+            if( !type.equals(regularClass) && (regularClass.equals("Float") || regularClass.equals("Int") ||
+                    regularClass.equals("Bool") || regularClass.equals("String") || regularClass.equals("Object") )){
+               
+                rightType = false;
+            }
+            if(!rightType){
+                mExpTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+                errorMsg.setForeground(Color.red);
+                errorMsg.setText("Do not match the data type selected");
+            }
+            else{
+                mVarDef.setName(mNameTextField.getText().trim());
+                mVarDef.setType((String) mTypeDefComboBoxModel.getSelectedItem());
+                dispose(Button.OK);
+            }
         }
     }
 
