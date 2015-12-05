@@ -16,7 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 
 import static de.dfki.vsm.players.ActionPlayer.notifyListenersAboutAction;
-import static de.dfki.vsm.players.ActionPlayer.actionEnded;
 
 /**
  *
@@ -78,7 +77,7 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 					boolean r = XMLUtilities.writeToXMLWriter(mAnimation, iosw);
 
 					try {
-						TCPActionServer.getInstance().sendToAll(new String(out.toByteArray(), "UTF-8"));
+						TCPActionServer.getInstance().sendToClient("StickmanStage", new String(out.toByteArray(), "UTF-8"));
 					} catch (UnsupportedEncodingException ex) {
 						mStickman.mLogger.warning(ex.getMessage());
 					}
@@ -104,7 +103,7 @@ public class StickmanEventAction extends EventAction implements AnimationListene
 			notifyListenersAboutAction(this, ActionListener.STATE.ACTION_FINISHED);
 
 			// notify Action Player
-			actionEnded(this);
+			mActionPlayer.actionEnded(this);
 		} catch (InterruptedException ex) {
 			mStickman.mLogger.warning("Action " + mName + " got interrupted");
 		}

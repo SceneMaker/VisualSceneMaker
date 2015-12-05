@@ -35,6 +35,6 @@ public class TiltLeftBack extends Animation {
 		mAnimationPart.add(new AnimationContent(mStickman.mHead, "tilt", -translationUnit));
 		mAnimationPart.add(new AnimationContent(mStickman.mMouth, "tilt", -translationUnit));
 
-		playAnimationPart(300);
+		playAnimationPart(200);
 	}
 }

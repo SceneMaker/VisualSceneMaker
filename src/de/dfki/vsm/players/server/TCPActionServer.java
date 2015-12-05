@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -61,7 +63,10 @@ public class TCPActionServer extends Thread {
 		sClientConnections.stream().forEach((c) -> {
 			c.end();
 		});
-
+                
+                // be sure all connection are done ...
+                sClientConnections = Collections.synchronizedList(new ArrayList());
+                
 		mRunning = false;
 		try {
 			mServerSocket.close();
@@ -74,6 +79,14 @@ public class TCPActionServer extends Thread {
 		sInstance = null;
 	}
 
+        public Set<String> getConnectionIDs() {
+            Set<String> result = new HashSet<>();
+            sClientConnections.stream().forEach((s) -> {
+                result.add(s.mClientId);
+            });
+            return result;
+        }
+        
 	public void sendToAll(String message) {
 		sClientConnections.stream().forEach((c) -> {
 			c.sendToApplication(message);
