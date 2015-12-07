@@ -7,10 +7,9 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
+import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
@@ -215,16 +214,16 @@ public class MonitorDialog extends JDialog implements  EventListener{
 
     @Override
     public void update(EventObject event) {
-        if( event instanceof VarBadgeUpdatedEvent)
+        if( event instanceof VariableChangedEvent)
         {
-            VariableEntry tempEntry = ((VarBadgeUpdatedEvent)event).getVarEntry();
-            for (int i = 0; i < mVariableTable.getRowCount(); i++) {
-                
-                if(mVariableTable.getValueAt(i, 0).equals(tempEntry.getVarName()))
-                {
-                    mVariableTable.setValueAt(tempEntry.getVarValue(), i, 1);
-                }
-            }
+           
+//            for (int i = 0; i < mVariableTable.getRowCount(); i++) {
+//                
+//                if(mVariableTable.getValueAt(i, 0).equals(((VarBadgeUpdatedEvent)event).getVarName()))
+//                {
+//                    mVariableTable.setValueAt(((VarBadgeUpdatedEvent)event).getVarValue(), i, 1);
+//                }
+//            }
         }
     }
   }

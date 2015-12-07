@@ -4,11 +4,11 @@ package de.dfki.vsm.model.sceneflow;
 import java.text.AttributedString;
 
 public class VariableEntry {
-        public SuperNode        mSuperNode;
-        public boolean          mHasChanged;
-        public String           mConcrete;
-        public String           mFormatted;
-        public AttributedString mAttributed;
+        private SuperNode        mSuperNode;
+        private boolean          mHasChanged;
+        private String           mConcrete;
+        private String           mFormatted;
+        private AttributedString mAttributed;
 
         public VariableEntry(SuperNode superNode, boolean hasChanged, String concrete, String formatted,
                      AttributedString attributed) {
@@ -47,4 +47,45 @@ public class VariableEntry {
                 return "";
             }
         }
+
+        public SuperNode getSuperNode() {
+            return mSuperNode;
+        }
+
+        public void setSuperNode(SuperNode mSuperNode) {
+            this.mSuperNode = mSuperNode;
+        }
+
+        public boolean isHasChanged() {
+            return mHasChanged;
+        }
+
+        public void setHasChanged(boolean mHasChanged) {
+            this.mHasChanged = mHasChanged;
+        }
+
+        public String getConcrete() {
+            return mConcrete;
+        }
+
+        public void setConcrete(String mConcrete) {
+            this.mConcrete = mConcrete;
+        }
+
+        public String getFormatted() {
+            return mFormatted;
+        }
+
+        public void setFormatted(String mFormatted) {
+            this.mFormatted = mFormatted;
+        }
+
+        public AttributedString getAttributed() {
+            return mAttributed;
+        }
+
+        public void setAttributed(AttributedString mAttributed) {
+            this.mAttributed = mAttributed;
+        }
+
     }
