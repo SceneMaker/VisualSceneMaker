@@ -2,14 +2,12 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.graphics.node.Position;
 import de.dfki.vsm.util.TextFormat;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -89,7 +87,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
             height = 0;
 
         for (VariableEntry entry : mEntryList) {
-            TextLayout textLayout = new TextLayout(entry.mAttributed.getIterator(), graphics.getFontRenderContext());
+            TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
             int        advance    = (int) textLayout.getVisibleAdvance();
 
             if (advance > width) {
@@ -152,7 +150,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                 int currentDrawingOffset = 0;
 
                 for (VariableEntry entry : mEntryList) {
-                    AttributedString attributedString = entry.mAttributed;
+                    AttributedString attributedString = entry.getAttributed();
                     TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
                                                             graphics.getFontRenderContext());
 
@@ -258,15 +256,13 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         for (VariableEntry entry : mEntryList) {
             String var = entry.getVarName();    // the name of the current variable
             String typ = entry.getVarType();
-
             if (var.equals(varVal.getFirst())) {
                 TPLTuple<String, AttributedString> formatedPair = TextFormat.fillWithAttributes("#r#" + typ + " " + var
                                                                       + " = " + varVal.getSecond());
-
-                entry.mFormatted  = formatedPair.getFirst();
-                entry.mAttributed = formatedPair.getSecond();
-                entry.mHasChanged = true;
-                //EventDispatcher.getInstance().convey(new VarBadgeUpdatedEvent(this, entry));
+                entry.setFormatted(formatedPair.getFirst());
+                entry.setAttributed(formatedPair.getSecond());
+                entry.setHasChanged(true);
+                
             }
         }
         }
