@@ -4,23 +4,26 @@ package de.dfki.vsm.editor.event;
 
 import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.util.evt.EventObject;
+import java.util.Vector;
 
 /**
  *     @author Martin Fallas
  *     This event lets the MonitorDialog know that a var has been updated
  */
 public class VarBadgeUpdatedEvent extends EventObject {
-    VariableEntry varEntry;
-    public VarBadgeUpdatedEvent(Object source, VariableEntry VE) {
+    
+    Vector<VariableEntry> varEntries;
+    
+    public VarBadgeUpdatedEvent(Object source, Vector<VariableEntry>  VE) {
         super(source);
-        varEntry = VE;
+        varEntries = VE;
     }
 
-    public VariableEntry getVarEntry() {
-        return varEntry;
+    public Vector<VariableEntry> getVarEntries() {
+        return varEntries;
     }
 
-    public void setVarEntry(VariableEntry varEntry) {
-        this.varEntry = varEntry;
+    public void setVarEntry(Vector<VariableEntry> entries) {
+        varEntries = entries;
     }
 }

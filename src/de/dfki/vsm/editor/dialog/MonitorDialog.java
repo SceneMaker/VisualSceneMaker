@@ -8,6 +8,8 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
+import de.dfki.vsm.editor.event.VariableChangedEvent;
+import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.VariableEntry;
@@ -22,13 +24,16 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Dimension;
+import java.text.AttributedString;
 
 import java.util.Vector;
 import javax.swing.BorderFactory;
@@ -215,15 +220,17 @@ public class MonitorDialog extends JDialog implements  EventListener{
 
     @Override
     public void update(EventObject event) {
-        if( event instanceof VarBadgeUpdatedEvent)
+            
+        if( event instanceof VariableChangedEvent)
         {
-            VariableEntry tempEntry = ((VarBadgeUpdatedEvent)event).getVarEntry();
-            for (int i = 0; i < mVariableTable.getRowCount(); i++) {
-                
-                if(mVariableTable.getValueAt(i, 0).equals(tempEntry.getVarName()))
-                {
-                    mVariableTable.setValueAt(tempEntry.getVarValue(), i, 1);
-                }
+             for (int i = 0; i < mVariableTable.getRowCount(); i++) {
+                 
+                    if(mVariableTable.getValueAt(i, 0).equals(((VariableChangedEvent)event).getVarValue().getFirst()))
+                    {
+                        java.lang.String value = (((VariableChangedEvent)event).getVarValue().getSecond());
+                        value = value.replace("#c#", "");                     
+                        mVariableTable.setValueAt(value, i, 1);
+                    }
             }
         }
     }
