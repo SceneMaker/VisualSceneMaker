@@ -732,7 +732,7 @@ public class Node extends Syntax {
         // Add hash of all Conditional Edges
         for (int cntEdge = 0; cntEdge < getSizeOfCEdgeList(); cntEdge++) {
             hashCode += mCEdgeList.get(cntEdge).hashCode() + mCEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mCEdgeList.get(cntEdge).mCondition.hashCode() + mCEdgeList.get(cntEdge).mSource.hashCode()
+                        + mCEdgeList.get(cntEdge).mExpression.hashCode() + mCEdgeList.get(cntEdge).mSource.hashCode()
                         + mCEdgeList.get(cntEdge).mTarget.hashCode();
         }
 

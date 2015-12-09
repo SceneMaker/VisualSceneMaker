@@ -83,7 +83,7 @@ public final class JPLEngine {
     }
 
     // Call A Query On The Engine
-    public static synchronized JPLResult query(final String strquery) {
+    public static /*synchronized*/ JPLResult query(final String strquery) {
 
         // Eventually Initialize JPL
         init();

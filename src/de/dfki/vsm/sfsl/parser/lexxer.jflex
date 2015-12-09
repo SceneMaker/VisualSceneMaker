@@ -29,33 +29,34 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 %%
 "PlaySceneGroup" { return new Symbol(_SFSLToken_.PSG); }
 "PlayDialogueAct" { return new Symbol(_SFSLToken_.PDA); }
-"UnblockSceneGroup" { return new Symbol(_SFSLToken_.USG); }
-"UnblockAllSceneGroups" { return new Symbol(_SFSLToken_.UASG); }
-"Get" { return new Symbol(_SFSLToken_.GET); }
-"Remove" { return new Symbol(_SFSLToken_.REMOVE); }
-"AddFirst" { return new Symbol(_SFSLToken_.ADDFIRST); }
-"AddLast" { return new Symbol(_SFSLToken_.ADDLAST); }
-"Random" { return new Symbol(_SFSLToken_.RANDOM); }
-"RemoveFirst" { return new Symbol(_SFSLToken_.REMOVEFIRST); }
-"RemoveLast" { return new Symbol(_SFSLToken_.REMOVELAST); }
-"First" { return new Symbol(_SFSLToken_.FIRST); }
-"Last" { return new Symbol(_SFSLToken_.LAST); }
-"Clear" { return new Symbol(_SFSLToken_.CLEAR); }
-"Size" { return new Symbol(_SFSLToken_.SIZE); }
-"Contains" { return new Symbol(_SFSLToken_.CONTAINS); }
-"Default" { return new Symbol(_SFSLToken_.DEFAULT); }
-"In" { return new Symbol(_SFSLToken_.IN); }
+
+
+"get" { return new Symbol(_SFSLToken_.GET); }
+"remove" { return new Symbol(_SFSLToken_.REMOVE); }
+"random" { return new Symbol(_SFSLToken_.RANDOM); }
+"addFirst" { return new Symbol(_SFSLToken_.ADDFIRST); }
+"addLast" { return new Symbol(_SFSLToken_.ADDLAST); }
+"removeFirst" { return new Symbol(_SFSLToken_.REMOVEFIRST); }
+"removeLast" { return new Symbol(_SFSLToken_.REMOVELAST); }
+"first" { return new Symbol(_SFSLToken_.FIRST); }
+"last" { return new Symbol(_SFSLToken_.LAST); }
+"clear" { return new Symbol(_SFSLToken_.CLEAR); }
+"size" { return new Symbol(_SFSLToken_.SIZE); }
+"empty" { return new Symbol(_SFSLToken_.EMPTY); }
+"contains" { return new Symbol(_SFSLToken_.CONTAINS); }
+
 "in" { return new Symbol(_SFSLToken_.IN); }
-"IN" { return new Symbol(_SFSLToken_.IN); }
-"iN" { return new Symbol(_SFSLToken_.IN); }
-"Empty" { return new Symbol(_SFSLToken_.EMPTY); }
-"Timeout" { return new Symbol(_SFSLToken_.TIMEOUT); }
-"HistoryClear" { return new Symbol(_SFSLToken_.HISTORYCLEAR); }
+"play" { return new Symbol(_SFSLToken_.PLAY); }
+"query" { return new Symbol(_SFSLToken_.QUERY); }
+"timeout" { return new Symbol(_SFSLToken_.TIMEOUT); }
+
+"HistoryFlatClear" { return new Symbol(_SFSLToken_.HISTORYFLATCLEAR); }
 "HistoryDeepClear" { return new Symbol(_SFSLToken_.HISTORYDEEPCLEAR); }
-"HistoryContainsState" { return new Symbol(_SFSLToken_.HISTORYCONTAINSSTATE); }
+"HistoryContains" { return new Symbol(_SFSLToken_.HISTORYCONTAINS); }
 "HistoryValueOf" { return new Symbol(_SFSLToken_.HISTORYVALUEOF); }
 "HistorySetDepth" { return new Symbol(_SFSLToken_.HISTORYSETDEPTH); }
-"HistoryRunTimeOf" { return new Symbol(_SFSLToken_.HISTORYRUNTIMEOF); }
+"HistoryRunTime" { return new Symbol(_SFSLToken_.HISTORYRUNTIME); }
+
 "ValueOf" { return new Symbol(_SFSLToken_.VALUEOF); }
 "true" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "false" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
