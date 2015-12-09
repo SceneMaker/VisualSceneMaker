@@ -8,7 +8,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.function.StateValueOf;
 import de.dfki.vsm.model.sceneflow.command.expression.function.InStateCond;
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand.CmdType;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.LExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.lexpression.AbstractVariable;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.Constant;
 import de.dfki.vsm.model.sceneflow.command.expression.function.PrologQuery;
 import de.dfki.vsm.model.sceneflow.command.expression.temporal.TemporalCond;
@@ -19,40 +19,44 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public abstract class Expression extends AbstractCommand {
+public abstract class AbstractExpression extends AbstractCommand {
 
     // TODO: Rename the expression types
     public enum ExpType {
 
         UNARYEXP,
-        BINARYEXP,  
-        CONDITIONAL, 
-        HVO, HCS, USR, VO, CONS, STATE, 
+        BINARYEXP,
+        CONDITIONAL,
+        PARENEXP,
+        HVO, HCS, USR, VO, CONS, STATE,
         PROLOG_QUERY, CONST, LEXP, TEMP
     }
 
     public abstract ExpType getExpType();
 
     @Override
-    public abstract Expression getCopy();
+    public abstract AbstractExpression getCopy();
 
     @Override
     public CmdType getCmdType() {
         return CmdType.EXP;
     }
 
-    public static Expression parse(Element element) throws XMLParseError {
-        Expression exp = null;
+    public static AbstractExpression parse(Element element) throws XMLParseError {
+        AbstractExpression exp = null;
         String tag = element.getTagName();
 
         if (tag.equals("UserCommand")) {
-            exp = new UsrCmd();
+            exp = new CallingExpression();
             exp.parseXML(element);
         } else if (tag.equals("If")) {
-            exp = new ConditionalExp();
+            exp = new TernaryExpression();
             exp.parseXML(element);
         } else if (tag.equals("Constructor")) {
-            exp = new Constructor();
+            exp = new ConstructExpression();
+            exp.parseXML(element);
+        } else if (tag.equals("Parentheses")) {
+            exp = new ParenthesesExpression();
             exp.parseXML(element);
         } else if (tag.equals("Random")
                 || tag.equals("First")
@@ -63,7 +67,7 @@ public abstract class Expression extends AbstractCommand {
                 || tag.equals("RemoveLast")
                 || tag.equals("Neg")
                 || tag.equals("Not")) {
-            exp = new UnaryExp();
+            exp = new UnaryExpression();
             exp.parseXML(element);
         } else if (tag.equals("Add")
                 || tag.equals("Div")
@@ -81,7 +85,7 @@ public abstract class Expression extends AbstractCommand {
                 || tag.equals("Le")
                 || tag.equals("Lt")
                 || tag.equals("Neq")) {
-            exp = new BinaryExp();
+            exp = new BinaryExpression();
             exp.parseXML(element);
         } else if (tag.equals("HistoryValueOf")) {
             exp = new HistoryValueOf();
@@ -101,11 +105,10 @@ public abstract class Expression extends AbstractCommand {
         } else if (tag.equals("PrologCondition")) {
             exp = new PrologQuery();
             exp.parseXML(element);
-        }
-        if (tag.equals("Member")
+        } else if (tag.equals("Member")
                 || tag.equals("Variable")
                 || tag.equals("Field")) {
-            exp = LExpression.parse(element);
+            exp = AbstractVariable.parse(element);
             exp.parseXML(element);
         } else if (tag.equals("Int")
                 || tag.equals("Float")

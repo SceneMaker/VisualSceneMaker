@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -19,8 +19,8 @@ import javax.swing.undo.CannotUndoException;
  * @author Not me
  */
 public class ModifyIEdgeAction extends ModifyEdgeAction {
-    private Expression mOldCondition;
-    private Expression mNewCondition;
+    private AbstractExpression mOldCondition;
+    private AbstractExpression mNewCondition;
 
     public ModifyIEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);

@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.sceneflow.diagram;
+package de.dfki.vsm.model.sceneflow.diagram.nodes;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;

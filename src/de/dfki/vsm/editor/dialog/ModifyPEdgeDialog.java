@@ -9,9 +9,9 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 //import de.dfki.vsm.editor.util.AltStartNodeManager;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.tpl.TPLTuple;
 

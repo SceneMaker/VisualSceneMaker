@@ -1,8 +1,8 @@
 package de.dfki.vsm.model.sceneflow.command.expression.constant;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression.ExpType;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression.ExpType;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
  *
  * @author Not men
  */
-public abstract class Constant extends Expression {
+public abstract class Constant extends AbstractExpression {
 
     public enum ConstType {
 

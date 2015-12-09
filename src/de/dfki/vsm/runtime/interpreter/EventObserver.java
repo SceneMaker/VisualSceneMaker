@@ -3,7 +3,7 @@ package de.dfki.vsm.runtime.interpreter;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.runtime.values.BooleanValue;

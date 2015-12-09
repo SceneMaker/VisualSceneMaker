@@ -46,7 +46,6 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "contains" { return new Symbol(_SFSLToken_.CONTAINS); }
 
 "in" { return new Symbol(_SFSLToken_.IN); }
-"play" { return new Symbol(_SFSLToken_.PLAY); }
 "query" { return new Symbol(_SFSLToken_.QUERY); }
 "timeout" { return new Symbol(_SFSLToken_.TIMEOUT); }
 
@@ -71,7 +70,6 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 
 [a-zA-Z_][a-zA-Z0-9_]* { return new Symbol(_SFSLToken_.VARIABLE, new java.lang.String(yytext())); }
 
-"@" { return new Symbol(_SFSLToken_.AT); }
 "+" { return new Symbol(_SFSLToken_.PLUS); }
 "-" { return new Symbol(_SFSLToken_.MINUS); }
 "*" { return new Symbol(_SFSLToken_.TIMES); }

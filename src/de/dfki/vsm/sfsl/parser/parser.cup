@@ -9,12 +9,13 @@ import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
-import de.dfki.vsm.model.sceneflow.command.expression.Constructor;
-import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
-import de.dfki.vsm.model.sceneflow.command.expression.BinaryExp;
-import de.dfki.vsm.model.sceneflow.command.expression.ConditionalExp;
+import de.dfki.vsm.model.sceneflow.command.expression.ParenthesesExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.BinaryExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.ConstructExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.JavaObject;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
@@ -23,7 +24,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.Constant;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.LExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.lexpression.AbstractVariable;
 import de.dfki.vsm.model.sceneflow.command.expression.lexpression.SimpleVariable;
 import de.dfki.vsm.model.sceneflow.command.expression.lexpression.MemberVariable;
 import de.dfki.vsm.model.sceneflow.command.expression.lexpression.ArrayVariable;
@@ -36,12 +37,14 @@ import de.dfki.vsm.model.sceneflow.command.expression.function.PrologQuery;
 import de.dfki.vsm.model.sceneflow.command.expression.temporal.TemporalCond;
 import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
 
+import java.util.ArrayList;
+
 //import java_cup.runtime.*;
 import java.io.StringReader;
 
 parser code {:
   public static AbstractCommand cmdResult;
-  public static Expression expResult;
+  public static AbstractExpression expResult;
  
   public static final short STATEMENT = 0;
   public static final short EXPRESSION = 1;
@@ -57,7 +60,7 @@ parser code {:
     cmdResult=null;
     expResult=null;
 
-    System.err.println("Parsing " + arg); 
+    System.err.println("Parsing Input String '" + arg + "'"); 
 
     java.lang.String inputString = new java.lang.String(arg);
     StringReader stringReader = new java.io.StringReader(inputString);
@@ -108,7 +111,7 @@ terminal CONTAINS;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  *
  *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-terminal LPAREN, RPAREN, LBRACK, RBRACK, LBRACE, RBRACE, COMMA, QUESTION, COLON, DOT, AT;
+terminal LPAREN, RPAREN, LBRACK, RBRACK, LBRACE, RBRACE, COMMA, QUESTION, COLON, DOT;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * Unary Arithmetric Operators
  *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -136,7 +139,6 @@ terminal HISTORYRUNTIME;
 terminal VALUEOF;
 terminal TIMEOUT;
 terminal QUERY;
-terminal PLAY;
 terminal NEW;
 terminal IN;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -158,20 +160,21 @@ non terminal TimeoutCond timeout;
 non terminal HistoryValueOf history_value_of;
 non terminal HistoryRunTime history_runtime_of;
 non terminal PrologQuery prolog_condition;
-non terminal ConditionalExp conditional_expression;
-non terminal BinaryExp binary_expression;
-non terminal UnaryExp unary_expression;
-non terminal UsrCmd usrcmd_expression;
-non terminal Constructor constructor;
+non terminal ConstructExpression construct_expression;
+non terminal CallingExpression calling_expression;
+non terminal AbstractVariable variable_expression;
+non terminal TernaryExpression ternary_expression;
+non terminal BinaryExpression binary_expression;
+non terminal UnaryExpression unary_expression;
 non terminal AbstractCommand command;
 non terminal Assignment assignment;
-non terminal Expression expression;
-non terminal Expression function;
-non terminal LExpression lexpression;
+non terminal AbstractExpression parentheses_expression;
+non terminal AbstractExpression expression;
+non terminal AbstractExpression function;
 non terminal Constant constant;
-non terminal java.util.Vector expression_list;
-non terminal java.util.Vector assignment_list;
-non terminal java.util.Vector non_empty_expression_list;
+non terminal ArrayList expression_list;
+non terminal ArrayList assignment_list;
+non terminal ArrayList non_empty_expression_list;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * Operator Precedences
  *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -204,32 +207,32 @@ command ::=
  * ASSIGNMENT
  */
 assignment ::=
-  lexpression:x EQUAL expression:y                                              {: RESULT = new Assignment(x, y); :};
+  variable_expression:x EQUAL expression:y                                              {: RESULT = new Assignment(x, y); :};
 
 /*
  * ASSIGNMENT LIST
  */
 assignment_list ::=
-                                                                                {: java.util.Vector<Assignment> vec = new java.util.Vector<Assignment>(); RESULT = vec; :}
-| assignment:x                                                                  {: java.util.Vector<Assignment> vec = new java.util.Vector<Assignment>(); vec.add(x); RESULT = vec; :}
-| assignment_list:x COMMA assignment:y                                           {: java.util.Vector<Assignment> vec = x; vec.add(y); RESULT = x; :};
+                                                                                {: ArrayList<Assignment> vec = new ArrayList<Assignment>(); RESULT = vec; :}
+| assignment:x                                                                  {: ArrayList<Assignment> vec = new ArrayList<Assignment>(); vec.add(x); RESULT = vec; :}
+| assignment_list:x COMMA assignment:y                                          {: ArrayList<Assignment> vec = x; vec.add(y); RESULT = x; :};
 
 
 /*
  * NON_EMPTY _SFSLParser_.EXPRESSION LIST
  */
 non_empty_expression_list ::=
-  expression:x                                                                  {: java.util.Vector<Expression> vec = new java.util.Vector<Expression>(); vec.add(x); RESULT = vec; :}
-| expression_list:x COMMA expression:y                                          {: java.util.Vector<Expression> vec = x; vec.add(y); RESULT = x; :};
+  expression:x                                                                  {: ArrayList<AbstractExpression> vec = new ArrayList<AbstractExpression>(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: ArrayList<AbstractExpression> vec = x; vec.add(y); RESULT = x; :};
 
 
 /*
  * _SFSLParser_.EXPRESSION LIST
  */
 expression_list ::= 
-                                                                                {: java.util.Vector<Expression> vec = new java.util.Vector<Expression>(); RESULT = vec; :}
-| expression:x                                                                  {: java.util.Vector<Expression> vec = new java.util.Vector<Expression>(); vec.add(x); RESULT = vec; :}
-| expression_list:x COMMA expression:y                                          {: java.util.Vector<Expression> vec = x; vec.add(y); RESULT = x; :};
+                                                                                {: ArrayList<AbstractExpression> vec = new ArrayList<AbstractExpression>(); RESULT = vec; :}
+| expression:x                                                                  {: ArrayList<AbstractExpression> vec = new ArrayList<AbstractExpression>(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: ArrayList<AbstractExpression> vec = x; vec.add(y); RESULT = x; :};
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * _SFSLParser_.EXPRESSION
@@ -237,50 +240,62 @@ expression_list ::=
 expression ::=
   unary_expression:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | binary_expression:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| conditional_expression:x                                                      {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| LPAREN binary_expression:x RPAREN                                             {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| usrcmd_expression:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| ternary_expression:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| calling_expression:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| variable_expression:x                                                         {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| construct_expression:x                                                        {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| parentheses_expression:x                                                      {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+  //
 | history_value_of:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | history_runtime_of:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | node_value_of:x                                                               {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| constructor:x                                                                 {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | function:x                                                                    {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | constant:x                                                                    {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | temporal:x                                                                    {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| lexpression:v                                                                 {: RESULT = v; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 ;
 
-constructor ::=
-  NEW VARIABLE:x LPAREN expression_list:y RPAREN                                {: RESULT = new Constructor(x, y); :};
+
+parentheses_expression ::=
+  LPAREN expression:x RPAREN                                                    {: RESULT = new ParenthesesExpression(x); :}
+;
+
+construct_expression ::=
+  NEW VARIABLE:x LPAREN expression_list:y RPAREN                                {: RESULT = new ConstructExpression(x, y); :}
+;
 
 node_value_of ::=
-  VALUEOF LPAREN VARIABLE:x COMMA VARIABLE:y RPAREN                             {: RESULT = new StateValueOf(x, y); :};
+  VALUEOF LPAREN VARIABLE:x COMMA VARIABLE:y RPAREN                             {: RESULT = new StateValueOf(x, y); :}
+;
 
 /*
  * USER COMMAND _SFSLParser_.EXPRESSION
  */
-usrcmd_expression ::=
-  VARIABLE:x LPAREN expression_list:y RPAREN                                    {: RESULT = new UsrCmd(x, y); :};
+calling_expression ::=
+  VARIABLE:x LPAREN expression_list:y RPAREN                                    {: RESULT = new CallingExpression(x, y); :}
+;
 
 /*
  * HISTORY VALUE _SFSLParser_.EXPRESSION
  */
 history_value_of ::=
   HISTORYVALUEOF LPAREN VARIABLE:x COMMA VARIABLE:y COMMA INTEGER:z RPAREN      {: RESULT = new HistoryValueOf(x, y, z); :}
-| HISTORYVALUEOF LPAREN VARIABLE:x COMMA VARIABLE:y RPAREN                      {: RESULT = new HistoryValueOf(x, y); :};
+| HISTORYVALUEOF LPAREN VARIABLE:x COMMA VARIABLE:y RPAREN                      {: RESULT = new HistoryValueOf(x, y); :}
+;
 
 /*
  * HISTORY RUNTIME _SFSLParser_.EXPRESSION
  */
 history_runtime_of ::=
   HISTORYRUNTIME LPAREN VARIABLE:x COMMA INTEGER:y RPAREN                     {: RESULT = new HistoryRunTime(x, y); :}
-| HISTORYRUNTIME LPAREN VARIABLE:x RPAREN                                     {: RESULT = new HistoryRunTime(x); :};
+| HISTORYRUNTIME LPAREN VARIABLE:x RPAREN                                     {: RESULT = new HistoryRunTime(x); :}
+;
 
 /*
  * CONDITIONAL _SFSLParser_.EXPRESSION
  */
-conditional_expression ::=
-  LPAREN expression:x QUESTION expression:y COLON expression:z RPAREN            {: RESULT = new ConditionalExp(x, y, z); :};
+ternary_expression ::=
+  LPAREN expression:x QUESTION expression:y COLON expression:z RPAREN            {: RESULT = new TernaryExpression(x, y, z); :}
+;
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * BINARY _SFSLParser_.EXPRESSION
@@ -288,57 +303,58 @@ conditional_expression ::=
 binary_expression ::=
 
 // Logical binary expressions
-  expression:x AND expression:y                                                 {: RESULT = new BinaryExp(x, BinaryExp.Operator.And, y); :}
-| expression:x OR expression:y                                                  {: RESULT = new BinaryExp(x, BinaryExp.Operator.Or, y); :}
+  expression:x AND expression:y                                                 {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.And, y); :}
+| expression:x OR expression:y                                                  {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Or, y); :}
 
 // Binary comparison expressions
-| expression:x LESS expression:y                                                {: RESULT = new BinaryExp(x, BinaryExp.Operator.Lt, y); :}
-| expression:x GREATER expression:y                                             {: RESULT = new BinaryExp(x, BinaryExp.Operator.Gt, y); :}
-| expression:x LESSEQUAL expression:y                                           {: RESULT = new BinaryExp(x, BinaryExp.Operator.Le, y); :}
-| expression:x GREATEREQUAL expression:y                                        {: RESULT = new BinaryExp(x, BinaryExp.Operator.Ge, y); :}
-| expression:x EQUALEQUAL expression:y                                          {: RESULT = new BinaryExp(x, BinaryExp.Operator.Eq, y); :}
-| expression:x NOTEQUAL expression:y                                            {: RESULT = new BinaryExp(x, BinaryExp.Operator.Neq, y); :}
+| expression:x LESS expression:y                                                {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Lt, y); :}
+| expression:x GREATER expression:y                                             {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Gt, y); :}
+| expression:x LESSEQUAL expression:y                                           {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Le, y); :}
+| expression:x GREATEREQUAL expression:y                                        {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Ge, y); :}
+| expression:x EQUALEQUAL expression:y                                          {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Eq, y); :}
+| expression:x NOTEQUAL expression:y                                            {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Neq, y); :}
 
 // Binary arithmetric expressions
-| expression:x PLUS expression:y                                                {: RESULT = new BinaryExp(x, BinaryExp.Operator.Add, y); :}
-| expression:x MINUS expression:y                                               {: RESULT = new BinaryExp(x, BinaryExp.Operator.Sub, y); :}
-| expression:x TIMES expression:y                                               {: RESULT = new BinaryExp(x, BinaryExp.Operator.Mul, y); :}
-| expression:x DIV expression:y                                                 {: RESULT = new BinaryExp(x, BinaryExp.Operator.Div, y); :}
+| expression:x PLUS expression:y                                                {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Add, y); :}
+| expression:x MINUS expression:y                                               {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Sub, y); :}
+| expression:x TIMES expression:y                                               {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Mul, y); :}
+| expression:x DIV expression:y                                                 {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Div, y); :}
 
 // List operator expressions
-| GET LPAREN expression:x COMMA expression:y RPAREN                             {: RESULT = new BinaryExp(x, BinaryExp.Operator.Get, y); :}
-| REMOVE LPAREN expression:x COMMA expression:y RPAREN                          {: RESULT = new BinaryExp(x, BinaryExp.Operator.Remove, y); :}
-| CONTAINS LPAREN expression:x COMMA expression:y RPAREN                        {: RESULT = new BinaryExp(x, BinaryExp.Operator.Contains, y); :}
-| ADDFIRST LPAREN expression:x COMMA expression:y RPAREN                        {: RESULT = new BinaryExp(x, BinaryExp.Operator.AddFirst, y); :}
-| ADDLAST LPAREN expression:x COMMA expression:y RPAREN                         {: RESULT = new BinaryExp(x, BinaryExp.Operator.AddLast, y); :};
+| GET LPAREN expression:x COMMA expression:y RPAREN                             {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Get, y); :}
+| REMOVE LPAREN expression:x COMMA expression:y RPAREN                          {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Remove, y); :}
+| CONTAINS LPAREN expression:x COMMA expression:y RPAREN                        {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Contains, y); :}
+| ADDFIRST LPAREN expression:x COMMA expression:y RPAREN                        {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.AddFirst, y); :}
+| ADDLAST LPAREN expression:x COMMA expression:y RPAREN                         {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.AddLast, y); :}
+;
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * UNARY _SFSLParser_.EXPRESSION
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 unary_expression ::=
   // Logical unary expressions 
-  NOT expression:x                                                              {: RESULT = new UnaryExp(x, UnaryExp.Operator.Not); :}
+  NOT expression:x                                                              {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.Not); :}
   
   // Unary arithmetric expressions
-| MINUS expression:x                                                            {: RESULT = new UnaryExp(x, UnaryExp.Operator.Neg); :}
+| MINUS expression:x                                                            {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.Neg); :}
 
   // Random number generation
-| RANDOM LPAREN expression:x RPAREN                                             {: RESULT = new UnaryExp(x, UnaryExp.Operator.Random); :}
+| RANDOM LPAREN expression:x RPAREN                                             {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.Random); :}
 
   // List operator expressions
-| REMOVEFIRST LPAREN expression:x RPAREN                                        {: RESULT = new UnaryExp(x, UnaryExp.Operator.RemoveFirst); :}
-| REMOVELAST LPAREN expression:x RPAREN                                         {: RESULT = new UnaryExp(x, UnaryExp.Operator.RemoveLast); :}
-| FIRST LPAREN expression:x RPAREN                                              {: RESULT = new UnaryExp(x, UnaryExp.Operator.First); :}
-| LAST LPAREN expression:x RPAREN                                               {: RESULT = new UnaryExp(x, UnaryExp.Operator.Last); :}
-| CLEAR LPAREN expression:x RPAREN                                              {: RESULT = new UnaryExp(x, UnaryExp.Operator.Clear); :}
-| EMPTY LPAREN expression:x RPAREN                                              {: RESULT = new UnaryExp(x, UnaryExp.Operator.Empty); :}
-| SIZE LPAREN expression:x RPAREN                                               {: RESULT = new UnaryExp(x, UnaryExp.Operator.Size); :}
+| REMOVEFIRST LPAREN expression:x RPAREN                                        {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.RemoveFirst); :}
+| REMOVELAST LPAREN expression:x RPAREN                                         {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.RemoveLast); :}
+| FIRST LPAREN expression:x RPAREN                                              {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.First); :}
+| LAST LPAREN expression:x RPAREN                                               {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.Last); :}
+| CLEAR LPAREN expression:x RPAREN                                              {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.Clear); :}
+| EMPTY LPAREN expression:x RPAREN                                              {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.Empty); :}
+| SIZE LPAREN expression:x RPAREN                                               {: RESULT = new UnaryExpression(x, UnaryExpression.Operator.Size); :}
 ;
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * L_SFSLParser_.EXPRESSION
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-lexpression ::=
+variable_expression ::=
   VARIABLE:x                                                                    {: RESULT = new SimpleVariable(x); :}
 | VARIABLE:x LBRACK expression:y RBRACK                                         {: RESULT = new ArrayVariable(x, y); :}
 | VARIABLE:x DOT VARIABLE:y                                                     {: RESULT = new MemberVariable(x, y); :}

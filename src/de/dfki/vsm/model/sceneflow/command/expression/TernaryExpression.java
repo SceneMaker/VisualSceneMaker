@@ -11,45 +11,45 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class ConditionalExp extends Expression {
+public class TernaryExpression extends AbstractExpression {
 
-    private Expression mCondition;
-    private Expression mThenExp;
-    private Expression mElseExp;
+    private AbstractExpression mCondition;
+    private AbstractExpression mThenExp;
+    private AbstractExpression mElseExp;
 
-    public ConditionalExp() {
+    public TernaryExpression() {
         mCondition = null;
         mThenExp = null;
         mElseExp = null;
     }
 
-    public ConditionalExp(Expression cond, Expression thenExp, Expression elseExp) {
+    public TernaryExpression(AbstractExpression cond, AbstractExpression thenExp, AbstractExpression elseExp) {
         mCondition = cond;
         mThenExp = thenExp;
         mElseExp = elseExp;
     }
 
-    public Expression getCondition() {
+    public AbstractExpression getCondition() {
         return mCondition;
     }
 
-    public void setCondition(Expression value) {
+    public void setCondition(AbstractExpression value) {
         mCondition = value;
     }
 
-    public Expression getThenExp() {
+    public AbstractExpression getThenExp() {
         return mThenExp;
     }
 
-    public void setThenExp(Expression value) {
+    public void setThenExp(AbstractExpression value) {
         mThenExp = value;
     }
 
-    public Expression getElseExp() {
+    public AbstractExpression getElseExp() {
         return mElseExp;
     }
 
-    public void setElseExp(Expression value) {
+    public void setElseExp(AbstractExpression value) {
         mElseExp = value;
     }
 
@@ -92,8 +92,8 @@ public class ConditionalExp extends Expression {
     }
 
     @Override
-    public ConditionalExp getCopy() {
-        return new ConditionalExp(mCondition.getCopy(), mThenExp.getCopy(), mElseExp.getCopy());
+    public TernaryExpression getCopy() {
+        return new TernaryExpression(mCondition.getCopy(), mThenExp.getCopy(), mElseExp.getCopy());
     }
 
     @Override
@@ -118,18 +118,18 @@ public class ConditionalExp extends Expression {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(Element element) throws XMLParseError {
-                            mThenExp = Expression.parse(element);
+                            mThenExp = AbstractExpression.parse(element);
                         }
                     });
                 } else if (element.getTagName().equals("Else")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(Element element) throws XMLParseError {
-                            mElseExp = Expression.parse(element);
+                            mElseExp = AbstractExpression.parse(element);
                         }
                     });
                 } else {
-                    mCondition = Expression.parse(element);
+                    mCondition = AbstractExpression.parse(element);
                 }
             }
         });

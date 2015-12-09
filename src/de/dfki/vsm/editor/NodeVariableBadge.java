@@ -30,7 +30,7 @@ public class NodeVariableBadge extends JComponent {
     LocationType                                  mLocation          = LocationType.RIGHT;
     Node                                          mNode              = null;
     WorkSpacePanel                                     mWorkSpace         = null;
-    de.dfki.vsm.model.sceneflow.diagram.BasicNode              mDataNode          = null;
+    de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode              mDataNode          = null;
     Point                                         mRelPos            = null;
     ArrayList<TPLTuple<String, AttributedString>> mLocalVarDefList   = null;
     ArrayList<TPLTuple<String, AttributedString>> mGlobalVarDefList  = null;

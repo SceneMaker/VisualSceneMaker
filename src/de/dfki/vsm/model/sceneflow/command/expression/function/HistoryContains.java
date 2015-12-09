@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.function;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class HistoryContains extends Expression{
+public class HistoryContains extends AbstractExpression{
     String mState;
     String mSubState;
     int    mDepth;

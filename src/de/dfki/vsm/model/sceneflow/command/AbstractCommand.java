@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.command;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.SyntaxObject;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -50,7 +50,7 @@ public abstract class AbstractCommand extends SyntaxObject {
             cmd = new HistorySetDepth();
             cmd.parseXML(element);
         } else {
-            cmd = Expression.parse(element);
+            cmd = AbstractExpression.parse(element);
         }
 
         return cmd;
