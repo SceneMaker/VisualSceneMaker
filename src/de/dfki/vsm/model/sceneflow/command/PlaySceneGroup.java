@@ -2,65 +2,66 @@ package de.dfki.vsm.model.sceneflow.command;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
+
 
 /**
  * @author Not me
  */
 public class PlaySceneGroup extends AbstractCommand {
-    private Expression         mArg;
-    private Vector<Expression> mArgList;
+    private AbstractExpression         mArg;
+    private ArrayList<AbstractExpression> mArgList;
 
     public PlaySceneGroup() {
         mArg     = null;
-        mArgList = new Vector<Expression>();
+        mArgList = new ArrayList<AbstractExpression>();
     }
 
-    public PlaySceneGroup(Expression arg) {
+    public PlaySceneGroup(AbstractExpression arg) {
         mArg     = arg;
-        mArgList = new Vector<Expression>();
+        mArgList = new ArrayList<AbstractExpression>();
     }
 
-    public PlaySceneGroup(Expression arg, Vector<Expression> argList) {
+    public PlaySceneGroup(AbstractExpression arg, ArrayList<AbstractExpression> argList) {
         mArg     = arg;
         mArgList = argList;
     }
 
-    public Expression getArg() {
+    public AbstractExpression getArg() {
         return mArg;
     }
 
-    public void setArg(Expression arg) {
+    public void setArg(AbstractExpression arg) {
         mArg = arg;
     }
 
-    public Vector<Expression> getArgList() {
+    public ArrayList<AbstractExpression> getArgList() {
         return mArgList;
     }
 
-    public void setArgList(Vector<Expression> value) {
+    public void setArgList(ArrayList<AbstractExpression> value) {
         mArgList = value;
     }
 
-    public Expression getArgAt(int index) {
+    public AbstractExpression getArgAt(int index) {
         return mArgList.get(index);
     }
 
-    public void setArgAt(int index, Expression value) {
+    public void setArgAt(int index, AbstractExpression value) {
         mArgList.set(index, value);
     }
 
-    public boolean addArg(Expression value) {
+    public boolean addArg(AbstractExpression value) {
         return mArgList.add(value);
     }
 
@@ -68,10 +69,10 @@ public class PlaySceneGroup extends AbstractCommand {
         return mArgList.size();
     }
 
-    public Vector<Expression> getCopyOfArgList() {
-        Vector<Expression> copy = new Vector<Expression>();
+    public ArrayList<AbstractExpression> getCopyOfArgList() {
+        ArrayList<AbstractExpression> copy = new ArrayList<AbstractExpression>();
 
-        for (Expression exp : mArgList) {
+        for (AbstractExpression exp : mArgList) {
             copy.add(exp.getCopy());
         }
 
@@ -143,11 +144,11 @@ public class PlaySceneGroup extends AbstractCommand {
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        final Vector<Expression> expList = new Vector<Expression>();
+        final ArrayList<AbstractExpression> expList = new ArrayList<AbstractExpression>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
-                expList.add(Expression.parse(element));
+                expList.add(AbstractExpression.parse(element));
             }
         });
         mArg     = expList.remove(0);

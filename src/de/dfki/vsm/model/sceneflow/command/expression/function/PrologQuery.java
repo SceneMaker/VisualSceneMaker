@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.sceneflow.command.expression.function;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -12,18 +12,18 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann me
  */
-public final class PrologQuery extends Expression {
+public final class PrologQuery extends AbstractExpression {
 
-    Expression mExpression;
+    AbstractExpression mExpression;
 
     public PrologQuery() {
     }
 
-    public PrologQuery(final Expression cmd) {
+    public PrologQuery(final AbstractExpression cmd) {
         mExpression = cmd;
     }
 
-    public final Expression getExpression() {
+    public final AbstractExpression getExpression() {
         return mExpression;
     }
 
@@ -64,7 +64,7 @@ public final class PrologQuery extends Expression {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(Element element) throws XMLParseError {
-                mExpression = Expression.parse(element);
+                mExpression = AbstractExpression.parse(element);
             }
         });
     }

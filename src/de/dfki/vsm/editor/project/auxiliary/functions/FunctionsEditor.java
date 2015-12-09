@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionRemovedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
-import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.definition.ArgumentDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;

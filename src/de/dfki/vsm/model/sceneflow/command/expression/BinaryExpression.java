@@ -10,10 +10,10 @@ import java.util.Vector;
 /**
  * @author Gregor Mehlmann
  */
-public class BinaryExp extends Expression {
+public class BinaryExpression extends AbstractExpression {
 
-    private Expression mLeftExp;
-    private Expression mRightExp;
+    private AbstractExpression mLeftExp;
+    private AbstractExpression mRightExp;
     private Operator mOperator;
 
     public enum Operator {
@@ -24,31 +24,31 @@ public class BinaryExp extends Expression {
         Get, Contains, Remove, AddFirst, AddLast
     }
 
-    public BinaryExp() {
+    public BinaryExpression() {
         mLeftExp = null;
         mRightExp = null;
         mOperator = null;
     }
 
-    public BinaryExp(Expression left, Operator op, Expression right) {
+    public BinaryExpression(AbstractExpression left, Operator op, AbstractExpression right) {
         mLeftExp = left;
         mOperator = op;
         mRightExp = right;
     }
 
-    public void setLeftExp(Expression value) {
+    public void setLeftExp(AbstractExpression value) {
         mLeftExp = value;
     }
 
-    public Expression getLeftExp() {
+    public AbstractExpression getLeftExp() {
         return mLeftExp;
     }
 
-    public void setRightExp(Expression value) {
+    public void setRightExp(AbstractExpression value) {
         mRightExp = value;
     }
 
-    public Expression getRightExp() {
+    public AbstractExpression getRightExp() {
         return mRightExp;
     }
 
@@ -217,8 +217,8 @@ public class BinaryExp extends Expression {
     }
 
     @Override
-    public BinaryExp getCopy() {
-        return new BinaryExp(mLeftExp.getCopy(), mOperator, mRightExp.getCopy());
+    public BinaryExpression getCopy() {
+        return new BinaryExpression(mLeftExp.getCopy(), mOperator, mRightExp.getCopy());
     }
 
     @Override
@@ -235,12 +235,12 @@ public class BinaryExp extends Expression {
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
 
-        final Vector<Expression> expList = new Vector<Expression>();
+        final Vector<AbstractExpression> expList = new Vector<AbstractExpression>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(Element element) throws XMLParseError {
-                expList.add(Expression.parse(element));
+                expList.add(AbstractExpression.parse(element));
             }
         });
         mLeftExp = expList.firstElement();

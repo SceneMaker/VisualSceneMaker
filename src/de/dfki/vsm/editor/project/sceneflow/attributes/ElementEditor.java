@@ -19,13 +19,13 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge.Type;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 //import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
@@ -216,7 +216,7 @@ class ConditionEditor extends JPanel implements EventListener {
 
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            AbstractExpression log = _SFSLParser_.expResult;
 
             if ((log != null) && !_SFSLParser_.errorFlag) {
                 mDataCEdge.setGuard(log);
@@ -520,7 +520,7 @@ class InterruptEditor extends JPanel implements EventListener {
             _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            AbstractExpression log = _SFSLParser_.expResult;
 
             if ((log != null) && !_SFSLParser_.errorFlag) {
                 mDataIEdge.setGuard(log);

@@ -1,6 +1,6 @@
 package de.dfki.vsm.model.sceneflow.command.expression.lexpression;
 
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -11,17 +11,17 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public class ArrayVariable extends LExpression {
+public class ArrayVariable extends AbstractVariable {
 
     private String mName;
-    private Expression mIndex;
+    private AbstractExpression mIndex;
 
     public ArrayVariable() {
         mName = new String();
         mIndex = null;
     }
 
-    public ArrayVariable(String name, Expression index) {
+    public ArrayVariable(String name, AbstractExpression index) {
         mName = name;
         mIndex = index;
     }
@@ -30,7 +30,7 @@ public class ArrayVariable extends LExpression {
         return mName;
     }
 
-    public Expression getExp() {
+    public AbstractExpression getExp() {
         return mIndex;
     }
 
@@ -54,7 +54,7 @@ public class ArrayVariable extends LExpression {
     }
 
     @Override
-    public LExpression getCopy() {
+    public AbstractVariable getCopy() {
         return new ArrayVariable(mName, mIndex.getCopy());
     }
 
@@ -63,7 +63,7 @@ public class ArrayVariable extends LExpression {
         mName = element.getAttribute("name");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
-                mIndex = Expression.parse(element);
+                mIndex = AbstractExpression.parse(element);
             }
         });
     }

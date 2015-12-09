@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.sceneflow.command;
 
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.LExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.lexpression.AbstractVariable;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -13,32 +13,32 @@ import org.w3c.dom.Element;
  * @author Not me
  */
 public class Assignment extends AbstractCommand {
-    private LExpression mLExp;
-    private Expression  mExp;
+    private AbstractVariable mLExp;
+    private AbstractExpression  mExp;
 
     public Assignment() {
         mLExp = null;
         mExp  = null;
     }
 
-    public Assignment(LExpression lExp, Expression exp) {
+    public Assignment(AbstractVariable lExp, AbstractExpression exp) {
         mLExp = lExp;
         mExp  = exp;
     }
 
-    public LExpression getLExp() {
+    public AbstractVariable getLExp() {
         return mLExp;
     }
 
-    public void setLExp(LExpression value) {
+    public void setLExp(AbstractVariable value) {
         mLExp = value;
     }
 
-    public Expression getExp() {
+    public AbstractExpression getExp() {
         return mExp;
     }
 
-    public void setExp(Expression value) {
+    public void setExp(AbstractExpression value) {
         mExp = value;
     }
 
@@ -89,11 +89,11 @@ public class Assignment extends AbstractCommand {
                 if (element.getTagName().equals("Expression")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         public void run(Element element) throws XMLParseError {
-                            mExp = Expression.parse(element);
+                            mExp = AbstractExpression.parse(element);
                         }
                     });
                 } else {
-                    mLExp = LExpression.parse(element);
+                    mLExp = AbstractVariable.parse(element);
                 }
             }
         });

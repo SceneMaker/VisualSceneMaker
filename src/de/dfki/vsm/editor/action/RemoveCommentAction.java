@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Comment;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.SceneFlowManager;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 
 //~--- JDK imports ------------------------------------------------------------
 

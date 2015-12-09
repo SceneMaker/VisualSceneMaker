@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.sceneflow.diagram.boards;
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import java.text.AttributedString;
 
 public class VariableEntry /*implements*/ /*SyntaxObject*/ /*ModelObject */{

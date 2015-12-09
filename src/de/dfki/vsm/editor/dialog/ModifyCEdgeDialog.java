@@ -10,9 +10,9 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 //import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
@@ -265,7 +265,7 @@ public class ModifyCEdgeDialog extends AbstractDialog {
             _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            AbstractExpression log = _SFSLParser_.expResult;
 
             System.err.println("Parsing result is " + log);
             

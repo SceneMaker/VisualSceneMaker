@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.sceneflow.diagram;
+package de.dfki.vsm.model.sceneflow.diagram.nodes;
 
 import de.dfki.vsm.model.sceneflow.diagram.boards.VariableBoard;
 import de.dfki.vsm.model.sceneflow.diagram.boards.CommentBoard;
@@ -80,15 +80,18 @@ public final class SceneFlow extends SuperNode {
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         String start = "";
-
         for (String id : mStartNodeList.keySet()) {
             start += id + ";";
         }
 
-        //out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        out.println("<SceneFlow " + "id=\"" + mId + "\" " + "name=\"" + mName + "\" " + "comment=\"" + mComment
-                + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
-                + "modifDate=\"" + Preferences.sDATE_FORMAT.format(new Date()) + "\" " + "start=\"" + start + "\">").push();
+        out.println("<SceneFlow "
+                + "id=\"" + mId + "\" "
+                + "name=\"" + mName + "\" "
+                + "comment=\"" + mComment + "\" "
+                + "hideLocalVar=\"" + mHideLocalVarBadge + "\" "
+                + "hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
+                + "modifDate=\"" + Preferences.sDATE_FORMAT.format(new Date()) + "\" "
+                + "start=\"" + start + "\">").push();
 
         int i = 0;
 

@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
  *
  * @author Gregor Mehlmann
  */
-public class SimpleVariable extends LExpression {
+public class SimpleVariable extends AbstractVariable {
 
     private String mName;
 

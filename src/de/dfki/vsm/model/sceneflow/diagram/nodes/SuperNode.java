@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.sceneflow.diagram;
+package de.dfki.vsm.model.sceneflow.diagram.nodes;
 
 import de.dfki.vsm.model.sceneflow.diagram.boards.VariableBoard;
 import de.dfki.vsm.model.sceneflow.diagram.boards.CommentBoard;

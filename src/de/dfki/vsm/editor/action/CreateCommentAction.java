@@ -26,7 +26,7 @@ public class CreateCommentAction extends EditorAction {
     private Point                                 mCoordinate  = null;
     private Comment                               mGUIComment;
     private de.dfki.vsm.model.sceneflow.diagram.boards.CommentBoard   mComment;
-    private de.dfki.vsm.model.sceneflow.diagram.SuperNode mParentDataNode;
+    private de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode mParentDataNode;
 
     public CreateCommentAction(WorkSpacePanel workSpace, Point coordinate) {
         mWorkSpace   = workSpace;

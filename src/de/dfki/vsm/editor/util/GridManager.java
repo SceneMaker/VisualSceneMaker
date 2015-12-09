@@ -224,7 +224,7 @@ public class GridManager {
         int w = 0;
         int h = 0;
 
-        for (de.dfki.vsm.model.sceneflow.diagram.BasicNode n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
+        for (de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
             if (n.getGraphics().getPosition().getXPos() > w) {
                 w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
             }
@@ -234,7 +234,7 @@ public class GridManager {
             }
         }
 
-        for (de.dfki.vsm.model.sceneflow.diagram.SuperNode n :
+        for (de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode n :
                 mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getSuperNodeList()) {
             if (n.getGraphics().getPosition().getXPos() > w) {
                 w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;

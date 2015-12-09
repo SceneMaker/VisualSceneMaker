@@ -6,8 +6,8 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.dialog.CreateExpDialog;
 import de.dfki.vsm.editor.dialog.AbstractDialog;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
@@ -229,7 +229,7 @@ public final class VarDefDialog extends AbstractDialog {
     }
 
     private void selectExp() {
-        Expression exp = new CreateExpDialog(null).run();
+        AbstractExpression exp = new CreateExpDialog(null).run();
 
         if (exp != null) {
             mVariableDefinition.setExp(exp);
@@ -257,7 +257,7 @@ public final class VarDefDialog extends AbstractDialog {
             String type = mVariableDefinition.getType();
             boolean rightType = true;
 
-            Expression expression = mVariableDefinition.getExp();
+            AbstractExpression expression = mVariableDefinition.getExp();
             String textValue = expression.getConcreteSyntax();
 
             String expFullClass = expression.getClass().getName();
