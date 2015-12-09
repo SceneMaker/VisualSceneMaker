@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.DockingManager;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -79,7 +79,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     private final LOGConsoleLogger           mLogger           = LOGConsoleLogger.getInstance();
     private final EventDispatcher                mEventMulticaster = EventDispatcher.getInstance();
     private Type                             mType;
-    private de.dfki.vsm.model.sceneflow.Node mDataNode;
+    private de.dfki.vsm.model.sceneflow.diagram.BasicNode mDataNode;
 
     //
     // TODO: move away
@@ -107,7 +107,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     /**
      *
      */
-    public Node(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.Node dataNode) {
+    public Node(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.diagram.BasicNode dataNode) {
         mWorkSpace    = workSpace;
         mEditorConfig = mWorkSpace.getEditorConfig();
         mDataNode     = dataNode;
@@ -128,7 +128,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                      : false;
 
         // check if connected edge(s) is/are cedge(s)
-        if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.Node.FLAVOUR.CNODE)) {
+        if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.diagram.BasicNode.FLAVOUR.CNODE)) {
 
             // If no additional default edge is present - node is possible end node!
             mIsEndNode = (mDataNode.getDedge() == null)
@@ -147,7 +147,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         setBounds(pos.x, pos.y, mEditorConfig.sNODEWIDTH, mEditorConfig.sNODEHEIGHT);
 
         // Set the initial start sign
-        HashMap<String, de.dfki.vsm.model.sceneflow.Node> startNodeMap =
+        HashMap<String, de.dfki.vsm.model.sceneflow.diagram.BasicNode> startNodeMap =
             mWorkSpace.getSceneFlowManager().getCurrentActiveSuperNode().getStartNodeMap();
 
         if (startNodeMap.containsKey(mDataNode.getId())) {
@@ -182,7 +182,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         return mWorkSpace;
     }
 
-    public de.dfki.vsm.model.sceneflow.Node getDataNode() {
+    public de.dfki.vsm.model.sceneflow.diagram.BasicNode getDataNode() {
         return mDataNode;
     }
 
@@ -232,7 +232,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                      : false;
 
         // check if connected edge(s) is/are cedge(s)
-        if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.Node.FLAVOUR.CNODE)) {
+        if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.diagram.BasicNode.FLAVOUR.CNODE)) {
 
             // If no additional default edge is present - node is possible end node!
             mIsEndNode = (mDataNode.getDedge() == null)
@@ -243,7 +243,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         }
 
         // / TODO: wozu das hier?
-        if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.Node.FLAVOUR.FNODE)) {
+        if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.diagram.BasicNode.FLAVOUR.FNODE)) {
             mIsEndNode = false;
         }
 
@@ -439,8 +439,8 @@ public final class Node extends JComponent implements EventListener, Observer {
     private void updateDataModel() {
 
 //      mDataNode.getGraphics().setPosition(getLocation().x, getLocation().y);
-        de.dfki.vsm.model.sceneflow.graphics.node.Graphics g =
-            new de.dfki.vsm.model.sceneflow.graphics.node.Graphics(getLocation().x, getLocation().y);
+        de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodeGraphics g =
+            new de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodeGraphics(getLocation().x, getLocation().y);
 
         mDataNode.setGraphics(g);
     }

@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.SImageView;
 
-import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
+import static de.dfki.vsm.editor.dialog.AbstractDialog.getFillerBox;
 import static de.dfki.vsm.Preferences.sABOUT_FILE;
 
 //~--- JDK imports ------------------------------------------------------------

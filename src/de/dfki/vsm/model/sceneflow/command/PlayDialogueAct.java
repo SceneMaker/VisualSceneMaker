@@ -17,7 +17,7 @@ import java.util.Vector;
 /**
  * @author Not me
  */
-public class PlayDialogueAct extends Command {
+public class PlayDialogueAct extends AbstractCommand {
 
     // The Name Of The Dialogue Act
     private Expression mDialogueAct;

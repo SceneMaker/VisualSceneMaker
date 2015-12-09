@@ -2,8 +2,8 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.model.sceneflow.command.Command;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
@@ -21,7 +21,7 @@ public class SystemHistory {
     private final HashMap<String, Stack> mHistoryStackMap = new HashMap<String, Stack>();
     private final HashMap<String, Entry> mHistoryEntryMap = new HashMap<String, Entry>();
 
-    public void push(Node node, Entry entry) {
+    public void push(BasicNode node, Entry entry) {
         if (mHistoryStackMap.get(node.getId()) == null) {
             mHistoryStackMap.put(node.getId(), new Stack(node));
         }
@@ -29,11 +29,11 @@ public class SystemHistory {
         mHistoryStackMap.get(node.getId()).push(entry);
     }
 
-    public void pop(Node node, Entry entry) {
+    public void pop(BasicNode node, Entry entry) {
         mHistoryStackMap.get(node.getId()).pop();
     }
 
-    public Entry get(Node node, int index) {
+    public Entry get(BasicNode node, int index) {
         if (mHistoryStackMap.get(node.getId()) == null) {
             return null;
 
@@ -51,16 +51,16 @@ public class SystemHistory {
         return mHistoryStackMap.get(id).get(index);
     }
 
-    public void setDepth(Node node, int depth) {
+    public void setDepth(BasicNode node, int depth) {
         mHistoryStackMap.get(node.getId()).setDepth(depth);
     }
 
-    public void erase(Node node) {
+    public void erase(BasicNode node) {
         mHistoryStackMap.remove(node.getId());
     }
 
     // TODO:
-    public void deepErase(Node id) {}
+    public void deepErase(BasicNode id) {}
 
     // TODO:
     public void setDepth(String state, int depth) {}
@@ -76,7 +76,7 @@ public class SystemHistory {
         mHistoryEntryMap.clear();
     }
 
-    public boolean isEmpty(Node node) {
+    public boolean isEmpty(BasicNode node) {
         if (mHistoryStackMap.get(node.getId()) == null) {
             return true;
         } else {
@@ -89,24 +89,24 @@ public class SystemHistory {
     }
 
     ////////////////////////////
-    public Entry get(Node node) {
+    public Entry get(BasicNode node) {
         return mHistoryEntryMap.get(node.getId());
     }
 
-    public void set(Node node, Entry entry) {
+    public void set(BasicNode node, Entry entry) {
         mHistoryEntryMap.put(node.getId(), entry);
     }
 
 //  ////////////////
     public static class Entry implements Copyable {
-        private final HashMap<String, Node> mChildNodeMap = new HashMap<String, Node>();
-        private final Vector<Command>       mCommandList  = new Vector<Command>();
-        private final Node                  mNode;
+        private final HashMap<String, BasicNode> mChildNodeMap = new HashMap<String, BasicNode>();
+        private final Vector<AbstractCommand>       mCommandList  = new Vector<AbstractCommand>();
+        private final BasicNode                  mNode;
         private SymbolTable                 mSymbolTable;
         private final long                  mStartTime;
         private long                        mEndTime;
 
-        public Entry(Node node) {
+        public Entry(BasicNode node) {
             mNode      = node;
             mStartTime = System.currentTimeMillis();
         }
@@ -119,11 +119,11 @@ public class SystemHistory {
             return mEndTime - mStartTime;
         }
 
-        public void addCmd(Command value) {
+        public void addCmd(AbstractCommand value) {
             mCommandList.add(value);
         }
 
-        public void addChildNode(Node node) {
+        public void addChildNode(BasicNode node) {
             mChildNodeMap.put(node.getId(), node);
         }
 
@@ -148,13 +148,13 @@ public class SystemHistory {
     public class Stack {
         private final LinkedList<Entry> mHistoryStack = new LinkedList<Entry>();
         int                             mDepth        = 1;
-        private final Node              mNode;
+        private final BasicNode              mNode;
 
-        public Stack(Node node) {
+        public Stack(BasicNode node) {
             mNode = node;
         }
 
-        public Node getNode() {
+        public BasicNode getNode() {
             return mNode;
         }
 

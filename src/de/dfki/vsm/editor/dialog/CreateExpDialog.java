@@ -24,7 +24,7 @@ import javax.swing.JPanel;
  *
  * @author Not me
  */
-public class CreateExpDialog extends Dialog {
+public class CreateExpDialog extends AbstractDialog {
 
     //
     private Expression mExpression;
@@ -119,7 +119,7 @@ public class CreateExpDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
+            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
             _SFSLParser_.run(inputString);
 
             Expression exp = _SFSLParser_.expResult;

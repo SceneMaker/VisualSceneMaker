@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
-import de.dfki.vsm.model.sceneflow.CEdge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -49,16 +49,16 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
     public void run() {
 
         // Remember the old condition
-        mOldCondition = ((CEdge) mDataEdge).getCondition();
+        mOldCondition = ((GuardedEdge) mDataEdge).getGuard();
 
         // Show a dialog to modify the condition
-        ModifyCEdgeDialog dialog = new ModifyCEdgeDialog(((CEdge) mDataEdge));
-        CEdge             cedge  = dialog.run();
+        ModifyCEdgeDialog dialog = new ModifyCEdgeDialog(((GuardedEdge) mDataEdge));
+        GuardedEdge             cedge  = dialog.run();
 
         // If the condition was successfully modified then
         // remember the new condition and update the undomanager
         if (cedge != null) {
-            mNewCondition = cedge.getCondition();
+            mNewCondition = cedge.getGuard();
             mUndoManager.addEdit(new Edit());
             UndoAction.getInstance().refreshUndoState();
             RedoAction.getInstance().refreshRedoState();
@@ -68,7 +68,7 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
     private class Edit extends AbstractUndoableEdit {
         @Override
         public void undo() throws CannotUndoException {
-            ((CEdge) mDataEdge).setCondition(mOldCondition);
+            ((GuardedEdge) mDataEdge).setGuard(mOldCondition);
 
             // mGUIEdge.update();
             mGUIEdge.repaint();
@@ -76,7 +76,7 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
 
         @Override
         public void redo() throws CannotRedoException {
-            ((CEdge) mDataEdge).setCondition(mNewCondition);
+            ((GuardedEdge) mDataEdge).setGuard(mNewCondition);
 
             // mGUIEdge.update();
             mGUIEdge.repaint();

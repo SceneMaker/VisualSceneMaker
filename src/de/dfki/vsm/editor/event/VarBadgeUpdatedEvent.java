@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.VariableEntry;
+import de.dfki.vsm.model.sceneflow.diagram.boards.VariableEntry;
 import de.dfki.vsm.util.evt.EventObject;
 import java.util.Vector;
 

@@ -8,12 +8,12 @@ import de.dfki.vsm.editor.EditButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
-import de.dfki.vsm.editor.dialog.Dialog.Button;
-import de.dfki.vsm.editor.util.AltStartNodeManager;
+import de.dfki.vsm.editor.dialog.AbstractDialog.Button;
+//import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.tpl.TPLTuple;
@@ -35,12 +35,12 @@ import javax.swing.JScrollPane;
  *
  * @author Not me
  */
-public class ModifyIEdgeDialog extends Dialog {
+public class ModifyIEdgeDialog extends AbstractDialog {
 
     // The edge that we want to modify
-    private final IEdge mIEdge;
+    private final InterruptEdge mIEdge;
     // GUI-Components
-    private final AltStartNodeManager mAltStartNodeManager;
+//    private final AltStartNodeManager mAltStartNodeManager;
     // GUI-Components
     private JPanel       mInputPanel;
     private JLabel       mInputLabel;
@@ -48,37 +48,37 @@ public class ModifyIEdgeDialog extends Dialog {
     private HintTextField   mInputTextField;
     private OKButton     mOkButton;
     private CancelButton mCancelButton;
-    private JPanel       mAltStartNodePanel;
-    private JLabel       mAltStartNodeLabel;
-    private JList        mAltStartNodeList;
-    private JScrollPane  mAltStartNodeScrollPane;
-    private AddButton    mAddAltStartNodeButton;
-    private RemoveButton mRemoveAltStartNodeButton;
-    private EditButton mEditAltStartNodeButton;
+//    private JPanel       mAltStartNodePanel;
+//    private JLabel       mAltStartNodeLabel;
+//    private JList        mAltStartNodeList;
+//    private JScrollPane  mAltStartNodeScrollPane;
+//    private AddButton    mAddAltStartNodeButton;
+//    private RemoveButton mRemoveAltStartNodeButton;
+//    private EditButton mEditAltStartNodeButton;
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
     private JLabel errorMsg;
 
-    public ModifyIEdgeDialog(IEdge iedge) {
+    public ModifyIEdgeDialog(InterruptEdge iedge) {
         super(EditorInstance.getInstance(), "Modify Interruptive Edge", true);
         mIEdge = iedge;
         // TODO: move to EdgeDialog
-        mAltStartNodeManager = new AltStartNodeManager(mIEdge);
+//        mAltStartNodeManager = new AltStartNodeManager(mIEdge);
         // Init GUI-Components
         initComponents();
-        mInputTextField.setText(mIEdge.getCondition().getConcreteSyntax());
-        loadAltStartNodeMap();
+        mInputTextField.setText(mIEdge.getGuard().getConcreteSyntax());
+//        loadAltStartNodeMap();
     }
 
-    public ModifyIEdgeDialog(Node sourceNode, Node targetNode) {
+    public ModifyIEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
         super(EditorInstance.getInstance(), "Create Interruptive Edge", true);
         // Init edge data
-        mIEdge = new IEdge();
+        mIEdge = new InterruptEdge();
         mIEdge.setTarget(targetNode.getId());
         mIEdge.setSourceNode(sourceNode);
         mIEdge.setTargetNode(targetNode);
         // TODO: move to EdgeDialog
-        mAltStartNodeManager = new AltStartNodeManager(mIEdge);
+//        mAltStartNodeManager = new AltStartNodeManager(mIEdge);
         // Init the GUI-Components
         initComponents();
     }
@@ -89,7 +89,7 @@ public class ModifyIEdgeDialog extends Dialog {
         // Init button panel
         initButtonPanel();
         // Init alternative start node panel
-        initAltStartNodePanel();
+//        initAltStartNodePanel();
         
         //Error message
         errorMsg = new JLabel("Information Required");
@@ -101,7 +101,7 @@ public class ModifyIEdgeDialog extends Dialog {
         finalBox.setAlignmentX(CENTER_ALIGNMENT);
         finalBox.add(mInputPanel);
         finalBox.add(Box.createVerticalStrut(20));
-        finalBox.add(mAltStartNodePanel);
+//        finalBox.add(mAltStartNodePanel);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(errorMsg);
         finalBox.add(Box.createVerticalStrut(20));
@@ -166,57 +166,57 @@ public class ModifyIEdgeDialog extends Dialog {
 
     }
 
-    protected void initAltStartNodePanel() {
-        // Init alternative start node label
-        mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
-        sanitizeComponent(mAltStartNodeLabel, labelSize);
-        // Init alternative start node list
-        mAltStartNodeList       = new JList(new DefaultListModel());
-        mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
-        Dimension tfSize = new Dimension(200, 110);
-        mAltStartNodeScrollPane.setPreferredSize(tfSize);
-        mAltStartNodeScrollPane.setMinimumSize(tfSize);
-        mAltStartNodeScrollPane.setMaximumSize(tfSize);
-        // Init alternative start node buttons
-        //add button
-        mAddAltStartNodeButton = new AddButton();
-        mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                addAltStartNode();
-            }
-        });
-        //remove button
-        mRemoveAltStartNodeButton = new RemoveButton();
-        mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                removeAltStartNode();
-            }
-        });
-        //edit button
-        mEditAltStartNodeButton = new EditButton();
-        mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                editAltStartNode();
-            }
-        });
-        // Init alternative start node panel
-        Box buttonsBox = Box.createVerticalBox();
-        buttonsBox.setMaximumSize(new Dimension(20, 100));
-        buttonsBox.add(mAddAltStartNodeButton);
-        buttonsBox.add(Box.createVerticalStrut(10));
-        buttonsBox.add(mRemoveAltStartNodeButton);
-        buttonsBox.add(Box.createVerticalStrut(10));
-        buttonsBox.add(mEditAltStartNodeButton);
-        mAltStartNodePanel = new JPanel();
-        mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.X_AXIS));
-        mAltStartNodePanel.add(mAltStartNodeLabel);
-        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
-        mAltStartNodePanel.add(mAltStartNodeScrollPane);
-        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
-        mAltStartNodePanel.add(buttonsBox);
-    }
+//    protected void initAltStartNodePanel() {
+//        // Init alternative start node label
+//        mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
+//        sanitizeComponent(mAltStartNodeLabel, labelSize);
+//        // Init alternative start node list
+//        mAltStartNodeList       = new JList(new DefaultListModel());
+//        mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
+//        Dimension tfSize = new Dimension(200, 110);
+//        mAltStartNodeScrollPane.setPreferredSize(tfSize);
+//        mAltStartNodeScrollPane.setMinimumSize(tfSize);
+//        mAltStartNodeScrollPane.setMaximumSize(tfSize);
+//        // Init alternative start node buttons
+//        //add button
+//        mAddAltStartNodeButton = new AddButton();
+//        mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+//            public void mouseClicked(java.awt.event.MouseEvent evt) {
+//                addAltStartNode();
+//            }
+//        });
+//        //remove button
+//        mRemoveAltStartNodeButton = new RemoveButton();
+//        mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+//            public void mouseClicked(java.awt.event.MouseEvent evt) {
+//                removeAltStartNode();
+//            }
+//        });
+//        //edit button
+//        mEditAltStartNodeButton = new EditButton();
+//        mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+//            public void mouseClicked(java.awt.event.MouseEvent evt) {
+//                editAltStartNode();
+//            }
+//        });
+//        // Init alternative start node panel
+//        Box buttonsBox = Box.createVerticalBox();
+//        buttonsBox.setMaximumSize(new Dimension(20, 100));
+//        buttonsBox.add(mAddAltStartNodeButton);
+//        buttonsBox.add(Box.createVerticalStrut(10));
+//        buttonsBox.add(mRemoveAltStartNodeButton);
+//        buttonsBox.add(Box.createVerticalStrut(10));
+//        buttonsBox.add(mEditAltStartNodeButton);
+//        mAltStartNodePanel = new JPanel();
+//        mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.X_AXIS));
+//        mAltStartNodePanel.add(mAltStartNodeLabel);
+//        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
+//        mAltStartNodePanel.add(mAltStartNodeScrollPane);
+//        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
+//        mAltStartNodePanel.add(buttonsBox);
+//    }
 
-    public IEdge run() {
+    public InterruptEdge run() {
         setVisible(true);
         if (mPressedButton == Button.OK) {
             return mIEdge;
@@ -253,17 +253,17 @@ public class ModifyIEdgeDialog extends Dialog {
         
         
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;//LOG;
+            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
             _SFSLParser_.run(inputString);
             //LogicalCond log = _SFSLParser_.logResult;
             Expression log = _SFSLParser_.expResult;//logResult;
             
 
             if ((log != null) &&!_SFSLParser_.errorFlag) {
-                mIEdge.setCondition(log);
+                mIEdge.setGuard(log);
 
                 // /
-                mAltStartNodeManager.saveAltStartNodeMap();
+//                mAltStartNodeManager.saveAltStartNodeMap();
                 ////
                 return true;
             } else {
@@ -274,74 +274,74 @@ public class ModifyIEdgeDialog extends Dialog {
         }
     }
 
-    private void loadAltStartNodeMap() {
-        mAltStartNodeManager.loadAltStartNodeMap();
+//    private void loadAltStartNodeMap() {
+//        mAltStartNodeManager.loadAltStartNodeMap();
+//
+//        if (mIEdge.getTargetNode() instanceof SuperNode) {
+//            Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
+//            while (it.hasNext()) {
+//                Map.Entry              pairs            = (Map.Entry) it.next();
+//                TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
+//                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+//                ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
+//                        startNodePair.getFirst() + "/" + altStartNodePair.getFirst());
+//                ////System.err.println("loading start node "+startNodePair.getSecond());
+//                ////System.err.println("loading alt start node "+altStartNodePair.getSecond());
+//            }
+//        } else {
+//            mAddAltStartNodeButton.setEnabled(false);
+//            mRemoveAltStartNodeButton.setEnabled(false);
+//            mEditAltStartNodeButton.setEnabled(false);
+//            mAltStartNodeList.setEnabled(false);
+//            mAltStartNodeScrollPane.setEnabled(false);
+//        }
+//    }
+//
+//    private void saveAltStartNodeMap() {
+//        mAltStartNodeManager.saveAltStartNodeMap();
+//    }
 
-        if (mIEdge.getTargetNode() instanceof SuperNode) {
-            Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry              pairs            = (Map.Entry) it.next();
-                TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
-                ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
-                        startNodePair.getFirst() + "/" + altStartNodePair.getFirst());
-                ////System.err.println("loading start node "+startNodePair.getSecond());
-                ////System.err.println("loading alt start node "+altStartNodePair.getSecond());
-            }
-        } else {
-            mAddAltStartNodeButton.setEnabled(false);
-            mRemoveAltStartNodeButton.setEnabled(false);
-            mEditAltStartNodeButton.setEnabled(false);
-            mAltStartNodeList.setEnabled(false);
-            mAltStartNodeScrollPane.setEnabled(false);
-        }
-    }
+//    private void addAltStartNode() {
+//        CreateAltStartNodeDialog dialog = new CreateAltStartNodeDialog(mAltStartNodeManager);
+//        dialog.run();
+//
+//        // /
+//        ((DefaultListModel) mAltStartNodeList.getModel()).clear();
+//        Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
+//        while (it.hasNext()) {
+//            Map.Entry              pairs            = (Map.Entry) it.next();
+//            TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
+//            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+//
+//            ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
+//                    + altStartNodePair.getFirst());
+//        }
+//    }
 
-    private void saveAltStartNodeMap() {
-        mAltStartNodeManager.saveAltStartNodeMap();
-    }
-
-    private void addAltStartNode() {
-        CreateAltStartNodeDialog dialog = new CreateAltStartNodeDialog(mAltStartNodeManager);
-        dialog.run();
-
-        // /
-        ((DefaultListModel) mAltStartNodeList.getModel()).clear();
-        Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
-
-            ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
-                    + altStartNodePair.getFirst());
-        }
-    }
-
-    private void removeAltStartNode() {
-        String selectedValue = (String) mAltStartNodeList.getSelectedValue();
-        if (selectedValue != null) {
-            String[] idPair      = selectedValue.split("/");
-            String   startNodeId = idPair[0];
-
-            // String altStartNodeId = idPair[1];
-            System.err.println("remove alt start node" + startNodeId);
-            mAltStartNodeManager.removeAltStartNode(startNodeId);
-            ((DefaultListModel) mAltStartNodeList.getModel()).removeElement(selectedValue);
-        }
-    }
-
-    private void editAltStartNode() {}
+//    private void removeAltStartNode() {
+//        String selectedValue = (String) mAltStartNodeList.getSelectedValue();
+//        if (selectedValue != null) {
+//            String[] idPair      = selectedValue.split("/");
+//            String   startNodeId = idPair[0];
+//
+//            // String altStartNodeId = idPair[1];
+//            System.err.println("remove alt start node" + startNodeId);
+//            mAltStartNodeManager.removeAltStartNode(startNodeId);
+//            ((DefaultListModel) mAltStartNodeList.getModel()).removeElement(selectedValue);
+//        }
+//    }
+//
+//    private void editAltStartNode() {}
 
     public JPanel getInputPanel() {
 
         return mInputPanel;
     }
 
-    public JPanel getAltStartNodePanel() {
-
-        return mAltStartNodePanel;
-    }
+//    public JPanel getAltStartNodePanel() {
+//
+//        return mAltStartNodePanel;
+//    }
 
     public JPanel getButtonPanel() {
         return mButtonPanel;

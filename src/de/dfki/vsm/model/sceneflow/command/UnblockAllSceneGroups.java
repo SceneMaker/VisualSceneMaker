@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class UnblockAllSceneGroups extends Command {
+public class UnblockAllSceneGroups extends AbstractCommand {
     private boolean mNonAbstract;
 
     public UnblockAllSceneGroups() {

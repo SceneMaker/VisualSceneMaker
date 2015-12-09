@@ -80,7 +80,7 @@ public class QuitDialog extends JDialog {
         }
         
         //CHANGE MODALITY 
-        setModalityType(Dialog.ModalityType.DOCUMENT_MODAL);
+        setModalityType(AbstractDialog.ModalityType.DOCUMENT_MODAL);
         
         // the exit message
         mExitMessage = new JLabel(exitMessage);
