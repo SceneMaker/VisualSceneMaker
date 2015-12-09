@@ -1,8 +1,6 @@
 package de.dfki.vsm.model.sceneflow.command.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
-
-import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -14,27 +12,28 @@ import org.w3c.dom.Element;
  * @author Not me
  */
 public class ConditionalExp extends Expression {
-    private Condition  mCondition;
+
+    private Expression mCondition;
     private Expression mThenExp;
     private Expression mElseExp;
 
     public ConditionalExp() {
         mCondition = null;
-        mThenExp   = null;
-        mElseExp   = null;
+        mThenExp = null;
+        mElseExp = null;
     }
 
-    public ConditionalExp(Condition cond, Expression thenExp, Expression elseExp) {
+    public ConditionalExp(Expression cond, Expression thenExp, Expression elseExp) {
         mCondition = cond;
-        mThenExp   = thenExp;
-        mElseExp   = elseExp;
+        mThenExp = thenExp;
+        mElseExp = elseExp;
     }
 
-    public Condition getCondition() {
+    public Expression getCondition() {
         return mCondition;
     }
 
-    public void setCondition(Condition value) {
+    public void setCondition(Expression value) {
         mCondition = value;
     }
 
@@ -54,44 +53,50 @@ public class ConditionalExp extends Expression {
         mElseExp = value;
     }
 
+    @Override
     public ExpType getExpType() {
-        return ExpType.IF;
+        return ExpType.CONDITIONAL;
     }
 
+    @Override
     public String getAbstractSyntax() {
         return "ConditionalExp( " + ((mCondition != null)
-                                     ? mCondition.getAbstractSyntax()
-                                     : "") + " , " + ((mThenExp != null)
+                ? mCondition.getAbstractSyntax()
+                : "") + " , " + ((mThenExp != null)
                 ? mThenExp.getAbstractSyntax()
                 : "") + " , " + ((mElseExp != null)
-                                 ? mElseExp.getAbstractSyntax()
-                                 : "") + " )";
+                ? mElseExp.getAbstractSyntax()
+                : "") + " )";
     }
 
+    @Override
     public String getConcreteSyntax() {
         return "( " + ((mCondition != null)
-                       ? mCondition.getConcreteSyntax()
-                       : "") + " ? " + ((mThenExp != null)
-                                        ? mThenExp.getConcreteSyntax()
-                                        : "") + " : " + ((mElseExp != null)
+                ? mCondition.getConcreteSyntax()
+                : "") + " ? " + ((mThenExp != null)
+                ? mThenExp.getConcreteSyntax()
+                : "") + " : " + ((mElseExp != null)
                 ? mElseExp.getConcreteSyntax()
                 : "") + " )";
     }
 
+    @Override
     public String getFormattedSyntax() {
         return "( " + ((mCondition != null)
-                       ? mCondition.getFormattedSyntax()
-                       : "") + " ? " + ((mThenExp != null)
-                                        ? mThenExp.getFormattedSyntax()
-                                        : "") + " : " + ((mElseExp != null)
+                ? mCondition.getFormattedSyntax()
+                : "") + " ? " + ((mThenExp != null)
+                ? mThenExp.getFormattedSyntax()
+                : "") + " : " + ((mElseExp != null)
                 ? mElseExp.getFormattedSyntax()
                 : "") + " )";
     }
 
+    @Override
     public ConditionalExp getCopy() {
         return new ConditionalExp(mCondition.getCopy(), mThenExp.getCopy(), mElseExp.getCopy());
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<If>").push();
         mCondition.writeXML(out);
@@ -104,23 +109,27 @@ public class ConditionalExp extends Expression {
         out.pop().println("</If>");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
             public void run(Element element) throws XMLParseError {
                 if (element.getTagName().equals("Then")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                        @Override
                         public void run(Element element) throws XMLParseError {
                             mThenExp = Expression.parse(element);
                         }
                     });
                 } else if (element.getTagName().equals("Else")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                        @Override
                         public void run(Element element) throws XMLParseError {
                             mElseExp = Expression.parse(element);
                         }
                     });
                 } else {
-                    mCondition = Condition.parse(element);
+                    mCondition = Expression.parse(element);
                 }
             }
         });

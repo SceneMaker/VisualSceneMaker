@@ -677,7 +677,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPDA(Node node, String name) {
         PlayDialogueAct pdaCmd = new PlayDialogueAct();
 
-        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
+        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral(name));
         node.getDataNode().addCmd(pdaCmd);
     }
 
@@ -688,7 +688,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPSG(Node node, String name) {
         PlaySceneGroup psgCmd = new PlaySceneGroup();
 
-        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
+        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral(name));
         node.getDataNode().addCmd(psgCmd);
     }
 
