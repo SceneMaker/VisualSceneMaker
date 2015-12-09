@@ -4,7 +4,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
+import de.dfki.vsm.model.sceneflow.diagram.graphics.comment.CommentBorder;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -61,7 +61,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     private Image                               mResizeMarker;
     private AlphaComposite                      mAC;
     private AlphaComposite                      mACFull;
-    private de.dfki.vsm.model.sceneflow.Comment mDataComment;
+    private de.dfki.vsm.model.sceneflow.diagram.boards.CommentBoard mDataComment;
 
     // interaction flags
     public boolean mSelected;
@@ -75,7 +75,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mDataComment = null;
     }
 
-    public Comment(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
+    public Comment(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.diagram.boards.CommentBoard dataComment) {
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;
@@ -150,7 +150,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         return toString();
     }
 
-    public de.dfki.vsm.model.sceneflow.Comment getData() {
+    public de.dfki.vsm.model.sceneflow.diagram.boards.CommentBoard getData() {
         return mDataComment;
     }
 
@@ -206,7 +206,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // update data
         Rectangle r2 = getBounds();
 
-        mDataComment.getGraphics().setRect(new Rect(r2.x, r2.y, r2.width, r2.height));
+        mDataComment.getGraphics().setRect(new CommentBorder(r2.x, r2.y, r2.width, r2.height));
 
         // DEBUG System.out.println("size " + getBounds());
     }
@@ -351,6 +351,6 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // update data
         Rectangle r = getBounds();
 
-        mDataComment.getGraphics().setRect(new Rect(r.x, r.y, r.width, r.height));
+        mDataComment.getGraphics().setRect(new CommentBorder(r.x, r.y, r.width, r.height));
     }
 }

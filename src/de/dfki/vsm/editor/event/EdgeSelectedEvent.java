@@ -2,21 +2,21 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Edge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
  * @author Not me
  */
 public class EdgeSelectedEvent extends EventObject {
-    private Edge mEdge;
+    private AbstractEdge mEdge;
 
-    public EdgeSelectedEvent(Object source, Edge edge) {
+    public EdgeSelectedEvent(Object source, AbstractEdge edge) {
         super(source);
         mEdge = edge;
     }
 
-    public Edge getEdge() {
+    public AbstractEdge getEdge() {
         return mEdge;
     }
     

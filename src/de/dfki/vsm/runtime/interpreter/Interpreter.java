@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.interpreter;
 
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.command.Command;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.events.AbortionEvent;
@@ -288,7 +288,7 @@ public class Interpreter {
 	////////////////////////////////////////////////////////////////////////////
 	//
 	////////////////////////////////////////////////////////////////////////////
-	public boolean execute(String nodeId, Command cmd) {
+	public boolean execute(String nodeId, AbstractCommand cmd) {
 		try {
 			lock();
 			mEvaluator.execute(cmd, mConfiguration.getState(nodeId).getThread().getEnvironment());

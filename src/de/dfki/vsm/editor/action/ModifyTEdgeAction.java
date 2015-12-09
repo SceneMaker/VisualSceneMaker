@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
-import de.dfki.vsm.model.sceneflow.TEdge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -28,11 +28,11 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
     public void run() {
 
         // Remember the old condition
-        mOldTimeout = ((TEdge) mDataEdge).getTimeout();
+        mOldTimeout = ((TimeoutEdge) mDataEdge).getTimeout();
 
         // Show a dialog to modify the condition
-        ModifyTEdgeDialog dialog = new ModifyTEdgeDialog(((TEdge) mDataEdge));
-        TEdge             tedge  = dialog.run();
+        ModifyTEdgeDialog dialog = new ModifyTEdgeDialog(((TimeoutEdge) mDataEdge));
+        TimeoutEdge             tedge  = dialog.run();
 
         // If the condition was successfully modified then
         // remember the new condition and update the undomanager
@@ -47,7 +47,7 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
     private class Edit extends AbstractUndoableEdit {
         @Override
         public void undo() throws CannotUndoException {
-            ((TEdge) mDataEdge).setTimeout(mOldTimeout);
+            ((TimeoutEdge) mDataEdge).setTimeout(mOldTimeout);
 
             // mGUIEdge.update();
             mGUIEdge.repaint();
@@ -55,7 +55,7 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
 
         @Override
         public void redo() throws CannotRedoException {
-            ((TEdge) mDataEdge).setTimeout(mNewTimeout);
+            ((TimeoutEdge) mDataEdge).setTimeout(mNewTimeout);
 
             // mGUIEdge.update();
             mGUIEdge.repaint();

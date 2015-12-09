@@ -7,12 +7,9 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
-import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.VariableEntry;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
@@ -21,21 +18,17 @@ import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
-import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Dimension;
-import java.text.AttributedString;
-
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -58,7 +51,7 @@ public class MonitorDialog extends JDialog implements  EventListener{
     private JTable               mVariableTable;
     private HintTextField           mInputTextField;
     private JScrollPane          mVariableScrollPane;
-    private Vector<VarDef>       mVarDefListData;
+    private ArrayList<VariableDefinition>       mVarDefListData;
     private static EditorProject       mEditorProject;
     
     private MonitorDialog() {
@@ -112,11 +105,11 @@ public class MonitorDialog extends JDialog implements  EventListener{
         int selectedIndex = mVariableTable.getSelectedRow();
         
         if (selectedIndex != -1) {
-            VarDef           varDef      = mVarDefListData.get(selectedIndex);
+            VariableDefinition           varDef      = mVarDefListData.get(selectedIndex);
             java.lang.String inputString = mInputTextField.getText().trim();
             
             try {
-                _SFSLParser_.parseResultType = _SFSLParser_.EXP;
+                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
                 _SFSLParser_.run(inputString);
 
                 Expression exp = _SFSLParser_.expResult;
@@ -202,7 +195,7 @@ public class MonitorDialog extends JDialog implements  EventListener{
         java.lang.String listofVars[][] = new java.lang.String[mVarDefListData.size()][2];
         java.lang.String[] listOfColumns = {"Variable", "Value"};
         int counter = 0;
-        for (VarDef varDef : mVarDefListData) {
+        for (VariableDefinition varDef : mVarDefListData) {
             java.lang.String[] tempString = { varDef.getName(), varDef.getExp().toString(), varDef.getFormattedSyntax()};
             listofVars[counter] =  tempString;
             counter++;

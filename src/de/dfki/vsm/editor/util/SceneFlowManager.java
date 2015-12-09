@@ -2,12 +2,13 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -56,7 +57,7 @@ public class SceneFlowManager {
         return mActiveSuperNodes.removeLast();
     }
 
-    public boolean isRootSuperNode(Node n) {
+    public boolean isRootSuperNode(BasicNode n) {
         return (n.equals((SuperNode) mSceneFlow));
     }
 
@@ -68,20 +69,20 @@ public class SceneFlowManager {
 
         if (!(superNode instanceof SceneFlow)) {
             SuperNode    parentSuperNode = getParentSuperNode(superNode);
-            Vector<Node> parentNodeSet   = parentSuperNode.getNodeList();
+            Vector<BasicNode> parentNodeSet   = parentSuperNode.getNodeList();
             Set<String>  currentNodeIDs  = new HashSet<String>();
 
-            for (Node cn : superNode.getNodeList()) {
+            for (BasicNode cn : superNode.getNodeList()) {
                 currentNodeIDs.add(cn.getId());
             }
 
-            for (Node node : parentNodeSet) {
+            for (BasicNode node : parentNodeSet) {
                 if (node.hasEdge()) {
                     switch (node.getFlavour()) {
                     case CNODE :
-                        Vector<CEdge> ces = node.getCEdgeList();
+                        final ArrayList<GuardedEdge> ces = node.getCEdgeList();
 
-                        for (CEdge c : ces) {
+                        for (GuardedEdge c : ces) {
 
                             // collectAltStartNodeIDs(processIDs(c.getStart()), currentNodeIDs, altStartNodeIDs);
                         }
@@ -89,9 +90,9 @@ public class SceneFlowManager {
                         break;
 
                     case PNODE :
-                        Vector<PEdge> pes = node.getPEdgeList();
+                        final ArrayList<RandomEdge> pes = node.getPEdgeList();
 
-                        for (PEdge p : pes) {
+                        for (RandomEdge p : pes) {
 
                             // collectAltStartNodeIDs(processIDs(p.getStart()), currentNodeIDs, altStartNodeIDs);
                         }
@@ -99,9 +100,9 @@ public class SceneFlowManager {
                         break;
 
                     case INODE :
-                        Vector<IEdge> ies = node.getIEdgeList();
+                        final ArrayList<InterruptEdge> ies = node.getIEdgeList();
 
-                        for (IEdge i : ies) {
+                        for (InterruptEdge i : ies) {
 
                             // collectAltStartNodeIDs(processIDs(i.getStart()), currentNodeIDs, altStartNodeIDs);
                         }
@@ -126,7 +127,7 @@ public class SceneFlowManager {
     /*
      * Returns the list of all parent SuperNodes containing the root SuperNode
      */
-    public Set<SuperNode> getParentSuperNodeSet(Node n) {
+    public Set<SuperNode> getParentSuperNodeSet(BasicNode n) {
         Set<SuperNode> nSet = new HashSet<SuperNode>();
 
         if (isRootSuperNode(n)) {    // if given node n is root SuperNode return null
@@ -169,13 +170,13 @@ public class SceneFlowManager {
     /*
      * Returns the parent SuperNode to a given Node n
      */
-    public SuperNode getParentSuperNode(Node n) {
+    public SuperNode getParentSuperNode(BasicNode n) {
         if (!isRootSuperNode(n)) {
             SuperNode parentSuperNode = (SuperNode) mSceneFlow;
-            Set<Node> ns              = getSubNodes(parentSuperNode);
+            Set<BasicNode> ns              = getSubNodes(parentSuperNode);
 
             // checking if node is contained in the nodes of the root SuperNode
-            for (Node cn : ns) {
+            for (BasicNode cn : ns) {
                 if (cn.equals(n)) {
                     return parentSuperNode;
                 } else {
@@ -197,12 +198,12 @@ public class SceneFlowManager {
     /*
      * Helper method for recursive traversion of supernodes to find Parent SuperNode to given Node
      */
-    private SuperNode findParentSuperNode(SuperNode currentSN, Node n) {
+    private SuperNode findParentSuperNode(SuperNode currentSN, BasicNode n) {
         if (hasSuperNodes(currentSN)) {
             SuperNode parentSuperNode = currentSN;
-            Set<Node> ns              = getSubNodes(currentSN);
+            Set<BasicNode> ns              = getSubNodes(currentSN);
 
-            for (Node cn : ns) {
+            for (BasicNode cn : ns) {
                 if (cn.equals(n)) {
                     return parentSuperNode;
                 } else {
@@ -223,12 +224,12 @@ public class SceneFlowManager {
     /*
      * Checks if a given Node instance is a subnode of a given intance of SuperNode
      */
-    public boolean isSubNode(Node superNode, Node n) {
+    public boolean isSubNode(BasicNode superNode, BasicNode n) {
         if (!(superNode instanceof SuperNode)) {
             return false;
         }
 
-        Set<Node> nSet = getSuperNodeSubNodes((SuperNode) superNode, new HashSet<Node>());
+        Set<BasicNode> nSet = getSuperNodeSubNodes((SuperNode) superNode, new HashSet<BasicNode>());
 
         // DEBUG //System.out.println("super node set size " + nSet.size());
         if ((nSet == null) || (nSet.size() == 0)) {
@@ -242,10 +243,10 @@ public class SceneFlowManager {
         }
     }
 
-    private Set<Node> getSuperNodeSubNodes(SuperNode sNode, Set allSubNodes) {
+    private Set<BasicNode> getSuperNodeSubNodes(SuperNode sNode, Set allSubNodes) {
 
         // get all super nodes and nodes
-        Vector<Node>      ns  = sNode.getNodeList();         // .getNodeSet();
+        Vector<BasicNode>      ns  = sNode.getNodeList();         // .getNodeSet();
         Vector<SuperNode> sns = sNode.getSuperNodeList();    // .getSuperNodeSet();
 
         // add super nodes and nodes to one set
@@ -254,7 +255,7 @@ public class SceneFlowManager {
             getSuperNodeSubNodes(sn, allSubNodes);    // recurvsively collect all SubSupernodes
         }
 
-        for (Node n : ns) {
+        for (BasicNode n : ns) {
             allSubNodes.add(n);
         }
 
@@ -273,17 +274,17 @@ public class SceneFlowManager {
         return (sn.getSuperNodeList().size() > 0);
     }
 
-    public Set<Node> getSubNodes() {
+    public Set<BasicNode> getSubNodes() {
         return getSubNodes((SuperNode) mSceneFlow);
     }
 
-    public Set<Node> getSubNodes(SuperNode sNode) {
-        HashSet<Node> allNodes = new HashSet<Node>();
+    public Set<BasicNode> getSubNodes(SuperNode sNode) {
+        HashSet<BasicNode> allNodes = new HashSet<BasicNode>();
 
         // get all super nodes and nodes
         // Set<Node> ns = sNode.getNodeSet();
         // Set<SuperNode> sns = sNode.getSuperNodeSet();
-        Vector<Node>      ns  = sNode.getNodeList();         // .getNodeSet();
+        Vector<BasicNode>      ns  = sNode.getNodeList();         // .getNodeSet();
         Vector<SuperNode> sns = sNode.getSuperNodeList();    // .getSuperNodeSet();
 
         // add super nodes and nodes to one set
@@ -291,7 +292,7 @@ public class SceneFlowManager {
             allNodes.add(sn);
         }
 
-        for (Node n : ns) {
+        for (BasicNode n : ns) {
             allNodes.add(n);
         }
 
@@ -304,7 +305,7 @@ public class SceneFlowManager {
         // get all active super nodes and nodes
         // Set<Node> ns = mActiveSuperNodes.getLast().getNodeSet();
         // Set<SuperNode> sns = mActiveSuperNodes.getLast().getSuperNodeSet();
-        Vector<Node>      ns  = mActiveSuperNodes.getLast().getNodeList();         // .getNodeSet();
+        Vector<BasicNode>      ns  = mActiveSuperNodes.getLast().getNodeList();         // .getNodeSet();
         Vector<SuperNode> sns = mActiveSuperNodes.getLast().getSuperNodeList();    // .getSuperNodeSet();
 
         // add super nodes and nodes to one set
@@ -312,7 +313,7 @@ public class SceneFlowManager {
             allNodeNames.add(sn.getName() + " (" + sn.getId() + ")");
         }
 
-        for (Node n : ns) {
+        for (BasicNode n : ns) {
             allNodeNames.add(n.getName() + " (" + n.getId() + ")");
         }
 

@@ -6,9 +6,9 @@ import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Type;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodeGraphics;
 
 import static de.dfki.vsm.editor.Node.Type.BasicNode;
 import static de.dfki.vsm.editor.Node.Type.SuperNode;
@@ -28,7 +28,7 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class CreateNodeAction extends NodeAction {
-    public CreateNodeAction(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.Node node) {
+    public CreateNodeAction(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.diagram.BasicNode node) {
         mWorkSpace        = workSpace;
         mCoordinate       = new Point(node.getGraphics().getPosition().getXPos(),
                                       node.getGraphics().getPosition().getYPos());
@@ -64,30 +64,24 @@ public class CreateNodeAction extends NodeAction {
 
         if (mGUINodeType == BasicNode) {
             mDataNodeId = mIDManager.getNextFreeNodeID();
-            mDataNode   = new Node();
+            mDataNode   = new BasicNode();
             mDataNode.setNameAndId(mDataNodeId);
-            mDataNode.setExhaustive(false);
-            mDataNode.setPreserving(false);
-            mDataNode.setGraphics(new Graphics(mCoordinate.x, mCoordinate.y));
+            mDataNode.setGraphics(new NodeGraphics(mCoordinate.x, mCoordinate.y));
             mParentDataNode = mSceneFlowManager.getCurrentActiveSuperNode();
         } else if (mGUINodeType == SuperNode) {
             mDataNodeId = mIDManager.getNextFreeSuperNodeID();
             mDataNode   = new SuperNode();
             mDataNode.setNameAndId(mDataNodeId);
-            mDataNode.setExhaustive(false);
-            mDataNode.setPreserving(false);
-            mDataNode.setGraphics(new Graphics(mCoordinate.x, mCoordinate.y));
+            mDataNode.setGraphics(new NodeGraphics(mCoordinate.x, mCoordinate.y));
             mParentDataNode = mSceneFlowManager.getCurrentActiveSuperNode();
 
             //////////////////
-            Node mHistoryDataNode = new Node();
+            BasicNode mHistoryDataNode = new BasicNode();
 
             mHistoryDataNode.setHistoryNodeFlag(true);
             mHistoryDataNode.setName("History");
             mHistoryDataNode.setId(mIDManager.getNextFreeNodeID());
-            mHistoryDataNode.setExhaustive(false);
-            mHistoryDataNode.setPreserving(false);
-            mHistoryDataNode.setGraphics(new Graphics(0, 0));
+            mHistoryDataNode.setGraphics(new NodeGraphics(0, 0));
             mHistoryDataNode.setParentNode((SuperNode) mDataNode);
             ((SuperNode) mDataNode).addNode(mHistoryDataNode);
             ((SuperNode) mDataNode).setHistoryNode(mHistoryDataNode);

@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Edge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**

@@ -5,17 +5,17 @@ import de.dfki.vsm.editor.event.EdgeExecutedEvent;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.event.NodeStartedEvent;
 import de.dfki.vsm.editor.event.NodeTerminatedEvent;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.EEdge;
-import de.dfki.vsm.model.sceneflow.Edge;
-import de.dfki.vsm.model.sceneflow.FEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
+import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.EpsilonEdge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.runtime.exceptions.InterruptException;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.exceptions.TerminateException;
@@ -23,6 +23,7 @@ import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.runtime.values.BooleanValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.util.Collection;
@@ -39,10 +40,10 @@ public class Process extends java.lang.Thread {
 	private boolean mIsTerminationRequested = false;
 	private boolean mIsRunning = false;
 	private boolean mWasExecuted = false;
-	private Node mCurrentNode = null;
-	private Edge mInterruptEdge = null;
-	private Edge mNextEdge = null;
-	private Edge mIncomingEdge = null;
+	private BasicNode mCurrentNode = null;
+	private AbstractEdge mInterruptEdge = null;
+	private AbstractEdge mNextEdge = null;
+	private AbstractEdge mIncomingEdge = null;
 	private final Vector<Process> mChildThreadList = new Vector<Process>();
 	private final Vector<Process> mAddChildThreadList = new Vector<Process>();
 	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -57,7 +58,7 @@ public class Process extends java.lang.Thread {
 	private final Process mParentThread;
 	private Interpreter mInterpreter;
 
-	public Process(String name, ThreadGroup group, Node currentNode, Environment environment, int level,
+	public Process(String name, ThreadGroup group, BasicNode currentNode, Environment environment, int level,
 	  Process parent, Interpreter interpreter) {
 		super(group, name);
 		mCurrentNode = currentNode;
@@ -81,7 +82,7 @@ public class Process extends java.lang.Thread {
 		return mLevel;
 	}
 
-	public Node getNode() {
+	public BasicNode getNode() {
 		return mCurrentNode;
 	}
 
@@ -174,7 +175,7 @@ public class Process extends java.lang.Thread {
 		interrupt();
 	}
 
-	public void requestInterruption(Edge edge) {
+	public void requestInterruption(AbstractEdge edge) {
 		if (mIsInterruptionRequested || mIsTerminationRequested) {
 			return;
 		}
@@ -543,7 +544,7 @@ public class Process extends java.lang.Thread {
 				/////////////////////////////////////////////////////////////
 				// Process command list
 				////////////////////////////////////////////////////////////
-				for (Command cmd : mCurrentNode.getCmdList()) {
+				for (AbstractCommand cmd : mCurrentNode.getCmdList()) {
 					mInterpreter.lock();
 					checkStatus();
 
@@ -571,14 +572,14 @@ public class Process extends java.lang.Thread {
 				/////////////////////////////////////////////////////////////
 				// FIND NEXT EDGE
 				////////////////////////////////////////////////////////////
-				Vector<FEdge> nextEdgeList = mCurrentNode.getFEdgeList();
+				final ArrayList<ForkingEdge> nextEdgeList = mCurrentNode.getFEdgeList();
 
 				if (nextEdgeList.isEmpty()) {
 
 					/////////////////////////////////////////////////////////////
 					// EXECUTE REGULAR NEXT EDGE
 					////////////////////////////////////////////////////////////
-					Edge nextEdge = null;
+					AbstractEdge nextEdge = null;
 
 					while (nextEdge == null) {
 						try {
@@ -605,10 +606,10 @@ public class Process extends java.lang.Thread {
 						}
 
 						// Default edge
-						Edge dedge = mCurrentNode.getDedge();
+						AbstractEdge dedge = mCurrentNode.getDedge();
 
-						if (dedge instanceof TEdge) {
-							TEdge tedge = (TEdge) dedge;
+						if (dedge instanceof TimeoutEdge) {
+							TimeoutEdge tedge = (TimeoutEdge) dedge;
 
 							if ((java.lang.System.currentTimeMillis() - mNodeTime) >= tedge.getTimeout()) {
 								nextEdge = tedge;
@@ -620,8 +621,8 @@ public class Process extends java.lang.Thread {
 
 								continue;
 							}
-						} else if (dedge instanceof EEdge) {
-							EEdge eedge = (EEdge) dedge;
+						} else if (dedge instanceof EpsilonEdge) {
+							EpsilonEdge eedge = (EpsilonEdge) dedge;
 
 							nextEdge = eedge;
 
@@ -674,7 +675,7 @@ public class Process extends java.lang.Thread {
 
 					Vector<Process> forkThreadList = new Vector<Process>();
 
-					for (Edge edge : nextEdgeList) {
+					for (AbstractEdge edge : nextEdgeList) {
 						Environment env = mParentThread.mEnvironment.getCopy();
 						Process thread = new Process(edge.getTargetNode().getId(), null, edge.getTargetNode(), env,
 						  mLevel, mParentThread, mInterpreter);
@@ -728,7 +729,7 @@ public class Process extends java.lang.Thread {
 	/**
 	 */
 	private void executeStartNodeList() throws InterruptException, TerminateException, InterpretException {
-		Vector<Node> startNodeList = computeStartNodeList();
+		Vector<BasicNode> startNodeList = computeStartNodeList();
 
 		if (!startNodeList.isEmpty()) {
 			mInterpreter.lock();
@@ -737,7 +738,7 @@ public class Process extends java.lang.Thread {
 			/**
 			 *
 			 */
-			for (Node node : startNodeList) {
+			for (BasicNode node : startNodeList) {
 				Process thread = new Process(node.getId(), null, node, mEnvironment.getCopy(), mLevel + 1, this,
 				  mInterpreter);
 
@@ -859,16 +860,16 @@ public class Process extends java.lang.Thread {
 
 	/**
 	 */
-	private Vector<Node> computeStartNodeList() {
+	private Vector<BasicNode> computeStartNodeList() {
 
 		/**
 		 */
-		Vector<Node> startNodeList = new Vector<Node>();
+		Vector<BasicNode> startNodeList = new Vector<BasicNode>();
 
 		/**
 		 * Get the history node of the current node
 		 */
-		Node historyNode = ((SuperNode) mCurrentNode).getHistoryNode();
+		BasicNode historyNode = ((SuperNode) mCurrentNode).getHistoryNode();
 
 		/**
 		 * Look if there exists a history for the current node
@@ -901,12 +902,12 @@ public class Process extends java.lang.Thread {
 		/**
 		 * Get the start node list of the current node
 		 */
-		Collection<Node> commonStartNodeList = ((SuperNode) mCurrentNode).getStartNodeMap().values();
+		Collection<BasicNode> commonStartNodeList = ((SuperNode) mCurrentNode).getStartNodeMap().values();
 
 		/**
 		 * Fill the next start node list with these start nodes
 		 */
-		for (Node node : commonStartNodeList) {
+		for (BasicNode node : commonStartNodeList) {
 			startNodeList.add(node);
 		}
 
@@ -936,7 +937,7 @@ public class Process extends java.lang.Thread {
 	/**
 	 */
 	private void processVarDefList() throws InterpretException {
-		for (VarDef varDef : mCurrentNode.getVarDefList()) {
+		for (VariableDefinition varDef : mCurrentNode.getVarDefList()) {
 			mEvaluator.declare(varDef, mEnvironment);
 		}
 	}
@@ -944,29 +945,29 @@ public class Process extends java.lang.Thread {
 	/**
 	 */
 	private void processTimeoutConditionList() throws InterpretException {
-		for (VarDef varDef : mCurrentNode.getVarDefList()) {
+		for (VariableDefinition varDef : mCurrentNode.getVarDefList()) {
 			mTimeoutManager.startTimeoutHandler(varDef, mEnvironment);
 		}
 
-		for (Command cmd : mCurrentNode.getCmdList()) {
+		for (AbstractCommand cmd : mCurrentNode.getCmdList()) {
 			mTimeoutManager.startTimeoutHandler(cmd, mEnvironment);
 		}
 
-		for (CEdge cedge : mCurrentNode.getCEdgeList()) {
-			mTimeoutManager.startTimeoutHandler(cedge.getCondition(), mEnvironment);
+		for (GuardedEdge cedge : mCurrentNode.getCEdgeList()) {
+			mTimeoutManager.startTimeoutHandler(cedge.getGuard(), mEnvironment);
 		}
 
-		for (IEdge iedge : mCurrentNode.getIEdgeList()) {
-			mTimeoutManager.startTimeoutHandler(iedge.getCondition(), mEnvironment);
+		for (InterruptEdge iedge : mCurrentNode.getIEdgeList()) {
+			mTimeoutManager.startTimeoutHandler(iedge.getGuard(), mEnvironment);
 		}
 	}
 
 	/**
 	 */
-	private CEdge checkCEdgeList() throws InterpretException {
-		for (CEdge cedge : mCurrentNode.getCEdgeList()) {
+	private GuardedEdge checkCEdgeList() throws InterpretException {
+		for (GuardedEdge cedge : mCurrentNode.getCEdgeList()) {
 			try {
-				BooleanValue value = (BooleanValue) mEvaluator.evaluate(cedge.getCondition(), mEnvironment);
+				BooleanValue value = (BooleanValue) mEvaluator.evaluate(cedge.getGuard(), mEnvironment);
 
 				// mLogger.message(cedge.getCondition().getConcreteSyntax() + " evaluates to " + value.getValue());
 				if (value.getValue()) {
@@ -975,7 +976,7 @@ public class Process extends java.lang.Thread {
 			} catch (ClassCastException e) {
 				java.lang.String errorMsg = "An error occured while executing thread "
 				  + Process.currentThread().toString() + " : " + "The condition '"
-				  + cedge.getCondition().getConcreteSyntax()
+				  + cedge.getGuard().getConcreteSyntax()
 				  + "' of the conditional edge from node '" + cedge.getSource()
 				  + "' to node '" + cedge.getTarget()
 				  + "' could not be evaluated to a boolean value.";
@@ -987,12 +988,12 @@ public class Process extends java.lang.Thread {
 		return null;
 	}
 
-	private PEdge checkPEdgeList() {
+	private RandomEdge checkPEdgeList() {
 		int random = new Random().nextInt(100);
 		int low = 0,
 		  high = 0;
 
-		for (PEdge pedge : mCurrentNode.getPEdgeList()) {
+		for (RandomEdge pedge : mCurrentNode.getPEdgeList()) {
 			high = low + pedge.getProbability() - 1;
 
 			if ((low <= random) && (random <= high)) {

@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -103,7 +103,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
                 currentCB.clear();
 
-                for (Node node : previousCB) {
+                for (BasicNode node : previousCB) {
                     currentCB.add(node);
                 }
             }
