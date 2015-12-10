@@ -1,6 +1,6 @@
 package de.dfki.vsm.model.sceneflow.language.definition;
 
-import de.dfki.vsm.model.sceneflow.language.LanguageObject;
+import de.dfki.vsm.model.sceneflow.language.SyntaxObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * @author Gregor Mehlmann
  */
-public final class FunctionDefinition extends LanguageObject implements Comparable<FunctionDefinition> {
+public final class FunctionDefinition implements SyntaxObject, Comparable<FunctionDefinition> {
 
     private String mName;
     private String mClazz;

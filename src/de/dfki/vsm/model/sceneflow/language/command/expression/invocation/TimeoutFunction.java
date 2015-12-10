@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.sceneflow.language.command.expression.function;
+package de.dfki.vsm.model.sceneflow.language.command.expression.invocation;
 
 import de.dfki.vsm.model.sceneflow.language.command.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -10,14 +10,14 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class TimeoutCall extends Expression {
+public final class TimeoutFunction extends Expression {
 
     private Expression mExpression;
 
-    public TimeoutCall() {
+    public TimeoutFunction() {
     }
 
-    public TimeoutCall(final Expression exp) {
+    public TimeoutFunction(final Expression exp) {
         mExpression = exp;
     }
 
@@ -41,8 +41,8 @@ public final class TimeoutCall extends Expression {
     }
 
     @Override
-    public final TimeoutCall getCopy() {
-        return new TimeoutCall(mExpression.getCopy());
+    public final TimeoutFunction getCopy() {
+        return new TimeoutFunction(mExpression.getCopy());
     }
 
     @Override

@@ -14,7 +14,7 @@ import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
 import de.dfki.vsm.model.sceneflow.language.command.expression.variable.ArrayVariable;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.TimeoutCall;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.TimeoutFunction;
 import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -34,7 +34,7 @@ import java.util.TimerTask;
 public class TimeoutManager {
 
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    private final HashMap<TimeoutCall, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCall, TPLTuple<Boolean, TimerTask>>();
+    private final HashMap<TimeoutFunction, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutFunction, TPLTuple<Boolean, TimerTask>>();
     private final Timer mTimer = new Timer("Timeout-Manager-Timer");
     private Interpreter mInterpreter;
 
@@ -42,7 +42,7 @@ public class TimeoutManager {
         mInterpreter = interpreter;
     }
 
-    public boolean contains(final TimeoutCall cond) {
+    public boolean contains(final TimeoutFunction cond) {
         return mTimeoutCondList.containsKey(cond);
     }
 
@@ -60,11 +60,11 @@ public class TimeoutManager {
         mLogger.message("Clearing timeout manager");
     }
 
-    public boolean expired(final TimeoutCall cond) {
+    public boolean expired(final TimeoutFunction cond) {
         return mTimeoutCondList.get(cond).getFirst();
     }
 
-    public void remove(final TimeoutCall cond) {
+    public void remove(final TimeoutFunction cond) {
 
         // mTimeoutCondList.get(cond).
         mTimeoutCondList.get(cond).getSecond().cancel();
@@ -72,7 +72,7 @@ public class TimeoutManager {
         mLogger.message("removing " + cond.getConcreteSyntax() + " ");
     }
 
-    public void start(final TimeoutCall cond, int timeout) {
+    public void start(final TimeoutFunction cond, int timeout) {
         if (contains(cond)) {
             mLogger.message("Already contained " + cond.getConcreteSyntax() + " -> restart");
             remove(cond);
@@ -148,19 +148,19 @@ public class TimeoutManager {
             startTimeoutHandler(((TernaryExpression) exp).getElseExp(), env);
         } else if (exp instanceof ArrayVariable) {
             startTimeoutHandler(((ArrayVariable) exp).getExp(), env);
-        } else if (exp instanceof TimeoutCall) {
+        } else if (exp instanceof TimeoutFunction) {
 
             /**
              * START TIMEOUT CONDITION TIMER
              */
-            startTimeoutHandler(((TimeoutCall) exp).getExpression(), env);
+            startTimeoutHandler(((TimeoutFunction) exp).getExpression(), env);
 
-            AbstractValue value = mInterpreter.getEvaluator().evaluate(((TimeoutCall) exp).getExpression(), env);
+            AbstractValue value = mInterpreter.getEvaluator().evaluate(((TimeoutFunction) exp).getExpression(), env);
 
             if (value.getType() == AbstractValue.Type.INT) {
-                start((TimeoutCall) exp, ((IntValue) value).getValue());
+                start((TimeoutFunction) exp, ((IntValue) value).getValue());
             } else if (value.getType() == AbstractValue.Type.STRING) {
-                start((TimeoutCall) exp, Integer.parseInt(((StringValue) value).getValue()));
+                start((TimeoutFunction) exp, Integer.parseInt(((StringValue) value).getValue()));
             } else {
                 throw new InterpretException(this, "timeout argument not integer");
             }

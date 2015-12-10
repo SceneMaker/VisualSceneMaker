@@ -13,11 +13,10 @@ import de.dfki.vsm.model.sceneflow.language.command.invocation.UnblockSceneGroup
 import de.dfki.vsm.model.sceneflow.language.command.expression.BinaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.TernaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.Expression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryRunTime;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryValueOf;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.HistoryRunTime;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.HistoryValueOf;
 import de.dfki.vsm.model.sceneflow.language.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.StateValueOf;
 import de.dfki.vsm.model.sceneflow.language.command.expression.literal.BoolLiteral;
 import de.dfki.vsm.model.sceneflow.language.command.expression.literal.FloatLiteral;
 import de.dfki.vsm.model.sceneflow.language.command.expression.literal.IntLiteral;
@@ -29,10 +28,10 @@ import de.dfki.vsm.model.sceneflow.language.command.expression.variable.ArrayVar
 import de.dfki.vsm.model.sceneflow.language.command.expression.VariableExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.variable.MemberVariable;
 import de.dfki.vsm.model.sceneflow.language.command.expression.variable.SimpleVariable;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryContains;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.InStateCond;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.PrologQuery;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.TimeoutCall;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.HistoryContains;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.InStateCond;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.PrologQuery;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.TimeoutFunction;
 import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.language.definition.ArgumentDefinition;
 import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
@@ -716,10 +715,10 @@ public class Evaluator {
         //        } 
         // TIMEOUT CONDITION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof TimeoutCall) {
-            if (mInterpreter.getTimeoutManager().contains((TimeoutCall) exp)) {
-                if (mInterpreter.getTimeoutManager().expired((TimeoutCall) exp)) {
-                    mInterpreter.getTimeoutManager().remove((TimeoutCall) exp);
+        else if (exp instanceof TimeoutFunction) {
+            if (mInterpreter.getTimeoutManager().contains((TimeoutFunction) exp)) {
+                if (mInterpreter.getTimeoutManager().expired((TimeoutFunction) exp)) {
+                    mInterpreter.getTimeoutManager().remove((TimeoutFunction) exp);
 
                     return new BooleanValue(true);
                 } else {
@@ -752,22 +751,6 @@ public class Evaluator {
             }
             //return evaluate(((PrologQuery) exp).getExpression(), env);
         } //
-        ////////////////////////////////////////////////////////////////////
-        // VALUE-OF EXPRESSION
-        ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof StateValueOf) {
-            Configuration.State state = mInterpreter.getConfiguration().getState(((StateValueOf) exp).getNode());
-
-            if (state != null) {
-                return state.getThread().getEnvironment().read(((StateValueOf) exp).getVar());
-            } else {
-                throw new InterpretException(exp,
-                        "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
-            }
-        } //
-        ////////////////////////////////////////////////////////////////////
-        // HISTORY CONTAINS
-        ////////////////////////////////////////////////////////////////////
         else if (exp instanceof HistoryContains) {
             SystemHistory.Entry entry = mInterpreter.getSystemHistory().get(((HistoryContains) exp).getState(),
                     ((HistoryContains) exp).getDepth());

@@ -1,6 +1,6 @@
 package de.dfki.vsm.model.sceneflow.language.definition;
 
-import de.dfki.vsm.model.sceneflow.language.LanguageObject;
+import de.dfki.vsm.model.sceneflow.language.SyntaxObject;
 import de.dfki.vsm.model.sceneflow.language.command.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class VariableDefinition extends LanguageObject {
+public final class VariableDefinition implements SyntaxObject {
 
     private String mType;
     private String mName;

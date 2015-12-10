@@ -1,13 +1,13 @@
 package de.dfki.vsm.model.sceneflow.language.command;
 
-import de.dfki.vsm.model.sceneflow.language.LanguageObject;
+import de.dfki.vsm.model.sceneflow.language.SyntaxObject;
 import de.dfki.vsm.util.xml.XMLParseError;
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
-public abstract class Command extends LanguageObject {
+public abstract class Command implements SyntaxObject {
 
     public static Command parse(Element element) throws XMLParseError {
         // The expression to parse

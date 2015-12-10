@@ -27,9 +27,14 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 
 
 %%
-"PlaySceneGroup" { return new Symbol(_SFSLToken_.PSG); }
-"PlayDialogueAct" { return new Symbol(_SFSLToken_.PDA); }
-
+"PlayDialogueAct" { return new Symbol(_SFSLToken_.PLAY_DIALOG_ACT); }
+"PlaySceneGroup" { return new Symbol(_SFSLToken_.PLAY_SCENE_GROUP); }
+"HistoryFlatClear" { return new Symbol(_SFSLToken_.HISTORY_FLAT_CLEAR); }
+"HistoryDeepClear" { return new Symbol(_SFSLToken_.HISTORY_DEEP_CLEAR); }
+"HistoryContains" { return new Symbol(_SFSLToken_.HISTORY_CONTAINS); }
+"HistoryValueOf" { return new Symbol(_SFSLToken_.HISTORY_VALUE_OF); }
+"HistorySetDepth" { return new Symbol(_SFSLToken_.HISTORY_SET_DEPTH); }
+"HistoryRunTime" { return new Symbol(_SFSLToken_.HISTORY_RUNTIME); }
 
 "get" { return new Symbol(_SFSLToken_.GET); }
 "remove" { return new Symbol(_SFSLToken_.REMOVE); }
@@ -49,14 +54,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "query" { return new Symbol(_SFSLToken_.QUERY); }
 "timeout" { return new Symbol(_SFSLToken_.TIMEOUT); }
 
-"HistoryFlatClear" { return new Symbol(_SFSLToken_.HISTORYFLATCLEAR); }
-"HistoryDeepClear" { return new Symbol(_SFSLToken_.HISTORYDEEPCLEAR); }
-"HistoryContains" { return new Symbol(_SFSLToken_.HISTORYCONTAINS); }
-"HistoryValueOf" { return new Symbol(_SFSLToken_.HISTORYVALUEOF); }
-"HistorySetDepth" { return new Symbol(_SFSLToken_.HISTORYSETDEPTH); }
-"HistoryRunTime" { return new Symbol(_SFSLToken_.HISTORYRUNTIME); }
 
-"ValueOf" { return new Symbol(_SFSLToken_.VALUEOF); }
 "true" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "false" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "null"  { return new Symbol(_SFSLToken_.NULL); }

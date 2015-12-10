@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.sceneflow.language.command.expression.function;
+package de.dfki.vsm.model.sceneflow.language.command.expression.invocation;
 
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.sceneflow.language.command.Expression;

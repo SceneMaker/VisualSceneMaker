@@ -1,10 +1,9 @@
 package de.dfki.vsm.model.sceneflow.language.command;
 
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryContains;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryRunTime;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryValueOf;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.StateValueOf;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.InStateCond;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.HistoryContains;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.HistoryRunTime;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.HistoryValueOf;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.InStateCond;
 import de.dfki.vsm.model.sceneflow.language.command.expression.BinaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.ConstructExpression;
@@ -13,10 +12,10 @@ import de.dfki.vsm.model.sceneflow.language.command.expression.ParenthesesExpres
 import de.dfki.vsm.model.sceneflow.language.command.expression.TernaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.VariableExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.PrologQuery;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.PrologQuery;
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.TimeoutCall;
+import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.TimeoutFunction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -85,9 +84,6 @@ public abstract class Expression extends Command {
         } else if (tag.equals("StateCondition")) {
             expression = new InStateCond();
             expression.parseXML(element);
-        } else if (tag.equals("ValueOf")) {
-            expression = new StateValueOf();
-            expression.parseXML(element);
         } else if (tag.equals("PrologCondition")) {
             expression = new PrologQuery();
             expression.parseXML(element);
@@ -106,7 +102,7 @@ public abstract class Expression extends Command {
             expression = LiteralExpression.parse(element);
             expression.parseXML(element);
         } else if (tag.equals("TimeoutCondition")) {
-            expression = new TimeoutCall();
+            expression = new TimeoutFunction();
             expression.parseXML(element);
         } else if (tag.equals("List")) {
             expression = new ListRecord();

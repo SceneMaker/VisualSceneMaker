@@ -1,13 +1,13 @@
 package de.dfki.vsm.model.sceneflow.language.definition;
 
-import de.dfki.vsm.model.sceneflow.language.LanguageObject;
+import de.dfki.vsm.model.sceneflow.language.SyntaxObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class ArgumentDefinition extends LanguageObject {
+public final class ArgumentDefinition implements SyntaxObject {
 
     private String mName;
     private String mType;
