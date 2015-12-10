@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.CmdDialog;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.util.evt.EventDispatcher;
 
 /**
@@ -24,7 +24,7 @@ public class AddCommandAction extends EditorAction {
 
     @Override
     public void run() {
-        Command cmd = new CmdDialog(null).run();
+        AbstractCommand cmd = new CmdDialog(null).run();
 
         if (cmd != null) {
             EventDispatcher.getInstance().convey(new NodeSelectedEvent(this, mNode.getDataNode()));

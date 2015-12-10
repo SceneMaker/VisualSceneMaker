@@ -30,7 +30,7 @@ import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sIEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sPEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
-import de.dfki.vsm.model.sceneflow.language.command.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -394,7 +394,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            AbstractExpression log = _SFSLParser_.expResult;
 
             return (log != null) &&!_SFSLParser_.errorFlag;
         } catch (Exception e) {
@@ -516,7 +516,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
                 _SFSLParser_.run(input);
 
-                Expression log = _SFSLParser_.expResult;
+                AbstractExpression log = _SFSLParser_.expResult;
 
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((GuardedEdge) mDataEdge).setGuard(log);
@@ -533,7 +533,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             
                 _SFSLParser_.run(input);
 
-                Expression log = _SFSLParser_.expResult;
+                AbstractExpression log = _SFSLParser_.expResult;
 
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((InterruptEdge) mDataEdge).setGuard(log);

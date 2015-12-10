@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 public class CmdDialog extends AbstractDialog {
 
     // The command  that has to be maintained
-    private Command mCommand;
+    private AbstractCommand mCommand;
 
     // GUI-Components
     private HintTextField   mInputTextField;
@@ -34,7 +34,7 @@ public class CmdDialog extends AbstractDialog {
     private CancelButton mCancelButton;
     private JLabel errorMsg;
 
-    public CmdDialog(Command command) {
+    public CmdDialog(AbstractCommand command) {
         super(EditorInstance.getInstance(), "Specify Command", true);
         mCommand = command;
         initComponents();
@@ -87,7 +87,7 @@ public class CmdDialog extends AbstractDialog {
         mOkButton.requestFocus();
     }
 
-    public Command run() {
+    public AbstractCommand run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {
@@ -122,7 +122,7 @@ public class CmdDialog extends AbstractDialog {
             _SFSLParser_.parseResultType = _SFSLParser_.STATEMENT;
             _SFSLParser_.run(inputString);
 
-            Command cmd = _SFSLParser_.cmdResult;
+            AbstractCommand cmd = _SFSLParser_.cmdResult;
 
             if ((cmd != null) &&!_SFSLParser_.errorFlag) {
                 mCommand = cmd;

@@ -14,8 +14,8 @@ import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.language.command.Command;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.runtime.exceptions.InterruptException;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.exceptions.TerminateException;
@@ -544,7 +544,7 @@ public class Process extends java.lang.Thread {
 				/////////////////////////////////////////////////////////////
 				// Process command list
 				////////////////////////////////////////////////////////////
-				for (Command cmd : mCurrentNode.getCmdList()) {
+				for (AbstractCommand cmd : mCurrentNode.getCmdList()) {
 					mInterpreter.lock();
 					checkStatus();
 
@@ -949,7 +949,7 @@ public class Process extends java.lang.Thread {
 			mTimeoutManager.startTimeoutHandler(varDef, mEnvironment);
 		}
 
-		for (Command cmd : mCurrentNode.getCmdList()) {
+		for (AbstractCommand cmd : mCurrentNode.getCmdList()) {
 			mTimeoutManager.startTimeoutHandler(cmd, mEnvironment);
 		}
 
