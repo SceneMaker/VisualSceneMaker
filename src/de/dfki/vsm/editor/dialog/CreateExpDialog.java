@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.language.command.Expression;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -27,7 +27,7 @@ import javax.swing.JPanel;
 public class CreateExpDialog extends AbstractDialog {
 
     //
-    private AbstractExpression mExpression;
+    private Expression mExpression;
 
     //
     private HintTextField   mInputTextField;
@@ -35,7 +35,7 @@ public class CreateExpDialog extends AbstractDialog {
     private CancelButton mCancelButton;
     private JLabel errorMsg;
 
-    public CreateExpDialog(AbstractExpression expression) {
+    public CreateExpDialog(Expression expression) {
         super(EditorInstance.getInstance(), "Specify Command", true);
         mExpression = expression;
         initComponents();
@@ -87,7 +87,7 @@ public class CreateExpDialog extends AbstractDialog {
         mOkButton.requestFocus();
     }
 
-    public AbstractExpression run() {
+    public Expression run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {
@@ -122,7 +122,7 @@ public class CreateExpDialog extends AbstractDialog {
             _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
             _SFSLParser_.run(inputString);
 
-            AbstractExpression exp = _SFSLParser_.expResult;
+            Expression exp = _SFSLParser_.expResult;
 
             if ((exp != null) &&!_SFSLParser_.errorFlag) {
                 mExpression = exp;

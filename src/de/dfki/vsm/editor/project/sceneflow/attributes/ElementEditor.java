@@ -24,11 +24,11 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.language.command.Expression;
 //import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
 //import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.RegularExpressions;
@@ -73,7 +73,7 @@ class CmdEditor extends AttributeEditor {
             // Reload the command execution list
             mListModel.clear();
 
-            for (AbstractCommand cmd : mDataNode.getCmdList()) {
+            for (Command cmd : mDataNode.getCmdList()) {
                 mListModel.addElement(cmd);
             }
         } else {
@@ -86,7 +86,7 @@ class CmdEditor extends AttributeEditor {
     protected void add() {
         de.dfki.vsm.editor.Node currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getNode(mDataNode.getId());
         EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().deselectAllOtherComponents(currentNode);
-        AbstractCommand cmd = new CmdDialog(null).run();
+        Command cmd = new CmdDialog(null).run();
 
         if (cmd != null) {
             mDataNode.addCmd(cmd);
@@ -99,8 +99,8 @@ class CmdEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if (index >= 0) {
-            AbstractCommand oldCmd = mDataNode.getCmdAt(index);
-            AbstractCommand newCmd = new CmdDialog(oldCmd).run();
+            Command oldCmd = mDataNode.getCmdAt(index);
+            Command newCmd = new CmdDialog(oldCmd).run();
 
             if (newCmd != null) {
                 mDataNode.setCmdAt(newCmd, index);
@@ -124,8 +124,8 @@ class CmdEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if (index >= 1) {
-            AbstractCommand thisCmd = mDataNode.getCmdAt(index);
-            AbstractCommand otherCmd = mDataNode.getCmdAt(index - 1);
+            Command thisCmd = mDataNode.getCmdAt(index);
+            Command otherCmd = mDataNode.getCmdAt(index - 1);
 
             mDataNode.setCmdAt(thisCmd, index - 1);
             mDataNode.setCmdAt(otherCmd, index);
@@ -140,8 +140,8 @@ class CmdEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if ((index >= 0) && (index < mListModel.size() - 1)) {
-            AbstractCommand thisCmd = mDataNode.getCmdAt(index);
-            AbstractCommand otherCmd = mDataNode.getCmdAt(index + 1);
+            Command thisCmd = mDataNode.getCmdAt(index);
+            Command otherCmd = mDataNode.getCmdAt(index + 1);
 
             mDataNode.setCmdAt(thisCmd, index + 1);
             mDataNode.setCmdAt(otherCmd, index);
@@ -216,7 +216,7 @@ class ConditionEditor extends JPanel implements EventListener {
 
             _SFSLParser_.run(inputString);
 
-            AbstractExpression log = _SFSLParser_.expResult;
+            Expression log = _SFSLParser_.expResult;
 
             if ((log != null) && !_SFSLParser_.errorFlag) {
                 mDataCEdge.setGuard(log);
@@ -520,7 +520,7 @@ class InterruptEditor extends JPanel implements EventListener {
             _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
             _SFSLParser_.run(inputString);
 
-            AbstractExpression log = _SFSLParser_.expResult;
+            Expression log = _SFSLParser_.expResult;
 
             if ((log != null) && !_SFSLParser_.errorFlag) {
                 mDataIEdge.setGuard(log);

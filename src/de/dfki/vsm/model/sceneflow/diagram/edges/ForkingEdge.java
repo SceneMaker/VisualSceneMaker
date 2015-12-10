@@ -1,6 +1,6 @@
 package de.dfki.vsm.model.sceneflow.diagram.edges;
 
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.language.command.Command;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -24,7 +24,7 @@ public class ForkingEdge extends AbstractEdge {
             final BasicNode targetNode,
             final BasicNode sourceNode,
             final EdgeGraphics graphics,
-            final ArrayList<AbstractCommand> cmdList) {
+            final ArrayList<Command> cmdList) {
         super(target, source, targetNode, sourceNode, graphics, cmdList);
     }
 
@@ -82,7 +82,7 @@ public class ForkingEdge extends AbstractEdge {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(final Element element) throws XMLParseError {
-                            mCommandList.add(AbstractCommand.parse(element));
+                            mCommandList.add(Command.parse(element));
                         }
                     });
                 } else {

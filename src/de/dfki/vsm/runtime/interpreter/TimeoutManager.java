@@ -1,21 +1,21 @@
 package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.model.sceneflow.command.Assignment;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
-import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
-import de.dfki.vsm.model.sceneflow.command.expression.BinaryExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.TernaryExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.UnaryExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.CallingExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.ArrayVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.Assignment;
+import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.language.command.invocation.PlayDialogAct;
+import de.dfki.vsm.model.sceneflow.language.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.language.command.invocation.UnblockSceneGroup;
+import de.dfki.vsm.model.sceneflow.language.command.expression.BinaryExpression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.language.command.Expression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
+import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
+import de.dfki.vsm.model.sceneflow.language.command.expression.variable.ArrayVariable;
+import de.dfki.vsm.model.sceneflow.language.command.expression.function.TimeoutCall;
+import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.IntValue;
@@ -34,7 +34,7 @@ import java.util.TimerTask;
 public class TimeoutManager {
 
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>>();
+    private final HashMap<TimeoutCall, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCall, TPLTuple<Boolean, TimerTask>>();
     private final Timer mTimer = new Timer("Timeout-Manager-Timer");
     private Interpreter mInterpreter;
 
@@ -42,7 +42,7 @@ public class TimeoutManager {
         mInterpreter = interpreter;
     }
 
-    public boolean contains(final TimeoutCond cond) {
+    public boolean contains(final TimeoutCall cond) {
         return mTimeoutCondList.containsKey(cond);
     }
 
@@ -60,11 +60,11 @@ public class TimeoutManager {
         mLogger.message("Clearing timeout manager");
     }
 
-    public boolean expired(final TimeoutCond cond) {
+    public boolean expired(final TimeoutCall cond) {
         return mTimeoutCondList.get(cond).getFirst();
     }
 
-    public void remove(final TimeoutCond cond) {
+    public void remove(final TimeoutCall cond) {
 
         // mTimeoutCondList.get(cond).
         mTimeoutCondList.get(cond).getSecond().cancel();
@@ -72,7 +72,7 @@ public class TimeoutManager {
         mLogger.message("removing " + cond.getConcreteSyntax() + " ");
     }
 
-    public void start(final TimeoutCond cond, int timeout) {
+    public void start(final TimeoutCall cond, int timeout) {
         if (contains(cond)) {
             mLogger.message("Already contained " + cond.getConcreteSyntax() + " -> restart");
             remove(cond);
@@ -105,32 +105,32 @@ public class TimeoutManager {
         startTimeoutHandler(def.getExp(), env);
     }
 
-    public void startTimeoutHandler(AbstractCommand cmd, Environment env) throws InterpretException {
+    public void startTimeoutHandler(Command cmd, Environment env) throws InterpretException {
         if (cmd instanceof PlaySceneGroup) {
             startTimeoutHandler(((PlaySceneGroup) cmd).getArg(), env);
 
-            for (AbstractExpression arg : ((PlaySceneGroup) cmd).getArgList()) {
+            for (Expression arg : ((PlaySceneGroup) cmd).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
-        } else if (cmd instanceof PlayDialogueAct) {
-            startTimeoutHandler(((PlayDialogueAct) cmd).getArg(), env);
+        } else if (cmd instanceof PlayDialogAct) {
+            startTimeoutHandler(((PlayDialogAct) cmd).getArg(), env);
 
-            for (AbstractExpression arg : ((PlayDialogueAct) cmd).getArgList()) {
+            for (Expression arg : ((PlayDialogAct) cmd).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
         } else if (cmd instanceof UnblockSceneGroup) {
             startTimeoutHandler(((UnblockSceneGroup) cmd).getArg(), env);
         } else if (cmd instanceof Assignment) {
-            startTimeoutHandler(((Assignment) cmd).getLExp(), env);
-            startTimeoutHandler(((Assignment) cmd).getExp(), env);
-        } else if (cmd instanceof AbstractExpression) {
-            startTimeoutHandler((AbstractExpression) cmd, env);
+            startTimeoutHandler(((Assignment) cmd).getVariable(), env);
+            startTimeoutHandler(((Assignment) cmd).getInitializer(), env);
+        } else if (cmd instanceof Expression) {
+            startTimeoutHandler((Expression) cmd, env);
         }
     }
 
-    public void startTimeoutHandler(AbstractExpression exp, Environment env) throws InterpretException {
+    public void startTimeoutHandler(Expression exp, Environment env) throws InterpretException {
         if (exp instanceof ListRecord) {
-            for (AbstractExpression arg : ((ListRecord) exp).getExpList()) {
+            for (Expression arg : ((ListRecord) exp).getExpList()) {
                 startTimeoutHandler(arg, env);
             }
         } else if (exp instanceof StructRecord) {
@@ -148,24 +148,24 @@ public class TimeoutManager {
             startTimeoutHandler(((TernaryExpression) exp).getElseExp(), env);
         } else if (exp instanceof ArrayVariable) {
             startTimeoutHandler(((ArrayVariable) exp).getExp(), env);
-        } else if (exp instanceof TimeoutCond) {
+        } else if (exp instanceof TimeoutCall) {
 
             /**
              * START TIMEOUT CONDITION TIMER
              */
-            startTimeoutHandler(((TimeoutCond) exp).getExpression(), env);
+            startTimeoutHandler(((TimeoutCall) exp).getExpression(), env);
 
-            AbstractValue value = mInterpreter.getEvaluator().evaluate(((TimeoutCond) exp).getExpression(), env);
+            AbstractValue value = mInterpreter.getEvaluator().evaluate(((TimeoutCall) exp).getExpression(), env);
 
             if (value.getType() == AbstractValue.Type.INT) {
-                start((TimeoutCond) exp, ((IntValue) value).getValue());
+                start((TimeoutCall) exp, ((IntValue) value).getValue());
             } else if (value.getType() == AbstractValue.Type.STRING) {
-                start((TimeoutCond) exp, Integer.parseInt(((StringValue) value).getValue()));
+                start((TimeoutCall) exp, Integer.parseInt(((StringValue) value).getValue()));
             } else {
                 throw new InterpretException(this, "timeout argument not integer");
             }
         } else if (exp instanceof CallingExpression) {
-            for (AbstractExpression arg : ((CallingExpression) exp).getArgList()) {
+            for (Expression arg : ((CallingExpression) exp).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
         } else {

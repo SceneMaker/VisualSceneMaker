@@ -1,41 +1,47 @@
 package de.dfki.vsm.sfsl.parser;
 
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.Assignment;
-import de.dfki.vsm.model.sceneflow.command.HistoryClear;
-import de.dfki.vsm.model.sceneflow.command.HistorySetDepth;
-import de.dfki.vsm.model.sceneflow.command.HistoryDeepClear;
-import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
-import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
-import de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups;
-import de.dfki.vsm.model.sceneflow.command.expression.ParenthesesExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.Invocation;
+import de.dfki.vsm.model.sceneflow.command.Expression;
+// Invocation Commands
+import de.dfki.vsm.model.sceneflow.command.invocation.HistorySetDepth;
+import de.dfki.vsm.model.sceneflow.command.invocation.HistoryFlatClear;
+import de.dfki.vsm.model.sceneflow.command.invocation.HistoryDeepClear;
+import de.dfki.vsm.model.sceneflow.command.invocation.PlayDialogAct;
+import de.dfki.vsm.model.sceneflow.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.command.invocation.UnblockSceneGroup;
+import de.dfki.vsm.model.sceneflow.command.invocation.UnblockSceneScript;
+// Different Expressions
+import de.dfki.vsm.model.sceneflow.command.expression.VariableExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.LiteralExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.BinaryExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.CallingExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.TernaryExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.ConstructExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.JavaObject;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.Constant;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.AbstractVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.SimpleVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.MemberVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.ArrayVariable;
+import de.dfki.vsm.model.sceneflow.command.expression.ParenthesesExpression;
+// Literal Expressions
+import de.dfki.vsm.model.sceneflow.command.expression.literal.NullObject;
+import de.dfki.vsm.model.sceneflow.command.expression.literal.IntLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.literal.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.literal.StringLiteral;
+// Record Expressions
+import de.dfki.vsm.model.sceneflow.command.expression.record.ListRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.record.StructRecord;
+// Variable Expressions
+import de.dfki.vsm.model.sceneflow.command.expression.variable.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.command.expression.variable.MemberVariable;
+import de.dfki.vsm.model.sceneflow.command.expression.variable.ArrayVariable;
+// Function Expressions
 import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryContains;
 import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryRunTime;
 import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryValueOf;
 import de.dfki.vsm.model.sceneflow.command.expression.function.InStateCond;
 import de.dfki.vsm.model.sceneflow.command.expression.function.StateValueOf;
 import de.dfki.vsm.model.sceneflow.command.expression.function.PrologQuery;
-import de.dfki.vsm.model.sceneflow.command.expression.temporal.TemporalCond;
-import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
+import de.dfki.vsm.model.sceneflow.command.expression.function.TimeoutCall;
 
 import java.util.ArrayList;
 
@@ -43,8 +49,8 @@ import java.util.ArrayList;
 import java.io.StringReader;
 
 parser code {:
-  public static AbstractCommand cmdResult;
-  public static AbstractExpression expResult;
+  public static Command cmdResult;
+  public static Expression expResult;
  
   public static final short STATEMENT = 0;
   public static final short EXPRESSION = 1;
@@ -162,16 +168,22 @@ non terminal HistoryRunTime history_runtime_of;
 non terminal PrologQuery prolog_condition;
 non terminal ConstructExpression construct_expression;
 non terminal CallingExpression calling_expression;
-non terminal AbstractVariable variable_expression;
+non terminal VariableExpression variable_expression;
+// Commands
+non terminal Command command;
+non terminal Invocation invocation;
+non terminal Assignment assignment;
+// Expressions
 non terminal TernaryExpression ternary_expression;
 non terminal BinaryExpression binary_expression;
 non terminal UnaryExpression unary_expression;
-non terminal AbstractCommand command;
-non terminal Assignment assignment;
-non terminal AbstractExpression parentheses_expression;
-non terminal AbstractExpression expression;
-non terminal AbstractExpression function;
-non terminal Constant constant;
+
+non terminal Expression record_expression;
+non terminal Expression parentheses_expression;
+non terminal Expression expression;
+non terminal Expression function;
+non terminal Expression timeout_function;
+non terminal LiteralExpression literal_expression;
 non terminal ArrayList expression_list;
 non terminal ArrayList assignment_list;
 non terminal ArrayList non_empty_expression_list;
@@ -192,8 +204,28 @@ precedence left DOT;
  *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 command ::=
   expression:x                                                                  {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| assignment:x                                                                  {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| PSG LPAREN expression:x RPAREN                                                {: RESULT = new PlaySceneGroup(x); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
+| assignment:x                                                                  {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("Error: The parse result Type Is Not Command"); _SFSLParser_.errorFlag = true; } :}
+| invocation:x                                                                  {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("Error: The parse result Type Is Not Command"); _SFSLParser_.errorFlag = true; } :}
+;
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Assignment Commands
+ *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+assignment ::=
+  variable_expression:x EQUAL expression:y                                      {: RESULT = new Assignment(x, y); :};
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Assignment Lists
+ *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+assignment_list ::=
+                                                                                {: ArrayList<Assignment> vec = new ArrayList<Assignment>(); RESULT = vec; :}
+| assignment:x                                                                  {: ArrayList<Assignment> vec = new ArrayList<Assignment>(); vec.add(x); RESULT = vec; :}
+| assignment_list:x COMMA assignment:y                                          {: ArrayList<Assignment> vec = x; vec.add(y); RESULT = x; :};
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Invocation Commands
+ *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+invocation_command ::=
+  PSG LPAREN expression:x RPAREN                                                {: RESULT = new PlaySceneGroup(x); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
 | PSG LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new PlaySceneGroup(x,y); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
 | PDA LPAREN expression:x RPAREN                                                {: RESULT = new PlayDialogueAct(x); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
 | PDA LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new PlayDialogueAct(x,y); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
@@ -201,48 +233,36 @@ command ::=
 | UASG LPAREN BOOLEAN:x RPAREN                                                  {: RESULT = new UnblockAllSceneGroups(x); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
 | HISTORYFLATCLEAR LPAREN VARIABLE:x RPAREN                                     {: RESULT = new HistoryClear(x); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
 | HISTORYDEEPCLEAR LPAREN VARIABLE:x RPAREN                                     {: RESULT = new HistoryDeepClear(x); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| HISTORYSETDEPTH LPAREN VARIABLE:x COMMA INTEGER:y RPAREN                      {: RESULT = new HistorySetDepth(x,y); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :};
+| HISTORYSETDEPTH LPAREN VARIABLE:x COMMA INTEGER:y RPAREN                      {: RESULT = new HistorySetDepth(x,y); if(_SFSLParser_.parseResultType == _SFSLParser_.STATEMENT) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
+;
 
-/*
- * ASSIGNMENT
- */
-assignment ::=
-  variable_expression:x EQUAL expression:y                                              {: RESULT = new Assignment(x, y); :};
-
-/*
- * ASSIGNMENT LIST
- */
-assignment_list ::=
-                                                                                {: ArrayList<Assignment> vec = new ArrayList<Assignment>(); RESULT = vec; :}
-| assignment:x                                                                  {: ArrayList<Assignment> vec = new ArrayList<Assignment>(); vec.add(x); RESULT = vec; :}
-| assignment_list:x COMMA assignment:y                                          {: ArrayList<Assignment> vec = x; vec.add(y); RESULT = x; :};
-
-
-/*
- * NON_EMPTY _SFSLParser_.EXPRESSION LIST
- */
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Expression Lists
+ *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 non_empty_expression_list ::=
-  expression:x                                                                  {: ArrayList<AbstractExpression> vec = new ArrayList<AbstractExpression>(); vec.add(x); RESULT = vec; :}
-| expression_list:x COMMA expression:y                                          {: ArrayList<AbstractExpression> vec = x; vec.add(y); RESULT = x; :};
+  expression:x                                                                  {: ArrayList<Expression> vec = new ArrayList<Expression>(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: ArrayList<Expression> vec = x; vec.add(y); RESULT = x; :};
 
 
 /*
  * _SFSLParser_.EXPRESSION LIST
  */
 expression_list ::= 
-                                                                                {: ArrayList<AbstractExpression> vec = new ArrayList<AbstractExpression>(); RESULT = vec; :}
-| expression:x                                                                  {: ArrayList<AbstractExpression> vec = new ArrayList<AbstractExpression>(); vec.add(x); RESULT = vec; :}
-| expression_list:x COMMA expression:y                                          {: ArrayList<AbstractExpression> vec = x; vec.add(y); RESULT = x; :};
+                                                                                {: ArrayList<Expression> vec = new ArrayList<Expression>(); RESULT = vec; :}
+| expression:x                                                                  {: ArrayList<Expression> vec = new ArrayList<Expression>(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: ArrayList<Expression> vec = x; vec.add(y); RESULT = x; :};
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- * _SFSLParser_.EXPRESSION
+ * Expressions
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 expression ::=
   unary_expression:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | binary_expression:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | ternary_expression:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| record_expression:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | calling_expression:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | variable_expression:x                                                         {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| literal_expression:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | construct_expression:x                                                        {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | parentheses_expression:x                                                      {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
   //
@@ -250,8 +270,7 @@ expression ::=
 | history_runtime_of:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | node_value_of:x                                                               {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 | function:x                                                                    {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| constant:x                                                                    {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| temporal:x                                                                    {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
+| timeout_function:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == _SFSLParser_.EXPRESSION) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
 ;
 
 
@@ -267,9 +286,10 @@ node_value_of ::=
   VALUEOF LPAREN VARIABLE:x COMMA VARIABLE:y RPAREN                             {: RESULT = new StateValueOf(x, y); :}
 ;
 
-/*
- * USER COMMAND _SFSLParser_.EXPRESSION
- */
+timeout_function ::= 
+    TIMEOUT LPAREN expression:x RPAREN                                          {: RESULT = new TimeoutCall(x); :}
+;
+
 calling_expression ::=
   VARIABLE:x LPAREN expression_list:y RPAREN                                    {: RESULT = new CallingExpression(x, y); :}
 ;
@@ -369,21 +389,22 @@ function ::=
   | QUERY LPAREN expression:x RPAREN                                            {: RESULT = new PrologQuery(x); :}
 //| QUERY LPAREN usrcmd_expression:x RPAREN                                     {: RESULT = new PrologQuery(x); :}
 ;
+
+
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- * CONSTANT LITERALS
+ * RECORD EXPRESSIONS
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-constant ::=
-  INTEGER:x                                                                     {: RESULT = new IntLiteral(x); :}
-| FLOAT:x                                                                       {: RESULT = new FloatLiteral(x); :}
-| BOOLEAN:x                                                                     {: RESULT = new BoolLiteral(x); :}
-| NULL                                                                          {: RESULT = new JavaObject(); :}
-| STRING:x                                                                      {: RESULT = new StringLiteral(_SFSLParser_.trimString(x)); :}
-| LBRACK expression_list:x RBRACK                                               {: RESULT = new ListRecord(x); :}
+record_expression ::=
+  LBRACK expression_list:x RBRACK                                               {: RESULT = new ListRecord(x); :}
 | LBRACE assignment_list:x RBRACE                                               {: RESULT = new StructRecord(x); :}
 ;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- * TEMPORAL CONDITION
+ * CONSTANT LITERALS
  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-temporal ::= timeout:x                                                          {: RESULT = x; :};
-timeout ::= TIMEOUT LPAREN expression:x RPAREN                                  {: RESULT = new TimeoutCond(x); :}
+literal_expression ::=
+  NULL                                                                          {: RESULT = new NullObject(); :}
+| BOOLEAN:x                                                                     {: RESULT = new BoolLiteral(x); :}
+| INTEGER:x                                                                     {: RESULT = new IntLiteral(x); :}
+| FLOAT:x                                                                       {: RESULT = new FloatLiteral(x); :}
+| STRING:x                                                                      {: RESULT = new StringLiteral(_SFSLParser_.trimString(x)); :}
 ;

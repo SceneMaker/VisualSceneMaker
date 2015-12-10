@@ -7,8 +7,8 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.dialog.AbstractDialog;
-import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.language.definition.ArgumentDefinition;
 
 //~--- JDK imports ------------------------------------------------------------
 

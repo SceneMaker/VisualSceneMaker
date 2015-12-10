@@ -2,17 +2,17 @@ package de.dfki.vsm.model.sceneflow.diagram.graphics.node;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.SyntaxObject;
+import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
 
-/**
+/** 
  * A position of a node
  *
  * @author Not me
  */
-public class NodePosition extends SyntaxObject {
+public class NodePosition implements ModelObject {
     private int mXPos;
     private int mYPos;
 
@@ -42,26 +42,29 @@ public class NodePosition extends SyntaxObject {
         return mYPos;
     }
 
-    public String getAbstractSyntax() {
-        return "Position(" + mXPos + "," + mYPos + ")";
-    }
+//    public String getAbstractSyntax() {
+//        return "Position(" + mXPos + "," + mYPos + ")";
+//    }
+//
+//    public String getConcreteSyntax() {
+//        return getAbstractSyntax();
+//    }
+//
+//    public String getFormattedSyntax() {
+//        return "";
+//    }
 
-    public String getConcreteSyntax() {
-        return getAbstractSyntax();
-    }
-
-    public String getFormattedSyntax() {
-        return "";
-    }
-
+    @Override
     public NodePosition getCopy() {
         return new NodePosition(mXPos, mYPos);
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) {
         out.println("<Position x-pos=\"" + mXPos + "\" y-pos=\"" + mYPos + "\"/>");
     }
 
+    @Override
     public void parseXML(Element element) {
         mXPos = Integer.valueOf(element.getAttribute("x-pos"));
         mYPos = Integer.valueOf(element.getAttribute("y-pos"));

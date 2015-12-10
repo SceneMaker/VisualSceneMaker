@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.sceneflow.diagram.edges;
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.language.command.Command;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public abstract class AbstractEdge /*extends SyntaxObject */ implements ModelObj
     // The graphics data of the edge
     protected EdgeGraphics mGraphics = null;
     // The list of edge commands
-    protected ArrayList<AbstractCommand> mCommandList = new ArrayList();
+    protected ArrayList<Command> mCommandList = new ArrayList();
     //
     //protected HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> mAltStartNodeMap = new HashMap();
 
@@ -88,7 +88,7 @@ public abstract class AbstractEdge /*extends SyntaxObject */ implements ModelObj
         mGraphics = value;
     }
 
-    public final ArrayList<AbstractCommand> getCmdList() {
+    public final ArrayList<Command> getCmdList() {
         return mCommandList;
     }
 
@@ -96,9 +96,9 @@ public abstract class AbstractEdge /*extends SyntaxObject */ implements ModelObj
         mCommandList = value;
     }
 
-    public final ArrayList<AbstractCommand> getCopyOfCmdList() {
-        final ArrayList<AbstractCommand> copy = new ArrayList();
-        for (final AbstractCommand command : mCommandList) {
+    public final ArrayList<Command> getCopyOfCmdList() {
+        final ArrayList<Command> copy = new ArrayList();
+        for (final Command command : mCommandList) {
             copy.add(command.getCopy());
         }
         return copy;
