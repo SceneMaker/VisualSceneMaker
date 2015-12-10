@@ -9,7 +9,7 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.ForkingEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
 import java.util.ArrayList;

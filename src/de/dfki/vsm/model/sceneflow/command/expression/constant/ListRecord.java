@@ -2,19 +2,17 @@ package de.dfki.vsm.model.sceneflow.command.expression.constant;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.ArrayList;
-import java.util.Vector;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-
+import java.util.Vector;
 
 /**
  *
@@ -23,15 +21,15 @@ import org.w3c.dom.Element;
 public class ListRecord extends Constant {
 
     // private java.lang.String mType;
-    private ArrayList<AbstractExpression> mExpList;
+    private Vector<Expression> mExpList;
 
     public ListRecord() {
 
         // mType = new java.lang.String();
-        mExpList = new ArrayList<AbstractExpression>();
+        mExpList = new Vector<Expression>();
     }
 
-    public ListRecord( /* java.lang.String type, */ArrayList<AbstractExpression> expList) {
+    public ListRecord( /* java.lang.String type, */Vector<Expression> expList) {
 
         // mType = type;
         mExpList = expList;
@@ -43,18 +41,18 @@ public class ListRecord extends Constant {
     // public void setType(java.lang.String type) {
     // mType = type;
     // }
-    public ArrayList<AbstractExpression> getExpList() {
+    public Vector<Expression> getExpList() {
         return mExpList;
     }
 
-    public void setExpList(ArrayList<AbstractExpression> expList) {
+    public void setExpList(Vector<Expression> expList) {
         mExpList = expList;
     }
 
-    public ArrayList<AbstractExpression> getCopyOfExpList() {
-        ArrayList<AbstractExpression> copy = new ArrayList<AbstractExpression>();
+    public Vector<Expression> getCopyOfExpList() {
+        Vector<Expression> copy = new Vector<Expression>();
 
-        for (AbstractExpression exp : mExpList) {
+        for (Expression exp : mExpList) {
             copy.add(exp.getCopy());
         }
 
@@ -128,7 +126,7 @@ public class ListRecord extends Constant {
         // mType = element.getAttribute("type");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
-                AbstractExpression exp = AbstractExpression.parse(element);
+                Expression exp = Expression.parse(element);
 
                 mExpList.add(exp);
             }

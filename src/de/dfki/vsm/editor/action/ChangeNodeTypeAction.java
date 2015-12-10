@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodeGraphics;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -77,7 +77,7 @@ public class ChangeNodeTypeAction extends NodeAction {
             }
         }
        
-        de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode mHistoryDataNode = new de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode();
+        de.dfki.vsm.model.sceneflow.diagram.BasicNode mHistoryDataNode = new de.dfki.vsm.model.sceneflow.diagram.BasicNode();
 
         mHistoryDataNode.setHistoryNodeFlag(true);
         mHistoryDataNode.setName("History");

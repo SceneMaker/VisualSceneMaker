@@ -11,45 +11,45 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class TernaryExpression extends AbstractExpression {
+public class ConditionalExp extends Expression {
 
-    private AbstractExpression mCondition;
-    private AbstractExpression mThenExp;
-    private AbstractExpression mElseExp;
+    private Expression mCondition;
+    private Expression mThenExp;
+    private Expression mElseExp;
 
-    public TernaryExpression() {
+    public ConditionalExp() {
         mCondition = null;
         mThenExp = null;
         mElseExp = null;
     }
 
-    public TernaryExpression(AbstractExpression cond, AbstractExpression thenExp, AbstractExpression elseExp) {
+    public ConditionalExp(Expression cond, Expression thenExp, Expression elseExp) {
         mCondition = cond;
         mThenExp = thenExp;
         mElseExp = elseExp;
     }
 
-    public AbstractExpression getCondition() {
+    public Expression getCondition() {
         return mCondition;
     }
 
-    public void setCondition(AbstractExpression value) {
+    public void setCondition(Expression value) {
         mCondition = value;
     }
 
-    public AbstractExpression getThenExp() {
+    public Expression getThenExp() {
         return mThenExp;
     }
 
-    public void setThenExp(AbstractExpression value) {
+    public void setThenExp(Expression value) {
         mThenExp = value;
     }
 
-    public AbstractExpression getElseExp() {
+    public Expression getElseExp() {
         return mElseExp;
     }
 
-    public void setElseExp(AbstractExpression value) {
+    public void setElseExp(Expression value) {
         mElseExp = value;
     }
 
@@ -92,8 +92,8 @@ public class TernaryExpression extends AbstractExpression {
     }
 
     @Override
-    public TernaryExpression getCopy() {
-        return new TernaryExpression(mCondition.getCopy(), mThenExp.getCopy(), mElseExp.getCopy());
+    public ConditionalExp getCopy() {
+        return new ConditionalExp(mCondition.getCopy(), mThenExp.getCopy(), mElseExp.getCopy());
     }
 
     @Override
@@ -118,18 +118,18 @@ public class TernaryExpression extends AbstractExpression {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(Element element) throws XMLParseError {
-                            mThenExp = AbstractExpression.parse(element);
+                            mThenExp = Expression.parse(element);
                         }
                     });
                 } else if (element.getTagName().equals("Else")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(Element element) throws XMLParseError {
-                            mElseExp = AbstractExpression.parse(element);
+                            mElseExp = Expression.parse(element);
                         }
                     });
                 } else {
-                    mCondition = AbstractExpression.parse(element);
+                    mCondition = Expression.parse(element);
                 }
             }
         });

@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.sceneflow.definition;
 
 import de.dfki.vsm.model.sceneflow.SyntaxObject;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -16,7 +16,7 @@ public final class VariableDefinition extends SyntaxObject {
 
     private String mType;
     private String mName;
-    private AbstractExpression mExp;
+    private Expression mExp;
 
     public VariableDefinition() {
         mName = new String();
@@ -27,7 +27,7 @@ public final class VariableDefinition extends SyntaxObject {
     public VariableDefinition(
             final String name,
             final String type,
-            final AbstractExpression exp) {
+            final Expression exp) {
         mName = name;
         mType = type;
         mExp = exp;
@@ -49,11 +49,11 @@ public final class VariableDefinition extends SyntaxObject {
         return mType;
     }
 
-    public final void setExp(final AbstractExpression value) {
+    public final void setExp(final Expression value) {
         mExp = value;
     }
 
-    public final AbstractExpression getExp() {
+    public final Expression getExp() {
         return mExp;
     }
 
@@ -93,7 +93,7 @@ public final class VariableDefinition extends SyntaxObject {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(Element element) throws XMLParseError {
-                mExp = AbstractExpression.parse(element);
+                mExp = Expression.parse(element);
             }
         });
     }

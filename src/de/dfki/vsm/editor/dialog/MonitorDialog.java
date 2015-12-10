@@ -9,9 +9,9 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
@@ -112,7 +112,7 @@ public class MonitorDialog extends JDialog implements  EventListener{
                 _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
                 _SFSLParser_.run(inputString);
 
-                AbstractExpression exp = _SFSLParser_.expResult;
+                Expression exp = _SFSLParser_.expResult;
                 
                 //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
@@ -120,12 +120,12 @@ public class MonitorDialog extends JDialog implements  EventListener{
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((BoolLiteral) exp).getValue());
                     } else if (exp instanceof IntLiteral) {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((IntLiteral) exp).getValue());
-                    } else if (exp instanceof UnaryExpression) {
-                        if ( ((UnaryExpression)exp).getExp() instanceof IntLiteral) {
-                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((IntLiteral)((UnaryExpression) exp).getExp()).getValue());
+                    } else if (exp instanceof UnaryExp) {
+                        if ( ((UnaryExp)exp).getExp() instanceof IntLiteral) {
+                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((IntLiteral)((UnaryExp) exp).getExp()).getValue());
                         }
-                        if ( ((UnaryExpression)exp).getExp() instanceof FloatLiteral) {
-                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((FloatLiteral)((UnaryExpression) exp).getExp()).getValue());
+                        if ( ((UnaryExp)exp).getExp() instanceof FloatLiteral) {
+                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((FloatLiteral)((UnaryExp) exp).getExp()).getValue());
                         }
                         
                     } else if (exp instanceof FloatLiteral) {

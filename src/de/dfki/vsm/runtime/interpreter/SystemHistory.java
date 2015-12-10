@@ -2,7 +2,7 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.values.AbstractValue;

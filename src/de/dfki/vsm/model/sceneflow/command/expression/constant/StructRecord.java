@@ -1,14 +1,18 @@
 package de.dfki.vsm.model.sceneflow.command.expression.constant;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.ArrayList;
+
 import org.w3c.dom.Element;
 
+//~--- JDK imports ------------------------------------------------------------
 
+import java.util.Vector;
 
 /**
  * A struct constant.
@@ -17,28 +21,29 @@ import org.w3c.dom.Element;
  */
 public class StructRecord extends Constant {
 
-
-    private ArrayList<Assignment> mExpList;
+    // private java.lang.String mType;
+    // private Vector<Expression> mExpList;
+    private Vector<Assignment> mExpList;
 
     public StructRecord() {
 
         // mType = new java.lang.String();
         // mExpList = new Vector<Expression>();
-        mExpList = new ArrayList<Assignment>();
+        mExpList = new Vector<Assignment>();
     }
 
-    public StructRecord( /* java.lang.String type,Vector<Expression> */ArrayList<Assignment> expList) {
+    public StructRecord( /* java.lang.String type,Vector<Expression> */Vector<Assignment> expList) {
 
         // mType = type;
         mExpList = expList;
     }
 
-    public /* Vector<Expression> */ ArrayList<Assignment> getExpList() {
+    public /* Vector<Expression> */ Vector<Assignment> getExpList() {
         return mExpList;
     }
 
-    public ArrayList< /* Expression */Assignment> getCopyOfExpList() {
-        ArrayList< /* Expression */Assignment> copy = new ArrayList< /* Expression */Assignment>();
+    public Vector< /* Expression */Assignment> getCopyOfExpList() {
+        Vector< /* Expression */Assignment> copy = new Vector< /* Expression */Assignment>();
 
         for ( /* Expression */Assignment exp : mExpList) {
             copy.add(exp.getCopy());

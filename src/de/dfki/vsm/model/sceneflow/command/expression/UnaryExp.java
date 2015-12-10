@@ -11,9 +11,9 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class UnaryExpression extends AbstractExpression {
+public class UnaryExp extends Expression {
 
-    private AbstractExpression mExp;
+    private Expression mExp;
     private Operator mOperator;
 
     public enum Operator {
@@ -23,21 +23,21 @@ public class UnaryExpression extends AbstractExpression {
         RemoveFirst, RemoveLast, First, Last, Clear, Empty, Size
     }
 
-    public UnaryExpression() {
+    public UnaryExp() {
         mExp = null;
         mOperator = null;
     }
 
-    public UnaryExpression(AbstractExpression exp, Operator operator) {
+    public UnaryExp(Expression exp, Operator operator) {
         mExp = exp;
         mOperator = operator;
     }
 
-    public void setExp(AbstractExpression value) {
+    public void setExp(Expression value) {
         mExp = value;
     }
 
-    public AbstractExpression getExp() {
+    public Expression getExp() {
         return mExp;
     }
 
@@ -157,8 +157,8 @@ public class UnaryExpression extends AbstractExpression {
         return opString;
     }
 
-    public UnaryExpression getCopy() {
-        return new UnaryExpression(mExp.getCopy(), mOperator);
+    public UnaryExp getCopy() {
+        return new UnaryExp(mExp.getCopy(), mOperator);
     }
 
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
@@ -171,7 +171,7 @@ public class UnaryExpression extends AbstractExpression {
         mOperator = Operator.valueOf(element.getTagName());
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
-                mExp = AbstractExpression.parse(element);
+                mExp = Expression.parse(element);
             }
         });
     }

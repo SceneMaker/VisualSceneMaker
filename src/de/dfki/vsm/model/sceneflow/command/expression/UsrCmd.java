@@ -6,32 +6,31 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-
+import java.util.Vector;
 
 /**
  * @author Not me
  */
-public class ConstructExpression extends AbstractExpression {
+public class UsrCmd extends Expression {
     private String             mName;
-    private ArrayList<AbstractExpression> mArgList;
+    private Vector<Expression> mArgList;
 
-    public ConstructExpression() {
+    public UsrCmd() {
         mName    = new String();
-        mArgList = new ArrayList<AbstractExpression>();
+        mArgList = new Vector<Expression>();
     }
 
-    public ConstructExpression(String name) {
+    public UsrCmd(String name) {
         mName    = name;
-        mArgList = new ArrayList<AbstractExpression>();
+        mArgList = new Vector<Expression>();
     }
 
-    public ConstructExpression(String name, ArrayList<AbstractExpression> argList) {
+    public UsrCmd(String name, Vector<Expression> argList) {
         mName    = name;
         mArgList = argList;
     }
@@ -44,11 +43,11 @@ public class ConstructExpression extends AbstractExpression {
         mName = value;
     }
 
-    public ArrayList<AbstractExpression> getArgList() {
+    public Vector<Expression> getArgList() {
         return mArgList;
     }
 
-    public void setArgList(ArrayList<AbstractExpression> value) {
+    public void setArgList(Vector<Expression> value) {
         mArgList = value;
     }
 
@@ -56,30 +55,30 @@ public class ConstructExpression extends AbstractExpression {
         return mArgList.size();
     }
 
-    public ArrayList<AbstractExpression> getCopyOfArgList() {
-        ArrayList<AbstractExpression> copy = new ArrayList<AbstractExpression>();
+    public Vector<Expression> getCopyOfArgList() {
+        Vector<Expression> copy = new Vector<Expression>();
 
-        for (AbstractExpression exp : mArgList) {
+        for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
         }
 
         return copy;
     }
 
-    public boolean addArg(AbstractExpression value) {
+    public boolean addArg(Expression value) {
         return mArgList.add(value);
     }
 
-    public AbstractExpression getArgAt(int index) {
+    public Expression getArgAt(int index) {
         return mArgList.get(index);
     }
 
     public ExpType getExpType() {
-        return ExpType.CONS;
+        return ExpType.USR;
     }
 
     public String getAbstractSyntax() {
-        String desc = "Constructor( " + mName + "( ";
+        String desc = "Command( " + mName + "( ";
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getAbstractSyntax();
@@ -93,7 +92,7 @@ public class ConstructExpression extends AbstractExpression {
     }
 
     public String getConcreteSyntax() {
-        String desc = "new " + mName + " ( ";
+        String desc = mName + " ( ";
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getConcreteSyntax();
@@ -107,7 +106,7 @@ public class ConstructExpression extends AbstractExpression {
     }
 
     public String getFormattedSyntax() {
-        String desc = "#r#new " + "#b#" + mName + " ( ";
+        String desc = "#b#" + mName + " ( ";
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getFormattedSyntax();
@@ -120,25 +119,25 @@ public class ConstructExpression extends AbstractExpression {
         return desc + " ) ";
     }
 
-    public ConstructExpression getCopy() {
-        return new ConstructExpression(mName, getCopyOfArgList());
+    public UsrCmd getCopy() {
+        return new UsrCmd(mName, getCopyOfArgList());
     }
 
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<Constructor name=\"" + mName + "\">").push();
+        out.println("<UserCommand name=\"" + mName + "\">").push();
 
         for (int i = 0; i < mArgList.size(); i++) {
             mArgList.get(i).writeXML(out);
         }
 
-        out.pop().println("</Constructor>");
+        out.pop().println("</UserCommand>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
-                AbstractExpression exp = AbstractExpression.parse(element);
+                Expression exp = Expression.parse(element);
 
                 mArgList.add(exp);
             }

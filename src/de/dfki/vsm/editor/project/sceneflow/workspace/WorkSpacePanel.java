@@ -49,11 +49,11 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.EpsilonEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.ForkingEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
 import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 //import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
@@ -697,7 +697,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void createFunCall(Node node, String name) {
-        CallingExpression cmd = new CallingExpression();
+        UsrCmd cmd = new UsrCmd();
 
         cmd.setName(name);
 
@@ -1045,7 +1045,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         JMenuItem item = null;
 
         if (!node.getDataNode().isHistoryNode()) {
-            HashMap<String, de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode> startNodes
+            HashMap<String, de.dfki.vsm.model.sceneflow.diagram.BasicNode> startNodes
                     = node.getDataNode().getParentNode().getStartNodeMap();
 
             item = new JMenuItem((startNodes.containsKey(node.getDataNode().getId()))
@@ -1058,7 +1058,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             pop.add(item);
             pop.add(new JSeparator());
 
-            if (!(node.getDataNode() instanceof de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode)) {
+            if (!(node.getDataNode() instanceof de.dfki.vsm.model.sceneflow.diagram.SuperNode)) {
                 item = new JMenuItem("To Supernode");
 
                 ChangeNodeTypeAction changetypeAction = new ChangeNodeTypeAction(this, node);
@@ -1375,10 +1375,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void showNodesOnWorkSpace() {
-        Vector<de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode> nodeList
+        Vector<de.dfki.vsm.model.sceneflow.diagram.BasicNode> nodeList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
 
-        for (de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode n : nodeList) {
+        for (de.dfki.vsm.model.sceneflow.diagram.BasicNode n : nodeList) {
             Point p = mGridManager.getNodeLocation(new Point(n.getGraphics().getPosition().getXPos(),
                     n.getGraphics().getPosition().getYPos()));
 
@@ -2748,7 +2748,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      *
      */
-    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode> {
+    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.diagram.BasicNode> {
     }
 
     /**

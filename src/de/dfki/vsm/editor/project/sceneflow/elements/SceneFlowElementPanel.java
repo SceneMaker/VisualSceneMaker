@@ -13,7 +13,7 @@ import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;

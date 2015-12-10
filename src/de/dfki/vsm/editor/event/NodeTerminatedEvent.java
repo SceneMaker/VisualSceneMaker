@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**

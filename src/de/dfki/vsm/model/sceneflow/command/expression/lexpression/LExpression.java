@@ -1,8 +1,8 @@
 package de.dfki.vsm.model.sceneflow.command.expression.lexpression;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression.ExpType;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression.ExpType;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public abstract class AbstractVariable extends AbstractExpression {
+public abstract class LExpression extends Expression {
 
     public enum LExpType {
 
@@ -22,15 +22,15 @@ public abstract class AbstractVariable extends AbstractExpression {
     public abstract LExpType getLExpType();
 
     @Override
-    public abstract AbstractVariable getCopy();
+    public abstract LExpression getCopy();
 
     @Override
     public ExpType getExpType() {
         return ExpType.LEXP;
     }
 
-    public static AbstractVariable parse(Element element) throws XMLParseError {
-        AbstractVariable log = null;
+    public static LExpression parse(Element element) throws XMLParseError {
+        LExpression log = null;
         String tag = element.getTagName();
 
         if (tag.equals("Variable")) {

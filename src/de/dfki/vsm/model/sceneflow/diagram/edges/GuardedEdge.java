@@ -1,8 +1,8 @@
 package de.dfki.vsm.model.sceneflow.diagram.edges;
 
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 public final class GuardedEdge extends AbstractEdge {
 
     // The guarding expression
-    private AbstractExpression mExpression;
+    private Expression mExpression;
 
     public GuardedEdge() {
         mExpression = null;
@@ -30,17 +30,17 @@ public final class GuardedEdge extends AbstractEdge {
             final BasicNode sourceNode,
             final EdgeGraphics graphics,
             final ArrayList<AbstractCommand> cmdList,
-            final AbstractExpression expression) {
+            final Expression expression) {
         super(target, source, targetNode, sourceNode, graphics, cmdList);
         // Initialize the guarding expression
         mExpression = expression;
     }
 
-    public final AbstractExpression getGuard() {
+    public final Expression getGuard() {
         return mExpression;
     }
 
-    public final void setGuard(final AbstractExpression value) {
+    public final void setGuard(final Expression value) {
         mExpression = value;
     }
 
@@ -107,7 +107,7 @@ public final class GuardedEdge extends AbstractEdge {
                         }
                     });
                 } else {
-                    mExpression = AbstractExpression.parse(element);
+                    mExpression = Expression.parse(element);
                 }
             }
         });

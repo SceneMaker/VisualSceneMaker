@@ -5,7 +5,7 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.boards.VariableEntry;
 import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodePosition;

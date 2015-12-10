@@ -2,18 +2,17 @@ package de.dfki.vsm.model.sceneflow.command;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-
+import java.util.Vector;
 
 /**
  * @author Not me
@@ -21,41 +20,41 @@ import org.w3c.dom.Element;
 public class PlayDialogueAct extends AbstractCommand {
 
     // The Name Of The Dialogue Act
-    private AbstractExpression mDialogueAct;
+    private Expression mDialogueAct;
 
     // The List Of Additional Features
-    private ArrayList<AbstractExpression> mFeatureList;
+    private Vector<Expression> mFeatureList;
 
     // Construct A Playback Command
     public PlayDialogueAct() {
         mDialogueAct = null;
-        mFeatureList = new ArrayList<>();
+        mFeatureList = new Vector<>();
     }
 
     // Construct A Playback Command
-    public PlayDialogueAct(final AbstractExpression dialogueAct) {
+    public PlayDialogueAct(final Expression dialogueAct) {
         mDialogueAct = dialogueAct;
-        mFeatureList = new ArrayList<>();
+        mFeatureList = new Vector<>();
     }
 
     // Construct A Playback Command
-    public PlayDialogueAct(final AbstractExpression dialogueAct, final ArrayList<AbstractExpression> featureList) {
+    public PlayDialogueAct(final Expression dialogueAct, final Vector<Expression> featureList) {
         mDialogueAct = dialogueAct;
         mFeatureList = featureList;
     }
 
     // Get The Dialogue Act
-    public final AbstractExpression getArg() {
+    public final Expression getArg() {
         return mDialogueAct;
     }
 
     // Set The Dialogue Act
-    public final void setDialogueAct(final AbstractExpression dialogueAct) {
+    public final void setDialogueAct(final Expression dialogueAct) {
         mDialogueAct = dialogueAct;
     }
 
     // Get The Feature List
-    public final ArrayList<AbstractExpression> getArgList() {
+    public final Vector<Expression> getArgList() {
         return mFeatureList;
     }
 
@@ -80,10 +79,10 @@ public class PlayDialogueAct extends AbstractCommand {
     // return mFeatureList.size();
     // }
     // Copy The feature List
-    public final ArrayList<AbstractExpression> getCopyOfArgList() {
-        final ArrayList<AbstractExpression> copy = new ArrayList<>();
+    public final Vector<Expression> getCopyOfArgList() {
+        final Vector<Expression> copy = new Vector<>();
 
-        for (final AbstractExpression exp : mFeatureList) {
+        for (final Expression exp : mFeatureList) {
             copy.add(exp.getCopy());
         }
 
@@ -169,12 +168,12 @@ public class PlayDialogueAct extends AbstractCommand {
     // Parse This Instance XML
     @Override
     public final void parseXML(Element element) throws XMLParseError {
-        final ArrayList<AbstractExpression> expList = new ArrayList<>();
+        final Vector<Expression> expList = new Vector<>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(Element element) throws XMLParseError {
-                expList.add(AbstractExpression.parse(element));
+                expList.add(Expression.parse(element));
             }
         });
         mDialogueAct = expList.remove(0);

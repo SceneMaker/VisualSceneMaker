@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.diagram.edges;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import java.util.ArrayList;
 
