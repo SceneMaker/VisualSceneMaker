@@ -2,8 +2,8 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.IEdge;
+import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.runtime.values.BooleanValue;
@@ -24,9 +24,9 @@ public class EventObserver {
             Configuration.State state = (Configuration.State) obj;
 
             //if (state.getNode() instanceof SuperNode) {
-                for (InterruptEdge iedge : state.getNode().getIEdgeList()) {
+                for (IEdge iedge : state.getNode().getIEdgeList()) {
                     try {
-                        if (((BooleanValue) mInterpreter.getEvaluator().evaluate(iedge.getGuard(),
+                        if (((BooleanValue) mInterpreter.getEvaluator().evaluate(iedge.getCondition(),
                                 state.getThread().getEnvironment())).getValue()) {
                             state.getThread().requestInterruption(iedge);
 
@@ -44,7 +44,7 @@ public class EventObserver {
 
                         java.lang.String errorMsg = "An error occured while executing thread "
                                                     + Process.currentThread().toString() + " : " + "The condition '"
-                                                    + iedge.getGuard().getConcreteSyntax()
+                                                    + iedge.getCondition().getConcreteSyntax()
                                                     + "' of the interruptive edge from node '" + iedge.getSource()
                                                     + "' to node '" + iedge.getTarget()
                                                     + "' could not be evaluated to a boolean value.";

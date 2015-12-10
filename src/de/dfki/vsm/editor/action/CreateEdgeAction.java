@@ -9,10 +9,10 @@ import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
-import de.dfki.vsm.model.sceneflow.diagram.edges.EpsilonEdge;
-import de.dfki.vsm.model.sceneflow.diagram.edges.ForkingEdge;
-import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.EEdge;
+import de.dfki.vsm.model.sceneflow.FEdge;
+import de.dfki.vsm.model.sceneflow.PEdge;
+import de.dfki.vsm.model.sceneflow.command.Command;
 import java.util.Vector;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -38,7 +38,7 @@ public class CreateEdgeAction extends EdgeAction {
     }
 
     public CreateEdgeAction(WorkSpacePanel workSpace, Node sourceNode, Node targetNode,
-                            de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge dataEdge, Edge.TYPE type) {
+                            de.dfki.vsm.model.sceneflow.Edge dataEdge, Edge.TYPE type) {
         mWorkSpace     = workSpace;
         mTargetGUINode = targetNode;
         mSourceGUINode = sourceNode;
@@ -55,12 +55,12 @@ public class CreateEdgeAction extends EdgeAction {
         if (mShowDialog) {
             switch (mGUIEdgeType) {
             case EEDGE :
-                mDataEdge = new EpsilonEdge();
+                mDataEdge = new EEdge();
 
                 break;
 
             case FEDGE :
-                mDataEdge = new ForkingEdge();
+                mDataEdge = new FEdge();
 
                 break;
 
@@ -82,8 +82,8 @@ public class CreateEdgeAction extends EdgeAction {
 
             case PEDGE :
                 if(mSourceGUINode.getDataNode().getPEdgeList().isEmpty()){
-                    mDataEdge = new RandomEdge();
-                    ((RandomEdge)mDataEdge).setProbability(100);
+                    mDataEdge = new PEdge();
+                    ((PEdge)mDataEdge).setProbability(100);
                 }
                 else
                 {

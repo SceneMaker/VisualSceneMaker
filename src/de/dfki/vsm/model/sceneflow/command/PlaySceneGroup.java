@@ -17,7 +17,7 @@ import java.util.Vector;
 /**
  * @author Not me
  */
-public class PlaySceneGroup extends AbstractCommand {
+public class PlaySceneGroup extends Command {
     private Expression         mArg;
     private Vector<Expression> mArgList;
 

@@ -2,7 +2,7 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.sceneflow.command.Assignment;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
 import de.dfki.vsm.model.sceneflow.command.HistoryDeepClear;
 import de.dfki.vsm.model.sceneflow.command.HistorySetDepth;
@@ -33,9 +33,9 @@ import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryContains;
 import de.dfki.vsm.model.sceneflow.command.expression.function.InStateCond;
 import de.dfki.vsm.model.sceneflow.command.expression.function.PrologQuery;
 import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
-import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.definition.ArgumentDefinition;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.definition.FunDef;
+import de.dfki.vsm.model.sceneflow.definition.ParamDef;
+import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -81,7 +81,7 @@ public class Evaluator {
     }
 
     // Execute a command
-    public final void execute(final AbstractCommand cmd, final Environment env) throws InterpretException {
+    public final void execute(final Command cmd, final Environment env) throws InterpretException {
 
         // Execute a scene group playback command
         if (cmd instanceof PlaySceneGroup) {
@@ -221,7 +221,7 @@ public class Evaluator {
      * @param env
      * @throws InterpretException
      */
-    public void declare(VariableDefinition def, Environment env) throws InterpretException {
+    public void declare(VarDef def, Environment env) throws InterpretException {
         env.create(def.getName(), evaluate(def.getExp(), env));
     }
 
@@ -747,7 +747,7 @@ public class Evaluator {
         else if (exp instanceof PrologQuery) {
             final AbstractValue query = evaluate(((PrologQuery) exp).getExpression(), env);
             if (query instanceof StringValue) {
-                return new BooleanValue(executeQuery(((StringValue) query).getValue(), env));
+                return new BooleanValue(executeQuery(((StringValue)query).getValue(), env));
             } else {
                 throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
@@ -887,7 +887,7 @@ public class Evaluator {
         LinkedList<AbstractValue> valueList = evaluateExpList(((UsrCmd) cmd).getArgList(), env);
 
         // Get the user command definition of this command
-        FunctionDefinition cmdDef = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(cmdName);
+        FunDef cmdDef = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(cmdName);
 
         if (cmdDef == null) {
             java.lang.String errorMsg = "An error occured while executing thread " + Process.currentThread().toString()
@@ -897,17 +897,17 @@ public class Evaluator {
             throw new InterpretException(this, errorMsg);
         }
 
-        java.lang.String cmdClassName = cmdDef.getClazz();
+        java.lang.String cmdClassName = cmdDef.getClassName();
         java.lang.String cmdMethodName = cmdDef.getMethod();
 
         // Construct the parameter list of the command
-        Class[] paramClassList = new Class[cmdDef.getArgList().size()];
+        Class[] paramClassList = new Class[cmdDef.getParamList().size()];
 
-        for (int i = 0; i < cmdDef.getArgList().size(); i++) {
-            final ArgumentDefinition argDef = cmdDef.getArgAt(i);
+        for (int i = 0; i < cmdDef.getParamList().size(); i++) {
+            ParamDef paramDef = cmdDef.getParamList().get(i);
 
             // mLogger.message(paramDef.getConcreteSyntax());
-            java.lang.String paramType = argDef.getType();
+            java.lang.String paramType = paramDef.getType();
             Class paramClass = null;
 
             if (paramType.equals("boolean")) {
@@ -1104,7 +1104,7 @@ public class Evaluator {
             for (Map.Entry<String, String> entry : subst.entrySet()) {
                 try {
 
-                    mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue() + " Via Prolog Query");
+                    mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue()+ " Via Prolog Query");
 
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));

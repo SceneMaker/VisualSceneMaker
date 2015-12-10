@@ -3,7 +3,7 @@ package de.dfki.vsm.runtime.interpreter;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -21,7 +21,7 @@ import java.util.Vector;
  * @author Not me
  */
 public class Configuration {
-    private final HashMap<BasicNode, LinkedList<State>> mConfiguration = new HashMap<BasicNode, LinkedList<State>>();
+    private final HashMap<Node, LinkedList<State>> mConfiguration = new HashMap<Node, LinkedList<State>>();
 
     public void clear() {
         mConfiguration.clear();
@@ -35,7 +35,7 @@ public class Configuration {
         mConfiguration.get(state.getNode()).addLast(state);
     }
 
-    public void exitState(BasicNode state, Process thread) throws InterpretException {
+    public void exitState(Node state, Process thread) throws InterpretException {
         if (mConfiguration.get(state) == null) {
             throw new InterpretException(this,
                                        "Configuration Error: There is no thread currently executing node " + state);
@@ -70,7 +70,7 @@ public class Configuration {
         }
     }
 
-    public State getState(BasicNode node) throws InterpretException {
+    public State getState(Node node) throws InterpretException {
         if (mConfiguration.get(node) == null) {
             throw new InterpretException(this,
                                        "Configuration Error: Node " + node.getId()
@@ -87,7 +87,7 @@ public class Configuration {
     }
 
     public State getState(String id) throws InterpretException {
-        for (BasicNode node : mConfiguration.keySet()) {
+        for (Node node : mConfiguration.keySet()) {
             if (node.getId().equals(id)) {
                 return getState(node);
             }
@@ -120,7 +120,7 @@ public class Configuration {
     }
 
     public boolean isInState(String state) {
-        for (BasicNode node : mConfiguration.keySet()) {
+        for (Node node : mConfiguration.keySet()) {
             if (node.getId().equals(state)) {
                 if (mConfiguration.get(node) != null) {
                     if (!mConfiguration.get(node).isEmpty()) {
@@ -134,15 +134,15 @@ public class Configuration {
     }
 
     public static class State implements Comparable, ModelObject {
-        private final transient BasicNode    mNode;
+        private final transient Node    mNode;
         private final transient Process mThread;
 
-        public State(BasicNode node, Process thread) {
+        public State(Node node, Process thread) {
             mNode   = node;
             mThread = thread;
         }
 
-        public BasicNode getNode() {
+        public Node getNode() {
             return mNode;
         }
 

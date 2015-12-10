@@ -6,8 +6,8 @@ import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryRunTime;
 import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryValueOf;
 import de.dfki.vsm.model.sceneflow.command.expression.function.StateValueOf;
 import de.dfki.vsm.model.sceneflow.command.expression.function.InStateCond;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand.CmdType;
+import de.dfki.vsm.model.sceneflow.command.Command;
+import de.dfki.vsm.model.sceneflow.command.Command.CmdType;
 import de.dfki.vsm.model.sceneflow.command.expression.lexpression.LExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.Constant;
 import de.dfki.vsm.model.sceneflow.command.expression.function.PrologQuery;
@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public abstract class Expression extends AbstractCommand {
+public abstract class Expression extends Command {
 
     // TODO: Rename the expression types
     public enum ExpType {

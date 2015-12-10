@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -24,7 +24,7 @@ import javax.swing.JTextField;
 /**
  * @author Sergio Soto
  */
-public class DialogActAttributes extends AbstractDialog {
+public class DialogActAttributes extends Dialog {
 
     // GUI-Components
     private JPanel       mAttributePanel;
@@ -158,10 +158,10 @@ public class DialogActAttributes extends AbstractDialog {
         mButtonPanel.add(mOkButton);
     }
 
-    public TimeoutEdge run() {
+    public TEdge run() {
         setVisible(true);
 
-        if (mPressedButton == AbstractDialog.Button.OK) {
+        if (mPressedButton == Dialog.Button.OK) {
             return null;
         } else {
             return null;
@@ -171,13 +171,13 @@ public class DialogActAttributes extends AbstractDialog {
     @Override
     protected void okActionPerformed() {
         if (process()) {
-            dispose(AbstractDialog.Button.OK);
+            dispose(Dialog.Button.OK);
         }
     }
 
     @Override
     protected void cancelActionPerformed() {
-        dispose(AbstractDialog.Button.CANCEL);
+        dispose(Dialog.Button.CANCEL);
     }
 
     private boolean process() {
