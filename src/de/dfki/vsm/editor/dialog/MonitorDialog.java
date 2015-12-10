@@ -15,12 +15,12 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
@@ -123,29 +123,29 @@ public class MonitorDialog extends JDialog implements  EventListener{
                 
                 //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
-                    if (exp instanceof BoolLiteral) {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((BoolLiteral) exp).getValue());
-                    } else if (exp instanceof IntLiteral) {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((IntLiteral) exp).getValue());
+                    if (exp instanceof Bool) {
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
+                    } else if (exp instanceof Int) {
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
                     } else if (exp instanceof UnaryExp) {
-                        if ( ((UnaryExp)exp).getExp() instanceof IntLiteral) {
-                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((IntLiteral)((UnaryExp) exp).getExp()).getValue());
+                        if ( ((UnaryExp)exp).getExp() instanceof Int) {
+                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((Int)((UnaryExp) exp).getExp()).getValue());
                         }
-                        if ( ((UnaryExp)exp).getExp() instanceof FloatLiteral) {
-                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((FloatLiteral)((UnaryExp) exp).getExp()).getValue());
+                        if ( ((UnaryExp)exp).getExp() instanceof Float) {
+                            return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1*((Float)((UnaryExp) exp).getExp()).getValue());
                         }
                         
-                    } else if (exp instanceof FloatLiteral) {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((FloatLiteral) exp).getValue());
-                    } else if (exp instanceof StringLiteral) {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((StringLiteral) exp).getValue());
-                    } else if (exp instanceof ListRecord) {
+                    } else if (exp instanceof Float) {
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
+                    } else if (exp instanceof String) {
+                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((String) exp).getValue());
+                    } else if (exp instanceof List) {
                         //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
                         // Evaluator eval = interpreter.getEvaluator();
                         // Environment env = interpreter.getEnvironment();
                         // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
-                    } else if (exp instanceof StructRecord) {
+                    } else if (exp instanceof Struct) {
                         //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                     } else {
                         System.out.println("Expression could not be parsed");

@@ -1,7 +1,9 @@
 package de.dfki.vsm.model.sceneflow;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.model.sceneflow.graphics.edge.Graphics;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -10,71 +12,65 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 
 import org.w3c.dom.Element;
 
+//~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
 /**
- * @author Gregor Mehlmann
+ * @author GregorMehlmann
  */
 public class CEdge extends Edge {
+    protected LogicalCond mCondition = null;
 
-    protected Expression mExpression = null;
-
-    public CEdge() {
-    }
+    public CEdge() {}
 
     public CEdge(String target, String source, Node targetNode, Node sourceNode, Graphics graphics,
-            Vector<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap,
-            Expression condition) {
+                 Vector<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap,
+                 LogicalCond condition) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
-        mExpression = condition;
+        mCondition = condition;
     }
 
-    public Expression getCondition() {
-        return mExpression;
+    public LogicalCond getCondition() {
+        return mCondition;
     }
 
-    public void setCondition(Expression value) {
-        mExpression = value;
+    public void setCondition(LogicalCond value) {
+        mCondition = value;
     }
 
-    @Override
     public Type getEdgeType() {
         return Type.CEdge;
     }
 
-    @Override
     public String getAbstractSyntax() {
         return null;
     }
 
-    @Override
     public String getConcreteSyntax() {
         return null;
     }
 
-    @Override
     public String getFormattedSyntax() {
         return null;
     }
 
     // TODO:
-    @Override
     public CEdge getCopy() {
         return new CEdge(mTarget, mSource, mTargetNode, mSourceNode, mGraphics.getCopy(), getCopyOfCmdList(),
-                getCopyOfAltStartNodeMap(), mExpression.getCopy());
+                         getCopyOfAltStartNodeMap(), mCondition.getCopy());
     }
 
-    @Override
     public void writeXML(de.dfki.vsm.util.ios.IOSIndentWriter out) throws XMLWriteError {
-        String start = "";
-        Iterator it = mAltStartNodeMap.entrySet().iterator();
+        String   start = "";
+        Iterator it    = mAltStartNodeMap.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodeData = (TPLTuple<String, Node>) pairs.getKey();
+            Map.Entry              pairs            = (Map.Entry) it.next();
+            TPLTuple<String, Node> startNodeData    = (TPLTuple<String, Node>) pairs.getKey();
             TPLTuple<String, Node> altStartNodeData = (TPLTuple<String, Node>) pairs.getValue();
 
             start += startNodeData.getFirst() + "/" + altStartNodeData.getFirst() + ";";
@@ -86,8 +82,8 @@ public class CEdge extends Edge {
             mGraphics.writeXML(out);
         }
 
-        if (mExpression != null) {
-            mExpression.writeXML(out);
+        if (mCondition != null) {
+            mCondition.writeXML(out);
         }
 
         if (!mCmdList.isEmpty()) {
@@ -103,7 +99,6 @@ public class CEdge extends Edge {
         out.pop().println("</CEdge>");
     }
 
-    @Override
     public void parseXML(Element element) throws XMLParseError {
         mTarget = element.getAttribute("target");
 
@@ -111,10 +106,10 @@ public class CEdge extends Edge {
 
         for (String idPair : altStartNodes) {
             if (!idPair.isEmpty()) {
-                String[] ids = idPair.split("/");
-                String startId = ids[0];
-                String altStartId = ids[1];
-                TPLTuple<String, Node> startPair = new TPLTuple<String, Node>(startId, null);
+                String[]               ids          = idPair.split("/");
+                String                 startId      = ids[0];
+                String                 altStartId   = ids[1];
+                TPLTuple<String, Node> startPair    = new TPLTuple<String, Node>(startId, null);
                 TPLTuple<String, Node> altStartPair = new TPLTuple<String, Node>(altStartId, null);
 
                 mAltStartNodeMap.put(startPair, altStartPair);
@@ -122,7 +117,6 @@ public class CEdge extends Edge {
         }
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
-            @Override
             public void run(Element element) throws XMLParseError {
                 java.lang.String tag = element.getTagName();
 
@@ -131,13 +125,12 @@ public class CEdge extends Edge {
                     mGraphics.parseXML(element);
                 } else if (tag.equals("Commands")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
                         public void run(Element element) throws XMLParseError {
                             mCmdList.add(Command.parse(element));
                         }
                     });
                 } else {
-                    mExpression = Expression.parse(element);
+                    mCondition = LogicalCond.parse(element);
                 }
             }
         });

@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
@@ -11,10 +12,15 @@ import de.dfki.vsm.model.sceneflow.command.expression.ConditionalExp;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.ArrayVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.EmptyCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.ArrVarExp;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -24,6 +30,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
+
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,9 +39,10 @@ import java.util.TimerTask;
  * @author Not me
  */
 public class TimeoutManager {
-
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>>();
+    private final LOGConsoleLogger                                   mLogger          = LOGConsoleLogger.getInstance();
+    private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCond,
+                                                                                            TPLTuple<Boolean,
+                                                                                                TimerTask>>();
     private final Timer mTimer = new Timer("Timeout-Manager-Timer");
     private Interpreter mInterpreter;
 
@@ -129,33 +137,43 @@ public class TimeoutManager {
     }
 
     public void startTimeoutHandler(Expression exp, Environment env) throws InterpretException {
-        if (exp instanceof ListRecord) {
-            for (Expression arg : ((ListRecord) exp).getExpList()) {
+        if (exp instanceof List) {
+            for (Expression arg : ((List) exp).getExpList()) {
                 startTimeoutHandler(arg, env);
             }
-        } else if (exp instanceof StructRecord) {
-            for (Assignment arg : ((StructRecord) exp).getExpList()) {
+        } else if (exp instanceof Struct) {
+            for (Assignment arg : ((Struct) exp).getExpList()) {
                 startTimeoutHandler(arg, env);
             }
-        } else if (exp instanceof UnaryExp) {
-            startTimeoutHandler(((UnaryExp) exp).getExp(), env);
         } else if (exp instanceof BinaryExp) {
             startTimeoutHandler(((BinaryExp) exp).getLeftExp(), env);
             startTimeoutHandler(((BinaryExp) exp).getRightExp(), env);
+        } else if (exp instanceof UnaryExp) {
+            startTimeoutHandler(((UnaryExp) exp).getExp(), env);
         } else if (exp instanceof ConditionalExp) {
             startTimeoutHandler(((ConditionalExp) exp).getCondition(), env);
             startTimeoutHandler(((ConditionalExp) exp).getThenExp(), env);
             startTimeoutHandler(((ConditionalExp) exp).getElseExp(), env);
-        } else if (exp instanceof ArrayVariable) {
-            startTimeoutHandler(((ArrayVariable) exp).getExp(), env);
+        } else if (exp instanceof ArrVarExp) {
+            startTimeoutHandler(((ArrVarExp) exp).getExp(), env);
+        } else if (exp instanceof BinaryCond) {
+            startTimeoutHandler(((BinaryCond) exp).getLeftCond(), env);
+            startTimeoutHandler(((BinaryCond) exp).getRightCond(), env);
+        } else if (exp instanceof UnaryCond) {
+            startTimeoutHandler(((UnaryCond) exp).getCondition(), env);
+        } else if (exp instanceof ComparisionCond) {
+            startTimeoutHandler(((ComparisionCond) exp).getLeftExp(), env);
+            startTimeoutHandler(((ComparisionCond) exp).getRightExp(), env);
+        } else if (exp instanceof EmptyCond) {
+            startTimeoutHandler(((EmptyCond) exp).getExp(), env);
         } else if (exp instanceof TimeoutCond) {
 
             /**
              * START TIMEOUT CONDITION TIMER
              */
-            startTimeoutHandler(((TimeoutCond) exp).getExpression(), env);
+            startTimeoutHandler(((TimeoutCond) exp).getTimeout(), env);
 
-            AbstractValue value = mInterpreter.getEvaluator().evaluate(((TimeoutCond) exp).getExpression(), env);
+            AbstractValue value = mInterpreter.getEvaluator().evaluate(((TimeoutCond) exp).getTimeout(), env);
 
             if (value.getType() == AbstractValue.Type.INT) {
                 start((TimeoutCond) exp, ((IntValue) value).getValue());
@@ -164,6 +182,8 @@ public class TimeoutManager {
             } else {
                 throw new InterpretException(this, "timeout argument not integer");
             }
+        } else if (exp instanceof DefaultCond) {
+            startTimeoutHandler(((DefaultCond) exp).getCondition(), env);
         } else if (exp instanceof UsrCmd) {
             for (Expression arg : ((UsrCmd) exp).getArgList()) {
                 startTimeoutHandler(arg, env);

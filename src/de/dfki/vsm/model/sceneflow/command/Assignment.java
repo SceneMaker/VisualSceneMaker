@@ -1,7 +1,9 @@
 package de.dfki.vsm.model.sceneflow.command;
 
+//~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.LExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
