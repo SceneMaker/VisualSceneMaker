@@ -29,7 +29,7 @@ import java.util.Vector;
  */
 public final class EdgeGraphics {
     Edge                             mEdge               = null;
-    de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge mDataEdge           = null;
+    de.dfki.vsm.model.sceneflow.Edge mDataEdge           = null;
     Node                             mSourceNode         = null;
     Node                             mTargetNode         = null;
     public Point[]                   mCoordList          = new Point[4];    // the edge curve control points
@@ -62,7 +62,7 @@ public final class EdgeGraphics {
 
         // check if edge has already graphic information in data model
         if (mDataEdge.getGraphics() != null) {
-            Vector<de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgePoint> curvePoints =
+            Vector<de.dfki.vsm.model.sceneflow.graphics.edge.Point> curvePoints =
                 mDataEdge.getGraphics().getArrow().getPointList();
 
             // if curve's data model isn't consistent on graphical data, init edge!
@@ -474,22 +474,22 @@ public final class EdgeGraphics {
     public void updateDataModel() {
 
         // add the graphic information to the sceneflow!
-        de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics      g             =
-            new de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics();
-        de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeArrow         arrow         =
-            new de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeArrow();
-        Vector<de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgePoint> xmlEdgePoints =
-            new Vector<de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgePoint>();
-        de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgePoint startPoint =
-            new de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgePoint();
+        de.dfki.vsm.model.sceneflow.graphics.edge.Graphics      g             =
+            new de.dfki.vsm.model.sceneflow.graphics.edge.Graphics();
+        de.dfki.vsm.model.sceneflow.graphics.edge.Arrow         arrow         =
+            new de.dfki.vsm.model.sceneflow.graphics.edge.Arrow();
+        Vector<de.dfki.vsm.model.sceneflow.graphics.edge.Point> xmlEdgePoints =
+            new Vector<de.dfki.vsm.model.sceneflow.graphics.edge.Point>();
+        de.dfki.vsm.model.sceneflow.graphics.edge.Point startPoint =
+            new de.dfki.vsm.model.sceneflow.graphics.edge.Point();
 
         startPoint.setXPos((int) mCurve.x1);
         startPoint.setYPos((int) mCurve.y1);
         startPoint.setCtrlXPos((int) mCurve.ctrlx1);
         startPoint.setCtrlYPos((int) mCurve.ctrly1);
 
-        de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgePoint endPoint =
-            new de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgePoint();
+        de.dfki.vsm.model.sceneflow.graphics.edge.Point endPoint =
+            new de.dfki.vsm.model.sceneflow.graphics.edge.Point();
 
         endPoint.setXPos((int) mCurve.x2);
         endPoint.setYPos((int) mCurve.y2);

@@ -7,7 +7,7 @@ import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
+import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.players.DefaultDialogPlayer;
@@ -390,7 +390,7 @@ public class RunTimeProject {
         // Perform all the postprocessing steps
         mSceneFlow.establishStartNodes();
         mSceneFlow.establishTargetNodes();
-//        mSceneFlow.establishAltStartNodes();
+        mSceneFlow.establishAltStartNodes();
         // Print an information message in this case
         mLogger.message("Loaded sceneflow configuration file in path '" + path + "':\n" + mSceneFlow);
         // Return success if the project was loaded

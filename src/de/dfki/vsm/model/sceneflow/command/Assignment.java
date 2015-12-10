@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class Assignment extends AbstractCommand {
+public class Assignment extends Command {
     private LExpression mLExp;
     private Expression  mExp;
 

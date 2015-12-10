@@ -8,10 +8,10 @@ import de.dfki.vsm.editor.EditButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
-//import de.dfki.vsm.editor.util.AltStartNodeManager;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
-import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.editor.util.AltStartNodeManager;
+import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.PEdge;
+import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -49,19 +49,19 @@ import javax.swing.text.PlainDocument;
  * @author Patrick Gebhard
  * @author Not me
  */
-public class ModifyPEdgeDialog extends AbstractDialog {
+public class ModifyPEdgeDialog extends Dialog {
 
     //
-    private HashMap<RandomEdge, JTextField> mPEdgeMap = new HashMap<RandomEdge, JTextField>();
+    private HashMap<PEdge, JTextField> mPEdgeMap = new HashMap<PEdge, JTextField>();
     private final Dimension buttonSize = new Dimension(150, 30);
     private final Dimension smallButtonSize = new Dimension(30, 30);
     // Data model components
-    private final BasicNode mSourceNode;
-    private final BasicNode mTargetNode;
-    private final RandomEdge mPEdge;
+    private final Node mSourceNode;
+    private final Node mTargetNode;
+    private final PEdge mPEdge;
 
     //
-//    private final AltStartNodeManager mAltStartNodeManager;
+    private final AltStartNodeManager mAltStartNodeManager;
 
     // GUI-Components
     private JPanel mHeaderPanel;
@@ -75,13 +75,13 @@ public class ModifyPEdgeDialog extends AbstractDialog {
     private JLabel mUniButton;
 
     //
-//    private JPanel mAltStartNodePanel;
-//    private JLabel mAltStartNodeLabel;
-//    private JList mAltStartNodeList;
-//    private JScrollPane mAltStartNodeScrollPane;
-//    private AddButton mAddAltStartNodeButton;
-//    private RemoveButton mRemoveAltStartNodeButton;
-//    private EditButton mEditAltStartNodeButton;
+    private JPanel mAltStartNodePanel;
+    private JLabel mAltStartNodeLabel;
+    private JList mAltStartNodeList;
+    private JScrollPane mAltStartNodeScrollPane;
+    private AddButton mAddAltStartNodeButton;
+    private RemoveButton mRemoveAltStartNodeButton;
+    private EditButton mEditAltStartNodeButton;
 
     //
     private JPanel mEdgeProbPanel;
@@ -101,20 +101,20 @@ public class ModifyPEdgeDialog extends AbstractDialog {
     private final ImageIcon ICON_UNIFORM_STANDARD = ResourceLoader.loadImageIcon("/res/img/uniform_gray.png");
     private final ImageIcon ICON_UNIFORM_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/uniform_blue.png");
     
-    public ModifyPEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
+    public ModifyPEdgeDialog(Node sourceNode, Node targetNode) {
         super(EditorInstance.getInstance(), "Create Probability Edge", true);
         mSourceNode = sourceNode;
         mTargetNode = targetNode;
 
         // Create a new probability edge
-        mPEdge = new RandomEdge();
+        mPEdge = new PEdge();
         mPEdge.setTarget(mTargetNode.getId());
         mPEdge.setSource(mSourceNode.getId());
         mPEdge.setSourceNode(mSourceNode);
         mPEdge.setTargetNode(mTargetNode);
 
         // Fill the local data map with the existing edges
-        for (RandomEdge edge : mSourceNode.getPEdgeList()) {
+        for (PEdge edge : mSourceNode.getPEdgeList()) {
             mPEdgeMap.put(edge, null);
         }
 
@@ -122,34 +122,34 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         mPEdgeMap.put(mPEdge, null);
 
         // TODO: move to EdgeDialog
-//        mAltStartNodeManager = new AltStartNodeManager(mPEdge);
+        mAltStartNodeManager = new AltStartNodeManager(mPEdge);
 
         // Init the GUI-Components
         initComponents();
 
         //
-//        loadAltStartNodeMap();
+        loadAltStartNodeMap();
     }
 
-    public ModifyPEdgeDialog(RandomEdge edge) {
+    public ModifyPEdgeDialog(PEdge edge) {
         super(EditorInstance.getInstance(), "Modify Probability Edge", true);
         mPEdge = edge;
         mSourceNode = mPEdge.getSourceNode();
         mTargetNode = mPEdge.getTargetNode();
 
         // Fill the map with the data
-        for (RandomEdge pedge : mSourceNode.getPEdgeList()) {
+        for (PEdge pedge : mSourceNode.getPEdgeList()) {
             mPEdgeMap.put(pedge, /* new JTextField("", 3) */ null);
         }
 
         // TODO: move to EdgeDialog
-//        mAltStartNodeManager = new AltStartNodeManager(mPEdge);
+        mAltStartNodeManager = new AltStartNodeManager(mPEdge);
 
         // Init the GUI-Components
         initComponents();
 
         //
-//        loadAltStartNodeMap();
+        loadAltStartNodeMap();
     }
 
     /**
@@ -173,7 +173,7 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         initButtonPanel();
 
         // Init alternative start node panel
-//        initAltStartNodePanel();
+        initAltStartNodePanel();
         //Error message
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
@@ -182,7 +182,7 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         Box finalBox = Box.createVerticalBox();
         finalBox.add(mEdgeProbPanel);
         finalBox.add(Box.createVerticalStrut(20));
-//        finalBox.add(mAltStartNodePanel);
+        finalBox.add(mAltStartNodePanel);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(errorMsg);
         finalBox.add(Box.createVerticalStrut(20));
@@ -254,7 +254,7 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         //
         boolean requiresUniformAction = false;
         
-        for (RandomEdge pedge : mPEdgeMap.keySet()) {
+        for (PEdge pedge : mPEdgeMap.keySet()) {
 
             // Init description label
             JLabel pedgeDescription = new JLabel(mSourceNode.getName() + " ( " + mSourceNode.getId() + " ) "
@@ -411,61 +411,61 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         }
     }
 
-//    protected void initAltStartNodePanel() {
-//
-//        // Init alternative start node label
-//        mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
-//        sanitizeComponent(mAltStartNodeLabel, labelSize);
-//        // Init alternative start node list
-//        mAltStartNodeList = new JList(new DefaultListModel());
-//        mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
-//        Dimension tfSize = new Dimension(200, 110);
-//        mAltStartNodeScrollPane.setPreferredSize(tfSize);
-//        mAltStartNodeScrollPane.setMinimumSize(tfSize);
-//        mAltStartNodeScrollPane.setMaximumSize(tfSize);
-//
-//        // Init alternative start node buttons300
-//        // add button
-//        mAddAltStartNodeButton = new AddButton();
-//        mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//            public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                addAltStartNode();
-//            }
-//        });
-//
-//        // remove button
-//        mRemoveAltStartNodeButton = new RemoveButton();
-//        mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//            public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                removeAltStartNode();
-//            }
-//        });
-//
-//        // edit button
-//        mEditAltStartNodeButton = new EditButton();
-//        mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
-//            public void mouseClicked(java.awt.event.MouseEvent evt) {
-//                editAltStartNode();
-//            }
-//        });
-//
-//        // Init alternative start node panel
-//        Box buttonsBox = Box.createVerticalBox();
-//        buttonsBox.setMaximumSize(new Dimension(20, 100));
-//        buttonsBox.add(mAddAltStartNodeButton);
-//        buttonsBox.add(Box.createVerticalStrut(10));
-//        buttonsBox.add(mRemoveAltStartNodeButton);
-//        buttonsBox.add(Box.createVerticalStrut(10));
-//        buttonsBox.add(mEditAltStartNodeButton);
-//        mAltStartNodePanel = new JPanel();
-//        mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.X_AXIS));
-//        mAltStartNodePanel.add(mAltStartNodeLabel);
-//        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
-//        mAltStartNodePanel.add(mAltStartNodeScrollPane);
-//        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
-//        mAltStartNodePanel.add(buttonsBox);
-//        mAltStartNodePanel.add(Box.createHorizontalGlue());
-//    }
+    protected void initAltStartNodePanel() {
+
+        // Init alternative start node label
+        mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
+        sanitizeComponent(mAltStartNodeLabel, labelSize);
+        // Init alternative start node list
+        mAltStartNodeList = new JList(new DefaultListModel());
+        mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
+        Dimension tfSize = new Dimension(200, 110);
+        mAltStartNodeScrollPane.setPreferredSize(tfSize);
+        mAltStartNodeScrollPane.setMinimumSize(tfSize);
+        mAltStartNodeScrollPane.setMaximumSize(tfSize);
+
+        // Init alternative start node buttons300
+        // add button
+        mAddAltStartNodeButton = new AddButton();
+        mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                addAltStartNode();
+            }
+        });
+
+        // remove button
+        mRemoveAltStartNodeButton = new RemoveButton();
+        mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                removeAltStartNode();
+            }
+        });
+
+        // edit button
+        mEditAltStartNodeButton = new EditButton();
+        mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                editAltStartNode();
+            }
+        });
+
+        // Init alternative start node panel
+        Box buttonsBox = Box.createVerticalBox();
+        buttonsBox.setMaximumSize(new Dimension(20, 100));
+        buttonsBox.add(mAddAltStartNodeButton);
+        buttonsBox.add(Box.createVerticalStrut(10));
+        buttonsBox.add(mRemoveAltStartNodeButton);
+        buttonsBox.add(Box.createVerticalStrut(10));
+        buttonsBox.add(mEditAltStartNodeButton);
+        mAltStartNodePanel = new JPanel();
+        mAltStartNodePanel.setLayout(new BoxLayout(mAltStartNodePanel, BoxLayout.X_AXIS));
+        mAltStartNodePanel.add(mAltStartNodeLabel);
+        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
+        mAltStartNodePanel.add(mAltStartNodeScrollPane);
+        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
+        mAltStartNodePanel.add(buttonsBox);
+        mAltStartNodePanel.add(Box.createHorizontalGlue());
+    }
 
     private void saveProbabilities() {
         if (!areProbabilitiesValid()) {
@@ -477,7 +477,7 @@ public class ModifyPEdgeDialog extends AbstractDialog {
 
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
-            RandomEdge edge = (RandomEdge) entry.getKey();
+            PEdge edge = (PEdge) entry.getKey();
             JTextField field = (JTextField) entry.getValue();
 
             edge.setProbability(Integer.valueOf(field.getText().trim()));
@@ -503,7 +503,7 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         return (sum == 100);
     }
 
-    public RandomEdge run() {
+    public PEdge run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {
@@ -556,7 +556,7 @@ public class ModifyPEdgeDialog extends AbstractDialog {
     public void okActionPerformed() {
         if (areProbabilitiesValid()) {
             saveProbabilities();
-//            saveAltStartNodeMap();
+            saveAltStartNodeMap();
             dispose(Button.OK);
         }
     }
@@ -566,72 +566,72 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         dispose(Button.CANCEL);
     }
 
-//    private void loadAltStartNodeMap() {
-//        mAltStartNodeManager.loadAltStartNodeMap();
-//
-//        if (mPEdge.getTargetNode() instanceof SuperNode) {
-//            Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-//
-//            while (it.hasNext()) {
-//                Map.Entry pairs = (Map.Entry) it.next();
-//                TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
-//                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
-//
-//                ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
-//                        + altStartNodePair.getFirst());
-//
-//                ////System.err.println("loading start node "+startNodePair.getSecond());
-//                ////System.err.println("loading alt start node "+altStartNodePair.getSecond());
-//            }
-//        } else {
-//            mAddAltStartNodeButton.setEnabled(false);
-//            mRemoveAltStartNodeButton.setEnabled(false);
-//            mEditAltStartNodeButton.setEnabled(false);
-//            mAltStartNodeList.setEnabled(false);
-//            mAltStartNodeScrollPane.setEnabled(false);
-//        }
-//    }
-//
-//    private void saveAltStartNodeMap() {
-//        mAltStartNodeManager.saveAltStartNodeMap();
-//    }
+    private void loadAltStartNodeMap() {
+        mAltStartNodeManager.loadAltStartNodeMap();
 
-//    private void addAltStartNode() {
-//        CreateAltStartNodeDialog dialog = new CreateAltStartNodeDialog(mAltStartNodeManager);
-//
-//        dialog.run();
-//
-//        // /
-//        ((DefaultListModel) mAltStartNodeList.getModel()).clear();
-//
-//        Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-//
-//        while (it.hasNext()) {
-//            Map.Entry pairs = (Map.Entry) it.next();
-//            TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
-//            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
-//
-//            ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
-//                    + altStartNodePair.getFirst());
-//        }
-//    }
+        if (mPEdge.getTargetNode() instanceof SuperNode) {
+            Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
 
-//    private void removeAltStartNode() {
-//        String selectedValue = (String) mAltStartNodeList.getSelectedValue();
-//
-//        if (selectedValue != null) {
-//            String[] idPair = selectedValue.split("/");
-//            String startNodeId = idPair[0];
-//
-//            // String altStartNodeId = idPair[1];
-//            System.err.println("remove alt start node" + startNodeId);
-//            mAltStartNodeManager.removeAltStartNode(startNodeId);
-//            ((DefaultListModel) mAltStartNodeList.getModel()).removeElement(selectedValue);
-//        }
-//    }
-//
-//    private void editAltStartNode() {
-//    }
+            while (it.hasNext()) {
+                Map.Entry pairs = (Map.Entry) it.next();
+                TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
+                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+
+                ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
+                        + altStartNodePair.getFirst());
+
+                ////System.err.println("loading start node "+startNodePair.getSecond());
+                ////System.err.println("loading alt start node "+altStartNodePair.getSecond());
+            }
+        } else {
+            mAddAltStartNodeButton.setEnabled(false);
+            mRemoveAltStartNodeButton.setEnabled(false);
+            mEditAltStartNodeButton.setEnabled(false);
+            mAltStartNodeList.setEnabled(false);
+            mAltStartNodeScrollPane.setEnabled(false);
+        }
+    }
+
+    private void saveAltStartNodeMap() {
+        mAltStartNodeManager.saveAltStartNodeMap();
+    }
+
+    private void addAltStartNode() {
+        CreateAltStartNodeDialog dialog = new CreateAltStartNodeDialog(mAltStartNodeManager);
+
+        dialog.run();
+
+        // /
+        ((DefaultListModel) mAltStartNodeList.getModel()).clear();
+
+        Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry) it.next();
+            TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
+            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+
+            ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
+                    + altStartNodePair.getFirst());
+        }
+    }
+
+    private void removeAltStartNode() {
+        String selectedValue = (String) mAltStartNodeList.getSelectedValue();
+
+        if (selectedValue != null) {
+            String[] idPair = selectedValue.split("/");
+            String startNodeId = idPair[0];
+
+            // String altStartNodeId = idPair[1];
+            System.err.println("remove alt start node" + startNodeId);
+            mAltStartNodeManager.removeAltStartNode(startNodeId);
+            ((DefaultListModel) mAltStartNodeList.getModel()).removeElement(selectedValue);
+        }
+    }
+
+    private void editAltStartNode() {
+    }
 
     public JPanel getEdgeProbPanel() {
         return mEdgeProbPanel;
@@ -649,11 +649,11 @@ public class ModifyPEdgeDialog extends AbstractDialog {
         return mUniButton;
     }
 
-//    public JPanel getAltStartNodePanel() {
-//        return mAltStartNodePanel;
-//    }
+    public JPanel getAltStartNodePanel() {
+        return mAltStartNodePanel;
+    }
 
-    public HashMap<RandomEdge, JTextField> getPEdgeMap() {
+    public HashMap<PEdge, JTextField> getPEdgeMap() {
         return mPEdgeMap;
     }
 }

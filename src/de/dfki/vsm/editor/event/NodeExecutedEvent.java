@@ -2,21 +2,21 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
  * @author Not me
  */
 public class NodeExecutedEvent extends EventObject {
-    private BasicNode mNode;
+    private Node mNode;
 
-    public NodeExecutedEvent(Object source, BasicNode node) {
+    public NodeExecutedEvent(Object source, Node node) {
         super(source);
         mNode = node;
     }
 
-    public BasicNode getNode() {
+    public Node getNode() {
         return mNode;
     }
 

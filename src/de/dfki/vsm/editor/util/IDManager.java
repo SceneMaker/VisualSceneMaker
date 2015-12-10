@@ -6,13 +6,12 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
-import de.dfki.vsm.model.sceneflow.diagram.edges.ForkingEdge;
-import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
-import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
-import java.util.ArrayList;
+import de.dfki.vsm.model.sceneflow.CEdge;
+import de.dfki.vsm.model.sceneflow.FEdge;
+import de.dfki.vsm.model.sceneflow.IEdge;
+import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.PEdge;
+import de.dfki.vsm.model.sceneflow.SuperNode;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -23,7 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
-import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * IDManager provides unique ids for nodes and supernodes
@@ -51,12 +49,12 @@ public class IDManager {
         for (SuperNode sn : supernodes) {
 
             // only scan for supernodes and nodes
-            if (!de.dfki.vsm.model.sceneflow.diagram.SceneFlow.class.isInstance(sn)) {
+            if (!de.dfki.vsm.model.sceneflow.SceneFlow.class.isInstance(sn)) {
                 mSuperNodeIDs.add(new Integer(sn.getId().substring(1)));
             }
 
             // Set<Node> ns = sn.getNodeSet();
-            Vector<BasicNode> ns = sn.getNodeList();
+            Vector<Node> ns = sn.getNodeList();
 
             collectNodeIDs(ns);
 
@@ -67,8 +65,8 @@ public class IDManager {
         }
     }
 
-    private void collectNodeIDs(Vector<BasicNode> ns) {
-        for (BasicNode n : ns) {
+    private void collectNodeIDs(Vector<Node> ns) {
+        for (Node n : ns) {
             String id = n.getId();
 
             if (id.startsWith("N")) {
@@ -148,13 +146,13 @@ public class IDManager {
     /*
      * resets recursively all ids of a given node or supernode and used edges.
      */
-    public void reassignAllIDs(Set<BasicNode> nodes) {
+    public void reassignAllIDs(Set<Node> nodes) {
 
         // DEBUG System.out.println("reassignAllIDs");
         Hashtable<String, String> relationOldNewIDs = new Hashtable<String, String>();
-        Vector<BasicNode>              nodesVector       = new Vector<BasicNode>();
+        Vector<Node>              nodesVector       = new Vector<Node>();
 
-        for (BasicNode n : nodes) {
+        for (Node n : nodes) {
             nodesVector.add(n);
         }
 
@@ -165,10 +163,10 @@ public class IDManager {
         // TODO reassign alternative Startnode information in Edges
     }
 
-    private Hashtable<String, String> reassignNodesID(Vector<BasicNode> nodes, Hashtable<String, String> lastOldNewIDRef) {
+    private Hashtable<String, String> reassignNodesID(Vector<Node> nodes, Hashtable<String, String> lastOldNewIDRef) {
         Hashtable<String, String> currentOldNewIDRef = lastOldNewIDRef;
 
-        for (BasicNode node : nodes) {
+        for (Node node : nodes) {
             if (SuperNode.class.isInstance(node)) {
                 String oldID = node.getId();
                 String newID = getNextFreeSuperNodeID();
@@ -178,7 +176,7 @@ public class IDManager {
                 node.setId(newID);
                 currentOldNewIDRef.put(oldID, newID);
 
-                Vector<BasicNode> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
+                Vector<Node> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
 
                 // reassign recursively other nodes id
                 currentOldNewIDRef = reassignNodesID(childNodes, currentOldNewIDRef);
@@ -199,8 +197,8 @@ public class IDManager {
     private void reassignSubSuperNodeStartNodeIDs(SuperNode sn, Hashtable<String, String> relationOldNewIDRef) {
         System.out.println("Checking start node IDs of sub super node " + sn.getId());
 
-        HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
-        HashMap<String, BasicNode> snm    = sn.getStartNodeMap();
+        HashMap<String, Node> newSNM = new HashMap<String, Node>();
+        HashMap<String, Node> snm    = sn.getStartNodeMap();
 
         for (String key : snm.keySet()) {
 
@@ -219,16 +217,16 @@ public class IDManager {
         }
     }
 
-    private void reassignStartNodeIDs(Vector<BasicNode> nodes, Hashtable<String, String> relationOldNewIDRef) {
-        Vector<BasicNode> subNodes = new Vector<BasicNode>();
+    private void reassignStartNodeIDs(Vector<Node> nodes, Hashtable<String, String> relationOldNewIDRef) {
+        Vector<Node> subNodes = new Vector<Node>();
 
-        for (BasicNode node : nodes) {
+        for (Node node : nodes) {
             if (node instanceof SuperNode) {
 
                 // System.out.println("Checking start node IDs of super node " + node.getId());
-                HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
+                HashMap<String, Node> newSNM = new HashMap<String, Node>();
                 SuperNode             sn     = (SuperNode) node;
-                HashMap<String, BasicNode> snm    = sn.getStartNodeMap();
+                HashMap<String, Node> snm    = sn.getStartNodeMap();
 
                 for (String key : snm.keySet()) {
 
@@ -249,15 +247,15 @@ public class IDManager {
         }
     }
 
-    private void reassignEdgesID(Vector<BasicNode> nodes, Hashtable<String, String> relationOldNewIDRef) {
-        for (BasicNode node : nodes) {
+    private void reassignEdgesID(Vector<Node> nodes, Hashtable<String, String> relationOldNewIDRef) {
+        for (Node node : nodes) {
             if (node.hasEdge()) {
                 switch (node.getFlavour()) {
                 case CNODE :
-                    final ArrayList<GuardedEdge> cEdgeList        = node.getCEdgeList();
-                    final ArrayList<GuardedEdge> invalidCEdgeList = new ArrayList();
+                    Vector<CEdge> cEdgeList        = node.getCEdgeList();
+                    Vector<CEdge> invalidCEdgeList = new Vector<CEdge>();
 
-                    for (GuardedEdge c : cEdgeList) {
+                    for (CEdge c : cEdgeList) {
                         String newID = relationOldNewIDRef.get(c.getTarget());
 
                         if (newID != null) {
@@ -268,7 +266,7 @@ public class IDManager {
                     }
 
                     if (invalidCEdgeList.size() > 0) {
-                        for (GuardedEdge ce : invalidCEdgeList) {
+                        for (CEdge ce : invalidCEdgeList) {
                             cEdgeList.remove(ce);
                         }
                     }
@@ -293,10 +291,10 @@ public class IDManager {
                 case PNODE :
 
                     // DEBUG System.out.println("pedge(s)");
-                    final ArrayList<RandomEdge> pes           = node.getPEdgeList();
-                    final ArrayList<RandomEdge> unvalidPEdges = new ArrayList();
+                    Vector<PEdge> pes           = node.getPEdgeList();
+                    Vector<PEdge> unvalidPEdges = new Vector<PEdge>();
 
-                    for (RandomEdge p : pes) {
+                    for (PEdge p : pes) {
                         String newID = relationOldNewIDRef.get(p.getTarget());
 
                         if (newID != null) {
@@ -309,7 +307,7 @@ public class IDManager {
                     }
 
                     if (unvalidPEdges.size() > 0) {
-                        for (RandomEdge ce : unvalidPEdges) {
+                        for (PEdge ce : unvalidPEdges) {
                             pes.remove(ce);
                         }
                     }
@@ -319,10 +317,10 @@ public class IDManager {
                 case FNODE :
 
                     // DEBUG System.out.println("fedge(s)");
-                    final ArrayList<ForkingEdge> fes           = node.getFEdgeList();
-                    final ArrayList<ForkingEdge> unvalidFEdges = new ArrayList();
+                    Vector<FEdge> fes           = node.getFEdgeList();
+                    Vector<FEdge> unvalidFEdges = new Vector<FEdge>();
 
-                    for (ForkingEdge f : fes) {
+                    for (FEdge f : fes) {
                         String newID = relationOldNewIDRef.get(f.getTarget());
 
                         if (newID != null) {
@@ -335,7 +333,7 @@ public class IDManager {
                     }
 
                     if (unvalidFEdges.size() > 0) {
-                        for (ForkingEdge ce : unvalidFEdges) {
+                        for (FEdge ce : unvalidFEdges) {
                             fes.remove(ce);
                         }
                     }
@@ -345,10 +343,10 @@ public class IDManager {
                 case INODE :
 
                     // DEBUG System.out.println("iedge(s)");
-                    final ArrayList<InterruptEdge> ies           = node.getIEdgeList();
-                    final ArrayList<InterruptEdge> unvalidIEdges = new ArrayList();
+                    Vector<IEdge> ies           = node.getIEdgeList();
+                    Vector<IEdge> unvalidIEdges = new Vector<IEdge>();
 
-                    for (InterruptEdge i : ies) {
+                    for (IEdge i : ies) {
                         String newID = relationOldNewIDRef.get(i.getTarget());
 
                         if (newID != null) {
@@ -361,7 +359,7 @@ public class IDManager {
                     }
 
                     if (unvalidIEdges.size() > 0) {
-                        for (InterruptEdge ce : unvalidIEdges) {
+                        for (IEdge ce : unvalidIEdges) {
                             ies.remove(ce);
                         }
                     }
@@ -408,7 +406,7 @@ public class IDManager {
             }
 
             if (SuperNode.class.isInstance(node)) {
-                Vector<BasicNode> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
+                Vector<Node> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
 
                 reassignEdgesID(childNodes, relationOldNewIDRef);
             }

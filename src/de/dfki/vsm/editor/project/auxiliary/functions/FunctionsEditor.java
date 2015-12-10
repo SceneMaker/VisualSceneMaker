@@ -7,9 +7,9 @@ import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionRemovedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
-import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
-import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.SceneFlow;
+import de.dfki.vsm.model.sceneflow.definition.FunDef;
+import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -69,7 +69,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
         repaint();
         
         // Iterate through all existing functions in the sceneflow
-        for (FunctionDefinition i : mSceneFlow.getUsrCmdDefMap().values()) {
+        for (FunDef i : mSceneFlow.getUsrCmdDefMap().values()) {
 
             // Create a SingleFunctionContainer object for every existing function
             SingleFunctionContainer singleFunctionContainer 
@@ -89,8 +89,8 @@ public class FunctionsEditor extends JPanel implements EventListener {
     
     
     public void addNewFunction() {
-        FunctionDefinition usrCmdDef = new FunctionDefinition("newCommand", "java.lang.System.out", "println");
-        usrCmdDef.addArg(new ArgumentDefinition("text", "String"));
+        FunDef usrCmdDef = new FunDef("newCommand", "java.lang.System.out", "println");
+        usrCmdDef.addParam(new ParamDef("text", "String"));
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
         
         SingleFunctionContainer singleFunctionContainer 
@@ -104,7 +104,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
     @Override
     public void update(EventObject event) {
         if (event instanceof FunctionSelectedEvent) {
-            FunctionDefinition functionData = ((FunctionSelectedEvent) event).getFunction();
+            FunDef functionData = ((FunctionSelectedEvent) event).getFunction();
 
             for (SingleFunctionContainer currentPanel : mFunctionContainerList) {
                 if (functionData.getName().equals(currentPanel.getFunDef().getName())) {
@@ -120,7 +120,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
             refreshFunctionsContainerPanel();
 
             // Highlight and set scrollbar to selected function
-            FunctionDefinition functionData = ((FunctionCreatedEvent) event).getFunction();
+            FunDef functionData = ((FunctionCreatedEvent) event).getFunction();
 
             for (SingleFunctionContainer currentPanel : mFunctionContainerList) {
                 if (functionData.getName().equals(currentPanel.getFunDef().getName())) {
@@ -143,7 +143,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
         } else if (event instanceof FunctionModifiedEvent) {
             refreshFunctionsContainerPanel();
 
-            FunctionDefinition functionData = ((FunctionModifiedEvent) event).getFunction();
+            FunDef functionData = ((FunctionModifiedEvent) event).getFunction();
 
             // Look for function in list
             for (SingleFunctionContainer currentPanel : mFunctionContainerList) {

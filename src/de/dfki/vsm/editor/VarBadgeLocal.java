@@ -5,10 +5,10 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.event.VarBadgeUpdatedEvent;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
-import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
-import de.dfki.vsm.model.sceneflow.diagram.boards.VariableEntry;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
-import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodePosition;
+import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.VariableEntry;
+import de.dfki.vsm.model.sceneflow.definition.VarDef;
+import de.dfki.vsm.model.sceneflow.graphics.node.Position;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -31,7 +31,6 @@ import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
 
 import java.text.AttributedString;
-import java.util.ArrayList;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -68,9 +67,9 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         SuperNode parentNode = mSuperNode;
         mEntryList.clear();
 
-        final ArrayList<VariableDefinition> varDefList = parentNode.getVarDefList();
+        Vector<VarDef> varDefList = parentNode.getVarDefList();
 
-        for (VariableDefinition varDef : varDefList) {
+        for (VarDef varDef : varDefList) {
             mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
                                      TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
         }
@@ -223,7 +222,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         setLocation(new Point(getLocation().x + vector.x, getLocation().y + vector.y));
 
         // Set the location on data model
-        mSuperNode.getLocalVariableBadge().setPosition(new NodePosition(getLocation().x, getLocation().y));
+        mSuperNode.getLocalVariableBadge().setPosition(new Position(getLocation().x, getLocation().y));
     }
 
     @Override
@@ -258,7 +257,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         // Recompute the entry list
         SuperNode parentNode = mSuperNode;
 
-        for (VariableDefinition varDef : parentNode.getVarDefList()) {
+        for (VarDef varDef : parentNode.getVarDefList()) {
 //          String varName = varDef.getName();
             mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
                                      TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));

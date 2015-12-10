@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class UnblockSceneGroup extends AbstractCommand {
+public class UnblockSceneGroup extends Command {
     private Expression mArg;
 
     public UnblockSceneGroup() {

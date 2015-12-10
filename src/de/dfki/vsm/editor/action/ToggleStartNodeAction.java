@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.Node;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -15,7 +15,7 @@ import java.util.HashMap;
  */
 public class ToggleStartNodeAction extends NodeAction {
     private boolean               mIsStartNode = false;
-    private HashMap<String, BasicNode> mStartNodes  = null;
+    private HashMap<String, Node> mStartNodes  = null;
 
     public ToggleStartNodeAction(de.dfki.vsm.editor.Node node, WorkSpacePanel workSpace) {
         super();

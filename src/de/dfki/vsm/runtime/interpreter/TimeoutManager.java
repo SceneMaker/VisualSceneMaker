@@ -2,7 +2,7 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.sceneflow.command.Assignment;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
@@ -15,7 +15,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.lexpression.ArrayVariable;
 import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.IntValue;
@@ -101,11 +101,11 @@ public class TimeoutManager {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    public void startTimeoutHandler(VariableDefinition def, Environment env) throws InterpretException {
+    public void startTimeoutHandler(VarDef def, Environment env) throws InterpretException {
         startTimeoutHandler(def.getExp(), env);
     }
 
-    public void startTimeoutHandler(AbstractCommand cmd, Environment env) throws InterpretException {
+    public void startTimeoutHandler(Command cmd, Environment env) throws InterpretException {
         if (cmd instanceof PlaySceneGroup) {
             startTimeoutHandler(((PlaySceneGroup) cmd).getArg(), env);
 

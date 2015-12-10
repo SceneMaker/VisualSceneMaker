@@ -13,10 +13,10 @@ import de.dfki.vsm.editor.util.EdgeGraphics;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
-import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.CEdge;
+import de.dfki.vsm.model.sceneflow.IEdge;
+import de.dfki.vsm.model.sceneflow.PEdge;
+import de.dfki.vsm.model.sceneflow.TEdge;
 //import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -82,12 +82,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private TYPE mType = null;
 
     // Reference to data model edges and nodes
-    private de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge mDataEdge = null;
+    private de.dfki.vsm.model.sceneflow.Edge mDataEdge = null;
 
     // The two graphical nodes to which this edge is connected
     private Node        mSourceNode               = null;
     private Node        mTargetNode               = null;
-    //private boolean     hasAlternativeTargetNodes = false;
+    private boolean     hasAlternativeTargetNodes = false;
     private boolean     mPointingToSameNode       = false;
     public EdgeGraphics mEg                       = null;
     private WorkSpacePanel   mWorkSpace                = null;
@@ -190,7 +190,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         initEditBox();
     }
 
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode) {
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode) {
         mDataEdge           = edge;
         mWorkSpace          = ws;
         mEditorConfig       = mWorkSpace.getEditorConfig();
@@ -211,7 +211,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     // TODO: Neuer Konstruktor, der Source und Target dockpoint "mitbekommt"
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode,
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
                 Point sourceDockPoint, Point targetDockpoint) {
         mDataEdge           = edge;
         mWorkSpace          = ws;
@@ -239,7 +239,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         update();
     }
 
-    public de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge getDataEdge() {
+    public de.dfki.vsm.model.sceneflow.Edge getDataEdge() {
         return mDataEdge;
     }
 
@@ -286,7 +286,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             case TEDGE :
                 mName        = "Timeout";
                 mColor       = sTEDGE_COLOR;
-                mDescription = ((TimeoutEdge) mDataEdge).getTimeout() + "ms";
+                mDescription = ((TEdge) mDataEdge).getTimeout() + "ms";
 
                 break;
 
@@ -294,8 +294,8 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 mName  = "Conditional";
                 mColor = sCEDGE_COLOR;
 
-                if (((GuardedEdge) mDataEdge).getGuard() != null) {
-                    mDescription = ((GuardedEdge) mDataEdge).getGuard().getConcreteSyntax();
+                if (((CEdge) mDataEdge).getCondition() != null) {
+                    mDescription = ((CEdge) mDataEdge).getCondition().getConcreteSyntax();
                 } else {
                     mDescription = "";
                 }
@@ -305,7 +305,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             case PEDGE :
                 mName        = "Propabilistic";
                 mColor       = sPEDGE_COLOR;
-                mDescription = ((RandomEdge) mDataEdge).getProbability() + "%";
+                mDescription = ((PEdge) mDataEdge).getProbability() + "%";
 
                 break;
 
@@ -313,8 +313,8 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 mName  = "Interruptive";
                 mColor = sIEDGE_COLOR;
 
-                if (((InterruptEdge) mDataEdge).getGuard() != null) {
-                    mDescription = ((InterruptEdge) mDataEdge).getGuard().getConcreteSyntax();
+                if (((IEdge) mDataEdge).getCondition() != null) {
+                    mDescription = ((IEdge) mDataEdge).getCondition().getConcreteSyntax();
                 } else {
                     mDescription = "";
                 }
@@ -322,7 +322,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 break;
             }
 
-            //hasAlternativeTargetNodes = !mDataEdge.getAltStartNodeMap().isEmpty();
+            hasAlternativeTargetNodes = !mDataEdge.getAltStartNodeMap().isEmpty();
         }
 
         // Update the font and the font metrics that have to be
@@ -390,7 +390,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         try {
             //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
+            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
             
             _SFSLParser_.run(inputString);
 
@@ -453,9 +453,9 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
          
         if (mDataEdge != null) {
             if (mType.equals(TYPE.TEDGE)) {
-                mValueEditor.setText("" + ((TimeoutEdge) mDataEdge).getTimeout());
+                mValueEditor.setText("" + ((TEdge) mDataEdge).getTimeout());
             } else if (mType.equals(TYPE.PEDGE)) {
-                mValueEditor.setText("" + ((RandomEdge) mDataEdge).getProbability());
+                mValueEditor.setText("" + ((PEdge) mDataEdge).getProbability());
             } else {
                 mValueEditor.setText(mDescription);
             }
@@ -506,20 +506,22 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         if (mType.equals(TYPE.TEDGE)) {
             try {
-                ((TimeoutEdge) mDataEdge).setTimeout(Long.valueOf(input));
+                ((TEdge) mDataEdge).setTimeout(Long.valueOf(input));
             } catch (NumberFormatException e) {
                 mLogger.warning("Invalid Number Format");
             }
             
         } else if (mType.equals(TYPE.CEDGE)) {
             try {
-                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
+                //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
+                _SFSLParser_.parseResultType = _SFSLParser_.EXP;
+            
                 _SFSLParser_.run(input);
 
                 Expression log = _SFSLParser_.expResult;
 
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
-                    ((GuardedEdge) mDataEdge).setGuard(log);
+                    ((CEdge) mDataEdge).setCondition(log);
                 } else {
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                         "Remember to wrap condition in parenthesis");
@@ -529,14 +531,15 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             
         } else if (mType.equals(TYPE.IEDGE)) {
             try {
-                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
+                //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
+                _SFSLParser_.parseResultType = _SFSLParser_.EXP;
             
                 _SFSLParser_.run(input);
 
                 Expression log = _SFSLParser_.expResult;
 
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
-                    ((InterruptEdge) mDataEdge).setGuard(log);
+                    ((IEdge) mDataEdge).setCondition(log);
                 } else {}
             } catch (Exception e) {}
         }
@@ -887,27 +890,27 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             graphics.drawPolygon(mEg.mHead);
         }
 
-//        if (hasAlternativeTargetNodes) {
-//
-//            // String targets = mDataEdge.getStart();
-//            String targets = mDataEdge.getAltStartNodesAsString();
-//
-//            // center the text
-//            mFontWidthCorrection = mFM.stringWidth(targets);
-//
-//            // Get the current transform
-//            AffineTransform currentAT = graphics.getTransform();
-//
-//            // Perform transformation
-//            AffineTransform at = new AffineTransform();
-//
-//            graphics.translate(mEg.mAbsoluteEndPos.x, mEg.mAbsoluteEndPos.y);
-//            at.setToRotation((2 * Math.PI) - (mEg.mArrowDir + (Math.PI / 2)));
-//            graphics.transform(at);
-//            graphics.setColor(Color.WHITE);
-//            paintRoundedTextBadge(graphics, new Point(-(mFontWidthCorrection + 5), 0), targets);
-//            graphics.setTransform(currentAT);
-//        }
+        if (hasAlternativeTargetNodes) {
+
+            // String targets = mDataEdge.getStart();
+            String targets = mDataEdge.getAltStartNodesAsString();
+
+            // center the text
+            mFontWidthCorrection = mFM.stringWidth(targets);
+
+            // Get the current transform
+            AffineTransform currentAT = graphics.getTransform();
+
+            // Perform transformation
+            AffineTransform at = new AffineTransform();
+
+            graphics.translate(mEg.mAbsoluteEndPos.x, mEg.mAbsoluteEndPos.y);
+            at.setToRotation((2 * Math.PI) - (mEg.mArrowDir + (Math.PI / 2)));
+            graphics.transform(at);
+            graphics.setColor(Color.WHITE);
+            paintRoundedTextBadge(graphics, new Point(-(mFontWidthCorrection + 5), 0), targets);
+            graphics.setTransform(currentAT);
+        }
 
         // draw activity cue
         if (mVisualisationTask != null) {
@@ -999,7 +1002,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         if (mEditorConfig.sVISUALISATION) {
             if (event instanceof EdgeExecutedEvent) {
-                de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
+                de.dfki.vsm.model.sceneflow.Edge edge = ((EdgeExecutedEvent) event).getEdge();
 
                 if (edge.equals(mDataEdge)) {
                     if (mVisualisationTask != null) {
