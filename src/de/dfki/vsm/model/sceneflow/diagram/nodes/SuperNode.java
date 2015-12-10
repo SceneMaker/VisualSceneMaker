@@ -8,8 +8,8 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.EpsilonEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodeGraphics;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -404,7 +404,7 @@ public class SuperNode extends BasicNode {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(Element element) throws XMLParseError {
-                            mCmdList.add(AbstractCommand.parse(element));
+                            mCmdList.add(Command.parse(element));
                         }
                     });
                 } else if (tag.equals("LocalVariableBadge")) {

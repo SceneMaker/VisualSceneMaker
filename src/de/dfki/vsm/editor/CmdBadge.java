@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.language.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -199,20 +199,20 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      * Resets badge to its default visual behavior
      */
     public synchronized void endEditMode() {
-        final ArrayList<AbstractCommand> copyOfCmdList = new ArrayList<>();
+        final ArrayList<Command> copyOfCmdList = new ArrayList<>();
 
         if (mEditMode) {
             for (int i = 0; i < mStringList.size(); i++) {
                 String text = mCmdEditors.get(i).getText();
 
                 if (!text.equals("")) {
-                    AbstractCommand command;
+                    Command command;
 
                     try {
                         _SFSLParser_.parseResultType = _SFSLParser_.STATEMENT;
                         _SFSLParser_.run(text);
 
-                        AbstractCommand cmd = _SFSLParser_.cmdResult;
+                        Command cmd = _SFSLParser_.cmdResult;
 
                         if ((cmd != null) && !_SFSLParser_.errorFlag) {
                             command = cmd;
@@ -303,11 +303,11 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     private void update() {
         ArrayList<String> strings = new ArrayList<>();
-        ArrayList<AbstractCommand> nodeCommands = mNode.getDataNode().getCmdList();
+        ArrayList<Command> nodeCommands = mNode.getDataNode().getCmdList();
 
         if ((nodeCommands != null) && (nodeCommands.size() > 0)) {
-            for (AbstractCommand cmd : nodeCommands) {
-                strings.add(((AbstractCommand) cmd).getFormattedSyntax());
+            for (Command cmd : nodeCommands) {
+                strings.add(((Command) cmd).getFormattedSyntax());
             }
         }
 

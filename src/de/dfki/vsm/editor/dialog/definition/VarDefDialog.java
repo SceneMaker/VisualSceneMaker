@@ -7,14 +7,14 @@ import de.dfki.vsm.editor.dialog.CreateExpDialog;
 import de.dfki.vsm.editor.dialog.AbstractDialog;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.Expression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.language.command.expression.literal.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.language.command.expression.literal.IntLiteral;
+import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
+import de.dfki.vsm.model.sceneflow.language.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
+import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -229,7 +229,7 @@ public final class VarDefDialog extends AbstractDialog {
     }
 
     private void selectExp() {
-        AbstractExpression exp = new CreateExpDialog(null).run();
+        Expression exp = new CreateExpDialog(null).run();
 
         if (exp != null) {
             mVariableDefinition.setExp(exp);
@@ -257,7 +257,7 @@ public final class VarDefDialog extends AbstractDialog {
             String type = mVariableDefinition.getType();
             boolean rightType = true;
 
-            AbstractExpression expression = mVariableDefinition.getExp();
+            Expression expression = mVariableDefinition.getExp();
             String textValue = expression.getConcreteSyntax();
 
             String expFullClass = expression.getClass().getName();

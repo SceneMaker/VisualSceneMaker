@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.diagram.graphics.edge;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.SyntaxObject;
+import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 import org.w3c.dom.Element;
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class EdgePoint extends SyntaxObject {
+public class EdgePoint implements ModelObject {
     private int mXPpos;
     private int mCtrlXPos;
     private int mYPos;
@@ -64,27 +64,30 @@ public class EdgePoint extends SyntaxObject {
         mCtrlYPos = value;
     }
 
-    public String getAbstractSyntax() {
-        return "Point(" + mYPos + "," + mYPos + "," + mCtrlXPos + "," + mCtrlYPos + ")";
-    }
+//    public String getAbstractSyntax() {
+//        return "Point(" + mYPos + "," + mYPos + "," + mCtrlXPos + "," + mCtrlYPos + ")";
+//    }
+//
+//    public String getConcreteSyntax() {
+//        return getAbstractSyntax();
+//    }
+//
+//    public String getFormattedSyntax() {
+//        return "";
+//    }
 
-    public String getConcreteSyntax() {
-        return getAbstractSyntax();
-    }
-
-    public String getFormattedSyntax() {
-        return "";
-    }
-
+    @Override
     public EdgePoint getCopy() {
         return new EdgePoint(mXPpos, mCtrlXPos, mYPos, mCtrlYPos);
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) {
         out.println("<Point x-pos=\"" + mXPpos + "\" y-pos=\"" + mYPos + "\" control-x-pos=\"" + mCtrlXPos
                     + "\" control-y-pos=\"" + mCtrlYPos + "\"/>");
     }
 
+    @Override
     public void parseXML(Element element) {
         mXPpos    = Integer.valueOf(element.getAttribute("x-pos"));
         mYPos     = Integer.valueOf(element.getAttribute("y-pos"));

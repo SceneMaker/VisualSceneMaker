@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.editor.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.boards.VariableEntry;
-import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodePosition;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventDispatcher;

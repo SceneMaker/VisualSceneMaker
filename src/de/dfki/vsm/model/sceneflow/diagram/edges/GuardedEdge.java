@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.sceneflow.diagram.edges;
 
-import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.language.command.Expression;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 public final class GuardedEdge extends AbstractEdge {
 
     // The guarding expression
-    private AbstractExpression mExpression;
+    private Expression mExpression;
 
     public GuardedEdge() {
         mExpression = null;
@@ -29,18 +29,18 @@ public final class GuardedEdge extends AbstractEdge {
             final BasicNode targetNode,
             final BasicNode sourceNode,
             final EdgeGraphics graphics,
-            final ArrayList<AbstractCommand> cmdList,
-            final AbstractExpression expression) {
+            final ArrayList<Command> cmdList,
+            final Expression expression) {
         super(target, source, targetNode, sourceNode, graphics, cmdList);
         // Initialize the guarding expression
         mExpression = expression;
     }
 
-    public final AbstractExpression getGuard() {
+    public final Expression getGuard() {
         return mExpression;
     }
 
-    public final void setGuard(final AbstractExpression value) {
+    public final void setGuard(final Expression value) {
         mExpression = value;
     }
 
@@ -103,11 +103,11 @@ public final class GuardedEdge extends AbstractEdge {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(final Element element) throws XMLParseError {
-                            mCommandList.add(AbstractCommand.parse(element));
+                            mCommandList.add(Command.parse(element));
                         }
                     });
                 } else {
-                    mExpression = AbstractExpression.parse(element);
+                    mExpression = Expression.parse(element);
                 }
             }
         });
