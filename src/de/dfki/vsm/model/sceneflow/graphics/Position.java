@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.sceneflow.graphics.node;
+package de.dfki.vsm.model.sceneflow.graphics;
 
 //~--- non-JDK imports --------------------------------------------------------
 
