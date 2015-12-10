@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
@@ -12,12 +13,13 @@ import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 
 //~--- JDK imports ------------------------------------------------------------
+
 import java.awt.Dimension;
 
 import java.util.Iterator;
@@ -48,19 +50,19 @@ public class ModifyCEdgeDialog extends Dialog {
     private final AltStartNodeManager mAltStartNodeManager;
 
     // GUI-Components
-    private JPanel mInputPanel;
-    private JLabel mInputLabel;
-    private JPanel mButtonPanel;
-    private HintTextField mInputTextField;
-    private OKButton mOkButton;
+    private JPanel       mInputPanel;
+    private JLabel       mInputLabel;
+    private JPanel       mButtonPanel;
+    private HintTextField   mInputTextField;
+    private OKButton     mOkButton;
     private CancelButton mCancelButton;
-    private JPanel mAltStartNodePanel;
-    private JLabel mAltStartNodeLabel;
-    private JList mAltStartNodeList;
-    private JScrollPane mAltStartNodeScrollPane;
-    private AddButton mAddAltStartNodeButton;
+    private JPanel       mAltStartNodePanel;
+    private JLabel       mAltStartNodeLabel;
+    private JList        mAltStartNodeList;
+    private JScrollPane  mAltStartNodeScrollPane;
+    private AddButton    mAddAltStartNodeButton;
     private RemoveButton mRemoveAltStartNodeButton;
-    private EditButton mEditAltStartNodeButton;
+    private EditButton   mEditAltStartNodeButton;
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
     private JLabel errorMsg;
@@ -77,7 +79,6 @@ public class ModifyCEdgeDialog extends Dialog {
         // Init GUI-Components
         initComponents();
     }
-
     public ModifyCEdgeDialog(CEdge cedge) {
         super(EditorInstance.getInstance(), "Modify Conditional Edge", true);
         mCEdge = cedge;
@@ -114,7 +115,7 @@ public class ModifyCEdgeDialog extends Dialog {
         finalBox.add(errorMsg);
         finalBox.add(Box.createVerticalStrut(20));
         finalBox.add(mButtonPanel);
-
+        
         addComponent(finalBox, 10, 30, 480, 280);
 
         packComponents(520, 300);
@@ -136,12 +137,10 @@ public class ModifyCEdgeDialog extends Dialog {
         mInputPanel.add(Box.createHorizontalStrut(10));
         mInputPanel.add(mInputTextField);
     }
-
     /**
      * Set the correct size of the components
-     *
      * @param jb
-     * @param dim
+     * @param dim 
      */
     private void sanitizeComponent(JComponent jb, Dimension dim) {
         jb.setPreferredSize(dim);
@@ -174,7 +173,7 @@ public class ModifyCEdgeDialog extends Dialog {
         mButtonPanel.add(Box.createHorizontalStrut(30));
         mButtonPanel.add(mOkButton);
         mButtonPanel.add(Box.createHorizontalStrut(30));
-
+        
     }
 
     protected void initAltStartNodePanel() {
@@ -182,7 +181,7 @@ public class ModifyCEdgeDialog extends Dialog {
         mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
         sanitizeComponent(mAltStartNodeLabel, labelSize);
         // Init alternative start node list
-        mAltStartNodeList = new JList(new DefaultListModel());
+        mAltStartNodeList       = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
         Dimension tfSize = new Dimension(200, 110);
         mAltStartNodeScrollPane.setPreferredSize(tfSize);
@@ -241,9 +240,10 @@ public class ModifyCEdgeDialog extends Dialog {
     protected void okActionPerformed() {
         if (process()) {
             dispose(Dialog.Button.OK);
-        } else {
+        }
+        else{
             mInputTextField.setForeground(Color.red);
-            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
         }
     }
 
@@ -253,7 +253,7 @@ public class ModifyCEdgeDialog extends Dialog {
     }
 
     private boolean process() {
-        if (mInputTextField.getText().length() == 0) {
+        if(mInputTextField.getText().length() == 0){
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
             return false;
@@ -261,15 +261,12 @@ public class ModifyCEdgeDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
+            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            LogicalCond log = _SFSLParser_.logResult;
 
-            System.err.println("Parsing result is " + log);
-            
-            if ((log != null) && !_SFSLParser_.errorFlag) {
+            if ((log != null) &&!_SFSLParser_.errorFlag) {
                 mCEdge.setCondition(log);
                 mAltStartNodeManager.saveAltStartNodeMap();
                 return true;
@@ -288,8 +285,8 @@ public class ModifyCEdgeDialog extends Dialog {
             Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
 
             while (it.hasNext()) {
-                Map.Entry pairs = (Map.Entry) it.next();
-                TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
+                Map.Entry              pairs            = (Map.Entry) it.next();
+                TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
                 TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
 
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
@@ -322,8 +319,8 @@ public class ModifyCEdgeDialog extends Dialog {
         Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
+            Map.Entry              pairs            = (Map.Entry) it.next();
+            TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
             TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
@@ -335,8 +332,8 @@ public class ModifyCEdgeDialog extends Dialog {
         String selectedValue = (String) mAltStartNodeList.getSelectedValue();
 
         if (selectedValue != null) {
-            String[] idPair = selectedValue.split("/");
-            String startNodeId = idPair[0];
+            String[] idPair      = selectedValue.split("/");
+            String   startNodeId = idPair[0];
 
             // String altStartNodeId = idPair[1];
             System.err.println("remove alt start node" + startNodeId);
@@ -345,8 +342,7 @@ public class ModifyCEdgeDialog extends Dialog {
         }
     }
 
-    private void editAltStartNode() {
-    }
+    private void editAltStartNode() {}
 
     public JPanel getInputPanel() {
         return mInputPanel;

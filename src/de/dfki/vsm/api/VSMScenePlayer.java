@@ -240,17 +240,8 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
                         // Initialize The Lock
                         mRunTime.getLock(mProject).lock();
                         
-                        // ATTENTION: Here the thread that calls the query function tries to set the
-                        // variable value in it's own environment!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        // not in the environment of the thread that is executing the state on which
-                        // an interruptive edge may be and which may contain the query statement !!!
-                        // See in contrast the update methof in the event observer.
-                        // This can cause a situation in which substituted variables are not found 
-                        // since they are on such a deep level so that they are not shared by the
-                        // thread executing the state with the iedge and the thread executing this query 
-                        // call (via the event observer but in the own environment)
                         
-                        // This call returns nothing if the variable exists and throws an exeption
+                        // This call returns nothing if the variable exists and and throws an exeption
                         environment.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
 
                     } catch (Exception exc) {

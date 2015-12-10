@@ -25,8 +25,7 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-//import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
@@ -429,12 +428,10 @@ class ConditionEditor extends JPanel implements EventListener {
         String inputString = mCEdgeDialog.getInputTextField().getText().trim();
 
         try {
-            //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
-            
+            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            LogicalCond log = _SFSLParser_.logResult;
 
             if ((log != null) && !_SFSLParser_.errorFlag) {
                 mDataCEdge.setCondition(log);
@@ -734,11 +731,10 @@ class InterruptEditor extends JPanel implements EventListener {
         String inputString = mIEdgeDialog.getInputTextField().getText().trim();
 
         try {
-           // _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-             _SFSLParser_.parseResultType = _SFSLParser_.EXP;
+            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            LogicalCond log = _SFSLParser_.logResult;
 
             if ((log != null) && !_SFSLParser_.errorFlag) {
                 mDataIEdge.setCondition(log);

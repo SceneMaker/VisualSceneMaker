@@ -13,30 +13,35 @@ import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
 import de.dfki.vsm.model.sceneflow.command.expression.BinaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.ConditionalExp;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryRunTime;
-import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryValueOf;
+import de.dfki.vsm.model.sceneflow.command.expression.HistoryRunTimeOf;
+import de.dfki.vsm.model.sceneflow.command.expression.HistoryValueOf;
 import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
-import de.dfki.vsm.model.sceneflow.command.expression.function.StateValueOf;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.JavaObject;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.ArrayVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.LExpression;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.MemberVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.lexpression.SimpleVariable;
-import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryContains;
-import de.dfki.vsm.model.sceneflow.command.expression.function.InStateCond;
-import de.dfki.vsm.model.sceneflow.command.expression.function.PrologQuery;
-import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
+import de.dfki.vsm.model.sceneflow.command.expression.ValueOf;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.ContainsCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.EmptyCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.ArrVarExp;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.MemVarExp;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.VarExp;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.InStateCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.BooleanValue;
@@ -48,9 +53,6 @@ import de.dfki.vsm.runtime.values.LongValue;
 import de.dfki.vsm.runtime.values.ObjectValue;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.runtime.values.StructValue;
-import de.dfki.vsm.util.jpl.JPLEngine;
-import de.dfki.vsm.util.jpl.JPLResult;
-import de.dfki.vsm.util.jpl.JPLUtility;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -61,7 +63,6 @@ import java.lang.reflect.Method;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
@@ -154,17 +155,17 @@ public class Evaluator {
             ////////////////////////////////////////////////////////////////////
             // Simple Variable Assignment
             ////////////////////////////////////////////////////////////////////
-            if (lexp instanceof SimpleVariable) {
-                env.write(((SimpleVariable) lexp).getName(), evaluate(rexp, env));
+            if (lexp instanceof VarExp) {
+                env.write(((VarExp) lexp).getName(), evaluate(rexp, env));
             } //
             ////////////////////////////////////////////////////////////////////
             // Array Field Assignment
             ////////////////////////////////////////////////////////////////////
-            else if (lexp instanceof ArrayVariable) {
-                AbstractValue fieldValue = evaluate(((ArrayVariable) lexp).getExp(), env);
+            else if (lexp instanceof ArrVarExp) {
+                AbstractValue fieldValue = evaluate(((ArrVarExp) lexp).getExp(), env);
 
                 if (fieldValue.getType() == AbstractValue.Type.INT) {
-                    env.write(((ArrayVariable) lexp).getName(), ((IntValue) fieldValue).getValue().intValue(),
+                    env.write(((ArrVarExp) lexp).getName(), ((IntValue) fieldValue).getValue().intValue(),
                             evaluate(rexp, env));
                 } else {
                     throw new InterpretException(cmd, "'" + cmd.getConcreteSyntax() + "' cannot be executed");
@@ -173,8 +174,8 @@ public class Evaluator {
             ////////////////////////////////////////////////////////////////////
             // Member Variable Assignment
             ////////////////////////////////////////////////////////////////////
-            else if (lexp instanceof MemberVariable) {
-                env.write(((MemberVariable) lexp).getName(), ((MemberVariable) lexp).getMemberName(), evaluate(rexp, env));
+            else if (lexp instanceof MemVarExp) {
+                env.write(((MemVarExp) lexp).getName(), ((MemVarExp) lexp).getMemberName(), evaluate(rexp, env));
             } //
             ////////////////////////////////////////////////////////////////////
             // Assignment
@@ -235,20 +236,20 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // CONSTANT EXPRESSION
         ////////////////////////////////////////////////////////////////////
-        if (exp instanceof BoolLiteral) {
-            return new BooleanValue(((BoolLiteral) exp).getValue());
-        } else if (exp instanceof IntLiteral) {
-            return new IntValue(((IntLiteral) exp).getValue());
-        } else if (exp instanceof FloatLiteral) {
-            return new FloatValue(((FloatLiteral) exp).getValue());
-        } else if (exp instanceof StringLiteral) {
-            return new StringValue(((StringLiteral) exp).getValue());
-        } else if (exp instanceof JavaObject) {
-            return new ObjectValue(((JavaObject) exp).getValue());
-        } else if (exp instanceof ListRecord) {
-            return new ListValue(evaluateExpList(((ListRecord) exp).getExpList(), env));
-        } else if (exp instanceof StructRecord) {
-            return new StructValue(evaluateAsgList(((StructRecord) exp).getExpList(), env));
+        if (exp instanceof Bool) {
+            return new BooleanValue(((Bool) exp).getValue());
+        } else if (exp instanceof Int) {
+            return new IntValue(((Int) exp).getValue());
+        } else if (exp instanceof Float) {
+            return new FloatValue(((Float) exp).getValue());
+        } else if (exp instanceof String) {
+            return new StringValue(((String) exp).getValue());
+        } else if (exp instanceof Object) {
+            return new ObjectValue(((Object) exp).getValue());
+        } else if (exp instanceof List) {
+            return new ListValue(evaluateExpList(((List) exp).getExpList(), env));
+        } else if (exp instanceof Struct) {
+            return new StructValue(evaluateAsgList(((Struct) exp).getExpList(), env));
         } //
         ////////////////////////////////////////////////////////////////////
         // BINARY EXPRESSIONS
@@ -258,6 +259,9 @@ public class Evaluator {
             AbstractValue right = evaluate(((BinaryExp) exp).getRightExp(), env);
             BinaryExp.Operator operator = ((BinaryExp) exp).getOperator();
 
+            ////////////////////////////////////////////////////////////////////
+            // OPERATOR +
+            ////////////////////////////////////////////////////////////////////
             if (operator == BinaryExp.Operator.Add) {
                 if ((left instanceof IntValue) && (right instanceof IntValue)) {
                     return new IntValue(((IntValue) left).intValue() + ((IntValue) right).intValue());
@@ -288,7 +292,11 @@ public class Evaluator {
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.Sub) {
+            } //
+            ////////////////////////////////////////////////////////////////////
+            // OPERATOR -
+            ////////////////////////////////////////////////////////////////////
+            else if (operator == BinaryExp.Operator.Sub) {
                 if ((left instanceof IntValue) && (right instanceof IntValue)) {
                     return new IntValue(((IntValue) left).intValue() - ((IntValue) right).intValue());
                 } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
@@ -300,7 +308,11 @@ public class Evaluator {
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.Mul) {
+            } //
+            ////////////////////////////////////////////////////////////////////
+            // OPERATOR *
+            ////////////////////////////////////////////////////////////////////
+            else if (operator == BinaryExp.Operator.Mul) {
                 if ((left instanceof IntValue) && (right instanceof IntValue)) {
                     return new IntValue(((IntValue) left).intValue() * ((IntValue) right).intValue());
                 } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
@@ -312,7 +324,11 @@ public class Evaluator {
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.Div) {
+            } //
+            ////////////////////////////////////////////////////////////////////
+            // OPERATOR /
+            ////////////////////////////////////////////////////////////////////
+            else if (operator == BinaryExp.Operator.Div) {
                 if ((left instanceof IntValue) && (right instanceof IntValue)) {
                     return new IntValue(((IntValue) left).intValue() / ((IntValue) right).intValue());
                 } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
@@ -324,20 +340,31 @@ public class Evaluator {
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.AddFirst) {
+            } ////////////////////////////////////////////////////////////////////
+            // OPERATOR AddFirst
+            ////////////////////////////////////////////////////////////////////
+            else if (operator == BinaryExp.Operator.AddFirst) {
                 if (left instanceof ListValue) {
+
                     // Convert The Left Expression
                     final ListValue listValue = (ListValue) left;
+
                     // Get The Java List From Value
                     final LinkedList<AbstractValue> list = listValue.getValueList();
+
                     // Add The Abstract Value Here
                     list.addFirst(right);
 
+                    //
                     return left;
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.AddLast) {
+            } //
+            ////////////////////////////////////////////////////////////////////
+            // OPERATOR AddLast
+            ////////////////////////////////////////////////////////////////////
+            else if (operator == BinaryExp.Operator.AddLast) {
                 if (left instanceof ListValue) {
                     ((ListValue) left).getValueList().addLast(right);
 
@@ -345,120 +372,31 @@ public class Evaluator {
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.Contains) {
-                if (left instanceof ListValue) {
-                    for (AbstractValue value : ((ListValue) left).getValueList()) {
-                        if (value.getType() == right.getType()) {
-                            if (value.equalsValue(right)) {
-                                return new BooleanValue(true);
-                            }
-                        }
-                    }
-                    return new BooleanValue(false);
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExp.Operator.Get) {
+            } //
+            ////////////////////////////////////////////////////////////////////
+            // OPERATOR Get
+            ////////////////////////////////////////////////////////////////////
+            else if (operator == BinaryExp.Operator.Get) {
                 if ((left instanceof ListValue) && (right instanceof IntValue)) {
                     return ((ListValue) left).getValueList().get(((IntValue) right).getValue());
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.Remove) {
+            } //
+            ////////////////////////////////////////////////////////////////////
+            // AddFirst ( <list> , <exp> )
+            ////////////////////////////////////////////////////////////////////
+            else if (operator == BinaryExp.Operator.Remove) {
                 if ((left instanceof ListValue) && (right instanceof IntValue)) {
                     return ((ListValue) left).getValueList().remove(((IntValue) right).getValue().intValue());
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == BinaryExp.Operator.And) {
-                if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
-                    return new BooleanValue(((BooleanValue) left).getValue() && ((BooleanValue) right).getValue());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExp.Operator.Or) {
-                if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
-                    return new BooleanValue(((BooleanValue) left).getValue() || ((BooleanValue) right).getValue());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExp.Operator.Eq) {
-                if (left.getType() == right.getType()) {
-                    return new BooleanValue(left.equalsValue(right));
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
-                }
-            } else if (operator == BinaryExp.Operator.Neq) {
-                if (left.getType() == right.getType()) {
-                    return new BooleanValue(!(left.equalsValue(right)));
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
-                }
-            } else if (operator == BinaryExp.Operator.Ge) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).getValue().intValue()
-                            >= ((IntValue) right).getValue().intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-                            >= ((FloatValue) right).getValue().floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).getValue().longValue()
-                            >= ((LongValue) right).getValue().longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-                            >= ((DoubleValue) right).getValue().doubleValue());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExp.Operator.Gt) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).getValue().intValue()
-                            > ((IntValue) right).getValue().intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-                            > ((FloatValue) right).getValue().floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).getValue().longValue()
-                            > ((LongValue) right).getValue().longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-                            > ((DoubleValue) right).getValue().doubleValue());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExp.Operator.Le) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).getValue().intValue()
-                            <= ((IntValue) right).getValue().intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-                            <= ((FloatValue) right).getValue().floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).getValue().longValue()
-                            <= ((LongValue) right).getValue().longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-                            <= ((DoubleValue) right).getValue().doubleValue());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExp.Operator.Lt) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).getValue().intValue()
-                            < ((IntValue) right).getValue().intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-                            < ((FloatValue) right).getValue().floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).getValue().longValue()
-                            < ((LongValue) right).getValue().longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-                            < ((DoubleValue) right).getValue().doubleValue());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else {
+            } //
+            ////////////////////////////////////////////////////////////////////
+            // Unknown binary operator
+            ////////////////////////////////////////////////////////////////////
+            else {
                 throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
         } //
@@ -469,6 +407,9 @@ public class Evaluator {
             AbstractValue value = evaluate(((UnaryExp) exp).getExp(), env);
             UnaryExp.Operator operator = ((UnaryExp) exp).getOperator();
 
+            ////////////////////////////////////////////////////////////////////
+            // Size
+            ////////////////////////////////////////////////////////////////////
             if (operator == UnaryExp.Operator.Size) {
                 if (value instanceof ListValue) {
                     return new IntValue(((ListValue) value).getValueList().size());
@@ -507,15 +448,11 @@ public class Evaluator {
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == UnaryExp.Operator.Empty) {
-                if (value instanceof ListValue) {
-                    return new BooleanValue(((ListValue) value).isEmpty());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
             } else if (operator == UnaryExp.Operator.Random) {
                 if (value instanceof IntValue) {
                     int random = new Random().nextInt(((IntValue) value).getValue().intValue());
+
+                    // System.err.println("Generating random number " + random);
                     return new IntValue(random);
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -528,18 +465,12 @@ public class Evaluator {
                 } else {
                     throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
-            } else if (operator == UnaryExp.Operator.Not) {
-                if (value instanceof BooleanValue) {
-                    return new BooleanValue(!((BooleanValue) value).getValue());
-                } else {
-                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
             } else {
                 throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
         } //
         ////////////////////////////////////////////////////////////////////
-        // CONDITIONAL EXPRESSION
+        // CONDITIONAL EXPRESSIONzuu
         ////////////////////////////////////////////////////////////////////
         else if (exp instanceof ConditionalExp) {
             AbstractValue condition = evaluate(((ConditionalExp) exp).getCondition(), env);
@@ -559,17 +490,17 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // SIMPLE VARIABLE EXPRESSION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof SimpleVariable) {
-            return env.read(((SimpleVariable) exp).getName());
+        else if (exp instanceof VarExp) {
+            return env.read(((VarExp) exp).getName());
         } //
         ////////////////////////////////////////////////////////////////////
         // ARRAY VARIABLE EXPRESSION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof ArrayVariable) {
-            AbstractValue index = evaluate(((ArrayVariable) exp).getExp(), env);
+        else if (exp instanceof ArrVarExp) {
+            AbstractValue index = evaluate(((ArrVarExp) exp).getExp(), env);
 
             if (index.getType() == AbstractValue.Type.INT) {
-                return env.read(((ArrayVariable) exp).getName(), ((IntValue) index).getValue());
+                return env.read(((ArrVarExp) exp).getName(), ((IntValue) index).getValue());
             } else {
                 throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
@@ -577,144 +508,176 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // MEMBER VARIABLE EXPRESSION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof MemberVariable) {
-            return env.read(((MemberVariable) exp).getName(), ((MemberVariable) exp).getMemberName());
+        else if (exp instanceof MemVarExp) {
+            return env.read(((MemVarExp) exp).getName(), ((MemVarExp) exp).getMemberName());
         } //
         ////////////////////////////////////////////////////////////////////
         // BINARY CONDITIONS
         ////////////////////////////////////////////////////////////////////
-        //        else if (exp instanceof BinaryCond) {
-        //
-        //            // System.err.println("Condition= " + exp.getAbstractSyntax());
-        //            AbstractValue left = evaluate(((BinaryCond) exp).getLeftCond(), env);
-        //            AbstractValue right = evaluate(((BinaryCond) exp).getRightCond(), env);
-        //            BinaryCond.Operator operator = ((BinaryCond) exp).getOperator();
-        //
-        //            if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
-        //                if (operator == BinaryCond.Operator.And) {
-        //                    return new BooleanValue(((BooleanValue) left).getValue() && ((BooleanValue) right).getValue());
-        //                } else if (operator == BinaryCond.Operator.Or) {
-        //                    return new BooleanValue(((BooleanValue) left).getValue() || ((BooleanValue) right).getValue());
-        //                } else {
-        //                    throw new InterpretException(exp,
-        //                            "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
-        //                }
-        //            } else {
-        //                throw new InterpretException(exp,
-        //                        "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
-        //            }
-        //        } 
-        //        else if (exp instanceof UnaryCond) {
-        //
-        //            /**
-        //             * UNARY CONDITIONS
-        //             */
-        //            AbstractValue value = evaluate(((UnaryCond) exp).getCondition(), env);
-        //            UnaryCond.Operator operator = ((UnaryCond) exp).getOperator();
-        //
-        //            if (value instanceof BooleanValue) {
-        //                if (operator == UnaryCond.Operator.Not) {
-        //                    return new BooleanValue(!((BooleanValue) value).getValue());
-        //                } else {
-        //                    throw new InterpretException(exp,
-        //                            "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
-        //                }
-        //            } else {
-        //                throw new InterpretException(exp,
-        //                        "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
-        //            }
-        //        } 
-        //        else if (exp instanceof ComparisionCond) {
-        //
-        //            /**
-        //             * COMPARISION CONDITIONS
-        //             */
-        //            AbstractValue left = evaluate(((ComparisionCond) exp).getLeftExp(), env);
-        //            AbstractValue right = evaluate(((ComparisionCond) exp).getRightExp(), env);
-        //            ComparisionCond.Operator operator = ((ComparisionCond) exp).getOperator();
-        //
-        //            if (operator == ComparisionCond.Operator.Eq) {
-        //                if (left.getType() == right.getType()) {
-        //                    return new BooleanValue(left.equalsValue(right));
-        //                } else {
-        //                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
-        //                }
-        //            }
-        //
-        //            if (operator == ComparisionCond.Operator.Neq) {
-        //                if (left.getType() == right.getType()) {
-        //                    return new BooleanValue(!(left.equalsValue(right)));
-        //                } else {
-        //                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
-        //                }
-        //            } else if (operator == ComparisionCond.Operator.Ge) {
-        //                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-        //                    return new BooleanValue(((IntValue) left).getValue().intValue()
-        //                            >= ((IntValue) right).getValue().intValue());
-        //                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-        //                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-        //                            >= ((FloatValue) right).getValue().floatValue());
-        //                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-        //                    return new BooleanValue(((LongValue) left).getValue().longValue()
-        //                            >= ((LongValue) right).getValue().longValue());
-        //                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-        //                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-        //                            >= ((DoubleValue) right).getValue().doubleValue());
-        //                } else {
-        //                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-        //                }
-        //            } else if (operator == ComparisionCond.Operator.Gt) {
-        //                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-        //                    return new BooleanValue(((IntValue) left).getValue().intValue()
-        //                            > ((IntValue) right).getValue().intValue());
-        //                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-        //                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-        //                            > ((FloatValue) right).getValue().floatValue());
-        //                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-        //                    return new BooleanValue(((LongValue) left).getValue().longValue()
-        //                            > ((LongValue) right).getValue().longValue());
-        //                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-        //                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-        //                            > ((DoubleValue) right).getValue().doubleValue());
-        //                } else {
-        //                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-        //                }
-        //            } else if (operator == ComparisionCond.Operator.Le) {
-        //                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-        //                    return new BooleanValue(((IntValue) left).getValue().intValue()
-        //                            <= ((IntValue) right).getValue().intValue());
-        //                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-        //                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-        //                            <= ((FloatValue) right).getValue().floatValue());
-        //                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-        //                    return new BooleanValue(((LongValue) left).getValue().longValue()
-        //                            <= ((LongValue) right).getValue().longValue());
-        //                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-        //                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-        //                            <= ((DoubleValue) right).getValue().doubleValue());
-        //                } else {
-        //                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-        //                }
-        //            } else if (operator == ComparisionCond.Operator.Lt) {
-        //                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-        //                    return new BooleanValue(((IntValue) left).getValue().intValue()
-        //                            < ((IntValue) right).getValue().intValue());
-        //                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-        //                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
-        //                            < ((FloatValue) right).getValue().floatValue());
-        //                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-        //                    return new BooleanValue(((LongValue) left).getValue().longValue()
-        //                            < ((LongValue) right).getValue().longValue());
-        //                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-        //                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
-        //                            < ((DoubleValue) right).getValue().doubleValue());
-        //                } else {
-        //                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-        //                }
-        //            } else {
-        //                throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-        //            }
-        //        } 
+        else if (exp instanceof BinaryCond) {
+
+            // System.err.println("Condition= " + exp.getAbstractSyntax());
+            AbstractValue left = evaluate(((BinaryCond) exp).getLeftCond(), env);
+            AbstractValue right = evaluate(((BinaryCond) exp).getRightCond(), env);
+            BinaryCond.Operator operator = ((BinaryCond) exp).getOperator();
+
+            if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
+                if (operator == BinaryCond.Operator.And) {
+                    return new BooleanValue(((BooleanValue) left).getValue() && ((BooleanValue) right).getValue());
+                } else if (operator == BinaryCond.Operator.Or) {
+                    return new BooleanValue(((BooleanValue) left).getValue() || ((BooleanValue) right).getValue());
+                } else {
+                    throw new InterpretException(exp,
+                            "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
+                }
+            } else {
+                throw new InterpretException(exp,
+                        "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
+            }
+        } else if (exp instanceof UnaryCond) {
+
+            /**
+             * UNARY CONDITIONS
+             */
+            AbstractValue value = evaluate(((UnaryCond) exp).getCondition(), env);
+            UnaryCond.Operator operator = ((UnaryCond) exp).getOperator();
+
+            if (value instanceof BooleanValue) {
+                if (operator == UnaryCond.Operator.Not) {
+                    return new BooleanValue(!((BooleanValue) value).getValue());
+                } else {
+                    throw new InterpretException(exp,
+                            "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
+                }
+            } else {
+                throw new InterpretException(exp,
+                        "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
+            }
+        } else if (exp instanceof ComparisionCond) {
+
+            /**
+             * COMPARISION CONDITIONS
+             */
+            AbstractValue left = evaluate(((ComparisionCond) exp).getLeftExp(), env);
+            AbstractValue right = evaluate(((ComparisionCond) exp).getRightExp(), env);
+            ComparisionCond.Operator operator = ((ComparisionCond) exp).getOperator();
+
+            if (operator == ComparisionCond.Operator.Eq) {
+                if (left.getType() == right.getType()) {
+                    return new BooleanValue(left.equalsValue(right));
+                } else {
+                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
+                }
+            }
+
+            if (operator == ComparisionCond.Operator.Neq) {
+                if (left.getType() == right.getType()) {
+                    return new BooleanValue(!(left.equalsValue(right)));
+                } else {
+                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
+                }
+            } else if (operator == ComparisionCond.Operator.Ge) {
+                if ((left instanceof IntValue) && (right instanceof IntValue)) {
+                    return new BooleanValue(((IntValue) left).getValue().intValue()
+                            >= ((IntValue) right).getValue().intValue());
+                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
+                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
+                            >= ((FloatValue) right).getValue().floatValue());
+                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
+                    return new BooleanValue(((LongValue) left).getValue().longValue()
+                            >= ((LongValue) right).getValue().longValue());
+                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
+                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
+                            >= ((DoubleValue) right).getValue().doubleValue());
+                } else {
+                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                }
+            } else if (operator == ComparisionCond.Operator.Gt) {
+                if ((left instanceof IntValue) && (right instanceof IntValue)) {
+                    return new BooleanValue(((IntValue) left).getValue().intValue()
+                            > ((IntValue) right).getValue().intValue());
+                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
+                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
+                            > ((FloatValue) right).getValue().floatValue());
+                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
+                    return new BooleanValue(((LongValue) left).getValue().longValue()
+                            > ((LongValue) right).getValue().longValue());
+                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
+                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
+                            > ((DoubleValue) right).getValue().doubleValue());
+                } else {
+                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                }
+            } else if (operator == ComparisionCond.Operator.Le) {
+                if ((left instanceof IntValue) && (right instanceof IntValue)) {
+                    return new BooleanValue(((IntValue) left).getValue().intValue()
+                            <= ((IntValue) right).getValue().intValue());
+                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
+                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
+                            <= ((FloatValue) right).getValue().floatValue());
+                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
+                    return new BooleanValue(((LongValue) left).getValue().longValue()
+                            <= ((LongValue) right).getValue().longValue());
+                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
+                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
+                            <= ((DoubleValue) right).getValue().doubleValue());
+                } else {
+                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                }
+            } else if (operator == ComparisionCond.Operator.Lt) {
+                if ((left instanceof IntValue) && (right instanceof IntValue)) {
+                    return new BooleanValue(((IntValue) left).getValue().intValue()
+                            < ((IntValue) right).getValue().intValue());
+                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
+                    return new BooleanValue(((FloatValue) left).getValue().floatValue()
+                            < ((FloatValue) right).getValue().floatValue());
+                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
+                    return new BooleanValue(((LongValue) left).getValue().longValue()
+                            < ((LongValue) right).getValue().longValue());
+                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
+                    return new BooleanValue(((DoubleValue) left).getValue().doubleValue()
+                            < ((DoubleValue) right).getValue().doubleValue());
+                } else {
+                    throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                }
+            } else {
+                throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+            }
+        } //
+        ////////////////////////////////////////////////////////////////////
+        // CONTAINS LIST CONDITION
+        ////////////////////////////////////////////////////////////////////
+        else if (exp instanceof ContainsCond) {
+            AbstractValue listValue = evaluate(((ContainsCond) exp).getListExp(), env);
+            AbstractValue elemValue = evaluate(((ContainsCond) exp).getElementExp(), env);
+
+            if (listValue.getType() == AbstractValue.Type.LIST) {
+                for (AbstractValue value : ((ListValue) listValue).getValueList()) {
+                    if (value.getType() == elemValue.getType()) {
+                        if (value.equalsValue(elemValue)) {
+                            return new BooleanValue(true);
+                        }
+                    }
+                }
+
+                return new BooleanValue(false);
+            } else {
+                throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+            }
+        } //
+        ////////////////////////////////////////////////////////////////////
+        // EMPTY LIST CONDITION
+        ////////////////////////////////////////////////////////////////////
+        else if (exp instanceof EmptyCond) {
+            AbstractValue value = evaluate(((EmptyCond) exp).getExp(), env);
+
+            if (value.getType() == AbstractValue.Type.LIST) {
+                return new BooleanValue(((ListValue) value).isEmpty());
+            } else {
+                throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+            }
+        } //
+        ////////////////////////////////////////////////////////////////////
         // TIMEOUT CONDITION
         ////////////////////////////////////////////////////////////////////
         else if (exp instanceof TimeoutCond) {
@@ -733,9 +696,9 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // DEFAULT CONDITION
         ////////////////////////////////////////////////////////////////////
-        //        else if (exp instanceof DefaultCond) {
-        //            return evaluate(((DefaultCond) exp).getCondition(), env);
-        //        } //
+        else if (exp instanceof DefaultCond) {
+            return evaluate(((DefaultCond) exp).getCondition(), env);
+        } //
         ////////////////////////////////////////////////////////////////////
         // IN-STATE CONDITION
         ////////////////////////////////////////////////////////////////////
@@ -744,23 +707,17 @@ public class Evaluator {
         } ////////////////////////////////////////////////////////////////////
         // IN-STATE CONDITION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof PrologQuery) {
-            final AbstractValue query = evaluate(((PrologQuery) exp).getExpression(), env);
-            if (query instanceof StringValue) {
-                return new BooleanValue(executeQuery(((StringValue)query).getValue(), env));
-            } else {
-                throw new InterpretException(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-            }
-            //return evaluate(((PrologQuery) exp).getExpression(), env);
+        else if (exp instanceof PrologCond) {
+            return evaluate(((PrologCond) exp).getUsrCmd(), env);
         } //
         ////////////////////////////////////////////////////////////////////
         // VALUE-OF EXPRESSION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof StateValueOf) {
-            Configuration.State state = mInterpreter.getConfiguration().getState(((StateValueOf) exp).getNode());
+        else if (exp instanceof ValueOf) {
+            Configuration.State state = mInterpreter.getConfiguration().getState(((ValueOf) exp).getNode());
 
             if (state != null) {
-                return state.getThread().getEnvironment().read(((StateValueOf) exp).getVar());
+                return state.getThread().getEnvironment().read(((ValueOf) exp).getVar());
             } else {
                 throw new InterpretException(exp,
                         "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
@@ -769,14 +726,14 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // HISTORY CONTAINS
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof HistoryContains) {
-            SystemHistory.Entry entry = mInterpreter.getSystemHistory().get(((HistoryContains) exp).getState(),
-                    ((HistoryContains) exp).getDepth());
+        else if (exp instanceof HistoryContainsState) {
+            SystemHistory.Entry entry = mInterpreter.getSystemHistory().get(((HistoryContainsState) exp).getState(),
+                    ((HistoryContainsState) exp).getDepth());
 
             if (entry == null) {
                 return new BooleanValue(false);
             } else {
-                return new BooleanValue(entry.containsChildNode(((HistoryContains) exp).getSubState()));
+                return new BooleanValue(entry.containsChildNode(((HistoryContainsState) exp).getSubState()));
             }
         } //
         ////////////////////////////////////////////////////////////////////
@@ -789,9 +746,9 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // HISTORY RUNTIME
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof HistoryRunTime) {
-            return new IntValue((int) mInterpreter.getSystemHistory().get(((HistoryRunTime) exp).getNode(),
-                    ((HistoryRunTime) exp).getDepth()).getRunTime());
+        else if (exp instanceof HistoryRunTimeOf) {
+            return new IntValue((int) mInterpreter.getSystemHistory().get(((HistoryRunTimeOf) exp).getNode(),
+                    ((HistoryRunTimeOf) exp).getDepth()).getRunTime());
         } //
         ////////////////////////////////////////////////////////////////////
         // USER COMMAND EXECUTION
@@ -801,7 +758,7 @@ public class Evaluator {
             try {
                 result = executeUsrCmd((UsrCmd) exp, env);
             } catch (Exception e) {
-
+                
                 throw new InterpretException(exp, "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
             }
             if (result instanceof Boolean) {
@@ -867,7 +824,7 @@ public class Evaluator {
         HashMap<java.lang.String, AbstractValue> valueMap = new HashMap<java.lang.String, AbstractValue>();
 
         for (Assignment exp : expList) {
-            valueMap.put(((SimpleVariable) exp.getLExp()).getName(), evaluate(exp.getExp(), env));
+            valueMap.put(((VarExp) exp.getLExp()).getName(), evaluate(exp.getExp(), env));
         }
 
         return valueMap;
@@ -1084,50 +1041,5 @@ public class Evaluator {
             throw e;
         }
         //return null;
-    }
-
-    public final boolean executeQuery(final String querystr, final Environment env) {
-
-        // Make The Query To The KB
-        final JPLResult result = JPLEngine.query(querystr);
-
-        // Check The Query Results
-        if (result.size() == 1) {
-
-            // Get The First And Single Substitution
-            HashMap<String, String> subst = result.getFirst();
-
-            // Try To Set The Variables Locally
-            // Because A Local Thread Is Trying
-//            try {
-            // Set The Variables In The Environment
-            for (Map.Entry<String, String> entry : subst.entrySet()) {
-                try {
-
-                    mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue()+ " Via Prolog Query");
-
-                    // This call returns nothing if the variable exists and and throws an exeption
-                    env.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
-
-                } catch (Exception exc) {
-
-                    // Print Debug Information
-                    mLogger.failure(exc.toString());
-                }
-            }
-//            } 
-//            catch (Exception exc) {
-//
-//                // Try To Set The Variables Globally
-//                // Because An Extern Thread Is Trying
-//                for (Map.Entry<String, String> entry : subst.entrySet()) {
-//                    RunTimeInstance.getInstance().setVariable(mProject, entry.getKey(), entry.getValue());
-//                }
-//            }
-
-            return true;
-        } else {
-            return false;
-        }
     }
 }

@@ -7,7 +7,6 @@ import de.dfki.vsm.runtime.values.BooleanValue;
 import de.dfki.vsm.runtime.values.FloatValue;
 import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;
-import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -31,10 +30,6 @@ public final class RunTimeInstance {
     private RunTimeInstance() {
         // Initialize the map of projects
         mProjectMap = new HashMap<>();
-        // Initialize the JPL engine
-        JPLEngine.init();
-        // And load the prolog sources
-        JPLEngine.load("res/swi/*.pl");
     }
 
     // Initialize the runtime instance
@@ -185,8 +180,8 @@ public final class RunTimeInstance {
         // Check activity status with the interpreter
         return mProjectMap.get(project).isRunning();
     }
-
-    // Check activity status of the project
+	
+	    // Check activity status of the project
     public final /* synchronized */ boolean wasExecuted(final RunTimeProject project) {
         //mLogger.message("Check if running");
         if (!mProjectMap.containsKey(project)) {

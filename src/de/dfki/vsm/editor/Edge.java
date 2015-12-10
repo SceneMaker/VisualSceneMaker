@@ -17,7 +17,7 @@ import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
-//import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -30,7 +30,6 @@ import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sIEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sPEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -389,12 +388,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         String inputString = condition;
 
         try {
-            //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
-            
+            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
             _SFSLParser_.run(inputString);
 
-            Expression log = _SFSLParser_.expResult;
+            LogicalCond log = _SFSLParser_.logResult;
 
             return (log != null) &&!_SFSLParser_.errorFlag;
         } catch (Exception e) {
@@ -513,12 +510,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             
         } else if (mType.equals(TYPE.CEDGE)) {
             try {
-                //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-                _SFSLParser_.parseResultType = _SFSLParser_.EXP;
-            
+                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
                 _SFSLParser_.run(input);
 
-                Expression log = _SFSLParser_.expResult;
+                LogicalCond log = _SFSLParser_.logResult;
 
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((CEdge) mDataEdge).setCondition(log);
@@ -531,12 +526,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             
         } else if (mType.equals(TYPE.IEDGE)) {
             try {
-                //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-                _SFSLParser_.parseResultType = _SFSLParser_.EXP;
-            
+                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
                 _SFSLParser_.run(input);
 
-                Expression log = _SFSLParser_.expResult;
+                LogicalCond log = _SFSLParser_.logResult;
 
                 if ((log != null) &&!_SFSLParser_.errorFlag) {
                     ((IEdge) mDataEdge).setCondition(log);

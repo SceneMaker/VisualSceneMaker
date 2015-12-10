@@ -19,7 +19,6 @@ public abstract class Syntax implements ModelObject {
     // Get The String Syntax Representation 
     @Override
     public String toString() {
-        return getAbstractSyntax();
-        //return getConcreteSyntax();
+        return getConcreteSyntax();
     }
 }

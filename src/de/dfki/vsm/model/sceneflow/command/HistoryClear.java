@@ -23,17 +23,14 @@ public class HistoryClear extends Command {
         return mState;
     }
 
-    @Override
     public CmdType getCmdType() {
         return CmdType.HC;
     }
 
-    @Override
     public String getAbstractSyntax() {
         return "HistoryClear ( " + mState + " )";
     }
 
-    @Override
     public String getConcreteSyntax() {
         return "HistoryClear ( " + mState + " )";
     }
