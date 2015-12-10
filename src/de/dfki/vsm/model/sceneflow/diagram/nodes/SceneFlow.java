@@ -3,9 +3,9 @@ package de.dfki.vsm.model.sceneflow.diagram.nodes;
 import de.dfki.vsm.model.sceneflow.diagram.boards.VariableBoard;
 import de.dfki.vsm.model.sceneflow.diagram.boards.CommentBoard;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.sceneflow.language.command.Command;
-import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -226,7 +226,7 @@ public final class SceneFlow extends SuperNode {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(final Element element) throws XMLParseError {
-                            mCmdList.add(Command.parse(element));
+                            mCmdList.add(AbstractCommand.parse(element));
                         }
                     });
                 } else if (tag.equals("UserCommands")) {

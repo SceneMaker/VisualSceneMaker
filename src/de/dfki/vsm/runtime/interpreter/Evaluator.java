@@ -1,41 +1,41 @@
 package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.model.sceneflow.language.command.Assignment;
-import de.dfki.vsm.model.sceneflow.language.command.Command;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.HistoryFlatClear;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.HistoryDeepClear;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.HistorySetDepth;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.PlayDialogAct;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.UnblockSceneScript;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.UnblockSceneGroup;
-import de.dfki.vsm.model.sceneflow.language.command.expression.BinaryExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.TernaryExpression;
-import de.dfki.vsm.model.sceneflow.language.command.Expression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryRunTime;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryValueOf;
-import de.dfki.vsm.model.sceneflow.language.command.expression.UnaryExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.StateValueOf;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.BoolLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.FloatLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.IntLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.NullObject;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.StringLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
-import de.dfki.vsm.model.sceneflow.language.command.expression.variable.ArrayVariable;
-import de.dfki.vsm.model.sceneflow.language.command.expression.VariableExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.variable.MemberVariable;
-import de.dfki.vsm.model.sceneflow.language.command.expression.variable.SimpleVariable;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.HistoryContains;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.InStateCond;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.PrologQuery;
-import de.dfki.vsm.model.sceneflow.language.command.expression.function.TimeoutCall;
-import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.ArgumentDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.command.Assignment;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.command.HistoryClear;
+import de.dfki.vsm.model.sceneflow.command.HistoryDeepClear;
+import de.dfki.vsm.model.sceneflow.command.HistorySetDepth;
+import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
+import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups;
+import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
+import de.dfki.vsm.model.sceneflow.command.expression.BinaryExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryRunTime;
+import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryValueOf;
+import de.dfki.vsm.model.sceneflow.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.function.StateValueOf;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.JavaObject;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.lexpression.ArrayVariable;
+import de.dfki.vsm.model.sceneflow.command.expression.lexpression.AbstractVariable;
+import de.dfki.vsm.model.sceneflow.command.expression.lexpression.MemberVariable;
+import de.dfki.vsm.model.sceneflow.command.expression.lexpression.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.command.expression.function.HistoryContains;
+import de.dfki.vsm.model.sceneflow.command.expression.function.InStateCond;
+import de.dfki.vsm.model.sceneflow.command.expression.function.PrologQuery;
+import de.dfki.vsm.model.sceneflow.command.expression.temporal.TimeoutCond;
+import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.BooleanValue;
@@ -80,7 +80,7 @@ public class Evaluator {
     }
 
     // Execute a command
-    public final void execute(final Command cmd, final Environment env) throws InterpretException {
+    public final void execute(final AbstractCommand cmd, final Environment env) throws InterpretException {
 
         // Execute a scene group playback command
         if (cmd instanceof PlaySceneGroup) {
@@ -103,13 +103,13 @@ public class Evaluator {
         } ////////////////////////////////////////////////////////////////////
         // PLAY DIALOGUE ACT
         ////////////////////////////////////////////////////////////////////
-        else if (cmd instanceof PlayDialogAct) {
+        else if (cmd instanceof PlayDialogueAct) {
 
             // Try To Evaluate The Name Expression
-            final AbstractValue name = evaluate(((PlayDialogAct) cmd).getArg(), env);
+            final AbstractValue name = evaluate(((PlayDialogueAct) cmd).getArg(), env);
 
             // Try To Evaluate The Feature List
-            LinkedList<AbstractValue> valueList = evaluateExpList(((PlayDialogAct) cmd).getArgList(), env);
+            LinkedList<AbstractValue> valueList = evaluateExpList(((PlayDialogueAct) cmd).getArgList(), env);
 
             // Check The Type of The Name Expression
             if (name.getType() == AbstractValue.Type.STRING) {
@@ -140,15 +140,15 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // UnblockAllSceneGroups
         ////////////////////////////////////////////////////////////////////
-        else if (cmd instanceof UnblockSceneScript) {
+        else if (cmd instanceof UnblockAllSceneGroups) {
             throw new InterpretException(cmd, "'" + cmd.getConcreteSyntax() + "' cannot be executed");
         } //
         ////////////////////////////////////////////////////////////////////
         // Assignment
         ////////////////////////////////////////////////////////////////////
         else if (cmd instanceof Assignment) {
-            VariableExpression lexp = ((Assignment) cmd).getVariable();
-            Expression rexp = ((Assignment) cmd).getInitializer();
+            AbstractVariable lexp = ((Assignment) cmd).getLExp();
+            AbstractExpression rexp = ((Assignment) cmd).getExp();
 
             ////////////////////////////////////////////////////////////////////
             // Simple Variable Assignment
@@ -185,8 +185,8 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         // HistoryClear
         ////////////////////////////////////////////////////////////////////
-        else if (cmd instanceof HistoryFlatClear) {
-            mInterpreter.getSystemHistory().erase(((HistoryFlatClear) cmd).getState());
+        else if (cmd instanceof HistoryClear) {
+            mInterpreter.getSystemHistory().erase(((HistoryClear) cmd).getState());
         } //
         ////////////////////////////////////////////////////////////////////
         // HistoryDeepClear
@@ -206,7 +206,7 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         else {
             try {
-                evaluate((Expression) cmd, env);
+                evaluate((AbstractExpression) cmd, env);
             } catch (Exception e) {
                 throw new InterpretException(env, "Runtime Error: '" + cmd.toString() + "' cannot be evaluated.");
             }
@@ -229,7 +229,7 @@ public class Evaluator {
      * Evaluate an expression
      *
      */
-    public AbstractValue evaluate(Expression exp, Environment env) throws InterpretException {
+    public AbstractValue evaluate(AbstractExpression exp, Environment env) throws InterpretException {
 
         ////////////////////////////////////////////////////////////////////
         // CONSTANT EXPRESSION
@@ -242,8 +242,8 @@ public class Evaluator {
             return new FloatValue(((FloatLiteral) exp).getValue());
         } else if (exp instanceof StringLiteral) {
             return new StringValue(((StringLiteral) exp).getValue());
-        } else if (exp instanceof NullObject) {
-            return new ObjectValue(((NullObject) exp).getValue());
+        } else if (exp instanceof JavaObject) {
+            return new ObjectValue(((JavaObject) exp).getValue());
         } else if (exp instanceof ListRecord) {
             return new ListValue(evaluateExpList(((ListRecord) exp).getExpList(), env));
         } else if (exp instanceof StructRecord) {
@@ -716,10 +716,10 @@ public class Evaluator {
         //        } 
         // TIMEOUT CONDITION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof TimeoutCall) {
-            if (mInterpreter.getTimeoutManager().contains((TimeoutCall) exp)) {
-                if (mInterpreter.getTimeoutManager().expired((TimeoutCall) exp)) {
-                    mInterpreter.getTimeoutManager().remove((TimeoutCall) exp);
+        else if (exp instanceof TimeoutCond) {
+            if (mInterpreter.getTimeoutManager().contains((TimeoutCond) exp)) {
+                if (mInterpreter.getTimeoutManager().expired((TimeoutCond) exp)) {
+                    mInterpreter.getTimeoutManager().remove((TimeoutCond) exp);
 
                     return new BooleanValue(true);
                 } else {
@@ -839,13 +839,13 @@ public class Evaluator {
      * Evaluate a list of expressions
      *
      */
-    public LinkedList<AbstractValue> evaluateExpList(ArrayList<Expression> expList, Environment env)
+    public LinkedList<AbstractValue> evaluateExpList(ArrayList<AbstractExpression> expList, Environment env)
             throws InterpretException /*
      * , InterruptException, TerminatedException
      */ {
         LinkedList<AbstractValue> valueList = new LinkedList<AbstractValue>();
 
-        for (Expression exp : expList) {
+        for (AbstractExpression exp : expList) {
             AbstractValue value = evaluate(exp, env);
 
             valueList.add(value);
@@ -866,7 +866,7 @@ public class Evaluator {
         HashMap<java.lang.String, AbstractValue> valueMap = new HashMap<java.lang.String, AbstractValue>();
 
         for (Assignment exp : expList) {
-            valueMap.put(((SimpleVariable) exp.getVariable()).getName(), evaluate(exp.getInitializer(), env));
+            valueMap.put(((SimpleVariable) exp.getLExp()).getName(), evaluate(exp.getExp(), env));
         }
 
         return valueMap;

@@ -1,6 +1,6 @@
 package de.dfki.vsm.model.sceneflow.diagram.edges;
 
-import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -27,7 +27,7 @@ public class RandomEdge extends AbstractEdge {
             final BasicNode targetNode,
             final BasicNode sourceNode,
             final EdgeGraphics graphics,
-            final ArrayList<Command> cmdList,
+            final ArrayList<AbstractCommand> cmdList,
             int probability) {
         super(target, source, targetNode, sourceNode, graphics, cmdList);
         // Initialize the probability
@@ -98,7 +98,7 @@ public class RandomEdge extends AbstractEdge {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(final Element element) throws XMLParseError {
-                            mCommandList.add(Command.parse(element));
+                            mCommandList.add(AbstractCommand.parse(element));
                         }
                     });
                 } else {

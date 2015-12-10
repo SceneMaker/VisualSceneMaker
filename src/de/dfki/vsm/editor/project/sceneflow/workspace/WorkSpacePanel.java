@@ -51,11 +51,11 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.PlayDialogAct;
-import de.dfki.vsm.model.sceneflow.language.command.invocation.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression;
-import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
+import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 //import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodePosition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -675,9 +675,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void createPDA(Node node, String name) {
-        PlayDialogAct pdaCmd = new PlayDialogAct();
+        PlayDialogueAct pdaCmd = new PlayDialogueAct();
 
-        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.language.command.expression.literal.StringLiteral(name));
+        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral(name));
         node.getDataNode().addCmd(pdaCmd);
     }
 
@@ -688,7 +688,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPSG(Node node, String name) {
         PlaySceneGroup psgCmd = new PlaySceneGroup();
 
-        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.language.command.expression.literal.StringLiteral(name));
+        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral(name));
         node.getDataNode().addCmd(psgCmd);
     }
 

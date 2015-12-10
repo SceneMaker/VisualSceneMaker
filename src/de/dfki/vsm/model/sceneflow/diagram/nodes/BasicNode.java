@@ -8,8 +8,8 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.EpsilonEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.language.command.Command;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodeGraphics;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -29,7 +29,7 @@ public class BasicNode implements ModelObject /*SyntaxObject*/ {
     protected String mComment = new String();
     //
     protected ArrayList<VariableDefinition> mVarDefList = new ArrayList();
-    protected ArrayList<Command> mCmdList = new ArrayList();
+    protected ArrayList<AbstractCommand> mCmdList = new ArrayList();
     protected ArrayList<GuardedEdge> mCEdgeList = new ArrayList();
     protected ArrayList<RandomEdge> mPEdgeList = new ArrayList();
     protected ArrayList<InterruptEdge> mIEdgeList = new ArrayList();
@@ -269,15 +269,15 @@ public class BasicNode implements ModelObject /*SyntaxObject*/ {
         return copy;
     }
 
-    public final void addCmd(Command value) {
+    public final void addCmd(AbstractCommand value) {
         mCmdList.add(value);
     }
 
-    public final Command getCmdAt(int index) {
+    public final AbstractCommand getCmdAt(int index) {
         return mCmdList.get(index);
     }
 
-    public final void setCmdAt(Command value, int index) {
+    public final void setCmdAt(AbstractCommand value, int index) {
         mCmdList.set(index, value);
     }
 
@@ -285,11 +285,11 @@ public class BasicNode implements ModelObject /*SyntaxObject*/ {
         mCmdList.remove(index);
     }
 
-    public final void setCmdList(ArrayList<Command> value) {
+    public final void setCmdList(ArrayList<AbstractCommand> value) {
         mCmdList = value;
     }
 
-    public final ArrayList<Command> getCmdList() {
+    public final ArrayList<AbstractCommand> getCmdList() {
         return mCmdList;
     }
 
@@ -297,10 +297,10 @@ public class BasicNode implements ModelObject /*SyntaxObject*/ {
         return mCmdList.size();
     }
 
-    public final ArrayList<Command> getCopyOfCmdList() {
-        ArrayList<Command> copy = new ArrayList<Command>();
+    public final ArrayList<AbstractCommand> getCopyOfCmdList() {
+        ArrayList<AbstractCommand> copy = new ArrayList<AbstractCommand>();
 
-        for (Command cmd : mCmdList) {
+        for (AbstractCommand cmd : mCmdList) {
             copy.add(cmd.getCopy());
         }
 
@@ -586,7 +586,7 @@ public class BasicNode implements ModelObject /*SyntaxObject*/ {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         @Override
                         public void run(Element element) throws XMLParseError {
-                            mCmdList.add(Command.parse(element));
+                            mCmdList.add(AbstractCommand.parse(element));
                         }
                     });
                 } else if (tag.equals("Graphics")) {

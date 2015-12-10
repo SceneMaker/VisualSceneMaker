@@ -3,7 +3,7 @@ package de.dfki.vsm.runtime.interpreter;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
-import de.dfki.vsm.model.sceneflow.language.command.Command;
+import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
 import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
@@ -100,7 +100,7 @@ public class SystemHistory {
 //  ////////////////
     public static class Entry implements Copyable {
         private final HashMap<String, BasicNode> mChildNodeMap = new HashMap<String, BasicNode>();
-        private final Vector<Command>       mCommandList  = new Vector<Command>();
+        private final Vector<AbstractCommand>       mCommandList  = new Vector<AbstractCommand>();
         private final BasicNode                  mNode;
         private SymbolTable                 mSymbolTable;
         private final long                  mStartTime;
@@ -119,7 +119,7 @@ public class SystemHistory {
             return mEndTime - mStartTime;
         }
 
-        public void addCmd(Command value) {
+        public void addCmd(AbstractCommand value) {
             mCommandList.add(value);
         }
 

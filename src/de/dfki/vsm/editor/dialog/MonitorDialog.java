@@ -10,15 +10,15 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
-import de.dfki.vsm.model.sceneflow.language.command.Expression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.UnaryExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.BoolLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.FloatLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.IntLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
-import de.dfki.vsm.model.sceneflow.language.command.expression.literal.StringLiteral;
-import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.IntLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.ListRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.StringLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.constant.StructRecord;
+import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -112,7 +112,7 @@ public class MonitorDialog extends JDialog implements  EventListener{
                 _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
                 _SFSLParser_.run(inputString);
 
-                Expression exp = _SFSLParser_.expResult;
+                AbstractExpression exp = _SFSLParser_.expResult;
                 
                 //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
                 if ((exp != null) &&!_SFSLParser_.errorFlag) {
