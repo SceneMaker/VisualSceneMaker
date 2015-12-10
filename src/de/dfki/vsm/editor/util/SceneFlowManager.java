@@ -4,10 +4,10 @@ package de.dfki.vsm.editor.util;
 
 import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------

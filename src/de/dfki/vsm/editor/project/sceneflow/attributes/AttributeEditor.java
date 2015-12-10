@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.project.sceneflow.attributes;
 
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import java.awt.Color;

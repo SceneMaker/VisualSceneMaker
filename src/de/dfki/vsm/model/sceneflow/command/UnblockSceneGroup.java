@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -14,21 +14,21 @@ import org.w3c.dom.Element;
  * @author Not me
  */
 public class UnblockSceneGroup extends AbstractCommand {
-    private AbstractExpression mArg;
+    private Expression mArg;
 
     public UnblockSceneGroup() {
         mArg = null;
     }
 
-    public UnblockSceneGroup(AbstractExpression arg) {
+    public UnblockSceneGroup(Expression arg) {
         mArg = arg;
     }
 
-    public AbstractExpression getArg() {
+    public Expression getArg() {
         return mArg;
     }
 
-    public void setArg(AbstractExpression value) {
+    public void setArg(Expression value) {
         mArg = value;
     }
 
@@ -71,7 +71,7 @@ public class UnblockSceneGroup extends AbstractCommand {
     public void parseXML(Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
-                mArg = AbstractExpression.parse(element);
+                mArg = Expression.parse(element);
             }
         });
     }

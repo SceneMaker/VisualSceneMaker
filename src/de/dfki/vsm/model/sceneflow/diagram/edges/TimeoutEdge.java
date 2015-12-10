@@ -1,8 +1,8 @@
 package de.dfki.vsm.model.sceneflow.diagram.edges;
 
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 public final class TimeoutEdge extends AbstractEdge {
 
     private long mTimeout = Long.MIN_VALUE;
-    private AbstractExpression mExpression = null;
+    private Expression mExpression = null;
 
     public TimeoutEdge() {
     }

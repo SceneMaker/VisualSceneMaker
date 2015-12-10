@@ -12,9 +12,9 @@ import de.dfki.vsm.editor.dialog.AbstractDialog.Button;
 //import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
@@ -256,7 +256,7 @@ public class ModifyIEdgeDialog extends AbstractDialog {
             _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
             _SFSLParser_.run(inputString);
             //LogicalCond log = _SFSLParser_.logResult;
-            AbstractExpression log = _SFSLParser_.expResult;//logResult;
+            Expression log = _SFSLParser_.expResult;//logResult;
             
 
             if ((log != null) &&!_SFSLParser_.errorFlag) {

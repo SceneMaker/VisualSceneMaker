@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class MemberVariable extends AbstractVariable {
+public class MemberVariable extends LExpression {
     private String mName;
     private String mMember;
 

@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.diagram.boards;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.comment.CommentGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;

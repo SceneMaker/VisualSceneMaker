@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.events.AbortionEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;

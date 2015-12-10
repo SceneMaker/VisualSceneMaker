@@ -10,7 +10,7 @@ import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.definition.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionRemovedEvent;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.definition.ArgumentDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;

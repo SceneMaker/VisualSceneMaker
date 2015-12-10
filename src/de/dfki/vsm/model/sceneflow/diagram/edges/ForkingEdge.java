@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.sceneflow.diagram.edges;
 
 import de.dfki.vsm.model.sceneflow.command.AbstractCommand;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;

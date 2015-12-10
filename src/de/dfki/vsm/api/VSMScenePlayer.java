@@ -2,7 +2,7 @@ package de.dfki.vsm.api;
 
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
+import de.dfki.vsm.model.sceneflow.diagram.SceneFlow;
 import de.dfki.vsm.runtime.interpreter.Environment;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.RunTimeInstance;

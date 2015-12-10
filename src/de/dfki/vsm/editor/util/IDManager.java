@@ -9,9 +9,9 @@ package de.dfki.vsm.editor.util;
 import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.ForkingEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
+import de.dfki.vsm.model.sceneflow.diagram.SuperNode;
 import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -51,7 +51,7 @@ public class IDManager {
         for (SuperNode sn : supernodes) {
 
             // only scan for supernodes and nodes
-            if (!de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow.class.isInstance(sn)) {
+            if (!de.dfki.vsm.model.sceneflow.diagram.SceneFlow.class.isInstance(sn)) {
                 mSuperNodeIDs.add(new Integer(sn.getId().substring(1)));
             }
 

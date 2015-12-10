@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.dialog.definition.VarDefDialog;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.model.sceneflow.diagram.nodes.BasicNode;
+import de.dfki.vsm.model.sceneflow.diagram.BasicNode;
 import de.dfki.vsm.model.sceneflow.definition.VariableDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;
 

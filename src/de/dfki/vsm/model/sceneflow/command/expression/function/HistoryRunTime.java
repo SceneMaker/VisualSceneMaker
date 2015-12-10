@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.function;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class HistoryRunTime extends AbstractExpression {
+public class HistoryRunTime extends Expression {
     private String mNode;
     private int    mDepth;
 

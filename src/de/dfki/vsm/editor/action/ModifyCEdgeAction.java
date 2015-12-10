@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
 import de.dfki.vsm.model.sceneflow.diagram.edges.GuardedEdge;
-import de.dfki.vsm.model.sceneflow.command.expression.AbstractExpression;
+import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -26,12 +26,12 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
     /**
      * The old condition of the conditional edge
      */
-    private AbstractExpression mOldCondition;
+    private Expression mOldCondition;
 
     /**
      * The new condition of the conditional edge
      */
-    private AbstractExpression mNewCondition;
+    private Expression mNewCondition;
 
     /**
      *
