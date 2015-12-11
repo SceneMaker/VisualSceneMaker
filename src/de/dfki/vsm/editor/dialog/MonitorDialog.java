@@ -32,16 +32,13 @@ import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.Dimension;
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.text.AttributedString;
 
 import java.util.Vector;
-import javax.swing.BorderFactory;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -49,17 +46,18 @@ import javax.swing.table.DefaultTableModel;
  */
 public class MonitorDialog extends JDialog implements  EventListener{
     private static MonitorDialog sSingeltonInstance = null;
-    private JPanel               mMainPanel;
-    private JPanel               mButtonsPanel;
-    private CancelButton         mCancelButton;
-    private OKButton             mOkButton;
-    private JPanel               mWorkPanel;
-    //private JList                mVariableList;
-    private JTable               mVariableTable;
+    private JPanel                  mMainPanel;
+    private JPanel                  mButtonsPanel;
+    private CancelButton            mCancelButton;
+    private OKButton                mOkButton;
+    private JPanel                  mWorkPanel;
+    //private JList                 mVariableList;
+    private JTable                  mVariableTable;
     private HintTextField           mInputTextField;
-    private JScrollPane          mVariableScrollPane;
-    private Vector<VarDef>       mVarDefListData;
-    private static EditorProject       mEditorProject;
+    private JScrollPane             mVariableScrollPane;
+    private Vector<VarDef>          mVarDefListData;
+    private static EditorProject    mEditorProject;
+    private boolean                 canOk = true;
     
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
@@ -95,6 +93,11 @@ public class MonitorDialog extends JDialog implements  EventListener{
         mWorkPanel.setBorder(BorderFactory.createLoweredBevelBorder());
         
         initVariableList();
+
+        final JLabel errorMsg = new JLabel("");
+       // errorMsg.setForeground(Color.white);
+        errorMsg.setBounds(20, 350, 360, 30);;
+
         mVariableScrollPane = new JScrollPane(mVariableTable);
         mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mVariableScrollPane.setBounds(20, 10, 360, 300);
@@ -105,6 +108,24 @@ public class MonitorDialog extends JDialog implements  EventListener{
         {
             mInputTextField.setEnabled(false);
         }
+        mInputTextField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent ke) {
+                int selectedIndex = mVariableTable.getSelectedRow();
+                if(selectedIndex == -1){
+                    mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+                    errorMsg.setText("Please select one variable from the variable list");
+                    canOk = false;
+
+                }else{
+                    mInputTextField.setBorder(BorderFactory.createEmptyBorder());
+                    errorMsg.setText("");
+                    canOk = true;
+                }
+            }
+        });
+
+        mWorkPanel.add(errorMsg);
         mWorkPanel.add(mInputTextField);
     }
 
@@ -171,8 +192,10 @@ public class MonitorDialog extends JDialog implements  EventListener{
         mOkButton.setBounds(205, 0, 125, 30);
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                boolean varAssigned = process();
-                dispose();
+                if(canOk == true) {
+                    boolean varAssigned = process();
+                    dispose();
+                }
             }
         });
         mCancelButton = new CancelButton();
