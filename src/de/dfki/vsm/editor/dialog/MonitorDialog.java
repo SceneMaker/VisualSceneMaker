@@ -33,6 +33,8 @@ import de.dfki.vsm.util.tpl.TPLTuple;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.text.AttributedString;
@@ -57,7 +59,8 @@ public class MonitorDialog extends JDialog implements  EventListener{
     private JScrollPane             mVariableScrollPane;
     private Vector<VarDef>          mVarDefListData;
     private static EditorProject    mEditorProject;
-    private boolean                 canOk = true;
+    private  JLabel errorMsg ;
+
     
     private MonitorDialog() {
         super(EditorInstance.getInstance(), "Run Monitor", true);
@@ -94,9 +97,10 @@ public class MonitorDialog extends JDialog implements  EventListener{
         
         initVariableList();
 
-        final JLabel errorMsg = new JLabel("");
+
        // errorMsg.setForeground(Color.white);
-        errorMsg.setBounds(20, 350, 360, 30);;
+        errorMsg =  new JLabel("");
+        errorMsg.setBounds(20, 350, 360, 30);
 
         mVariableScrollPane = new JScrollPane(mVariableTable);
         mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
@@ -115,13 +119,20 @@ public class MonitorDialog extends JDialog implements  EventListener{
                 if(selectedIndex == -1){
                     mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
                     errorMsg.setText("Please select one variable from the variable list");
-                    canOk = false;
+
 
                 }else{
                     mInputTextField.setBorder(BorderFactory.createEmptyBorder());
                     errorMsg.setText("");
-                    canOk = true;
+
                 }
+            }
+        });
+
+        mInputTextField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                okActionPerformed();
             }
         });
 
@@ -184,6 +195,26 @@ public class MonitorDialog extends JDialog implements  EventListener{
         return false;
     }
 
+    private boolean validateValues() {
+        int selectedIndex = mVariableTable.getSelectedRow();
+        if (mInputTextField.getText().length() == 0 || selectedIndex == -1) {
+            mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
+            errorMsg.setForeground(Color.red);
+            return false;
+        }
+        mInputTextField.setBorder(BorderFactory.createEmptyBorder());
+        errorMsg.setText("");
+        errorMsg.setForeground(Color.white);
+        return true;
+    }
+
+    protected void okActionPerformed() {
+        if(validateValues() == true) {
+            boolean varAssigned = process();
+            dispose();
+        }
+    }
+
     private void initComponents() {
         initWorkPanel();
         mButtonsPanel = new JPanel(null);
@@ -192,10 +223,7 @@ public class MonitorDialog extends JDialog implements  EventListener{
         mOkButton.setBounds(205, 0, 125, 30);
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if(canOk == true) {
-                    boolean varAssigned = process();
-                    dispose();
-                }
+               okActionPerformed();
             }
         });
         mCancelButton = new CancelButton();
