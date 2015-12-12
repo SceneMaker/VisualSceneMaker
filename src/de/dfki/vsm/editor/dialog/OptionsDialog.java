@@ -11,12 +11,11 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GraphicsEnvironment;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import java.awt.event.KeyEvent;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -163,6 +162,20 @@ public class OptionsDialog extends JDialog {
         mMainPanel.setLayout(new BoxLayout(mMainPanel, BoxLayout.Y_AXIS));
         mMainPanel.add(mPrefPanel);
         mMainPanel.add(mButtonsPanel);
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
+                        saveEditorConfig(true);
+                    }
+                }
+                return false;
+            }
+        });
         add(mMainPanel);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
