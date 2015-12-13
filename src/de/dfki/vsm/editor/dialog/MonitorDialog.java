@@ -214,16 +214,18 @@ public class MonitorDialog extends JDialog implements  EventListener{
 
     @Override
     public void update(EventObject event) {
+            
         if( event instanceof VariableChangedEvent)
         {
-           
-//            for (int i = 0; i < mVariableTable.getRowCount(); i++) {
-//                
-//                if(mVariableTable.getValueAt(i, 0).equals(((VarBadgeUpdatedEvent)event).getVarName()))
-//                {
-//                    mVariableTable.setValueAt(((VarBadgeUpdatedEvent)event).getVarValue(), i, 1);
-//                }
-//            }
+             for (int i = 0; i < mVariableTable.getRowCount(); i++) {
+                 
+                    if(mVariableTable.getValueAt(i, 0).equals(((VariableChangedEvent)event).getVarValue().getFirst()))
+                    {
+                        java.lang.String value = (((VariableChangedEvent)event).getVarValue().getSecond());
+                        value = value.replace("#c#", "");                     
+                        mVariableTable.setValueAt(value, i, 1);
+                    }
+            }
         }
     }
   }

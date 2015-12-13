@@ -180,29 +180,6 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         }
     }
 
-    private void updateVariable(TPLTuple<String, String> varVal) {
-       
-
-        synchronized(mEntryList) {
-        // System.err.println("updateVariable");
-        for (VariableEntry entry : mEntryList) {
-            String var = entry.getVarName();    // the name of the current variable
-            String typ = entry.getVarType();
-
-            if (var.equals(varVal.getFirst())) {
-                TPLTuple<String, AttributedString> formatedPair = TextFormat.fillWithAttributes("#r#" + typ + " " + var
-                                                                      + " = " + varVal.getSecond());
-
-                entry.setFormatted(formatedPair.getFirst());
-                entry.setAttributed(formatedPair.getSecond());
-                entry.setHasChanged(true);
-              //  EventDispatcher.getInstance().convey(new VarBadgeUpdatedEvent(this, entry));
-            }
-        }
-        }
-       
-    }
-
     private boolean containsEntryFor(String varName) {
         for (VariableEntry entry : mEntryList) {
             if (entry.getVarName().equals(varName)) {
@@ -211,40 +188,6 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         }
 
         return false;
-    }
-
-    public void update(Observable o, Object obj) {
-
-        // mLogger.message("VarBadge.update(" + obj + ")");
-        // Clear the entry list
-        mEntryList.clear();
-
-        // Recompute the entry list
-        SuperNode parentNode = mSuperNode.getParentNode();
-
-        while (parentNode != null) {
-            for (VarDef varDef : parentNode.getVarDefList()) {
-                String varName = varDef.getName();
-
-                // if (!containsEntryFor(varName)) {
-                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                                         TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
-
-                // }
-            }
-
-            parentNode = parentNode.getParentNode();
-        }
-    }
-
-    public synchronized void update(EventObject event) {
-        if (event instanceof VariableChangedEvent) {
-            updateVariable(((VariableChangedEvent) event).getVarValue());
-
-            // Editor.getInstance().update();
-            revalidate();
-            repaint();
-        }
     }
 
     @Override
@@ -310,5 +253,63 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
         // Set the location on data model
         mSuperNode.getGlobalVariableBadge().setPosition(new Position(getLocation().x, getLocation().y));
+    }
+    
+    @Override
+    public void update(Observable o, Object obj) {
+
+        // mLogger.message("VarBadge.update(" + obj + ")");
+        // Clear the entry list
+        mEntryList.clear();
+
+        // Recompute the entry list
+        SuperNode parentNode = mSuperNode.getParentNode();
+
+        while (parentNode != null) {
+            for (VarDef varDef : parentNode.getVarDefList()) {
+                String varName = varDef.getName();
+
+                // if (!containsEntryFor(varName)) {
+                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                                         TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+
+                // }
+            }
+
+            parentNode = parentNode.getParentNode();
+        }
+    }
+
+    @Override
+    public synchronized void update(EventObject event) {
+        if (event instanceof VariableChangedEvent) {
+            updateVariable(((VariableChangedEvent) event).getVarValue());
+
+            // Editor.getInstance().update();
+            revalidate();
+            repaint();
+        }
+    }
+    
+    private void updateVariable(TPLTuple<String, String> varVal) {
+        
+        synchronized(mEntryList) {
+            
+            
+            // System.err.println("updateVariable");
+            for (VariableEntry entry : mEntryList) {
+                String var = entry.getVarName();    // the name of the current variable
+                String typ = entry.getVarType();
+
+                if (var.equals(varVal.getFirst())) {
+                    TPLTuple<String, AttributedString> formatedPair = TextFormat.fillWithAttributes("#r#" + typ + " " + var
+                                                                         + " = " + varVal.getSecond());
+
+                    entry.setFormatted(formatedPair.getFirst());
+                    entry.setAttributed(formatedPair.getSecond());
+                    entry.setHasChanged(true);
+                }
+            }
+        } 
     }
 }

@@ -160,8 +160,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                     currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
                                            + (int) textLayout.getDescent();
                     
-                }
-                
+                }                
             }
         }
     }
@@ -223,51 +222,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         mSuperNode.getLocalVariableBadge().setPosition(new Position(getLocation().x, getLocation().y));
     }
 
-    public void update(Observable o, Object obj) {
-
-        // mLogger.message("VarBadge.update(" + obj + ")");
-        // Clear the entry list
-        mEntryList.clear();
-
-        // Recompute the entry list
-        SuperNode parentNode = mSuperNode;
-
-        for (VarDef varDef : parentNode.getVarDefList()) {
-//            String varName = varDef.getName();
-
-            mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                                     TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
-
-        }
-    }
-
-    public synchronized void update(EventObject event) {
-        if (event instanceof VariableChangedEvent) {
-            updateVariable(((VariableChangedEvent) event).getVarValue());
-
-            // Editor.getInstance().update();
-            revalidate();
-            repaint();
-        }
-    }
-
-    private  void updateVariable(TPLTuple<String, String> varVal) {
-        synchronized(mEntryList) {
-        for (VariableEntry entry : mEntryList) {
-            String var = entry.getVarName();    // the name of the current variable
-            String typ = entry.getVarType();
-            if (var.equals(varVal.getFirst())) {
-                TPLTuple<String, AttributedString> formatedPair = TextFormat.fillWithAttributes("#r#" + typ + " " + var
-                                                                      + " = " + varVal.getSecond());
-                entry.setFormatted(formatedPair.getFirst());
-                entry.setAttributed(formatedPair.getSecond());
-                entry.setHasChanged(true);
-                
-            }
-        }
-        }
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
@@ -289,6 +243,53 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     public boolean isHidden() {
         return mIsHidden;
     }
-
     
+        @Override
+    public void update(Observable o, Object obj) {
+
+        // mLogger.message("VarBadge.update(" + obj + ")");
+        // Clear the entry list
+        mEntryList.clear();
+
+        // Recompute the entry list
+        SuperNode parentNode = mSuperNode;
+
+        for (VarDef varDef : parentNode.getVarDefList()) {
+//          String varName = varDef.getName();
+            mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                                     TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+        }
+    }
+    
+    @Override
+    public synchronized void update(EventObject event) {
+        if (event instanceof VariableChangedEvent) {
+            updateVariable(((VariableChangedEvent) event).getVarValue());
+
+            // Editor.getInstance().update();
+            revalidate();
+            repaint();
+        }
+    }
+
+    private  void updateVariable(TPLTuple<String, String> varVal) {
+        
+        
+        
+        synchronized(mEntryList) {
+            for (VariableEntry entry : mEntryList) {
+                String var = entry.getVarName();    // the name of the current variable
+                String typ = entry.getVarType();
+
+                if (var.equals(varVal.getFirst())) {
+                    TPLTuple<String, AttributedString> formatedPair = TextFormat.fillWithAttributes("#r#" + typ + " " + var
+                                                                          + " = " + varVal.getSecond());
+                entry.setFormatted(formatedPair.getFirst());
+                entry.setAttributed(formatedPair.getSecond());
+                entry.setHasChanged(true);
+
+                }
+            }
+        } 
+    }
 }
