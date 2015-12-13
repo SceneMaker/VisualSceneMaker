@@ -2,6 +2,7 @@ package de.dfki.vsm.model.sceneflow.graphics.node;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.model.sceneflow.graphics.Position;
 import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
