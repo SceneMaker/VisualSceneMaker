@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.model.sceneflow.graphics.node.Position;
+import de.dfki.vsm.model.sceneflow.graphics.Position;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;

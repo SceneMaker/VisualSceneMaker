@@ -57,7 +57,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.model.sceneflow.graphics.node.Position;
+import de.dfki.vsm.model.sceneflow.graphics.Position;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
