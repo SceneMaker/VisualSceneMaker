@@ -1,69 +1,65 @@
 package de.dfki.vsm.model.sceneflow.language.command.expression.literal;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.sceneflow.language.command.expression.LiteralExpression;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-
 import org.w3c.dom.Element;
 
 /**
- * A string constant.
- *
  * @author Gregor Mehlmann
  */
-public class StringLiteral extends LiteralExpression {
-
-    private String mValue;
-
-    public StringLiteral() {
+public final class CharLiteral extends LiteralExpression {
+    
+    private Character mValue;
+    
+    public CharLiteral() {
         mValue = null;
     }
-
-    public StringLiteral(java.lang.String value) {
+    
+    public CharLiteral(Character value) {
         mValue = value;
     }
-
-    public java.lang.String getValue() {
+    
+    public Character getValue() {
         return mValue;
     }
-
-    public void setValue(java.lang.String value) {
+    
+    public void setValue(Character value) {
         mValue = value;
     }
-
+    
     @Override
     public ConstType getConstType() {
         return ConstType.STRING;
     }
-
+    
     @Override
-    public java.lang.String getAbstractSyntax() {
+    public String getAbstractSyntax() {
         return "String(" + getConcreteSyntax() + ")";
     }
-
+    
     @Override
-    public java.lang.String getConcreteSyntax() {
+    public String getConcreteSyntax() {
         return "\"" + mValue + "\"";
     }
-
+    
     @Override
-    public java.lang.String getFormattedSyntax() {
+    public String getFormattedSyntax() {
         return TextFormat.formatConstantStringLiteral("\"" + mValue + "\"");
     }
-
+    
     @Override
-    public StringLiteral getCopy() {
-        return new StringLiteral(mValue);
+    public CharLiteral getCopy() {
+        return new CharLiteral(mValue);
     }
-
+    
     @Override
     public void writeXML(IOSIndentWriter out) {
         out.println("<String value=\"" + mValue + "\"/>");
     }
-
+    
     @Override
     public void parseXML(Element element) {
-        mValue = element.getAttribute("value");
+        mValue = element.getAttribute("value").charAt(0);
     }
 }
