@@ -49,6 +49,7 @@ public class EditorProject extends RunTimeProject {
         // And then load the project
         return parse();
     }*/
+    
     @Override
     public final boolean parse(final String path) {
         // Check if the file is null
@@ -61,20 +62,23 @@ public class EditorProject extends RunTimeProject {
         // Get the absolute file for this directory
         //final File base = file.getAbsoluteFile();
         // Check if the project directory does exist
-        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
-             if (super.parse(path)
-                && mEditorConfig.load(path)) {
-            // Set the initial hash code
-            mInitialHash = getHashCode();
-            // Return true if project is saved
-            return true;
-        } else {
-            // Return false when saving failed
-            return false;
-        }
-            
-            
-        }
+        
+        
+        // TODO: THIS HAS TO BE REFEACTORED! BAD CODE
+        
+//        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
+//             if (super.parse(path)
+//                && mEditorConfig.load(path)) {
+//            // Set the initial hash code
+//            mInitialHash = getHashCode();
+//            // Return true if project is saved
+//            return true;
+//        } else {
+//            // Return false when saving failed
+//            return false;
+//        }  
+//        }
+        
         File file = new File(path);
         final File base = file.getAbsoluteFile();
         

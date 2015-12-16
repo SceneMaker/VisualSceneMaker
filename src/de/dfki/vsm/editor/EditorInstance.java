@@ -150,12 +150,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
          } catch (final Exception e) {
          // If Nimbus is not available, you can set the GUI to another look and feel.
          }*/
-         // SET FONTS
-         setUIFonts();
+        // SET FONTS
+        setUIFonts();
 
-         // SET BACKGROUNDS
-         setUIBackgrounds();
-         
+        // SET BACKGROUNDS
+        setUIBackgrounds();
+
         // Preferences.info();
         // Init the menu bar
         mEditorMenuBar = new EditorMenuBar(this);
@@ -208,8 +208,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Register the editor as event listener
         mEventCaster.register(this);
     }
-    
-    
+
     private void setUIFonts() {
         String defaultFont = "Helvetica";    // DEFAULT FONT FOR ALL COMPONENTS
 
@@ -320,7 +319,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     public final boolean newProject(String projectName) {
         // Create a new project editor
         final ProjectEditor editor = new ProjectEditor();
-        
+
         // Set default name  main superNode
         editor.getSceneFlowEditor().getSceneFlow().setName(editor.getEditorProject().getEditorConfig().sMAINSUPERNODENAME);
 
@@ -353,7 +352,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             @Override
             public boolean accept(File f) {
                 if (f.isDirectory()) {
-                    
+
                     File configFile = new File(f.getPath() + System.getProperty("file.separator") + "project.xml");
 
                     if (configFile.exists()) {
@@ -371,6 +370,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
                 return false;
             }
+
             @Override
             public String getDescription() {
                 return "SceneMaker Project File Filter";
@@ -392,10 +392,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
-
-
-    public final boolean openProject(String path){
-        if(path == null){
+    public final boolean openProject(String path) {
+        if (path == null) {
             mLogger.failure("Error: Cannot open editor project from a bad Stream");
             // And return failure here
             return false;
@@ -409,6 +407,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 setContentPane(mProjectEditors);
                 // Show the menu bar items
                 mEditorMenuBar.setVisible(true);
+                //
+                mLogger.message("Switching content pane to project editors");
+            } else {
+                //
+                mLogger.message("Already showing project editors in content pane");
             }
             // Create a new project editor from project
             final ProjectEditor projectEditor = new ProjectEditor(project);
@@ -419,10 +422,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Update the recent project list
             updateRecentProjects(project);
             // Print some info message
-            mLogger.message("Opening project editor from Stream");
+            //mLogger.message("Opening project editor from Stream");
             // Refresh the appearance
             refresh();
-            projectEditor.expandTree();
+            //projectEditor.expandTree();
             // Return true at success
             return true;
         } else {
@@ -484,16 +487,16 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return false;
         }
     }
-    
+
     //ADD NEW PROJECT TAB
     void addProjectTab(String tabName, final JComponent content) {
-        
+
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
         mProjectEditors.addTab(null, new JScrollPane(ep));
-        
+
         JLabel tabLabel = new JLabel(tabName);
-       
+
         // Create an AddButton
         final AddButton mCloseButton = new AddButton();
         mCloseButton.setIcon(Preferences.ICON_CANCEL_STANDARD_TINY);
@@ -512,7 +515,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                close((ProjectEditor)content, QuitDialog.CLOSE_PROJ_DIALOG);
+                close((ProjectEditor) content, QuitDialog.CLOSE_PROJ_DIALOG);
             }
         });
         if (mProjectEditors.getTabCount() > 0) {
@@ -526,27 +529,26 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
 
     }
+
     // SETS A SYMBOL TO SHOW THAT THE PROJECT WAS MODIFIED
-    public void setTabNameModified()
-    {
-        JPanel pnl = (JPanel)mProjectEditors.getTabComponentAt(mProjectEditors.getSelectedIndex());
-        String tabName = ((JLabel)pnl.getComponent(0)).getText();
-        if(!tabName.endsWith("*"))
-        {
-            ((JLabel)pnl.getComponent(0)).setText(tabName+"*");
+    public void setTabNameModified() {
+        JPanel pnl = (JPanel) mProjectEditors.getTabComponentAt(mProjectEditors.getSelectedIndex());
+        String tabName = ((JLabel) pnl.getComponent(0)).getText();
+        if (!tabName.endsWith("*")) {
+            ((JLabel) pnl.getComponent(0)).setText(tabName + "*");
         }
     }
+
     //REMOVES MODIFIED SYMBOL
-    public void setTabNameSaved()
-    {
-        JPanel pnl = (JPanel)mProjectEditors.getTabComponentAt(mProjectEditors.getSelectedIndex());
-        String tabName = ((JLabel)pnl.getComponent(0)).getText();
-        if(tabName.endsWith("*"))
-        {
-            tabName = tabName.substring(0, tabName.length()-1);
-            ((JLabel)pnl.getComponent(0)).setText(tabName);
+    public void setTabNameSaved() {
+        JPanel pnl = (JPanel) mProjectEditors.getTabComponentAt(mProjectEditors.getSelectedIndex());
+        String tabName = ((JLabel) pnl.getComponent(0)).getText();
+        if (tabName.endsWith("*")) {
+            tabName = tabName.substring(0, tabName.length() - 1);
+            ((JLabel) pnl.getComponent(0)).setText(tabName);
         }
     }
+
     // Save the selected project editor 
     public final boolean saveAs() {
         return saveAs(getSelectedProjectEditor());
@@ -561,7 +563,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Check if the project is valid
             if (project != null) {
                 // Set ProjectName
-                String projectName = mProjectEditors.getTitleAt(mProjectEditors.getSelectedIndex()).replace("*","");
+                String projectName = mProjectEditors.getTitleAt(mProjectEditors.getSelectedIndex()).replace("*", "");
                 project.setProjectName(projectName);
                 // Create a new file chooser
                 final JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
@@ -619,23 +621,21 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     // Close a specific project editor
     private int close(ProjectEditor editor, int DialogType) {
-        
+
         // Check if the project has changed
         if (editor.getEditorProject().hasChanged()) {
 
             QuitDialog qDiag = new QuitDialog(DialogType);
             int exitMessage = qDiag.getExitMessage();
             System.out.println(exitMessage);
-            if (exitMessage == QuitDialog.CANCEL_CLOSING)
-            {
+            if (exitMessage == QuitDialog.CANCEL_CLOSING) {
                 return exitMessage;
             }
-            if (exitMessage == QuitDialog.SAVE_AND_EXIT)
-            {
+            if (exitMessage == QuitDialog.SAVE_AND_EXIT) {
                 save(editor);
-            }           
+            }
             // Stop project execution if running
-            if (mRunTime.isRunning(editor.getEditorProject())){
+            if (mRunTime.isRunning(editor.getEditorProject())) {
                 stop(editor.getEditorProject());
             }
             // Close the project editor itself
@@ -654,10 +654,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             editor = null;
             System.gc();
             return exitMessage;
-        }
-        else{
+        } else {
             // Stop project execution if running
-            if (mRunTime.isRunning(editor.getEditorProject())){
+            if (mRunTime.isRunning(editor.getEditorProject())) {
                 stop(editor.getEditorProject());
             }
             // Close the project editor itself
@@ -678,7 +677,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             System.gc();
             return QuitDialog.SAVE_AND_EXIT;
         }
-        
+
     }
 
     // Save all project editors
@@ -692,17 +691,15 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     public final void closeAll() {
         for (int i = 0; i < mProjectEditors.getTabCount(); i++) {
             int result = close((ProjectEditor) mProjectEditors.getComponentAt(i), QuitDialog.EXIT_DIALOG);
-            if (result == QuitDialog.CANCEL_CLOSING)
-            {
+            if (result == QuitDialog.CANCEL_CLOSING) {
                 return;
             }
         }
         System.exit(0);
     }
-    
+
     //ESCAPE LISTENER- Closes dialog with escape key
-    public static void addEscapeListener(final JDialog dialog)
-    {
+    public static void addEscapeListener(final JDialog dialog) {
         ActionListener escListner = new ActionListener() {
 
             @Override
@@ -738,6 +735,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
      }
 
      }*/
+
     // Update list of recent projects
     public void updateRecentProjects(final EditorProject project) {
         final String projectPath = project.getProjectPath();
@@ -751,10 +749,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
             String path = Preferences.getProperty("recentproject." + i + ".path");
             String pName = Preferences.getProperty("recentproject." + i + ".name");
-            if (path != null && pName != null && !path.startsWith(Preferences.sSAMPLE_PROJECTS))
-            {
+            if (path != null && pName != null && !path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
                 recentProjectPaths.add(Preferences.getProperty("recentproject." + i + ".path"));
-                recentProjectNames.add(Preferences.getProperty("recentproject." + i + ".name")); 
+                recentProjectNames.add(Preferences.getProperty("recentproject." + i + ".name"));
             }
         }
         if (recentProjectPaths.contains(projectPath)) {
@@ -782,8 +779,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 recentProjectNames.add(index, projectName);
             }
         } else {
-            if(projectPath != null && !projectPath.contains(Preferences.sSAMPLE_PROJECTS))
-            {
+            if (projectPath != null && !projectPath.contains(Preferences.sSAMPLE_PROJECTS)) {
                 // case: project not in recent list
                 recentProjectPaths.add(0, projectPath);
                 recentProjectNames.add(0, projectName);
@@ -793,7 +789,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // set properties
         String dir = null;
         String name = null;
-        int maxCnt = ((recentProjectPaths.size() <= Preferences.sMAX_RECENT_PROJECTS)? recentProjectPaths.size() : Preferences.sMAX_RECENT_PROJECTS);
+        int maxCnt = ((recentProjectPaths.size() <= Preferences.sMAX_RECENT_PROJECTS) ? recentProjectPaths.size() : Preferences.sMAX_RECENT_PROJECTS);
         for (int i = 0; i < maxCnt; i++) {
             dir = recentProjectPaths.get(i);
             name = recentProjectNames.get(i);
@@ -893,8 +889,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                     // Print some information
                     //mLogger.message("Starting project '" + project + "'");
                     // Refresh the appearance
-                    
-                    
+
                     //refresh(); // TODO WHY IS THIS CALL HERE?
                     // Return true at success
                     return true;
@@ -912,8 +907,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
         }
     }
-    
-     // Stop the execution of the current project
+
+    // Stop the execution of the current project
     public final void stop() {
         // Get the project that has to be executed
         final ProjectEditor editor = getSelectedProjectEditor();
