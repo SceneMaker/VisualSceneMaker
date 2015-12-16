@@ -255,18 +255,18 @@ public class EditorConfig {
     
     public synchronized boolean load(final String path) {
 
-        InputStream inputStream = null;
-        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
-            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "editorconfig.xml");
-            if (inputStream == null) {
-                // Print an error message in this case
-                mLogger.failure("Error: Cannot find gesticon configuration file  ");
-                // Return failure if it does not exist
-                return false;
-            }
-
-        }
-        else {
+//        InputStream inputStream = null;
+//        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
+//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "editorconfig.xml");
+//            if (inputStream == null) {
+//                // Print an error message in this case
+//                mLogger.failure("Error: Cannot find gesticon configuration file  ");
+//                // Return failure if it does not exist
+//                return false;
+//            }
+//
+//        }
+//        else {
             final File file = new File(path, "editorconfig.xml");
             // Check if the configuration file does exist
             if (!file.exists()) {
@@ -275,13 +275,13 @@ public class EditorConfig {
                 // Return failure if it does not exist
                 return false;
             }
-            try {
-                inputStream = new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-                mLogger.failure("Error: Cannot find editor configuration file '" + file + "'");
-            }
-        }
-        if(!XMLUtilities.parseFromXMLStream(sPROPERTIES, inputStream)){
+//            try {
+//                inputStream = new FileInputStream(file);
+//            } catch (FileNotFoundException e) {
+//                mLogger.failure("Error: Cannot find editor configuration file '" + file + "'");
+//            }
+//        }
+        if(!XMLUtilities.parseFromXMLFile(sPROPERTIES, file)){
             mLogger.failure("Error: Cannot parse editor configuration file  in path" + path);
             return false;
         }
