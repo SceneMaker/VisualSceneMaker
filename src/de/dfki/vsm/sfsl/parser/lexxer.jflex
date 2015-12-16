@@ -31,7 +31,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "PlaySceneGroup" { return new Symbol(_SFSLToken_.PLAY_SCENE_GROUP); }
 "HistoryFlatClear" { return new Symbol(_SFSLToken_.HISTORY_FLAT_CLEAR); }
 "HistoryDeepClear" { return new Symbol(_SFSLToken_.HISTORY_DEEP_CLEAR); }
-"HistoryContains" { return new Symbol(_SFSLToken_.HISTORY_CONTAINS); }
+//"HistoryContains" { return new Symbol(_SFSLToken_.HISTORY_CONTAINS); }
 "HistoryValueOf" { return new Symbol(_SFSLToken_.HISTORY_VALUE_OF); }
 "HistorySetDepth" { return new Symbol(_SFSLToken_.HISTORY_SET_DEPTH); }
 "HistoryRunTime" { return new Symbol(_SFSLToken_.HISTORY_RUNTIME); }
@@ -54,11 +54,24 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "query" { return new Symbol(_SFSLToken_.QUERY); }
 "timeout" { return new Symbol(_SFSLToken_.TIMEOUT); }
 
+"list" { return new Symbol(_SFSLToken_.LIST); }
+"struct" { return new Symbol(_SFSLToken_.STRUCT); }
 
 "true" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "false" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "null"  { return new Symbol(_SFSLToken_.NULL); }
 "new"   { return new Symbol(_SFSLToken_.NEW); }
+
+
+"int"  { return new Symbol(_SFSLToken_.TINT, new java.lang.String(yytext())); }
+"short"   { return new Symbol(_SFSLToken_.TSHORT, new java.lang.String(yytext())); }
+"long"  { return new Symbol(_SFSLToken_.TLONG, new java.lang.String(yytext())); }
+"float"   { return new Symbol(_SFSLToken_.TFLOAT, new java.lang.String(yytext())); }
+"double"  { return new Symbol(_SFSLToken_.TDOUBLE, new java.lang.String(yytext())); }
+"bool"   { return new Symbol(_SFSLToken_.TBOOL, new java.lang.String(yytext())); }
+"char"   { return new Symbol(_SFSLToken_.TCHAR, new java.lang.String(yytext())); }
+"string"   { return new Symbol(_SFSLToken_.TSTRING, new java.lang.String(yytext())); }
+
 
 [0-9]+\.[0-9]+ { return new Symbol(_SFSLToken_.FLOAT, new java.lang.Float(yytext())); }
 [0-9]+ { return new Symbol(_SFSLToken_.INTEGER, new java.lang.Integer(yytext())); }
@@ -66,7 +79,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 //\"([a-zA-Z0-9]|[ _-=.!>():'])*\" { return new Symbol(_SFSLToken_.STRING, new java.lang.String(yytext())); }
 {string}        { return new Symbol(_SFSLToken_.STRING, new java.lang.String(yytext())); }
 
-[a-zA-Z_][a-zA-Z0-9_]* { return new Symbol(_SFSLToken_.VARIABLE, new java.lang.String(yytext())); }
+[a-zA-Z_][a-zA-Z0-9_]* { return new Symbol(_SFSLToken_.IDENTIFIER, new java.lang.String(yytext())); }
 
 "+" { return new Symbol(_SFSLToken_.PLUS); }
 "-" { return new Symbol(_SFSLToken_.MINUS); }
