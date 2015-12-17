@@ -318,6 +318,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
                         mActionPlayer.play();
 
                         // wait for all actions to be played
+                        mLogger.message("Wait for all actions ...");
                         try {
                             mAllActionSync.acquire();
                         } catch (InterruptedException ex) {

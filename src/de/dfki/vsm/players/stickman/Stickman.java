@@ -34,9 +34,10 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
@@ -81,7 +82,7 @@ public class Stickman extends JComponent {
 	// amimation stuff
 	public Semaphore mAnimationLaunchControl = new Semaphore(1);
 	public AnimationScheduler mAnimationScheduler;
-	private final ArrayList<AnimationListener> mAnimationListeners = new ArrayList<>();
+	private final List<AnimationListener> mAnimationListeners =  new CopyOnWriteArrayList<AnimationListener>();;
 
 	// body parts
 	public Head mHead;

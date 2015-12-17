@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
@@ -24,7 +24,8 @@ public class TCPActionServer extends Thread {
 
 	private static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 	private static TCPActionServer sInstance = null;
-	private static List<ServerConnectionHandler> sClientConnections = Collections.synchronizedList(new ArrayList());
+        private List<ServerConnectionHandler> sClientConnections =  new CopyOnWriteArrayList<ServerConnectionHandler>();
+	//private static List<ServerConnectionHandler> sClientConnections = Collections.synchronizedList(new ArrayList());
 	private final ArrayList<AnimationListener> mAnimationListeners = new ArrayList<>();
 	private boolean mRunning = true;
 
@@ -65,7 +66,7 @@ public class TCPActionServer extends Thread {
 		});
                 
                 // be sure all connection are done ...
-                sClientConnections = Collections.synchronizedList(new ArrayList());
+                sClientConnections = new CopyOnWriteArrayList<ServerConnectionHandler>();
                 
 		mRunning = false;
 		try {
