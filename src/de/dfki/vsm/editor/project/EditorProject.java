@@ -1,10 +1,8 @@
 package de.dfki.vsm.editor.project;
 
-import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.io.File;
-import java.nio.file.Path;
 
 /**
  * @author Gregor Mehlmann
