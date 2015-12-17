@@ -227,6 +227,8 @@ public class RunTimeProject {
                 && parseGesticonConfig(urlBaseStream));
 
     }
+    
+
 
     // Write the project data to a directory
     public boolean write(final File file) {
@@ -276,37 +278,28 @@ public class RunTimeProject {
     }
 
     private boolean parseProjectConfig(final String path) {
-
-        mLogger.message("Trying to parse project configuration from path '" + path + "'");
-
-//        InputStream inputStream = null;
-//        if (path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
-//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "project.xml");
-//            if (inputStream == null) {
-//                // Print an error message in this case
-//                mLogger.failure("Error: Cannot find project configuration file  ");
-//                // Return failure if it does not exist
-//                return false;
-//            }
-//
-//        } else {
-            final File file = new File(path, "project.xml");
-            // Check if the configuration file does exist
-            if (!file.exists()) {
+        InputStream inputStream = null;
+        final File file = new File(path, "project.xml");
+        if (file.exists()) {
+             try {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                mLogger.failure("Error: Cannot find sproject configuration file '" + file + "'");
+            }
+        }else{
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "project.xml");
+            if (inputStream == null) {
                 // Print an error message in this case
-                mLogger.failure("Error: Cannot find project configuration file '" + file + "'");
+                mLogger.failure("Error: Cannot find project configuration file  ");
                 // Return failure if it does not exist
                 return false;
             }
-//            try {
-//                inputStream = new FileInputStream(file);
-//            } catch (FileNotFoundException e) {
-//                mLogger.failure("Error: Cannot find sproject configuration file '" + file + "'");
-//            }
-//        }
-        if (!XMLUtilities.parseFromXMLFile(mProjectConfig, file)) {
-            mLogger.failure("Error: Cannot parse project configuration file  in path" + path);
-            return false;
+
+        }
+
+        if(!XMLUtilities.parseFromXMLStream(mProjectConfig, inputStream)){
+               mLogger.failure("Error: Cannot parse project configuration file  in path" + path);
+               return false;
         }
 
         // Print an information message in this case
@@ -349,33 +342,31 @@ public class RunTimeProject {
         return true;
     }
 
-    private boolean parseSceneFlow(final String path) {
-//        InputStream inputStream = null;
-//        if (path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
-//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "sceneflow.xml");
-//            if (inputStream == null) {
-//                // Print an error message in this case
-//                mLogger.failure("Error: Cannot find sceneflow configuration file project ");
-//                // Return failure if it does not exist
-//                return false;
-//            }
-//
-//        } else {
-            final File file = new File(path, "sceneflow.xml");
-            // Check if the configuration file does exist
-            if (!file.exists()) {
-                // Print an error message in this case
+
+    private boolean parseSceneFlow(final String path){
+        InputStream inputStream = null;
+        final File file = new File(path, "sceneflow.xml");
+        // Check if the configuration file does exist
+        if (file.exists()) {
+           try {
+                inputStream = new FileInputStream(file);
+           } catch (FileNotFoundException e) {
                 mLogger.failure("Error: Cannot find sceneflow configuration file '" + file + "'");
+           }
+        }
+
+        else{
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "sceneflow.xml");
+            if (inputStream == null) {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find sceneflow configuration file   project ");
                 // Return failure if it does not exist
                 return false;
             }
-//            try {
-//                inputStream = new FileInputStream(file);
-//            } catch (FileNotFoundException e) {
-//                mLogger.failure("Error: Cannot find sceneflow configuration file '" + file + "'");
-//            }
-//        }
-        if (!XMLUtilities.parseFromXMLFile(mSceneFlow, file)) {
+
+        }
+
+        if(!XMLUtilities.parseFromXMLStream(mSceneFlow, inputStream)){
             mLogger.failure("Error: Cannot parse sceneflow configuration file  in path" + path);
             return false;
         }
@@ -425,34 +416,31 @@ public class RunTimeProject {
     }
 
     private boolean parseSceneScript(final String path) {
-//        InputStream inputStream = null;
-//        if (path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
-//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "scenescript.xml");
-//            if (inputStream == null) {
-//                // Print an error message in this case
-//                mLogger.failure("Error: Cannot find scenescript configuration file  ");
-//                // Return failure if it does not exist
-//                return false;
-//            }
-//
-//        } else {
-            final File file = new File(path, "scenescript.xml");
+        InputStream inputStream = null;
+
+        final File file = new File(path, "scenescript.xml");
             // Check if the configuration file does exist
-            if (!file.exists()) {
-                // Print an error message in this case
+        if (file.exists()) {
+            try {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
                 mLogger.failure("Error: Cannot find scenescript configuration file '" + file + "'");
+            }
+        }
+
+        else {
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "scenescript.xml");
+            if (inputStream == null) {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find scenescript configuration file  ");
                 // Return failure if it does not exist
                 return false;
             }
-//            try {
-//                inputStream = new FileInputStream(file);
-//            } catch (FileNotFoundException e) {
-//                mLogger.failure("Error: Cannot find scenescript configuration file '" + file + "'");
-//            }
-//        }
-        if (!XMLUtilities.parseFromXMLFile(mSceneScript, file)) {
-            mLogger.failure("Error: Cannot parse scenescript configuration file  in path" + path);
-            return false;
+
+        }
+        if(!XMLUtilities.parseFromXMLStream(mSceneScript, inputStream)){
+                mLogger.failure("Error: Cannot parse scenescript configuration file  in path" + path);
+                return false;
         }
 
         // Print an information message in this case
@@ -497,35 +485,35 @@ public class RunTimeProject {
 
     private boolean parseActiconConfig(final String path) {
 
-//        InputStream inputStream = null;
-//        if (path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
-//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "acticon.xml");
-//            if (inputStream == null) {
-//                // Print an error message in this case
-//                mLogger.failure("Error: Cannot find acticon configuration file  ");
-//                // Return failure if it does not exist
-//                return false;
-//            }
-//
-//        } else {
-            final File file = new File(path, "acticon.xml");
+        InputStream inputStream = null;
+        final File file = new File(path, "acticon.xml");
             // Check if the configuration file does exist
-            if (!file.exists()) {
-                // Print an error message in this case
+        if (file.exists()) {
+           try {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
                 mLogger.failure("Error: Cannot find acticon configuration file '" + file + "'");
+            }
+
+        }
+
+        else {
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "acticon.xml");
+            if (inputStream == null) {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find acticon configuration file  ");
                 // Return failure if it does not exist
                 return false;
             }
-//            try {
-//                inputStream = new FileInputStream(file);
-//            } catch (FileNotFoundException e) {
-//                mLogger.failure("Error: Cannot find acticon configuration file '" + file + "'");
-//            }
-//        }
-        if (!XMLUtilities.parseFromXMLFile(mActiconConfig, file)) {
+
+
+        }
+
+        if(!XMLUtilities.parseFromXMLStream(mActiconConfig, inputStream)){
             mLogger.failure("Error: Cannot parse acticon configuration file  in path" + path);
             return false;
         }
+
         // Print an information message in this case
         mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" + mActiconConfig);
         // Return success if the project was loaded
@@ -568,32 +556,31 @@ public class RunTimeProject {
 
     private boolean parseGesticonConfig(final String path) {
 
-//        InputStream inputStream = null;
-//        if (path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
-//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "gesticon.xml");
-//            if (inputStream == null) {
-//                // Print an error message in this case
-//                mLogger.failure("Error: Cannot find gesticon configuration file  ");
-//                // Return failure if it does not exist
-//                return false;
-//            }
-//
-//        } else {
-            final File file = new File(path, "gesticon.xml");
+        InputStream inputStream = null;
+
+        final File file = new File(path, "gesticon.xml");
             // Check if the configuration file does exist
-            if (!file.exists()) {
-                // Print an error message in this case
+        if (file.exists()) {
+            try {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
                 mLogger.failure("Error: Cannot find gesticon configuration file '" + file + "'");
+            }
+        }
+
+        else {
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "gesticon.xml");
+            if (inputStream == null) {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find gesticon configuration file  ");
                 // Return failure if it does not exist
                 return false;
             }
-//            try {
-//                inputStream = new FileInputStream(file);
-//            } catch (FileNotFoundException e) {
-//                mLogger.failure("Error: Cannot find gesticon configuration file '" + file + "'");
-//            }
-//        }
-        if (!XMLUtilities.parseFromXMLFile(mGesticonConfig, file)) {
+
+
+        }
+
+        if(!XMLUtilities.parseFromXMLStream(mGesticonConfig, inputStream)){
             mLogger.failure("Error: Cannot parse gesticon configuration file  in path" + path);
             return false;
         }
@@ -640,32 +627,29 @@ public class RunTimeProject {
 
     private boolean parseVisiconConfig(final String path) {
 
-//        InputStream inputStream = null;
-//        if (path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
-//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "visicon.xml");
-//            if (inputStream == null) {
-//                // Print an error message in this case
-//                mLogger.failure("Error: Cannot find visicon configuration file  ");
-//                // Return failure if it does not exist
-//                return false;
-//            }
-//
-//        } else {
-            final File file = new File(path, "visicon.xml");
+        InputStream inputStream = null;
+
+        final File file = new File(path, "visicon.xml");
             // Check if the configuration file does exist
-            if (!file.exists()) {
-                // Print an error message in this case
+        if (file.exists()) {
+            try {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
                 mLogger.failure("Error: Cannot find visicon configuration file '" + file + "'");
+            }
+        }
+
+        else {
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "visicon.xml");
+            if (inputStream == null) {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find visicon configuration file  ");
                 // Return failure if it does not exist
                 return false;
             }
-//            try {
-//                inputStream = new FileInputStream(file);
-//            } catch (FileNotFoundException e) {
-//                mLogger.failure("Error: Cannot find visicon configuration file '" + file + "'");
-//            }
-//        }
-        if (!XMLUtilities.parseFromXMLFile(mVisiconConfig, file)) {
+
+        }
+        if(!XMLUtilities.parseFromXMLStream(mVisiconConfig, inputStream)){
             mLogger.failure("Error: Cannot parse visicon configuration file  in path" + path);
             return false;
         }
