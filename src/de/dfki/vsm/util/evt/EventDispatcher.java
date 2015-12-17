@@ -4,9 +4,10 @@ package de.dfki.vsm.util.evt;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Not me
@@ -20,7 +21,7 @@ public class EventDispatcher {
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // The Listener List
-    private final LinkedList<EventListener> mListenerList = new LinkedList<EventListener>();
+    private final List<EventListener> mListenerList =  new CopyOnWriteArrayList<EventListener>();
 
     // The Timer Thread
     private final Timer mTimer = new Timer("EventCasterTimer");
@@ -44,12 +45,14 @@ public class EventDispatcher {
     }
 
     // Add An Event Listener
-    public final /*synchronized*/ void register(final EventListener listener) {
-        mListenerList.add(listener);
+    public final /*synchronized*/ void register(final EventListener listener) {       
+            //mLogger.message("Registering '" + listener + "'");
+            mListenerList.add(listener);
     }
 
-    public final /*synchronized*/ void remove(final EventListener listener) {
-        mListenerList.remove(listener);
+    public final /*synchronized*/ void remove(final EventListener listener) {  
+            //mLogger.message("Remove '" + listener + "'");
+            mListenerList.remove(listener);
     }
 
     public final /*synchronized*/ void convey(final EventObject event) {
