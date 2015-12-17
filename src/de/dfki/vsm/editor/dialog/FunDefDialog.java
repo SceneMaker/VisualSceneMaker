@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
@@ -10,7 +9,6 @@ import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -55,17 +53,18 @@ import javax.swing.text.PlainDocument;
 public class FunDefDialog extends Dialog {
 
     //
-    private Vector<String>          mArgNameList  = new Vector<String>();
-    private HashMap<String, String> mNameMap      = new HashMap<String, String>();
-    private HashMap<String, String> mTypeMap      = new HashMap<String, String>();
-    private HashMap<String, Method> mMethodMap    = new HashMap<String, Method>();
-    private final Document          mNameDocument = new PlainDocument() {
+    private Vector<String> mArgNameList = new Vector<String>();
+    private HashMap<String, String> mNameMap = new HashMap<String, String>();
+    private HashMap<String, String> mTypeMap = new HashMap<String, String>();
+    private HashMap<String, Method> mMethodMap = new HashMap<String, Method>();
+    private final Document mNameDocument = new PlainDocument() {
         @Override
         public void insertString(int offs, String str, AttributeSet attr) throws BadLocationException {
             String newstr = str.replaceAll(" ", "");    // could use "\\s" instead of " "
 
             super.insertString(offs, newstr, attr);
         }
+
         @Override
         public void replace(int offs, int len, String str, AttributeSet attr) throws BadLocationException {
             String newstr = str.replaceAll(" ", "");    // could use "\\s" instead of " "
@@ -81,27 +80,27 @@ public class FunDefDialog extends Dialog {
     private Method mSelectedMethod;
 
     // GUI Components
-    private JLabel       mNameLabel;
-    private JTextField   mNameTextField;
-    private JLabel       mClassNameLabel;
-    private JTextField   mClassNameTextField;
-    private JLabel       mMethodLabel;
-    private JComboBox    mMethodComboBox;
-    private JLabel       mArgLabel;
-    private JList        mArgList;
-    private JScrollPane  mArgScrollPane;
-    private OKButton     mOkButton;
+    private JLabel mNameLabel;
+    private JTextField mNameTextField;
+    private JLabel mClassNameLabel;
+    private JTextField mClassNameTextField;
+    private JLabel mMethodLabel;
+    private JComboBox mMethodComboBox;
+    private JLabel mArgLabel;
+    private JList mArgList;
+    private JScrollPane mArgScrollPane;
+    private OKButton mOkButton;
     private CancelButton mCancelButton;
-    private JLabel       mMessageLabel;
-    private JPanel       mFunDefContent;
-    private JPanel       nameContainer;
-    private JPanel       methodContainer;
-    private JPanel       classNameContainer;
-    private JPanel       argContainer;
-    private JPanel       mUpperPanel;
-    private JPanel       mLowerPanel;
-    private Color        mDefaultColor;
-    private Boolean      mIsValidClass;
+    private JLabel mMessageLabel;
+    private JPanel mFunDefContent;
+    private JPanel nameContainer;
+    private JPanel methodContainer;
+    private JPanel classNameContainer;
+    private JPanel argContainer;
+    private JPanel mUpperPanel;
+    private JPanel mLowerPanel;
+    private Color mDefaultColor;
+    private Boolean mIsValidClass;
     private Dimension labelSize = new Dimension(100, 30);
     private Dimension textFielSize = new Dimension(250, 30);
 
@@ -124,29 +123,29 @@ public class FunDefDialog extends Dialog {
     }
 
     private void initComponents() {
-
-        //
-        mNameLabel     = new JLabel("Name:");
+        mNameLabel = new JLabel("Name:");
         mNameTextField = new JTextField();
         mNameTextField.setDocument(mNameDocument);
         sanitizeComponent(mNameLabel, labelSize);
         sanitizeComponent(mNameTextField, textFielSize);
-        
+
         //Name box
         Box nameBox = Box.createHorizontalBox();
         nameBox.add(mNameLabel);
         nameBox.add(Box.createHorizontalStrut(10));
-        nameBox.add(mNameTextField);        
+        nameBox.add(mNameTextField);
         //
-        mClassNameLabel     = new JLabel("Class:");
+        mClassNameLabel = new JLabel("Class:");
         mClassNameTextField = new JTextField();
         sanitizeComponent(mClassNameLabel, labelSize);
         sanitizeComponent(mClassNameTextField, textFielSize);
-        
+
         mClassNameTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent evt) {
-                classTextFieldKeyTyped(evt);
+                if (!evt.isActionKey()) {
+                    classTextFieldKeyTyped(evt);
+                }
             }
         });
         //Class name box
@@ -155,7 +154,7 @@ public class FunDefDialog extends Dialog {
         classNameBox.add(Box.createHorizontalStrut(10));
         classNameBox.add(mClassNameTextField);
         //
-        mMethodLabel    = new JLabel("Method:");
+        mMethodLabel = new JLabel("Method:");
         mMethodComboBox = new JComboBox();
         sanitizeComponent(mMethodLabel, labelSize);
         sanitizeComponent(mMethodComboBox, textFielSize);
@@ -173,13 +172,13 @@ public class FunDefDialog extends Dialog {
         methodBox.add(mMethodComboBox);
         //
         mArgLabel = new JLabel("Arguments:");
-        mArgList  = new JList();
+        mArgList = new JList();
         mArgList.setModel(new DefaultListModel());
         mArgScrollPane = new JScrollPane(mArgList);
         mArgScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         sanitizeComponent(mArgLabel, labelSize);
         sanitizeComponent(mArgScrollPane, new Dimension(220, 110));
-        
+
         mArgList.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -219,7 +218,7 @@ public class FunDefDialog extends Dialog {
         Box messageBox = Box.createHorizontalBox();
         messageBox.add(mMessageLabel);
 //        mMessageLabel.setMinimumSize(new DimensioXn(300, 30));
-        
+
         Box finalBox = Box.createVerticalBox();
         finalBox.add(nameBox);
         finalBox.add(Box.createVerticalStrut(15));
@@ -232,34 +231,33 @@ public class FunDefDialog extends Dialog {
         finalBox.add(messageBox);
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(mButtonPanel);
-        
-        
+
         addComponent(finalBox, 20, 20, 380, 300);
         packComponents(420, 320);
         mDefaultColor = Color.white;
     }
+
     /**
      * Set the correct size of the components
+     *
      * @param jb
-     * @param dim 
+     * @param dim
      */
     private void sanitizeComponent(JComponent jb, Dimension dim) {
         jb.setPreferredSize(dim);
         jb.setMinimumSize(dim);
         jb.setMaximumSize(dim);
     }
-    private void fillComponents() {
 
-        //
+    private void fillComponents() {
         mNameTextField.setText(mFunDef.getName());
 
-        //
         mClassNameTextField.setText(mFunDef.getClassName());
 
         // Init the method combo box with the class name of the user command
         // definition and set the selected method to the method of the user
         // command definition.
-        initMethodComboBox();
+        initMethodComboBox(mFunDef.getClassName());
 
         String selectedMethod = mFunDef.getMethod() + mFunDef.getParamPrettyPrint();
 
@@ -272,15 +270,13 @@ public class FunDefDialog extends Dialog {
         // with the parameter names of the user command definition.
         resizeArgNameList();
 
+        // TODO - Something is wrong with the argument name!
+        
         for (int i = 0; (i < mFunDef.getSizeOfParamList()) && (i < mArgNameList.size()); i++) {
             mArgNameList.set(i, mFunDef.getParamAt(i).getName());
         }
 
         updateArgList();
-    }
-
-    private void initMethodComboBox() {
-        initMethodComboBox(mFunDef.getClassName());
     }
 
     private void initMethodComboBox(String className) {
@@ -289,7 +285,7 @@ public class FunDefDialog extends Dialog {
         mMessageLabel.setForeground(Color.GREEN);
         mMethodComboBox.setForeground(Color.DARK_GRAY);
 
-        boolean isClass  = true;
+        boolean isClass = true;
         boolean isObject = true;
 
         try {
@@ -311,12 +307,12 @@ public class FunDefDialog extends Dialog {
             isObject = true;
 
             try {
-                int    dotIndex    = className.lastIndexOf('.');
-                String parentName  = className.substring(0, dotIndex);
-                String memberName  = className.substring(dotIndex + 1);
-                Class  parentClass = Class.forName(parentName);
-                Field  javaField   = parentClass.getField(memberName);
-                Class  javaClass   = javaField.getType();
+                int dotIndex = className.lastIndexOf('.');
+                String parentName = className.substring(0, dotIndex);
+                String memberName = className.substring(dotIndex + 1);
+                Class parentClass = Class.forName(parentName);
+                Field javaField = parentClass.getField(memberName);
+                Class javaClass = javaField.getType();
 
                 if (Modifier.isStatic(javaField.getModifiers()) && Modifier.isPublic(javaField.getModifiers())) {
                     getAvailableMethodNames(javaClass);    // PG added 10.1.14: recursively get all available methods
@@ -327,7 +323,7 @@ public class FunDefDialog extends Dialog {
         }
 
         // Display a message on the message label
-        if (!isClass &&!isObject) {
+        if (!isClass && !isObject) {
             mIsValidClass = false;
             mMethodComboBox.addItem(mFunDef.getMethod() + " (not in class or classpath)");
             mMethodComboBox.setForeground(Color.RED.darker());
@@ -336,7 +332,7 @@ public class FunDefDialog extends Dialog {
         } else {
 
             // Get the selected method and resize/fill the argument list
-            mIsValidClass   = true;
+            mIsValidClass = true;
             mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
             resizeArgNameList();
             updateArgList();
@@ -358,7 +354,7 @@ public class FunDefDialog extends Dialog {
 
         Class sc = c.getSuperclass();
 
-        if (Modifier.isPublic(sc.getModifiers()) &&!sc.equals(Object.class)) {
+        if (Modifier.isPublic(sc.getModifiers()) && !sc.equals(Object.class)) {
             getAvailableMethodNames(sc);
         }
     }
@@ -366,69 +362,69 @@ public class FunDefDialog extends Dialog {
     public JPanel createPanel() {
         mFunDefContent = new JPanel();
         mFunDefContent.setLayout(new BoxLayout(mFunDefContent, BoxLayout.Y_AXIS));
-     
+
         // mFunDefContent.setLayout(new GridLayout(0,1));
         mFunDefContent.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-          
+
         nameContainer = new JPanel();
         nameContainer.setLayout(new BoxLayout(nameContainer, BoxLayout.X_AXIS));
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         nameContainer.add(mNameLabel);
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         nameContainer.add(mNameTextField);
-        
+
         mNameTextField.setPreferredSize(new Dimension(0, 25));
         nameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-        
+
         methodContainer = new JPanel();
         methodContainer.setLayout(new BoxLayout(methodContainer, BoxLayout.X_AXIS));
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         methodContainer.add(mMethodLabel);
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         methodContainer.add(mMethodComboBox);
-        
+
         mMethodComboBox.setPreferredSize(new Dimension(0, 25));
         methodContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-        
+
         classNameContainer = new JPanel();
         classNameContainer.setLayout(new BoxLayout(classNameContainer, BoxLayout.X_AXIS));
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         classNameContainer.add(mClassNameLabel);
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         classNameContainer.add(mClassNameTextField);
-        
+
         mClassNameTextField.setPreferredSize(new Dimension(0, 25));
         classNameContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-        
+
         argContainer = new JPanel();
 
         JList list = mArgList;
         list.setVisibleRowCount(1);
         list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        
+
         argContainer.setLayout(new BoxLayout(argContainer, BoxLayout.X_AXIS));
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         argContainer.add(mArgLabel);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
         argContainer.add(list);
-        
+
         list.setPreferredSize(new Dimension(0, 25));
         DefaultListCellRenderer renderer = (DefaultListCellRenderer) list.getCellRenderer();
         renderer.setHorizontalAlignment(JLabel.CENTER);
         argContainer.add(Box.createRigidArea(new Dimension(5, 5)));
-        
+
         mUpperPanel = new JPanel();
         mUpperPanel.setOpaque(true);
         mUpperPanel.setLayout(new GridLayout(0, 2));
         mUpperPanel.add(nameContainer);
         mUpperPanel.add(methodContainer);
-        
+
         mLowerPanel = new JPanel();
         mLowerPanel.setOpaque(true);
         mLowerPanel.setLayout(new GridLayout(0, 2));
         mLowerPanel.add(classNameContainer);
         mLowerPanel.add(argContainer);
-        
+
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
         mFunDefContent.add(mUpperPanel);
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 5)));
@@ -436,7 +432,7 @@ public class FunDefDialog extends Dialog {
         mFunDefContent.add(Box.createRigidArea(new Dimension(5, 10)));
 
         Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        double    width      = screenSize.getWidth();
+        double width = screenSize.getWidth();
 
         mFunDefContent.setMaximumSize(new Dimension((int) width, 80));
 
@@ -444,7 +440,6 @@ public class FunDefDialog extends Dialog {
     }
 
     private void updateArgList() {
-
         // Clear the argument name list
         ((DefaultListModel) mArgList.getModel()).clear();
 
@@ -461,7 +456,7 @@ public class FunDefDialog extends Dialog {
                 String parameterName = mArgNameList.get(i);
 
                 // String parameterTypeName = parameterType.getName();//parameterType.getSimpleName();
-                String parameterTypeName     = parameterType.getName();
+                String parameterTypeName = parameterType.getName();
                 String composedParameterName = parameterName + " (" + parameterTypeName + ")";
 
                 // Add the name and the name of the type to the appropriate map
@@ -504,7 +499,7 @@ public class FunDefDialog extends Dialog {
         String className = mClassNameTextField.getText();
 
         if (!Character.isISOControl(evt.getKeyChar())) {
-            int    position  = mClassNameTextField.getCaret().getDot();
+            int position = mClassNameTextField.getCaret().getDot();
             String newstring = new StringBuffer(className).insert(position, evt.getKeyChar()).toString();
 
             className = newstring;
@@ -516,10 +511,10 @@ public class FunDefDialog extends Dialog {
     public void argumentListMouseClicked(MouseEvent evt) {
         if ((evt.getButton() == MouseEvent.BUTTON1) && (evt.getClickCount() == 2)) {
             if (mArgList.getSelectedValue() != null) {
-                int    index  = mArgList.getSelectedIndex();
+                int index = mArgList.getSelectedIndex();
                 String result = (String) JOptionPane.showInputDialog(this, "Rename Parameter:", "Rename Parameter",
-                                    JOptionPane.PLAIN_MESSAGE, null, null,
-                                    mNameMap.get((String) mArgList.getSelectedValue()));
+                        JOptionPane.PLAIN_MESSAGE, null, null,
+                        mNameMap.get((String) mArgList.getSelectedValue()));
 
                 mArgNameList.set(index, result);
                 updateArgList();
@@ -560,13 +555,13 @@ public class FunDefDialog extends Dialog {
 
     @Override
     public void okActionPerformed() {
-        if(mNameTextField.getText().length() == 0 ){
+        if (mNameTextField.getText().length() == 0) {
             mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             mMessageLabel.setText("Function name is not valid");
             mMessageLabel.setForeground(Color.red);
             return;
         }
-        if(mClassNameTextField.getText().length() == 0 ){
+        if (mClassNameTextField.getText().length() == 0) {
             mClassNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             mMessageLabel.setText("Class name is not valid");
             mMessageLabel.setForeground(Color.red);
