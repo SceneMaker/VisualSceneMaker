@@ -24,6 +24,14 @@ import javax.swing.JScrollPane;
 
 /**
 * @author Sergio Soto
+* 
+ * Patrick Dec. 2015: This code has to be redesigned. The current approach works. The next implementation
+ * should not follow the concept of constantly rebuilding every SingleFunctionContainer
+ * when a new function is added. 
+ * The next implementation should follow the pattern Model - View - Control. In the
+ * current implementation control is mixed with view.
+ * 
+ * Current status: BETA
 */
 public class FunctionsEditor extends JPanel implements EventListener {
 
