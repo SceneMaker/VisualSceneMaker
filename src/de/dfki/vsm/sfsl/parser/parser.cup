@@ -341,11 +341,11 @@ parentheses_expression ::=
 ;
 
 construct_expression ::=
-  NEW IDENTIFIER:x LPAREN expression_list:y RPAREN                                {: RESULT = new ConstructExpression(x, y); :}
+  NEW IDENTIFIER:x LPAREN expression_list:y RPAREN                              {: RESULT = new ConstructExpression(x, y); :}
 ;
 
 calling_expression ::=
-  IDENTIFIER:x LPAREN expression_list:y RPAREN                                    {: RESULT = new CallingExpression(x, y); :}
+  IDENTIFIER:x LPAREN expression_list:y RPAREN                                  {: RESULT = new CallingExpression(x, y); :}
 ;
 
 binary_expression ::=

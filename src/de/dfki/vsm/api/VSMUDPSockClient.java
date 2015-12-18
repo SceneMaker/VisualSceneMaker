@@ -1,5 +1,7 @@
 package de.dfki.vsm.api;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -127,9 +129,9 @@ public final class VSMUDPSockClient extends VSMAgentClient {
                     = new DatagramPacket(buffer, buffer.length);
             // And send the UDP packet
             mSocket.send(packet);
-               // Return true at success
+            // Return true at success
             return true;
-        } catch (final Exception exc) {
+        } catch (final IOException exc) {
             // Print some information
             mLogger.failure(exc.toString());
             // Return false at failure 
@@ -151,9 +153,9 @@ public final class VSMUDPSockClient extends VSMAgentClient {
             mSocket.receive(packet);
             // Return the buffer now
             return Arrays.copyOf(buffer, packet.getLength());
-        } catch (final Exception exc) {
+        } catch (final IOException exc) {
             // Print some information
-            mLogger.warning(exc.toString());
+            //mLogger.warning(exc.toString());
             // Return null at failure 
             return null;
         }
@@ -173,7 +175,7 @@ public final class VSMUDPSockClient extends VSMAgentClient {
                 // And return message
                 return message;
             }
-        } catch (final Exception exc) {
+        } catch (final UnsupportedEncodingException exc) {
             // Print some information
             mLogger.failure(exc.toString());
         }
