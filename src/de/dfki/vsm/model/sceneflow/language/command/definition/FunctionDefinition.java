@@ -1,6 +1,6 @@
-package de.dfki.vsm.model.sceneflow.language.definition;
+package de.dfki.vsm.model.sceneflow.language.command.definition;
 
-import de.dfki.vsm.model.sceneflow.language.SyntaxObject;
+import de.dfki.vsm.model.sceneflow.language.command.Definition;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -11,12 +11,12 @@ import java.util.ArrayList;
 /**
  * @author Gregor Mehlmann
  */
-public final class FunctionDefinition implements SyntaxObject, Comparable<FunctionDefinition> {
+public final class FunctionDefinition extends Definition implements Comparable<FunctionDefinition> {
 
     private String mName;
     private String mClazz;
     private String mMethod;
-    private ArrayList<ArgumentDefinition> mArgList
+    private ArrayList<ParameterDefinition> mArgList
             = new ArrayList<>();
 
     public FunctionDefinition() {
@@ -83,17 +83,17 @@ public final class FunctionDefinition implements SyntaxObject, Comparable<Functi
 
     public final ArrayList getCopyOfParamList() {
         final ArrayList copy = new ArrayList();
-        for (ArgumentDefinition arg : mArgList) {
+        for (ParameterDefinition arg : mArgList) {
             copy.add(arg.getCopy());
         }
         return copy;
     }
 
-    public final boolean addArg(final ArgumentDefinition value) {
+    public final boolean addArg(final ParameterDefinition value) {
         return mArgList.add(value);
     }
 
-    public final ArgumentDefinition getArgAt(final int index) {
+    public final ParameterDefinition getArgAt(final int index) {
         return mArgList.get(index);
     }
 
@@ -157,7 +157,7 @@ public final class FunctionDefinition implements SyntaxObject, Comparable<Functi
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(Element element) throws XMLParseError {
-                ArgumentDefinition var = new ArgumentDefinition();
+                ParameterDefinition var = new ParameterDefinition();
 
                 var.parseXML(element);
                 mArgList.add(var);
@@ -210,4 +210,10 @@ public final class FunctionDefinition implements SyntaxObject, Comparable<Functi
     public final int compareTo(final FunctionDefinition other) {
         return mName.compareTo(other.getName());
     }
+
+    @Override
+    public String toString() {
+        return getAbstractSyntax();
+    }
+
 }

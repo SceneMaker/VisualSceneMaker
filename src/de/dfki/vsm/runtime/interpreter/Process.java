@@ -15,7 +15,7 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.RandomEdge;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SuperNode;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.language.command.Command;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.VariableDefinition;
 import de.dfki.vsm.runtime.exceptions.InterruptException;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.exceptions.TerminateException;

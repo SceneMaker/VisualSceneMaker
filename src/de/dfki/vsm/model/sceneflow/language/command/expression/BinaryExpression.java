@@ -19,10 +19,9 @@ public class BinaryExpression extends Expression {
 
     public enum Operator {
 
-        And, Or,
-        Add, Div, Mul, Sub,
-        Eq, Ge, Gt, Le, Lt, Neq,
-        Get, Contains, Remove, AddFirst, AddLast
+        AndAnd, OrOr, And, Or, Xor,
+        Add, Div, Mul, Mod, Sub,
+        Eq, Ge, Gt, Le, Lt, Neq
     }
 
     public BinaryExpression() {
@@ -128,21 +127,21 @@ public class BinaryExpression extends Expression {
             case Neq:
                 opString = left + " != " + right;
                 break;
-            case Get:
-                opString = "Get(" + left + " , " + right + ")";
-                break;
-            case Contains:
-                opString = "Contains(" + left + " , " + right + ")";
-                break;
-            case Remove:
-                opString = "Remove(" + left + " , " + right + ")";
-                break;
-            case AddFirst:
-                opString = "AddFirst(" + left + " , " + right + ")";
-                break;
-            case AddLast:
-                opString = "AddLast(" + left + " , " + right + ")";
-                break;
+//            case Get:
+//                opString = "Get(" + left + " , " + right + ")";
+//                break;
+//            case Contains:
+//                opString = "Contains(" + left + " , " + right + ")";
+//                break;
+//            case Remove:
+//                opString = "Remove(" + left + " , " + right + ")";
+//                break;
+//            case AddFirst:
+//                opString = "AddFirst(" + left + " , " + right + ")";
+//                break;
+//            case AddLast:
+//                opString = "AddLast(" + left + " , " + right + ")";
+//                break;
         }
         return opString;
     }
@@ -198,21 +197,21 @@ public class BinaryExpression extends Expression {
             case Neq:
                 opString = left + " != " + right;
                 break;
-            case Get:
-                opString = "Get(" + left + " , " + right + ")";
-                break;
-            case Contains:
-                opString = "Contains(" + left + " , " + right + ")";
-                break;
-            case Remove:
-                opString = "Remove(" + left + " , " + right + ")";
-                break;
-            case AddFirst:
-                opString = "AddFirst(" + left + " , " + right + ")";
-                break;
-            case AddLast:
-                opString = "AddLast(" + left + " , " + right + ")";
-                break;
+//            case Get:
+//                opString = "Get(" + left + " , " + right + ")";
+//                break;
+//            case Contains:
+//                opString = "Contains(" + left + " , " + right + ")";
+//                break;
+//            case Remove:
+//                opString = "Remove(" + left + " , " + right + ")";
+//                break;
+//            case AddFirst:
+//                opString = "AddFirst(" + left + " , " + right + ")";
+//                break;
+//            case AddLast:
+//                opString = "AddLast(" + left + " , " + right + ")";
+//                break;
         }
         return opString;
     }

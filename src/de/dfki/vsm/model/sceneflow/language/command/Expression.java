@@ -5,10 +5,10 @@ import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.Histor
 import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.HistoryValueOf;
 import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.InStateCond;
 import de.dfki.vsm.model.sceneflow.language.command.expression.BinaryExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.ConstructExpression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.JavaCallExpression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.JavaNewExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.LiteralExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.ParenthesesExpression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.ParenExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.TernaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.VariableExpression;
@@ -32,16 +32,16 @@ public abstract class Expression extends Command {
         final String tag = element.getTagName();
 
         if (tag.equals("UserCommand")) {
-            expression = new CallingExpression();
+            expression = new JavaCallExpression();
             expression.parseXML(element);
         } else if (tag.equals("If")) {
             expression = new TernaryExpression();
             expression.parseXML(element);
         } else if (tag.equals("Constructor")) {
-            expression = new ConstructExpression();
+            expression = new JavaNewExpression();
             expression.parseXML(element);
         } else if (tag.equals("Parentheses")) {
-            expression = new ParenthesesExpression();
+            expression = new ParenExpression();
             expression.parseXML(element);
         } else if (tag.equals("Random")
                 || tag.equals("First")

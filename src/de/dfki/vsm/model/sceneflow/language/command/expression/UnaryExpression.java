@@ -19,8 +19,10 @@ public class UnaryExpression extends Expression {
 
     public enum Operator {
 
-        Neg, Not,
-        Random,
+        Neg, Not, Lnot, Inc, Dec,
+        
+        Random, 
+        
         RemoveFirst, RemoveLast, First, Last, Clear, Empty, Size
     }
 

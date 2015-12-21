@@ -1,4 +1,4 @@
-package de.dfki.vsm.model.sceneflow.language.definition;
+package de.dfki.vsm.model.sceneflow.language.command.definition;
 
 import de.dfki.vsm.model.sceneflow.language.SyntaxObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -7,17 +7,17 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class ArgumentDefinition implements SyntaxObject {
+public final class ParameterDefinition implements SyntaxObject {
 
     private String mName;
     private String mType;
 
-    public ArgumentDefinition() {
+    public ParameterDefinition() {
         mName = new String();
         mType = new String();
     }
 
-    public ArgumentDefinition(final String name, final String type) {
+    public ParameterDefinition(final String name, final String type) {
         mName = name;
         mType = type;
     }
@@ -80,8 +80,8 @@ public final class ArgumentDefinition implements SyntaxObject {
     }
 
     @Override
-    public final ArgumentDefinition getCopy() {
-        return new ArgumentDefinition(mName, mType);
+    public final ParameterDefinition getCopy() {
+        return new ParameterDefinition(mName, mType);
     }
 
     @Override
@@ -94,4 +94,11 @@ public final class ArgumentDefinition implements SyntaxObject {
         mName = element.getAttribute("name");
         mType = element.getAttribute("type");
     }
+
+    @Override
+    public String toString() {
+        return getAbstractSyntax();
+    }
+    
+    
 }

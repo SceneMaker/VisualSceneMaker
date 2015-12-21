@@ -17,21 +17,21 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public class CallingExpression extends Expression {
+public class JavaCallExpression extends Expression {
     private String             mName;
     private ArrayList<Expression> mArgList;
 
-    public CallingExpression() {
+    public JavaCallExpression() {
         mName    = new String();
-        mArgList = new ArrayList<Expression>();
+        mArgList = new ArrayList();
     }
 
-    public CallingExpression(String name) {
+    public JavaCallExpression(String name) {
         mName    = name;
-        mArgList = new ArrayList<Expression>();
+        mArgList = new ArrayList();
     }
 
-    public CallingExpression(String name, ArrayList<Expression> argList) {
+    public JavaCallExpression(String name, ArrayList argList) {
         mName    = name;
         mArgList = argList;
     }
@@ -57,7 +57,7 @@ public class CallingExpression extends Expression {
     }
 
     public ArrayList<Expression> getCopyOfArgList() {
-        ArrayList<Expression> copy = new ArrayList<Expression>();
+        ArrayList<Expression> copy = new ArrayList();
 
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
@@ -78,6 +78,7 @@ public class CallingExpression extends Expression {
 //        return ExpType.USR;
 //    }
 
+    @Override
     public String getAbstractSyntax() {
         String desc = "Command( " + mName + "( ";
 
@@ -92,6 +93,7 @@ public class CallingExpression extends Expression {
         return desc + " ) )";
     }
 
+    @Override
     public String getConcreteSyntax() {
         String desc = mName + " ( ";
 
@@ -106,6 +108,7 @@ public class CallingExpression extends Expression {
         return desc + " )";
     }
 
+    @Override
     public String getFormattedSyntax() {
         String desc = "#b#" + mName + " ( ";
 
@@ -120,10 +123,12 @@ public class CallingExpression extends Expression {
         return desc + " ) ";
     }
 
-    public CallingExpression getCopy() {
-        return new CallingExpression(mName, getCopyOfArgList());
+    @Override
+    public JavaCallExpression getCopy() {
+        return new JavaCallExpression(mName, getCopyOfArgList());
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<UserCommand name=\"" + mName + "\">").push();
 
@@ -134,9 +139,11 @@ public class CallingExpression extends Expression {
         out.pop().println("</UserCommand>");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
             public void run(Element element) throws XMLParseError {
                 Expression exp = Expression.parse(element);
 

@@ -1,39 +1,35 @@
 package de.dfki.vsm.model.sceneflow.language.command.expression;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.language.command.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
-
+import java.util.concurrent.AbstractExecutorService;
 import org.w3c.dom.Element;
 
-//~--- JDK imports ------------------------------------------------------------
-
-
-
 /**
- * @author Not me
+ *
+ * @author Gregor Mehlmann
  */
-public class ConstructExpression extends Expression {
-    private String             mName;
+public class FunctionExpression extends Expression {
+
+    private String mName;
     private ArrayList<Expression> mArgList;
 
-    public ConstructExpression() {
-        mName    = new String();
-        mArgList = new ArrayList<Expression>();
+    public FunctionExpression() {
+        mName = new String();
+        mArgList = new ArrayList();
     }
 
-    public ConstructExpression(String name) {
-        mName    = name;
-        mArgList = new ArrayList<Expression>();
+    public FunctionExpression(String name) {
+        mName = name;
+        mArgList = new ArrayList();
     }
 
-    public ConstructExpression(String name, ArrayList<Expression> argList) {
-        mName    = name;
+    public FunctionExpression(String name, ArrayList argList) {
+        mName = name;
         mArgList = argList;
     }
 
@@ -58,7 +54,7 @@ public class ConstructExpression extends Expression {
     }
 
     public ArrayList<Expression> getCopyOfArgList() {
-        ArrayList<Expression> copy = new ArrayList<Expression>();
+        ArrayList<Expression> copy = new ArrayList();
 
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
@@ -76,11 +72,11 @@ public class ConstructExpression extends Expression {
     }
 
 //    public ExpType getExpType() {
-//        return ExpType.CONS;
+//        return ExpType.USR;
 //    }
-
+    @Override
     public String getAbstractSyntax() {
-        String desc = "Constructor( " + mName + "( ";
+        String desc = "FunctionExpression( " + mName + "( ";
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getAbstractSyntax();
@@ -93,8 +89,9 @@ public class ConstructExpression extends Expression {
         return desc + " ) )";
     }
 
+    @Override
     public String getConcreteSyntax() {
-        String desc = "new " + mName + " ( ";
+        String desc = mName + " ( ";
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getConcreteSyntax();
@@ -107,8 +104,9 @@ public class ConstructExpression extends Expression {
         return desc + " )";
     }
 
+    @Override
     public String getFormattedSyntax() {
-        String desc = "#r#new " + "#b#" + mName + " ( ";
+        String desc = "#b#" + mName + " ( ";
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getFormattedSyntax();
@@ -121,23 +119,27 @@ public class ConstructExpression extends Expression {
         return desc + " ) ";
     }
 
-    public ConstructExpression getCopy() {
-        return new ConstructExpression(mName, getCopyOfArgList());
+    @Override
+    public FunctionExpression getCopy() {
+        return new FunctionExpression(mName, getCopyOfArgList());
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<Constructor name=\"" + mName + "\">").push();
+        out.println("<FunctionExpression name=\"" + mName + "\">").push();
 
         for (int i = 0; i < mArgList.size(); i++) {
             mArgList.get(i).writeXML(out);
         }
 
-        out.pop().println("</Constructor>");
+        out.pop().println("</FunctionExpression>");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
             public void run(Element element) throws XMLParseError {
                 Expression exp = Expression.parse(element);
 

@@ -8,8 +8,8 @@ import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionRemovedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
-import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.ParameterDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -90,7 +90,7 @@ public class FunctionsEditor extends JPanel implements EventListener {
     
     public void addNewFunction() {
         FunctionDefinition usrCmdDef = new FunctionDefinition("newCommand", "java.lang.System.out", "println");
-        usrCmdDef.addArg(new ArgumentDefinition("text", "String"));
+        usrCmdDef.addArg(new ParameterDefinition("text", "String"));
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
         
         SingleFunctionContainer singleFunctionContainer 

@@ -18,7 +18,7 @@ import de.dfki.vsm.model.sceneflow.language.command.expression.literal.IntLitera
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
 import de.dfki.vsm.model.sceneflow.language.command.expression.literal.StringLiteral;
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.VariableDefinition;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -109,13 +109,14 @@ public class MonitorDialog extends JDialog implements  EventListener{
             java.lang.String inputString = mInputTextField.getText().trim();
             
             try {
-                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-                _SFSLParser_.run(inputString);
+                 final Expression exp = (Expression) _SFSLParser_.run(inputString);
+           // Expression log = _SFSLParser_.expResult;
 
-                Expression exp = _SFSLParser_.expResult;
+ 
+
                 
                 //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
-                if ((exp != null) &&!_SFSLParser_.errorFlag) {
+                if (exp != null) {
                     if (exp instanceof BoolLiteral) {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((BoolLiteral) exp).getValue());
                     } else if (exp instanceof IntLiteral) {

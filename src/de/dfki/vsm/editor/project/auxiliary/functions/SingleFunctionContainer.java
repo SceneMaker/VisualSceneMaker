@@ -11,8 +11,8 @@ import de.dfki.vsm.editor.dialog.definition.FunDefDialog;
 import de.dfki.vsm.editor.event.FunctionRemovedEvent;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.model.sceneflow.diagram.nodes.SceneFlow;
-import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.ParameterDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -153,7 +153,7 @@ public class SingleFunctionContainer extends JPanel {
         while (args.hasMoreElements()) {
             String argString = (String) args.nextElement();
 
-            mFunDef.addArg(new ArgumentDefinition(getNameMap().get(argString),
+            mFunDef.addArg(new ParameterDefinition(getNameMap().get(argString),
                     getTypeMap().get(argString)));
         }
         
@@ -448,7 +448,7 @@ public class SingleFunctionContainer extends JPanel {
                             String argString = (String) args.nextElement();
 
                             mFunDef.addArg(
-                                    new ArgumentDefinition(getNameMap().get(argString), getTypeMap().get(argString)));
+                                    new ParameterDefinition(getNameMap().get(argString), getTypeMap().get(argString)));
                         }
 
                         EditorInstance.getInstance().refresh();
@@ -508,7 +508,7 @@ public class SingleFunctionContainer extends JPanel {
                         while (args.hasMoreElements()) {
                             String argString = (String) args.nextElement();
 
-                            mFunDef.addArg(new ArgumentDefinition(getNameMap().get(argString),
+                            mFunDef.addArg(new ParameterDefinition(getNameMap().get(argString),
                                     getTypeMap().get(argString)));
                         }
 
@@ -546,7 +546,7 @@ public class SingleFunctionContainer extends JPanel {
                 while (args.hasMoreElements()) {
                     String argString = (String) args.nextElement();
 
-                    mFunDef.addArg(new ArgumentDefinition(getNameMap().get(argString),
+                    mFunDef.addArg(new ParameterDefinition(getNameMap().get(argString),
                             getTypeMap().get(argString)));
                 }
 
@@ -773,7 +773,7 @@ public class SingleFunctionContainer extends JPanel {
             while (args.hasMoreElements()) {
                 String argString = (String) args.nextElement();
 
-                mFunDef.addArg(new ArgumentDefinition(getNameMap().get(argString),
+                mFunDef.addArg(new ParameterDefinition(getNameMap().get(argString),
                         getTypeMap().get(argString)));
             }
 

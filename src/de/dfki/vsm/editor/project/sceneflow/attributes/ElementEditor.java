@@ -27,8 +27,8 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.language.command.Command;
 import de.dfki.vsm.model.sceneflow.language.command.Expression;
 //import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.VariableDefinition;
 //import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.RegularExpressions;
@@ -211,15 +211,11 @@ class ConditionEditor extends JPanel implements EventListener {
         String inputString = mCEdgeDialog.getInputTextField().getText().trim();
 
         try {
-            //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
+              final Expression result = (Expression) _SFSLParser_.run(inputString);
+           // Expression log = _SFSLParser_.expResult;
 
-            _SFSLParser_.run(inputString);
-
-            Expression log = _SFSLParser_.expResult;
-
-            if ((log != null) && !_SFSLParser_.errorFlag) {
-                mDataCEdge.setGuard(log);
+            if (result != null) {
+                mDataCEdge.setGuard(result);
             } else {
 
                 // Do nothing
@@ -516,14 +512,11 @@ class InterruptEditor extends JPanel implements EventListener {
         String inputString = mIEdgeDialog.getInputTextField().getText().trim();
 
         try {
-            // _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-            _SFSLParser_.run(inputString);
+               final Expression result = (Expression) _SFSLParser_.run(inputString);
+           // Expression log = _SFSLParser_.expResult;
 
-            Expression log = _SFSLParser_.expResult;
-
-            if ((log != null) && !_SFSLParser_.errorFlag) {
-                mDataIEdge.setGuard(log);
+            if (result != null) {
+                mDataIEdge.setGuard(result);
             } else {
 
                 // Do nothing

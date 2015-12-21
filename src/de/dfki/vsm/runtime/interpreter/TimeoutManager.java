@@ -10,12 +10,12 @@ import de.dfki.vsm.model.sceneflow.language.command.expression.BinaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.TernaryExpression;
 import de.dfki.vsm.model.sceneflow.language.command.Expression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.UnaryExpression;
-import de.dfki.vsm.model.sceneflow.language.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.language.command.expression.JavaCallExpression;
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
 import de.dfki.vsm.model.sceneflow.language.command.expression.variable.ArrayVariable;
 import de.dfki.vsm.model.sceneflow.language.command.expression.invocation.TimeoutFunction;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.VariableDefinition;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.IntValue;
@@ -164,8 +164,8 @@ public class TimeoutManager {
             } else {
                 throw new InterpretException(this, "timeout argument not integer");
             }
-        } else if (exp instanceof CallingExpression) {
-            for (Expression arg : ((CallingExpression) exp).getArgList()) {
+        } else if (exp instanceof JavaCallExpression) {
+            for (Expression arg : ((JavaCallExpression) exp).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
         } else {

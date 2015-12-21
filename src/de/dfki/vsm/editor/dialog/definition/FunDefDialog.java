@@ -7,8 +7,8 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.dialog.AbstractDialog;
-import de.dfki.vsm.model.sceneflow.language.definition.FunctionDefinition;
-import de.dfki.vsm.model.sceneflow.language.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.ParameterDefinition;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -117,7 +117,7 @@ public class FunDefDialog extends AbstractDialog {
 
             // Create a new function definition
             mFunDef = new FunctionDefinition("newCommand", "java.lang.System.out", "println");
-            mFunDef.addArg(new ArgumentDefinition("text", "String"));
+            mFunDef.addArg(new ParameterDefinition("text", "String"));
         }
 
         initComponents();
@@ -591,7 +591,7 @@ public class FunDefDialog extends AbstractDialog {
         while (args.hasMoreElements()) {
             String argString = (String) args.nextElement();
 
-            mFunDef.addArg(new ArgumentDefinition(mNameMap.get(argString), mTypeMap.get(argString)));
+            mFunDef.addArg(new ParameterDefinition(mNameMap.get(argString), mTypeMap.get(argString)));
         }
         //
         dispose(Button.OK);

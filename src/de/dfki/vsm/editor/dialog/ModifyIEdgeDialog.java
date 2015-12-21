@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
@@ -42,11 +41,11 @@ public class ModifyIEdgeDialog extends AbstractDialog {
     // GUI-Components
 //    private final AltStartNodeManager mAltStartNodeManager;
     // GUI-Components
-    private JPanel       mInputPanel;
-    private JLabel       mInputLabel;
-    private JPanel       mButtonPanel;
-    private HintTextField   mInputTextField;
-    private OKButton     mOkButton;
+    private JPanel mInputPanel;
+    private JLabel mInputLabel;
+    private JPanel mButtonPanel;
+    private HintTextField mInputTextField;
+    private OKButton mOkButton;
     private CancelButton mCancelButton;
 //    private JPanel       mAltStartNodePanel;
 //    private JLabel       mAltStartNodeLabel;
@@ -90,12 +89,12 @@ public class ModifyIEdgeDialog extends AbstractDialog {
         initButtonPanel();
         // Init alternative start node panel
 //        initAltStartNodePanel();
-        
+
         //Error message
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(labelSize);
-        
+
         //FINAL BOX
         Box finalBox = Box.createVerticalBox();
         finalBox.setAlignmentX(CENTER_ALIGNMENT);
@@ -130,8 +129,9 @@ public class ModifyIEdgeDialog extends AbstractDialog {
 
     /**
      * Set the correct size of the components
+     *
      * @param jb
-     * @param dim 
+     * @param dim
      */
     private void sanitizeComponent(JComponent jb, Dimension dim) {
         jb.setPreferredSize(dim);
@@ -215,7 +215,6 @@ public class ModifyIEdgeDialog extends AbstractDialog {
 //        mAltStartNodePanel.add(Box.createHorizontalStrut(10));
 //        mAltStartNodePanel.add(buttonsBox);
 //    }
-
     public InterruptEdge run() {
         setVisible(true);
         if (mPressedButton == Button.OK) {
@@ -229,10 +228,9 @@ public class ModifyIEdgeDialog extends AbstractDialog {
     protected void okActionPerformed() {
         if (process()) {
             dispose(Button.OK);
-        }
-        else{
+        } else {
             mInputTextField.setForeground(Color.red);
-            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");
         }
     }
 
@@ -242,25 +240,20 @@ public class ModifyIEdgeDialog extends AbstractDialog {
     }
 
     private boolean process() {
-        if(mInputTextField.getText().length() == 0){
+        if (mInputTextField.getText().length() == 0) {
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
-            
+
             return false;
         }
         String inputString = mInputTextField.getText().trim();
-        
-        
-        
-        try {
-            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-            _SFSLParser_.run(inputString);
-            //LogicalCond log = _SFSLParser_.logResult;
-            Expression log = _SFSLParser_.expResult;//logResult;
-            
 
-            if ((log != null) &&!_SFSLParser_.errorFlag) {
-                mIEdge.setGuard(log);
+        try {
+            final Expression result = (Expression) _SFSLParser_.run(inputString);
+            // Expression log = _SFSLParser_.expResult;
+
+            if (result != null) {
+                mIEdge.setGuard(result);
 
                 // /
 //                mAltStartNodeManager.saveAltStartNodeMap();
@@ -300,7 +293,6 @@ public class ModifyIEdgeDialog extends AbstractDialog {
 //    private void saveAltStartNodeMap() {
 //        mAltStartNodeManager.saveAltStartNodeMap();
 //    }
-
 //    private void addAltStartNode() {
 //        CreateAltStartNodeDialog dialog = new CreateAltStartNodeDialog(mAltStartNodeManager);
 //        dialog.run();
@@ -317,7 +309,6 @@ public class ModifyIEdgeDialog extends AbstractDialog {
 //                    + altStartNodePair.getFirst());
 //        }
 //    }
-
 //    private void removeAltStartNode() {
 //        String selectedValue = (String) mAltStartNodeList.getSelectedValue();
 //        if (selectedValue != null) {
@@ -332,7 +323,6 @@ public class ModifyIEdgeDialog extends AbstractDialog {
 //    }
 //
 //    private void editAltStartNode() {}
-
     public JPanel getInputPanel() {
 
         return mInputPanel;
@@ -342,7 +332,6 @@ public class ModifyIEdgeDialog extends AbstractDialog {
 //
 //        return mAltStartNodePanel;
 //    }
-
     public JPanel getButtonPanel() {
         return mButtonPanel;
     }

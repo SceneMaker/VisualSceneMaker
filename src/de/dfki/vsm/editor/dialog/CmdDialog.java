@@ -119,19 +119,15 @@ public class CmdDialog extends AbstractDialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.STATEMENT;
-            _SFSLParser_.run(inputString);
-
-            Command cmd = _SFSLParser_.cmdResult;
-
-            if ((cmd != null) &&!_SFSLParser_.errorFlag) {
-                mCommand = cmd;
-
+            final Command result = (Command) _SFSLParser_.run(inputString);
+            System.err.println("Parsing " + result);
+            if (result != null) {
+                mCommand = result;
                 return true;
             } else {
                 return false;
             }
-        } catch (Exception e) {
+        } catch (final Exception exc) {            
             return false;
         }
     }

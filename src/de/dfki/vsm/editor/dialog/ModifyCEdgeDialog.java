@@ -261,16 +261,11 @@ public class ModifyCEdgeDialog extends AbstractDialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-            _SFSLParser_.run(inputString);
+              final Expression result = (Expression) _SFSLParser_.run(inputString);
+           // Expression log = _SFSLParser_.expResult;
 
-            Expression log = _SFSLParser_.expResult;
-
-            System.err.println("Parsing result is " + log);
-            
-            if ((log != null) && !_SFSLParser_.errorFlag) {
-                mCEdge.setGuard(log);
+            if (result != null) {
+                mCEdge.setGuard(result);
 //                mAltStartNodeManager.saveAltStartNodeMap();
                 return true;
             } else {

@@ -9,7 +9,7 @@ import de.dfki.vsm.model.sceneflow.diagram.edges.EpsilonEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.diagram.edges.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.language.command.Command;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.diagram.graphics.node.NodeGraphics;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;

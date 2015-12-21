@@ -386,21 +386,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     
     private boolean validate(String condition) {
                   
-        String inputString = condition;
-
-        try {
-            //_SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-            
-            _SFSLParser_.run(inputString);
-
-            Expression log = _SFSLParser_.expResult;
-
-            return (log != null) &&!_SFSLParser_.errorFlag;
-        } catch (Exception e) {
-            
-            return false;
-        }
+        return true;
     }
     
     /* 
@@ -512,33 +498,33 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             }
             
         } else if (mType.equals(TYPE.CEDGE)) {
-            try {
-                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-                _SFSLParser_.run(input);
-
-                Expression log = _SFSLParser_.expResult;
-
-                if ((log != null) &&!_SFSLParser_.errorFlag) {
-                    ((GuardedEdge) mDataEdge).setGuard(log);
-                } else {
-                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
-                        "Remember to wrap condition in parenthesis");
-                    // Do nothing
-                }
-            } catch (Exception e) {}
+//            try {
+//                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
+//                _SFSLParser_.run(input);
+//
+//                Expression log = _SFSLParser_.expResult;
+//
+//                if ((log != null) &&!_SFSLParser_.errorFlag) {
+//                    ((GuardedEdge) mDataEdge).setGuard(log);
+//                } else {
+//                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
+//                        "Remember to wrap condition in parenthesis");
+//                    // Do nothing
+//                }
+//            } catch (Exception e) {}
             
         } else if (mType.equals(TYPE.IEDGE)) {
-            try {
-                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-            
-                _SFSLParser_.run(input);
-
-                Expression log = _SFSLParser_.expResult;
-
-                if ((log != null) &&!_SFSLParser_.errorFlag) {
-                    ((InterruptEdge) mDataEdge).setGuard(log);
-                } else {}
-            } catch (Exception e) {}
+//            try {
+//                _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
+//            
+//                _SFSLParser_.run(input);
+//
+//                Expression log = _SFSLParser_.expResult;
+//
+//                if ((log != null) &&!_SFSLParser_.errorFlag) {
+//                    ((InterruptEdge) mDataEdge).setGuard(log);
+//                } else {}
+//            } catch (Exception e) {}
         }
 
         EditorInstance.getInstance().refresh();

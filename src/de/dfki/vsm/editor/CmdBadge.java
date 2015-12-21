@@ -209,13 +209,10 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
                     Command command;
 
                     try {
-                        _SFSLParser_.parseResultType = _SFSLParser_.STATEMENT;
-                        _SFSLParser_.run(text);
+                         final Command result = (Command) _SFSLParser_.run(text);
 
-                        Command cmd = _SFSLParser_.cmdResult;
-
-                        if ((cmd != null) && !_SFSLParser_.errorFlag) {
-                            command = cmd;
+                        if (result != null) {
+                            command = result;
                         } else {
                             return;
                         }
@@ -223,7 +220,6 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
                         mCmdEditors.get(i).setForeground(Color.red);
                         return;
                     }
-
                     copyOfCmdList.add(command);
                 }
             }

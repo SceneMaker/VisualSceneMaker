@@ -54,8 +54,8 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "query" { return new Symbol(_SFSLToken_.QUERY); }
 "timeout" { return new Symbol(_SFSLToken_.TIMEOUT); }
 
-"list" { return new Symbol(_SFSLToken_.LIST); }
-"struct" { return new Symbol(_SFSLToken_.STRUCT); }
+//"list" { return new Symbol(_SFSLToken_.LIST); }
+//"struct" { return new Symbol(_SFSLToken_.STRUCT); }
 
 "true" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "false" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
@@ -81,19 +81,26 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 
 [a-zA-Z_][a-zA-Z0-9_]* { return new Symbol(_SFSLToken_.IDENTIFIER, new java.lang.String(yytext())); }
 
-"+" { return new Symbol(_SFSLToken_.PLUS); }
-"-" { return new Symbol(_SFSLToken_.MINUS); }
-"*" { return new Symbol(_SFSLToken_.TIMES); }
-"/" { return new Symbol(_SFSLToken_.DIV); }
-"&&" { return new Symbol(_SFSLToken_.AND); }
-"||" { return new Symbol(_SFSLToken_.OR); }
+"++" { return new Symbol(_SFSLToken_.INC); }
+"--" { return new Symbol(_SFSLToken_.DEC); }
+"&&" { return new Symbol(_SFSLToken_.ANDAND); }
+"||" { return new Symbol(_SFSLToken_.OROR); }
 "==" { return new Symbol(_SFSLToken_.EQUALEQUAL); }
 "!=" { return new Symbol(_SFSLToken_.NOTEQUAL); }
 "<" { return new Symbol(_SFSLToken_.LESS); }
 ">" { return new Symbol(_SFSLToken_.GREATER); }
 "<=" { return new Symbol(_SFSLToken_.LESSEQUAL); }
 ">=" { return new Symbol(_SFSLToken_.GREATEREQUAL); }
+//"->" { return new Symbol(_SFSLToken_.ARROW); }
+"+" { return new Symbol(_SFSLToken_.PLUS); }
+"-" { return new Symbol(_SFSLToken_.MINUS); }
+"*" { return new Symbol(_SFSLToken_.TIMES); }
+"/" { return new Symbol(_SFSLToken_.DIV); }
+"~" { return new Symbol(_SFSLToken_.LNOT); }
 "!" { return new Symbol(_SFSLToken_.NOT); }
+"&" { return new Symbol(_SFSLToken_.AND); }
+"^" { return new Symbol(_SFSLToken_.XOR); }
+"|" { return new Symbol(_SFSLToken_.OR); }
 "(" { return new Symbol(_SFSLToken_.LPAREN); }
 ")" { return new Symbol(_SFSLToken_.RPAREN); }
 "[" { return new Symbol(_SFSLToken_.LBRACK); }
@@ -105,6 +112,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "?" { return new Symbol(_SFSLToken_.QUESTION); }
 ":" { return new Symbol(_SFSLToken_.COLON); }
 "=" { return new Symbol(_SFSLToken_.EQUAL); }
+"%" { return new Symbol(_SFSLToken_.MOD); }
 
 [ \t\r\n\f] { /* ignore white space. */ }
 . { System.err.println("Illegal character: "+yytext()); }

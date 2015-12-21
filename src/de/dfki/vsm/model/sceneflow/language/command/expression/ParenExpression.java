@@ -12,16 +12,16 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class ParenthesesExpression extends Expression {
+public class ParenExpression extends Expression {
 
     private Expression mExp;
 
-    public ParenthesesExpression() {
+    public ParenExpression() {
         mExp = null;
 
     }
 
-    public ParenthesesExpression(Expression exp) {
+    public ParenExpression(Expression exp) {
         mExp = exp;
     }
 
@@ -54,8 +54,8 @@ public class ParenthesesExpression extends Expression {
     }
 
     @Override
-    public ParenthesesExpression getCopy() {
-        return new ParenthesesExpression(mExp.getCopy());
+    public ParenExpression getCopy() {
+        return new ParenExpression(mExp.getCopy());
     }
 
     @Override

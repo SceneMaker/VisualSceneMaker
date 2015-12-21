@@ -119,13 +119,11 @@ public class CreateExpDialog extends AbstractDialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.EXPRESSION;
-            _SFSLParser_.run(inputString);
+               final Expression result = (Expression) _SFSLParser_.run(inputString);
+           // Expression log = _SFSLParser_.expResult;
 
-            Expression exp = _SFSLParser_.expResult;
-
-            if ((exp != null) &&!_SFSLParser_.errorFlag) {
-                mExpression = exp;
+            if (result != null) {
+                mExpression = result;
 
                 return true;
             } else {

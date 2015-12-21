@@ -14,7 +14,7 @@ import de.dfki.vsm.model.sceneflow.language.command.expression.literal.IntLitera
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.ListRecord;
 import de.dfki.vsm.model.sceneflow.language.command.expression.literal.StringLiteral;
 import de.dfki.vsm.model.sceneflow.language.command.expression.record.StructRecord;
-import de.dfki.vsm.model.sceneflow.language.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.language.command.definition.VariableDefinition;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;

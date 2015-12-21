@@ -20,7 +20,7 @@ public abstract class LiteralExpression extends Expression {
 
     public enum ConstType {
 
-        BOOL, INT, STRING, FLOAT,  NULL
+        INT, SHORT, LONG, BOOL, STRING, FLOAT, DOUBLE, NULL
     }
 
 //    /**
@@ -31,7 +31,6 @@ public abstract class LiteralExpression extends Expression {
 //    public ExpType getExpType() {
 //        return ExpType.CONST;
 //    }
-
     public abstract ConstType getConstType();
 
     @Override
