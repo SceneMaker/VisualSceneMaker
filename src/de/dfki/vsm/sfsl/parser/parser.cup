@@ -185,6 +185,7 @@ non terminal Expression invocation_expression;
 ////////////////////////////////////////////////////////////////////////////////
 // Lists
 non terminal ArrayList assignment_list;
+non terminal ArrayList opt_assignment_list;
 non terminal ArrayList expression_list;
 non terminal ArrayList opt_expression_list;
 non terminal ArrayList member_definition_list;
@@ -299,9 +300,12 @@ assignment ::=
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * Assignment Lists
  *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-assignment_list ::=
+opt_assignment_list ::=
                                                                                 {: ArrayList vec = new ArrayList(); RESULT = vec; :}
-| assignment:x                                                                  {: ArrayList vec = new ArrayList(); vec.add(x); RESULT = vec; :}
+| assignment_list:x                                                             {: RESULT = x; :}
+;
+assignment_list ::=
+  assignment:x                                                                  {: ArrayList vec = new ArrayList(); vec.add(x); RESULT = vec; :}
 | assignment_list:x COMMA assignment:y                                          {: ArrayList vec = x; vec.add(y); RESULT = x; :}
 ;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -321,13 +325,14 @@ invocation ::=
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * Expression Lists
  *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-expression_list ::=
-  expression:x                                                                  {: ArrayList vec = new ArrayList(); vec.add(x); RESULT = vec; :}
-| expression_list:x COMMA expression:y                                          {: ArrayList vec = x; vec.add(y); RESULT = x; :}
-;
 opt_expression_list ::= 
                                                                                 {: ArrayList vec = new ArrayList(); RESULT = vec; :}
 | expression_list:x                                                             {: RESULT = x; :}
+;
+
+expression_list ::=
+  expression:x                                                                  {: ArrayList vec = new ArrayList(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: ArrayList vec = x; vec.add(y); RESULT = x; :}
 ;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * Expressions
@@ -421,7 +426,7 @@ invocation_expression ::=
 ;
 record_expression ::=
   LBRACK opt_expression_list:x RBRACK                                           {: RESULT = new ListRecord(x); :}
-| LBRACE assignment_list:x RBRACE                                               {: RESULT = new StructRecord(x); :}
+| LBRACE opt_assignment_list:x RBRACE                                               {: RESULT = new StructRecord(x); :}
 ;
 literal_expression ::=
   NULL                                                                          {: RESULT = new NullObject(); :}
