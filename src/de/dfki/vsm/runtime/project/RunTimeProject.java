@@ -1,6 +1,5 @@
 package de.dfki.vsm.runtime.project;
 
-import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
@@ -23,6 +22,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.zip.*;
 
 /**
  * @author Gregor Mehlmann
@@ -833,8 +833,12 @@ public class RunTimeProject {
 //        } //else {
 //
 //        //}
+	
     // Get the hash code of the project
     protected synchronized int getHashCode() {
+		
+		
+		
         int hashCode = ((mSceneFlow == null)
                 ? 0
                 : mSceneFlow.getHashCode());
@@ -842,6 +846,12 @@ public class RunTimeProject {
         // Only Based On The SceneFlow's 
         // Hash And Not Based Also On The 
         // Other Project Data Structures?
+		
+		// TODO PG: DEBUG: mLogger.failure(">>>>>>>>>>>>>>>>>>>>>>>>>>> " + getProjectName() + "'s HASHCODE " + hashCode);
+		
+		
+		
+		
         return hashCode;
     }
 }
