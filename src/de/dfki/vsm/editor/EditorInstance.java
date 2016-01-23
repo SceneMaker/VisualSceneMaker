@@ -71,7 +71,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     private final EditorMenuBar mEditorMenuBar;
     private final JTabbedPane mProjectEditors;
     private final JScrollPane mWelcomeScreen;
-    public final EditorStarter mWelcomePanel;
+    private final EditorStarter mWelcomePanel;
 
     // Get the singelton editor instance
     public synchronized static EditorInstance getInstance() {
@@ -266,9 +266,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("ScrollBar.thumb", Color.LIGHT_GRAY);
     }
 
-//    public void clearRecentProjects() {
-//        mWelcomePanel.updateWelcomePanel();
-//    }
+    public void clearRecentProjects() {
+        mWelcomePanel.updateWelcomePanel();
+    }
 
     private void checkAndSetLocation() {
         Point finalPos = new Point(0, 0);
@@ -393,7 +393,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     public final boolean openProject(String path) {
-		if (path == null) {
+        if (path == null) {
             mLogger.failure("Error: Cannot open editor project from a bad Stream");
             // And return failure here
             return false;
@@ -420,7 +420,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             addProjectTab(project.getProjectName(), projectEditor);
 //            mProjectEditors.setSelectedComponent(projectEditor);
             // Update the recent project list
-           updateRecentProjects(project);
+            updateRecentProjects(project);
             // Print some info message
             //mLogger.message("Opening project editor from Stream");
             // Refresh the appearance
@@ -805,7 +805,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         // save properties
         Preferences.save();
-        // PG: NO NO NO NO NO: mWelcomePanel.createProjectLists();
+        mWelcomePanel.createRecentAndSamplePrjList();
         mEditorMenuBar.refreshRecentFileMenu();
     }
 

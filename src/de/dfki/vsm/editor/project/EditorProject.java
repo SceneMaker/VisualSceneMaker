@@ -50,7 +50,7 @@ public class EditorProject extends RunTimeProject {
     
     @Override
     public final boolean parse(final String path) {
-		// Check if the file is null
+        // Check if the file is null
         if (path == null) {
             // Print an error message
             mLogger.failure("Error: Cannot parse editor project from a bad file");
@@ -216,10 +216,6 @@ public class EditorProject extends RunTimeProject {
 
     // Check if the hash code has changed
     public final boolean hasChanged() {
-		
-		// TODO: PG: DEBUG: mLogger.failure(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> HAS CHANGED was called! " + mInitialHash + " vs " + getHashCode());
-		
-		
         return (mInitialHash != getHashCode());
     }
 }
