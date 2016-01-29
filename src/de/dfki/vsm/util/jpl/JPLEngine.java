@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.jpl;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
 
 import java.util.Map;
@@ -17,7 +17,7 @@ import org.jpl7.Variable;
 public final class JPLEngine {
 
     // The System File Logger
-    private static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
+    private static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
 
     // The Liveliness Flag
     private static volatile boolean sAlive;

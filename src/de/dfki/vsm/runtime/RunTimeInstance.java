@@ -7,7 +7,7 @@ import de.dfki.vsm.runtime.values.BooleanValue;
 import de.dfki.vsm.runtime.values.FloatValue;
 import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -20,8 +20,8 @@ public final class RunTimeInstance {
     private static RunTimeInstance sInstance = null;
 
     // The singelton logger instance
-    private final LOGConsoleLogger mLogger
-            = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
 
     // The map of maintainted projects
     private final HashMap<RunTimeProject, Interpreter> mProjectMap;

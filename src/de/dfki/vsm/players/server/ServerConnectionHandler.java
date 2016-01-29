@@ -1,7 +1,7 @@
 package de.dfki.vsm.players.server;
 
 import de.dfki.vsm.players.EventActionPlayer;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,7 +21,7 @@ public class ServerConnectionHandler extends Thread {
 	private boolean mRunning = true;
 	public String mClientId = "";
 
-	private static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+	private static final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
 	public ServerConnectionHandler(Socket s) {
 		super.setName("Server Connection Handler");

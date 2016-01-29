@@ -8,7 +8,7 @@ package de.dfki.vsm.players;
 import de.dfki.vsm.players.action.Action;
 import de.dfki.vsm.players.action.ActionListener;
 import de.dfki.vsm.players.server.TCPActionServer;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,7 +46,7 @@ public class ActionPlayer extends Thread {
     public static boolean mActionServerRunning = false;
 
     // Logger
-    static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    static final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     ActionPlayer() {
         initialize();
