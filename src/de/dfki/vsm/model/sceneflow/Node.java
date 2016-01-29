@@ -161,8 +161,6 @@ public class Node extends Syntax {
                 return true;
             }
         }
-
-       
         return false;
     }
     /**
