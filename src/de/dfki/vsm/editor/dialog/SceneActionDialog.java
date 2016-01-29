@@ -14,7 +14,7 @@ import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -47,7 +47,7 @@ import javax.swing.WindowConstants;
  */
 public class SceneActionDialog extends JDialog {
     private static SceneActionDialog sInstance = null;
-    private final LOGConsoleLogger   mLogger   = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger   mLogger   = LOGDefaultLogger.getInstance();
     private final EditorInstance             mEditor   = EditorInstance.getInstance();
     private JPanel                   mMainPanel;
     private JPanel                   mActionPanel;

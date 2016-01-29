@@ -5,7 +5,7 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
@@ -40,7 +40,7 @@ public class NewProjectDialog extends JDialog {
     private JLabel lblName;
 
     // logger
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     public NewProjectDialog() {
         super(EditorInstance.getInstance(), "New Project", true);

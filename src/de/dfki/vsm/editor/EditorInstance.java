@@ -18,7 +18,7 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -64,7 +64,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The singelton runtime instance 
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
     // The singelton logger instance   
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The singelton event multicaster
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // The editor's GUI components

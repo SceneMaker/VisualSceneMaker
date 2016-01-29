@@ -1,6 +1,6 @@
 package de.dfki.vsm.util.cpy;
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,7 +13,7 @@ import java.io.ObjectOutputStream;
 public abstract class CopyTool {
 
     // The Logger Instance
-    private final static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
+    private final static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
 
     // Return A Deep Copy 
     public final static Copyable copy(final Copyable obj) {

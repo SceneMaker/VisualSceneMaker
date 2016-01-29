@@ -4,7 +4,7 @@ package de.dfki.vsm.util.syn;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
@@ -20,7 +20,7 @@ import java.io.ByteArrayOutputStream;
 public class SyntaxDocToken implements ModelObject {
 
     // The System Logger
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Token Attributes
     private final int    mIndex;

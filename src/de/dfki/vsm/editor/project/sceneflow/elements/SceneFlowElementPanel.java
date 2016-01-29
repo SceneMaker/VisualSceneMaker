@@ -20,7 +20,7 @@ import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -61,7 +61,7 @@ import javax.swing.tree.TreeSelectionModel;
 public final class SceneFlowElementPanel extends JScrollPane {
 
     // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The element tree of this panel
     private final ElementTree mElementTree;
@@ -113,7 +113,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     private final JMenuItem functionRemove = new JMenuItem("Remove");
 
     //
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     private final EditorProject mProject;

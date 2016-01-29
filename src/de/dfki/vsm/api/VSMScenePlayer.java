@@ -11,7 +11,7 @@ import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.jpl.JPLUtility;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +24,8 @@ public abstract class VSMScenePlayer implements RunTimePlayer {
     protected final RunTimeInstance mRunTime
             = RunTimeInstance.getInstance();
     // The defaut system logger
-    protected final LOGConsoleLogger mLogger
-            = LOGConsoleLogger.getInstance();
+    protected final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
     // The quue of waiting tasks
     protected final HashMap<String, Thread> mThreadQueue
             = new HashMap<>();

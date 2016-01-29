@@ -20,7 +20,7 @@ import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -70,7 +70,7 @@ import javax.swing.undo.UndoManager;
 public final class SceneFlowEditor extends JPanel implements EventListener {
 
     // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // TODO: move undo manager up at least to project editor
     private UndoManager mUndoManager = null;

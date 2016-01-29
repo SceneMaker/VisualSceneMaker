@@ -21,7 +21,7 @@ import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sEEDGE_COLOR;
@@ -110,7 +110,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
 	// Activity monitor
 	private VisualisationTask mVisualisationTask = null;
-	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+	private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 	private final EventDispatcher mEventMulticaster = EventDispatcher.getInstance();
 
 	// edit panel
