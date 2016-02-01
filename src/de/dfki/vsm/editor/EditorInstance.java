@@ -269,7 +269,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 //    public void clearRecentProjects() {
 //        mWelcomePanel.updateWelcomePanel();
 //    }
-
     private void checkAndSetLocation() {
         Point finalPos = new Point(0, 0);
         Point editorPosition = new Point(Integer.valueOf(Preferences.getProperty("frame_posx")),
@@ -393,7 +392,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     public final boolean openProject(String path) {
-		if (path == null) {
+        if (path == null) {
             mLogger.failure("Error: Cannot open editor project from a bad Stream");
             // And return failure here
             return false;
@@ -420,7 +419,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             addProjectTab(project.getProjectName(), projectEditor);
 //            mProjectEditors.setSelectedComponent(projectEditor);
             // Update the recent project list
-           updateRecentProjects(project);
+            updateRecentProjects(project);
             // Print some info message
             //mLogger.message("Opening project editor from Stream");
             // Refresh the appearance
@@ -881,27 +880,34 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
         } else {
             // Launch the current project in the runtime
-            if (mRunTime.launch(project)) {
+            if (mRunTime.load(project)) {
+                if (mRunTime.launch(project)) {
                 // Print some information
-                //mLogger.message("Launching project '" + project + "'");
-                // Start the interpreter for that project
-                if (mRunTime.start(project)) {
+                    //mLogger.message("Launching project '" + project + "'");
+                    // Start the interpreter for that project
+                    if (mRunTime.start(project)) {
                     // Print some information
-                    //mLogger.message("Starting project '" + project + "'");
-                    // Refresh the appearance
+                        //mLogger.message("Starting project '" + project + "'");
+                        // Refresh the appearance
 
                     //refresh(); // TODO WHY IS THIS CALL HERE?
-                    // Return true at success
-                    return true;
+                        // Return true at success
+                        return true;
+                    } else {
+                        // Print an error message
+                        mLogger.failure("Error: Cannot start project '" + project + "'");
+                        // Return false at failure
+                        return false;
+                    }
                 } else {
                     // Print an error message
-                    mLogger.failure("Error: Cannot start project '" + project + "'");
+                    mLogger.failure("Error: Cannot launch project '" + project + "'");
                     // Return false at failure
                     return false;
                 }
             } else {
                 // Print an error message
-                mLogger.failure("Error: Cannot launch project '" + project + "'");
+                mLogger.failure("Error: Cannot load project '" + project + "'");
                 // Return false at failure
                 return false;
             }

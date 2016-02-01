@@ -51,8 +51,7 @@ public final class RunTimeInstance {
         return mProjectMap.get(project).getLock();
     }
 
-    // Launch a runtime project
-    public final /* synchronized */ boolean launch(final RunTimeProject project) {
+    public final /* synchronized */ boolean load(final RunTimeProject project) {
 
         // Check if the project is already registered
         if (mProjectMap.containsKey(project)) {
@@ -71,6 +70,30 @@ public final class RunTimeInstance {
             // Print some information 
             //mLogger.message("Loaded runtime objects of project '" + project + "'");
         }
+        // Return true at success
+        return true;
+    }
+
+    // Launch a runtime project
+    public final /* synchronized */ boolean launch(final RunTimeProject project) {
+
+        // Check if the project is already registered
+        if (mProjectMap.containsKey(project)) {
+            // Print an error message
+            mLogger.failure("Failure: Cannot register a new interpreter for project '" + project + "'");
+            // Return false at error
+            return false;
+        }
+        // Try to load all runtime objects
+//        if (!project.load()) {
+//            // Print an error message
+//            mLogger.failure("Failure: Cannot load runtime objects of project '" + project + "'");
+//            // Return false at error
+//            return false;
+//        } else {
+//            // Print some information 
+//            //mLogger.message("Loaded runtime objects of project '" + project + "'");
+//        }
         // Try to launch all runtime objects
         if (!project.launch()) {
             // Print an error message
@@ -180,8 +203,8 @@ public final class RunTimeInstance {
         // Check activity status with the interpreter
         return mProjectMap.get(project).isRunning();
     }
-	
-	    // Check activity status of the project
+
+    // Check activity status of the project
     public final /* synchronized */ boolean wasExecuted(final RunTimeProject project) {
         //mLogger.message("Check if running");
         if (!mProjectMap.containsKey(project)) {
