@@ -400,11 +400,11 @@ public final class SceneScript extends SceneEntity {
             initLangMap();
             initGroupMap();
         } else {
-            mEntityList.clear();
+           /* mEntityList.clear();
             mSceneList.clear();
             mCommentList.clear();
             mGroupMap.clear();
-            mLangMap.clear();
+            mLangMap.clear();*/
         }
     }
 }

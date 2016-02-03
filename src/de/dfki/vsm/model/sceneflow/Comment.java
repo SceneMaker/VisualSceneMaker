@@ -77,13 +77,13 @@ public class Comment extends Syntax {
             mTextEditor = new JEditorPane();
         }
 
-        mTextEditor.setContentType(new HTMLEditorKit().getContentType());
+        //mTextEditor.setContentType(new HTMLEditorKit().getContentType());
 
         // now use the same font than the label!
         Font   mFont    = new Font("SansSerif", Font.PLAIN, mFontSize);
         String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
 
-        ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
+       // ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
         mTextEditor.setText(mHTMLText);
         mHTMLText = mTextEditor.getText();
     }

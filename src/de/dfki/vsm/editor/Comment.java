@@ -105,44 +105,51 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // mTextLabel.setForeground(new Color(147, 130, 52, 127));
         mTextLabel.setForeground(new Color(75, 75, 75, 127));
         mTextEditor = new JEditorPane();
-        mTextEditor.setContentType(new HTMLEditorKit().getContentType());
+        //mTextEditor.setContentType();
         mTextEditor.setOpaque(false);
         mTextEditor.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
         // now use the same font than the label!
-        String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
+       // String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
 
-        ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
+        //((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
         setLayout(new BorderLayout());
 
         // first put it in the editor, then back in the label
         mTextEditor.setText(mDataComment.getHTMLText());
-        mTextLabel.setText(mTextEditor.getText());
+        mTextLabel.setText(formatLabelText(mTextEditor.getText()));
         add(mTextLabel, BorderLayout.CENTER);
+    }
+
+    private String formatLabelText(String text){
+        //In order to the JLabel accept break lines
+        text = text.replaceAll("(\r\n|\n)", "<br />");
+        String displayText = "<html>" + text + "</html>";
+        return displayText;
     }
 
     @Override
     public void update(EventObject event) {   }
 
-    
+
     @Override
     public void update(Observable o, Object obj) {
         update();
     }
-    
-    
+
+
     public void update() {
-        
+
         mFont = new Font("SansSerif", Font.ITALIC, mEditorConfig.sWORKSPACEFONTSIZE);
         mTextLabel.setFont(mFont);
         mTextEditor.setFont(mFont);
 
         String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
 
-        ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
+        //((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
         mDataComment.setHTMLText(mTextEditor.getText());
         mTextEditor.setText(mDataComment.getHTMLText());
-        mTextLabel.setText(mTextEditor.getText());
+        mTextLabel.setText(formatLabelText(mTextEditor.getText()));
         repaint();
     }
 
@@ -256,7 +263,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         if ((e.getButton() == MouseEvent.BUTTON1) && (e.getClickCount() == 2)) {
 
             // DEBUG System.out.println("double click");
-            String text = mTextLabel.getText();
+            String text = mTextEditor.getText();
 
             mTextEditor.setText(text);
             remove(mTextLabel);
@@ -321,7 +328,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
             String htmlText = mTextEditor.getText();
 
             System.out.println(htmlText);
-            mTextLabel.setText(htmlText);
+            mTextLabel.setText(formatLabelText(htmlText));
             remove(mTextEditor);
             add(mTextLabel, BorderLayout.CENTER);
             mEditMode = false;
