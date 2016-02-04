@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.evt;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.util.List;
@@ -18,7 +18,7 @@ public class EventDispatcher {
     private static EventDispatcher sInstance = null;
 
     // The Logger Instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Listener List
     private final List<EventListener> mListenerList =  new CopyOnWriteArrayList<EventListener>();

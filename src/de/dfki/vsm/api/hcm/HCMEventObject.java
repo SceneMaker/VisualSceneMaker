@@ -2,7 +2,7 @@ package de.dfki.vsm.api.hcm;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -21,7 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public final class HCMEventObject {
 
     // The VSM Logger
-    private static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
+    private static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
 
     // The Message Id
     private static long sId = 0;

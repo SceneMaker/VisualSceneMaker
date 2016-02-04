@@ -62,7 +62,7 @@ import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -159,7 +159,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
     //
     public final Observable mObservable = new Observable();
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     //

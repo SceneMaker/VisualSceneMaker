@@ -4,7 +4,7 @@ import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.auxiliary.functions.FunctionsEditor;
 import de.dfki.vsm.editor.project.auxiliary.dialogact.DialogActEditor;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.BorderFactory;
@@ -17,7 +17,7 @@ import javax.swing.JTabbedPane;
 public final class AuxiliaryEditor extends JPanel {
 
     // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The tabbed pane of the editor
     private final JTabbedPane mEditorTabbedPane = new JTabbedPane();
     private final FunctionsEditor mFunctionEditor;

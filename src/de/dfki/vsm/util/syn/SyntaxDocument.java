@@ -2,7 +2,7 @@ package de.dfki.vsm.util.syn;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -27,7 +27,7 @@ import javax.swing.undo.UndoManager;
 public class SyntaxDocument extends PlainDocument implements UndoableEditListener {
 
     // The Singelton Logger
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The List Of Tokens
     public LinkedList<SyntaxDocSymbol> mSymbolList = new LinkedList<>();

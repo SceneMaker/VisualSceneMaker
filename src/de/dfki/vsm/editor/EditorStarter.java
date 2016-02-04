@@ -8,7 +8,7 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -65,7 +65,7 @@ public class EditorStarter extends JPanel {
 	private JFrame mParentFrame;
 
 	// The singelton logger instance
-	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+	private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
 	private class CoolSeparator extends JSeparator {
 
@@ -269,11 +269,12 @@ public class EditorStarter extends JPanel {
 		mRightProjectBox.removeAll();
 		mRightProjectBox.revalidate();
 		mRightProjectBox.repaint();
-		createMenuButtons();
-		listOfRecentProjects();
-		listOfTutorials();
-		listOfBuildInProjects();
-		newsAndDoc();
+                // COMMENTED OUT BECAUSE STILL ERROR DUE TO MISSING FILES IN MY WORKSPACE
+		//createMenuButtons();
+		//listOfRecentProjects();
+		//listOfTutorials();
+		//listOfBuildInProjects();
+		//newsAndDoc();
 	}
 
 	/**

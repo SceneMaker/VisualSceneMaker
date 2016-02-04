@@ -24,5 +24,6 @@ public class LOGLogFileHandler extends FileHandler {
 
         // Log The Messages From All Levels
         setLevel(Level.ALL);
+    
     }
 }

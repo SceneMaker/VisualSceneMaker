@@ -1,6 +1,6 @@
 package de.dfki.vsm.api;
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
  * @author Gregor Mehlmann
@@ -8,8 +8,8 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 public abstract class VSMAgentClient extends Thread {
 
     // The singelton logger instance
-    protected final LOGConsoleLogger mLogger
-            = LOGConsoleLogger.getInstance();
+    protected final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
     // The thread terminatioin flag
     protected volatile boolean mDone = false;
     // The respective player instance
