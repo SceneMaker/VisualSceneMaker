@@ -9,6 +9,8 @@ import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.animationlogic.Animation;
 import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
 import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
+import de.dfki.vsm.runtime.events.AbortionEvent;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.ByteArrayOutputStream;
@@ -36,8 +38,19 @@ public class StickmanAction extends Action implements AnimationListener {
 		mDuration = dur;
 		mParameter = param;
 		mBlocking = block;
-		mAnimation = AnimationLoader.getInstance().loadAnimation(mStickman, mName, mDuration, mBlocking);
-		mAnimation.mParameter = mParameter;
+		try {
+			mAnimation = AnimationLoader.getInstance().loadAnimation(mStickman, mName, mDuration, mBlocking);
+		}
+		catch (Exception e){
+			String msg = "animation " + mName + " is not known by Stickman ...";
+			EventDispatcher.getInstance().convey(new AbortionEvent(this, new ClassNotFoundException(msg)));
+		}
+		if(mAnimation != null ) {
+			//Show an error dialog
+
+			mAnimation.mParameter = mParameter;
+
+		}
 	}
 	
 	@Override

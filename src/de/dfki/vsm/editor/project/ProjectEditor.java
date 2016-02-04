@@ -9,7 +9,7 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
@@ -26,7 +26,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 public final class ProjectEditor extends JSplitPane implements EventListener {
 
     // The singelton logger instance   
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The singelton event multicaster
     private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
     // The editor project of this editor

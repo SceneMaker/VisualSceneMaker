@@ -3,7 +3,7 @@ package de.dfki.vsm.util.syn;
 //~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -34,7 +34,7 @@ import javax.swing.text.Utilities;
 public final class SyntaxStylePolicy implements ModelObject {
 
     // The Singelton Logger
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The Token Style Map
     private final HashMap<String, SyntaxTokenStyle> mStyleMap = new HashMap<>();

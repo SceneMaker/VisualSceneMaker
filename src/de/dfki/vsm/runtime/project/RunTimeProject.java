@@ -16,7 +16,7 @@ import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
 import de.dfki.vsm.runtime.dialogacts.DummyDialogAct;
 import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.plugins.RunTimePlugin;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 
 import java.io.*;
@@ -30,8 +30,8 @@ import java.util.Map.Entry;
 public class RunTimeProject {
 
     // The singelton logger instance
-    protected final LOGConsoleLogger mLogger
-            = LOGConsoleLogger.getInstance();
+    protected final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
 
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();

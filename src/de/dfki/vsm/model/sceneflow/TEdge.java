@@ -47,8 +47,13 @@ public class TEdge extends Edge {
         return mTimeout;
     }
 
-    public void setTimeout(long value) {
-        mTimeout = value;
+    public void setTimeout(long value) throws NumberFormatException {
+        if(value >= 0){
+            mTimeout = value;
+        }else{
+            throw new NumberFormatException("Invalid Time Out Egde Value");
+        }
+       // mTimeout = value;
     }
 
     public void setExpression(Expression value) {

@@ -2,7 +2,7 @@ package de.dfki.vsm.util.bin;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 

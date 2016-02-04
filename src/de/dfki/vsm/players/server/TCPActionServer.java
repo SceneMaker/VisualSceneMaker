@@ -1,7 +1,7 @@
 package de.dfki.vsm.players.server;
 
 import de.dfki.vsm.players.ActionPlayer;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,7 +22,7 @@ public class TCPActionServer extends Thread {
 	public static int mServerPort = 7777;
 	public static ServerSocket mServerSocket = null;
 
-	private static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+	private static final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 	private static TCPActionServer sInstance = null;
         private List<ServerConnectionHandler> sClientConnections =  new CopyOnWriteArrayList<ServerConnectionHandler>();
 	//private static List<ServerConnectionHandler> sClientConnections = Collections.synchronizedList(new ArrayList());
