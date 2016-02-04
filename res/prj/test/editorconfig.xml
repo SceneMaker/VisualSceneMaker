@@ -22,6 +22,7 @@
 <entry key="node_height">90</entry>
 <entry key="scriptfonsize">11</entry>
 <entry key="frame_width">800</entry>
+<entry key="defaultsupernodename">default</entry>
 <entry key="visualizationtrace">false</entry>
 <entry key="grid_y">1</entry>
 <entry key="propertiesdividerlocation">790</entry>

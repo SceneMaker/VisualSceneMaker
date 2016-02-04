@@ -13,7 +13,7 @@ import de.dfki.vsm.model.sceneflow.FEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -27,7 +27,7 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class DeflectEdgeAction extends EdgeAction {
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     public DeflectEdgeAction(WorkSpacePanel workSpace, Edge edge, Node newTargetNode, Point newDropPoint) {
         mWorkSpace         = workSpace;

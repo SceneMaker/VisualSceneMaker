@@ -3,7 +3,7 @@ package de.dfki.vsm.model.scenescript;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocSymbol;
 import de.dfki.vsm.util.syn.SyntaxDocToken;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 public class ScriptSymbol extends SyntaxDocSymbol implements ScriptFields {
 
     // The System Logger
-    public final static LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
+    public final static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
 
     // The Array With Field Names
     public final static String[] sFieldNames;

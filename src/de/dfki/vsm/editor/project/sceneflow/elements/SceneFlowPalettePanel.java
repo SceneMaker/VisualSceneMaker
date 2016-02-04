@@ -5,7 +5,7 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.Comment;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
@@ -68,7 +68,7 @@ public class SceneFlowPalettePanel extends JPanel {
                     new Comment());
     
     //
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     
     //
     private final int paletteDimension = 230;

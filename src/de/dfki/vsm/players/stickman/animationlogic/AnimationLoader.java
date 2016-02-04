@@ -84,7 +84,7 @@ public class AnimationLoader {
 				Class[] params = con.getParameterTypes();
 
 				if (params.length == 3) {
-					if (params[0].getSimpleName().equalsIgnoreCase("stickman") 
+					if (params[0].getSimpleName().equalsIgnoreCase("stickman")
 					  && params[1].getSimpleName().equalsIgnoreCase("int")
 					  && params[2].getSimpleName().equalsIgnoreCase("boolean")) {
 						a = (Animation) c.getDeclaredConstructor(params).newInstance(sm, duration, block);

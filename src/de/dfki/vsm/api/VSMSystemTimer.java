@@ -1,6 +1,6 @@
 package de.dfki.vsm.api;
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
  * @author Gregor Mehlmann
@@ -8,7 +8,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 public final class VSMSystemTimer extends Thread {
 
     // The singelton system togger
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The thread termination flag
     private volatile boolean mDone = false;
     // The scene player reference

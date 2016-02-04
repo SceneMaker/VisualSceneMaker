@@ -1,14 +1,13 @@
 package de.dfki.vsm.editor;
 
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
-import com.sun.javafx.css.Rule;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -30,7 +29,6 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -41,7 +39,8 @@ import javax.swing.border.EmptyBorder;
  * projects
  *
  */
-public class EditorStarter extends JPanel {
+public class EditorStarter extends JPanel
+{
 
     private final static Dimension screenDimension = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
     private final static Dimension halfScreenDimension = new Dimension((int) (java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2), (int) java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight());
@@ -65,30 +64,35 @@ public class EditorStarter extends JPanel {
     private JFrame mParentFrame;
 
     // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-    private class CoolSeparator extends JSeparator {
+    private class CoolSeparator extends JSeparator
+    {
 
         Dimension size = new Dimension(screenDimension.width, 1);
 
-        public CoolSeparator() {
+        public CoolSeparator()
+        {
             setSize(size);
             setPreferredSize(size);
             setMaximumSize(size);
         }
 
         @Override
-        public void paintComponent(Graphics g) {
+        public void paintComponent(Graphics g)
+        {
             Graphics2D g2 = (Graphics2D) g;
 
             g2.setColor(sMENUHEADLINECOLOR);
-            for (int x = 0; x < size.width; x += 10) {
+            for (int x = 0; x < size.width; x += 10)
+            {
                 g2.drawLine(x, 0, x + 5, 0);
             }
         }
     }
 
-    public EditorStarter(final EditorInstance mParent) {
+    public EditorStarter(final EditorInstance mParent)
+    {
         mEditorInstance = mParent;
 
         JPanel content = new JPanel();
@@ -156,9 +160,11 @@ public class EditorStarter extends JPanel {
         content.add(mCenterProjectBox);
 
         // acquire the build details
-        try {
+        try
+        {
             Properties vProp;
-            try (InputStream versionInfo = Preferences.sVSM_VERSIONURL.openStream()) {
+            try (InputStream versionInfo = Preferences.sVSM_VERSIONURL.openStream())
+            {
                 vProp = new Properties();
                 vProp.load(versionInfo);
             }
@@ -176,14 +182,17 @@ public class EditorStarter extends JPanel {
 
             content.add(Box.createRigidArea(d));
             content.add(versionLabel);
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             e.printStackTrace();
         }
 
         mParentFrame = null;
         Window windows[] = Window.getWindows();
-        for (Window w : windows) {
-            if (w instanceof EditorInstance) {
+        for (Window w : windows)
+        {
+            if (w instanceof EditorInstance)
+            {
                 // There is only one, so ...
                 mParentFrame = (EditorInstance) w;
             }
@@ -196,15 +205,20 @@ public class EditorStarter extends JPanel {
         p.setOpaque(false);
         p.add(mWelcomeStickman);
 
-        this.addMouseListener(new java.awt.event.MouseAdapter() {
+        this.addMouseListener(new java.awt.event.MouseAdapter()
+        {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (mWelcomeStickman.mHead.getBounds().contains(evt.getX(), evt.getY())) {
+            public void mouseClicked(java.awt.event.MouseEvent evt)
+            {
+                if (mWelcomeStickman.mHead.getBounds().contains(evt.getX(), evt.getY()))
+                {
                     mWelcomeStickman.doAnimation("Speaking", 500, "My head!", false);
                     mWelcomeStickman.doAnimation("Blink", 100, false);
                     mWelcomeStickman.doAnimation("Mouth_O", 40, true);
                     mWelcomeStickman.doAnimation("Mouth_Default", 20, true);
-                } else {
+                }
+                else
+                {
                     mWelcomeStickman.doAnimation("Blink", 100, false);
                     mWelcomeStickman.doAnimation("Smile", 500, false);
                 }
@@ -219,21 +233,23 @@ public class EditorStarter extends JPanel {
         //setOpaque(true);
 
         setBackground(new Color(235, 235, 235));
-		//setBackground(Color.white);
+        //setBackground(Color.white);
 
         // Let the user welcome
         new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        mWelcomeStickman.doAnimation("Speaking", 2000, "Welcome!", false);
-                        mWelcomeStickman.doAnimation("Mouth_O", 20, true);
-                        mWelcomeStickman.doAnimation("Smile", 1000, false);
-                        mWelcomeStickman.doAnimation("TiltLeft", 300, false);
-                        mWelcomeStickman.doAnimation("WaveLeft", 2000, true);
-                        mWelcomeStickman.doAnimation("TiltLeftBack", 300, false);
-                    }
-                },
+                new java.util.TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                mWelcomeStickman.doAnimation("Speaking", 2000, "Welcome!", false);
+                mWelcomeStickman.doAnimation("Mouth_O", 20, true);
+                mWelcomeStickman.doAnimation("Smile", 1000, false);
+                mWelcomeStickman.doAnimation("TiltLeft", 300, false);
+                mWelcomeStickman.doAnimation("WaveLeft", 2000, true);
+                mWelcomeStickman.doAnimation("TiltLeftBack", 300, false);
+            }
+        },
                 1000
         );
 
@@ -241,7 +257,8 @@ public class EditorStarter extends JPanel {
 
     // Draws the image on the background
     @Override
-    public final void paintComponent(final Graphics graphics) {
+    public final void paintComponent(final Graphics graphics)
+    {
         mWelcomeStickman.setVisible(isVisible());
         mParentFrame.getGlassPane().setVisible(isVisible());
 
@@ -256,14 +273,16 @@ public class EditorStarter extends JPanel {
         g2.fillRect(0, getBounds().height - 30, getBounds().width, getBounds().height);
     }
 
-    public void updateWelcomePanel() {
+    public void updateWelcomePanel()
+    {
         createRecentAndSamplePrjList();
     }
 
     /**
      * Creates the list of recent projects
      */
-    public void createRecentAndSamplePrjList() {
+    public void createRecentAndSamplePrjList()
+    {
         mLeftProjectBox.removeAll();
         mLeftProjectBox.revalidate();
         mLeftProjectBox.repaint();
@@ -281,7 +300,8 @@ public class EditorStarter extends JPanel {
     /**
      * Creates open and new project buttons
      */
-    private void createMenuButtons() {
+    private void createMenuButtons()
+    {
         // PROJECTS SECTION
         JLabel actionMenu = new JLabel(" General");
 
@@ -293,7 +313,7 @@ public class EditorStarter extends JPanel {
         actionMenu.setFont(sMENUHEADLINEFONT);
         mLeftProjectBox.add(actionMenu);
 
-		// *********************************************************************
+        // *********************************************************************
         // NEW PROJECT BUTTON
         // *********************************************************************
         JLabel mNewProjMenu = new JLabel("New Project");
@@ -306,22 +326,26 @@ public class EditorStarter extends JPanel {
         mNewProjMenu.setOpaque(true);
         mNewProjMenu.setBackground(sMENUITEMBACKBGROUNDCOLOR);
         mNewProjMenu.setForeground(sTEXTCOLOR);
-        mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+        mNewProjMenu.addMouseListener(new java.awt.event.MouseAdapter()
+        {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            public void mouseClicked(java.awt.event.MouseEvent evt)
+            {
                 // mEditorInstance.newProject();
                 NewProjectDialog npd = new NewProjectDialog();
                 mWelcomeStickman.setVisible(false);
             }
 
             @Override
-            public void mouseEntered(MouseEvent me) {
+            public void mouseEntered(MouseEvent me)
+            {
                 me.getComponent().setBackground(sHIGHLIGHTCOLOR);
                 EditorStarter.this.repaint();
             }
 
             @Override
-            public void mouseExited(MouseEvent me) {
+            public void mouseExited(MouseEvent me)
+            {
                 me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
                 EditorStarter.this.repaint();
             }
@@ -329,7 +353,7 @@ public class EditorStarter extends JPanel {
         mLeftProjectBox.add(mNewProjMenu);
         mLeftProjectBox.add(new CoolSeparator());
 
-		// *********************************************************************
+        // *********************************************************************
         // OPEN PROJECT BUTTON
         // *********************************************************************
         JLabel mOpenProjectMenu = new JLabel("Open a Project");
@@ -342,18 +366,22 @@ public class EditorStarter extends JPanel {
         mOpenProjectMenu.setBackground(sMENUITEMBACKBGROUNDCOLOR);
         mOpenProjectMenu.setForeground(sTEXTCOLOR);
         mOpenProjectMenu.setFont(sMENUITEMFONT);
-        mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+        mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseClicked(java.awt.event.MouseEvent evt)
+            {
                 mEditorInstance.openProject();
                 mWelcomeStickman.setVisible(false);
             }
 
-            public void mouseEntered(MouseEvent me) {
+            public void mouseEntered(MouseEvent me)
+            {
                 me.getComponent().setBackground(sHIGHLIGHTCOLOR);
                 EditorStarter.this.repaint();
             }
 
-            public void mouseExited(MouseEvent me) {
+            public void mouseExited(MouseEvent me)
+            {
                 me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
                 EditorStarter.this.repaint();
             }
@@ -364,9 +392,10 @@ public class EditorStarter extends JPanel {
     /**
      * creates the box with the list of recent projects
      */
-    private void listOfRecentProjects() {
+    private void listOfRecentProjects()
+    {
 
-		// *********************************************************************
+        // *********************************************************************
         // LIST OF RECENT PROJECTS
         // *********************************************************************
         JLabel titleMenu = new JLabel((Preferences.sMAX_RECENT_FILE_COUNT > 1) ? " Recent Projects" : " Recent Project");
@@ -387,21 +416,26 @@ public class EditorStarter extends JPanel {
         recentPanel.setLayout(new BoxLayout(recentPanel, BoxLayout.Y_AXIS));
 
         int filesConsidered = (Preferences.sMAX_RECENT_FILE_COUNT < 5) ? Preferences.sMAX_RECENT_FILE_COUNT : 4;
-        for (int i = 0; i <= filesConsidered; i++) {
+        for (int i = 0; i <= filesConsidered; i++)
+        {
             String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
             String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
-            if (projectDirName != null) {
+            if (projectDirName != null)
+            {
                 final File projectDir = new File(projectDirName);
 
-                if (projectDir.exists()) {
-                    if (projectDirName.startsWith("res" + System.getProperty("file.separator") + "prj")) {
+                if (projectDir.exists())
+                {
+                    if (projectDirName.startsWith("res" + System.getProperty("file.separator") + "prj"))
+                    {
                         continue;
                     }
 
                     String modified = Preferences.getProperty("recentproject." + i + ".date");
 
-                    if (modified == null) {
+                    if (modified == null)
+                    {
                         modified = "Not saved yet";
                     }
 
@@ -414,22 +448,26 @@ public class EditorStarter extends JPanel {
                     projectList[i].setPreferredSize(new Dimension(buttonSize));
                     projectList[i].setFont(sMENUITEMFONT);
                     projectList[i].setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-                    projectList[i].addMouseListener(new MouseAdapter() {
+                    projectList[i].addMouseListener(new MouseAdapter()
+                    {
                         @Override
-                        public void mouseClicked(MouseEvent me) {
+                        public void mouseClicked(MouseEvent me)
+                        {
                             // mEditorInstance.toggleProjectEditorList(true);
                             mEditorInstance.openProject(projectDir.getPath());
                             mWelcomeStickman.setVisible(false);
                         }
 
                         @Override
-                        public void mouseEntered(MouseEvent me) {
+                        public void mouseEntered(MouseEvent me)
+                        {
                             me.getComponent().setBackground(sHIGHLIGHTCOLOR);
                             EditorStarter.this.repaint();
                         }
 
                         @Override
-                        public void mouseExited(MouseEvent me) {
+                        public void mouseExited(MouseEvent me)
+                        {
                             me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
                             EditorStarter.this.repaint();
                         }
@@ -441,7 +479,8 @@ public class EditorStarter extends JPanel {
         }
 
         // remove last separator
-        if (recentPanel.getComponentCount() > 0) {
+        if (recentPanel.getComponentCount() > 0)
+        {
             recentPanel.remove(recentPanel.getComponentCount() - 1);
         }
 
@@ -451,16 +490,19 @@ public class EditorStarter extends JPanel {
     /**
      * Creates link list of sample projects
      */
-    private void listOfTutorials() {
-		// *********************************************************************
+    private void listOfTutorials()
+    {
+        // *********************************************************************
         // LIST OF TUTORIALS PROJECTS
         // *********************************************************************
 
         int tutorialProjCnt = 0;
-        if (TutorialsProjFolder.exists()) {
+        if (TutorialsProjFolder.exists())
+        {
             tutorialProjCnt = TutorialsProjFolder.listFiles().length;
         }
-        if (tutorialProjCnt == 0) {
+        if (tutorialProjCnt == 0)
+        {
             return;
         }
 
@@ -491,11 +533,13 @@ public class EditorStarter extends JPanel {
 
         File listDirs[] = TutorialsProjFolder.listFiles();
 
-        for (final File tutorialDir : listDirs) {
+        for (final File tutorialDir : listDirs)
+        {
 
             final File tutorialProj = new File(tutorialDir.getPath());
 
-            if (tutorialProj.exists()) {
+            if (tutorialProj.exists())
+            {
                 //File projectPath = new File(sampleDir.getPath() + "project.xml" );
                 EditorProject project = new EditorProject();
 
@@ -512,22 +556,26 @@ public class EditorStarter extends JPanel {
                 newTutorialProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
                 newTutorialProj.setForeground(sTEXTCOLOR);
                 newTutorialProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-                newTutorialProj.addMouseListener(new MouseAdapter() {
+                newTutorialProj.addMouseListener(new MouseAdapter()
+                {
                     @Override
-                    public void mouseClicked(MouseEvent me) {
+                    public void mouseClicked(MouseEvent me)
+                    {
                         // mEditorInstance.toggleProjectEditorList(true);
                         mEditorInstance.openProject(tutorialProj.getPath());
                         mWelcomeStickman.setVisible(false);
                     }
 
                     @Override
-                    public void mouseEntered(MouseEvent me) {
+                    public void mouseEntered(MouseEvent me)
+                    {
                         me.getComponent().setBackground(sHIGHLIGHTCOLOR);
                         EditorStarter.this.repaint();
                     }
 
                     @Override
-                    public void mouseExited(MouseEvent me) {
+                    public void mouseExited(MouseEvent me)
+                    {
                         me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
                         EditorStarter.this.repaint();
                     }
@@ -539,7 +587,8 @@ public class EditorStarter extends JPanel {
         }
 
         // remove last separator
-        if (tutorialProjPanel.getComponentCount() > 0) {
+        if (tutorialProjPanel.getComponentCount() > 0)
+        {
             tutorialProjPanel.remove(tutorialProjPanel.getComponentCount() - 1);
         }
 
@@ -551,49 +600,60 @@ public class EditorStarter extends JPanel {
     /**
      * Creates link list of buildin sample projects
      */
-    private void listOfBuildInProjects() {
-		// *********************************************************************
+    private void listOfBuildInProjects()
+    {
+        // *********************************************************************
         // LIST OF SAMPLE PROJECTS
         // *********************************************************************
 
         CodeSource src = SceneMaker3.class.getProtectionDomain().getCodeSource();
         List<String> listDirs = new ArrayList<String>();
         String path = "res/prj";
-        if (src != null) {
+        if (src != null)
+        {
             URL jar = src.getLocation();
             ZipInputStream zip = null;
-            try {
+            try
+            {
                 zip = new ZipInputStream(jar.openStream());
-            } catch (IOException ex) {
+            } catch (IOException ex)
+            {
                 mLogger.failure("Error reading resource");
 
             }
             ZipEntry ze = null;
 
-            try {
-                while ((ze = zip.getNextEntry()) != null) {
+            try
+            {
+                while ((ze = zip.getNextEntry()) != null)
+                {
                     String entryName = ze.getName();
-                    if (entryName.startsWith(path) && ze.isDirectory()) {
+                    if (entryName.startsWith(path) && ze.isDirectory())
+                    {
                         String entry = entryName.substring(path.length() + 1);
                         int checkSubdir = entry.indexOf("/");
-                        if (checkSubdir >= 0) {
+                        if (checkSubdir >= 0)
+                        {
                             // if it is a subdirectory, we just return the directory name
                             entry = entry.substring(0, checkSubdir);
                         }
-                        if (!listDirs.contains(entry) && !entry.equals("")) {
+                        if (!listDirs.contains(entry) && !entry.equals(""))
+                        {
                             listDirs.add(path + "/" + entry);
                             System.out.println(entry);
                         }
                     }
                 }
-            } catch (IOException ex) {
+            } catch (IOException ex)
+            {
                 mLogger.failure("Error reading resource");
             }
 
         }
         int buildInSampleProjCnt = listDirs.size();
 
-        if (buildInSampleProjCnt == 0) {
+        if (buildInSampleProjCnt == 0)
+        {
             return;
         }
 
@@ -621,7 +681,8 @@ public class EditorStarter extends JPanel {
         mScrollPanel.getViewport().setOpaque(false);
         mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-        for (final String sampleDir : listDirs) {
+        for (final String sampleDir : listDirs)
+        {
 
             EditorProject project = new EditorProject();
 
@@ -637,22 +698,26 @@ public class EditorStarter extends JPanel {
             newSampleProj.setBackground(sMENUITEMBACKBGROUNDCOLOR);
             newSampleProj.setForeground(sTEXTCOLOR);
             newSampleProj.setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
-            newSampleProj.addMouseListener(new MouseAdapter() {
+            newSampleProj.addMouseListener(new MouseAdapter()
+            {
                 @Override
-                public void mouseClicked(MouseEvent me) {
+                public void mouseClicked(MouseEvent me)
+                {
                     // mEditorInstance.toggleProjectEditorList(true);
                     mEditorInstance.openProject(sampleDir);
                     mWelcomeStickman.setVisible(false);
                 }
 
                 @Override
-                public void mouseEntered(MouseEvent me) {
+                public void mouseEntered(MouseEvent me)
+                {
                     me.getComponent().setBackground(sHIGHLIGHTCOLOR);
                     EditorStarter.this.repaint();
                 }
 
                 @Override
-                public void mouseExited(MouseEvent me) {
+                public void mouseExited(MouseEvent me)
+                {
                     me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
                     EditorStarter.this.repaint();
                 }
@@ -664,7 +729,8 @@ public class EditorStarter extends JPanel {
         }
 
         // remove last separator
-        if (sampleProjPanel.getComponentCount() > 0) {
+        if (sampleProjPanel.getComponentCount() > 0)
+        {
             sampleProjPanel.remove(sampleProjPanel.getComponentCount() - 1);
         }
 
@@ -675,9 +741,10 @@ public class EditorStarter extends JPanel {
     /**
      * Adds information items
      */
-    private void newsAndDoc() {
+    private void newsAndDoc()
+    {
 
-		// *********************************************************************
+        // *********************************************************************
         // NEWS AND DOCUMENTATION
         // *********************************************************************
         JLabel mDocuMenu = new JLabel(" News and Documentation");
@@ -701,15 +768,18 @@ public class EditorStarter extends JPanel {
         link.setBackground(sMENUITEMBACKBGROUNDCOLOR);
         link.setForeground(sTEXTCOLOR);
         link.setFont(sMENUITEMFONT);
-        link.addMouseListener(new java.awt.event.MouseAdapter() {
+        link.addMouseListener(new java.awt.event.MouseAdapter()
+        {
             @Override
-            public void mouseEntered(MouseEvent me) {
+            public void mouseEntered(MouseEvent me)
+            {
                 me.getComponent().setBackground(sHIGHLIGHTCOLOR);
                 EditorStarter.this.repaint();
             }
 
             @Override
-            public void mouseExited(MouseEvent me) {
+            public void mouseExited(MouseEvent me)
+            {
                 me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
                 EditorStarter.this.repaint();
             }
@@ -718,7 +788,8 @@ public class EditorStarter extends JPanel {
         mRightProjectBox.add(link);
     }
 
-    public void refresh() {
+    public void refresh()
+    {
         // noting to do ...
     }
 }

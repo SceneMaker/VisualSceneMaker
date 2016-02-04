@@ -18,7 +18,7 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -64,7 +64,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The singelton runtime instance 
     private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
     // The singelton logger instance   
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The singelton event multicaster
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // The editor's GUI components
@@ -881,27 +881,34 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
         } else {
             // Launch the current project in the runtime
-            if (mRunTime.launch(project)) {
+            if (mRunTime.load(project)) {
+                if (mRunTime.launch(project)) {
                 // Print some information
-                //mLogger.message("Launching project '" + project + "'");
-                // Start the interpreter for that project
-                if (mRunTime.start(project)) {
+                    //mLogger.message("Launching project '" + project + "'");
+                    // Start the interpreter for that project
+                    if (mRunTime.start(project)) {
                     // Print some information
-                    //mLogger.message("Starting project '" + project + "'");
-                    // Refresh the appearance
+                        //mLogger.message("Starting project '" + project + "'");
+                        // Refresh the appearance
 
                     //refresh(); // TODO WHY IS THIS CALL HERE?
-                    // Return true at success
-                    return true;
+                        // Return true at success
+                        return true;
+                    } else {
+                        // Print an error message
+                        mLogger.failure("Error: Cannot start project '" + project + "'");
+                        // Return false at failure
+                        return false;
+                    }
                 } else {
                     // Print an error message
-                    mLogger.failure("Error: Cannot start project '" + project + "'");
+                    mLogger.failure("Error: Cannot launch project '" + project + "'");
                     // Return false at failure
                     return false;
                 }
             } else {
                 // Print an error message
-                mLogger.failure("Error: Cannot launch project '" + project + "'");
+                mLogger.failure("Error: Cannot load project '" + project + "'");
                 // Return false at failure
                 return false;
             }

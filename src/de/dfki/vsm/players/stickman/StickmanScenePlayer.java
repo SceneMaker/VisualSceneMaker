@@ -33,7 +33,7 @@ import de.dfki.vsm.runtime.values.AbstractValue.Type;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.runtime.values.StructValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -51,7 +51,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
     // The singelton player instance
     public static StickmanScenePlayer sInstance = null;
     // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The player's runtime project 
     private RunTimeProject mProject;
     // The project specific config

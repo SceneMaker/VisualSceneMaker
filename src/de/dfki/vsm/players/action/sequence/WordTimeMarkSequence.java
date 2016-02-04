@@ -6,7 +6,7 @@
 package de.dfki.vsm.players.action.sequence;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
@@ -25,7 +25,7 @@ public class WordTimeMarkSequence implements XMLParseable, XMLWriteable{
 	protected String mText = "";
 	protected ArrayList<Entry> mWordsAndTimemarks;
 	// The singelton logger instance
-	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+	private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
 	public WordTimeMarkSequence() {
 		mWordsAndTimemarks = new ArrayList<>();
