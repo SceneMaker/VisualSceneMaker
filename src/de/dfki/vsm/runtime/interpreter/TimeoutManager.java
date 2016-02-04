@@ -26,7 +26,7 @@ import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -39,7 +39,7 @@ import java.util.TimerTask;
  * @author Not me
  */
 public class TimeoutManager {
-    private final LOGConsoleLogger                                   mLogger          = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger                                   mLogger          = LOGDefaultLogger.getInstance();
     private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCond,
                                                                                             TPLTuple<Boolean,
                                                                                                 TimerTask>>();

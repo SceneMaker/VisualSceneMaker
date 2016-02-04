@@ -2,7 +2,7 @@ package de.dfki.vsm.util.syn;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java_cup.runtime.Scanner;
 
@@ -21,7 +21,7 @@ import javax.swing.text.Segment;
 public abstract class SyntaxDocLexxer implements Scanner {
 
     // Get The System Logger
-    protected final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // Comment Generation Flag
     protected boolean mComment;

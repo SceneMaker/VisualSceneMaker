@@ -53,7 +53,7 @@ import de.dfki.vsm.runtime.values.LongValue;
 import de.dfki.vsm.runtime.values.ObjectValue;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.runtime.values.StructValue;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.lang.reflect.Array;
@@ -72,7 +72,7 @@ import java.util.Vector;
 public class Evaluator {
 
     // The singelton logger instance 
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The parent interpreter object
     private final Interpreter mInterpreter;
 
