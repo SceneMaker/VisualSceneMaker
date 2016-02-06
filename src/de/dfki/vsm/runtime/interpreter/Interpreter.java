@@ -1,5 +1,7 @@
 package de.dfki.vsm.runtime.interpreter;
 
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
@@ -333,9 +335,10 @@ public class Interpreter {
     public boolean setVariable(String varName, AbstractValue value) {
         try {
 
-            lock();
-            mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
-            mEventObserver.update();
+			lock();
+                        Node currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
+			mConfiguration.getState(currentNode).getThread().getEnvironment().write(varName, value);
+			mEventObserver.update();
 
             return true;
         } catch (InterpretException e) {
