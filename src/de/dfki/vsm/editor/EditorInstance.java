@@ -526,6 +526,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             mProjectEditors.setTabComponentAt(mProjectEditors.getTabCount() - 1, pnl);
             mProjectEditors.setComponentAt(mProjectEditors.getTabCount() - 1, content);
             mProjectEditors.setSelectedIndex(mProjectEditors.getTabCount() - 1);
+            mProjectEditors.setTitleAt(mProjectEditors.getTabCount() - 1, tabName);
         }
 
     }
