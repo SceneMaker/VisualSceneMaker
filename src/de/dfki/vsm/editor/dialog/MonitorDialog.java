@@ -106,7 +106,7 @@ public class MonitorDialog extends JDialog implements EventListener
         // errorMsg.setForeground(Color.white);
         errorMsg = new JLabel("");
         errorMsg.setBounds(20, 350, 360, 30);
-
+        
         //VAR BOX
         Box varBox = Box.createVerticalBox();
         varBox.add(Box.createVerticalStrut(20));
@@ -157,6 +157,22 @@ public class MonitorDialog extends JDialog implements EventListener
             }
         });
         
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mInputTextField.hasFocus())
+                    {
+                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                        mInputTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         mWorkPanel.add(errorMsg);
         mWorkPanel.add(mInputTextField);
     }

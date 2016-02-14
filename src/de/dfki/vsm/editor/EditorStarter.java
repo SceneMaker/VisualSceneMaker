@@ -138,8 +138,10 @@ public class EditorStarter extends JPanel
         mCenterProjectBox.setOpaque(false);
 
         mLeftProjectBox.setMaximumSize(halfScreenDimension);
+        mLeftProjectBox.setMinimumSize(halfScreenDimension);
         mLeftProjectBox.setPreferredSize(halfScreenDimension);
         mRightProjectBox.setMaximumSize(halfScreenDimension);
+        mRightProjectBox.setMinimumSize(halfScreenDimension);
         mRightProjectBox.setPreferredSize(mLeftProjectBox.getSize());
         mLeftProjectBox.setBorder(new EmptyBorder(0, 0, 0, 1));
 
@@ -149,6 +151,7 @@ public class EditorStarter extends JPanel
 
         msgLabel.setAlignmentX(LEFT_ALIGNMENT);
         titleLabel.setAlignmentX(LEFT_ALIGNMENT);
+        mCenterProjectBox.add(Box.createHorizontalStrut(10));
         mCenterProjectBox.add(mRightProjectBox);
 
         Dimension centerSize = mCenterProjectBox.getMaximumSize();
@@ -387,6 +390,7 @@ public class EditorStarter extends JPanel
             }
         });
         mLeftProjectBox.add(mOpenProjectMenu);
+        mLeftProjectBox.add(Box.createVerticalStrut(30));
     }
 
     /**
@@ -488,7 +492,7 @@ public class EditorStarter extends JPanel
     }
 
     /**
-     * Creates link list of sample projects
+     * Creates link list of TUTORIAL PROJECTS
      */
     private void listOfTutorials()
     {
@@ -526,7 +530,7 @@ public class EditorStarter extends JPanel
         mScrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         mScrollPanel.setViewportView(tutorialProjPanel);
         mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
-        mScrollPanel.setViewportBorder(new EmptyBorder(0, -10, 0, 0));
+        mScrollPanel.setViewportBorder(new EmptyBorder(0, 0, 0, 0));
         mScrollPanel.setOpaque(false);
         mScrollPanel.getViewport().setOpaque(false);
         mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -612,6 +616,7 @@ public class EditorStarter extends JPanel
         if (src != null)
         {
             URL jar = src.getLocation();
+            System.out.println(jar.getPath());
             ZipInputStream zip = null;
             try
             {
@@ -640,7 +645,7 @@ public class EditorStarter extends JPanel
                         if (!listDirs.contains(entry) && !entry.equals(""))
                         {
                             listDirs.add(path + "/" + entry);
-                            System.out.println(entry);
+//                            System.out.println(entry);
                         }
                     }
                 }
@@ -676,7 +681,7 @@ public class EditorStarter extends JPanel
         mScrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         mScrollPanel.setViewportView(sampleProjPanel);
         mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
-        mScrollPanel.setViewportBorder(new EmptyBorder(0, -10, 0, 0));
+        mScrollPanel.setViewportBorder(new EmptyBorder(0, 0, 0, 0));
         mScrollPanel.setOpaque(false);
         mScrollPanel.getViewport().setOpaque(false);
         mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);

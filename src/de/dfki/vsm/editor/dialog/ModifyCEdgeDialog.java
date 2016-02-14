@@ -34,6 +34,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import static java.awt.Component.CENTER_ALIGNMENT;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 
@@ -105,6 +108,22 @@ public class ModifyCEdgeDialog extends Dialog {
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(labelSize);
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mInputTextField.hasFocus())
+                    {
+                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                        mInputTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         // Init main panel
         Box finalBox = Box.createVerticalBox();
         finalBox.setAlignmentX(CENTER_ALIGNMENT);
@@ -128,6 +147,8 @@ public class ModifyCEdgeDialog extends Dialog {
         sanitizeComponent(mInputLabel, labelSize);
         // Input text field
         mInputTextField = new HintTextField("(a < b )");
+        
+        
         //mInputTextField.tr();
         sanitizeComponent(mInputTextField, textFielSize);
         // Input panel
