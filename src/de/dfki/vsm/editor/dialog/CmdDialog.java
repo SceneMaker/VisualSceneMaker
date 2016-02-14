@@ -10,6 +10,9 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -73,6 +76,22 @@ public class CmdDialog extends Dialog {
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(new Dimension(300, 30));
         
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mInputTextField.hasFocus())
+                    {
+                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                        mInputTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         
         Box finalBox = Box.createVerticalBox();
         finalBox.add(Box.createVerticalStrut(15));
