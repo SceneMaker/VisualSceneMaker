@@ -5,13 +5,20 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.events.AbortionEvent;
+import de.dfki.vsm.runtime.interpreter.Configuration.State;
 import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.tpl.TPLTriple;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * @author Gregor Mehlmann
@@ -60,7 +67,7 @@ public class Interpreter {
     public void lock() {
         //mLogger.message("REQUEST (" + Thread.currentThread() + "," + mLock.getHoldCount()+ ")");
 
-		//mLogger.message("IS LOCKED : " +mLock.isLocked());
+        //mLogger.message("IS LOCKED : " +mLock.isLocked());
         //mLogger.message("IS LOCKED BY CURRENTTHREAD : " + mLock.isHeldByCurrentThread());
         mLock.lock();
 
@@ -165,12 +172,12 @@ public class Interpreter {
     // Start the execution of the project
     public final boolean start() {
 
-		// TODO: This is insecure, cause the thread could die in the meantime
+        // TODO: This is insecure, cause the thread could die in the meantime
         // alive is not the right condition
         // PathLogger.startLogging();
         if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
 
-			// Print some information 
+            // Print some information 
             //mLogger.message("Starting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
             // Create a new thread
             mSceneFlowThread = new Process(mSceneFlow.getId(), null, // TODO: choose an adquate thread group and check if this group has died before
@@ -200,7 +207,7 @@ public class Interpreter {
     public boolean abort() {
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {    // TODO: This is insecure, cause the thread could start in the meantime
 
-			// Print some information 
+            // Print some information 
             //mLogger.message("Aborting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
             try {
                 lock();
@@ -210,8 +217,8 @@ public class Interpreter {
                 unlock();
             }
 
-			// Wait here until terminated and clear data structures
-            // /** Clean up the data structures of the interpreter */
+            // Wait here until terminated and clear data structures
+            // Clean up the data structures of the interpreter
             // mSystemHistory.clear();
             // mConfiguration.clear();
             // mTimeoutManager.clear();
@@ -285,7 +292,7 @@ public class Interpreter {
         }
     }
 
-	////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     //
     ////////////////////////////////////////////////////////////////////////////
     public boolean execute(String nodeId, Command cmd) {
@@ -474,6 +481,39 @@ public class Interpreter {
         } catch (InterpretException e) {
             return null;
         } finally {
+            unlock();
+        }
+    }
+
+    public ArrayList listActiveStates() {
+
+        try {
+            // First lock the interpreter
+            lock();
+            // Create the result list
+            final ArrayList list = new ArrayList();
+            // List all active state 
+            final Object[] states = mConfiguration.getOrderedStates();
+            //
+            for (final Object object : states) {
+                final State state = (State) object;
+                //
+                final String pname = state.getThread().getName();
+                final String nname = state.getNode().getName();
+                //
+                final Environment env = state.getThread().getEnvironment();
+                final SymbolTable table = env.getActiveSymbolTable();
+                final HashMap map = table.copySymbolTable();
+                //
+                final TPLTriple triple = new TPLTriple(pname, nname, map);
+                //
+                list.add(triple);
+            }
+            // Return the result list
+            return list;
+            //return new ArrayList(Arrays.asList(Arrays.copyOf(states, states.length)));
+        } finally {
+            // Finally unlock the interpreter
             unlock();
         }
     }

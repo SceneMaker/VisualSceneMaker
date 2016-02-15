@@ -44,6 +44,8 @@ public class LOGConsoleFormat extends Formatter {
             message += "\033[1;33m";
         } else if (record.getLevel() == Level.INFO) {
             message += "\033[1;36m";
+        }  else if (record.getLevel() == Level.ALL) {
+            message += "\033[1;32m";
         } else {
             message += "\033[1;37m";
         }

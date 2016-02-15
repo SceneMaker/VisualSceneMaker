@@ -24,33 +24,32 @@ public class EditorProject extends RunTimeProject {
     }
 
     /*// Load the editor project
-    @Override
-    public final boolean parse(final File file) {
-        // Check if the file is null
-        if (file == null) {
-            // Print an error message
-            mLogger.failure("Error: Cannot parse editor project from a bad file");
-            // Return false at error
-            return false;
-        }
-        // Get the absolute file for this directory
-        final File base = file.getAbsoluteFile();
-        // Check if the project directory does exist
-        if (!base.exists()) {
-            // Print an error message
-            mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
-            // Return false at error
-            return false;
-        }
-        // First set the project file 
-        mProjectFile = base;
-        // And then load the project
-        return parse();
-    }*/
-    
+     @Override
+     public final boolean parse(final File file) {
+     // Check if the file is null
+     if (file == null) {
+     // Print an error message
+     mLogger.failure("Error: Cannot parse editor project from a bad file");
+     // Return false at error
+     return false;
+     }
+     // Get the absolute file for this directory
+     final File base = file.getAbsoluteFile();
+     // Check if the project directory does exist
+     if (!base.exists()) {
+     // Print an error message
+     mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
+     // Return false at error
+     return false;
+     }
+     // First set the project file 
+     mProjectFile = base;
+     // And then load the project
+     return parse();
+     }*/
     @Override
     public final boolean parse(final String path) {
-		// Check if the file is null
+        // Check if the file is null
         if (path == null) {
             // Print an error message
             mLogger.failure("Error: Cannot parse editor project from a bad file");
@@ -60,10 +59,8 @@ public class EditorProject extends RunTimeProject {
         // Get the absolute file for this directory
         //final File base = file.getAbsoluteFile();
         // Check if the project directory does exist
-        
-        
+
         // TODO: THIS HAS TO BE REFEACTORED! BAD CODE
-        
 //        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
 //             if (super.parse(path)
 //                && mEditorConfig.load(path)) {
@@ -76,26 +73,27 @@ public class EditorProject extends RunTimeProject {
 //            return false;
 //        }  
 //        }
-        
-        File file = new File(path);
-        final File base = file.getAbsoluteFile();
-        
-        if(!file.exists()){
-            mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
-        }
-        if (!base.exists()) {
+        final File file = new File(path);
+        if (file.exists()) {
+            final File base = file.getAbsoluteFile();
+            if (base.exists()) {
+                // First set the project file
+                mProjectFile = base;
+                // And then load the project
+                return parse();
+            } else {
+                // Print an error message
+                mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
+                // Return false at error
+                return false;
+            }
+        } else {
             // Print an error message
-            mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
+            mLogger.failure("Error: Cannot find editor project directory '" + file + "'");
             // Return false at error
             return false;
         }
-        // First set the project file
-        mProjectFile = base;
-        // And then load the project
-        return parse();
     }
-
-
 
     // Save the editor project
     @Override
@@ -216,10 +214,8 @@ public class EditorProject extends RunTimeProject {
 
     // Check if the hash code has changed
     public final boolean hasChanged() {
-		
-		// TODO: PG: DEBUG: mLogger.failure(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> HAS CHANGED was called! " + mInitialHash + " vs " + getHashCode());
-		
-		
+
+        // TODO: PG: DEBUG: mLogger.failure(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> HAS CHANGED was called! " + mInitialHash + " vs " + getHashCode());
         return (mInitialHash != getHashCode());
     }
 }
