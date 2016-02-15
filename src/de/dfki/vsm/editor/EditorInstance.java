@@ -395,6 +395,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     public final ProjectEditor showProject(final EditorProject project) {
         // Show the project editors
         setContentPane(mProjectEditors);
+        //
+        mWelcomePanel.setVisible(false);
         // Create a new project editor from project
         final ProjectEditor editor = new ProjectEditor(project);
         // Add the project editor to list of project
