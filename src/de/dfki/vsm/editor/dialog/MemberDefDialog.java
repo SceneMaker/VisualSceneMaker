@@ -8,6 +8,9 @@ import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.definition.MemberDef;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 
@@ -97,6 +100,22 @@ public class MemberDefDialog extends Dialog {
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(labelSize);
         
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mNameTextField.hasFocus())
+                    {
+                        mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
+                        mNameTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         Box finalBox = Box.createVerticalBox();
         finalBox.add(nameBox);
         finalBox.add(Box.createVerticalStrut(15));

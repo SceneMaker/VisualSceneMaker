@@ -151,21 +151,21 @@ public class NewProjectDialog extends JDialog {
                 return false;
             }
         });
-        addKeyListener(new KeyAdapter() {
-
-            @Override
-            public void keyPressed(KeyEvent e)
-            {
-                System.out.println(e.getKeyChar());
-                System.out.println(e.isConsumed());
-                System.out.println(e.isActionKey());
-                System.out.println(e.getKeyLocation());
-                if(e.isActionKey())
-                {
-                    System.out.println("is action key");
-                }
-            }
-        });
+//        addKeyListener(new KeyAdapter() {
+//
+//            @Override
+//            public void keyPressed(KeyEvent e)
+//            {
+//                System.out.println(e.getKeyChar());
+//                System.out.println(e.isConsumed());
+//                System.out.println(e.isActionKey());
+//                System.out.println(e.getKeyLocation());
+//                if(e.isActionKey())
+//                {
+//                    System.out.println("is action key");
+//                }
+//            }
+//        });
         add(mMainPanel);
         setResizable(false);
         pack();

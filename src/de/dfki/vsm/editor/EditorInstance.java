@@ -71,7 +71,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     private final EditorMenuBar mEditorMenuBar;
     private final JTabbedPane mProjectEditors;
     private final JScrollPane mWelcomeScreen;
-    public final EditorStarter mWelcomePanel;
+    private final EditorStarter mWelcomePanel;
 
     // Get the singelton editor instance
     public synchronized static EditorInstance getInstance() {
@@ -266,9 +266,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("ScrollBar.thumb", Color.LIGHT_GRAY);
     }
 
-//    public void clearRecentProjects() {
-//        mWelcomePanel.updateWelcomePanel();
-//    }
+    public void clearRecentProjects() {
+        mWelcomePanel.updateWelcomePanel();
+    }
+
     private void checkAndSetLocation() {
         Point finalPos = new Point(0, 0);
         Point editorPosition = new Point(Integer.valueOf(Preferences.getProperty("frame_posx")),
@@ -556,6 +557,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             mProjectEditors.setTabComponentAt(mProjectEditors.getTabCount() - 1, pnl);
             mProjectEditors.setComponentAt(mProjectEditors.getTabCount() - 1, content);
             mProjectEditors.setSelectedIndex(mProjectEditors.getTabCount() - 1);
+            mProjectEditors.setTitleAt(mProjectEditors.getTabCount() - 1, tabName);
         }
 
     }
@@ -835,7 +837,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         // save properties
         Preferences.save();
-        // PG: NO NO NO NO NO: mWelcomePanel.createProjectLists();
+        mWelcomePanel.createRecentAndSamplePrjList();
         mEditorMenuBar.refreshRecentFileMenu();
     }
 
