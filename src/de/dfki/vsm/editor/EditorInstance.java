@@ -391,6 +391,37 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
     }
 
+    public final ProjectEditor showProject(final EditorProject project) {
+        // Show the project editors
+        setContentPane(mProjectEditors);
+        // Create a new project editor from project
+        final ProjectEditor editor = new ProjectEditor(project);
+        // Add the project editor to list of project
+        // editors and select it in the tabbed pane
+        addProjectTab(project.getProjectName(), editor);
+        // Set editor visible
+        setVisible(true);
+        // Refresh the appearance
+        refresh();
+        // Return true at success
+        return editor;
+    }
+
+    public final boolean hideProject(final ProjectEditor editor) {
+        // Close selected editor
+        editor.close();
+        // Remove the component 
+        mProjectEditors.remove(editor);
+        // Hide the project editors
+        setContentPane(mWelcomeScreen);
+        // Refresh the appearance
+        refresh();
+        // Set editor invisible
+        setVisible(false);
+        // Return true at success
+        return true;
+    }
+
     public final boolean openProject(String path) {
         if (path == null) {
             mLogger.failure("Error: Cannot open editor project from a bad Stream");
@@ -407,10 +438,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 // Show the menu bar items
                 mEditorMenuBar.setVisible(true);
                 //
-                mLogger.message("Switching content pane to project editors");
+                //mLogger.message("Switching content pane to project editors");
             } else {
                 //
-                mLogger.message("Already showing project editors in content pane");
+                //mLogger.message("Already showing project editors in content pane");
             }
             // Create a new project editor from project
             final ProjectEditor projectEditor = new ProjectEditor(project);
@@ -882,7 +913,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Launch the current project in the runtime
             if (mRunTime.load(project)) {
                 if (mRunTime.launch(project)) {
-                // Print some information
+                    // Print some information
                     //mLogger.message("Launching project '" + project + "'");
                     // Start the interpreter for that project
                     if (mRunTime.start(project)) {
@@ -890,7 +921,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         //mLogger.message("Starting project '" + project + "'");
                         // Refresh the appearance
 
-                    //refresh(); // TODO WHY IS THIS CALL HERE?
+                        //refresh(); // TODO WHY IS THIS CALL HERE?
                         // Return true at success
                         return true;
                     } else {

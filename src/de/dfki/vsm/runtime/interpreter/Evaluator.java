@@ -759,6 +759,8 @@ public class Evaluator {
                 result = executeUsrCmd((UsrCmd) exp, env);
             } catch (Exception e) {
                 
+                e.printStackTrace();
+                
                 throw new InterpretException(exp, "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
             }
             if (result instanceof Boolean) {

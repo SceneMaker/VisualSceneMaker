@@ -310,7 +310,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
      */
     public final void refresh() {
         // Print some information
-        mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         updateSceneList();
         updateFunctions();
         updateDialogActs();
