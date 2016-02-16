@@ -139,8 +139,8 @@
     <!-- Execute to Welcome Screen -->
     <target name="exec">
         <java classname="de.dfki.vsm.SceneMaker3" fork="true">
-            <!-- <arg line="runtime res/prj/test"/>-->
-            <arg line="editor res/prj/test"/>
+            <!-- <arg line="runtime res/prj/test"/> -->
+            <!-- <arg line="editor res/prj/test"/> -->
             <classpath refid="clspath"/>
         </java>
     </target>
