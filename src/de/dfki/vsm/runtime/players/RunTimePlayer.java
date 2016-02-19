@@ -7,20 +7,23 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public interface RunTimePlayer extends RunTimePlugin {
+public abstract class RunTimePlayer implements RunTimePlugin {
 
     // Play with given arguments
-    public void play(final String name, final LinkedList<AbstractValue> args);
+    public abstract void play(final String name, final LinkedList<AbstractValue> args);
 
     // A single task of the player
-    public static class Task extends Thread {
+    protected class Task extends Thread {
 
         // The termination flag
-        private boolean mIsDone;
+        private volatile boolean mIsDone;
 
         // Abort the execution
         public final void abort() {
+            //
             mIsDone = true;
+            //
+            interrupt();
         }
 
         // Check execution status
@@ -29,7 +32,7 @@ public interface RunTimePlayer extends RunTimePlugin {
         }
 
         // Construct with a name
-        public Task(final String name) {
+        protected Task(final String name) {
             super(name);
             // Initialize the flag
             mIsDone = false;
