@@ -10,7 +10,7 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public class DefaultDialogPlayer implements RunTimePlayer {
+public class DefaultDialogPlayer extends RunTimePlayer {
 
     // The singelton player instance
     public static DefaultDialogPlayer sInstance = null;

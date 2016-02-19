@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * @author Gregor Mehlmann
  */
-public abstract class VSMScenePlayer implements RunTimePlayer {
+public abstract class VSMScenePlayer extends RunTimePlayer {
 
     // The runtime environment
     protected final RunTimeInstance mRunTime

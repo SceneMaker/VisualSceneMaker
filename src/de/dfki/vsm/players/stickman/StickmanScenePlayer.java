@@ -46,7 +46,7 @@ import java.util.concurrent.Semaphore;
  * @author Patrick Gebhard (based on Default ScenePlayer)
  *
  */
-public final class StickmanScenePlayer implements RunTimePlayer, ActionListener {
+public final class StickmanScenePlayer extends RunTimePlayer implements ActionListener {
 
     // The singelton player instance
     public static StickmanScenePlayer sInstance = null;

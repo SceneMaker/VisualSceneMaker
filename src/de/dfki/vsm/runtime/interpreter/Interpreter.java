@@ -16,11 +16,9 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTriple;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import org.ujmp.core.collections.ArrayIndexList;
 
 /**
  * @author Gregor Mehlmann
