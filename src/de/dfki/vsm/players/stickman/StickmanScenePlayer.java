@@ -1,8 +1,10 @@
 package de.dfki.vsm.players.stickman;
 
+import de.dfki.vsm.editor.dialog.SelectPlayerDialog;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
+import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
@@ -34,11 +36,9 @@ import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.runtime.values.StructValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -103,6 +103,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
     @Override
     public final boolean launch(final RunTimeProject project) {
         // Initialize the project
+
         mProject = project;
         // Initialize the name
         mPlayerName = project.getPlayerName(this);
@@ -128,6 +129,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
             if (ac != null) {
                 mRelationAgentPlayer.put(c, ac.getClassName());
             }
+
         });
 
         // put all stickman characters on the stickman stage

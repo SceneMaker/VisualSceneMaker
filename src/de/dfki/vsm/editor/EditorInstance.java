@@ -1,19 +1,16 @@
 package de.dfki.vsm.editor;
 
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+import de.dfki.vsm.editor.dialog.*;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
-import de.dfki.vsm.editor.dialog.AboutDialog;
-import de.dfki.vsm.editor.dialog.ErrorDialog;
-import de.dfki.vsm.editor.dialog.MonitorDialog;
-import de.dfki.vsm.editor.dialog.OptionsDialog;
-import de.dfki.vsm.editor.dialog.QuitDialog;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.events.AbortionEvent;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -449,7 +446,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Get the selected editor project
             final EditorProject project = editor.getEditorProject();
             // Check if the project is valid
-            if (project != null) {
+            final boolean isCharacterRegistered = isAllCharacterRegistered(editor);
+
+            if (project != null ) {
                 // Check if the project is pending
                 if (!project.isPending()) {
                     // Try to write the editor project
@@ -526,6 +525,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             mProjectEditors.setTabComponentAt(mProjectEditors.getTabCount() - 1, pnl);
             mProjectEditors.setComponentAt(mProjectEditors.getTabCount() - 1, content);
             mProjectEditors.setSelectedIndex(mProjectEditors.getTabCount() - 1);
+            mProjectEditors.setTitleAt(mProjectEditors.getTabCount() - 1, tabName);
         }
 
     }
@@ -552,6 +552,24 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Save the selected project editor 
     public final boolean saveAs() {
         return saveAs(getSelectedProjectEditor());
+    }
+
+    private final boolean isAllCharacterRegistered(final ProjectEditor editor){
+        final EditorProject project = editor.getEditorProject();
+        boolean finished = false;
+        ArrayList<String> missingAgents = project.checkPlayersAndAgents();
+        //String playerName, String agentName, String projectName, String characterName
+        // project.
+        if(missingAgents.size() > 0){
+            final SelectPlayerDialog newAgentDialog = new SelectPlayerDialog(((RunTimeProject) project), missingAgents, "StickmanStage");
+            //newAgentDialog.showDialog();
+            finished = newAgentDialog.isFinished();
+        }
+
+
+        //Checking if all characters are registered
+
+        return finished;
     }
 
     // Save the specific project editor 

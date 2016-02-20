@@ -8,7 +8,7 @@ import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.*;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.players.DefaultDialogPlayer;
 import de.dfki.vsm.players.DefaultScenePlayer;
@@ -21,7 +21,7 @@ import de.dfki.vsm.util.xml.XMLUtilities;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
@@ -209,6 +209,72 @@ public class RunTimeProject {
      && parseVisiconConfig(base)
      && parseGesticonConfig(base));
      }*/
+
+    public ArrayList<String> checkPlayersAndAgents(){
+    //Check if all the agents are registered. Return array of missing ones
+
+        ArrayList<String> missingAgents = new ArrayList<>();
+        boolean found = false;
+        int i = 0;
+        while (i < mProjectConfig.getPlayerConfigList().size() && !found){
+            if(mProjectConfig.getPlayerConfigList().get(i).getClassName().contains("StickmanScenePlayer")){
+                found = true;
+            }
+            i++;
+        }
+        //Only show it for stickman players
+        if(found) {
+            getCharacters(mSceneScript).stream().forEach((c) -> {
+                AgentConfig ac = mProjectConfig.getAgentConfig(c);
+                if (ac == null) { //Not mapped
+                    missingAgents.add(c);
+                }
+            });
+        }
+        return missingAgents;
+
+
+    }
+
+    private Set<String> getCharacters(SceneScript scenescript){
+        //
+        Set<String> speakersSet = new HashSet<>();
+
+        for (SceneEntity scene : scenescript.getEntityList()) {
+            System.out.println("Scene");
+
+            LinkedList<SceneTurn> sturns = ((SceneObject)scene).getTurnList();
+
+            for (SceneTurn t : sturns) {
+                if (!speakersSet.contains(t.getSpeaker())) {
+                    speakersSet.add(t.getSpeaker());
+                }
+
+                LinkedList<SceneUttr> suttr = t.getUttrList();
+
+                for (SceneUttr u : suttr) {
+                    LinkedList<AbstractWord> words = u.getWordList();
+
+                    for (AbstractWord word : words) {
+                        if (word instanceof ActionObject) {
+                            ActionObject ao = ((ActionObject) word);
+
+                            String agent = ao.getAgentName();
+
+                            if ((agent != null) && !agent.trim().isEmpty()) {
+                                if (!speakersSet.contains(agent)) {
+                                    speakersSet.add(agent);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return speakersSet;
+    }
+
+
     public boolean parse(String urlBaseStream) {
         // Check if the file is null
         if (urlBaseStream == null) {
@@ -303,8 +369,17 @@ public class RunTimeProject {
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded project configuration file in path'" + path + "':\n" + mProjectConfig);
+        mLogger.message("Loaded project configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
+        return true;
+    }
+
+    public boolean parseNewAgentFromString(String xml){
+        InputStream stream = new ByteArrayInputStream(xml.getBytes());
+        if(!XMLUtilities.parseFromXMLStream(mProjectConfig  , stream)){
+            mLogger.failure("Error: Cannot parse agent" );
+            return false;
+        }
         return true;
     }
 
@@ -375,7 +450,7 @@ public class RunTimeProject {
         mSceneFlow.establishTargetNodes();
         mSceneFlow.establishAltStartNodes();
         // Print an information message in this case
-        mLogger.message("Loaded sceneflow configuration file in path '" + path + "':\n" + mSceneFlow);
+        mLogger.message("Loaded sceneflow configuration file in path '" + path + "':\n" );
         // Return success if the project was loaded
         return true;
 
@@ -444,7 +519,7 @@ public class RunTimeProject {
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
+        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
         return true;
     }
@@ -515,7 +590,7 @@ public class RunTimeProject {
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" + mActiconConfig);
+        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
         return true;
     }
@@ -586,7 +661,7 @@ public class RunTimeProject {
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" + mGesticonConfig);
+        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
         return true;
     }
@@ -655,7 +730,7 @@ public class RunTimeProject {
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" + mVisiconConfig);
+        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
         return true;
     }
