@@ -17,12 +17,15 @@ import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -220,6 +223,23 @@ public class VarDefDialog extends Dialog
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(labelSize);
+        
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mNameTextField.hasFocus())
+                    {
+                        mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
+                        mNameTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         //FINAL BOX
         Box finalBox = Box.createVerticalBox();
         finalBox.add(nameBox);

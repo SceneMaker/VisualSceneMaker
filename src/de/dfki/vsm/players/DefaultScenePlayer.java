@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 /**
  * @author Gregor Mehlmann
  */
-public final class DefaultScenePlayer implements RunTimePlayer {
+public final class DefaultScenePlayer extends RunTimePlayer {
 
     // The singelton player instance
     public static DefaultScenePlayer sInstance = null;

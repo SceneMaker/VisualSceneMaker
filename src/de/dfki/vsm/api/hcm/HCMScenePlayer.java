@@ -1,4 +1,4 @@
- package de.dfki.vsm.api.hcm;
+package de.dfki.vsm.api.hcm;
 
 import de.dfki.vsm.api.VSMAgentClient;
 import de.dfki.vsm.api.VSMScenePlayer;
@@ -35,7 +35,6 @@ public final class HCMScenePlayer extends VSMScenePlayer {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     private HCMScenePlayer() {
-
 
         // Print Some Debug Information
         mLogger.message("Creating HCM Scene Player");
@@ -100,7 +99,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
         // Print Debug Information
         mLogger.message("Launching HCM Scene Player");
-        
+
         return true;
     }
 
@@ -135,7 +134,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
 
         // Print Debug Information
         mLogger.message("Unloading HCM Scene Player");
-        
+
         return true;
     }
 
@@ -282,7 +281,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
         }
 
         // Create The Player Task
-        Task task = new Task(utid) {
+        final Task task = new Task(utid) {
             @Override
             public void run() {
 

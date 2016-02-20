@@ -8,6 +8,7 @@ import de.dfki.vsm.runtime.values.FloatValue;
 import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -438,4 +439,13 @@ public final class RunTimeInstance {
 
         return null;
     }
+
+    public final /* synchronized */ ArrayList listActiveStates(final RunTimeProject project) {
+        if (project != null) {
+            if (mProjectMap.containsKey(project)) {
+                return mProjectMap.get(project).listActiveStates();
+            }
+        }
+        return null;
+    }  
 }

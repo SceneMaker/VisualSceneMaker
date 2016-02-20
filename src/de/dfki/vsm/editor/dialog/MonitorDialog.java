@@ -30,6 +30,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.AttributedString;
 
 import java.util.Vector;
@@ -41,7 +43,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class MonitorDialog extends JDialog implements EventListener
 {
-
+    
     private static MonitorDialog sSingeltonInstance = null;
     private JPanel mMainPanel;
     private JPanel mButtonsPanel;
@@ -57,7 +59,7 @@ public class MonitorDialog extends JDialog implements EventListener
     private Vector<VarDef> mLocalVarDefListData;
     private static EditorProject mEditorProject;
     private JLabel errorMsg;
-
+    
     private MonitorDialog()
     {
         super(EditorInstance.getInstance(), "Run Monitor", true);
@@ -67,20 +69,21 @@ public class MonitorDialog extends JDialog implements EventListener
         // Add the sceneflowtoolbar to the event multicaster
         EventDispatcher.getInstance().register(this);
     }
-
+    
     public static MonitorDialog getInstance()
     {
         mEditorProject = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
-        if (sSingeltonInstance == null) {
+        if (sSingeltonInstance == null)
+        {
             sSingeltonInstance = new MonitorDialog();
         }
         return sSingeltonInstance;
     }
-
+    
     public void init(SceneFlow sceneFlow)
     {
     }
-
+    
     public void resetView()
     {
         remove(mMainPanel);
@@ -90,20 +93,20 @@ public class MonitorDialog extends JDialog implements EventListener
         mMainPanel.add(mWorkPanel);
         add(mMainPanel);
     }
-
+    
     private void initWorkPanel()
     {
         mWorkPanel = new JPanel(null);
         mWorkPanel.setBounds(0, 0, 400, 400);
         mWorkPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-
+        
         initGlobalVariableList();
         initLocalVariableList();
 
         // errorMsg.setForeground(Color.white);
         errorMsg = new JLabel("");
         errorMsg.setBounds(20, 350, 360, 30);
-
+        
         //VAR BOX
         Box varBox = Box.createVerticalBox();
         varBox.add(Box.createVerticalStrut(20));
@@ -112,14 +115,15 @@ public class MonitorDialog extends JDialog implements EventListener
         varBox.add(Box.createVerticalStrut(20));
         varBox.add(new JLabel("Local Variables"));
         varBox.add(mLocalVariableTable);
-
+        
         mVariableScrollPane = new JScrollPane(varBox);
         mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mVariableScrollPane.setBounds(20, 10, 360, 300);
         mInputTextField = new HintTextField("Enter new value");
         mInputTextField.setBounds(20, 320, 360, 30);
         mWorkPanel.add(mVariableScrollPane);
-        if (!RunTimeInstance.getInstance().isRunning(mEditorProject)) {
+        if (!RunTimeInstance.getInstance().isRunning(mEditorProject))
+        {
             mInputTextField.setEnabled(false);
         }
         mInputTextField.addKeyListener(new KeyAdapter()
@@ -129,19 +133,21 @@ public class MonitorDialog extends JDialog implements EventListener
             {
                 int selectedGlobalVarsIndex = mGlobalVariableTable.getSelectedRow();
                 int selectedLocalVarsIndex = mLocalVariableTable.getSelectedRow();
-                if (selectedGlobalVarsIndex == -1 && selectedLocalVarsIndex == -1) {
+                if (selectedGlobalVarsIndex == -1 && selectedLocalVarsIndex == -1)
+                {
                     mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
                     errorMsg.setText("Please select one variable from the variable list");
-
+                    
                 }
-                else {
+                else
+                {
                     mInputTextField.setBorder(BorderFactory.createEmptyBorder());
                     errorMsg.setText("");
-
+                    
                 }
             }
         });
-
+        
         mInputTextField.addActionListener(new ActionListener()
         {
             @Override
@@ -150,25 +156,43 @@ public class MonitorDialog extends JDialog implements EventListener
                 okActionPerformed();
             }
         });
+        
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
 
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mInputTextField.hasFocus())
+                    {
+                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                        mInputTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         mWorkPanel.add(errorMsg);
         mWorkPanel.add(mInputTextField);
     }
-
+    
     private boolean process()
     {
         int selectedGlobalVarsIndex = mGlobalVariableTable.getSelectedRow();
         int selectedLocalVarsIndex = mLocalVariableTable.getSelectedRow();
-
+        
         VarDef varDef;
         java.lang.String inputString;
-
-        if (selectedGlobalVarsIndex != -1) {
+        
+        if (selectedGlobalVarsIndex != -1)
+        {
             varDef = mGlobalVarDefListData.get(selectedGlobalVarsIndex);
             inputString = mInputTextField.getText().trim();
             return updateAVariable(varDef, inputString);
         }
-        if (selectedLocalVarsIndex != -1) {
+        if (selectedLocalVarsIndex != -1)
+        {
             varDef = mLocalVarDefListData.get(selectedLocalVarsIndex);
             inputString = mInputTextField.getText().trim();
             EditorProject selectedEP = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject();
@@ -176,69 +200,84 @@ public class MonitorDialog extends JDialog implements EventListener
         }
         return false;
     }
-
+    
     public boolean updateAVariable(VarDef varDef, java.lang.String value)
     {
-        try {
+        try
+        {
             _SFSLParser_.parseResultType = _SFSLParser_.EXP;
             _SFSLParser_.run(value);
-
+            
             Expression exp = _SFSLParser_.expResult;
 
             //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
-            if ((exp != null) && !_SFSLParser_.errorFlag) {
-                if (exp instanceof Bool) {
+            if ((exp != null) && !_SFSLParser_.errorFlag)
+            {
+                if (exp instanceof Bool)
+                {
                     return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
                 }
-                else if (exp instanceof Int) {
+                else if (exp instanceof Int)
+                {
                     return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
                 }
-                else if (exp instanceof UnaryExp) {
-                    if (((UnaryExp) exp).getExp() instanceof Int) {
+                else if (exp instanceof UnaryExp)
+                {
+                    if (((UnaryExp) exp).getExp() instanceof Int)
+                    {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Int) ((UnaryExp) exp).getExp()).getValue());
                     }
-                    if (((UnaryExp) exp).getExp() instanceof Float) {
+                    if (((UnaryExp) exp).getExp() instanceof Float)
+                    {
                         return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Float) ((UnaryExp) exp).getExp()).getValue());
                     }
-
+                    
                 }
-                else if (exp instanceof Float) {
+                else if (exp instanceof Float)
+                {
                     return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                 }
-                else if (exp instanceof String) {
+                else if (exp instanceof String)
+                {
                     return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((String) exp).getValue());
                 }
-                else if (exp instanceof List) {
+                else if (exp instanceof List)
+                {
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
                     // Evaluator eval = interpreter.getEvaluator();
                     // Environment env = interpreter.getEnvironment();
                     // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
                 }
-                else if (exp instanceof Struct) {
+                else if (exp instanceof Struct)
+                {
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                 }
-                else {
+                else
+                {
                     System.out.println("Expression could not be parsed");
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             System.err.println(e.toString());
-            for (StackTraceElement st : e.getStackTrace()) {
+            for (StackTraceElement st : e.getStackTrace())
+            {
                 System.out.println(st);
             }
         }
-
+        
         return false;
     }
-
+    
     private boolean validateValues()
     {
         int selectedGlobalVarsIndex = mGlobalVariableTable.getSelectedRow();
         int selectedLocalVarsIndex = mLocalVariableTable.getSelectedRow();
-
-        if (mInputTextField.getText().length() == 0 || (selectedLocalVarsIndex == -1 && selectedGlobalVarsIndex == -1)) {
+        
+        if (mInputTextField.getText().length() == 0 || (selectedLocalVarsIndex == -1 && selectedGlobalVarsIndex == -1))
+        {
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
             return false;
@@ -248,15 +287,16 @@ public class MonitorDialog extends JDialog implements EventListener
         errorMsg.setForeground(Color.white);
         return true;
     }
-
+    
     protected void okActionPerformed()
     {
-        if (validateValues() == true) {
+        if (validateValues() == true)
+        {
             boolean varAssigned = process();
             dispose();
         }
     }
-
+    
     private void initComponents()
     {
         initWorkPanel();
@@ -294,42 +334,62 @@ public class MonitorDialog extends JDialog implements EventListener
                 getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
         mOkButton.requestFocus();
     }
-
+    
     private void initGlobalVariableList()
     {
         mGlobalVarDefListData = mEditorProject.getSceneFlow().getCopyOfVarDefList();
         java.lang.String listofGlobalVars[][] = new java.lang.String[mGlobalVarDefListData.size()][2];
-        java.lang.String[] listOfColumns = {"Variable", "Value"};
+        java.lang.String[] listOfColumns =
+        {
+            "Variable", "Value"
+        };
         int counter = 0;
-        for (VarDef varDef : mGlobalVarDefListData) {
-            java.lang.String[] tempString = {varDef.getName(), varDef.getExp().toString(), varDef.getFormattedSyntax()};
+        for (VarDef varDef : mGlobalVarDefListData)
+        {
+            java.lang.String[] tempString =
+            {
+                varDef.getName(), varDef.getExp().toString(), varDef.getFormattedSyntax()
+            };
             listofGlobalVars[counter] = tempString;
             counter++;
         }
         mGlobalVariableTable = new JTable(new DefaultTableModel(listofGlobalVars, listOfColumns)
         {
-
+            
             @Override
             public boolean isCellEditable(int i, int i1)
             {
                 return false;
             }
-
+            
+        });
+        mGlobalVariableTable.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent me)
+            {
+                super.mouseClicked(me);
+                mLocalVariableTable.getSelectionModel().clearSelection();
+            }
+            
         });
     }
-
+    
     private void initLocalVariableList()
     {
         mLocalVarDefListData = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode().getCopyOfVarDefList();
         java.lang.String listofVars[][] = new java.lang.String[mLocalVarDefListData.size()][2];
         java.lang.String[] listOfColumns
-                = {
+                =
+                {
                     "Variable", "Value"
                 };
         int counter = 0;
-        for (VarDef varDef : mLocalVarDefListData) {
+        for (VarDef varDef : mLocalVarDefListData)
+        {
             java.lang.String[] tempString
-                    = {
+                    =
+                    {
                         varDef.getName(), varDef.getExp().toString(), varDef.getFormattedSyntax()
                     };
             listofVars[counter] = tempString;
@@ -337,27 +397,50 @@ public class MonitorDialog extends JDialog implements EventListener
         }
         mLocalVariableTable = new JTable(new DefaultTableModel(listofVars, listOfColumns)
         {
-
+            
             @Override
             public boolean isCellEditable(int i, int i1)
             {
                 return false;
             }
-
+            
+        });
+        mLocalVariableTable.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mouseClicked(MouseEvent me)
+            {
+                super.mouseClicked(me);
+                mGlobalVariableTable.getSelectionModel().clearSelection();
+            }
+            
         });
     }
-
+    
     @Override
     public void update(EventObject event)
     {
-
-        if (event instanceof VariableChangedEvent) {
-            for (int i = 0; i < mGlobalVariableTable.getRowCount(); i++) {
-
-                if (mGlobalVariableTable.getValueAt(i, 0).equals(((VariableChangedEvent) event).getVarValue().getFirst())) {
+        
+        if (event instanceof VariableChangedEvent)
+        {
+            for (int i = 0; i < mGlobalVariableTable.getRowCount(); i++)
+            {
+                
+                if (mGlobalVariableTable.getValueAt(i, 0).equals(((VariableChangedEvent) event).getVarValue().getFirst()))
+                {
                     java.lang.String value = (((VariableChangedEvent) event).getVarValue().getSecond());
                     value = value.replace("#c#", "");
                     mGlobalVariableTable.setValueAt(value, i, 1);
+                }
+            }
+            for (int i = 0; i < mLocalVariableTable.getRowCount(); i++)
+            {
+                
+                if (mLocalVariableTable.getValueAt(i, 0).equals(((VariableChangedEvent) event).getVarValue().getFirst()))
+                {
+                    java.lang.String value = (((VariableChangedEvent) event).getVarValue().getSecond());
+                    value = value.replace("#c#", "");
+                    mLocalVariableTable.setValueAt(value, i, 1);
                 }
             }
         }

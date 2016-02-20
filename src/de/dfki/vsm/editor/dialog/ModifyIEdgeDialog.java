@@ -19,6 +19,9 @@ import de.dfki.vsm.sfsl.parser._SFSLParser_;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -96,6 +99,22 @@ public class ModifyIEdgeDialog extends Dialog {
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(labelSize);
         
+        //Key listener need to gain focus on the text field
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent ke) {
+                //boolean keyHandled = false;
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if(!mInputTextField.hasFocus())
+                    {
+                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                        mInputTextField.requestFocus();
+                    }
+                }
+                return false;
+            }
+        });
         //FINAL BOX
         Box finalBox = Box.createVerticalBox();
         finalBox.setAlignmentX(CENTER_ALIGNMENT);
