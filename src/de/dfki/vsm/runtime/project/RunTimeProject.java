@@ -8,7 +8,7 @@ import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.*;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.players.DefaultDialogPlayer;
 import de.dfki.vsm.players.DefaultScenePlayer;
@@ -21,7 +21,7 @@ import de.dfki.vsm.util.xml.XMLUtilities;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
