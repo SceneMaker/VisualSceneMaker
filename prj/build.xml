@@ -139,8 +139,8 @@
     <!-- Execute to Welcome Screen -->
     <target name="exec">
         <java classname="de.dfki.vsm.SceneMaker3" fork="true">
-            <!-- <arg line="runtime res/prj/test"/>-->
-            <arg line="editor res/prj/test"/>
+            <!-- <arg line="runtime res/prj/test"/> -->
+            <!-- <arg line="editor res/prj/test"/> -->
             <classpath refid="clspath"/>
         </java>
     </target>
@@ -153,8 +153,8 @@
     </target>-->
     <!-- Execute Project -->
     <target name="test">
-        <java classname="de.dfki.vsm.test.TestVSMProject" fork="true">
-            <arg line="res/prj/test"/>
+        <java classname="de.dfki.vsm.test.TestVSMAPI" fork="true">
+            <!--<arg line="res/prj/test"/>-->
             <classpath refid="clspath"/>
         </java>
     </target>   

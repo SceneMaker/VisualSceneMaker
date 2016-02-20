@@ -69,7 +69,7 @@ public class PlayerConfig extends ConfigElement {
             entry.writeXML(stream);
             stream.endl();
         }
-        stream.pop().print("</Player>").flush();
+        stream.pop().println("</Player>").flush();
     }
 
     // Write A Player From XML
