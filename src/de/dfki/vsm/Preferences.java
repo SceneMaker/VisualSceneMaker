@@ -257,7 +257,8 @@ public final class Preferences {
     //OK ICONS
     public static final ImageIcon ICON_OK_STANDARD            = ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png");
     public static final ImageIcon ICON_OK_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png");
-    
+    public static final ImageIcon PREIVOUS_BUTTON             = ResourceLoader.loadImageIcon("/res/img/arrow_prev.png");
+    public static final ImageIcon NEXT_BUTTON                 = ResourceLoader.loadImageIcon("/res/img/arrow_next.png");
     //BACKGROUND WELCOME 
     public static final Image     BACKGROUND_IMAGE             = ResourceLoader.loadImageIcon("/res/img/icon_big.png").getImage();   // Background for the welcome screen
     /**
