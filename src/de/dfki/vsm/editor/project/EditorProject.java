@@ -60,19 +60,8 @@ public class EditorProject extends RunTimeProject {
         //final File base = file.getAbsoluteFile();
         // Check if the project directory does exist
 
-        // TODO: THIS HAS TO BE REFEACTORED! BAD CODE
-//        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
-//             if (super.parse(path)
-//                && mEditorConfig.load(path)) {
-//            // Set the initial hash code
-//            mInitialHash = getHashCode();
-//            // Return true if project is saved
-//            return true;
-//        } else {
-//            // Return false when saving failed
-//            return false;
-//        }  
-//        }
+
+
         final File file = new File(path);
         if (file.exists()) {
             final File base = file.getAbsoluteFile();
@@ -88,6 +77,14 @@ public class EditorProject extends RunTimeProject {
                 return false;
             }
         } else {
+            try{
+                if (super.parse(path) && mEditorConfig.load(path)) {
+                    return true;
+                }
+            }
+            catch (Exception e){
+                mLogger.failure("Error: Cannot find editor project directory '");
+            }
             // Print an error message
             mLogger.failure("Error: Cannot find editor project directory '" + file + "'");
             // Return false at error

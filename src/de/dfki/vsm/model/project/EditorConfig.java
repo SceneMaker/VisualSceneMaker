@@ -254,37 +254,30 @@ public class EditorConfig {
     }
     
     public synchronized boolean load(final String path) {
-
-//        InputStream inputStream = null;
-//        if(path.startsWith(Preferences.sSAMPLE_PROJECTS)){
-//            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator")  + "editorconfig.xml");
-//            if (inputStream == null) {
-//                // Print an error message in this case
-//                mLogger.failure("Error: Cannot find gesticon configuration file  ");
-//                // Return failure if it does not exist
-//                return false;
-//            }
-//
-//        }
-//        else {
+            InputStream inputStream = null;
             final File file = new File(path, "editorconfig.xml");
             // Check if the configuration file does exist
-            if (!file.exists()) {
-                // Print an error message in this case
-                mLogger.failure("Error: Cannot find editor configuration file '" + file + "'");
-                // Return failure if it does not exist
-                return false;
+            if (file.exists()) {
+                try {
+                    inputStream = new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    mLogger.failure("Error: Cannot find sproject configuration file '" + file + "'");
+                }
             }
-//            try {
-//                inputStream = new FileInputStream(file);
-//            } catch (FileNotFoundException e) {
-//                mLogger.failure("Error: Cannot find editor configuration file '" + file + "'");
-//            }
-//        }
-        if(!XMLUtilities.parseFromXMLFile(sPROPERTIES, file)){
-            mLogger.failure("Error: Cannot parse editor configuration file  in path" + path);
+            else{
+                inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "editorconfig.xml");
+                if (inputStream == null) {
+                    // Print an error message in this case
+                    mLogger.failure("Error: Cannot find project configuration file  ");
+                    // Return failure if it does not exist
+                    return false;
+                }
+            }
+        if (!XMLUtilities.parseFromXMLStream(sPROPERTIES, inputStream)) {
+            mLogger.failure("Error: Cannot parse project configuration file  in path" + path);
             return false;
         }
+
 
 
 
