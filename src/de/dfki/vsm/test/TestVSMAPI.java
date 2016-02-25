@@ -556,9 +556,9 @@ public class TestVSMAPI {
                 register(
                         new SpeechAction("Hello charamel #1 how #2 #3 are you today?"),
                         new TimeTrigger(1000), stickmanExecutor).
-                register(
-                        new SpeechAction("#4 stickman I guess I am kind of #5 fine!"),
-                        new TimeTrigger(3000), charamelExecutor).
+//                register(
+//                        new SpeechAction("#4 stickman I guess I am kind of #5 fine!"),
+//                        new TimeTrigger(3000), charamelExecutor).
                 register(
                         new InnerAction("[Reeti: head nod repetitions=2]"),
                         new MarkTrigger("#1"), charamelExecutor).
