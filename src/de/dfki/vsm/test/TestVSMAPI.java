@@ -1,7 +1,20 @@
 package de.dfki.vsm.test;
 
+import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.ActionObject;
+import de.dfki.vsm.model.scenescript.SceneGroup;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.runtime.RunTimeInstance;
+import de.dfki.vsm.runtime.players.RunTimePlayer;
+import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -12,24 +25,30 @@ import java.util.TimerTask;
  */
 public class TestVSMAPI {
 
-    // The abstract action is the abstract representation
-    // of an action that an agent, for example a virtual
-    // character or robot might be able to execute. 
-    public interface AbstractAction {
+    // An abstract activity is the abstract representation
+    // of an activity that an agent, for example a virtual
+    // character or a robot might be able to perform. Here,
+    // an activity may be a verbal activity, that means a
+    // spoken utterance, but an activity may also be any 
+    // nonverbal performance in some other modality than
+    // speech, such as gaze, gestures, postures, facial 
+    // expressions, head movements
+    public interface AbstractActivity {
 
         public String getText();
     }
 
-    // The speech action is a whole utterance that the 
+    // The verbal activity is a whole utterance that the 
     // agent has to perform using the TTS system of its
     // underlying platform. It represents an utterance
-    // in a scene script where the action objects are
-    // replaced with markers that reference the actions
-    public static class SpeechAction implements AbstractAction {
+    // in a scene script where the nonverbal actions are
+    // replaced with markers that reference the activities
+    public static class VerbalActivity implements AbstractActivity {
 
         private final String mText;
 
-        public SpeechAction(final String text) {
+        public VerbalActivity(final String text) {
+            // Initialize the text
             mText = text;
         }
 
@@ -45,16 +64,16 @@ public class TestVSMAPI {
 
     }
 
-    // An inner action represents an inner action
+    // A nonverbal activity represents an inner action
     // object of an utterance in a scene script and
     // is coupled to a unique marker which is used to
     // substitute the action object in  speech action
-    public static class InnerAction implements AbstractAction {
+    public static class NonverbalActivity implements AbstractActivity {
 
         /*private final String mMark;*/
         private final String mText;
 
-        public InnerAction(/*final String mark,*/final String text) {
+        public NonverbalActivity(/*final String mark,*/final String text) {
             //mMark = mark;
             mText = text;
         }
@@ -126,13 +145,13 @@ public class TestVSMAPI {
 
         // Determines what is delivered when to whom
         public AbstractSchedule register(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractTrigger trigger,
                 final AbstractExecutor executor);
 
         // Determines that a feedback has been given
         public AbstractSchedule feedback(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractFeedback feedback);
 
         // Determines that a trigger has been seen
@@ -149,16 +168,16 @@ public class TestVSMAPI {
     public static abstract class AbstractCommand {
 
         // The underlying abstract action
-        protected final AbstractAction mAction;
+        protected final AbstractActivity mAction;
 
-        public AbstractCommand(final AbstractAction action) {
+        public AbstractCommand(final AbstractActivity action) {
             mAction = action;
         }
     }
 
     public static abstract class CharamelCommand extends AbstractCommand {
 
-        public CharamelCommand(final AbstractAction action) {
+        public CharamelCommand(final AbstractActivity action) {
             super(action);
         }
 
@@ -170,7 +189,7 @@ public class TestVSMAPI {
 
     public static abstract class StickmanCommand extends AbstractCommand {
 
-        public StickmanCommand(final AbstractAction action) {
+        public StickmanCommand(final AbstractActivity action) {
             super(action);
         }
 
@@ -184,7 +203,7 @@ public class TestVSMAPI {
 
         private final String mText;
 
-        public StickmanSpeech(final AbstractAction action) {
+        public StickmanSpeech(final AbstractActivity action) {
             super(action);
             // TODO: Remove markers from text of the action
             mText = action.getText();
@@ -202,7 +221,7 @@ public class TestVSMAPI {
 
     public static class StickmanDummy extends StickmanCommand {
 
-        public StickmanDummy(final AbstractAction action) {
+        public StickmanDummy(final AbstractActivity action) {
             super(action);
         }
 
@@ -220,7 +239,7 @@ public class TestVSMAPI {
 
         private final String mXML;
 
-        public CharamelSpeech(final AbstractAction action) {
+        public CharamelSpeech(final AbstractActivity action) {
             super(action);
             // TODO: Translate to a charamel speech command
             mXML = action.getText();
@@ -238,7 +257,7 @@ public class TestVSMAPI {
 
     public static class CharamelDummy extends CharamelCommand {
 
-        public CharamelDummy(final AbstractAction action) {
+        public CharamelDummy(final AbstractActivity action) {
             super(action);
         }
 
@@ -262,7 +281,7 @@ public class TestVSMAPI {
     public interface AbstractFactory {
 
         public AbstractCommand compile(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractContext context);
 
     }
@@ -271,12 +290,12 @@ public class TestVSMAPI {
 
         @Override
         public CharamelCommand compile(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractContext context) {
-            if (action instanceof SpeechAction) {
+            if (action instanceof VerbalActivity) {
                 // Return stickman speech command
                 return new CharamelSpeech(action);
-            } else if (action instanceof InnerAction) {
+            } else if (action instanceof NonverbalActivity) {
                 // Translate the action to command
                 // based on the context (Patrick)               
                 return new CharamelDummy(action);
@@ -290,12 +309,12 @@ public class TestVSMAPI {
 
         @Override
         public StickmanCommand compile(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractContext context) {
-            if (action instanceof SpeechAction) {
+            if (action instanceof VerbalActivity) {
                 // Return stickman speech command
                 return new StickmanSpeech(action);
-            } else if (action instanceof InnerAction) {
+            } else if (action instanceof NonverbalActivity) {
                 // Translate the action to command
                 // based on the context (Patrick)               
                 return new StickmanDummy(action);
@@ -321,8 +340,10 @@ public class TestVSMAPI {
     // feddback about the execution status of actions
     public interface AbstractExecutor {
 
+        public String getMarker(final Long markid);
+
         public void execute(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractSchedule scheduler);
     }
 
@@ -331,8 +352,14 @@ public class TestVSMAPI {
         private final CharamelFactory mFactory = new CharamelFactory();
 
         @Override
+        public String getMarker(final Long markid) {
+            // Acapela style bookmarks
+            return "\\mrk=" + markid + "\\";
+        }
+
+        @Override
         public void execute(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractSchedule scheduler) {
             // Tranlate the action
             final CharamelCommand command = mFactory.compile(action, this);
@@ -344,11 +371,17 @@ public class TestVSMAPI {
 
     public static class StickmanExecutor implements AbstractExecutor, AbstractContext {
 
+        @Override
+        public String getMarker(final Long markid) {
+            // Microsoft style bookmarks
+            return "<mark name=\"" + markid + "\"/>";
+        }
+
         private final StickmanFactory mFactory = new StickmanFactory();
 
         @Override
         public void execute(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractSchedule scheduler) {
             // Tranlate the action
             final StickmanCommand command = mFactory.compile(action, this);
@@ -410,12 +443,12 @@ public class TestVSMAPI {
         // when a specific trigger has been detected.
         private final class Activity {
 
-            private final AbstractAction mAction;
+            private final AbstractActivity mAction;
             private final AbstractTrigger mTrigger;
             private final AbstractExecutor mExecutor;
 
             private Activity(
-                    final AbstractAction action,
+                    final AbstractActivity action,
                     final AbstractTrigger trigger,
                     final AbstractExecutor executor) {
                 mAction = action;
@@ -433,7 +466,7 @@ public class TestVSMAPI {
         // The manager wants to register an activity
         @Override
         public final synchronized ActivitySchedule register(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractTrigger trigger,
                 final AbstractExecutor executor) {
             // Create and add the new activity
@@ -463,7 +496,7 @@ public class TestVSMAPI {
         // The executor gives a feedback to a command
         @Override
         public synchronized final ActivitySchedule feedback(
-                final AbstractAction action,
+                final AbstractActivity action,
                 final AbstractFeedback feedback) {
             final Iterator it = mActivityList.iterator();
             while (it.hasNext()) {
@@ -539,12 +572,104 @@ public class TestVSMAPI {
         }
     }
 
+    // The scene player
+    public static final class GenericScenePlayer implements RunTimePlayer {
+
+        // The static marker id
+        private static Long sMarkId = 0x0L;
+
+        // Get unique marker id
+        private final static Long newMarkId() {
+            return ++sMarkId;
+        }
+
+        // The runtime environment
+        private final RunTimeInstance mRunTime
+                = RunTimeInstance.getInstance();
+        // The defaut system logger
+        private final LOGDefaultLogger mLogger
+                = LOGDefaultLogger.getInstance();
+
+        // The runtime project data
+        private RunTimeProject mProject;
+
+        private final HashMap<String, AbstractExecutor> mExecutorMap = new HashMap();
+
+        @Override
+        public final boolean launch(final RunTimeProject project) {
+            // Initialize the project
+            mProject = project;
+            // Initialize the executors
+            mExecutorMap.put("Reeti", new StickmanExecutor());
+            mExecutorMap.put("Naoli", new CharamelExecutor());
+            // Return true at success
+            return true;
+        }
+
+        @Override
+        public final boolean unload() {
+            // Return true at success
+            return true;
+        }
+        
+        
+        public final void act(final String actor, final String action) {
+            // Get the correct executor
+            final AbstractExecutor executor = mExecutorMap.get(actor);
+            
+        }
+
+        @Override
+        public final void play(final String name, final LinkedList args) {
+            final Task task = new Task(name) {
+                @Override
+                public void run() {
+                    final SceneScript script = mProject.getSceneScript();
+                    final SceneGroup group = script.getSceneGroup(name);
+                    // Select a new scene
+                    final SceneObject scene = group.select();
+                    // Process the scene
+                    for (SceneTurn turn : scene.getTurnList()) {
+                        // Get the executor
+                        final AbstractExecutor executor = mExecutorMap.get(turn.getSpeaker());
+                        //
+                        for (SceneUttr uttr : turn.getUttrList()) {
+                            // Get activity schedule
+                            final ActivitySchedule schedule = new ActivitySchedule();
+                            //
+                            for (AbstractWord word : uttr.getWordList()) {
+                                if (word instanceof ActionObject) {
+                                    // Get a new unique mark id
+                                    final Long markid = newMarkId();
+                                    // Get a marker string. Because the style of the 
+                                    // marker depends on the TTS system used by the
+                                    // output device or character engine, we ask the
+                                    // executor to construct a new marker from the
+                                    // unique id that we generated in the player now.
+                                    final String marker = executor.getMarker(markid);
+                                    // Make mark trigger
+                                    final MarkTrigger trigger = new MarkTrigger(marker);
+                                    // Register a new trigger. For a late compilation
+                                    // of the activity we do create the activity here
+                                    // but use the string representation and compile
+                                    // the activity later in the frame of execution.
+                                    // Create an activity scheduler
+        
+                                    //final String activity = new ActionActivity()
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+        }
+    }
+
     public static void main(final String[] args) {
         // The main function represents the 
         // scene player task within the play
         // method of the scene player instance
-
-        // Create the different executors
         final StickmanExecutor stickmanExecutor = new StickmanExecutor();
         final CharamelExecutor charamelExecutor = new CharamelExecutor();
         // Create an activity scheduler
@@ -554,16 +679,16 @@ public class TestVSMAPI {
         // patterns of the member functions
         schedule.
                 register(
-                        new SpeechAction("Hello charamel #1 how #2 #3 are you today?"),
+                        new VerbalActivity("Hello charamel #1 how #2 #3 are you today?"),
                         new TimeTrigger(1000), stickmanExecutor).
+                //                register(
+                //                        new SpeechAction("#4 stickman I guess I am kind of #5 fine!"),
+                //                        new TimeTrigger(3000), charamelExecutor).
                 register(
-                        new SpeechAction("#4 stickman I guess I am kind of #5 fine!"),
-                        new TimeTrigger(3000), charamelExecutor).
-                register(
-                        new InnerAction("[Reeti: head nod repetitions=2]"),
+                        new NonverbalActivity("[Reeti: head nod repetitions=2]"),
                         new MarkTrigger("#1"), charamelExecutor).
                 register(
-                        new InnerAction("[Naoli: gaze target=Gregor]"),
+                        new NonverbalActivity("[Naoli: gaze target=Gregor]"),
                         new MarkTrigger("#2"), charamelExecutor);
 
         // Create a scheduler
