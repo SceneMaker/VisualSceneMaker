@@ -239,28 +239,32 @@ public final class Preferences {
     public static final ImageIcon ICON_MINUS_ROLLOVER           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_blue.png");
     public static final ImageIcon ICON_MINUS_DISABLED           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/remove_disabled.png");
     //EDIT ICON
-    public static final ImageIcon ICON_EDIT_STANDARD           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png");
-    public static final ImageIcon ICON_EDIT_ROLLOVER           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit_blue.png");
+    public static final ImageIcon ICON_EDIT_STANDARD            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit.png");
+    public static final ImageIcon ICON_EDIT_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/edit_blue.png");
     //UP ICON 
-    public static final ImageIcon ICON_UP_STANDARD             = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20.png");
-    public static final ImageIcon ICON_UP_ROLLOVER             = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_blue.png");
-    public static final ImageIcon ICON_UP_DISABLED             = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_disabled.png");
+    public static final ImageIcon ICON_UP_STANDARD              = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20.png");
+    public static final ImageIcon ICON_UP_ROLLOVER              = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_blue.png");
+    public static final ImageIcon ICON_UP_DISABLED              = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/up_20_disabled.png");
     //DOWN ICON
-    public static final ImageIcon ICON_DOWN_STANDARD           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down.png");
-    public static final ImageIcon ICON_DOWN_ROLLOVER           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_blue.png");
-    public static final ImageIcon ICON_DOWN_DISABLED           = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_disabled.png");
+    public static final ImageIcon ICON_DOWN_STANDARD            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down.png");
+    public static final ImageIcon ICON_DOWN_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_blue.png");
+    public static final ImageIcon ICON_DOWN_DISABLED            = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/down_disabled.png");
     //CANCEL ICONS
-    public static final ImageIcon ICON_CANCEL_STANDARD        = ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png");
-    public static final ImageIcon ICON_CANCEL_ROLLOVER        = ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png");
-    public static final ImageIcon ICON_CANCEL_STANDARD_TINY   = ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray_tiny.png");
-    public static final ImageIcon ICON_CANCEL_ROLLOVER_TINY   = ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue_tiny.png");
+    public static final ImageIcon ICON_CANCEL_STANDARD          = ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray.png");
+    public static final ImageIcon ICON_CANCEL_ROLLOVER          = ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue.png");
+    public static final ImageIcon ICON_CANCEL_STANDARD_TINY     = ResourceLoader.loadImageIcon("/res/img/cancel_icon_gray_tiny.png");
+    public static final ImageIcon ICON_CANCEL_ROLLOVER_TINY     = ResourceLoader.loadImageIcon("/res/img/cancel_icon_blue_tiny.png");
     //OK ICONS
-    public static final ImageIcon ICON_OK_STANDARD            = ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png");
-    public static final ImageIcon ICON_OK_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png");
-    public static final ImageIcon PREIVOUS_BUTTON             = ResourceLoader.loadImageIcon("/res/img/arrow_prev.png");
-    public static final ImageIcon NEXT_BUTTON                 = ResourceLoader.loadImageIcon("/res/img/arrow_next.png");
+    public static final ImageIcon ICON_OK_STANDARD              = ResourceLoader.loadImageIcon("/res/img/ok_icon_gray.png");
+    public static final ImageIcon ICON_OK_ROLLOVER              = ResourceLoader.loadImageIcon("/res/img/ok_icon_blue.png");
+    //BACK ICONS
+    public static final ImageIcon ICON_PREVIOUS_STANDARD        = ResourceLoader.loadImageIcon("/res/img/back_icon_gray.png");
+    public static final ImageIcon ICON_PREVIOUS_ROLLOVER        = ResourceLoader.loadImageIcon("/res/img/back_icon_blue.png");
+    //NEXT ICONS
+    public static final ImageIcon ICON_NEXT_STANDARD            = ResourceLoader.loadImageIcon("/res/img/next_icon_gray.png");
+    public static final ImageIcon ICON_NEXT_ROLLOVER            = ResourceLoader.loadImageIcon("/res/img/next_icon_blue.png");
     //BACKGROUND WELCOME 
-    public static final Image     BACKGROUND_IMAGE             = ResourceLoader.loadImageIcon("/res/img/icon_big.png").getImage();   // Background for the welcome screen
+    public static final Image     BACKGROUND_IMAGE              = ResourceLoader.loadImageIcon("/res/img/icon_big.png").getImage();   // Background for the welcome screen
     /**
      *
      */

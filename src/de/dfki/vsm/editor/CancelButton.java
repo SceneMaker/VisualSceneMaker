@@ -18,12 +18,13 @@ import javax.swing.SwingConstants;
  *
  * @author mfallas
  */
-public class CancelButton extends JLabel {
+public class CancelButton extends JLabel
+{
 
     private final Dimension buttonSize = new Dimension(125, 30);
-    
-    
-    public CancelButton() {
+
+    public CancelButton()
+    {
         setText("Cancel");
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(true);
@@ -36,17 +37,23 @@ public class CancelButton extends JLabel {
         setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
         setPreferredSize(buttonSize);
         setMinimumSize(buttonSize);
-        addMouseListener(new java.awt.event.MouseAdapter() {
+        addMouseListener(new java.awt.event.MouseAdapter()
+        {
 
 //          public void mouseClicked(java.awt.event.MouseEvent evt) {
 //              //savePreferences(true);
 //          }
-            public void mouseEntered(MouseEvent me) {
-                setIcon(Preferences.ICON_CANCEL_ROLLOVER);
-                setBackground(new Color(82, 127, 255));
+            public void mouseEntered(MouseEvent me)
+            {
+                if (isEnabled())
+                {
+                    setIcon(Preferences.ICON_CANCEL_ROLLOVER);
+                    setBackground(new Color(82, 127, 255));
+                }
             }
 
-            public void mouseExited(MouseEvent me) {
+            public void mouseExited(MouseEvent me)
+            {
                 setIcon(Preferences.ICON_CANCEL_STANDARD);
                 setBackground(new Color(255, 255, 255));
             }

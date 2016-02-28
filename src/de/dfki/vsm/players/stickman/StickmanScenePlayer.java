@@ -122,7 +122,7 @@ public final class StickmanScenePlayer extends RunTimePlayer implements ActionLi
         // Start the StickmanStage client application 
         mLogger.message("Starting StickmanStage Client Application ...");
         mStickmanStage = StickmanStage.getNetworkInstance("127.0.0.1", 8000);
-
+        mRelationAgentPlayer.clear();
         // collect and prepare information which agent belongs to which player
         getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
             AgentConfig ac = mProject.getAgentConfig(c);
@@ -131,7 +131,6 @@ public final class StickmanScenePlayer extends RunTimePlayer implements ActionLi
             }
 
         });
-
         // put all stickman characters on the stickman stage
         mRelationAgentPlayer.keySet().stream().forEach((c) -> {
             if (mRelationAgentPlayer.get(c).equalsIgnoreCase("stickmanstage")) {
@@ -140,7 +139,7 @@ public final class StickmanScenePlayer extends RunTimePlayer implements ActionLi
                 mLogger.warning("No AgentConfig found for Agent " + c + "!");
             }
         });
-
+        System.out.println(mRelationAgentPlayer);
         // configure blocking mechanism 
         mAllActionSync = new Semaphore(0);
         // configure shutdown mechanism

@@ -481,7 +481,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Get the selected editor project
             final EditorProject project = editor.getEditorProject();
             // Check if the project is valid
-			final boolean isCharacterRegistered = isAllCharacterRegistered(editor);
+            boolean isCharacterRegistered = isAllCharacterRegistered(editor);
             if (project != null) {
                 // Check if the project is pending
                 if (!project.isPending()) {
@@ -594,10 +594,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 			final SelectPlayerDialog newAgentDialog = new SelectPlayerDialog(((RunTimeProject) project), missingAgents, "StickmanStage");
 			finished = newAgentDialog.isFinished();
 		}
-
-
 		//Checking if all characters are registered
-
+                project.clearAgentList();
 		return finished;
 	}
 	public final boolean saveAs() {
