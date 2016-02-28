@@ -280,9 +280,9 @@ public class EditorStarter extends JPanel {
 		mRightProjectBox.revalidate();
 		mRightProjectBox.repaint();
 		createMenuButtons();
-		//listOfRecentProjects();
-		//listOfTutorials();
-		//listOfBuildInProjects();
+		listOfRecentProjects();
+		listOfTutorials();
+		listOfBuildInProjects();
 		newsAndDoc();
 	}
 
