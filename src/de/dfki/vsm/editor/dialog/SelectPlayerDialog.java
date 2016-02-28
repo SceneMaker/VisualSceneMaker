@@ -299,6 +299,7 @@ public class SelectPlayerDialog extends JDialog
             {
                 mCharacterNameText.setText(mMissingAgents.get(currentIndex));
                 mCancelButton.setIcon(Preferences.ICON_PREVIOUS_STANDARD);
+                mCancelButton.setText("Back");
             }
         }
         else
