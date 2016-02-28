@@ -97,6 +97,20 @@ public final class ProjectConfig implements ModelObject {
     public final ArrayList<AgentConfig> getAgentConfigList() {
         return mAgentList;
     }
+    
+    public void cleanAgentConfigList(ArrayList<String> realList)
+    { 
+        ArrayList<AgentConfig> temAgentList = mAgentList;
+        for (AgentConfig agentConfig : mAgentList)
+        {
+            if(!realList.contains(agentConfig.getAgentName()))
+            {
+                mAgentList.remove(agentConfig);
+            }
+        }
+        
+        
+    }
 
     // Get the list of player configurations
     public ArrayList<PlayerConfig> getPlayerConfigList() {

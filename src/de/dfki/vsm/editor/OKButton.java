@@ -43,8 +43,11 @@ public class OKButton extends JLabel {
 //              //savePreferences(true);
 //          }
             public void mouseEntered(MouseEvent me) {
-                setIcon(Preferences.ICON_OK_ROLLOVER);
-                setBackground(new Color(82, 127, 255));
+                if (isEnabled())
+                {
+                    setIcon(Preferences.ICON_OK_ROLLOVER);
+                    setBackground(new Color(82, 127, 255));
+                }
             }
             public void mouseExited(MouseEvent me) {
                 setIcon(Preferences.ICON_OK_STANDARD);
