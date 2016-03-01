@@ -1219,8 +1219,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         //ADD VARIABLE MENU ITEM
         JMenuItem itemAddVariable = new JMenuItem("Add Variable");
-        SuperNode currentSuperNode = getSceneFlowManager().getCurrentActiveSuperNode();
-        AddVariableAction addVariableAction = new AddVariableAction(currentSuperNode);
+        AddVariableAction addVariableAction = new AddVariableAction(this);
         itemAddVariable.addActionListener(addVariableAction.getActionListener());
         pop.add(itemAddVariable);
         //PASTE NODES MENU ITEM
