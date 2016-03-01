@@ -2,10 +2,14 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.project.EditorConfig;
+import de.dfki.vsm.players.DefaultScenePlayer;
+import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -16,29 +20,25 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.awt.event.KeyEvent;
-import java.util.Vector;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.security.CodeSource;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import static de.dfki.vsm.Preferences.sUSER_DIR;
+import de.dfki.vsm.model.project.PlayerConfig;
 
 /**
  * @author Not me
@@ -94,8 +94,13 @@ public class OptionsDialog extends JDialog {
     private JPanel             mScriptPanel;
     private JButton            mDeleteRecentFileListButton;
     private JButton            mDeleteRecentFileButton;
+
+    private JComboBox          mScenePlayersCombo;
     
     private final EditorConfig       mEditorConfig;
+
+    private static ArrayList<String> mScenePlayers = new ArrayList<>();
+
 
     private OptionsDialog() {
         super(EditorInstance.getInstance(), "Preferences", false);
@@ -117,11 +122,14 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initComponents() {
+        mScenePlayers.add("Non selected");
         initGeneralPanel();
         initFileListPanel();
         initGraphicsPanel();
         initScriptPanel();
         setBackground(Color.white);
+
+
 
         // initScenePlayerPanel();
         mButtonsPanel = new JPanel();
@@ -434,6 +442,82 @@ public class OptionsDialog extends JDialog {
         mGraphicsPanel.add(fontAndSize);
         mGraphicsPanel.add(graphicOptions);
         mGraphicsPanel.add(Box.createRigidArea(new Dimension(5, 20)));
+
+    }
+
+    public static void loadClass(){
+        try {
+            getClassNamesFromPackage("de.dfki.vsm.players");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static  void getClassNamesFromPackage(String packageName) throws IOException{
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL packageURL;
+        ArrayList<String> names = new ArrayList<String>();;
+
+        packageName = packageName.replace(".", "/");
+        packageURL = classLoader.getResource(packageName);
+
+        if(packageURL.getProtocol().equals("jar")){
+            String jarFileName;
+            JarFile jf ;
+            Enumeration<JarEntry> jarEntries;
+            String entryName;
+
+            // build jar file name, then loop through zipped entries
+            jarFileName = URLDecoder.decode(packageURL.getFile(), "UTF-8");
+            jarFileName = jarFileName.substring(5,jarFileName.indexOf("!"));
+            System.out.println(">"+jarFileName);
+            jf = new JarFile(jarFileName);
+            jarEntries = jf.entries();
+
+            while(jarEntries.hasMoreElements()){
+                entryName = jarEntries.nextElement().getName();
+                if(entryName.startsWith(packageName) && entryName.length()>packageName.length()+5){
+                    try {
+                        String fullClassName = entryName.replace("/", ".");
+                        entryName = fullClassName.substring(0,entryName.lastIndexOf('.'));
+                        Class classEntry = Class.forName(entryName);
+                        Class[] interfaces = classEntry.getInterfaces();
+                        for (Class inter: interfaces) {
+                            if(inter.getSimpleName().equals("RunTimePlayer")){
+                                mScenePlayers.add(entryName);
+                            }
+                        }
+                    }
+                    catch (StringIndexOutOfBoundsException e){
+                        System.out.println(entryName);
+                        continue;
+                    } catch (ClassNotFoundException e) {
+                        System.out.println("Class not found");
+                        continue;
+                    }
+
+                }
+            }
+
+            // loop through files in classpath
+        }else{
+            URI uri = null;
+            try {
+                uri = new URI(packageURL.toString());
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            File folder = new File(uri.getPath());
+            // won't work with path which contains blank (%20)
+            // File folder = new File(packageURL.getFile());
+            File[] contenuti = folder.listFiles();
+            String entryName;
+            for(File actual: contenuti){
+                entryName = actual.getName();
+                entryName = entryName.substring(0, entryName.lastIndexOf('.'));
+                names.add(entryName);
+            }
+        }
     }
 
     private void initScriptPanel() {
@@ -482,16 +566,26 @@ public class OptionsDialog extends JDialog {
         fontAndSize.add(Box.createRigidArea(new Dimension(5, 0)));
         fontAndSize.add(Box.createHorizontalGlue());
                
-        mLaunchDefaultPlayerCheckBox = new JCheckBox("Launch Default Scene Player", false);
-        mLaunchDefaultPlayerCheckBox.setOpaque(false);
+        //mLaunchDefaultPlayerCheckBox = new JCheckBox("Launch Default Scene Player", false);
+        loadClass();
+        mScenePlayersCombo = new JComboBox(new DefaultComboBoxModel(mScenePlayers.toArray()));
+
+        /*mLaunchDefaultPlayerCheckBox.setOpaque(false);
         mLaunchDefaultPlayerCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
+        });*/
+
+        mScenePlayersCombo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveEditorConfig(false);
+                mEditor.refresh();
+            }
         });
-        
         
         mScriptPanel = new JPanel();
         mScriptPanel.setBackground(Color.white);
@@ -500,7 +594,7 @@ public class OptionsDialog extends JDialog {
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
         mScriptPanel.add(fontAndSize);
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
-        mScriptPanel.add(mLaunchDefaultPlayerCheckBox);
+        mScriptPanel.add(mScenePlayersCombo);
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
         
     }
@@ -546,8 +640,25 @@ public class OptionsDialog extends JDialog {
             "scriptfonsize",
             Integer.toString(((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty("scriptfonttype", mScriptFontComboBox.getSelectedItem().toString());
+
+        if(mScenePlayersCombo.getSelectedIndex() > 0) { // 0 Is for the default configuration
+
+            EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
+
+            String newPlayer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                    + "<Project name=\"" + project.getProjectName() + "\">" +
+                    "<Players>" +
+                    "<Player name=\"defaultsceneplayer\" class=\"" + mScenePlayersCombo.getSelectedItem().toString() + "\">" +
+                    "</Player>" +
+                    "</Players>"
+
+                    + "</Project>";
+            project.parseProjectConfigFromString(newPlayer);
+        }
+
+
         
-        mEditorConfig.setProperty("launchPlayer", Boolean.toString(mLaunchDefaultPlayerCheckBox.isSelected()));
+        //mEditorConfig.setProperty("launchPlayer", Boolean.toString(mLaunchDefaultPlayerCheckBox.isSelected()));
 
 //      Preferences.setProperty("selectedsceneplayer",
 //              (String) mScenePlayerComboBox.getSelectedItem());
@@ -635,7 +746,7 @@ public class OptionsDialog extends JDialog {
             } else if (key.equals("visualizationtrace")) {
                 mVisualizationTraceCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
             }  else if (key.equals("launchPlayer")) {
-                mLaunchDefaultPlayerCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
+                //mLaunchDefaultPlayerCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("shownodeid")) {
                 mShowNodeIDCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("showvariables")) {
@@ -653,10 +764,18 @@ public class OptionsDialog extends JDialog {
                     Integer.valueOf(mEditorConfig.getProperty(key)));
             }
 
-//          else if (key.equals("sceneplayer")) {
-//              mScenePlayerComboBox.setSelectedItem(Preferences.getProperty(key));
-//          }
         }
+
+        EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
+        PlayerConfig defaultPlayer = project.getCurrentPlayer();
+        int index = 0;
+        for(String player: mScenePlayers){
+            if(player.equals(defaultPlayer.getClassName())){
+                mScenePlayersCombo.setSelectedIndex(index);
+            }
+            index++;
+        }
+        
 
         // Add specific listeners
         mNodeSizeSpinner.addChangeListener(new ChangeListener() {

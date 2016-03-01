@@ -268,7 +268,7 @@ public class EditorConfig {
                 inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "editorconfig.xml");
                 if (inputStream == null) {
                     // Print an error message in this case
-                    mLogger.failure("Error: Cannot find project configuration file  ");
+                    mLogger.failure("Error: Cannot find project configuration file  " + file);
                     // Return failure if it does not exist
                     return false;
                 }

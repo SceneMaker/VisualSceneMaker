@@ -186,6 +186,13 @@ public class RunTimeProject
     {
         return mProjectConfig.getPlayerConfig("defaultdialogplayer");
     }
+    
+    public final PlayerConfig getCurrentPlayer(){
+        if(mProjectConfig != null && mProjectConfig.getPlayerConfigList().size() > 0){
+           return mProjectConfig.getPlayerConfigList().get(0);
+        }
+        return null;
+    }
 
     // Get the scene player of the project
     public final RunTimePlayer getDefaultScenePlayer()
@@ -223,6 +230,15 @@ public class RunTimeProject
             // player without a configuration
             return DefaultDialogPlayer.getInstance();
         }
+    }
+
+    // Get the dialog player of the project
+    public final void setDefaulPlayer(PlayerConfig player)
+    {
+        // Get the player from the map
+
+        mProjectConfig.getPlayerConfigList().add(player);
+
     }
 
     // Parse the project data from a directory
@@ -459,9 +475,11 @@ public class RunTimeProject
         return true;
     }
 
-    public boolean parseNewAgentFromString(String xml)
+    public boolean parseProjectConfigFromString(String xml)
     {
+        //Parse the config file for project from a string
         InputStream stream = new ByteArrayInputStream(xml.getBytes());
+        mProjectConfig.cleanPlayerList();
         if (!XMLUtilities.parseFromXMLStream(mProjectConfig, stream))
         {
             mLogger.failure("Error: Cannot parse agent");
@@ -469,6 +487,8 @@ public class RunTimeProject
         }
         return true;
     }
+
+
 
     private boolean writeProjectConfig(final File base)
     {
