@@ -407,4 +407,11 @@ public final class SceneScript extends SceneEntity {
             mLangMap.clear();*/
         }
     }
+
+    public int getHashCode() {
+        int hashCode = ((mEntityList == null)
+                ? 0
+                : getText().hashCode()) ;
+        return hashCode;
+    }
 }

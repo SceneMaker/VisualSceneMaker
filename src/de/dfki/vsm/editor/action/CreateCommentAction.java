@@ -4,6 +4,8 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.Comment;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.editor.util.SceneFlowManager;
+import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
 import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
 
@@ -27,6 +29,8 @@ public class CreateCommentAction extends EditorAction {
     private Comment                               mGUIComment;
     private de.dfki.vsm.model.sceneflow.Comment   mComment;
     private de.dfki.vsm.model.sceneflow.SuperNode mParentDataNode;
+    private SuperNode mSuperNode;
+    private SceneFlowManager mSceneFlowManager;
 
     public CreateCommentAction(WorkSpacePanel workSpace, Point coordinate) {
         mWorkSpace   = workSpace;
@@ -35,9 +39,16 @@ public class CreateCommentAction extends EditorAction {
         mComment     = new de.dfki.vsm.model.sceneflow.Comment();
         mComment.setGraphics(new Graphics(new Rect(coordinate.x, coordinate.y, 100, 100)));
         mParentDataNode = mWorkSpace.getSceneFlowManager().getCurrentActiveSuperNode();
+        mSceneFlowManager = mWorkSpace.getSceneFlowManager();
+        mSuperNode        = mSceneFlowManager.getCurrentActiveSuperNode();
 
         //
         mGUIComment = new de.dfki.vsm.editor.Comment(mWorkSpace, mComment);
+    }
+
+    public void delete(){
+        mSuperNode.removeComment(mComment);
+        mWorkSpace.remove(mGUIComment);
     }
 
     public void create() {
@@ -48,16 +59,27 @@ public class CreateCommentAction extends EditorAction {
 
     public void run() {
         create();
+        mUndoManager.addEdit(new Edit());
+        UndoAction.getInstance().refreshUndoState();
+        RedoAction.getInstance().refreshRedoState();
         mWorkSpace.revalidate();
         mWorkSpace.repaint();
     }
 
     private class Edit extends AbstractUndoableEdit {
         @Override
-        public void undo() throws CannotUndoException {}
+        public void undo() throws CannotUndoException {
+            delete();
+            mWorkSpace.revalidate();
+            mWorkSpace.repaint();
+        }
 
         @Override
-        public void redo() throws CannotRedoException {}
+        public void redo() throws CannotRedoException {
+            create();
+            mWorkSpace.revalidate();
+            mWorkSpace.repaint();
+        }
 
         @Override
         public boolean canUndo() {

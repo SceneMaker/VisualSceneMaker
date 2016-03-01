@@ -1090,10 +1090,12 @@ public class RunTimeProject
         int hashCode = ((mSceneFlow == null)
                 ? 0
                 : mSceneFlow.getHashCode());
+
         // TODO: Why Is The Hash Computed
         // Only Based On The SceneFlow's 
         // Hash And Not Based Also On The 
         // Other Project Data Structures?
+        hashCode+= mSceneScript.getHashCode();
         return hashCode;
     }
 }

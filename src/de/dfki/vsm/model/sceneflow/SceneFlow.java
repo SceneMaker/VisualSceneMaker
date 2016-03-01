@@ -581,9 +581,10 @@ public class SceneFlow extends SuperNode {
         // Add hash of all comments on workspace
         for (int cntComment = 0; cntComment < getCommentList().size(); cntComment++) {          
             hashCode += mCommentList.get(cntComment).mGraphics.getRect().hashCode();
-            //hashCode += mCommentList.get(cntComment).getHTMLText().hashCode();
+            hashCode += mCommentList.get(cntComment).getHTMLText().hashCode();
         }
-        
+
+
         return hashCode;
     }
 }
