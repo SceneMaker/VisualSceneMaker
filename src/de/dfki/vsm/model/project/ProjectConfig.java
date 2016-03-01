@@ -155,6 +155,10 @@ public final class ProjectConfig implements ModelObject {
         stream.pop().print("</Project>").flush();
     }
 
+    public void cleanPlayerList(){
+        mPlayerList.clear();
+    }
+
     // Parse the project coonfiguration from XML
     @Override
     public final void parseXML(final Element element) throws XMLParseError {

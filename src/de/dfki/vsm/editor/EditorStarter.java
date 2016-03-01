@@ -570,7 +570,6 @@ public class EditorStarter extends JPanel {
 		String path = "res/prj";
 		if (src != null) {
 			URL jar = src.getLocation();
-			System.out.println(jar.getPath());
 			ZipInputStream zip = null;
 			try {
 				zip = new ZipInputStream(jar.openStream());

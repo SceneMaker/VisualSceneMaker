@@ -2,7 +2,6 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.sun.jmx.remote.internal.ArrayQueue;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.dialog.VarDefDialog;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;

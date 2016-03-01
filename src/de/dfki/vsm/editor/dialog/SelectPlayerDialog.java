@@ -356,7 +356,7 @@ public class SelectPlayerDialog extends JDialog
                 + "    </Agent>"
                 + " </Agents>"
                 + "</Project>";
-        mProject.parseNewAgentFromString(newXMLAgent);
+        mProject.parseProjectConfigFromString(newXMLAgent);
     }
     
     protected void cancelActionPerformed()
