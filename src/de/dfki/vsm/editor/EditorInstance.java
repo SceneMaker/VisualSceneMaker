@@ -527,8 +527,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 		JEditorPane ep = new JEditorPane();
 		ep.setEditable(false);
 		mProjectEditors.addTab(null, new JScrollPane(ep));
+                ;
 
 		JLabel tabLabel = new JLabel(tabName);
+                
 
 		// Create an AddButton
 		final AddButton mCloseButton = new AddButton();
@@ -560,6 +562,8 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 			mProjectEditors.setComponentAt(mProjectEditors.getTabCount() - 1, content);
 			mProjectEditors.setSelectedIndex(mProjectEditors.getTabCount() - 1);
 			mProjectEditors.setTitleAt(mProjectEditors.getTabCount() - 1, tabName);
+                        mProjectEditors.setToolTipTextAt(mProjectEditors.getTabCount() - 1, ((ProjectEditor) content).getEditorProject().getProjectPath());
+                        
 		}
 
 	}
