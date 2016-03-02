@@ -122,7 +122,6 @@ public class OptionsDialog extends JDialog {
     }
 
     private void initComponents() {
-        mScenePlayers.add("Non selected");
         initGeneralPanel();
         initFileListPanel();
         initGraphicsPanel();
@@ -460,62 +459,64 @@ public class OptionsDialog extends JDialog {
 
         packageName = packageName.replace(".", "/");
         packageURL = classLoader.getResource(packageName);
+        if(mScenePlayers.size() <= 0) {
+            mScenePlayers.add("Non selected");
 
-        if(packageURL.getProtocol().equals("jar")){
-            String jarFileName;
-            JarFile jf ;
-            Enumeration<JarEntry> jarEntries;
-            String entryName;
+            if (packageURL.getProtocol().equals("jar")) {
+                String jarFileName;
+                JarFile jf;
+                Enumeration<JarEntry> jarEntries;
+                String entryName;
 
-            // build jar file name, then loop through zipped entries
-            jarFileName = URLDecoder.decode(packageURL.getFile(), "UTF-8");
-            jarFileName = jarFileName.substring(5,jarFileName.indexOf("!"));
-            System.out.println(">"+jarFileName);
-            jf = new JarFile(jarFileName);
-            jarEntries = jf.entries();
+                // build jar file name, then loop through zipped entries
+                jarFileName = URLDecoder.decode(packageURL.getFile(), "UTF-8");
+                jarFileName = jarFileName.substring(5, jarFileName.indexOf("!"));
+                System.out.println(">" + jarFileName);
+                jf = new JarFile(jarFileName);
+                jarEntries = jf.entries();
 
-            while(jarEntries.hasMoreElements()){
-                entryName = jarEntries.nextElement().getName();
-                if(entryName.startsWith(packageName) && entryName.length()>packageName.length()+5){
-                    try {
-                        String fullClassName = entryName.replace("/", ".");
-                        entryName = fullClassName.substring(0,entryName.lastIndexOf('.'));
-                        Class classEntry = Class.forName(entryName);
-                        Class[] interfaces = classEntry.getInterfaces();
-                        for (Class inter: interfaces) {
-                            if(inter.getSimpleName().equals("RunTimePlayer")){
-                                mScenePlayers.add(entryName);
+                while (jarEntries.hasMoreElements()) {
+                    entryName = jarEntries.nextElement().getName();
+                    if (entryName.startsWith(packageName) && entryName.length() > packageName.length() + 5) {
+                        try {
+                            String fullClassName = entryName.replace("/", ".");
+                            entryName = fullClassName.substring(0, entryName.lastIndexOf('.'));
+                            Class classEntry = Class.forName(entryName);
+                            Class[] interfaces = classEntry.getInterfaces();
+                            for (Class inter : interfaces) {
+                                if (inter.getSimpleName().equals("RunTimePlayer")) {
+                                    mScenePlayers.add(entryName);
+                                }
                             }
+                        } catch (StringIndexOutOfBoundsException e) {
+                            System.out.println(entryName);
+                            continue;
+                        } catch (ClassNotFoundException e) {
+                            System.out.println("Class not found");
+                            continue;
                         }
-                    }
-                    catch (StringIndexOutOfBoundsException e){
-                        System.out.println(entryName);
-                        continue;
-                    } catch (ClassNotFoundException e) {
-                        System.out.println("Class not found");
-                        continue;
-                    }
 
+                    }
                 }
-            }
 
-            // loop through files in classpath
-        }else{
-            URI uri = null;
-            try {
-                uri = new URI(packageURL.toString());
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-            File folder = new File(uri.getPath());
-            // won't work with path which contains blank (%20)
-            // File folder = new File(packageURL.getFile());
-            File[] contenuti = folder.listFiles();
-            String entryName;
-            for(File actual: contenuti){
-                entryName = actual.getName();
-                entryName = entryName.substring(0, entryName.lastIndexOf('.'));
-                names.add(entryName);
+                // loop through files in classpath
+            } else {
+                URI uri = null;
+                try {
+                    uri = new URI(packageURL.toString());
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                File folder = new File(uri.getPath());
+                // won't work with path which contains blank (%20)
+                // File folder = new File(packageURL.getFile());
+                File[] contenuti = folder.listFiles();
+                String entryName;
+                for (File actual : contenuti) {
+                    entryName = actual.getName();
+                    entryName = entryName.substring(0, entryName.lastIndexOf('.'));
+                    names.add(entryName);
+                }
             }
         }
     }
@@ -641,7 +642,7 @@ public class OptionsDialog extends JDialog {
             Integer.toString(((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty("scriptfonttype", mScriptFontComboBox.getSelectedItem().toString());
 
-        if(mScenePlayersCombo.getSelectedIndex() > 0) { // 0 Is for the default configuration
+        if(mScenePlayersCombo.getSelectedIndex() > 0 && dispose) { // 0 Is for the default configuration
 
             EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
 
@@ -769,12 +770,17 @@ public class OptionsDialog extends JDialog {
         EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
         PlayerConfig defaultPlayer = project.getCurrentPlayer();
         int index = 0;
-        for(String player: mScenePlayers){
-            if(player.equals(defaultPlayer.getClassName())){
-                mScenePlayersCombo.setSelectedIndex(index);
+        if(defaultPlayer != null) {
+            for (String player : mScenePlayers) {
+                if (player.equals(defaultPlayer.getClassName())) {
+                    mScenePlayersCombo.setSelectedIndex(index);
+                }
+                index++;
             }
-            index++;
+        }else{
+            mScenePlayersCombo.setSelectedIndex(0);
         }
+
         
 
         // Add specific listeners
