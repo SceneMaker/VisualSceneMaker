@@ -475,11 +475,14 @@ public class RunTimeProject
         return true;
     }
 
+    public void clearPlayersList(){
+        mProjectConfig.cleanPlayerList();
+    }
+
     public boolean parseProjectConfigFromString(String xml)
     {
         //Parse the config file for project from a string
         InputStream stream = new ByteArrayInputStream(xml.getBytes());
-        mProjectConfig.cleanPlayerList();
         if (!XMLUtilities.parseFromXMLStream(mProjectConfig, stream))
         {
             mLogger.failure("Error: Cannot parse agent");

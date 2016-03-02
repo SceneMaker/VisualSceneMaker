@@ -654,6 +654,7 @@ public class OptionsDialog extends JDialog {
                     "</Players>"
 
                     + "</Project>";
+            project.clearPlayersList();
             project.parseProjectConfigFromString(newPlayer);
         }
 
