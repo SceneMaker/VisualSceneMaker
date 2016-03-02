@@ -398,6 +398,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         mPlayButton = add(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                mEditorInstance.save();
                 mEditorInstance.play(mEditorProject);
                 mStopButton.setEnabled(true);
             }

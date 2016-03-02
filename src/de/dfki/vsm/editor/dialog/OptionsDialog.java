@@ -99,7 +99,9 @@ public class OptionsDialog extends JDialog {
     
     private final EditorConfig       mEditorConfig;
 
-    private static ArrayList<String> mScenePlayers = new ArrayList<>();
+    private static ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
+    private static ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
+    private JLabel mScenePlayersLabel;
 
 
     private OptionsDialog() {
@@ -459,8 +461,8 @@ public class OptionsDialog extends JDialog {
 
         packageName = packageName.replace(".", "/");
         packageURL = classLoader.getResource(packageName);
-        if(mScenePlayers.size() <= 0) {
-            mScenePlayers.add("Non selected");
+        if(mScenePlayersShortNames.size() <= 0) {
+            mScenePlayersShortNames.add("Non selected");
 
             if (packageURL.getProtocol().equals("jar")) {
                 String jarFileName;
@@ -483,9 +485,12 @@ public class OptionsDialog extends JDialog {
                             entryName = fullClassName.substring(0, entryName.lastIndexOf('.'));
                             Class classEntry = Class.forName(entryName);
                             Class[] interfaces = classEntry.getInterfaces();
+                            
+                            System.out.println(fullClassName + "-- " + classEntry + " --- ");
                             for (Class inter : interfaces) {
                                 if (inter.getSimpleName().equals("RunTimePlayer")) {
-                                    mScenePlayers.add(entryName);
+                                    mScenePlayersLongNames.add(entryName);
+                                    mScenePlayersShortNames.add(entryName.substring(entryName.lastIndexOf('.')+1));
                                 }
                             }
                         } catch (StringIndexOutOfBoundsException e) {
@@ -569,8 +574,8 @@ public class OptionsDialog extends JDialog {
                
         //mLaunchDefaultPlayerCheckBox = new JCheckBox("Launch Default Scene Player", false);
         loadClass();
-        mScenePlayersCombo = new JComboBox(new DefaultComboBoxModel(mScenePlayers.toArray()));
-
+        mScenePlayersCombo = new JComboBox(new DefaultComboBoxModel(mScenePlayersShortNames.toArray()));
+        mScenePlayersCombo.setMaximumSize(new Dimension(200, 30));
         /*mLaunchDefaultPlayerCheckBox.setOpaque(false);
         mLaunchDefaultPlayerCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -587,6 +592,13 @@ public class OptionsDialog extends JDialog {
                 mEditor.refresh();
             }
         });
+        mScenePlayersLabel = new JLabel(" Default Scene Player");
+        Box scenePlayersBox = Box.createHorizontalBox();
+        scenePlayersBox.add(mScenePlayersLabel);
+        scenePlayersBox.add(Box.createHorizontalStrut(15));
+        scenePlayersBox.add(mScenePlayersCombo);
+        
+        
         
         mScriptPanel = new JPanel();
         mScriptPanel.setBackground(Color.white);
@@ -595,7 +607,7 @@ public class OptionsDialog extends JDialog {
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
         mScriptPanel.add(fontAndSize);
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
-        mScriptPanel.add(mScenePlayersCombo);
+        mScriptPanel.add(scenePlayersBox);
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
         
     }
@@ -649,7 +661,7 @@ public class OptionsDialog extends JDialog {
             String newPlayer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                     + "<Project name=\"" + project.getProjectName() + "\">" +
                     "<Players>" +
-                    "<Player name=\"defaultsceneplayer\" class=\"" + mScenePlayersCombo.getSelectedItem().toString() + "\">" +
+                    "<Player name=\"defaultsceneplayer\" class=\"" + mScenePlayersLongNames.get(mScenePlayersCombo.getSelectedIndex()-1)+ "\">" +
                     "</Player>" +
                     "</Players>"
 
@@ -703,7 +715,8 @@ public class OptionsDialog extends JDialog {
 //          mLogger.message("  Removing recentfile" + i + " ");
 //      }
         mEditorConfig.save(mEditor.getSelectedProjectEditor().getEditorProject().getProjectFile());
-
+        
+        EditorInstance.getInstance().save();
         if (dispose) {
             dispose();
         }
@@ -772,7 +785,7 @@ public class OptionsDialog extends JDialog {
         PlayerConfig defaultPlayer = project.getCurrentPlayer();
         int index = 0;
         if(defaultPlayer != null) {
-            for (String player : mScenePlayers) {
+            for (String player : mScenePlayersShortNames) {
                 if (player.equals(defaultPlayer.getClassName())) {
                     mScenePlayersCombo.setSelectedIndex(index);
                 }
