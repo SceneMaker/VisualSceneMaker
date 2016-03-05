@@ -1,84 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="128" language="en" identifier="Welcome">
-    <SceneTurn lower="18" upper="49" speaker="Anna">
-      <SceneUttr lower="24" upper="49" punct=".">
-        <ActionObject lower="24" upper="34" agentname="" name="WaveLeft">
+  <SceneObject lower="0" upper="132" language="en" identifier="Welcome">
+    <SceneTurn lower="18" upper="50" speaker="Anna1">
+      <SceneUttr lower="25" upper="50" punct=".">
+        <ActionObject lower="25" upper="35" agentname="" name="WaveLeft">
         </ActionObject>
-        <ActionObject lower="35" upper="40" agentname="" name="Nod">
+        <ActionObject lower="36" upper="41" agentname="" name="Nod">
         </ActionObject>
-        <SceneWord lower="41" upper="48" text="Welcome"/>
+        <SceneWord lower="42" upper="49" text="Welcome"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="50" upper="98" speaker="Anna">
-      <SceneUttr lower="56" upper="98" punct="!">
-        <SceneWord lower="56" upper="60" text="Nice"/>
-        <ActionObject lower="61" upper="68" agentname="" name="Smile">
+    </SceneTurn><SceneTurn lower="51" upper="101" speaker="Anna11">
+      <SceneUttr lower="59" upper="101" punct="!">
+        <SceneWord lower="59" upper="63" text="Nice"/>
+        <ActionObject lower="64" upper="71" agentname="" name="Smile">
         </ActionObject>
-        <SceneWord lower="69" upper="71" text="to"/>
-        <SceneWord lower="72" upper="76" text="have"/>
-        <ActionObject lower="77" upper="88" agentname="Bob" name="Smile">
+        <SceneWord lower="72" upper="74" text="to"/>
+        <SceneWord lower="75" upper="79" text="have"/>
+        <ActionObject lower="80" upper="91" agentname="Bob" name="Smile">
         </ActionObject>
-        <SceneWord lower="89" upper="92" text="you"/>
-        <SceneWord lower="93" upper="97" text="here"/>
+        <SceneWord lower="92" upper="95" text="you"/>
+        <SceneWord lower="96" upper="100" text="here"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="99" upper="128" speaker="Bob">
-      <SceneUttr lower="104" upper="128" punct="!">
-        <SceneWord lower="104" upper="106" text="Hi"/>
-        <SceneWord lower="107" upper="112" text="there"/>
-        <ActionObject lower="113" upper="123" agentname="" name="WaveLeft">
+    </SceneTurn><SceneTurn lower="102" upper="132" speaker="Bob1">
+      <SceneUttr lower="108" upper="132" punct="!">
+        <SceneWord lower="108" upper="110" text="Hi"/>
+        <SceneWord lower="111" upper="116" text="there"/>
+        <ActionObject lower="117" upper="127" agentname="" name="WaveLeft">
         </ActionObject>
-        <SceneWord lower="124" upper="127" text="too"/>
+        <SceneWord lower="128" upper="131" text="too"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="130" upper="344" language="en" identifier="ByeBye">
-    <SceneTurn lower="147" upper="211" speaker="Anna">
-      <SceneUttr lower="153" upper="158" punct=",">
-        <SceneWord lower="153" upper="157" text="Well"/>
+  <SceneObject lower="134" upper="348" language="en" identifier="ByeBye">
+    <SceneTurn lower="151" upper="215" speaker="Anna">
+      <SceneUttr lower="157" upper="162" punct=",">
+        <SceneWord lower="157" upper="161" text="Well"/>
       </SceneUttr>
-      <SceneUttr lower="159" upper="211" punct=".">
-        <SceneWord lower="159" upper="164" text="there"/>
-        <SceneWord lower="165" upper="167" text="is"/>
-        <SceneWord lower="168" upper="169" text="a"/>
-        <ActionObject lower="170" upper="180" agentname="" name="TiltLeft">
+      <SceneUttr lower="163" upper="215" punct=".">
+        <SceneWord lower="163" upper="168" text="there"/>
+        <SceneWord lower="169" upper="171" text="is"/>
+        <SceneWord lower="172" upper="173" text="a"/>
+        <ActionObject lower="174" upper="184" agentname="" name="TiltLeft">
         </ActionObject>
-        <SceneWord lower="181" upper="190" text="beginning"/>
-        <SceneWord lower="191" upper="194" text="and"/>
-        <SceneWord lower="195" upper="200" text="there"/>
-        <SceneWord lower="201" upper="203" text="is"/>
-        <SceneWord lower="204" upper="206" text="an"/>
-        <SceneWord lower="207" upper="210" text="end"/>
+        <SceneWord lower="185" upper="194" text="beginning"/>
+        <SceneWord lower="195" upper="198" text="and"/>
+        <SceneWord lower="199" upper="204" text="there"/>
+        <SceneWord lower="205" upper="207" text="is"/>
+        <SceneWord lower="208" upper="210" text="an"/>
+        <SceneWord lower="211" upper="214" text="end"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="212" upper="258" speaker="Anna">
-      <SceneUttr lower="218" upper="222" punct=",">
-        <SceneWord lower="218" upper="221" text="Now"/>
+    </SceneTurn><SceneTurn lower="216" upper="262" speaker="Anna">
+      <SceneUttr lower="222" upper="226" punct=",">
+        <SceneWord lower="222" upper="225" text="Now"/>
       </SceneUttr>
-      <SceneUttr lower="223" upper="258" punct=".">
-        <SceneWord lower="223" upper="225" text="it"/>
-        <SceneWord lower="226" upper="228" text="is"/>
-        <ActionObject lower="229" upper="234" agentname="" name="Sad">
+      <SceneUttr lower="227" upper="262" punct=".">
+        <SceneWord lower="227" upper="229" text="it"/>
+        <SceneWord lower="230" upper="232" text="is"/>
+        <ActionObject lower="233" upper="238" agentname="" name="Sad">
         </ActionObject>
-        <SceneWord lower="235" upper="238" text="the"/>
-        <SceneWord lower="239" upper="242" text="end"/>
-        <ActionObject lower="243" upper="257" agentname="" name="TiltLeftBack">
+        <SceneWord lower="239" upper="242" text="the"/>
+        <SceneWord lower="243" upper="246" text="end"/>
+        <ActionObject lower="247" upper="261" agentname="" name="TiltLeftBack">
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="259" upper="318" speaker="Bob">
-      <SceneUttr lower="264" upper="318" punct="!">
-        <SceneWord lower="264" upper="267" text="Bye"/>
-        <ActionObject lower="268" upper="278" agentname="" name="WaveLeft">
+    </SceneTurn><SceneTurn lower="263" upper="322" speaker="Bob">
+      <SceneUttr lower="268" upper="322" punct="!">
+        <SceneWord lower="268" upper="271" text="Bye"/>
+        <ActionObject lower="272" upper="282" agentname="" name="WaveLeft">
         </ActionObject>
-        <ActionObject lower="279" upper="294" agentname="Anna" name="WaveLeft">
+        <ActionObject lower="283" upper="298" agentname="Anna" name="WaveLeft">
         </ActionObject>
-        <ActionObject lower="295" upper="313" agentname="Valerie" name="WaveLeft">
+        <ActionObject lower="299" upper="317" agentname="Valerie" name="WaveLeft">
         </ActionObject>
-        <SceneWord lower="314" upper="317" text="bye"/>
+        <SceneWord lower="318" upper="321" text="bye"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="319" upper="344" speaker="Valerie">
-      <SceneUttr lower="328" upper="344" punct="!">
-        <SceneWord lower="328" upper="331" text="Bye"/>
-        <SceneWord lower="332" upper="335" text="bye"/>
-        <ActionObject lower="336" upper="343" agentname="" name="Smile">
+    </SceneTurn><SceneTurn lower="323" upper="348" speaker="Valerie">
+      <SceneUttr lower="332" upper="348" punct="!">
+        <SceneWord lower="332" upper="335" text="Bye"/>
+        <SceneWord lower="336" upper="339" text="bye"/>
+        <ActionObject lower="340" upper="347" agentname="" name="Smile">
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
