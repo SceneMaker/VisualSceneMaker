@@ -19,4 +19,20 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
+  <SceneObject lower="61" upper="111" language="en" identifier="SceneName">
+    <SceneTurn lower="81" upper="111" speaker="character">
+      <SceneUttr lower="92" upper="111" punct=".">
+        <SceneWord lower="92" upper="98" text="Akvaro"/>
+        <SceneWord lower="99" upper="103" text="Text"/>
+        <SceneWord lower="104" upper="110" text="Cepess"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="113" upper="149" language="@@" identifier="SceneName">
+    <SceneTurn lower="133" upper="149" speaker="character">
+      <SceneUttr lower="144" upper="149" punct=".">
+        <SceneWord lower="144" upper="148" text="Text"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>

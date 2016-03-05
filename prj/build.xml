@@ -152,6 +152,19 @@
             </java>
     </target>-->
     <!-- Execute Project -->
+
+    <!-- Execute to Welcome Screen -->
+    <target name="debug">
+
+        <java classname="de.dfki.vsm.SceneMaker3" fork="true">
+            <!-- <arg line="runtime res/prj/test"/>-->
+
+            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" />
+            <classpath refid="clspath"/>
+        </java>
+    </target>
+
+
     <target name="test">
         <java classname="de.dfki.vsm.test.TestVSMAPI" fork="true">
             <!--<arg line="res/prj/test"/>-->

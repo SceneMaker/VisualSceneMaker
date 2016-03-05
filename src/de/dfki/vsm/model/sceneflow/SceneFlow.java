@@ -3,6 +3,7 @@ package de.dfki.vsm.model.sceneflow;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
+import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
 import de.dfki.vsm.util.cpy.CopyTool;
@@ -547,7 +548,12 @@ public class SceneFlow extends SuperNode {
         // Add hash of existing user commands
         for (FunDef fundDef : mUserCmdDefMap.values()) {
             hashCode += fundDef.getName().hashCode() + fundDef.getClassName().hashCode()
-                    + fundDef.getMethod().hashCode() + fundDef.getParamList().hashCode();
+                    + fundDef.getMethod().hashCode();
+                    for(ParamDef var: fundDef.getParamList()){ //Otherwise the hascode was not unique
+                        hashCode+= var.getName().hashCode();
+                        hashCode+= var.getType().hashCode();
+                    }
+                    //+ fundDef.getParamList().hashCode();
         }
        
         // Add hash of all nodes on workspace

@@ -5,6 +5,7 @@
   <Players>
     <Player name="defaultsceneplayer" class="de.dfki.vsm.players.stickman.StickmanScenePlayer">
     </Player>
+
   </Players>
   <Agents>
     <Agent name="Anna" player="StickmanStage">
@@ -16,6 +17,18 @@
       <Feature key="port" value="7777"/>
     </Agent>
     <Agent name="Valerie" player="StickmanStage">
+      <Feature key="host" value="localhost"/>
+      <Feature key="port" value="7777"/>
+    </Agent>
+    <Agent name="Bob1" player="StickmanStage">
+      <Feature key="host" value="localhost"/>
+      <Feature key="port" value="7777"/>
+    </Agent>
+    <Agent name="Anna1" player="StickmanStage">
+      <Feature key="host" value="localhost"/>
+      <Feature key="port" value="7777"/>
+    </Agent>
+    <Agent name="Anna11" player="StickmanStage">
       <Feature key="host" value="localhost"/>
       <Feature key="port" value="7777"/>
     </Agent>
