@@ -654,7 +654,7 @@ public class OptionsDialog extends JDialog {
                     "</Players>"
 
                     + "</Project>";
-            project.clearPlayersList();
+            project.clearPlayersList(); //Only one at the time player can be used. If this changes this should be removed!
             project.parseProjectConfigFromString(newPlayer);
         }
 
