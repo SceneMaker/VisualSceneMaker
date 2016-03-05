@@ -32,7 +32,7 @@ public class RunTimeProject
 
     // The singelton logger instance
     protected final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+        = LOGDefaultLogger.getInstance();
 
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
@@ -186,10 +186,14 @@ public class RunTimeProject
     {
         return mProjectConfig.getPlayerConfig("defaultdialogplayer");
     }
-    
-    public final PlayerConfig getCurrentPlayer(){
-        if(mProjectConfig != null && mProjectConfig.getPlayerConfigList().size() > 0){
-           return mProjectConfig.getPlayerConfigList().get(0);
+
+    public final PlayerConfig getCurrentPlayer()
+    {
+        System.out.println(mProjectConfig.getPlayerConfigList());
+        if (mProjectConfig != null && mProjectConfig.getPlayerConfigList().size() > 0)
+        {
+            
+            return mProjectConfig.getPlayerConfigList().get(0);
         }
         return null;
     }
@@ -286,13 +290,13 @@ public class RunTimeProject
         if (found)
         {
             getCharacters(mSceneScript).stream().forEach((c)
-                    -> 
-                    {
-                        AgentConfig ac = mProjectConfig.getAgentConfig(c);
-                        if (ac == null)
-                        { //Not mapped
-                            missingAgents.add(c);
-                        }
+                -> 
+                {
+                    AgentConfig ac = mProjectConfig.getAgentConfig(c);
+                    if (ac == null)
+                    { //Not mapped
+                        missingAgents.add(c);
+                    }
             });
         }
         return missingAgents;
@@ -302,13 +306,14 @@ public class RunTimeProject
     public void clearAgentList()
     {
         ArrayList<String> existingAgents = new ArrayList<>();
-        getCharacters(mSceneScript).stream().forEach((c) -> 
-                {
-                    AgentConfig ac = mProjectConfig.getAgentConfig(c);
-                    if (ac != null)
-                    { //Not mapped
-                        existingAgents.add(c);
-                    }
+        getCharacters(mSceneScript).stream().forEach((c)
+            -> 
+            {
+                AgentConfig ac = mProjectConfig.getAgentConfig(c);
+                if (ac != null)
+                { //Not mapped
+                    existingAgents.add(c);
+                }
         }
         );
         mProjectConfig.cleanAgentConfigList(existingAgents);
@@ -374,11 +379,11 @@ public class RunTimeProject
 
         // Parse the project from the base directory
         return (parseProjectConfig(file)
-                && parseSceneFlow(file)
-                && parseSceneScript(file)
-                && parseActiconConfig(file)
-                && parseVisiconConfig(file)
-                && parseGesticonConfig(file));
+            && parseSceneFlow(file)
+            && parseSceneScript(file)
+            && parseActiconConfig(file)
+            && parseVisiconConfig(file)
+            && parseGesticonConfig(file));
 
     }
 
@@ -411,11 +416,11 @@ public class RunTimeProject
         }
         // Save the project to the base directory
         return (writeProjectConfig(base)
-                && writeSceneFlow(base)
-                && writeSceneScript(base)
-                && writeActiconConfig(base)
-                && writeVisiconConfig(base)
-                && writeGesticonConfig(base));
+            && writeSceneFlow(base)
+            && writeSceneScript(base)
+            && writeActiconConfig(base)
+            && writeVisiconConfig(base)
+            && writeGesticonConfig(base));
     }
 
     // Load the runtime objects of the project
@@ -470,12 +475,14 @@ public class RunTimeProject
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded project configuration file in path'" + path + "':\n" + mProjectConfig);
+//        mLogger.message("Loaded project configuration file in path'" + path + "':\n" + mProjectConfig);
+        mLogger.message("Loaded project configuration file in path'" + path + "':\n");
         // Return success if the project was loaded
         return true;
     }
 
-    public void clearPlayersList(){
+    public void clearPlayersList()
+    {
         mProjectConfig.cleanPlayerList();
     }
 
@@ -490,8 +497,6 @@ public class RunTimeProject
         }
         return true;
     }
-
-
 
     private boolean writeProjectConfig(final File base)
     {
@@ -652,7 +657,9 @@ public class RunTimeProject
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
+//        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
+        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" );
+
         // Return success if the project was loaded
         return true;
     }
@@ -734,7 +741,8 @@ public class RunTimeProject
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" + mActiconConfig);
+//        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" + mActiconConfig);
+        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
         return true;
     }
@@ -816,7 +824,8 @@ public class RunTimeProject
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" + mGesticonConfig);
+//        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" + mGesticonConfig);
+        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
         return true;
     }
@@ -897,7 +906,8 @@ public class RunTimeProject
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" + mVisiconConfig);
+//        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" + mVisiconConfig);
+        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" );
         // Return success if the project was loaded
         return true;
     }
@@ -1111,14 +1121,14 @@ public class RunTimeProject
     protected synchronized int getHashCode()
     {
         int hashCode = ((mSceneFlow == null)
-                ? 0
-                : mSceneFlow.getHashCode());
+            ? 0
+            : mSceneFlow.getHashCode());
 
         // TODO: Why Is The Hash Computed
         // Only Based On The SceneFlow's 
         // Hash And Not Based Also On The 
         // Other Project Data Structures?
-        hashCode+= mSceneScript.getHashCode();
+        hashCode += mSceneScript.getHashCode();
         return hashCode;
     }
 }
