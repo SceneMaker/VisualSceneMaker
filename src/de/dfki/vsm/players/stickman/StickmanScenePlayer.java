@@ -8,7 +8,7 @@ import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneAbbrev;
@@ -178,13 +178,13 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
                 LinkedList<SceneUttr> suttr = t.getUttrList();
 
                 for (SceneUttr u : suttr) {
-                    LinkedList<AbstractWord> words = u.getWordList();
+                    LinkedList<UtteranceElement> words = u.getWordList();
 
-                    for (AbstractWord word : words) {
+                    for (UtteranceElement word : words) {
                         if (word instanceof ActionObject) {
                             ActionObject ao = ((ActionObject) word);
 
-                            String agent = ao.getAgentName();
+                            String agent = ao.getActorName();
 
                             if ((agent != null) && !agent.trim().isEmpty()) {
                                 if (!speakersSet.contains(agent)) {
@@ -260,7 +260,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
                         // create a new word time mark sequence based on the current utterance
                         WordTimeMarkSequence wts = new WordTimeMarkSequence(utt.getCleanText());
 
-                        if (!(utt.getCleanText().length() == 0) && !utt.getCleanText().equalsIgnoreCase(utt.getPunct())) {
+                        if (!(utt.getCleanText().length() == 0) && !utt.getCleanText().equalsIgnoreCase(utt.getPunctuationMark())) {
                             if (mRelationAgentPlayer.get(speaker).equalsIgnoreCase("stickmanstage")) {
                                 // Create and add the master event action that controlas all other actions
                                 mActionPlayer.addMasterEventAction(new StickmanEventAction(StickmanStage.getStickman(speaker), 0, "Speaking", 3000, wts, false));
@@ -274,7 +274,7 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
                         // Process the words of this utterance
                         // remember timemark
                         String tm = mActionPlayer.getTimeMark();
-                        for (AbstractWord word : utt.getWordList()) {
+                        for (UtteranceElement word : utt.getWordList()) {
                             if (word instanceof SceneWord) {
                                 String w = ((SceneWord) word).getText();
                                 // add word to the word time mark sequence
@@ -289,12 +289,12 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
                             } else if (word instanceof ActionObject) {
                                 ActionObject ao = ((ActionObject) word);
 
-                                String agent = ao.getAgentName();
+                                String agent = ao.getActorName();
                                 agent = (agent == null || agent.trim().isEmpty()) ? speaker : agent;
 
                                 if (mRelationAgentPlayer.get(agent).equalsIgnoreCase("stickmanstage")) {
                                     // if there is a master event action, let it decide when to play the action, else play it at timecode 0
-                                    StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), mActionPlayer.hasMasterEventAction() ? -1 : 0, ao.getName(), 1000, "", false);
+                                    StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), mActionPlayer.hasMasterEventAction() ? -1 : 0, ao.getActivityName(), 1000, "", false);
                                     if (mActionPlayer.hasMasterEventAction()) {
                                         // give time mark to the master event action
                                         ((EventAction) mActionPlayer.getMasterEventAction()).addTimeMark(tm);

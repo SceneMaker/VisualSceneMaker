@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.scenescript;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -10,68 +9,70 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
  * @author Not me
  */
-public final class ActionObject extends AbstractWord {
+public final class ActionObject extends UtteranceElement {
 
     // The Action Arguments
     private LinkedList<ActionFeature> mFeatureList = new LinkedList<>();
 
-	// The Name Of The Agent
-	private String mAgentName;
-	
+    // The Name Of The Agent
+    private String mActorName;
+
     // The Name Of The Action
-    private String mName;
+    private String mActivityName;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ActionObject() {
-		mAgentName = null;
-        mName = null;
+        mActorName = null;
+        mActivityName = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public ActionObject(final int lower, final int upper, final String agent, final String name, final LinkedList<ActionFeature> list) {
+    public ActionObject(
+            final int lower, final int upper,
+            final String actor, final String activity,
+            final LinkedList<ActionFeature> list) {
 
         // Initialize The Boundary
         super(lower, upper);
-		
+
         // Initialize The Members
-        mAgentName = agent;
-		
-		mName = name;
+        mActorName = actor;
+        mActivityName = activity;
 
         // Initialize Fature List
         mFeatureList = list;
     }
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final String getAgentName() {
-        return mAgentName;
-    }
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final String getName() {
-        return mName;
-    }
-	
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final void setName(final String name) {
-        mName = name;
+    public final String getActorName() {
+        return mActorName;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public final String getActivityName() {
+        return mActivityName;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    //public final void setName(final String name) {
+    //    mActivityName = name;
+    //}
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -123,9 +124,9 @@ public final class ActionObject extends AbstractWord {
     public final String getText() {
 
         // Append The Identifiers
-		String agentname = (mAgentName == null || mAgentName.isEmpty()) ? "" : mAgentName + " ";
-		
-        String result = "[" + agentname + mName;
+        String agentname = (mActorName == null || mActorName.isEmpty()) ? "" : mActorName + " ";
+
+        String result = "[" + agentname + mActivityName;
 
         if (!mFeatureList.isEmpty()) {
             result += " ";
@@ -152,9 +153,9 @@ public final class ActionObject extends AbstractWord {
     public final String getText(final HashMap<String, String> args) {
 
         // Append The Identifiers
-		String agentname = (mAgentName == null || mAgentName.isEmpty()) ? "" : mAgentName + " ";
-		
-        String result = "[" + agentname + mName;
+        String agentname = (mActorName == null || mActorName.isEmpty()) ? "" : mActorName + " ";
+
+        String result = "[" + agentname + mActivityName;
 
         if (!mFeatureList.isEmpty()) {
             result += " ";
@@ -179,11 +180,10 @@ public final class ActionObject extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-		
-		//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AGENTNAME " + mAgentName);
-		
-        stream.println("<ActionObject " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "agentname=\""+ ((mAgentName == null) ? "" : mAgentName) + "\" "+ "name=\"" + mName
-                       + "\">");
+
+        //System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AGENTNAME " + mAgentName);
+        stream.println("<ActionObject " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "agentname=\"" + ((mActorName == null) ? "" : mActorName) + "\" " + "name=\"" + mActivityName
+                + "\">");
         stream.push();
 
         for (final ActionFeature feature : mFeatureList) {
@@ -209,9 +209,9 @@ public final class ActionObject extends AbstractWord {
         mUpper = Integer.parseInt(element.getAttribute("upper"));
 
         // Parse The Members
-        mName = element.getAttribute("name");
-		mAgentName = element.getAttribute("agentname");
-		
+        mActivityName = element.getAttribute("name");
+        mActorName = element.getAttribute("agentname");
+
         // Process The Child Nodes
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
@@ -251,6 +251,6 @@ public final class ActionObject extends AbstractWord {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final ActionObject getCopy() {
-        return new ActionObject(mLower, mUpper, mAgentName, mName, copyFeatureList());
+        return new ActionObject(mLower, mUpper, mActorName, mActivityName, copyFeatureList());
     }
 }

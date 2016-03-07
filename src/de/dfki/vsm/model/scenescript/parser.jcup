@@ -161,7 +161,7 @@ non terminal LinkedList entity_sequence_opt;
 non terminal LinkedList feature_sequence_opt;
 // Nonterminal Objects
 non terminal SceneTurn turn;
-non terminal AbstractWord word;
+non terminal UtteranceElement word;
 non terminal SceneObject scene;
 non terminal SceneEntity entity;
 non terminal SceneUttr utterance;
@@ -300,7 +300,7 @@ utterance ::=
     PUNCTUATION:punctuation
     {:
         // Get The First Word In List
-        AbstractWord firstword = (AbstractWord)sequence.getFirst();
+        UtteranceElement firstword = (UtteranceElement)sequence.getFirst();
         // Construct A New Utterance
         RESULT = new SceneUttr(
             firstword.getLower(), 
@@ -320,7 +320,7 @@ word_sequence ::=
     :}
   | word:word
     {:
-        RESULT = new LinkedList<AbstractWord>();
+        RESULT = new LinkedList<UtteranceElement>();
         RESULT.add(word);
     :}
 ;

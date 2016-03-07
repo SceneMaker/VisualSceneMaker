@@ -5,7 +5,7 @@ import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneAbbrev;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -148,7 +148,7 @@ public final class DefaultScenePlayer implements RunTimePlayer {
                         EventDispatcher.getInstance().convey(new UtteranceExecutedEvent(this, utt));
 
                         // Process the words of this utterance
-                        for (AbstractWord word : utt.getWordList()) {
+                        for (UtteranceElement word : utt.getWordList()) {
                             if (word instanceof SceneWord) {
 
                                 // Visualization

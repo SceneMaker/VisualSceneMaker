@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * @author Not me
  */
-public final class SceneAbbrev extends AbstractWord {
+public final class SceneAbbrev extends UtteranceElement {
 
     // The First Part
     private String mFirst;
