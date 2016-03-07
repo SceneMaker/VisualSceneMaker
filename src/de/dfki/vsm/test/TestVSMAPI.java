@@ -32,7 +32,7 @@ public class TestVSMAPI {
     // spoken utterance, but an activity may also be any 
     // nonverbal performance in some other modality than
     // speech, such as gaze, gestures, postures, facial 
-    // expressions, head movements
+    // expressions, head movements and so on ...
     public interface AbstractActivity {
 
         public String getText();
