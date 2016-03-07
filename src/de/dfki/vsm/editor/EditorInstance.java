@@ -793,12 +793,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 	public void updateRecentProjects(final EditorProject project) {
             String projectPath = project.getProjectPath();
             String projectName = project.getProjectName();
-            PlayerConfig currentPlayer = project.getCurrentPlayer();
-            if (currentPlayer != null)
-            {
-                String playerClass = currentPlayer.getClassName();
-                projectName += "   {" + playerClass.substring(playerClass.lastIndexOf(".")+1) + "}";
-            }
+//            PlayerConfig currentPlayer = project.getCurrentPlayer();
+//            if (currentPlayer != null)
+//            {
+//                String playerClass = currentPlayer.getClassName();
+//                projectName += "   {" + playerClass.substring(playerClass.lastIndexOf(".")+1) + "}";
+//            }
             // Print some info message
             mLogger.message("Updating recent projects with '" + projectPath + "' '" + projectName + "'");
             //
