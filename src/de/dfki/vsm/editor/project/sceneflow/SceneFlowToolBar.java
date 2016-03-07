@@ -38,8 +38,10 @@ import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
+import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.dialog.SaveFileDialog;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 
 /**
  * @author Gregor Mehlmann
@@ -196,6 +198,13 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
 //            }
 //        }
         refreshButtons();
+        if(event instanceof ProjectChangedEvent )
+        {
+            if (event.getSource() instanceof OptionsDialog)
+            {
+                mSaveProject.setEnabled(true);
+            }
+        }
     }
 
     private void initPreferences() {
@@ -398,6 +407,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         mPlayButton = add(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                mEditorInstance.save();
                 mEditorInstance.play(mEditorProject);
                 mStopButton.setEnabled(true);
             }

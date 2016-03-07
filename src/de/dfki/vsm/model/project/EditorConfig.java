@@ -20,7 +20,8 @@ import java.util.TreeSet;
  *
  * This class saves project related configurations.
  */
-public class EditorConfig {
+public class EditorConfig
+{
 
     // The Logger Instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -61,116 +62,143 @@ public class EditorConfig {
     public int sSCRIPT_FONT_SIZE = 16;
     public boolean sSHOWSCENE_ELEMENTS = false;
     public boolean sAUTOHIDE_BOTTOMPANEL = true; // Saves the pricked pin of the bottom panel of the editor
-    public String sMAINSUPERNODENAME = "default"; 
+    public String sMAINSUPERNODENAME = "default";
 
-    public EditorConfig() {
-        
-        if (!sPROPERTIES.containsKey("node_width")) {
+    public EditorConfig()
+    {
+
+        if (!sPROPERTIES.containsKey("node_width"))
+        {
             sPROPERTIES.setProperty("node_width", "90");
         }
-        
-        if (!sPROPERTIES.containsKey("node_height")) {
+
+        if (!sPROPERTIES.containsKey("node_height"))
+        {
             sPROPERTIES.setProperty("node_height", "90");
         }
-        
-        if (!sPROPERTIES.containsKey("grid_x")) {
+
+        if (!sPROPERTIES.containsKey("grid_x"))
+        {
             sPROPERTIES.setProperty("grid_x", "1");
         }
-        
-        if (!sPROPERTIES.containsKey("grid_y")) {
+
+        if (!sPROPERTIES.containsKey("grid_y"))
+        {
             sPROPERTIES.setProperty("grid_y", "1");
         }
-        
-        if (!sPROPERTIES.containsKey("visualization")) {
+
+        if (!sPROPERTIES.containsKey("visualization"))
+        {
             sPROPERTIES.setProperty("visualization", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("visualizationtrace")) {
+
+        if (!sPROPERTIES.containsKey("visualizationtrace"))
+        {
             sPROPERTIES.setProperty("visualizationtrace", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("shownodeid")) {
+
+        if (!sPROPERTIES.containsKey("shownodeid"))
+        {
             sPROPERTIES.setProperty("shownodeid", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showvariables")) {
+
+        if (!sPROPERTIES.containsKey("showvariables"))
+        {
             sPROPERTIES.setProperty("showvariables", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showsmartpathcalculations")) {
+
+        if (!sPROPERTIES.containsKey("showsmartpathcalculations"))
+        {
             sPROPERTIES.setProperty("showsmartpathcalculations", "false");
         }
-        
-        if (!sPROPERTIES.containsKey("showsceneelements")) {
+
+        if (!sPROPERTIES.containsKey("showsceneelements"))
+        {
             sPROPERTIES.setProperty("showsceneelements", "false");
         }
 
         // default values for editor appearance
-        if (!sPROPERTIES.containsKey("showelements")) {
+        if (!sPROPERTIES.containsKey("showelements"))
+        {
             sPROPERTIES.setProperty("showelements", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showelementproperties")) {
+
+        if (!sPROPERTIES.containsKey("showelementproperties"))
+        {
             sPROPERTIES.setProperty("showelementproperties", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("propertiesdividerlocation")) {
+
+        if (!sPROPERTIES.containsKey("propertiesdividerlocation"))
+        {
             sPROPERTIES.setProperty("propertiesdividerlocation", "790");
         }
-        
-        if (!sPROPERTIES.containsKey("showscenefloweditor")) {
+
+        if (!sPROPERTIES.containsKey("showscenefloweditor"))
+        {
             sPROPERTIES.setProperty("showscenefloweditor", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showsceneeditor")) {
+
+        if (!sPROPERTIES.containsKey("showsceneeditor"))
+        {
             sPROPERTIES.setProperty("showsceneeditor", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("sceneflow_sceneeditor_ratio")) {
+
+        if (!sPROPERTIES.containsKey("sceneflow_sceneeditor_ratio"))
+        {
             sPROPERTIES.setProperty("sceneflow_sceneeditor_ratio", "0.75");
         }
-        
-        if (!sPROPERTIES.containsKey("showgestures")) {
+
+        if (!sPROPERTIES.containsKey("showgestures"))
+        {
             sPROPERTIES.setProperty("showgestures", "true");
         }
 
         // visual appearance of workspace and its elements
-        if (!sPROPERTIES.containsKey("grid")) {
+        if (!sPROPERTIES.containsKey("grid"))
+        {
             sPROPERTIES.setProperty("grid", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("num_magnets")) {
+
+        if (!sPROPERTIES.containsKey("num_magnets"))
+        {
             sPROPERTIES.setProperty("num_magnets", "8");
         }
-        
-        if (!sPROPERTIES.containsKey("workspace_fontsize")) {
+
+        if (!sPROPERTIES.containsKey("workspace_fontsize"))
+        {
             sPROPERTIES.setProperty("workspace_fontsize", "11");
         }
-        
-        if (!sPROPERTIES.containsKey("scriptfonsize")) {
+
+        if (!sPROPERTIES.containsKey("scriptfonsize"))
+        {
             sPROPERTIES.setProperty("scriptfonsize", "16");
         }
-        
-        if (!sPROPERTIES.containsKey("scriptfonttype")) {
+
+        if (!sPROPERTIES.containsKey("scriptfonttype"))
+        {
             sPROPERTIES.setProperty("scriptfonttype", "Monospaced");
         }
-        
-        if (!sPROPERTIES.containsKey("launchPlayer")) {
+
+        if (!sPROPERTIES.containsKey("launchPlayer"))
+        {
             sPROPERTIES.setProperty("launchPlayer", "false");
         }
-        if (!sPROPERTIES.containsKey("autohidebottombar")) { //state of the bottom bar (pricked pin)
+        if (!sPROPERTIES.containsKey("autohidebottombar"))
+        { //state of the bottom bar (pricked pin)
             sPROPERTIES.setProperty("autohidebottombar", "true");
         }
-        if (!sPROPERTIES.containsKey("defaultsupernodename")) { //state of the bottom bar (pricked pin)
+        if (!sPROPERTIES.containsKey("defaultsupernodename"))
+        { //state of the bottom bar (pricked pin)
             sPROPERTIES.setProperty("defaultsupernodename", "default");
         }
-        
+
     }
 
     /**
      *
      */
-    private synchronized void init() {
+    private synchronized void init()
+    {
         sNODEWIDTH = Integer.valueOf(sPROPERTIES.getProperty("node_width"));
         sNODEHEIGHT = Integer.valueOf(sPROPERTIES.getProperty("node_height"));
         sGRID_XSCALE = Integer.valueOf(sPROPERTIES.getProperty("grid_x"));
@@ -203,27 +231,32 @@ public class EditorConfig {
     ////////////////////////////////////////////////////////////////////////////
     //
     ////////////////////////////////////////////////////////////////////////////
-    public boolean save(final File base) {
+    public boolean save(final File base)
+    {
 
         // Create the project configuration file
         final File file = new File(base, "editorconfig.xml");
 
         // Check if the configuration does exist
-        if (!file.exists()) {
+        if (!file.exists())
+        {
 
             // Print a warning message if this case
             mLogger.warning("Warning: Creating the new project editor configuration file '" + file + "'");
 
             // Create a new configuration file now
-            try {
+            try
+            {
 
                 // Try to create a new configuration file
-                if (!file.createNewFile()) {
+                if (!file.createNewFile())
+                {
 
                     // Print an error message if this case
                     mLogger.warning("Warning: There already exists a project editor configuration file '" + file + "'");
                 }
-            } catch (final IOException exc) {
+            } catch (final IOException exc)
+            {
 
                 // Print an error message if this case
                 mLogger.failure("Failure: Cannot create the new project editor configuration file '" + file + "'");
@@ -234,7 +267,8 @@ public class EditorConfig {
         }
 
         // Write the project configuration file
-        if (!XMLUtilities.writeToXMLFile(sPROPERTIES, file)) {
+        if (!XMLUtilities.writeToXMLFile(sPROPERTIES, file))
+        {
 
             // Print an error message if this case
             mLogger.failure("Error: Cannot write project editor configuration file '" + file + "'");
@@ -242,7 +276,7 @@ public class EditorConfig {
             // Return failure if it does not exist
             return false;
         }
-        
+
         init();
 
         // Print an information message if this case
@@ -250,39 +284,41 @@ public class EditorConfig {
 
         // Return success if the project was saved
         return true;
-        
+
     }
-    
-    public synchronized boolean load(final String path) {
-            InputStream inputStream = null;
-            final File file = new File(path, "editorconfig.xml");
-            // Check if the configuration file does exist
-            if (file.exists()) {
-                try {
-                    inputStream = new FileInputStream(file);
-                } catch (FileNotFoundException e) {
-                    mLogger.failure("Error: Cannot find sproject configuration file '" + file + "'");
-                }
+
+    public synchronized boolean load(final String path)
+    {
+        InputStream inputStream = null;
+        final File file = new File(path, "editorconfig.xml");
+        // Check if the configuration file does exist
+        if (file.exists())
+        {
+            try
+            {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e)
+            {
+                mLogger.failure("Error: Cannot find sproject configuration file '" + file + "'");
             }
-            else{
-                inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "editorconfig.xml");
-                if (inputStream == null) {
-                    // Print an error message in this case
-                    mLogger.failure("Error: Cannot find project configuration file  " + file);
-                    // Return failure if it does not exist
-                    return false;
-                }
+        }
+        else
+        {
+            inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "editorconfig.xml");
+            if (inputStream == null)
+            {
+                // Print an error message in this case
+                mLogger.failure("Error: Cannot find project configuration file  " + file);
+                // Return failure if it does not exist
+                return false;
             }
-        if (!XMLUtilities.parseFromXMLStream(sPROPERTIES, inputStream)) {
+        }
+        if (!XMLUtilities.parseFromXMLStream(sPROPERTIES, inputStream))
+        {
             mLogger.failure("Error: Cannot parse project configuration file  in path" + path);
             return false;
         }
 
-
-
-
-
-        
         /*try {
 
                 sPROPERTIES.loadFromXML(inputStream);
@@ -290,148 +326,182 @@ public class EditorConfig {
         } catch (IOException e) {
             e.printStackTrace(System.out);
         }*/
-        
-        if (!sPROPERTIES.containsKey("defaultsupernodename")) { 
+        if (!sPROPERTIES.containsKey("defaultsupernodename"))
+        {
             sPROPERTIES.setProperty("defaultsupernodename", "default");
         }
-           
-        if (!sPROPERTIES.containsKey("frame_title")) {
+
+        if (!sPROPERTIES.containsKey("frame_title"))
+        {
             sPROPERTIES.setProperty("frame_title", "Visual SceneMaker");
         }
-        
-        if (!sPROPERTIES.containsKey("frame_name")) {
+
+        if (!sPROPERTIES.containsKey("frame_name"))
+        {
             sPROPERTIES.setProperty("frame_name", "SceneFlowEditor");
         }
-        
-        if (!sPROPERTIES.containsKey("icon_file")) {
+
+        if (!sPROPERTIES.containsKey("icon_file"))
+        {
             sPROPERTIES.setProperty("icon_file", "res/img/icon.png");
         }
-        
-        if (!sPROPERTIES.containsKey("frame_posx")) {
+
+        if (!sPROPERTIES.containsKey("frame_posx"))
+        {
             sPROPERTIES.setProperty("frame_posx", "0");
         }
-        
-        if (!sPROPERTIES.containsKey("frame_posy")) {
+
+        if (!sPROPERTIES.containsKey("frame_posy"))
+        {
             sPROPERTIES.setProperty("frame_posy", "0");
         }
-        
-        if (!sPROPERTIES.containsKey("frame_width")) {
+
+        if (!sPROPERTIES.containsKey("frame_width"))
+        {
             sPROPERTIES.setProperty("frame_width", "800");
         }
-        
-        if (!sPROPERTIES.containsKey("frame_height")) {
+
+        if (!sPROPERTIES.containsKey("frame_height"))
+        {
             sPROPERTIES.setProperty("frame_height", "600");
         }
-        
-        if (!sPROPERTIES.containsKey("node_width")) {
+
+        if (!sPROPERTIES.containsKey("node_width"))
+        {
             sPROPERTIES.setProperty("node_width", "90");
         }
-        
-        if (!sPROPERTIES.containsKey("node_height")) {
+
+        if (!sPROPERTIES.containsKey("node_height"))
+        {
             sPROPERTIES.setProperty("node_height", "90");
         }
-        
-        if (!sPROPERTIES.containsKey("grid_x")) {
+
+        if (!sPROPERTIES.containsKey("grid_x"))
+        {
             sPROPERTIES.setProperty("grid_x", "1");
         }
-        
-        if (!sPROPERTIES.containsKey("grid_y")) {
+
+        if (!sPROPERTIES.containsKey("grid_y"))
+        {
             sPROPERTIES.setProperty("grid_y", "1");
         }
-        
-        if (!sPROPERTIES.containsKey("visualization")) {
+
+        if (!sPROPERTIES.containsKey("visualization"))
+        {
             sPROPERTIES.setProperty("visualization", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("visualizationtrace")) {
+
+        if (!sPROPERTIES.containsKey("visualizationtrace"))
+        {
             sPROPERTIES.setProperty("visualizationtrace", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("shownodeid")) {
+
+        if (!sPROPERTIES.containsKey("shownodeid"))
+        {
             sPROPERTIES.setProperty("shownodeid", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showvariables")) {
+
+        if (!sPROPERTIES.containsKey("showvariables"))
+        {
             sPROPERTIES.setProperty("showvariables", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showsmartpathcalculations")) {
+
+        if (!sPROPERTIES.containsKey("showsmartpathcalculations"))
+        {
             sPROPERTIES.setProperty("showsmartpathcalculations", "false");
         }
-        
-        if (!sPROPERTIES.containsKey("showsceneelements")) {
+
+        if (!sPROPERTIES.containsKey("showsceneelements"))
+        {
             sPROPERTIES.setProperty("showsceneelements", "false");
         }
 
         // default values for editor appearance
-        if (!sPROPERTIES.containsKey("showelements")) {
+        if (!sPROPERTIES.containsKey("showelements"))
+        {
             sPROPERTIES.setProperty("showelements", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showelementproperties")) {
+
+        if (!sPROPERTIES.containsKey("showelementproperties"))
+        {
             sPROPERTIES.setProperty("showelementproperties", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("propertiesdividerlocation")) {
+
+        if (!sPROPERTIES.containsKey("propertiesdividerlocation"))
+        {
             sPROPERTIES.setProperty("propertiesdividerlocation", "790");
         }
-        
-        if (!sPROPERTIES.containsKey("showscenefloweditor")) {
+
+        if (!sPROPERTIES.containsKey("showscenefloweditor"))
+        {
             sPROPERTIES.setProperty("showscenefloweditor", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("showsceneeditor")) {
+
+        if (!sPROPERTIES.containsKey("showsceneeditor"))
+        {
             sPROPERTIES.setProperty("showsceneeditor", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("sceneflow_sceneeditor_ratio")) {
+
+        if (!sPROPERTIES.containsKey("sceneflow_sceneeditor_ratio"))
+        {
             sPROPERTIES.setProperty("sceneflow_sceneeditor_ratio", "0.75");
         }
-        
-        if (!sPROPERTIES.containsKey("showgestures")) {
+
+        if (!sPROPERTIES.containsKey("showgestures"))
+        {
             sPROPERTIES.setProperty("showgestures", "true");
         }
 
         // visual appearance of workspace and its elements
-        if (!sPROPERTIES.containsKey("grid")) {
+        if (!sPROPERTIES.containsKey("grid"))
+        {
             sPROPERTIES.setProperty("grid", "true");
         }
-        
-        if (!sPROPERTIES.containsKey("num_magnets")) {
+
+        if (!sPROPERTIES.containsKey("num_magnets"))
+        {
             sPROPERTIES.setProperty("num_magnets", "8");
         }
-        
-        if (!sPROPERTIES.containsKey("workspace_fontsize")) {
+
+        if (!sPROPERTIES.containsKey("workspace_fontsize"))
+        {
             sPROPERTIES.setProperty("workspace_fontsize", "11");
         }
-        
-        if (!sPROPERTIES.containsKey("scriptfonsize")) {
+
+        if (!sPROPERTIES.containsKey("scriptfonsize"))
+        {
             sPROPERTIES.setProperty("scriptfonsize", "11");
         }
-        
-        if (!sPROPERTIES.containsKey("scriptfonttype")) {
+
+        if (!sPROPERTIES.containsKey("scriptfonttype"))
+        {
             sPROPERTIES.setProperty("scriptfonttype", "Arial");
         }
-        
-        if (!sPROPERTIES.containsKey("launchPlayer")) {
+
+        if (!sPROPERTIES.containsKey("launchPlayer"))
+        {
             sPROPERTIES.setProperty("launchPlayer", "false");
         }
-        if (!sPROPERTIES.containsKey("autohidebottombar")) { // load state of the pin of the bottom bar
+        if (!sPROPERTIES.containsKey("autohidebottombar"))
+        { // load state of the pin of the bottom bar
             sPROPERTIES.setProperty("autohidebottombar", "true");
         }
-        
-        
+
         //
         init();
 
         // Print an information message if this case
-        mLogger.message("Loaded project editor configuration file in path'" + path+ "':\n");
+        mLogger.message("Loaded project editor configuration file in path'" + path + "':\n");
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        if (XMLUtilities.writeToXMLStream(sPROPERTIES, stream)) {
-            try {
-                mLogger.message(stream.toString("UTF-8"));
-            } catch (Exception exc) {
-                mLogger.failure(exc.toString());
+        if (XMLUtilities.writeToXMLStream(sPROPERTIES, stream))
+        {
+            try
+            {
+                //                mLogger.message(stream.toString("UTF-8"));
+                mLogger.message("Configuration File Loaded: " +path );
+            } catch (Exception exc)
+            {
+                mLogger.failure(exc.getMessage());
             }
         }
 
@@ -440,28 +510,33 @@ public class EditorConfig {
     }
 
     // TODO: This should actually be private
-    public synchronized String getProperty(String key) {
+    public synchronized String getProperty(String key)
+    {
         return sPROPERTIES.getProperty(key);
     }
 
     // TODO: This should actually be private
-    public synchronized Object setProperty(String key, String value) {
+    public synchronized Object setProperty(String key, String value)
+    {
         return sPROPERTIES.setProperty(key, value);
     }
 
     // TODO: This should actually be private
-    public synchronized Object removeProperty(String key) {
+    public synchronized Object removeProperty(String key)
+    {
         return sPROPERTIES.remove(key);
     }
 
     // TODO: This should actually be private
-    public synchronized SortedSet<Object> getKeySet() {
+    public synchronized SortedSet<Object> getKeySet()
+    {
         return new TreeSet<>(sPROPERTIES.keySet());
     }
 
     // Get the string representation of the configuration
     @Override
-    public final String toString() {
+    public final String toString()
+    {
 
         // Create a new byte array buffer stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -470,9 +545,11 @@ public class EditorConfig {
         XMLUtilities.writeToXMLStream(sPROPERTIES, buffer);
 
         // Return the stream string representation
-        try {
+        try
+        {
             return buffer.toString("UTF-8");
-        } catch (Exception exc) {
+        } catch (Exception exc)
+        {
             return buffer.toString();
         }
     }
