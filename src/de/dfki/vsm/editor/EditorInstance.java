@@ -7,6 +7,7 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.events.AbortionEvent;
@@ -790,75 +791,92 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
 	// Update list of recent projects
 	public void updateRecentProjects(final EditorProject project) {
-		final String projectPath = project.getProjectPath();
-		final String projectName = project.getProjectName();
-		// Print some info message
-		mLogger.message("Updating recent projects with '" + projectPath + "' '" + projectName + "'");
-		//
-		ArrayList<String> recentProjectPaths = new ArrayList<>();
-		ArrayList<String> recentProjectNames = new ArrayList<>();
-		// Load the list of recent projects
-		for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
-			String path = Preferences.getProperty("recentproject." + i + ".path");
-			String pName = Preferences.getProperty("recentproject." + i + ".name");
-			if (path != null && pName != null && !path.startsWith(Preferences.sSAMPLE_PROJECTS)) {
-				recentProjectPaths.add(Preferences.getProperty("recentproject." + i + ".path"));
-				recentProjectNames.add(Preferences.getProperty("recentproject." + i + ".name"));
-			}
-		}
-		if (recentProjectPaths.contains(projectPath)) {
+            String projectPath = project.getProjectPath();
+            String projectName = project.getProjectName();
+//            PlayerConfig currentPlayer = project.getCurrentPlayer();
+//            if (currentPlayer != null)
+//            {
+//                String playerClass = currentPlayer.getClassName();
+//                projectName += "   {" + playerClass.substring(playerClass.lastIndexOf(".")+1) + "}";
+//            }
+            // Print some info message
+            mLogger.message("Updating recent projects with '" + projectPath + "' '" + projectName + "'");
+            //
+            ArrayList<String> recentProjectPaths = new ArrayList<>();
+            ArrayList<String> recentProjectNames = new ArrayList<>();
+            // Load the list of recent projects
+            for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++)
+            {
+                String path = Preferences.getProperty("recentproject." + i + ".path");
+                String pName = Preferences.getProperty("recentproject." + i + ".name");
+                if (path != null && pName != null && !path.startsWith(Preferences.sSAMPLE_PROJECTS) && !path.startsWith(Preferences.sTUTORIALS_PROJECTS))
+                {
+                    recentProjectPaths.add(Preferences.getProperty("recentproject." + i + ".path"));
+                    recentProjectNames.add(Preferences.getProperty("recentproject." + i + ".name"));
+                }
+            }
+            if (recentProjectPaths.contains(projectPath))
+            {
 
-			// case: project in recent list
-			if (recentProjectNames.contains(projectName)) {
+                // case: project in recent list
+                if (recentProjectNames.contains(projectName))
+                {
 
-				// case: project is on list - has now to be at first pos
-				int index = recentProjectPaths.indexOf(projectPath);
-				Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
-				if (index != 0) {
-					recentProjectPaths.add(0, projectPath);
-					recentProjectNames.add(0, projectName);
-					recentProjectNames.remove(index + 1);
-					recentProjectPaths.remove(index + 1);
-				}
-			} else {
+                    // case: project is on list - has now to be at first pos
+                    int index = recentProjectPaths.indexOf(projectPath);
+                    Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
+                    if (index != 0)
+                    {
+                        recentProjectPaths.add(0, projectPath);
+                        recentProjectNames.add(0, projectName);
+                        recentProjectNames.remove(index + 1);
+                        recentProjectPaths.remove(index + 1);
+                    }
+                }
+                else
+                {
 
-				// dir is the same, but name changed
-				int index = recentProjectPaths.indexOf(projectPath);
+                    // dir is the same, but name changed
+                    int index = recentProjectPaths.indexOf(projectPath);
 
-				Preferences.setProperty("recentproject." + index + ".name", projectName);
-				Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
-				recentProjectNames.remove(index);
-				recentProjectNames.add(index, projectName);
-			}
-		} else {
-			if (projectPath != null && !projectPath.contains(Preferences.sSAMPLE_PROJECTS)) {
-				// case: project not in recent list
-				recentProjectPaths.add(0, projectPath);
-				recentProjectNames.add(0, projectName);
-			}
-		}
+                    Preferences.setProperty("recentproject." + index + ".name", projectName);
+                    Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
+                    recentProjectNames.remove(index);
+                    recentProjectNames.add(index, projectName);
+                }
+            }
+            else if (projectPath != null && !projectPath.contains(Preferences.sSAMPLE_PROJECTS) && !projectPath.contains(Preferences.sTUTORIALS_PROJECTS))
+            {
+                // case: project not in recent list
+                recentProjectPaths.add(0, projectPath);
+                recentProjectNames.add(0, projectName);
+            }
 
-		// set properties
-		String dir = null;
-		String name = null;
-		int maxCnt = ((recentProjectPaths.size() <= Preferences.sMAX_RECENT_PROJECTS) ? recentProjectPaths.size() : Preferences.sMAX_RECENT_PROJECTS);
-		for (int i = 0; i < maxCnt; i++) {
-			dir = recentProjectPaths.get(i);
-			name = recentProjectNames.get(i);
+            // set properties
+            String dir = null;
+            String name = null;
+            int maxCnt = ((recentProjectPaths.size() <= Preferences.sMAX_RECENT_PROJECTS) ? recentProjectPaths.size() : Preferences.sMAX_RECENT_PROJECTS);
+            for (int i = 0; i < maxCnt; i++)
+            {
+                dir = recentProjectPaths.get(i);
+                name = recentProjectNames.get(i);
 
-			if ((dir != null) && (name != null)) {
-				Preferences.setProperty("recentproject." + i + ".path", dir);
-				Preferences.setProperty("recentproject." + i + ".name", name);
-				//Preferences.setProperty("recentproject." + i + ".date", Preferences.sDATE_FORMAT.format(new Date()));
-			} else {
-				break;
-			}
-		}
+                if ((dir != null) && (name != null))
+                {
+                    Preferences.setProperty("recentproject." + i + ".path", dir);
+                    Preferences.setProperty("recentproject." + i + ".name", name);
+                    //Preferences.setProperty("recentproject." + i + ".date", Preferences.sDATE_FORMAT.format(new Date()));
+                }
+                else
+                {
+                    break;
+                }
+            }
 
-		// save properties
-		Preferences.save();
-		mWelcomePanel.createRecentAndSamplePrjList();
-		mEditorMenuBar.refreshRecentFileMenu();
+            // save properties
+            Preferences.save();
+            mWelcomePanel.createRecentAndSamplePrjList();
+            mEditorMenuBar.refreshRecentFileMenu();
 	}
 
 	// Show the options dialog

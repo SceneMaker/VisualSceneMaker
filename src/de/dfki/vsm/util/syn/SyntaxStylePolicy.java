@@ -54,7 +54,8 @@ public final class SyntaxStylePolicy implements ModelObject {
             if (XMLUtilities.parseFromXMLURL(this, mURL)) {
 
                 // Print Some Debug Information
-                mLogger.message("Success: Loading Style Policy URL:\n" + toString());
+//                mLogger.message("Success: Loading Style Policy URL:\n" + toString());
+                mLogger.message("Success: Loading Style Policy URL:\n");
             } else {
                 // Print Some Information
                 mLogger.failure("Failure: Cannot Parse Style Policy URL '"

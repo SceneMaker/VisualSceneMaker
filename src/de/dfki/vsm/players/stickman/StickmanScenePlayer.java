@@ -226,6 +226,8 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
         }
 
         // Create The Player Task
+        
+        System.out.println(process.getName() + name + " StickManScenePlayer----------------------");
         Task task = new Task(process.getName() + name + " StickManScenePlayer") {
             @Override
             public void run() {
