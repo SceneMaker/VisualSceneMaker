@@ -93,12 +93,12 @@ public final class SceneTurn extends SceneEntity {
 
 		for (SceneUttr utt : mUttrList) {
 
-			for (AbstractWord word : utt.getWordList()) {
+			for (UtteranceElement word : utt.getWordList()) {
 				if (word instanceof SceneWord) {
 					result += ((SceneWord) word).getText() + " ";
 				}
 			}
-			result = result.trim() + utt.getPunct() + " ";
+			result = result.trim() + utt.getPunctuationMark() + " ";
 		}
 
 		result = result.trim();

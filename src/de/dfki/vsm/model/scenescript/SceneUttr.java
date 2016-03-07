@@ -18,7 +18,7 @@ import java.util.LinkedList;
 public class SceneUttr extends SceneEntity {
 
 	// The Word List
-	private LinkedList<AbstractWord> mWordList = new LinkedList<>();
+	private LinkedList<UtteranceElement> mWordList = new LinkedList<>();
 
 	// The Punctuation
 	private String mPunct;
@@ -32,7 +32,7 @@ public class SceneUttr extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
-	public SceneUttr(final int lower, final int upper, final LinkedList<AbstractWord> list, final String punct) {
+	public SceneUttr(final int lower, final int upper, final LinkedList<UtteranceElement> list, final String punct) {
 
 		// Initialize Boundary
 		super(lower, upper);
@@ -45,11 +45,11 @@ public class SceneUttr extends SceneEntity {
 	    ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
-	public final LinkedList<AbstractWord> getCleanWordList() {
-		LinkedList<AbstractWord> textWords = new LinkedList<>();
+	public final LinkedList<UtteranceElement> getCleanWordList() {
+		LinkedList<UtteranceElement> textWords = new LinkedList<>();
 		
 			// TODO variables
-		for (AbstractWord word : mWordList) {
+		for (UtteranceElement word : mWordList) {
 			if (word instanceof SceneWord) {
 				textWords.add(word);
 			}
@@ -61,27 +61,27 @@ public class SceneUttr extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
-	public final LinkedList<AbstractWord> getWordList() {
+	public final LinkedList<UtteranceElement> getWordList() {
 		return mWordList;
 	}
 
     ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
-	public final void setWordList(final LinkedList<AbstractWord> list) {
+	public final void setWordList(final LinkedList<UtteranceElement> list) {
 		mWordList = list;
 	}
 
     ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
-	public final LinkedList<AbstractWord> copyWordList() {
+	public final LinkedList<UtteranceElement> copyWordList() {
 
 		// Construct A List Copy
-		final LinkedList<AbstractWord> copy = new LinkedList<>();
+		final LinkedList<UtteranceElement> copy = new LinkedList<>();
 
 		// Copy Each Single Member
-		for (final AbstractWord word : mWordList) {
+		for (final UtteranceElement word : mWordList) {
 			copy.add(word.getCopy());
 		}
 
@@ -92,14 +92,14 @@ public class SceneUttr extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
-	public final String getPunct() {
+	public final String getPunctuationMark() {
 		return mPunct;
 	}
 
     ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
-	public final void setPunct(final String punct) {
+	public final void setPunctuationMark(final String punct) {
 		mPunct = punct;
 	}
 
@@ -110,12 +110,12 @@ public class SceneUttr extends SceneEntity {
 		String result = "";
 
 		// TODO variables
-		for (AbstractWord word : mWordList) {
+		for (UtteranceElement word : mWordList) {
 			if (word instanceof SceneWord) {
 				result += ((SceneWord) word).getText() + " ";
 			}
 		}
-		result = result.trim() + getPunct() + " ";
+		result = result.trim() + getPunctuationMark() + " ";
 
 		result = result.trim();
 
@@ -159,7 +159,7 @@ public class SceneUttr extends SceneEntity {
 		  + "\">");
 		stream.push();
 
-		for (final AbstractWord word : mWordList) {
+		for (final UtteranceElement word : mWordList) {
 			word.writeXML(stream);
 
 			if (!word.equals(mWordList.getLast())) {

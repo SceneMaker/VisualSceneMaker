@@ -3,7 +3,7 @@ package de.dfki.vsm.api.hcm;
 import de.dfki.vsm.api.VSMAgentClient;
 import de.dfki.vsm.api.VSMScenePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.model.scenescript.AbstractWord;
+import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -312,7 +312,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                         final StringBuilder textBuilder = new StringBuilder();
 
                         // Process The Words Of The Utterance
-                        for (final AbstractWord sceneWord : sceneUtt.getWordList()) {
+                        for (final UtteranceElement sceneWord : sceneUtt.getWordList()) {
 
                             // Continue With Next
                             textBuilder.append(sceneWord.getText(argMap));
@@ -327,7 +327,7 @@ public final class HCMScenePlayer extends VSMScenePlayer {
                         if (textBuilder.length() > 0) {
 
                             // Append Punctation MArk
-                            textBuilder.append(sceneUtt.getPunct());
+                            textBuilder.append(sceneUtt.getPunctuationMark());
                         }
 
                         // Get The Speaker Name

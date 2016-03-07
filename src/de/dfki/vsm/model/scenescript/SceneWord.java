@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * @author Not me
  */
-public class SceneWord extends AbstractWord {
+public class SceneWord extends UtteranceElement {
 
     // The Word Text
     private String mText;

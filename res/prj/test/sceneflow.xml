@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mi, 16 Dez 2015 09:22:20" start="N1;N2;N8;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Fr, 4 Mär 2016 14:46:05" start="N1;N2;N8;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
     <Variable type="String" name ="SystemTime">
-      <String value="undefined"/>
-    </Variable>
+      <String><![CDATA[undefined]]></String></Variable>
     <Variable type="String" name ="SomeValue">
-      <String value="undefined"/>
-    </Variable>
+      <String><![CDATA[undefined]]></String></Variable>
   </Declare>
   <Commands>
   </Commands>
@@ -25,8 +23,7 @@
     </Declare>
     <Commands>
       <PlaySceneGroup>
-        <String value="Hello"/>
-      </PlaySceneGroup>
+        <String><![CDATA[Hello]]></String></PlaySceneGroup>
     </Commands>
     <TEdge target="N3" start="" timeout="1000">
     <Graphics>
@@ -66,8 +63,7 @@
     </Declare>
     <Commands>
       <UserCommand name="query">
-        <String value="statistics."/>
-      </UserCommand>
+        <String><![CDATA[statistics.]]></String></UserCommand>
     </Commands>
     <TEdge target="N1" start="" timeout="1000">
     <Graphics>
@@ -88,8 +84,7 @@
     </Declare>
     <Commands>
       <UserCommand name="query">
-        <String value="now(SystemTime)."/>
-      </UserCommand>
+        <String><![CDATA[now(SystemTime).]]></String></UserCommand>
     </Commands>
     <EEdge target="N2" start ="">
     <Graphics>

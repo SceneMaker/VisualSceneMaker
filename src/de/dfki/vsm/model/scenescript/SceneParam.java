@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * @author Not me
  */
-public final class SceneParam extends AbstractWord {
+public final class SceneParam extends UtteranceElement {
 
     // The Parameter Name
     private String mName;

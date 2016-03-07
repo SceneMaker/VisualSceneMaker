@@ -336,15 +336,15 @@ public class RunTimeProject
 
                 for (SceneUttr u : suttr)
                 {
-                    LinkedList<AbstractWord> words = u.getWordList();
+                    LinkedList<UtteranceElement> words = u.getWordList();
 
-                    for (AbstractWord word : words)
+                    for (UtteranceElement word : words)
                     {
                         if (word instanceof ActionObject)
                         {
                             ActionObject ao = ((ActionObject) word);
 
-                            String agent = ao.getAgentName();
+                            String agent = ao.getActorName();
 
                             if ((agent != null) && !agent.trim().isEmpty())
                             {
