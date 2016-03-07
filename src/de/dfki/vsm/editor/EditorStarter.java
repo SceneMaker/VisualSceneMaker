@@ -423,6 +423,7 @@ public class EditorStarter extends JPanel {
 					projectList[i].setPreferredSize(new Dimension(buttonSize));
 					projectList[i].setFont(sMENUITEMFONT);
 					projectList[i].setIcon(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png"));
+                                        projectList[i].setToolTipText(projectDirName);
 					projectList[i].addMouseListener(new MouseAdapter() {
 						@Override
 						public void mouseClicked(MouseEvent me) {
@@ -509,7 +510,9 @@ public class EditorStarter extends JPanel {
 				EditorProject project = new EditorProject();
 
 				project.parse(tutorialProj.getPath());
-
+//                                String scenePlayerName = project.getCurrentPlayer().getPlayerName();
+//                                scenePlayerName = scenePlayerName.substring(0, scenePlayerName.lastIndexOf("."));
+//                                scenePlayerName = scenePlayerName.substring(scenePlayerName.lastIndexOf("."));
 				JLabel newTutorialProj = new JLabel(project.getProjectName());// + ", last edited: "
 				// + Preferences.sDATE_FORMAT.format(tutorialProj.lastModified()));
 
