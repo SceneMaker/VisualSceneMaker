@@ -545,11 +545,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         //mLogger.message("Refreshing Buttons Of '" + this + "'");
         //*************************************
         //Refresh the buttons SAVE, UNDO and REDO when project have been changed
-        
         mSaveProject.setEnabled(mEditorProject.hasChanged());
-
         mUndo.setEnabled(undoAction.isEnabled());
-
         mRedo.setEnabled(redoAction.isEnabled());
         //*************************************
         //mLogger.message("Check execution status '" + this + "'");

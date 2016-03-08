@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="126" language="en" identifier="TestScene">
-    <SceneTurn lower="20" upper="126" speaker="reeti">
-      <SceneUttr lower="27" upper="51" punct=".">
-        <SceneWord lower="27" upper="32" text="Hallo"/>
-        <ActionObject lower="33" upper="45" agentname="reeti" name="wave">
-        </ActionObject>
-        <SceneWord lower="46" upper="50" text="Welt"/>
-      </SceneUttr>
-      <SceneUttr lower="52" upper="126" punct=".">
-        <SceneWord lower="52" upper="56" text="Dies"/>
-        <SceneWord lower="57" upper="60" text="ist"/>
-        <SceneWord lower="61" upper="64" text="ein"/>
-        <ActionObject lower="65" upper="92" agentname="naoli" name="smile">
-          <ActionFeature lower="78" upper="91" typ="INTEGER" key="duration" val="2000"/></ActionObject>
-        <SceneWord lower="93" upper="97" text="Test"/>
-        <SceneWord lower="98" upper="101" text="für"/>
-        <SceneWord lower="102" upper="105" text="den"/>
-        <SceneWord lower="106" upper="111" text="neuen"/>
-        <SceneWord lower="112" upper="118" text="Szenen"/>
-        <SceneWord lower="119" upper="125" text="Player"/>
+  <SceneObject lower="0" upper="59" language="en" identifier="Hello">
+    <SceneTurn lower="16" upper="59" speaker="reeti">
+      <SceneUttr lower="23" upper="59" punct="!">
+        <SceneWord lower="23" upper="28" text="Hallo"/>
+        <SceneWord lower="29" upper="33" text="Welt"/>
+        <SceneWord lower="34" upper="35" text="d"/>
+        <SceneWord lower="36" upper="37" text="d"/>
+        <SceneWord lower="38" upper="39" text="d"/>
+        <SceneWord lower="40" upper="41" text="d"/>
+        <SceneWord lower="42" upper="44" text="dd"/>
+        <SceneWord lower="45" upper="46" text="d"/>
+        <SceneWord lower="47" upper="48" text="d"/>
+        <SceneWord lower="49" upper="51" text="dd"/>
+        <SceneWord lower="52" upper="54" text="dd"/>
+        <SceneWord lower="55" upper="56" text="d"/>
+        <SceneWord lower="57" upper="58" text="d"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
