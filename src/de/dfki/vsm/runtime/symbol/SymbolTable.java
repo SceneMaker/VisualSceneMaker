@@ -2,7 +2,7 @@ package de.dfki.vsm.runtime.symbol;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.runtime.exceptions.InterpretException;
+import de.dfki.vsm.runtime.exception.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
 

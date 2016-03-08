@@ -5,6 +5,7 @@
   <Players>
     <Player name="defaultsceneplayer" class="de.dfki.vsm.players.stickman.StickmanScenePlayer">
     </Player>
+
   </Players>
   <Agents>
   </Agents>
