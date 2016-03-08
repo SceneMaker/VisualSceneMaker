@@ -326,11 +326,16 @@ public class RunTimeProject
 
         for (SceneEntity scene : scenescript.getEntityList())
         {
-            System.out.println("Scene");
+//            System.out.println(scene);
 
-            LinkedList<SceneTurn> sturns = ((SceneObject) scene).getTurnList();
-
-            for (SceneTurn t : sturns)
+            LinkedList<SceneTurn> sturns = null; 
+            if(scene instanceof SceneObject)
+            {
+                 sturns = ((SceneObject) scene).getTurnList();
+            }
+            if(sturns != null)
+            {
+                for (SceneTurn t : sturns)
             {
                 if (!speakersSet.contains(t.getSpeaker()))
                 {
@@ -361,6 +366,7 @@ public class RunTimeProject
                         }
                     }
                 }
+            }
             }
         }
         return speakersSet;
