@@ -52,7 +52,8 @@ public final class RunTimeInstance {
         return mProjectMap.get(project).getLock();
     }
 
-    public final /* synchronized */ boolean load(final RunTimeProject project) {
+    /*
+    public final boolean load(final RunTimeProject project) {
 
         // Check if the project is already registered
         if (mProjectMap.containsKey(project)) {
@@ -74,7 +75,8 @@ public final class RunTimeInstance {
         // Return true at success
         return true;
     }
-
+    */
+    
     // Launch a runtime project
     public final /* synchronized */ boolean launch(final RunTimeProject project) {
 

@@ -4,7 +4,7 @@ package de.dfki.vsm.runtime.interpreter;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.runtime.exceptions.InterpretException;
+import de.dfki.vsm.runtime.exception.InterpretException;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 

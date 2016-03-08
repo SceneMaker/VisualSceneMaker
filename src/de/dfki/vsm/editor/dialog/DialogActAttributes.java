@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
+import de.dfki.vsm.runtime.dialog.DialogActInterface;
 
 //~--- JDK imports ------------------------------------------------------------
 
