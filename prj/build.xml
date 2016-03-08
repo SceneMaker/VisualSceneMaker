@@ -154,7 +154,7 @@
     <!-- Execute Project -->
     <target name="test">
         <java classname="de.dfki.vsm.test.TestVSMAPI" fork="true">
-            <arg line="res/prj/test"/>
+            <!--<arg line="res/prj/test"/>-->
             <classpath refid="clspath"/>
         </java>
     </target>   
