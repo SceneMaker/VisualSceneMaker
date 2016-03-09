@@ -1,46 +1,42 @@
 package de.dfki.vsm.xtension.stickman;
 
 import de.dfki.vsm.runtime.player.activity.AbstractActivity;
-import de.dfki.vsm.runtime.player.activity.ActionActivity;
-import de.dfki.vsm.runtime.player.activity.VerbalActivity;
-import de.dfki.vsm.runtime.player.context.AbstractContext;
-import de.dfki.vsm.runtime.player.executor.AbstractExecutor;
-import de.dfki.vsm.runtime.player.factory.AbstractFactory;
-import de.dfki.vsm.runtime.player.scheduler.AbstractScheduler;
+import de.dfki.vsm.runtime.player.activity.player.ActivityPlayer;
+import de.dfki.vsm.runtime.player.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class Stickman implements AbstractExecutor, AbstractFactory, AbstractContext {
+public final class Stickman implements ActivityExecutor {
+
+    public Stickman(final RunTimeProject project) {
+    }
+
+    
+    @Override
+    public void launch() {
+
+    }
 
     @Override
-    public final String compile(
-            final AbstractActivity action,
-            final AbstractContext context) {
-        if (action instanceof VerbalActivity) {
-            // Return stickman speech command
-            return new String();
-        } else if (action instanceof ActionActivity) {
-            // Return stickman action command
-            return new String();
-        } else {
-            return new String();
-        }
+    public void unload() {
+
     }
 
     @Override
     public final void execute(
             final AbstractActivity activity,
-            final AbstractScheduler scheduler) {
+            final ActivityPlayer scheduler) {
         // Compile the activity
-        final String command = compile(activity, this);
+        final String command = activity.getText();
         // Execute the command
         System.err.println("Stickman executing command '" + command + "'");
 
     }
 
     @Override
-    public final String getMarker(final Long id) {
+    public final String marker(final Long id) {
         // Microsoft style bookmarks
         return "<mark name=\"" + id + "\"/>";
     }

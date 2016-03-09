@@ -421,15 +421,17 @@ public class RunTimeProject {
     // Launch the runtime objects of the project
     public final boolean launch() {
 
-        return (mScenePlayer.launch()
-                && mDialogPlayer.launch());
+        mScenePlayer.launch();
+        mDialogPlayer.launch();
+        return true;
         //return (launchPlayers() && launchPlugins());
     }
 
     // Unload the runtime objects of the project
     public final boolean unload() {
-        return (mScenePlayer.unload()
-                && mDialogPlayer.unload());
+        mScenePlayer.unload();
+        mDialogPlayer.unload();
+        return true;
         //return (unloadPlayers() && unloadPlugins());
     }
 
