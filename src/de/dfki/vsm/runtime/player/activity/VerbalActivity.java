@@ -8,12 +8,14 @@ import java.util.LinkedList;
 public final class VerbalActivity implements AbstractActivity {
 
     private final LinkedList<String> mList;
-    private final String mMark;
+    private final String mPunct;
+    private final String mSpeaker;
 
-    public VerbalActivity(final LinkedList<String> list, final String mark) {
+    public VerbalActivity(final String speaker, final LinkedList<String> list, final String punct) {
         // Initialize the text
         mList = list;
-        mMark = mark;
+        mPunct = punct;
+        mSpeaker = speaker;
     }
 
     @Override
@@ -25,7 +27,11 @@ public final class VerbalActivity implements AbstractActivity {
                 builder.append(' ');
             }
         }
-        return builder.toString();
+        return builder.append(mPunct).toString();
+    }
+
+    public final String getSpeaker() {
+        return mSpeaker;
     }
 
     @Override

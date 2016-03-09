@@ -7,9 +7,11 @@ import java.util.LinkedList;
  */
 public interface AbstractPlayer {
 
-    public boolean launch();
+    public void launch();
 
-    public boolean unload();
+    public void unload();
 
-    public boolean play(final String name, final LinkedList args);
+    public void play(final String name, final LinkedList args);
+
+    
 }
