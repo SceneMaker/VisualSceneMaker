@@ -1,46 +1,66 @@
 package de.dfki.vsm.xtension.charamel;
 
 import de.dfki.vsm.runtime.player.activity.AbstractActivity;
-import de.dfki.vsm.runtime.player.activity.ActionActivity;
-import de.dfki.vsm.runtime.player.activity.VerbalActivity;
-import de.dfki.vsm.runtime.player.context.AbstractContext;
-import de.dfki.vsm.runtime.player.executor.AbstractExecutor;
-import de.dfki.vsm.runtime.player.factory.AbstractFactory;
-import de.dfki.vsm.runtime.player.scheduler.AbstractScheduler;
+import de.dfki.vsm.runtime.player.activity.player.ActivityPlayer;
+import de.dfki.vsm.runtime.player.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback;
+import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.ABORTED;
+import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.RUNNING;
+import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.STARTED;
+import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.STOPPED;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class Charamel implements AbstractExecutor, AbstractFactory, AbstractContext {
+public final class Charamel implements ActivityExecutor {
+
+    public Charamel(final RunTimeProject project) {
+    }
+
+    
+    @Override
+    public void launch() {
+
+    }
 
     @Override
-    public final String compile(
-            final AbstractActivity action,
-            final AbstractContext context) {
-        if (action instanceof VerbalActivity) {
-            // Return charamel speech command
-            return new String();
-        } else if (action instanceof ActionActivity) {
-            // Return charamel action command 
-            return new String();
-        } else {
-            return new String();
-        }
+    public void unload() {
+
     }
 
     @Override
     public final void execute(
             final AbstractActivity activity,
-            final AbstractScheduler scheduler) {
+            final ActivityPlayer scheduler) {
         // Compile the activity
-        final String command = compile(activity, this);
-        // Execute the command
+        final String command = activity.getText();
+        // Print some information
         System.err.println("Charamel executing command '" + command + "'");
+        // Give some status feeback
+        scheduler.feedback(new StatusFeedback(activity, STARTED));
+        //
+        try {
+            for (int i = 0; i < 5; i++) {
+                // Simulate the execution
+                Thread.sleep(1000);
+                // Give some status feeback
+                scheduler.feedback(new StatusFeedback(activity, RUNNING));
+            }
+        } catch (final Exception exc) {
+            // Print some information
+            System.err.println("Interrupting command execution '" + command + "'");
+            // Give some status feeback
+            scheduler.feedback(new StatusFeedback(activity, ABORTED));
+        }
+
+        // Give some status feeback
+        scheduler.feedback(new StatusFeedback(activity, STOPPED));
 
     }
 
     @Override
-    public final String getMarker(final Long id) {
+    public final String marker(final Long id) {
         // Acapela style bookmarks
         return "\\mrk=" + id + "\\";
     }
