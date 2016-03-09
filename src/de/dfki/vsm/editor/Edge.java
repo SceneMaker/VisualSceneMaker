@@ -248,7 +248,6 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     {
 
         // mLogger.message("Edge.update(" + obj + ")");
-        System.out.println("update called in edge");
         update();
     }
 
@@ -928,7 +927,6 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     @Override
     public void paintComponent(java.awt.Graphics g)
     {
-        System.out.println(" paint called");
         Graphics2D graphics = (Graphics2D) g;
 
 //      if (mWorkSpace != null) {
@@ -944,11 +942,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 //      graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 //      graphics.setStroke(new BasicStroke(0.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
 //      graphics.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
-//        graphics.setColor(mColor);
+        graphics.setColor(mColor);
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
                 BasicStroke.JOIN_MITER));
-//        graphics.draw(mEg.mCurve);
+        graphics.draw(mEg.mCurve);
 
         if (mEditMode == false)
         {
@@ -1065,9 +1063,8 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             }
 
             graphics.setStroke(new BasicStroke(20f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
-            
+            graphics.draw(mEg.mCurve);
         }
-        graphics.draw(mEg.mCurve);
 
 //      }
 //    }
