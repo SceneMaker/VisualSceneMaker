@@ -22,7 +22,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultC
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.exceptions.InterpretException;
+import de.dfki.vsm.runtime.exception.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;

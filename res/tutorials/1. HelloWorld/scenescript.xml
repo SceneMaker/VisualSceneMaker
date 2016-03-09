@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="38" language="en" identifier="Hello">
-    <SceneTurn lower="16" upper="38" speaker="Stickman">
-      <SceneUttr lower="26" upper="38" punct="!">
-        <SceneWord lower="26" upper="31" text="Hello"/>
-        <SceneWord lower="32" upper="37" text="World"/>
+  <SceneObject lower="0" upper="36" language="en" identifier="Hello">
+    <SceneTurn lower="16" upper="36" speaker="sticky">
+      <SceneUttr lower="24" upper="36" punct="!">
+        <SceneWord lower="24" upper="29" text="Hello"/>
+        <SceneWord lower="30" upper="35" text="World"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

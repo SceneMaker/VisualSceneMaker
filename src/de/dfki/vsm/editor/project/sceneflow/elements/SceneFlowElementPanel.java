@@ -18,7 +18,7 @@ import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
+import de.dfki.vsm.runtime.dialog.DialogActInterface;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;

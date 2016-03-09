@@ -29,7 +29,7 @@ import de.dfki.vsm.players.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.players.stickman.action.StickmanAction;
 import de.dfki.vsm.players.stickman.action.StickmanEventAction;
 import de.dfki.vsm.runtime.interpreter.Process;
-import de.dfki.vsm.runtime.players.RunTimePlayer;
+import de.dfki.vsm.runtime.player.DEPRECATEDRunTimePlayerDEPRECATED;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.AbstractValue.Type;
 import de.dfki.vsm.runtime.values.StringValue;
@@ -46,7 +46,7 @@ import java.util.concurrent.Semaphore;
  * @author Patrick Gebhard (based on Default ScenePlayer)
  *
  */
-public final class StickmanScenePlayer implements RunTimePlayer, ActionListener {
+public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECATED, ActionListener {
 
     // The singelton player instance
     public static StickmanScenePlayer sInstance = null;
@@ -106,7 +106,8 @@ public final class StickmanScenePlayer implements RunTimePlayer, ActionListener 
 
         mProject = project;
         // Initialize the name
-        mPlayerName = project.getPlayerName(this);
+        //mPlayerName = project.getPlayerName(this);
+        
         // Initialize the config
         mPlayerConfig = project.getPlayerConfig(mPlayerName);
         // Print some information
