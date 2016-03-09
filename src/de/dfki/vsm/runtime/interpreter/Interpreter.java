@@ -5,10 +5,11 @@ import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.runtime.exceptions.InterpretException;
-import de.dfki.vsm.runtime.events.AbortionEvent;
+import de.dfki.vsm.runtime.exception.InterpretException;
+import de.dfki.vsm.runtime.event.AbortionEvent;
 import de.dfki.vsm.runtime.interpreter.Configuration.State;
-import de.dfki.vsm.runtime.players.RunTimePlayer;
+import de.dfki.vsm.runtime.player.DialogPlayer;
+import de.dfki.vsm.runtime.player.ScenePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -25,18 +26,20 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Interpreter {
 
-    private final LOGDefaultLogger mLogger;
-    private final EventDispatcher mEventMulticaster;
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventDispatcher mEventMulticaster = EventDispatcher.getInstance();
     private final SceneFlow mSceneFlow;
-    private final EventObserver mEventObserver;
+    private final Interruptor mEventObserver;
     private final Configuration mConfiguration;
     private final SystemHistory mSystemHistory;
     private final Evaluator mEvaluator;
     private final TimeoutManager mTimeoutManager;
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
-    private final RunTimePlayer mScenePlayer;
-    private final RunTimePlayer mDialogPlayer;
+    //private final RunTimePlayer mScenePlayer;
+    private final ScenePlayer mScenePlayer;
+    //private final RunTimePlayer mDialogPlayer;
+    private final DialogPlayer mDialogPlayer;
     private final RunTimeProject mRunTimeProject;
     private Process mSceneFlowThread;
 
@@ -47,16 +50,14 @@ public class Interpreter {
         // Initialize the sceneflow object
         mSceneFlow = mRunTimeProject.getSceneFlow();
         // TODO: We want only one scene player
-        mScenePlayer = mRunTimeProject.getDefaultScenePlayer();
-        mDialogPlayer = mRunTimeProject.getDefaultDialogPlayer();        //
-        mLogger = LOGDefaultLogger.getInstance();
-        mEventMulticaster = EventDispatcher.getInstance();
+        mScenePlayer = mRunTimeProject.getScenePlayer();
+        mDialogPlayer = new DialogPlayer(project);//mRunTimeProject.getDefaultDialogPlayer();          
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
         mConfiguration = new Configuration();
         mSystemHistory = new SystemHistory();
         mTimeoutManager = new TimeoutManager(this);
-        mEventObserver = new EventObserver(this);
+        mEventObserver = new Interruptor(this);
         mEvaluator = new Evaluator(this);
     }
 
@@ -109,7 +110,7 @@ public class Interpreter {
     }
 
     // Get the scene player
-    public final RunTimePlayer getScenePlayer() {
+    public final /* RunTimePlayer*/ ScenePlayer getScenePlayer() {
         try {
             lock();
 
@@ -119,7 +120,8 @@ public class Interpreter {
         }
     }
 
-    public RunTimePlayer getDialoguePlayer() {
+    
+    public /* RunTimePlayer*/ DialogPlayer getDialogPlayer() {
         try {
             lock();
 
@@ -128,7 +130,8 @@ public class Interpreter {
             unlock();
         }
     }
-
+    
+    
     public Configuration getConfiguration() {
         try {
             lock();
@@ -149,7 +152,7 @@ public class Interpreter {
         }
     }
 
-    public EventObserver getEventObserver() {
+    public Interruptor getEventObserver() {
         try {
             lock();
 

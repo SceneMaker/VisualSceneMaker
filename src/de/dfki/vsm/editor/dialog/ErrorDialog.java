@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.runtime.events.AbortionEvent;
+import de.dfki.vsm.runtime.event.AbortionEvent;
 
 //~--- JDK imports ------------------------------------------------------------
 
