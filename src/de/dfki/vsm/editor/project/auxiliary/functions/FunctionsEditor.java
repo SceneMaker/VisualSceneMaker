@@ -52,6 +52,8 @@ public class FunctionsEditor extends JPanel implements EventListener
     ;
 
     private final SceneFlow mSceneFlow;
+    private String defaulFuncName = "newCommand";
+    private int nameCounter = 0;
 
     public FunctionsEditor(final EditorProject project)
     {
@@ -94,7 +96,7 @@ public class FunctionsEditor extends JPanel implements EventListener
 
             // Create a SingleFunctionContainer object for every existing function
             SingleFunctionContainer singleFunctionContainer
-                    = new SingleFunctionContainer(i, mSceneFlow);
+                = new SingleFunctionContainer(i, mSceneFlow);
 
             // Add it to list
             mFunctionContainerList.add(singleFunctionContainer);
@@ -108,15 +110,32 @@ public class FunctionsEditor extends JPanel implements EventListener
         repaint();
     }
 
+    private boolean containsFunction(String name)
+    {
+        for (SingleFunctionContainer currentPanel : mFunctionContainerList)
+        {
+            if (name.equals(currentPanel.getFunDef().getName()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void addNewFunction()
     {
-
-        FunDef usrCmdDef = new FunDef("newCommand", "java.lang.System.out", "println");
+        String funcName = defaulFuncName;
+        while (containsFunction(funcName))
+        {
+            nameCounter++;
+            funcName = defaulFuncName + nameCounter;
+        }
+        FunDef usrCmdDef = new FunDef(funcName, "java.lang.System.out", "println");
         usrCmdDef.addParam(new ParamDef("text", "String"));
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
 
         SingleFunctionContainer singleFunctionContainer
-                = new SingleFunctionContainer(usrCmdDef, mSceneFlow);
+            = new SingleFunctionContainer(usrCmdDef, mSceneFlow);
 
         singleFunctionContainer.updateArgList();
 
@@ -133,7 +152,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
 
         SingleFunctionContainer singleFunctionContainer
-                = new SingleFunctionContainer(usrCmdDef, mSceneFlow);
+            = new SingleFunctionContainer(usrCmdDef, mSceneFlow);
 
         singleFunctionContainer.updateArgList();
 
