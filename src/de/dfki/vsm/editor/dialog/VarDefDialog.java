@@ -233,7 +233,7 @@ public class VarDefDialog extends Dialog
                 if (ke.getID() == KeyEvent.KEY_PRESSED) {
                     if(!mNameTextField.hasFocus())
                     {
-                        mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
+                        //mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
                         mNameTextField.requestFocus();
                     }
                 }
