@@ -1,4 +1,4 @@
-package de.dfki.vsm.runtime.player;
+package de.dfki.vsm.runtime.activity.sceneplayer;
 
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -8,27 +8,22 @@ import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.runtime.interpreter.Process;
-import de.dfki.vsm.runtime.player.activity.ActionActivity;
-import de.dfki.vsm.runtime.player.activity.VerbalActivity;
-import de.dfki.vsm.runtime.player.activity.player.ActivityPlayer;
-import de.dfki.vsm.runtime.player.activity.player.ActivityPlayer.SchedulingPolicy;
-import de.dfki.vsm.runtime.player.activity.trigger.MarkerTrigger;
-import de.dfki.vsm.runtime.player.activity.trigger.TimeoutTrigger;
-import de.dfki.vsm.runtime.player.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.ActionActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
+import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
+import de.dfki.vsm.runtime.player.AbstractPlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.xtension.charamel.Charamel;
-import de.dfki.vsm.xtension.console.Console;
-import de.dfki.vsm.xtension.stickman.Stickman;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.concurrent.AbstractExecutorService;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class ScenePlayer implements AbstractPlayer {
+public final class ActivityScenePlayer implements AbstractPlayer {
 
     // The defaut system logger
     private final LOGDefaultLogger mLogger
@@ -42,19 +37,17 @@ public final class ScenePlayer implements AbstractPlayer {
         return ++sId;
     }
 
-    // The runtime project data
+    // The runtime project
     private final RunTimeProject mProject;
     // The activity scheduler
-    private final ActivityPlayer mPlayer = new ActivityPlayer();
-    // The executor mapping
-    private final HashMap<String, ActivityExecutor> mDevices
-            = new HashMap();
+    private final ActivityManager mManager = new ActivityManager();
+    // The activity executor map
+    private final HashMap<String, ActivityExecutor> mDevices = new HashMap();
 
     // Create the scene player
-    public ScenePlayer(final RunTimeProject project) {
+    public ActivityScenePlayer(final RunTimeProject project) {
         // Initialize the project
         mProject = project;
-
         // Load the executors now
         try {
             // Do that from the config!
@@ -94,6 +87,9 @@ public final class ScenePlayer implements AbstractPlayer {
     public final void play(final String name, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
+        // Make unique worker name
+        final String task = process.getName() + ":" + name + "@";
+        // TODO: Append VSM framework time to name
         // Print some information
         mLogger.message("Playing '" + name + "' in process '" + process + "' on scene player '" + this + "'");
         // Translate the arguments
@@ -108,45 +104,55 @@ public final class ScenePlayer implements AbstractPlayer {
         final SceneGroup group = script.getSceneGroup("en", name);
         final SceneObject scene = group.select();
         // Create playback task
-        final Task task = new Task(name) {
-            
+        final PlayerWorker worker = new PlayerWorker(task) {
+
             @Override
             public void run() {
                 for (SceneTurn turn : scene.getTurnList()) {
                     // Get executor for turn
-                    final ActivityExecutor turnexec = mDevices.get(turn.getSpeaker());
+                    final ActivityExecutor turnActorExecutor = mDevices.get(turn.getSpeaker());
                     //
                     for (SceneUttr uttr : turn.getUttrList()) {
-                        final LinkedList<String> builder = new LinkedList();
+                        final LinkedList<String> builderlist = new LinkedList();
+                        final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
                         for (final UtteranceElement element : uttr.getWordList()) {
                             if (element instanceof ActionObject) {
                                 final ActionObject action = (ActionObject) element;
                                 // Get the actor name of this action
                                 final String actor = action.getActorName();
                                 // Get the executor for this action
-                                final ActivityExecutor actexec
-                                        = (actor != null ? mDevices.get(actor) : turnexec);
+                                final ActivityExecutor actionActorExecutor
+                                        = (actor != null ? mDevices.get(actor) : turnActorExecutor);
                                 // Create a new marker for the action
-                                final String marker = actexec.marker(newId());
+                                final String marker = actionActorExecutor.marker(newId());
                                 // Append the marker to the activity
-                                builder.add(marker);
+                                builderlist.add(marker);
                                 // Register the activity with marker
-                                mPlayer.register(
-                                        new MarkerTrigger(marker),
-                                        SchedulingPolicy.PARALLEL,
-                                        new ActionActivity(action.getText(map)), actexec);
+                                observedWorkerList.add(
+                                        mManager.register(
+                                                marker, // Execute at this marker
+                                                new ActionActivity(
+                                                        null,
+                                                        null,
+                                                        null,
+                                                        action.getText(map)),
+                                                actionActorExecutor));
                             } else {
                                 // Append the text to the activity
-                                builder.add(element.getText(map));
+                                builderlist.add(element.getText(map));
                             }
                         }
                         // 
                         final String punctuation = uttr.getPunctuationMark();
                         // Schedule the activity
-                        mPlayer.schedule(
-                                new TimeoutTrigger(0),
-                                SchedulingPolicy.BLOCKING,
-                                new VerbalActivity(turn.getSpeaker(), builder, punctuation), turnexec);
+                        mManager.schedule(
+                                0, // Schedule without delay
+                                observedWorkerList,
+                                new SpeechActivity(
+                                        turn.getSpeaker(),
+                                        builderlist,
+                                        punctuation),
+                                turnActorExecutor);
                         // Check for interruption
                         if (isDone()) {
                             return;
@@ -156,52 +162,27 @@ public final class ScenePlayer implements AbstractPlayer {
             }
         };
         // Start the playback task
-        task.start();
+        worker.start();
         // Wait for playback task
         boolean finished = false;
         while (!finished) {
             try {
                 // Print some information
-                mLogger.warning("Waiting for '" + task + "'");
+                mLogger.warning("Awaiting player worker '" + worker + "'");
                 // Join the playback task
-                task.join();
+                worker.join();
                 // Continue after joining
                 finished = true;
+                // Print some information
+                mLogger.warning("Joining player worker '" + worker + "'");
             } catch (final InterruptedException exc) {
                 // Print some information
-                mLogger.warning("Interrupting '" + task + "'");
+                mLogger.warning("Aborting player worker '" + worker + "'");
                 // Terminate playback task
-                task.abort();
+                worker.abort();
             }
         }
         // Print some information
         mLogger.warning("Continuing '" + process + "'");
-    }
-
-    // A player task
-    public class Task extends Thread {
-
-        // The termination flag
-        private volatile boolean mDone;
-
-        // Abort the execution
-        public final void abort() {
-            //
-            mDone = true;
-            //
-            interrupt();
-        }
-
-        // Check execution status
-        public final boolean isDone() {
-            return mDone;
-        }
-
-        // Construct with a name
-        protected Task(final String name) {
-            super(name);
-            // Initialize the flag
-            mDone = false;
-        }
     }
 }

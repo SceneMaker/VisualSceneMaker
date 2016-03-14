@@ -9,7 +9,7 @@ import de.dfki.vsm.runtime.exception.InterpretException;
 import de.dfki.vsm.runtime.event.AbortionEvent;
 import de.dfki.vsm.runtime.interpreter.Configuration.State;
 import de.dfki.vsm.runtime.player.DialogPlayer;
-import de.dfki.vsm.runtime.player.ScenePlayer;
+import de.dfki.vsm.runtime.activity.sceneplayer.ActivityScenePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -37,7 +37,7 @@ public class Interpreter {
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
     //private final RunTimePlayer mScenePlayer;
-    private final ScenePlayer mScenePlayer;
+    private final ActivityScenePlayer mScenePlayer;
     //private final RunTimePlayer mDialogPlayer;
     private final DialogPlayer mDialogPlayer;
     private final RunTimeProject mRunTimeProject;
@@ -110,7 +110,7 @@ public class Interpreter {
     }
 
     // Get the scene player
-    public final /* RunTimePlayer*/ ScenePlayer getScenePlayer() {
+    public final /* RunTimePlayer*/ ActivityScenePlayer getScenePlayer() {
         try {
             lock();
 

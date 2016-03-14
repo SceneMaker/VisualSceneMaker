@@ -28,30 +28,29 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="132" upper="258" language="en" identifier="Gloria">
-    <SceneTurn lower="149" upper="201" speaker="gloria">
-      <SceneUttr lower="157" upper="201" punct="?">
+  <SceneObject lower="132" upper="252" language="en" identifier="Gloria">
+    <SceneTurn lower="149" upper="195" speaker="gloria">
+      <SceneUttr lower="157" upper="195" punct="?">
         <SceneWord lower="157" upper="162" text="Hello"/>
-        <SceneWord lower="163" upper="168" text="world"/>
-        <ActionObject lower="169" upper="182" agentname="sticky" name="wave">
+        <ActionObject lower="163" upper="176" agentname="sticky" name="wave">
         </ActionObject>
-        <SceneWord lower="183" upper="186" text="how"/>
-        <SceneWord lower="187" upper="190" text="are"/>
-        <SceneWord lower="191" upper="194" text="you"/>
-        <SceneWord lower="195" upper="200" text="today"/>
+        <SceneWord lower="177" upper="180" text="how"/>
+        <SceneWord lower="181" upper="184" text="are"/>
+        <SceneWord lower="185" upper="188" text="you"/>
+        <SceneWord lower="189" upper="194" text="today"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="202" upper="258" speaker="gloria">
-      <SceneUttr lower="210" upper="258" punct="!">
-        <SceneWord lower="210" upper="212" text="My"/>
-        <SceneWord lower="213" upper="217" text="name"/>
-        <ActionObject lower="218" upper="232" agentname="sticky" name="smile">
+    </SceneTurn><SceneTurn lower="196" upper="252" speaker="gloria">
+      <SceneUttr lower="204" upper="252" punct="!">
+        <SceneWord lower="204" upper="206" text="My"/>
+        <SceneWord lower="207" upper="211" text="name"/>
+        <ActionObject lower="212" upper="226" agentname="sticky" name="smile">
         </ActionObject>
-        <SceneWord lower="233" upper="235" text="is"/>
-        <SceneWord lower="236" upper="242" text="Gloria"/>
-        <SceneWord lower="243" upper="246" text="and"/>
-        <SceneWord lower="247" upper="248" text="I"/>
-        <SceneWord lower="249" upper="251" text="am"/>
-        <SceneWord lower="252" upper="257" text="human"/>
+        <SceneWord lower="227" upper="229" text="is"/>
+        <SceneWord lower="230" upper="236" text="Gloria"/>
+        <SceneWord lower="237" upper="240" text="and"/>
+        <SceneWord lower="241" upper="242" text="I"/>
+        <SceneWord lower="243" upper="245" text="am"/>
+        <SceneWord lower="246" upper="251" text="human"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
