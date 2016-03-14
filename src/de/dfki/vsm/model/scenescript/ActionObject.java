@@ -19,19 +19,20 @@ public final class ActionObject extends UtteranceElement {
 
     // The Action Arguments
     private LinkedList<ActionFeature> mFeatureList = new LinkedList<>();
-
     // The Name Of The Agent
-    private String mActorName;
-
+    private String mActor;
+    // The Mode Of The Action
+    private String mMode;
     // The Name Of The Action
-    private String mActivityName;
+    private String mName;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public ActionObject() {
-        mActorName = null;
-        mActivityName = null;
+        mActor = null;
+        mMode = null;
+        mName = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -39,43 +40,32 @@ public final class ActionObject extends UtteranceElement {
     ////////////////////////////////////////////////////////////////////////////
     public ActionObject(
             final int lower, final int upper,
-            final String actor, final String activity,
+            final String actor,
+            final String mode,
+            final String name,
             final LinkedList<ActionFeature> list) {
-
         // Initialize The Boundary
         super(lower, upper);
-
         // Initialize The Members
-        mActorName = actor;
-        mActivityName = activity;
-
+        mActor = actor;
+        mMode = mode;
+        mName = name;
         // Initialize Fature List
         mFeatureList = list;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final String getActorName() {
-        return mActorName;
+    public final String getActor() {
+        return mActor;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public final String getActivityName() {
-        return mActivityName;
+    public final String getMode() {
+        return mMode;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    //public final void setName(final String name) {
-    //    mActivityName = name;
-    //}
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    public final String getName() {
+        return mName;
+    }
+
     public final LinkedList<ActionFeature> getFeatureList() {
         return mFeatureList;
     }
@@ -124,10 +114,10 @@ public final class ActionObject extends UtteranceElement {
     public final String getText() {
 
         // Append The Identifiers
-        String agentname = (mActorName == null || mActorName.isEmpty()) ? "" : mActorName + " ";
-
-        String result = "[" + agentname + mActivityName;
-
+        String actor = (mActor == null) ? "" : mActor + " ";
+        String mode = (mMode == null) ? "" : mMode;
+        String name = (mName == null) ? "" : " " + mName;
+        String result = "[" + actor + mode + name;
         if (!mFeatureList.isEmpty()) {
             result += " ";
 
@@ -153,9 +143,11 @@ public final class ActionObject extends UtteranceElement {
     public final String getText(final HashMap<String, String> args) {
 
         // Append The Identifiers
-        String agentname = (mActorName == null || mActorName.isEmpty()) ? "" : mActorName + " ";
+        String actor = (mActor == null) ? "" : mActor + " ";
+        String mode = (mMode == null) ? "" : mMode;
+        String name = (mName == null) ? "" : " " + mName;
 
-        String result = "[" + agentname + mActivityName;
+        String result = "[" + actor + mode + name;
 
         if (!mFeatureList.isEmpty()) {
             result += " ";
@@ -181,9 +173,13 @@ public final class ActionObject extends UtteranceElement {
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
 
-        //System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AGENTNAME " + mAgentName);
-        stream.println("<ActionObject " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "agentname=\"" + ((mActorName == null) ? "" : mActorName) + "\" " + "name=\"" + mActivityName
-                + "\">");
+        stream.println("<ActionObject "
+                + "lower=\"" + mLower + "\" "
+                + "upper=\"" + mUpper + "\" "
+                + "actor=\"" + mActor + "\" "
+                + "mode=\"" + mMode + "\" "
+                + "name=\"" + mName + "\" "
+                + ">");
         stream.push();
 
         for (final ActionFeature feature : mFeatureList) {
@@ -209,8 +205,9 @@ public final class ActionObject extends UtteranceElement {
         mUpper = Integer.parseInt(element.getAttribute("upper"));
 
         // Parse The Members
-        mActivityName = element.getAttribute("name");
-        mActorName = element.getAttribute("agentname");
+        mActor = element.getAttribute("actor");
+        mMode = element.getAttribute("mode");
+        mName = element.getAttribute("name");
 
         // Process The Child Nodes
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
@@ -246,11 +243,8 @@ public final class ActionObject extends UtteranceElement {
         });
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
     @Override
     public final ActionObject getCopy() {
-        return new ActionObject(mLower, mUpper, mActorName, mActivityName, copyFeatureList());
+        return new ActionObject(mLower, mUpper, mActor, mMode, mName, copyFeatureList());
     }
 }

@@ -12,7 +12,7 @@ public final class ActionActivity extends AbstractActivity {
             final String mode,
             final String name,
             final String text) {
-        super(Policy.PARALLEL, actor);
+        super(Policy.PARALLEL, actor, mode, name);
         // Initialize the text
         mText = text;
     }

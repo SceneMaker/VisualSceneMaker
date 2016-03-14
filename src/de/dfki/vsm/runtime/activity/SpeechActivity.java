@@ -15,7 +15,7 @@ public final class SpeechActivity extends AbstractActivity {
             final String actor,
             final LinkedList list,
             final String mark) {
-        super(Policy.BLOCKING, actor);
+        super(Policy.BLOCKING, actor, "SPEECH", "SPEAK");
         // Initialize the content
         mList = list;
         mMark = mark;

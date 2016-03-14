@@ -346,7 +346,7 @@ public class RunTimeProject {
                         if (word instanceof ActionObject) {
                             ActionObject ao = ((ActionObject) word);
 
-                            String agent = ao.getActorName();
+                            String agent = ao.getActor();
 
                             if ((agent != null) && !agent.trim().isEmpty()) {
                                 if (!speakersSet.contains(agent)) {

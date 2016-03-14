@@ -109,37 +109,37 @@ public final class ActivityScenePlayer implements AbstractPlayer {
             @Override
             public void run() {
                 for (SceneTurn turn : scene.getTurnList()) {
-                    // Get executor for turn
+                    // Get executor for this turn
                     final ActivityExecutor turnActorExecutor = mDevices.get(turn.getSpeaker());
-                    //
+                    // Serially play the utterances
                     for (SceneUttr uttr : turn.getUttrList()) {
-                        final LinkedList<String> builderlist = new LinkedList();
+                        final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
                         for (final UtteranceElement element : uttr.getWordList()) {
                             if (element instanceof ActionObject) {
                                 final ActionObject action = (ActionObject) element;
                                 // Get the actor name of this action
-                                final String actor = action.getActorName();
+                                final String actor = action.getActor();
                                 // Get the executor for this action
                                 final ActivityExecutor actionActorExecutor
                                         = (actor != null ? mDevices.get(actor) : turnActorExecutor);
                                 // Create a new marker for the action
                                 final String marker = actionActorExecutor.marker(newId());
                                 // Append the marker to the activity
-                                builderlist.add(marker);
+                                textBuilder.add(marker);
                                 // Register the activity with marker
                                 observedWorkerList.add(
                                         mManager.register(
                                                 marker, // Execute at this marker
                                                 new ActionActivity(
-                                                        null,
-                                                        null,
-                                                        null,
+                                                        action.getActor(),
+                                                        action.getMode(),
+                                                        action.getName(),
                                                         action.getText(map)),
                                                 actionActorExecutor));
                             } else {
                                 // Append the text to the activity
-                                builderlist.add(element.getText(map));
+                                textBuilder.add(element.getText(map));
                             }
                         }
                         // 
@@ -150,7 +150,7 @@ public final class ActivityScenePlayer implements AbstractPlayer {
                                 observedWorkerList,
                                 new SpeechActivity(
                                         turn.getSpeaker(),
-                                        builderlist,
+                                        textBuilder,
                                         punctuation),
                                 turnActorExecutor);
                         // Check for interruption
