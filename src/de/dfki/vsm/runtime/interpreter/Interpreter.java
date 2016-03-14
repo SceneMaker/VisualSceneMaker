@@ -8,8 +8,8 @@ import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.runtime.exception.InterpretException;
 import de.dfki.vsm.runtime.event.AbortionEvent;
 import de.dfki.vsm.runtime.interpreter.Configuration.State;
-import de.dfki.vsm.runtime.player.DialogPlayer;
-import de.dfki.vsm.runtime.activity.sceneplayer.ActivityScenePlayer;
+import de.dfki.vsm.runtime.player.ScenePlayer;
+import de.dfki.vsm.runtime.player.reactive.ReactivePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.symbol.SymbolTable;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -37,9 +37,9 @@ public class Interpreter {
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
     //private final RunTimePlayer mScenePlayer;
-    private final ActivityScenePlayer mScenePlayer;
+    private final ScenePlayer mScenePlayer;
     //private final RunTimePlayer mDialogPlayer;
-    private final DialogPlayer mDialogPlayer;
+    //private final ScenePlayer mDialogPlayer;
     private final RunTimeProject mRunTimeProject;
     private Process mSceneFlowThread;
 
@@ -51,7 +51,7 @@ public class Interpreter {
         mSceneFlow = mRunTimeProject.getSceneFlow();
         // TODO: We want only one scene player
         mScenePlayer = mRunTimeProject.getScenePlayer();
-        mDialogPlayer = new DialogPlayer(project);//mRunTimeProject.getDefaultDialogPlayer();          
+        //mDialogPlayer = new DefaultPlayer(project);
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
         mConfiguration = new Configuration();
@@ -110,28 +110,26 @@ public class Interpreter {
     }
 
     // Get the scene player
-    public final /* RunTimePlayer*/ ActivityScenePlayer getScenePlayer() {
+    public final ScenePlayer getScenePlayer() {
         try {
             lock();
-
             return mScenePlayer;
         } finally {
             unlock();
         }
     }
 
-    
-    public /* RunTimePlayer*/ DialogPlayer getDialogPlayer() {
-        try {
-            lock();
+    /*
+     public  DefaultPlayer getDialogPlayer() {
+     try {
+     lock();
 
-            return mDialogPlayer;
-        } finally {
-            unlock();
-        }
-    }
-    
-    
+     return mDialogPlayer;
+     } finally {
+     unlock();
+     }
+     }
+     */
     public Configuration getConfiguration() {
         try {
             lock();
@@ -343,10 +341,10 @@ public class Interpreter {
     public boolean setVariable(String varName, AbstractValue value) {
         try {
 
-			lock();
-                        Node currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
-			mConfiguration.getState(currentNode).getThread().getEnvironment().write(varName, value);
-			mEventObserver.update();
+            lock();
+            Node currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
+            mConfiguration.getState(currentNode).getThread().getEnvironment().write(varName, value);
+            mEventObserver.update();
 
             return true;
         } catch (InterpretException e) {

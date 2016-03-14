@@ -1,4 +1,4 @@
-package de.dfki.vsm.runtime.activity.sceneplayer;
+package de.dfki.vsm.runtime.player.reactive;
 
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -13,21 +13,16 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
-import de.dfki.vsm.runtime.player.AbstractPlayer;
+import de.dfki.vsm.runtime.player.ScenePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.values.AbstractValue;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class ActivityScenePlayer implements AbstractPlayer {
-
-    // The defaut system logger
-    private final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
+public final class ReactivePlayer extends ScenePlayer {
 
     // The static marker id
     private static Long sId = 0x0L;
@@ -37,17 +32,16 @@ public final class ActivityScenePlayer implements AbstractPlayer {
         return ++sId;
     }
 
-    // The runtime project
-    private final RunTimeProject mProject;
     // The activity scheduler
     private final ActivityManager mManager = new ActivityManager();
     // The activity executor map
     private final HashMap<String, ActivityExecutor> mDevices = new HashMap();
 
     // Create the scene player
-    public ActivityScenePlayer(final RunTimeProject project) {
+    public ReactivePlayer(final RunTimeProject project) {
         // Initialize the project
-        mProject = project;
+        super(project);
+
         // Load the executors now
         try {
             // Do that from the config!

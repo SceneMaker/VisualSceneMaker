@@ -31,7 +31,7 @@ import javax.swing.event.ChangeListener;
 
 import static de.dfki.vsm.Preferences.sUSER_DIR;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
-import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.util.evt.EventDispatcher;
 
 /**
@@ -860,7 +860,7 @@ public class OptionsDialog extends JDialog
         }
         /*
         EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
-        PlayerConfig defaultPlayer = project.getCurrentPlayer();
+        DeviceConfig defaultPlayer = project.getCurrentPlayer();
         int index = 0;
         if (defaultPlayer != null)
         {

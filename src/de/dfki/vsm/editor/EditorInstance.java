@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.event.AbortionEvent;
@@ -793,7 +793,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 	public void updateRecentProjects(final EditorProject project) {
             String projectPath = project.getProjectPath();
             String projectName = project.getProjectName();
-//            PlayerConfig currentPlayer = project.getCurrentPlayer();
+//            DeviceConfig currentPlayer = project.getCurrentPlayer();
 //            if (currentPlayer != null)
 //            {
 //                String playerClass = currentPlayer.getClassName();

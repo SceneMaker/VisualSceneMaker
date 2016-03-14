@@ -8,9 +8,6 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
 import de.dfki.vsm.runtime.activity.feedback.StatusFeedback;
 import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.ABORTED;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.RUNNING;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.STARTED;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.STOPPED;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.awt.Dimension;
 import java.util.Scanner;
@@ -70,7 +67,7 @@ public final class Console extends JFrame implements ActivityExecutor {
                     mTextArea.getDocument().getLength(), "\n", null);
             mTextArea.getDocument().insertString(
                     mTextArea.getDocument().getLength(), "AGENT:", null);
-            
+
         } catch (final Exception exc) {
             System.err.println(exc.toString());
         }
@@ -103,7 +100,7 @@ public final class Console extends JFrame implements ActivityExecutor {
                     } catch (final Exception exc) {
                         System.err.println(exc.toString());
                         // Give some feedback
-                        scheduler.handle(new StatusFeedback(activity, ABORTED));
+                        //scheduler.handle(new StatusFeedback(activity, ABORTED));
                         // Return when aborted
                         return;
                     }
