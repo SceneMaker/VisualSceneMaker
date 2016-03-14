@@ -1,8 +1,8 @@
 package de.dfki.vsm.xtension.stickman;
 
-import de.dfki.vsm.runtime.player.activity.AbstractActivity;
-import de.dfki.vsm.runtime.player.activity.player.ActivityPlayer;
-import de.dfki.vsm.runtime.player.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 /**
@@ -27,16 +27,16 @@ public final class Stickman implements ActivityExecutor {
     @Override
     public final void execute(
             final AbstractActivity activity,
-            final ActivityPlayer scheduler) {
+            final ActivityManager scheduler) {
         // Compile the activity
-        final String command = activity.getText();
+        final String command = activity.toString();
         // Execute the command
         System.err.println("Stickman executing command '" + command + "'");
 
     }
 
     @Override
-    public final String marker(final Long id) {
+    public final String marker(final long id) {
         // Microsoft style bookmarks
         return "<mark name=\"" + id + "\"/>";
     }

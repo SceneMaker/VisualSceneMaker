@@ -1,4 +1,4 @@
-package de.dfki.vsm.runtime.player.activity.trigger;
+package de.dfki.vsm.runtime.activity.trigger;
 
 import java.util.Objects;
 

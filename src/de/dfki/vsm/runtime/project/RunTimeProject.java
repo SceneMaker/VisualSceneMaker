@@ -18,7 +18,7 @@ import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.dialog.DialogActInterface;
 import de.dfki.vsm.runtime.dialog.DummyDialogAct;
 import de.dfki.vsm.runtime.player.DialogPlayer;
-import de.dfki.vsm.runtime.player.ScenePlayer;
+import de.dfki.vsm.runtime.activity.sceneplayer.ActivityScenePlayer;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 
@@ -51,7 +51,7 @@ public class RunTimeProject {
     //private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap<>();
     // The players maintained within this project
     //private final HashMap<String, RunTimePlayer> mPlayerMap = new HashMap<>();
-    private final ScenePlayer mScenePlayer;
+    private final ActivityScenePlayer mScenePlayer;
     private final DialogPlayer mDialogPlayer;
 
     // TODO:  Refactor The Dialog Act Stuff
@@ -63,7 +63,7 @@ public class RunTimeProject {
         // Print some information
         mLogger.message("Creating a new empty runtime project");
 
-        mScenePlayer = new ScenePlayer(this);
+        mScenePlayer = new ActivityScenePlayer(this);
         mDialogPlayer = new DialogPlayer(this);
     }
 
@@ -73,7 +73,7 @@ public class RunTimeProject {
         parse(file.getPath());
 
         //
-        mScenePlayer = new ScenePlayer(this);
+        mScenePlayer = new ActivityScenePlayer(this);
         mDialogPlayer = new DialogPlayer(this);
     }
 
@@ -201,7 +201,7 @@ public class RunTimeProject {
      return null;
      }
      */
-    public final ScenePlayer getScenePlayer() {
+    public final ActivityScenePlayer getScenePlayer() {
         return mScenePlayer;
     }
 
