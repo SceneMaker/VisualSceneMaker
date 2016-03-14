@@ -185,7 +185,7 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
                         if (word instanceof ActionObject) {
                             ActionObject ao = ((ActionObject) word);
 
-                            String agent = ao.getActorName();
+                            String agent = ao.getActor();
 
                             if ((agent != null) && !agent.trim().isEmpty()) {
                                 if (!speakersSet.contains(agent)) {
@@ -292,12 +292,12 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
                             } else if (word instanceof ActionObject) {
                                 ActionObject ao = ((ActionObject) word);
 
-                                String agent = ao.getActorName();
+                                String agent = ao.getActor();
                                 agent = (agent == null || agent.trim().isEmpty()) ? speaker : agent;
 
                                 if (mRelationAgentPlayer.get(agent).equalsIgnoreCase("stickmanstage")) {
                                     // if there is a master event action, let it decide when to play the action, else play it at timecode 0
-                                    StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), mActionPlayer.hasMasterEventAction() ? -1 : 0, ao.getActivityName(), 1000, "", false);
+                                    StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), mActionPlayer.hasMasterEventAction() ? -1 : 0, ao.getMode(), 1000, "", false);
                                     if (mActionPlayer.hasMasterEventAction()) {
                                         // give time mark to the master event action
                                         ((EventAction) mActionPlayer.getMasterEventAction()).addTimeMark(tm);

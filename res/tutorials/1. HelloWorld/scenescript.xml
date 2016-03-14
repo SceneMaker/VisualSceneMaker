@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="130" language="en" identifier="Hello">
-    <SceneTurn lower="16" upper="68" speaker="sticky">
-      <SceneUttr lower="24" upper="68" punct="?">
+  <SceneObject lower="0" upper="143" language="en" identifier="Hello">
+    <SceneTurn lower="16" upper="76" speaker="sticky">
+      <SceneUttr lower="24" upper="76" punct="?">
         <SceneWord lower="24" upper="29" text="Hello"/>
         <SceneWord lower="30" upper="35" text="world"/>
-        <ActionObject lower="36" upper="49" agentname="gloria" name="wave">
+        <ActionObject lower="36" upper="57" actor="gloria" mode="gesture" name="wave" >
         </ActionObject>
-        <SceneWord lower="50" upper="53" text="how"/>
-        <SceneWord lower="54" upper="57" text="are"/>
-        <SceneWord lower="58" upper="61" text="you"/>
-        <SceneWord lower="62" upper="67" text="today"/>
+        <SceneWord lower="58" upper="61" text="how"/>
+        <SceneWord lower="62" upper="65" text="are"/>
+        <SceneWord lower="66" upper="69" text="you"/>
+        <SceneWord lower="70" upper="75" text="today"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="69" upper="130" speaker="sticky">
-      <SceneUttr lower="77" upper="130" punct="!">
-        <SceneWord lower="77" upper="79" text="My"/>
-        <SceneWord lower="80" upper="84" text="name"/>
-        <ActionObject lower="85" upper="99" agentname="gloria" name="smile">
+    </SceneTurn><SceneTurn lower="77" upper="143" speaker="sticky">
+      <SceneUttr lower="85" upper="143" punct="!">
+        <SceneWord lower="85" upper="87" text="My"/>
+        <SceneWord lower="88" upper="92" text="name"/>
+        <ActionObject lower="93" upper="112" actor="gloria" mode="face" name="smile" >
         </ActionObject>
-        <SceneWord lower="100" upper="102" text="is"/>
-        <SceneWord lower="103" upper="109" text="Sticky"/>
-        <SceneWord lower="110" upper="113" text="and"/>
-        <SceneWord lower="114" upper="115" text="I"/>
-        <SceneWord lower="116" upper="118" text="am"/>
-        <SceneWord lower="119" upper="120" text="a"/>
-        <SceneWord lower="121" upper="129" text="stickman"/>
+        <SceneWord lower="113" upper="115" text="is"/>
+        <SceneWord lower="116" upper="122" text="Sticky"/>
+        <SceneWord lower="123" upper="126" text="and"/>
+        <SceneWord lower="127" upper="128" text="I"/>
+        <SceneWord lower="129" upper="131" text="am"/>
+        <SceneWord lower="132" upper="133" text="a"/>
+        <SceneWord lower="134" upper="142" text="stickman"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="132" upper="252" language="en" identifier="Gloria">
-    <SceneTurn lower="149" upper="195" speaker="gloria">
-      <SceneUttr lower="157" upper="195" punct="?">
-        <SceneWord lower="157" upper="162" text="Hello"/>
-        <ActionObject lower="163" upper="176" agentname="sticky" name="wave">
+  <SceneObject lower="145" upper="273" language="en" identifier="Gloria">
+    <SceneTurn lower="162" upper="213" speaker="gloria">
+      <SceneUttr lower="170" upper="213" punct="?">
+        <SceneWord lower="170" upper="175" text="Hello"/>
+        <ActionObject lower="176" upper="194" actor="sticky" mode="face" name="fear" >
         </ActionObject>
-        <SceneWord lower="177" upper="180" text="how"/>
-        <SceneWord lower="181" upper="184" text="are"/>
-        <SceneWord lower="185" upper="188" text="you"/>
-        <SceneWord lower="189" upper="194" text="today"/>
+        <SceneWord lower="195" upper="198" text="how"/>
+        <SceneWord lower="199" upper="202" text="are"/>
+        <SceneWord lower="203" upper="206" text="you"/>
+        <SceneWord lower="207" upper="212" text="today"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="196" upper="252" speaker="gloria">
-      <SceneUttr lower="204" upper="252" punct="!">
-        <SceneWord lower="204" upper="206" text="My"/>
-        <SceneWord lower="207" upper="211" text="name"/>
-        <ActionObject lower="212" upper="226" agentname="sticky" name="smile">
+    </SceneTurn><SceneTurn lower="214" upper="273" speaker="gloria">
+      <SceneUttr lower="222" upper="273" punct="!">
+        <SceneWord lower="222" upper="224" text="My"/>
+        <SceneWord lower="225" upper="229" text="name"/>
+        <ActionObject lower="230" upper="247" actor="sticky" mode="head" name="nod" >
         </ActionObject>
-        <SceneWord lower="227" upper="229" text="is"/>
-        <SceneWord lower="230" upper="236" text="Gloria"/>
-        <SceneWord lower="237" upper="240" text="and"/>
-        <SceneWord lower="241" upper="242" text="I"/>
-        <SceneWord lower="243" upper="245" text="am"/>
-        <SceneWord lower="246" upper="251" text="human"/>
+        <SceneWord lower="248" upper="250" text="is"/>
+        <SceneWord lower="251" upper="257" text="Gloria"/>
+        <SceneWord lower="258" upper="261" text="and"/>
+        <SceneWord lower="262" upper="263" text="I"/>
+        <SceneWord lower="264" upper="266" text="am"/>
+        <SceneWord lower="267" upper="272" text="human"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

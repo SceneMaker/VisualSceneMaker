@@ -12,7 +12,7 @@ public final class PauseActivity extends AbstractActivity {
     public PauseActivity(
             final String actor,
             final long timeout) {
-        super(Policy.BLOCKING, actor);
+        super(Policy.BLOCKING, actor, "SPEECH", "PAUSE");
         // Initialize the timeout
         mTimeout = timeout;
     }
