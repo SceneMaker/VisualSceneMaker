@@ -24,8 +24,8 @@ public final class ProjectConfig implements ModelObject {
     private String mProjectName;
     // The list of plugin configurations
     private final ArrayList<PluginConfig> mPluginList;
-    // The list of player configurations
-    private final ArrayList<PlayerConfig> mPlayerList;
+    // The list of device configurations
+    private final ArrayList<DeviceConfig> mDeviceList;
     // The list of agent configurations
     private final ArrayList<AgentConfig> mAgentList;
 
@@ -36,7 +36,7 @@ public final class ProjectConfig implements ModelObject {
         // Initialize The Plugin List
         mPluginList = new ArrayList<>();
         // Initialize The Player List
-        mPlayerList = new ArrayList<>();
+        mDeviceList = new ArrayList<>();
         // Initialize The Agent List
         mAgentList = new ArrayList<>();
     }
@@ -44,14 +44,14 @@ public final class ProjectConfig implements ModelObject {
     // Construct an empty project
     public ProjectConfig(final String name,
             final ArrayList<PluginConfig> plugins,
-            final ArrayList<PlayerConfig> players,
+            final ArrayList<DeviceConfig> devices,
             final ArrayList<AgentConfig> agents) {
         // Initialize The Project Name
         mProjectName = name;
         // Initialize The Plugin List
         mPluginList = plugins;
         // Initialize The Player List
-        mPlayerList = players;
+        mDeviceList = devices;
         // Initialize The Agent List
         mAgentList = agents;
     }
@@ -84,9 +84,9 @@ public final class ProjectConfig implements ModelObject {
         return null;
     }
 
-    public final PlayerConfig getPlayerConfig(final String name) {
-        for (final PlayerConfig config : mPlayerList) {
-            if (config.getPlayerName().equals(name)) {
+    public final DeviceConfig getPlayerConfig(final String name) {
+        for (final DeviceConfig config : mDeviceList) {
+            if (config.getDeviceName().equals(name)) {
                 return config;
             }
         }
@@ -97,24 +97,19 @@ public final class ProjectConfig implements ModelObject {
     public final ArrayList<AgentConfig> getAgentConfigList() {
         return mAgentList;
     }
-    
-    public void cleanAgentConfigList(ArrayList<String> realList)
-    { 
+
+    public void cleanAgentConfigList(ArrayList<String> realList) {
         ArrayList<AgentConfig> temAgentList = mAgentList;
-        for (AgentConfig agentConfig : mAgentList)
-        {
-            if(!realList.contains(agentConfig.getAgentName()))
-            {
+        for (AgentConfig agentConfig : mAgentList) {
+            if (!realList.contains(agentConfig.getAgentName())) {
                 mAgentList.remove(agentConfig);
             }
         }
-        
-        
     }
 
-    // Get the list of player configurations
-    public ArrayList<PlayerConfig> getPlayerConfigList() {
-        return mPlayerList;
+    // Get the list of device configurations
+    public ArrayList<DeviceConfig> getDeviceConfigList() {
+        return mDeviceList;
     }
 
     // Get the list of plugin configurations
@@ -132,31 +127,31 @@ public final class ProjectConfig implements ModelObject {
         stream.println("<Plugins>").push();
         for (final PluginConfig plugin : mPluginList) {
             plugin.writeXML(stream);
-            stream.endl();
+            //stream.endl();
         }
         stream.pop().println("</Plugins>");
 
         // Write The Players As XML
-        stream.println("<Players>").push();
-        for (final PlayerConfig player : mPlayerList) {
+        stream.println("<Devices>").push();
+        for (final DeviceConfig player : mDeviceList) {
             player.writeXML(stream);
-            stream.endl();
+            //stream.endl();
         }
-        stream.pop().println("</Players>");
+        stream.pop().println("</Devices>");
 
         // Write The Agents As XML
         stream.println("<Agents>").push();
         for (final AgentConfig agent : mAgentList) {
             agent.writeXML(stream);
-            stream.endl();
+            //stream.endl();
         }
         stream.pop().println("</Agents>");
         //
         stream.pop().print("</Project>").flush();
     }
 
-    public void cleanPlayerList(){
-        mPlayerList.clear();
+    public void cleanPlayerList() {
+        mDeviceList.clear();
     }
 
     // Parse the project coonfiguration from XML
@@ -187,16 +182,16 @@ public final class ProjectConfig implements ModelObject {
                                 mPluginList.add(plugin);
                             }
                         });
-                    } else if (tag.equals("Players")) {
-                        XMLParseAction.processChildNodes(element, "Player", new XMLParseAction() {
+                    } else if (tag.equals("Devices")) {
+                        XMLParseAction.processChildNodes(element, "Device", new XMLParseAction() {
                             @Override
                             public void run(Element element) throws XMLParseError {
                                 // Create A New Project Player
-                                final PlayerConfig player = new PlayerConfig();
+                                final DeviceConfig device = new DeviceConfig();
                                 // And Parse The Project Player 
-                                player.parseXML(element);
+                                device.parseXML(element);
                                 // And Add It To The Player List
-                                mPlayerList.add(player);
+                                mDeviceList.add(device);
                             }
                         });
                     } else if (tag.equals("Agents")) {

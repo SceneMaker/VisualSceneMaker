@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
-import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -55,7 +55,7 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
     // The player's runtime project 
     private RunTimeProject mProject;
     // The project specific config
-    private PlayerConfig mPlayerConfig;
+    private DeviceConfig mPlayerConfig;
     // The project specific name
     private String mPlayerName;
     // OUTPUT MANAGER: The Actionplay 
@@ -128,7 +128,7 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
         getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
             AgentConfig ac = mProject.getAgentConfig(c);
             if (ac != null) {
-                mRelationAgentPlayer.put(c, ac.getClassName());
+                mRelationAgentPlayer.put(c, ac.getDeviceName());
             }
 
         });
