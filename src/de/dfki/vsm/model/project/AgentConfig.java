@@ -18,7 +18,7 @@ public class AgentConfig extends ConfigElement {
     // The Name Of The Agent
     private String mAgentName;
     // The Class Of The Agent
-    private String mPlayerName;
+    private String mDeviceName;
 
     // Construct A New Agent
     public AgentConfig() {
@@ -26,7 +26,7 @@ public class AgentConfig extends ConfigElement {
         super("Agent", "Feature");
         // Initialize The Members
         mAgentName = new String();
-        mPlayerName = new String();
+        mDeviceName = new String();
     }
 
     // Construct A New Agent
@@ -35,7 +35,7 @@ public class AgentConfig extends ConfigElement {
         super("Agent", "Feature");
         // Initialize The Members
         mAgentName = name;
-        mPlayerName = player;
+        mDeviceName = player;
     }
 
     // Construct A New Agent
@@ -46,7 +46,7 @@ public class AgentConfig extends ConfigElement {
         super("Feature", "Agent", features);
         // Initialize The Members
         mAgentName = name;
-        mPlayerName = player;
+        mDeviceName = player;
     }
 
     // Get Agent Name
@@ -55,20 +55,18 @@ public class AgentConfig extends ConfigElement {
     }
 
     // Get Class Name
-    public final String getClassName() {
-        return mPlayerName;
+    public final String getDeviceName() {
+        return mDeviceName;
     }
 
     // Write A Agent As XML
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.println("<Agent name=\"" + mAgentName + "\" player=\"" + mPlayerName + "\">");
-        stream.push();
+        stream.println("<Agent name=\"" + mAgentName + "\" device=\"" + mDeviceName + "\">").push();
         for (final ConfigFeature entry : mFeatureList) {
             entry.writeXML(stream);
-            stream.endl();
         }
-        stream.pop().print("</Agent>").flush();
+        stream.pop().println("</Agent>");
     }
 
     // Write A Agent From XML
@@ -80,7 +78,7 @@ public class AgentConfig extends ConfigElement {
         if (tag.equals("Agent")) {
             // Get The Attributes
             mAgentName = element.getAttribute("name");
-            mPlayerName = element.getAttribute("player");
+            mDeviceName = element.getAttribute("device");
             // Parse The Entries
             XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
                 @Override
@@ -98,7 +96,7 @@ public class AgentConfig extends ConfigElement {
     // Get Copy Of Agent Config
     @Override
     public final AgentConfig getCopy() {
-        return new AgentConfig(mAgentName, mPlayerName, copyEntryList());
+        return new AgentConfig(mAgentName, mDeviceName, copyEntryList());
     }
 
 }

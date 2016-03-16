@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mi, 9 Mär 2016 16:34:41" start="N1;N4;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mo, 14 Mär 2016 15:06:52" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -30,13 +30,13 @@
     <TEdge target="N2" start="" timeout="1000">
     <Graphics>
       <Arrow>
-        <Point x-pos="120" y-pos="165" control-x-pos="232" control-y-pos="165"/>
+        <Point x-pos="210" y-pos="165" control-x-pos="322" control-y-pos="165"/>
         <Point x-pos="390" y-pos="165" control-x-pos="277" control-y-pos="165"/>
       </Arrow>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position x-pos="30" y-pos="120"/>
+      <Position x-pos="120" y-pos="120"/>
     </Graphics>
   </Node>
   <Node id="N2" name="End" exhaustive="false" preserving="false" history="false">
@@ -53,8 +53,8 @@
     <TEdge target="N1" start="" timeout="1000">
     <Graphics>
       <Arrow>
-        <Point x-pos="392" y-pos="177" control-x-pos="284" control-y-pos="207"/>
-        <Point x-pos="118" y-pos="177" control-x-pos="225" control-y-pos="207"/>
+        <Point x-pos="392" y-pos="177" control-x-pos="288" control-y-pos="229"/>
+        <Point x-pos="208" y-pos="177" control-x-pos="304" control-y-pos="229"/>
       </Arrow>
     </Graphics>
     </TEdge>
@@ -95,8 +95,8 @@
     <TEdge target="N3" start="" timeout="1000">
     <Graphics>
       <Arrow>
-        <Point x-pos="120" y-pos="345" control-x-pos="232" control-y-pos="345"/>
-        <Point x-pos="390" y-pos="345" control-x-pos="277" control-y-pos="345"/>
+        <Point x-pos="120" y-pos="345" control-x-pos="238" control-y-pos="326"/>
+        <Point x-pos="390" y-pos="345" control-x-pos="277" control-y-pos="326"/>
       </Arrow>
     </Graphics>
     </TEdge>

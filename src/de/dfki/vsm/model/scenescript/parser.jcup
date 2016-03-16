@@ -354,20 +354,21 @@ word ::=
             identifier.getValue());
     :}
   | ACTIONHEAD:header 
-    IDENTIFIER:idenifier 
+    IDENTIFIER:modality 
     feature_sequence_opt:sequence 
     ACTIONFOOT:footer
     {:
         RESULT = new ActionObject(
                 header.getLower(), 
                 footer.getUpper(),
-                null,
-                idenifier.getValue(), 
+                null, // No actor
+                modality.getValue(), 
+                null, // No name
                 sequence);
     :}
   | ACTIONHEAD:header 
     IDENTIFIER:character 
-    IDENTIFIER:idenifier 
+    IDENTIFIER:modality 
     feature_sequence_opt:sequence 
     ACTIONFOOT:footer
     {:
@@ -375,7 +376,23 @@ word ::=
                 header.getLower(), 
                 footer.getUpper(),
                 character.getValue(),
-                idenifier.getValue(), 
+                modality.getValue(), 
+                null, // No name
+                sequence);
+    :}
+  | ACTIONHEAD:header 
+    IDENTIFIER:character 
+    IDENTIFIER:modality 
+    IDENTIFIER:activity 
+    feature_sequence_opt:sequence 
+    ACTIONFOOT:footer
+    {:
+        RESULT = new ActionObject(
+                header.getLower(), 
+                footer.getUpper(),
+                character.getValue(),
+                modality.getValue(), 
+                activity.getValue(), 
                 sequence);
     :}
 ;
