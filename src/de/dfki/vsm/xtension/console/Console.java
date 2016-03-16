@@ -1,17 +1,13 @@
 package de.dfki.vsm.xtension.console;
 
-import de.dfki.vsm.runtime.player.activity.AbstractActivity;
-import de.dfki.vsm.runtime.player.activity.ActionActivity;
-import de.dfki.vsm.runtime.player.activity.VerbalActivity;
-import de.dfki.vsm.runtime.player.activity.player.ActivityPlayer;
-import de.dfki.vsm.runtime.player.activity.trigger.MarkerTrigger;
-import de.dfki.vsm.runtime.player.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.player.executor.feedback.MarkerFeedback;
-import de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback;
-import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.ABORTED;
-import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.RUNNING;
-import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.STARTED;
-import static de.dfki.vsm.runtime.player.executor.feedback.StatusFeedback.ExecutionStatus.STOPPED;
+import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.ActionActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
+import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
+import de.dfki.vsm.runtime.activity.feedback.StatusFeedback;
+import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.ABORTED;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.awt.Dimension;
 import java.util.Scanner;
@@ -60,26 +56,26 @@ public final class Console extends JFrame implements ActivityExecutor {
     @Override
     public final void execute(
             final AbstractActivity object,
-            final ActivityPlayer scheduler) {
+            final ActivityManager scheduler) {
         // Execute the command
         System.err.println("Console executing activity '" + object + "'");
         // Give some feedback
-        scheduler.feedback(new StatusFeedback(object, STARTED));
+        //scheduler.handle(new StatusFeedback(object, STARTED));
         try {
             //           
             mTextArea.getDocument().insertString(
                     mTextArea.getDocument().getLength(), "\n", null);
             mTextArea.getDocument().insertString(
                     mTextArea.getDocument().getLength(), "AGENT:", null);
-            
+
         } catch (final Exception exc) {
             System.err.println(exc.toString());
         }
         // Chech activity type
-        if (object instanceof VerbalActivity) {
-            final VerbalActivity activity = (VerbalActivity) object;
+        if (object instanceof SpeechActivity) {
+            final SpeechActivity activity = (SpeechActivity) object;
             // Execute speech command
-            final Scanner scanner = new Scanner(activity.getText());
+            final Scanner scanner = new Scanner(activity.toString());
             while (scanner.hasNext()) {
                 // Get the next token
                 final String token = scanner.next();
@@ -89,12 +85,11 @@ public final class Console extends JFrame implements ActivityExecutor {
                     // Check for bookmark
                     final String id = matcher.group(1);
                     // Give some feedback
-                    scheduler.feedback(new MarkerFeedback(
-                            new MarkerTrigger(token), activity));
+                    scheduler.handle(new MarkerFeedback(activity, token));
                 } else {
                     try {
                         // Give some feedback
-                        scheduler.feedback(new StatusFeedback(activity, RUNNING));
+                        //scheduler.handle(new StatusFeedback(activity, RUNNING));
                         //
                         mTextArea.getDocument().insertString(
                                 mTextArea.getDocument().getLength(), token, null);
@@ -105,7 +100,7 @@ public final class Console extends JFrame implements ActivityExecutor {
                     } catch (final Exception exc) {
                         System.err.println(exc.toString());
                         // Give some feedback
-                        scheduler.feedback(new StatusFeedback(activity, ABORTED));
+                        //scheduler.handle(new StatusFeedback(activity, ABORTED));
                         // Return when aborted
                         return;
                     }
@@ -117,18 +112,19 @@ public final class Console extends JFrame implements ActivityExecutor {
                 //
                 mTextArea.getDocument().insertString(
                         mTextArea.getDocument().getLength(), activity.getText(), null);
+                Thread.sleep(10000);
             } catch (final Exception exc) {
                 System.err.println(exc.toString());
             }
         }
         // Give some feedback
-        scheduler.feedback(new StatusFeedback(object, STOPPED));
+        //scheduler.handle(new StatusFeedback(object, STOPPED));
 
     }
 
     @Override
-    public final String marker(final Long id) {
-        // Microsoft style bookmarks
+    public final String marker(final long id) {
+        // Phantasie style bookmarks
         return "#" + id + "#";
     }
 }

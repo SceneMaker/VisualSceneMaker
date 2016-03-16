@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.event.TurnExecutedEvent;
 import de.dfki.vsm.editor.event.UtteranceExecutedEvent;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
-import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -55,7 +55,7 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
     // The player's runtime project 
     private RunTimeProject mProject;
     // The project specific config
-    private PlayerConfig mPlayerConfig;
+    private DeviceConfig mPlayerConfig;
     // The project specific name
     private String mPlayerName;
     // OUTPUT MANAGER: The Actionplay 
@@ -128,7 +128,7 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
         getCharacters(mProject.getSceneScript()).stream().forEach((c) -> {
             AgentConfig ac = mProject.getAgentConfig(c);
             if (ac != null) {
-                mRelationAgentPlayer.put(c, ac.getClassName());
+                mRelationAgentPlayer.put(c, ac.getDeviceName());
             }
 
         });
@@ -185,7 +185,7 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
                         if (word instanceof ActionObject) {
                             ActionObject ao = ((ActionObject) word);
 
-                            String agent = ao.getActorName();
+                            String agent = ao.getActor();
 
                             if ((agent != null) && !agent.trim().isEmpty()) {
                                 if (!speakersSet.contains(agent)) {
@@ -292,12 +292,12 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
                             } else if (word instanceof ActionObject) {
                                 ActionObject ao = ((ActionObject) word);
 
-                                String agent = ao.getActorName();
+                                String agent = ao.getActor();
                                 agent = (agent == null || agent.trim().isEmpty()) ? speaker : agent;
 
                                 if (mRelationAgentPlayer.get(agent).equalsIgnoreCase("stickmanstage")) {
                                     // if there is a master event action, let it decide when to play the action, else play it at timecode 0
-                                    StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), mActionPlayer.hasMasterEventAction() ? -1 : 0, ao.getActivityName(), 1000, "", false);
+                                    StickmanAction sa = new StickmanAction(StickmanStage.getStickman(agent), mActionPlayer.hasMasterEventAction() ? -1 : 0, ao.getMode(), 1000, "", false);
                                     if (mActionPlayer.hasMasterEventAction()) {
                                         // give time mark to the master event action
                                         ((EventAction) mActionPlayer.getMasterEventAction()).addTimeMark(tm);
