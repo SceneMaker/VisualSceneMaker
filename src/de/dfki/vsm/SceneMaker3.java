@@ -2,7 +2,6 @@ package de.dfki.vsm;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.runtime.RunTimeInstance;
-import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.io.File;
@@ -170,31 +169,28 @@ public final class SceneMaker3 {
         final RunTimeProject data = new RunTimeProject(file);
         // Get the singelton runtime instance
         final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
-        //
-        if (sRunTime.load(data)) {
-            // Launch the runtime with the project
-            if (sRunTime.launch(data)) {
-                // Start the runtime with the project
-                if (sRunTime.start(data)) {
-                    // Wait until user aborts execution
-                    System.err.println("Press Key To Abort ...");
+        // Launch the runtime with the project
+        if (sRunTime.launch(data)) {
+            // Start the runtime with the project
+            if (sRunTime.start(data)) {
+                // Wait until user aborts execution
+                System.err.println("Press Key To Abort ...");
                 // TODO: Stop waiting if execution
-                    // has been aborted in another way
-                    try {
-                        final int in = System.in.read();
-                        if (in != -1) {
-                            // Aborting the execution now
-                        }
-                    } catch (final IOException exc) {
-                        // Do nothing
-                    } finally {
-                        // Abort the runtime with the project
-                        sRunTime.abort(data);
-                        // Unload the project from the runtime  
-                        sRunTime.unload(data);
+                // has been aborted in another way
+                try {
+                    final int in = System.in.read();
+                    if (in != -1) {
+                        // Aborting the execution now
                     }
-
+                } catch (final IOException exc) {
+                    // Do nothing
+                } finally {
+                    // Abort the runtime with the project
+                    sRunTime.abort(data);
+                    // Unload the project from the runtime  
+                    sRunTime.unload(data);
                 }
+
             }
         }
     }

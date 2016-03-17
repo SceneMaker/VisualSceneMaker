@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.project;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 

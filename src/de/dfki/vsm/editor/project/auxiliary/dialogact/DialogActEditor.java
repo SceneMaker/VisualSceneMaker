@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.event.DialogActSelectedEvent;
 import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.runtime.dialogacts.DialogActInterface;
+import de.dfki.vsm.runtime.dialog.DialogActInterface;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;

@@ -50,7 +50,6 @@ public final class SceneScript extends SceneEntity {
 
         // Initialize Object Lists
         initObjectLists();
-
         // Initialize The Groups
         initGroupMap();
         initLangMap();
@@ -59,7 +58,7 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    private void initObjectLists() {
+    public void initObjectLists() {
 
         // First Clear The Groups
         mSceneList.clear();
@@ -371,10 +370,10 @@ public final class SceneScript extends SceneEntity {
                 }
 
                 // Initialize The Two Lists
-                // initObjectLists();
+                 initObjectLists();
                 // Initialize The Group Map
-                // initLangMap();
-                // initGroupMap();
+                 initLangMap();
+                 initGroupMap();
             }
         });
     }

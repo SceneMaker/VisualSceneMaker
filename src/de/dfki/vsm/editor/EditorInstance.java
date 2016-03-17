@@ -7,10 +7,10 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
-import de.dfki.vsm.runtime.events.AbortionEvent;
+import de.dfki.vsm.runtime.event.AbortionEvent;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -482,7 +482,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             // Get the selected editor project
             final EditorProject project = editor.getEditorProject();
             // Check if the project is valid
-            boolean isCharacterRegistered = isAllCharacterRegistered(editor);
+            //boolean isCharacterRegistered = isAllCharacterRegistered(editor);
             if (project != null) {
                 // Check if the project is pending
                 if (!project.isPending()) {
@@ -793,7 +793,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 	public void updateRecentProjects(final EditorProject project) {
             String projectPath = project.getProjectPath();
             String projectName = project.getProjectName();
-//            PlayerConfig currentPlayer = project.getCurrentPlayer();
+//            DeviceConfig currentPlayer = project.getCurrentPlayer();
 //            if (currentPlayer != null)
 //            {
 //                String playerClass = currentPlayer.getClassName();
@@ -951,7 +951,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 			}
 		} else {
 			// Launch the current project in the runtime
-			if (mRunTime.load(project)) {
+			//if (mRunTime.load(project)) {
 				if (mRunTime.launch(project)) {
                     // Print some information
 					//mLogger.message("Launching project '" + project + "'");
@@ -976,12 +976,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 					// Return false at failure
 					return false;
 				}
-			} else {
+			//} else {
 				// Print an error message
-				mLogger.failure("Error: Cannot load project '" + project + "'");
+			//	mLogger.failure("Error: Cannot load project '" + project + "'");
 				// Return false at failure
-				return false;
-			}
+			//	return false;
+			//}
 		}
 	}
 

@@ -2,10 +2,10 @@
 <Project name="Hello World">
   <Plugins>
   </Plugins>
-  <Players>
-    <Player name="defaultsceneplayer" class="de.dfki.vsm.players.stickman.StickmanScenePlayer">
-    </Player>
-  </Players>
+  <Devices>
+	<Device name="stickman" class="de.Stickman"/>
+  </Devices>
   <Agents>
+	<Agent name="sticky" device="stickman"/>
   </Agents>
 </Project>

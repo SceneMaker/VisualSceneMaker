@@ -1,14 +1,11 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.players.DefaultScenePlayer;
-import de.dfki.vsm.runtime.players.RunTimePlayer;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -24,12 +21,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.security.CodeSource;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -37,7 +31,7 @@ import javax.swing.event.ChangeListener;
 
 import static de.dfki.vsm.Preferences.sUSER_DIR;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
-import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.util.evt.EventDispatcher;
 
 /**
@@ -864,9 +858,9 @@ public class OptionsDialog extends JDialog
             }
 
         }
-
+        /*
         EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
-        PlayerConfig defaultPlayer = project.getCurrentPlayer();
+        DeviceConfig defaultPlayer = project.getCurrentPlayer();
         int index = 0;
         if (defaultPlayer != null)
         {
@@ -883,7 +877,7 @@ public class OptionsDialog extends JDialog
         {
             mScenePlayersCombo.setSelectedIndex(0);
         }
-
+        */
         // Add specific listeners
         mNodeSizeSpinner.addChangeListener(new ChangeListener()
         {
