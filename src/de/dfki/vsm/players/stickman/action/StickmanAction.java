@@ -9,7 +9,7 @@ import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.players.stickman.animationlogic.Animation;
 import de.dfki.vsm.players.stickman.animationlogic.AnimationLoader;
 import de.dfki.vsm.players.stickman.animationlogic.listener.AnimationListener;
-import de.dfki.vsm.runtime.events.AbortionEvent;
+import de.dfki.vsm.runtime.event.AbortionEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLUtilities;

@@ -42,7 +42,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.Timeout
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.exceptions.InterpretException;
+import de.dfki.vsm.runtime.exception.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.BooleanValue;
 import de.dfki.vsm.runtime.values.DoubleValue;
@@ -105,6 +105,7 @@ public class Evaluator {
         } ////////////////////////////////////////////////////////////////////
         // PLAY DIALOGUE ACT
         ////////////////////////////////////////////////////////////////////
+        /*
         else if (cmd instanceof PlayDialogueAct) {
 
             // Try To Evaluate The Name Expression
@@ -120,7 +121,7 @@ public class Evaluator {
                 mInterpreter.unlock();
 
                 // Execute The Dialogue Act Player
-                mInterpreter.getDialoguePlayer().play(((StringValue) name).getValue(), valueList);
+                mInterpreter.getDialogPlayer().play(((StringValue) name).getValue(), valueList);
 
                 // Relock The Interpreter Lock Now
                 mInterpreter.lock();
@@ -133,7 +134,9 @@ public class Evaluator {
 
                 throw new InterpretException(cmd, errorMsg);
             }
-        } ////////////////////////////////////////////////////////////////////
+        } 
+        */
+        ////////////////////////////////////////////////////////////////////
         // UnblockSceneGroup
         ////////////////////////////////////////////////////////////////////
         else if (cmd instanceof UnblockSceneGroup) {

@@ -1,7 +1,5 @@
 package de.dfki.vsm.runtime.interpreter;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
@@ -22,14 +20,12 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultC
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.exceptions.InterpretException;
+import de.dfki.vsm.runtime.exception.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.runtime.values.IntValue;
 import de.dfki.vsm.runtime.values.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
-
-//~--- JDK imports ------------------------------------------------------------
 
 import java.util.HashMap;
 import java.util.Timer;
@@ -39,10 +35,9 @@ import java.util.TimerTask;
  * @author Not me
  */
 public class TimeoutManager {
-    private final LOGDefaultLogger                                   mLogger          = LOGDefaultLogger.getInstance();
-    private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCond,
-                                                                                            TPLTuple<Boolean,
-                                                                                                TimerTask>>();
+
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutCond, TPLTuple<Boolean, TimerTask>>();
     private final Timer mTimer = new Timer("Timeout-Manager-Timer");
     private Interpreter mInterpreter;
 
@@ -87,6 +82,7 @@ public class TimeoutManager {
         }
 
         final TimerTask task = new TimerTask() {
+            @Override
             public void run() {
                 mInterpreter.lock();
 

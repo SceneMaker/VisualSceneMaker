@@ -9,7 +9,7 @@
 <entry key="showvariables">true</entry>
 <entry key="frame_posy">0</entry>
 <entry key="frame_posx">0</entry>
-<entry key="scriptfonttype">Arial</entry>
+<entry key="scriptfonttype">Monospaced</entry>
 <entry key="shownodeid">true</entry>
 <entry key="showsceneeditor">true</entry>
 <entry key="visualization">true</entry>
@@ -20,12 +20,12 @@
 <entry key="showelementproperties">true</entry>
 <entry key="sceneflow_sceneeditor_ratio">0.75</entry>
 <entry key="node_height">90</entry>
-<entry key="scriptfonsize">11</entry>
+<entry key="scriptfonsize">16</entry>
 <entry key="frame_width">800</entry>
 <entry key="defaultsupernodename">default</entry>
-<entry key="visualizationtrace">true</entry>
+<entry key="visualizationtrace">false</entry>
 <entry key="grid_y">1</entry>
-<entry key="propertiesdividerlocation">1133</entry>
+<entry key="propertiesdividerlocation">668</entry>
 <entry key="grid_x">1</entry>
 <entry key="icon_file">res/img/icon.png</entry>
 <entry key="showsmartpathcalculations">false</entry>
