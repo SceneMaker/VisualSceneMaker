@@ -10,6 +10,8 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Iterator;
+
 import org.w3c.dom.Element;
 
 /**
@@ -101,11 +103,12 @@ public final class ProjectConfig implements ModelObject {
     public void cleanAgentConfigList(ArrayList<String> realList)
     { 
         ArrayList<AgentConfig> temAgentList = mAgentList;
-        for (AgentConfig agentConfig : mAgentList)
-        {
+        Iterator iter = mAgentList.iterator();
+        while(iter.hasNext()) {
+            AgentConfig agentConfig = (AgentConfig) iter.next();
             if(!realList.contains(agentConfig.getAgentName()))
             {
-                mAgentList.remove(agentConfig);
+                iter.remove();
             }
         }
         
