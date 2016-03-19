@@ -192,7 +192,7 @@ public class RunTimeProject
         System.out.println(mProjectConfig.getPlayerConfigList());
         if (mProjectConfig != null && mProjectConfig.getPlayerConfigList().size() > 0)
         {
-            
+
             return mProjectConfig.getPlayerConfigList().get(0);
         }
         return null;
@@ -326,36 +326,42 @@ public class RunTimeProject
 
         for (SceneEntity scene : scenescript.getEntityList())
         {
-            System.out.println("Scene");
+//            System.out.println("Scene");
 
-            LinkedList<SceneTurn> sturns = ((SceneObject) scene).getTurnList();
-
-            for (SceneTurn t : sturns)
+            LinkedList<SceneTurn> sturns = null;
+            if (scene instanceof SceneObject)
             {
-                if (!speakersSet.contains(t.getSpeaker()))
+                sturns = ((SceneObject) scene).getTurnList();
+            }
+            if (sturns != null)
+            {
+                for (SceneTurn t : sturns)
                 {
-                    speakersSet.add(t.getSpeaker());
-                }
-
-                LinkedList<SceneUttr> suttr = t.getUttrList();
-
-                for (SceneUttr u : suttr)
-                {
-                    LinkedList<AbstractWord> words = u.getWordList();
-
-                    for (AbstractWord word : words)
+                    if (!speakersSet.contains(t.getSpeaker()))
                     {
-                        if (word instanceof ActionObject)
+                        speakersSet.add(t.getSpeaker());
+                    }
+
+                    LinkedList<SceneUttr> suttr = t.getUttrList();
+
+                    for (SceneUttr u : suttr)
+                    {
+                        LinkedList<AbstractWord> words = u.getWordList();
+
+                        for (AbstractWord word : words)
                         {
-                            ActionObject ao = ((ActionObject) word);
-
-                            String agent = ao.getAgentName();
-
-                            if ((agent != null) && !agent.trim().isEmpty())
+                            if (word instanceof ActionObject)
                             {
-                                if (!speakersSet.contains(agent))
+                                ActionObject ao = ((ActionObject) word);
+
+                                String agent = ao.getAgentName();
+
+                                if ((agent != null) && !agent.trim().isEmpty())
                                 {
-                                    speakersSet.add(agent);
+                                    if (!speakersSet.contains(agent))
+                                    {
+                                        speakersSet.add(agent);
+                                    }
                                 }
                             }
                         }
@@ -658,7 +664,7 @@ public class RunTimeProject
 
         // Print an information message in this case
 //        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
-        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" );
+        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n");
 
         // Return success if the project was loaded
         return true;
@@ -742,7 +748,7 @@ public class RunTimeProject
 
         // Print an information message in this case
 //        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" + mActiconConfig);
-        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" );
+        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n");
         // Return success if the project was loaded
         return true;
     }
@@ -825,7 +831,7 @@ public class RunTimeProject
 
         // Print an information message in this case
 //        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" + mGesticonConfig);
-        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" );
+        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n");
         // Return success if the project was loaded
         return true;
     }
@@ -907,7 +913,7 @@ public class RunTimeProject
 
         // Print an information message in this case
 //        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" + mVisiconConfig);
-        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" );
+        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n");
         // Return success if the project was loaded
         return true;
     }

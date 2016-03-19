@@ -1,11 +1,12 @@
 package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
+import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -20,38 +21,47 @@ import javax.swing.undo.UndoManager;
  *
  * @author Not me
  */
-public class RedoAction extends AbstractAction {
+public class RedoAction extends AbstractAction
+{
+    // The singelton logger instance   
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private static RedoAction sSingeltonInstance = null;
 
-    private RedoAction() {
+    private RedoAction()
+    {
         super("Redo");
         putValue(ACCELERATOR_KEY,
-                 KeyStroke.getKeyStroke(KeyEvent.VK_Z,
-                                        (java.awt.event.InputEvent.SHIFT_MASK
-                                         | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
+            KeyStroke.getKeyStroke(KeyEvent.VK_Z,
+                (java.awt.event.InputEvent.SHIFT_MASK
+                | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
         setEnabled(false);
     }
 
-    public static RedoAction getInstance() {
-        if (sSingeltonInstance == null) {
+    public static RedoAction getInstance()
+    {
+        if (sSingeltonInstance == null)
+        {
             sSingeltonInstance = new RedoAction();
         }
 
         return sSingeltonInstance;
     }
 
-    public void actionPerformed(ActionEvent evt) {
+    public void actionPerformed(ActionEvent evt)
+    {
         UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
-        try {
+        try
+        {
             manager.redo();
-        } catch (CannotRedoException e) {
-            e.printStackTrace();
+        } catch (CannotRedoException e)
+        {
+            mLogger.failure(e.getMessage());
         }
-
+        
         refreshRedoState();
         UndoAction.getInstance().refreshUndoState();
-
+        EventDispatcher.getInstance().convey(new ProjectChangedEvent(this));
         /*
          * try {
          * UndoRedoManager.getInstance().redo();
@@ -63,13 +73,17 @@ public class RedoAction extends AbstractAction {
          */
     }
 
-    public void refreshRedoState() {
+    public void refreshRedoState()
+    {
         UndoManager manager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
 
-        if (manager.canRedo()) {
+        if (manager.canRedo())
+        {
             setEnabled(true);
             putValue(Action.NAME, manager.getRedoPresentationName());
-        } else {
+        }
+        else
+        {
             setEnabled(false);
             putValue(Action.NAME, "Redo");
         }
