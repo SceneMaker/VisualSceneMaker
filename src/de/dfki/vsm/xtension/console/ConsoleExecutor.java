@@ -6,8 +6,6 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
-import de.dfki.vsm.runtime.activity.feedback.StatusFeedback;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.ABORTED;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.awt.Dimension;
 import java.util.Scanner;
@@ -20,12 +18,12 @@ import javax.swing.JTextArea;
 /**
  * @author Gregor Mehlmann
  */
-public final class Console extends JFrame implements ActivityExecutor {
+public final class ConsoleExecutor extends JFrame implements ActivityExecutor {
 
     private final JTextArea mTextArea;
     private final JScrollPane mScrollPane;
 
-    public Console(final RunTimeProject project) {
+    public ConsoleExecutor(final RunTimeProject project) {
         // Create the text area
         mTextArea = new JTextArea();
         mScrollPane = new JScrollPane(mTextArea);

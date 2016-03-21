@@ -5,7 +5,6 @@
 package de.dfki.vsm.model.sceneflow;
 // Import Java Cup Runtime
 import java_cup.runtime.Symbol;
-
 ////////////////////////////////////////////////////////////////////////////////
 // End User Code ///////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +18,6 @@ import java_cup.runtime.Symbol;
 %unicode                                    // 16-Bit Unicode Character Encoding
 %final                                      // Make Generated Scanner Class Final
 %public                                     // Make Generated Scanner Class Public
-
 // Set The Scanner Interface    
 %implements java_cup.runtime.Scanner
 // Set The Scanner Token Class    
@@ -28,8 +26,28 @@ import java_cup.runtime.Symbol;
 %class ChartLexxer
 // Set Scanner Token Function
 %function next_token
-
-alpha=[a-zA-Z\u00e4\u00c4\u00f6\u00d6\u00fc\u00dc\u00df\u0040\u00b5\u00C0\u00C1\u00C2\u00C6\u00C7\u00C8\u00C9\u00CA\u00CB\u00CE\u00CF\u00D4\u00D6\u00E0\u00E2\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EE\u00EF\u00F4\u00F6\u00FB\u00FC\u00FF]
+// The Standard Construtor Stuff                  
+%init{  
+    // Do Nothing Here
+%init}
+%eofval{
+    // Return NULL At End Of File
+    return null;
+    // Return End Of File Token EOF At End                                    
+    //return create(ScriptFields.EOF);
+%eofval}
+%eof{
+    // Do Nothing
+%eof}
+%eofclose
+////////////////////////////////////////////////////////////////////////////////
+// End Directives //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////////////////////////
+// Start Macro Definitions /////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+alpha   = [a-zA-Z\u00e4\u00c4\u00f6\u00d6\u00fc\u00dc\u00df\u0040\u00b5\u00C0\u00C1\u00C2\u00C6\u00C7\u00C8\u00C9\u00CA\u00CB\u00CE\u00CF\u00D4\u00D6\u00E0\u00E2\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EE\u00EF\u00F4\u00F6\u00FB\u00FC\u00FF]
 digit   = [0-9]
 special = [<>'!?$%&#/=~_:;,]|\\|\.|\+|\*|\-|\||\[|\]|\(|\)
 win_new = (\n)
@@ -41,9 +59,13 @@ escape  = (\\)
 //char    = (\'({alpha}|{digit}|{special})\')
 //ident   = (({alpha}|_)({alpha}|{digit}|_)*)
 string  = (\"({alpha}|{digit}|{special}|{white})*\")
-
-
+////////////////////////////////////////////////////////////////////////////////
+// End Macro Definitions ///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 %%
+////////////////////////////////////////////////////////////////////////////////
+// Start Token Definitions /////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 "PlaySceneGroup" { return new Symbol(ChartFields.PSG); }
 "PlayDialogueAct" { return new Symbol(ChartFields.PDA); }
 "UnblockSceneGroup" { return new Symbol(ChartFields.USG); }

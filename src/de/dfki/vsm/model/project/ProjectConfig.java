@@ -84,7 +84,7 @@ public final class ProjectConfig implements ModelObject {
         return null;
     }
 
-    public final DeviceConfig getPlayerConfig(final String name) {
+    public final DeviceConfig getDeviceConfig(final String name) {
         for (final DeviceConfig config : mDeviceList) {
             if (config.getDeviceName().equals(name)) {
                 return config;
@@ -96,15 +96,6 @@ public final class ProjectConfig implements ModelObject {
     // Get the list of agent configurations
     public final ArrayList<AgentConfig> getAgentConfigList() {
         return mAgentList;
-    }
-
-    public void cleanAgentConfigList(ArrayList<String> realList) {
-        ArrayList<AgentConfig> temAgentList = mAgentList;
-        for (AgentConfig agentConfig : mAgentList) {
-            if (!realList.contains(agentConfig.getAgentName())) {
-                mAgentList.remove(agentConfig);
-            }
-        }
     }
 
     // Get the list of device configurations

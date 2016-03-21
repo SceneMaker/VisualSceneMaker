@@ -34,23 +34,12 @@ public final class ReactivePlayer extends ScenePlayer {
 
     // The activity scheduler
     private final ActivityManager mManager = new ActivityManager();
-    // The activity executor map
-    private final HashMap<String, ActivityExecutor> mDevices = new HashMap();
 
     // Create the scene player
     public ReactivePlayer(final RunTimeProject project) {
         // Initialize the project
         super(project);
-
-        // Load the executors now
-        try {
-            // Do that from the config!
-            mDevices.put("sticky", de.dfki.vsm.xtension.console.Console.class.getConstructor(RunTimeProject.class).newInstance(project));
-            mDevices.put("gloria", de.dfki.vsm.xtension.console.Console.class.getConstructor(RunTimeProject.class).newInstance(project));
-        } catch (final Exception exc) {
-            mLogger.failure(exc.toString());
-        }
-        // Print some information
+// Print some information
         mLogger.message("Creating scene player '" + this + "' for project '" + project + "'");
     }
 
@@ -60,7 +49,7 @@ public final class ReactivePlayer extends ScenePlayer {
         // Print some information
         mLogger.message("Launching scene player '" + this + "'");
         // Launch all executors
-        for (final ActivityExecutor executor : mDevices.values()) {
+        for (final ActivityExecutor executor : mProject.getExecutorList().values()) {
             executor.launch();
         }
     }
@@ -71,7 +60,7 @@ public final class ReactivePlayer extends ScenePlayer {
         // Print some information
         mLogger.message("Unloading scene player '" + this + "'");
         // Unload all executors
-        for (final ActivityExecutor executor : mDevices.values()) {
+        for (final ActivityExecutor executor : mProject.getExecutorList().values()) {
             executor.unload();
         }
     }
@@ -104,7 +93,7 @@ public final class ReactivePlayer extends ScenePlayer {
             public void run() {
                 for (SceneTurn turn : scene.getTurnList()) {
                     // Get executor for this turn
-                    final ActivityExecutor turnActorExecutor = mDevices.get(turn.getSpeaker());
+                    final ActivityExecutor turnActorExecutor = mProject.getExecutorOf(turn.getSpeaker());
                     // Serially play the utterances
                     for (SceneUttr uttr : turn.getUttrList()) {
                         final LinkedList<String> textBuilder = new LinkedList();
@@ -116,7 +105,7 @@ public final class ReactivePlayer extends ScenePlayer {
                                 final String actor = action.getActor();
                                 // Get the executor for this action
                                 final ActivityExecutor actionActorExecutor
-                                        = (actor != null ? mDevices.get(actor) : turnActorExecutor);
+                                        = (actor != null ? mProject.getExecutorOf(actor) : turnActorExecutor);
                                 // Create a new marker for the action
                                 final String marker = actionActorExecutor.marker(newId());
                                 // Append the marker to the activity

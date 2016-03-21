@@ -109,7 +109,7 @@ public final class StickmanScenePlayer implements DEPRECATEDRunTimePlayerDEPRECA
         //mPlayerName = project.getPlayerName(this);
         
         // Initialize the config
-        mPlayerConfig = project.getPlayerConfig(mPlayerName);
+        mPlayerConfig = project.getDeviceConfig(mPlayerName);
         // Print some information
         mLogger.message("Launching the StickmanScenePlayer '" + this + "' with configuration:\n" + mPlayerConfig);
 
