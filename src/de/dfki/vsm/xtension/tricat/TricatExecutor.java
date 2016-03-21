@@ -179,11 +179,13 @@ public final class TricatExecutor implements ActivityExecutor {
         mClientMap.put(client.getName(), client);
         // Start the client thread
         client.start();
+        //
+        mLogger.warning("Accepting " + client.getName() + "");
     }
 
     // Handle some message
     public void handle(final String message, final TWorldHandler client) {
-        mLogger.warning("Handling Feedback " + message + "");
+        mLogger.warning("Handling " + message + "");
     }
 
     // Broadcast some message

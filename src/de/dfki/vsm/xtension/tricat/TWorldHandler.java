@@ -48,6 +48,8 @@ public class TWorldHandler extends Thread {
         } catch (final IOException exc) {
             mLogger.failure(exc.toString());
         }
+        // Start the thread
+        super.start();
     }
 
     // Abort the client thread

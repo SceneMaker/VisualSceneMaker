@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="157" language="en" identifier="SusanneWelcome">
+  <SceneObject lower="0" upper="87" language="en" identifier="SusanneWelcome">
     <SceneTurn lower="25" upper="87" speaker="susanne">
       <SceneUttr lower="34" upper="87" punct="?">
         <SceneWord lower="34" upper="39" text="Hello"/>
@@ -12,45 +12,18 @@
         <SceneWord lower="77" upper="80" text="you"/>
         <SceneWord lower="81" upper="86" text="today"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="88" upper="157" speaker="susanne">
-      <SceneUttr lower="97" upper="157" punct="!">
-        <SceneWord lower="97" upper="99" text="My"/>
-        <SceneWord lower="100" upper="104" text="name"/>
-        <ActionObject lower="105" upper="125" actor="patrick" mode="face" name="smile" >
-        </ActionObject>
-        <SceneWord lower="126" upper="128" text="is"/>
-        <SceneWord lower="129" upper="136" text="Susanne"/>
-        <SceneWord lower="137" upper="140" text="and"/>
-        <SceneWord lower="141" upper="142" text="I"/>
-        <SceneWord lower="143" upper="145" text="am"/>
-        <SceneWord lower="146" upper="147" text="a"/>
-        <SceneWord lower="148" upper="156" text="stickman"/>
-      </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="159" upper="300" language="en" identifier="PatrickWelcome">
-    <SceneTurn lower="184" upper="237" speaker="patrick">
-      <SceneUttr lower="193" upper="237" punct="?">
-        <SceneWord lower="193" upper="198" text="Hello"/>
-        <ActionObject lower="199" upper="218" actor="susanne" mode="face" name="fear" >
+  <SceneObject lower="89" upper="167" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="114" upper="167" speaker="patrick">
+      <SceneUttr lower="123" upper="167" punct="?">
+        <SceneWord lower="123" upper="128" text="Hello"/>
+        <ActionObject lower="129" upper="148" actor="susanne" mode="face" name="fear" >
         </ActionObject>
-        <SceneWord lower="219" upper="222" text="how"/>
-        <SceneWord lower="223" upper="226" text="are"/>
-        <SceneWord lower="227" upper="230" text="you"/>
-        <SceneWord lower="231" upper="236" text="today"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="238" upper="300" speaker="patrick">
-      <SceneUttr lower="247" upper="300" punct="!">
-        <SceneWord lower="247" upper="249" text="My"/>
-        <SceneWord lower="250" upper="254" text="name"/>
-        <ActionObject lower="255" upper="273" actor="susanne" mode="head" name="nod" >
-        </ActionObject>
-        <SceneWord lower="274" upper="276" text="is"/>
-        <SceneWord lower="277" upper="284" text="Patrick"/>
-        <SceneWord lower="285" upper="288" text="and"/>
-        <SceneWord lower="289" upper="290" text="I"/>
-        <SceneWord lower="291" upper="293" text="am"/>
-        <SceneWord lower="294" upper="299" text="human"/>
+        <SceneWord lower="149" upper="152" text="how"/>
+        <SceneWord lower="153" upper="156" text="are"/>
+        <SceneWord lower="157" upper="160" text="you"/>
+        <SceneWord lower="161" upper="166" text="today"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
