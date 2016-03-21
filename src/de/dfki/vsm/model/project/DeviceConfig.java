@@ -69,6 +69,7 @@ public class DeviceConfig extends ConfigElement {
         stream.println("<Device name=\"" + mDeviceName + "\" class=\"" + mClassName + "\">").push();
         for (final ConfigFeature entry : mFeatureList) {
             entry.writeXML(stream);
+            stream.endl();
         }
         stream.pop().println("</Device>");
     }

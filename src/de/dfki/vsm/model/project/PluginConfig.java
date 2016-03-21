@@ -66,6 +66,7 @@ public class PluginConfig extends ConfigElement {
         stream.push();
         for (final ConfigFeature entry : mFeatureList) {
             entry.writeXML(stream);
+            stream.endl();
         }
         stream.pop().println("</Plugin>");
     }

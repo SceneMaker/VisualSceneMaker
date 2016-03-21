@@ -65,6 +65,7 @@ public class AgentConfig extends ConfigElement {
         stream.println("<Agent name=\"" + mAgentName + "\" device=\"" + mDeviceName + "\">").push();
         for (final ConfigFeature entry : mFeatureList) {
             entry.writeXML(stream);
+            stream.endl();
         }
         stream.pop().println("</Agent>");
     }
