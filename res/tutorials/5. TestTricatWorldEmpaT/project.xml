@@ -4,7 +4,7 @@
   </Plugins>
   <Devices>
     <Device name="tricat" class="de.dfki.vsm.xtension.tricat.TricatExecutor">
-      <Feature key="tworlddir" value=""/><Feature key="cactordir" value=""/><Feature key="tworldexe" value=""/><Feature key="cactorexe" value=""/></Device>
+      <Feature key="tworlddir" val=""/><Feature key="cactordir" val=""/><Feature key="tworldexe" val=""/><Feature key="cactorexe" val=""/></Device>
   </Devices>
   <Agents>
     <Agent name="susanne" device="tricat">
