@@ -72,7 +72,7 @@ public final class ActivityWorker extends Thread {
         // Return when aborted
         if (!mDone) {
             // Print some information
-            mLogger.warning("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
+            mLogger.message("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
             // Execute the activity
             mExecutor.execute(mActivity, mScheduler);
         }
@@ -81,11 +81,11 @@ public final class ActivityWorker extends Thread {
             for (final ActivityWorker worker : mList) {
                 try {
                     // Print some information
-                    mLogger.warning("Awaiting activity worker '" + worker + "'");
+                    mLogger.message("Awaiting activity worker '" + worker + "'");
                     // Wait for the delay
                     worker.join();
                     // Print some information
-                    mLogger.warning("Joining activity worker '" + worker + "'");
+                    mLogger.message("Joining activity worker '" + worker + "'");
                     // TODO: Remove the worker fromn thread
                     // or clear the list after joinig all
                 } catch (final InterruptedException exc) {

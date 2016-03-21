@@ -67,20 +67,20 @@ public final class ActivityManager {
         // Check if we need to wait
         if (activity.getType() == Policy.BLOCKING) {
             // Print some information
-            mLogger.warning("Blocking calling thread'" + Thread.currentThread() + "'");
+            mLogger.message("Blocking calling thread'" + Thread.currentThread() + "'");
             // Wait for termination
             boolean finished = false;
             while (!finished) {
                 try {
                     // Print some information
-                    mLogger.warning("Awaiting activity worker '" + task + "'");
+                    mLogger.message("Awaiting activity worker '" + task + "'");
                     // Join the job worker
                     task.join();
                     // Finish this execution
                     // after an interruption
                     finished = true;
                     // Print some information
-                    mLogger.warning("Joining activity worker '" + task + "'");
+                    mLogger.message("Joining activity worker '" + task + "'");
                 } catch (final InterruptedException exc) {
                     // Print some information
                     mLogger.warning("Aborting activity worker '" + task + "'");
@@ -89,7 +89,7 @@ public final class ActivityManager {
                 }
             }
             // Print some information
-            mLogger.warning("Continuing calling thread'" + Thread.currentThread() + "'");
+            mLogger.message("Continuing calling thread'" + Thread.currentThread() + "'");
         }
     }
 

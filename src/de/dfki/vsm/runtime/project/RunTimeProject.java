@@ -231,6 +231,12 @@ public class RunTimeProject {
         return true;
     }
 
+    // TODO: Load Plugins and call methods on them via the evaluator in the interpreter
+    // Make a new command type in the syntax for that purpose
+    public final Object call (final String name, final String method ) {
+        return null;
+    }
+    
     // Launch the runtime objects of the project
     public final boolean launch() {
         mScenePlayer.launch();
