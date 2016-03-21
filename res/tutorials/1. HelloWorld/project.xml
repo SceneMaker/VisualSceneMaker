@@ -3,9 +3,11 @@
   <Plugins>
   </Plugins>
   <Devices>
-	<Device name="stickman" class="de.Stickman"/>
+    <Device name="stickman" class="de.Stickman">
+    </Device>
   </Devices>
   <Agents>
-	<Agent name="sticky" device="stickman"/>
+    <Agent name="sticky" device="stickman">
+    </Agent>
   </Agents>
 </Project>
