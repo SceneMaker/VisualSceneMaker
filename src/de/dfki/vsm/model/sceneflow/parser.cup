@@ -1,7 +1,11 @@
-package de.dfki.vsm.sfsl.parser;
+package de.dfki.vsm.model.sceneflow;
 
 //import java_cup.runtime.*;
+
 import java.io.StringReader;
+
+import de.dfki.vsm.model.sceneflow.*;
+
 
 parser code {:
   public static de.dfki.vsm.model.sceneflow.command.Command cmdResult;
@@ -33,7 +37,7 @@ parser code {:
 
     String inputString = new String(arg);
     StringReader stringReader = new java.io.StringReader(inputString);
-    new _SFSLParser_(new _SFSLScanner_(stringReader)).parse();
+    new ChartParser(new ChartLexxer(stringReader)).parse();
 	}
 :};
 
@@ -107,17 +111,17 @@ precedence left DOT;
  * COMMAND
  */
 command ::=
-  expression:x                                                                  {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| assignment:x                                                                  {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| PSG LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| PSG LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x,y); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| PDA LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogueAct(x); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| PDA LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogueAct(x,y); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| USG LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup(x); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| UASG LPAREN BOOLEAN:x RPAREN                                                  {: RESULT = new de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups(x); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| HISTORYCLEAR LPAREN VARIABLE:x RPAREN                                         {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistoryClear(x); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| HISTORYDEEPCLEAR LPAREN VARIABLE:x RPAREN                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistoryDeepClear(x); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :}
-| HISTORYSETDEPTH LPAREN VARIABLE:x COMMA INTEGER:y RPAREN                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistorySetDepth(x,y); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CMD) { _SFSLParser_.cmdResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); _SFSLParser_.errorFlag = true; } :};
+  expression:x                                                                  {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } :}
+| assignment:x                                                                  {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PSG LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PSG LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PDA LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogueAct(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PDA LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogueAct(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| USG LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| UASG LPAREN BOOLEAN:x RPAREN                                                  {: RESULT = new de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| HISTORYCLEAR LPAREN VARIABLE:x RPAREN                                         {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistoryClear(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| HISTORYDEEPCLEAR LPAREN VARIABLE:x RPAREN                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistoryDeepClear(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| HISTORYSETDEPTH LPAREN VARIABLE:x COMMA INTEGER:y RPAREN                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistorySetDepth(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :};
 
 /*
  * ASSIGNMENT
@@ -154,16 +158,16 @@ expression_list ::=
  * EXPRESSION
  */
 expression ::=
-  condition:x                                                                   {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| conditional_expression:x                                                      {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| binary_expression:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| LPAREN binary_expression:x RPAREN                                             {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| unary_expression:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| usrcmd_expression:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| history_value_of:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| history_runtime_of:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| node_value_of:x                                                               {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :}
-| constructor:x                                                                 {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.EXP) { _SFSLParser_.expResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); _SFSLParser_.errorFlag = true; } :};
+  condition:x                                                                   {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } :}
+| conditional_expression:x                                                      {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| binary_expression:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| LPAREN binary_expression:x RPAREN                                             {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| unary_expression:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| usrcmd_expression:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| history_value_of:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| history_runtime_of:x                                                          {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| node_value_of:x                                                               {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| constructor:x                                                                 {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :};
 
 
 constructor ::=
@@ -237,12 +241,12 @@ lexpression ::=
  * CONDITION
  */
 condition::=
-  logical_condition:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CND) { _SFSLParser_.cndResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| constant:x                                                                    {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CND) { _SFSLParser_.cndResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); _SFSLParser_.errorFlag = true; } :}
-| empty_condition:x                                                             {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CND) { _SFSLParser_.cndResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); _SFSLParser_.errorFlag = true; } :}
-| contains_condition:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CND) { _SFSLParser_.cndResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); _SFSLParser_.errorFlag = true; } :}
-| temporal_condition:x                                                          {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CND) { _SFSLParser_.cndResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); _SFSLParser_.errorFlag = true; } :}
-| lexpression:x                                                                 {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.CND) { _SFSLParser_.cndResult = RESULT; _SFSLParser_.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); _SFSLParser_.errorFlag = true; } :};
+  logical_condition:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } :}
+| constant:x                                                                    {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| empty_condition:x                                                             {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| contains_condition:x                                                          {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| temporal_condition:x                                                          {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| lexpression:x                                                                 {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :};
 
 /*
  * CONSTANT
@@ -263,7 +267,7 @@ float_constant ::=
 bool_constant ::= 
   BOOLEAN:x                                                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool(x); :};
 string_constant ::= 
-  STRING:x                                                                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(_SFSLParser_.trimString(x)); :};
+  STRING:x                                                                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(ChartParser.trimString(x)); :};
 null_constant ::=
   NULL                                                                          {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object(); :};
 list_constant ::= 
@@ -287,14 +291,14 @@ contains_condition ::=
  * LOGICAL CONDITION
  */
 logical_condition ::=
-  default_condition:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| instate_condition:x                                                           {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| unary_condition:x                                                             {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| binary_condition:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| comparision_condition:x                                                       {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| HISTORYCONTAINSSTATE LPAREN VARIABLE:x COMMA VARIABLE:y RPAREN                {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState(x,y); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| HISTORYCONTAINSSTATE LPAREN VARIABLE:x COMMA VARIABLE:y COMMA INTEGER:z RPAREN {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState(x,y,z); if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
-| prolog_condition:x                                                            {: RESULT = x; if(_SFSLParser_.parseResultType == de.dfki.vsm.sfsl.parser._SFSLParser_.LOG) {_SFSLParser_.logResult = RESULT; _SFSLParser_.errorFlag = false; } :}
+  default_condition:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| instate_condition:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| unary_condition:x                                                             {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| binary_condition:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| comparision_condition:x                                                       {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| HISTORYCONTAINSSTATE LPAREN VARIABLE:x COMMA VARIABLE:y RPAREN                {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState(x,y); if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| HISTORYCONTAINSSTATE LPAREN VARIABLE:x COMMA VARIABLE:y COMMA INTEGER:z RPAREN {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState(x,y,z); if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| prolog_condition:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
 ;
 
 /*

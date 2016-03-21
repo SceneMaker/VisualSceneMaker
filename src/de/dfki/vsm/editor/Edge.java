@@ -17,7 +17,7 @@ import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -429,12 +429,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            return (log != null) && !_SFSLParser_.errorFlag;
+            return (log != null) && !ChartParser.errorFlag;
         } catch (Exception e)
         {
 
@@ -572,12 +572,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         {
             try
             {
-                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-                _SFSLParser_.run(input);
+                ChartParser.parseResultType = ChartParser.LOG;
+                ChartParser.run(input);
 
-                LogicalCond log = _SFSLParser_.logResult;
+                LogicalCond log = ChartParser.logResult;
 
-                if ((log != null) && !_SFSLParser_.errorFlag)
+                if ((log != null) && !ChartParser.errorFlag)
                 {
                     ((CEdge) mDataEdge).setCondition(log);
                 }
@@ -596,12 +596,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         {
             try
             {
-                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-                _SFSLParser_.run(input);
+                ChartParser.parseResultType = ChartParser.LOG;
+                ChartParser.run(input);
 
-                LogicalCond log = _SFSLParser_.logResult;
+                LogicalCond log = ChartParser.logResult;
 
-                if ((log != null) && !_SFSLParser_.errorFlag)
+                if ((log != null) && !ChartParser.errorFlag)
                 {
                     ((IEdge) mDataEdge).setCondition(log);
                 }

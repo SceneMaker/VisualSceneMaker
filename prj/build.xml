@@ -35,17 +35,17 @@
     <!-- Define Script Parser File -->
     <property name="scnprsfile" value="${scngendir}${file.separator}ScriptParser.java"/>    
     <!-- Define Destination Directory For Parser -->
-    <property name="sflgendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}sfsl${file.separator}parser"/>
+    <property name="sflgendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}sceneflow"/>
     <!-- Define Scenes Lex File -->
     <property name="sfllexfile" value="${sflgendir}${file.separator}lexxer.jflex"/>
     <!-- Define Scenes Cup File -->
     <property name="sflcupfile" value="${sflgendir}${file.separator}parser.cup"/>
     <!-- Define Scenes Parser File -->
-    <property name="sflprsfile" value="${sflgendir}${file.separator}_SFSLParser_.java"/>
+    <property name="sflprsfile" value="${sflgendir}${file.separator}ChartParser.java"/>
     <!-- Define Scenes Scanner File -->
-    <property name="sflscnfile" value="${sflgendir}${file.separator}_SFSLScanner_.java"/>
+    <property name="sflscnfile" value="${sflgendir}${file.separator}ChartLexxer.java"/>
     <!-- Define Scenes Token File -->
-    <property name="sfltknfile" value="${sflgendir}${file.separator}_SFSLToken_.java"/>    
+    <property name="sfltknfile" value="${sflgendir}${file.separator}ChartFields.java"/>    
     <!-- Define Library Path -->
     <path id="libpath">
         <fileset dir="${libdir}">
@@ -183,7 +183,7 @@
         </java>
         <echo message="Generating '${sflprsfile}' ${line.separator}      from '${sflcupfile}'"/>
         <java classname="java_cup.Main">
-            <arg line="-progress -time -interface -parser _SFSLParser_ -symbols _SFSLToken_ -destdir '${sflgendir}'"/>
+            <arg line="-progress -time -interface -parser ChartParser -symbols ChartFields -destdir '${sflgendir}'"/>
             <arg file="${sflcupfile}"/>
             <classpath refid="clspath"/>
         </java>

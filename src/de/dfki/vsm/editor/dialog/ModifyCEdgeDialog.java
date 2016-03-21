@@ -14,7 +14,7 @@ import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 
@@ -282,12 +282,12 @@ public class ModifyCEdgeDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) &&!_SFSLParser_.errorFlag) {
+            if ((log != null) &&!ChartParser.errorFlag) {
                 mCEdge.setCondition(log);
                 mAltStartNodeManager.saveAltStartNodeMap();
                 return true;
