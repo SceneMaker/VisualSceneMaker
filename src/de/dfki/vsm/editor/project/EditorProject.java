@@ -59,9 +59,6 @@ public class EditorProject extends RunTimeProject {
         // Get the absolute file for this directory
         //final File base = file.getAbsoluteFile();
         // Check if the project directory does exist
-
-
-
         final File file = new File(path);
         if (file.exists()) {
             final File base = file.getAbsoluteFile();

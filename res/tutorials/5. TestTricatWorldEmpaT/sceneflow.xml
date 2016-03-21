@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mo, 21 Mär 2016 10:55:45" start="N1;N4;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Mo, 21 Mär 2016 11:33:35" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -12,14 +12,6 @@
   <GlobalVariableBadge>
     <Position x-pos="10" y-pos="10"/>
   </GlobalVariableBadge>
-  <Comment>
-    <Graphics>
-      <Rect x-pos="43" y-pos="25" width="431" height="50"/>
-    </Graphics>
-    <Text style="color:blue">
-      For detailed instructions, visit http://scenemaker.dfki.de/tutorial.html
-    </Text>
-  </Comment>
   <Node id="N1" name="Start" exhaustive="false" preserving="false" history="false">
     <Define>
     </Define>
@@ -30,13 +22,13 @@
     <TEdge target="N2" start="" timeout="1000">
     <Graphics>
       <Arrow>
-        <Point x-pos="210" y-pos="165" control-x-pos="277" control-y-pos="165"/>
-        <Point x-pos="390" y-pos="165" control-x-pos="322" control-y-pos="165"/>
+        <Point x-pos="480" y-pos="165" control-x-pos="547" control-y-pos="165"/>
+        <Point x-pos="660" y-pos="165" control-x-pos="592" control-y-pos="165"/>
       </Arrow>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position x-pos="120" y-pos="120"/>
+      <Position x-pos="390" y-pos="120"/>
     </Graphics>
   </Node>
   <Node id="N2" name="End" exhaustive="false" preserving="false" history="false">
@@ -45,21 +37,19 @@
     <Declare>
     </Declare>
     <Commands>
-      <UserCommand name="printString">
-        <String><![CDATA[Hello World]]></String></UserCommand>
       <PlaySceneGroup>
-        <String><![CDATA[Hello]]></String></PlaySceneGroup>
+        <String><![CDATA[SusanneWelcome]]></String></PlaySceneGroup>
     </Commands>
     <TEdge target="N1" start="" timeout="1000">
     <Graphics>
       <Arrow>
-        <Point x-pos="392" y-pos="177" control-x-pos="327" control-y-pos="195"/>
-        <Point x-pos="208" y-pos="177" control-x-pos="272" control-y-pos="195"/>
+        <Point x-pos="662" y-pos="177" control-x-pos="597" control-y-pos="195"/>
+        <Point x-pos="478" y-pos="177" control-x-pos="542" control-y-pos="195"/>
       </Arrow>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position x-pos="390" y-pos="120"/>
+      <Position x-pos="660" y-pos="120"/>
     </Graphics>
   </Node>
   <Node id="N3" name="End" exhaustive="false" preserving="false" history="false">
@@ -68,21 +58,19 @@
     <Declare>
     </Declare>
     <Commands>
-      <UserCommand name="printString">
-        <String><![CDATA[Hello World]]></String></UserCommand>
       <PlaySceneGroup>
-        <String><![CDATA[Gloria]]></String></PlaySceneGroup>
+        <String><![CDATA[PatrickWelcome]]></String></PlaySceneGroup>
     </Commands>
     <TEdge target="N4" start="" timeout="1000">
     <Graphics>
       <Arrow>
-        <Point x-pos="392" y-pos="357" control-x-pos="327" control-y-pos="375"/>
-        <Point x-pos="208" y-pos="357" control-x-pos="272" control-y-pos="375"/>
+        <Point x-pos="662" y-pos="357" control-x-pos="597" control-y-pos="375"/>
+        <Point x-pos="478" y-pos="357" control-x-pos="542" control-y-pos="375"/>
       </Arrow>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position x-pos="390" y-pos="300"/>
+      <Position x-pos="660" y-pos="300"/>
     </Graphics>
   </Node>
   <Node id="N4" name="Start" exhaustive="false" preserving="false" history="false">
@@ -95,13 +83,13 @@
     <TEdge target="N3" start="" timeout="1000">
     <Graphics>
       <Arrow>
-        <Point x-pos="210" y-pos="345" control-x-pos="277" control-y-pos="345"/>
-        <Point x-pos="390" y-pos="345" control-x-pos="322" control-y-pos="345"/>
+        <Point x-pos="480" y-pos="345" control-x-pos="547" control-y-pos="345"/>
+        <Point x-pos="660" y-pos="345" control-x-pos="592" control-y-pos="345"/>
       </Arrow>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position x-pos="120" y-pos="300"/>
+      <Position x-pos="390" y-pos="300"/>
     </Graphics>
   </Node>
   <UserCommands>
