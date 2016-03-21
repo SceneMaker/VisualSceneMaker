@@ -4,22 +4,17 @@ import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.feedback.StatusFeedback;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.ABORTED;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.RUNNING;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.STARTED;
-import static de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status.STOPPED;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.io.File;
+import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class TricatExecutor extends Thread implements ActivityExecutor {
+public final class TricatExecutor implements ActivityExecutor {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
@@ -28,12 +23,12 @@ public final class TricatExecutor extends Thread implements ActivityExecutor {
     private final String mName;
     // The runtime project
     private final RunTimeProject mProject;
-    // The UDP datagram socket 
-    private DatagramSocket mSocket;
-    // The remote socket adress 
-    private SocketAddress mAddress;
-    // The thread termination flag
-    private boolean mDone = false;
+    //
+    private TricatListener mServer;
+    // The mao of processes
+    private final HashMap<String, Process> mProcessMap = new HashMap();
+    // The client thread list
+    private final HashMap<String, TWorldClient> mClientMap = new HashMap();
 
     // Construct the executor
     public TricatExecutor(final String name, final RunTimeProject project) {
@@ -41,124 +36,99 @@ public final class TricatExecutor extends Thread implements ActivityExecutor {
         mName = name;
         // Initialize the project
         mProject = project;
-        // Initialize the executor
-        start();
-    }
-
-    // Parse specific elements
-    @Override
-    public void start() {
-        try {
-            // Parse the configuration
-            final DeviceConfig config = mProject.getDeviceConfig(mName);
-            // Set the socket address
-            mAddress = new InetSocketAddress(
-                    config.getProperty("host"),
-                    Integer.parseInt(config.getProperty("port")));
-            // Create the server socket
-            mSocket = new DatagramSocket();
-            // Connect the server socket
-            mSocket.connect(mAddress);
-            // Print some information
-            mLogger.message("Connecting tricat executor to " + mAddress.toString());
-            // Start the client thread
-            super.start();
-        } catch (final Exception exc) {
-            mLogger.failure(exc.toString());
-        }
-    }
-
-    // Abort the server thread
-    public final void abort() {
-        // Set the termination flag
-        mDone = true;
-        // Eventually close the socket
-        if (mSocket != null && !mSocket.isClosed()) {
-            mSocket.close();
-        }
-        // Interrupt if sleeping
-        interrupt();
-    }
-
-    // Receive some message
-    public final String recv() {
-        if (mSocket != null) {
-            // Create The Datagram Packet
-            final byte[] buffer = new byte[4096];
-            final DatagramPacket packet
-                    = new DatagramPacket(buffer, buffer.length);
-            try {
-                // Receive The Datagram Packet
-                mSocket.receive(packet);
-                // Get The Datagram's String 
-                final String message = new String(
-                        packet.getData(), 0,
-                        packet.getLength(), "UTF-8");
-                // Debug Some Information
-                mLogger.warning("Receiving '" + message + "'");
-                // Return Received Data
-                return message;
-            } catch (final Exception exc) {
-                // Debug Some Information
-                mLogger.warning(exc.toString());
-            }
-        }
-        // Otherwise Return Null
-        return null;
-    }
-
-    // Send some message 
-    public final boolean send(final String string) {
-        try {
-            // Create the byte buffer
-            final byte[] buffer = string.getBytes("UTF-8");
-            // Create the UDP packet
-            final DatagramPacket packet
-                    = new DatagramPacket(buffer, buffer.length);
-            // And send the UDP packet
-            mSocket.send(packet);
-            // Print some information
-            mLogger.message("Sending '" + string + "'");
-            // Return true at success
-            return true;
-        } catch (final Exception exc) {
-            // Print some information
-            mLogger.failure(exc.toString());
-            // Return false at failure 
-            return false;
-        }
     }
 
     // Launch the executor 
     @Override
     public void launch() {
+        try {
+            mProcessMap.put("EmpatTest.exe", Runtime.getRuntime().exec(
+                    "cmd /c start \"" + "\" EmpatTest.exe", null,
+                    new File("D:\\SubVersion\\Gregor\\Projects\\EmpaTDFKI\\software\\EmpaT\\CharActorServer")));
 
+            mProcessMap.put("EmpaT.exe", Runtime.getRuntime().exec(
+                    "cmd /c start \"" + "\" EmpaT.exe "
+                    + "-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 "
+                    + "-CharActorIP 127.0.0.1 -CharActorPort 4000", null,
+                    new File("D:\\SubVersion\\Gregor\\Projects\\EmpaTDFKI\\software\\EmpaT")));
+        } catch (final Exception exc) {
+            mLogger.failure(exc.toString());
+        }
+
+        // Parse the configuration
+        final DeviceConfig config = mProject.getDeviceConfig(mName);
+        // Create the connection
+        mServer = new TricatListener(8000, this);
+        // Start the connection
+        mServer.start();
+        //
+        while (mClientMap.isEmpty()) {
+            mLogger.message("Waiting for TWorld");
+            try {
+                Thread.sleep(1000);
+            } catch (final InterruptedException exc) {
+
+            }
+        }
+        broadcast("Start");
     }
 
     // Unload the executor 
     @Override
     public void unload() {
-
-    }
-
-    // Execute the server thread
-    @Override
-    public final void run() {
-        // Receive while not done ...
-        while (!mDone) {
-            // Receive a new message
-            final String message = recv();
-            if (message != null) {
-                //
-                //final long time = mPlayer.getCurrentTime();
-                // Parse the new message
-                //final SSIEventObject event = new SSIEventObject(time, message);
-                // Print some information
-                // mLogger.message("SSI event handler receiving '" + event.toString() + "'");
-                // Delegate the handling            
-                //mPlayer.handle(event);
+        // Abort the client threads
+        for (final TWorldClient client : mClientMap.values()) {
+            client.abort();
+            // Join the client thread
+            try {
+                client.join();
+            } catch (final Exception exc) {
+                mLogger.failure(exc.toString());
+                // Print some information 
+                mLogger.message("Joining client thread");
             }
         }
+        // Clear the map of clients 
+        mClientMap.clear();
+        // Abort the server thread
+        try {
+            mServer.abort();
+            // Join the client thread
+            mServer.join();
+            // Print some information 
+            mLogger.message("Joining server thread");
+        } catch (final Exception exc) {
+            mLogger.failure(exc.toString());
+        }
+
+        // Wait for pawned processes
+        for (final Entry<String, Process> entry : mProcessMap.entrySet()) {
+            // Get the process entry
+            final String name = entry.getKey();
+            final Process process = entry.getValue();
+            try {
+                // Kill the processes
+                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
+                // Wait for the killer
+                killer.waitFor();
+                // Print some information 
+                mLogger.message("Joining killer " + name + "");
+                // Wait for the process
+                process.waitFor();
+                // Print some information 
+                mLogger.message("Joining process " + name + "");
+            } catch (final Exception exc) {
+                mLogger.failure(exc.toString());
+            }
+        }
+        // Clear the map of processes 
+        mProcessMap.clear();
+    }
+
+    @Override
+    public final String marker(final long id) {
+        // TWorld style bookmarks
+        return "\\mrk=" + id + "\\";
     }
 
     @Override
@@ -168,32 +138,58 @@ public final class TricatExecutor extends Thread implements ActivityExecutor {
         // Compile the activity
         final String command = activity.toString();
         // Print some information
-        System.err.println("Command '" + command + "'");
-        // Give some status feeback
-        //scheduler.handle(new StatusFeedback(activity, STARTED));
+        //System.err.println("Command '" + command + "'");
         //
-        try {
-            for (int i = 0; i < 5; i++) {
-                // Simulate the execution
-                Thread.sleep(1000);
-                // Give some status feeback
-                //scheduler.handle(new StatusFeedback(activity, RUNNING));
-            }
-        } catch (final Exception exc) {
-            // Print some information
-            System.err.println("Interrupting command execution '" + command + "'");
-            // Give some status feeback
-            //scheduler.handle(new StatusFeedback(activity, ABORTED));
-        }
+        final String message = ""
+                + "<TWorldCommand>\n"
+                + "<object name=\"Susanne\">\n"
+                + "<action name=\"caixml\" id=\"734\">\n"
+                + "<!-- Charamel Command -->\n"
+                + "<cai_request version='1.0'>\n"
+                + "<cai_command id=\"2\">\n"
+                + "RenderXML\n"
+                + "<animation_track>\n"
+                + "<pause>\n"
+                + "</pause>\n"
+                + "<motion \n"
+                + "speed='1.0' \n"
+                + "attack='1000' \n"
+                + "decay='1000' \n"
+                + "start='0' \n"
+                + "duration='2000'>\n"
+                + "walk/turns/turn_90r\n"
+                + "</motion>\n"
+                + "</animation_track>\n"
+                + "</cai_command>\n"
+                + "</cai_request>\n"
+                + "</action>\n"
+                + "</object>\n"
+                + "</TWorldCommand>";
+        broadcast(message);
 
-        // Give some status feeback
-        //scheduler.handle(new StatusFeedback(activity, STOPPED));
-
+        // Return when terminated
     }
 
-    @Override
-    public final String marker(final long id) {
-        // Acapela style bookmarks
-        return "\\mrk=" + id + "\\";
+    // Accept some socket
+    public void accept(final Socket socket) {
+        // Make new client thread 
+        final TWorldClient client = new TWorldClient(socket, this);
+        // Add the client to list
+        // TODO: Get some reasonable name for references here!
+        mClientMap.put(client.getName(), client);
+        // Start the client thread
+        client.start();
+    }
+
+    // Handle some message
+    public void handle(final String message, final TWorldClient client) {
+        mLogger.warning("Handling Feedback " + message + "");
+    }
+
+    // Broadcast some message
+    private void broadcast(final String message) {
+        for (final TWorldClient client : mClientMap.values()) {
+            client.send(message);
+        }
     }
 }

@@ -4,11 +4,7 @@
   </Plugins>
   <Devices>
     <Device name="tricat" class="de.dfki.vsm.xtension.tricat.TricatExecutor">
-		<Feature key="host" value="127.0.0.1">
-		</Feature>
-		<Feature key="port" value="4000">
-		</Feature>
-	</Device>
+      <Feature key="host" value="127.0.0.1"/><Feature key="port" value="4000"/></Device>
   </Devices>
   <Agents>
     <Agent name="susanne" device="tricat">

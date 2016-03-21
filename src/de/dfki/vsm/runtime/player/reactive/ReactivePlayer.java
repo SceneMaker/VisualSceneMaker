@@ -151,13 +151,13 @@ public final class ReactivePlayer extends ScenePlayer {
         while (!finished) {
             try {
                 // Print some information
-                mLogger.warning("Awaiting player worker '" + worker + "'");
+                mLogger.message("Awaiting player worker '" + worker + "'");
                 // Join the playback task
                 worker.join();
                 // Continue after joining
                 finished = true;
                 // Print some information
-                mLogger.warning("Joining player worker '" + worker + "'");
+                mLogger.message("Joining player worker '" + worker + "'");
             } catch (final InterruptedException exc) {
                 // Print some information
                 mLogger.warning("Aborting player worker '" + worker + "'");
@@ -166,6 +166,6 @@ public final class ReactivePlayer extends ScenePlayer {
             }
         }
         // Print some information
-        mLogger.warning("Continuing '" + process + "'");
+        mLogger.message("Continuing '" + process + "'");
     }
 }
