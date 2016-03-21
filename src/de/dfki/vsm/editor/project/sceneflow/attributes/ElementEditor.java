@@ -29,7 +29,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalC
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.RegularExpressions;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -462,12 +462,12 @@ class ConditionEditor extends JPanel implements EventListener
 
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) && !_SFSLParser_.errorFlag)
+            if ((log != null) && !ChartParser.errorFlag)
             {
                 mDataCEdge.setCondition(log);
             }
@@ -826,12 +826,12 @@ class InterruptEditor extends JPanel implements EventListener
 
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) && !_SFSLParser_.errorFlag)
+            if ((log != null) && !ChartParser.errorFlag)
             {
                 mDataIEdge.setCondition(log);
             }

@@ -15,7 +15,7 @@ import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -272,13 +272,13 @@ public class ModifyIEdgeDialog extends Dialog {
         
         
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.CND;//LOG;
-            _SFSLParser_.run(inputString);
-            //LogicalCond log = _SFSLParser_.logResult;
-            Condition log = _SFSLParser_.cndResult;//logResult;
+            ChartParser.parseResultType = ChartParser.CND;//LOG;
+            ChartParser.run(inputString);
+            //LogicalCond log = ChartParser.logResult;
+            Condition log = ChartParser.cndResult;//logResult;
             
 
-            if ((log != null) &&!_SFSLParser_.errorFlag) {
+            if ((log != null) &&!ChartParser.errorFlag) {
                 mIEdge.setCondition(log);
 
                 // /

@@ -19,7 +19,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTimeInstance;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -205,13 +205,13 @@ public class MonitorDialog extends JDialog implements EventListener
     {
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
-            _SFSLParser_.run(value);
+            ChartParser.parseResultType = ChartParser.EXP;
+            ChartParser.run(value);
             
-            Expression exp = _SFSLParser_.expResult;
+            Expression exp = ChartParser.expResult;
 
             //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
-            if ((exp != null) && !_SFSLParser_.errorFlag)
+            if ((exp != null) && !ChartParser.errorFlag)
             {
                 if (exp instanceof Bool)
                 {

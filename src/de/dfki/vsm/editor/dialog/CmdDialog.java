@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
@@ -138,12 +138,12 @@ public class CmdDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.CMD;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.CMD;
+            ChartParser.run(inputString);
 
-            Command cmd = _SFSLParser_.cmdResult;
+            Command cmd = ChartParser.cmdResult;
 
-            if ((cmd != null) &&!_SFSLParser_.errorFlag) {
+            if ((cmd != null) &&!ChartParser.errorFlag) {
                 mCommand = cmd;
 
                 return true;
