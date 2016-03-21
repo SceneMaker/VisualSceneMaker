@@ -14,6 +14,12 @@ import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
+import de.dfki.vsm.runtime.exception.InterpretException;
+import de.dfki.vsm.runtime.interpreter.Environment;
+import de.dfki.vsm.runtime.interpreter.Evaluator;
+import de.dfki.vsm.runtime.interpreter.Interpreter;
+import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.runtime.values.AbstractValue;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -60,6 +66,7 @@ public class VarDefDialog extends Dialog
     private Dimension labelSize = new Dimension(75, 30);
     private Dimension textFielSize = new Dimension(250, 30);
     private JLabel errorMsg;
+    private boolean isNewVariable = true;
 
     public VarDefDialog(Node node, VarDef varDef)
     {
@@ -69,8 +76,10 @@ public class VarDefDialog extends Dialog
         if (varDef != null)
         {
             mVarDef = varDef.getCopy();
+            isNewVariable = false;
         } else
         {
+            isNewVariable = true;
             mVarDef = new VarDef("NewVar", "Bool", new Bool(true));
         }
 
@@ -92,6 +101,7 @@ public class VarDefDialog extends Dialog
         sanitizeComponent(mNameTextField, textFielSize);
         //Name box
         Box nameBox = Box.createHorizontalBox();
+        Box erroBox = Box.createHorizontalBox();
         nameBox.add(mNameLabel);
         nameBox.add(Box.createHorizontalStrut(10));
         nameBox.add(mNameTextField);
@@ -222,7 +232,8 @@ public class VarDefDialog extends Dialog
         //Error message
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
-        errorMsg.setMinimumSize(labelSize);
+        sanitizeComponent(errorMsg,new Dimension(400,30));
+        erroBox.add(errorMsg);
         
         //Key listener need to gain focus on the text field
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
@@ -248,7 +259,7 @@ public class VarDefDialog extends Dialog
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(expBox);
         finalBox.add(Box.createVerticalStrut(15));
-        finalBox.add(errorMsg);
+        finalBox.add(erroBox);
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(mButtonPanel);
         addComponent(finalBox, 10, 20, 400, 290);
@@ -339,41 +350,19 @@ public class VarDefDialog extends Dialog
         {
             mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
-        } else
-        {
-
-            String type = mVarDef.getType();
-            boolean rightType = true;
-
-            Expression expression = mVarDef.getExp();
-            String textValue = expression.getConcreteSyntax();
-
-            String expFullClass = expression.getClass().getName();
-            int lastIndex = expFullClass.lastIndexOf('.');
-            String regularClass = expFullClass;
-            if (lastIndex >= 0)
-            {
-                regularClass = expFullClass.substring(lastIndex + 1);
-            }
-
-            //Just made for the regular datatypes
-            if (!type.equals(regularClass) && (regularClass.equals("Float") || regularClass.equals("Int")
-                    || regularClass.equals("Bool") || regularClass.equals("String") || regularClass.equals("Object")))
-            {
-
-                rightType = false;
-            }
+        } else {
+            //This set the variable
+            boolean rightType = mVarDef.validate(mNameTextField.getText().trim(),
+                    (String) mTypeDefComboBoxModel.getSelectedItem(), isNewVariable);
             if (!rightType)
             {
                 mExpTextField.setBorder(BorderFactory.createLineBorder(Color.red));
                 errorMsg.setForeground(Color.red);
-                errorMsg.setText("Do not match the data type selected");
-            } else
-            {
-                mVarDef.setName(mNameTextField.getText().trim());
-                mVarDef.setType((String) mTypeDefComboBoxModel.getSelectedItem());
+                errorMsg.setText(mVarDef.getmErrorMsg());
+            } else {
                 dispose(Button.OK);
             }
+
         }
     }
 
