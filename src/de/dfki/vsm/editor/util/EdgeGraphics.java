@@ -209,7 +209,7 @@ public final class EdgeGraphics
         // scale control point in relation to distance between nodes
         double distance = Point.distance(sNC.x, sNC.y, tNC.x, tNC.y);
         double scalingFactor = (mPointingToSameNode)
-            ? 1
+            ? 3
             : ((distance / mEditorConfig.sNODEHEIGHT) - 0.5d);
 
         scalingFactor = (scalingFactor < 1.0d)
