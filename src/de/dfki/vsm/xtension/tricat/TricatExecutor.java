@@ -28,7 +28,7 @@ public final class TricatExecutor implements ActivityExecutor {
     // The mao of processes
     private final HashMap<String, Process> mProcessMap = new HashMap();
     // The client thread list
-    private final HashMap<String, TWorldClient> mClientMap = new HashMap();
+    private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
 
     // Construct the executor
     public TricatExecutor(final String name, final RunTimeProject project) {
@@ -77,7 +77,7 @@ public final class TricatExecutor implements ActivityExecutor {
     @Override
     public void unload() {
         // Abort the client threads
-        for (final TWorldClient client : mClientMap.values()) {
+        for (final TWorldHandler client : mClientMap.values()) {
             client.abort();
             // Join the client thread
             try {
@@ -173,7 +173,7 @@ public final class TricatExecutor implements ActivityExecutor {
     // Accept some socket
     public void accept(final Socket socket) {
         // Make new client thread 
-        final TWorldClient client = new TWorldClient(socket, this);
+        final TWorldHandler client = new TWorldHandler(socket, this);
         // Add the client to list
         // TODO: Get some reasonable name for references here!
         mClientMap.put(client.getName(), client);
@@ -182,13 +182,13 @@ public final class TricatExecutor implements ActivityExecutor {
     }
 
     // Handle some message
-    public void handle(final String message, final TWorldClient client) {
+    public void handle(final String message, final TWorldHandler client) {
         mLogger.warning("Handling Feedback " + message + "");
     }
 
     // Broadcast some message
     private void broadcast(final String message) {
-        for (final TWorldClient client : mClientMap.values()) {
+        for (final TWorldHandler client : mClientMap.values()) {
             client.send(message);
         }
     }

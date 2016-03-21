@@ -4,7 +4,6 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
