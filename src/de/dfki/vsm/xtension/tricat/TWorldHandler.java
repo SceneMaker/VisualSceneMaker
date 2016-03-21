@@ -11,7 +11,7 @@ import java.net.Socket;
 /**
  * @author Gregor Mehlmann
  */
-public class TWorldClient extends Thread {
+public class TWorldHandler extends Thread {
 
     // The logger instance
     private final LOGConsoleLogger mLogger
@@ -27,7 +27,7 @@ public class TWorldClient extends Thread {
     private boolean mDone = false;
 
     // Create the client thread
-    public TWorldClient(final Socket socket, final TricatExecutor executor) {
+    public TWorldHandler(final Socket socket, final TricatExecutor executor) {
         // Initialize the socket
         mSocket = socket;
         // Initialize the executor
