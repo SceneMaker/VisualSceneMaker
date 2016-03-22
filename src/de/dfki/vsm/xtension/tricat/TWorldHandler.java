@@ -23,6 +23,10 @@ public class TWorldHandler extends Thread {
     // The socket streams
     private BufferedReader mInStream;
     private BufferedWriter mOutStream;
+    // message builder and state
+    private StringBuilder mTworldFeedback = new StringBuilder();
+    private boolean mReceivingFeedback = false;
+    private boolean mFeedbackCollected = false;
     // The termination flag
     private boolean mDone = false;
 
@@ -85,6 +89,34 @@ public class TWorldHandler extends Thread {
         }
     }
 
+    // Receive TriCAT messages
+    public final void recvTWorldFeedback() {
+        try {
+            // Receive The Next Line
+            final String message = mInStream.readLine();
+            // Debug Some Information
+            mLogger.warning("Receiving '" + message + "'");
+
+            if (mReceivingFeedback) {
+                mTworldFeedback.append(message).append("\n");
+                if (message.contains("</TWorldFeedback>")) {
+                    mLogger.message("Received TWorld Feedback " + mTworldFeedback);
+                    mReceivingFeedback = false;
+                    mFeedbackCollected = true;
+                }
+            }
+
+            if (message.contains("<TWorldFeedback>")) {
+                mTworldFeedback = new StringBuilder();
+                mTworldFeedback.append(message).append("\n");
+                mReceivingFeedback = true;
+            }
+        } catch (final IOException exc) {
+            // Debug Some Information
+            mLogger.warning(exc.toString());
+        }
+    }
+
     // Send some message 
     public final boolean send(final String string) {
         try {
@@ -109,10 +141,14 @@ public class TWorldHandler extends Thread {
     public final void run() {
         while (!mDone) {
             // Receive a new message
-            final String message = recv();
-            if (message != null) {
-                // Handle the message
-                mExecutor.handle(message, this);
+//            final String message = recv();
+//            if (message != null) {
+//                // Handle the message
+//                mExecutor.handle(message, this);
+//            }
+            recvTWorldFeedback();
+            if (mFeedbackCollected) {
+                mExecutor.handle(mTworldFeedback.toString(), this);
             }
         }
     }

@@ -44,13 +44,13 @@ public final class TricatExecutor implements ActivityExecutor {
         try {
             mProcessMap.put("EmpatTest.exe", Runtime.getRuntime().exec(
                     "cmd /c start \"" + "\" EmpatTest.exe", null,
-                    new File("D:\\SubVersion\\Gregor\\Projects\\EmpaTDFKI\\software\\EmpaT\\CharActorServer")));
+                    new File("D:\\EmpaT\\software\\EmpaT\\CharActorServer")));
 
             mProcessMap.put("EmpaT.exe", Runtime.getRuntime().exec(
                     "cmd /c start \"" + "\" EmpaT.exe "
                     + "-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 "
                     + "-CharActorIP 127.0.0.1 -CharActorPort 4000", null,
-                    new File("D:\\SubVersion\\Gregor\\Projects\\EmpaTDFKI\\software\\EmpaT")));
+                    new File("D:\\EmpaT\\software\\EmpaT")));
         } catch (final Exception exc) {
             mLogger.failure(exc.toString());
         }
