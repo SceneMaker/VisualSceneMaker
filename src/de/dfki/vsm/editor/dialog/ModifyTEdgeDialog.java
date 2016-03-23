@@ -11,7 +11,7 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.util.tpl.TPLTuple;
@@ -44,7 +44,7 @@ public class ModifyTEdgeDialog extends Dialog {
     // The edge that should be created
     private final TEdge mTEdge;
 
-    // private HashMap<Pair<String, Node>, Pair<String, Node>> mAltStartNodeMap = null;
+    // private HashMap<Pair<String, BasicNode>, Pair<String, BasicNode>> mAltStartNodeMap = null;
     private final AltStartNodeManager mAltStartNodeManager;
 
     // GUI-Components
@@ -65,7 +65,7 @@ public class ModifyTEdgeDialog extends Dialog {
     private Dimension textFielSize = new Dimension(230, 30);
     private JLabel errorMsg;
 
-    public ModifyTEdgeDialog(Node sourceNode, Node targetNode) {
+    public ModifyTEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
         super(EditorInstance.getInstance(), "Create Timeout Edge", true);
 
         // Set the edge data
@@ -312,8 +312,8 @@ public class ModifyTEdgeDialog extends Dialog {
 
             while (it.hasNext()) {
                 Map.Entry              pairs            = (Map.Entry) it.next();
-                TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+                TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+                TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                         + altStartNodePair.getFirst());
@@ -346,8 +346,8 @@ public class ModifyTEdgeDialog extends Dialog {
 
         while (it.hasNext()) {
             Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+            TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+            TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                     + altStartNodePair.getFirst());

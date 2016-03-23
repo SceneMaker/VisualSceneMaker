@@ -11,26 +11,26 @@ import java.util.ArrayList;
 /**
  * @author Not me
  */
-public abstract class Edge extends Syntax {
+public abstract class AbstractEdge extends Syntax {
 
     protected String mTarget = new String();
     protected String mSource = new String();
-    protected Node mTargetNode = null;
-    protected Node mSourceNode = null;
+    protected BasicNode mTargetNode = null;
+    protected BasicNode mSourceNode = null;
     protected Graphics mGraphics = null;
     protected ArrayList<Command> mCmdList = new ArrayList<Command>();
-    protected HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> mAltStartNodeMap = new HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>>();
+    protected HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> mAltStartNodeMap = new HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>>();
 
     public enum Type {
 
         CEdge, EEdge, IEdge, PEdge, TEdge, FEdge
     }
 
-    public Edge() {
+    public AbstractEdge() {
     }
 
-    public Edge(String target, String source, Node targetNode, Node sourceNode, Graphics graphics,
-            ArrayList<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap) {
+    public AbstractEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, Graphics graphics,
+            ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap) {
         mTarget = target;
         mSource = source;
         mTargetNode = targetNode;
@@ -56,19 +56,19 @@ public abstract class Edge extends Syntax {
         mSource = value;
     }
 
-    public Node getTargetNode() {
+    public BasicNode getTargetNode() {
         return mTargetNode;
     }
 
-    public void setTargetNode(Node value) {
+    public void setTargetNode(BasicNode value) {
         mTargetNode = value;
     }
 
-    public Node getSourceNode() {
+    public BasicNode getSourceNode() {
         return mSourceNode;
     }
 
-    public void setSourceNode(Node value) {
+    public void setSourceNode(BasicNode value) {
         mSourceNode = value;
     }
 
@@ -98,36 +98,36 @@ public abstract class Edge extends Syntax {
         return copy;
     }
 
-    public ArrayList<Node> getAltStartNodeList() {
-        ArrayList<Node> altStartNodeList = new ArrayList<Node>();
+    public ArrayList<BasicNode> getAltStartNodeList() {
+        ArrayList<BasicNode> altStartNodeList = new ArrayList<BasicNode>();
 
-        for (TPLTuple<String, Node> pair : mAltStartNodeMap.values()) {
+        for (TPLTuple<String, BasicNode> pair : mAltStartNodeMap.values()) {
             altStartNodeList.add(pair.getSecond());
         }
 
         return altStartNodeList;
     }
 
-    public HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> getAltStartNodeMap() {
+    public HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> getAltStartNodeMap() {
         return mAltStartNodeMap;
     }
 
-    public void setAltStartNodeMap(HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> value) {
+    public void setAltStartNodeMap(HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> value) {
         mAltStartNodeMap = value;
     }
 
     // TODO: This is not yet a deep copy
-    public HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> getCopyOfAltStartNodeMap() {
-        HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> copy = new HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>>();
+    public HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> getCopyOfAltStartNodeMap() {
+        HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> copy = new HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>>();
         Iterator it = mAltStartNodeMap.entrySet().iterator();
 
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
-            TPLTuple<String, Node> startNodePairCopy = new TPLTuple<String, Node>(startNodePair.getFirst(),
+            TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
+            TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
+            TPLTuple<String, BasicNode> startNodePairCopy = new TPLTuple<String, BasicNode>(startNodePair.getFirst(),
                     startNodePair.getSecond());
-            TPLTuple<String, Node> altStartNodePairCopy = new TPLTuple<String, Node>(altStartNodePair.getFirst(),
+            TPLTuple<String, BasicNode> altStartNodePairCopy = new TPLTuple<String, BasicNode>(altStartNodePair.getFirst(),
                     altStartNodePair.getSecond());
 
             copy.put(startNodePairCopy, altStartNodePairCopy);
@@ -143,8 +143,8 @@ public abstract class Edge extends Syntax {
 
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            TPLTuple<String, Node> start = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> alt = (TPLTuple<String, Node>) pairs.getValue();
+            TPLTuple<String, BasicNode> start = (TPLTuple<String, BasicNode>) pairs.getKey();
+            TPLTuple<String, BasicNode> alt = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             result += start.getFirst() + "/" + alt.getFirst() + ";";
         }
@@ -154,5 +154,5 @@ public abstract class Edge extends Syntax {
 
     public abstract Type getEdgeType();
 
-    public abstract Edge getCopy();
+    public abstract AbstractEdge getCopy();
 }

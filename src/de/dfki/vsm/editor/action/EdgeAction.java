@@ -16,7 +16,7 @@ import de.dfki.vsm.editor.util.grid.GridRectangle;
 import de.dfki.vsm.editor.util.grid.pathfinding.Path;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.EEdge;
-import de.dfki.vsm.model.sceneflow.Edge;
+import de.dfki.vsm.model.sceneflow.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
@@ -50,7 +50,7 @@ public abstract class EdgeAction extends EditorAction {
     protected de.dfki.vsm.editor.Node mTargetGUINode              = null;
     protected de.dfki.vsm.editor.Node mLastTargetGUINode          = null;
     protected de.dfki.vsm.editor.Edge mGUIEdge                    = null;
-    protected Edge                    mDataEdge                   = null;
+    protected AbstractEdge                    mDataEdge                   = null;
     protected TYPE                    mGUIEdgeType                = null;
     protected Point                   mSourceGUINodeDockPoint     = null;
     protected Point                   mTargetGUINodeDockPoint     = null;
@@ -98,7 +98,7 @@ public abstract class EdgeAction extends EditorAction {
         // Revalidate data node and graphical node types
         switch (mSourceGUINode.getDataNode().getFlavour()) {
         case NONE :
-            Edge dedge = mSourceGUINode.getDataNode().getDedge();
+            AbstractEdge dedge = mSourceGUINode.getDataNode().getDedge();
 
             if (dedge instanceof EEdge) {
                 mSourceGUINode.setFlavour(Flavour.ENode);
@@ -131,8 +131,8 @@ public abstract class EdgeAction extends EditorAction {
             break;
         }
 
-        // Connect GUI Edge to Source GUI node
-        // Connect GUI Edge to Target GUI node
+        // Connect GUI AbstractEdge to Source GUI node
+        // Connect GUI AbstractEdge to Target GUI node
         // TODO: Recompute the appearance of the source GUI node
         if (mGUIEdge == null) {
             mGUIEdge = new de.dfki.vsm.editor.Edge(mWorkSpace, mDataEdge, mGUIEdgeType, mSourceGUINode, mTargetGUINode);
@@ -429,7 +429,7 @@ public abstract class EdgeAction extends EditorAction {
         // Revalidate data node and graphical node types
         switch (mSourceGUINode.getDataNode().getFlavour()) {
         case NONE :
-            Edge dedge = mSourceGUINode.getDataNode().getDedge();
+            AbstractEdge dedge = mSourceGUINode.getDataNode().getDedge();
 
             if (dedge instanceof EEdge) {
                 mSourceGUINode.setFlavour(Flavour.ENode);
@@ -462,7 +462,7 @@ public abstract class EdgeAction extends EditorAction {
             break;
         }
 
-        // Remove the GUI-Edge from the workspace and
+        // Remove the GUI-AbstractEdge from the workspace and
         // update the source node appearance
         EditorInstance.getInstance().refresh();
         mWorkSpace.remove(mGUIEdge);

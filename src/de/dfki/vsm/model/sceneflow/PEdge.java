@@ -22,13 +22,13 @@ import java.util.Map;
 /**
  * @author Not me
  */
-public class PEdge extends Edge {
+public class PEdge extends AbstractEdge {
     protected int mProbability = Integer.MIN_VALUE;
 
     public PEdge() {}
 
-    public PEdge(String target, String source, Node targetNode, Node sourceNode, Graphics graphics,
-                 ArrayList<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap,
+    public PEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, Graphics graphics,
+                 ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap,
                  int probability) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
         mProbability = probability;
@@ -70,8 +70,8 @@ public class PEdge extends Edge {
 
         while (it.hasNext()) {
             Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodeData    = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodeData = (TPLTuple<String, Node>) pairs.getValue();
+            TPLTuple<String, BasicNode> startNodeData    = (TPLTuple<String, BasicNode>) pairs.getKey();
+            TPLTuple<String, BasicNode> altStartNodeData = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             start += startNodeData.getFirst() + "/" + altStartNodeData.getFirst() + ";";
         }
@@ -107,8 +107,8 @@ public class PEdge extends Edge {
                 String[]               ids          = idPair.split("/");
                 String                 startId      = ids[0];
                 String                 altStartId   = ids[1];
-                TPLTuple<String, Node> startPair    = new TPLTuple<String, Node>(startId, null);
-                TPLTuple<String, Node> altStartPair = new TPLTuple<String, Node>(altStartId, null);
+                TPLTuple<String, BasicNode> startPair    = new TPLTuple<String, BasicNode>(startId, null);
+                TPLTuple<String, BasicNode> altStartPair = new TPLTuple<String, BasicNode>(altStartId, null);
 
                 mAltStartNodeMap.put(startPair, altStartPair);
             }

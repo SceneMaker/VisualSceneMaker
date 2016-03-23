@@ -1,11 +1,10 @@
 package de.dfki.vsm.model.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
+import de.dfki.vsm.model.sceneflow.graphics.node.NodeGraphics;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.tpl.TPLTuple;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,35 +23,35 @@ import java.util.Map;
 /**
  * @author Not me
  */
-public class SuperNode extends Node {
-    protected ArrayList<Comment>       mCommentList         = new ArrayList<Comment>();
-    protected ArrayList<Node>          mNodeList            = new ArrayList<Node>();
-    protected ArrayList<SuperNode>     mSuperNodeList       = new ArrayList<SuperNode>();
-    protected HashMap<String, Node> mStartNodeMap        = new HashMap<String, Node>();
-    protected Node                  mHistoryNode         = null;
-    protected boolean               mHideLocalVarBadge   = false;
-    protected boolean               mHideGlobalVarBadge  = false;
-    protected VariableBadge         mLocalVariableBadge  = new VariableBadge("LocalVariableBadge");
-    protected VariableBadge         mGlobalVariableBadge = new VariableBadge("GlobalVariableBadge");
+public class SuperNode extends BasicNode {
 
-    public SuperNode() {}
+    protected ArrayList<Comment> mCommentList = new ArrayList<Comment>();
+    protected ArrayList<BasicNode> mNodeList = new ArrayList<BasicNode>();
+    protected ArrayList<SuperNode> mSuperNodeList = new ArrayList<SuperNode>();
+    protected HashMap<String, BasicNode> mStartNodeMap = new HashMap<String, BasicNode>();
+    protected BasicNode mHistoryNode = null;
+    protected boolean mHideLocalVarBadge = false;
+    protected boolean mHideGlobalVarBadge = false;
+    protected VariableBadge mLocalVariableBadge = new VariableBadge("LocalVariableBadge");
+    protected VariableBadge mGlobalVariableBadge = new VariableBadge("GlobalVariableBadge");
 
-    public SuperNode(Node node) {
-        mId            = node.mId;
-        mName          = node.mName;
-        mComment       = node.mComment;
-        mExhaustive    = node.mExhaustive;
-        mPreserving    = node.mPreserving;
-        mTypeDefList   = node.mTypeDefList;
-        mVarDefList    = node.mVarDefList;
-        mCmdList       = node.mCmdList;
-        mCEdgeList     = node.mCEdgeList;
-        mPEdgeList     = node.mPEdgeList;
-        mIEdgeList     = node.mIEdgeList;
-        mFEdgeList     = node.mFEdgeList;
-        mDEdge         = node.mDEdge;
-        mGraphics      = node.mGraphics;
-        mParentNode    = node.mParentNode;
+    public SuperNode() {
+    }
+
+    public SuperNode(final BasicNode node) {
+        mId = node.mId;
+        mName = node.mName;
+        mComment = node.mComment;
+        mTypeDefList = node.mTypeDefList;
+        mVarDefList = node.mVarDefList;
+        mCmdList = node.mCmdList;
+        mCEdgeList = node.mCEdgeList;
+        mPEdgeList = node.mPEdgeList;
+        mIEdgeList = node.mIEdgeList;
+        mFEdgeList = node.mFEdgeList;
+        mDEdge = node.mDEdge;
+        mGraphics = node.mGraphics;
+        mParentNode = node.mParentNode;
         mIsHistoryNode = node.mIsHistoryNode;
     }
 
@@ -85,39 +83,39 @@ public class SuperNode extends Node {
         return mCommentList;
     }
 
-    public void setHistoryNode(Node value) {
+    public void setHistoryNode(BasicNode value) {
         mHistoryNode = value;
     }
 
-    public Node getHistoryNode() {
+    public BasicNode getHistoryNode() {
         return mHistoryNode;
     }
 
-    public HashMap<String, Node> getStartNodeMap() {
+    public HashMap<String, BasicNode> getStartNodeMap() {
         return mStartNodeMap;
     }
 
-    public void setStartNodeMap(HashMap<String, Node> value) {
+    public void setStartNodeMap(HashMap<String, BasicNode> value) {
         mStartNodeMap = value;
     }
 
-    public void addStartNode(Node node) {
+    public void addStartNode(BasicNode node) {
         mStartNodeMap.put(node.getId(), node);
     }
 
-    public void removeStartNode(Node node) {
+    public void removeStartNode(BasicNode node) {
         mStartNodeMap.remove(node.getId());
     }
 
     // TODO: this is not a deep copy
-    public HashMap<String, Node> getCopyOfStartNodeMap() {
-        HashMap<String, Node> copy = new HashMap<String, Node>();
-        Iterator              it   = mStartNodeMap.entrySet().iterator();
+    public HashMap<String, BasicNode> getCopyOfStartNodeMap() {
+        HashMap<String, BasicNode> copy = new HashMap<String, BasicNode>();
+        Iterator it = mStartNodeMap.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry pairs    = (Map.Entry) it.next();
-            String    nodeId   = (String) pairs.getKey();
-            Node      nodeData = (Node) pairs.getValue();
+            Map.Entry pairs = (Map.Entry) it.next();
+            String nodeId = (String) pairs.getKey();
+            BasicNode nodeData = (BasicNode) pairs.getValue();
 
             copy.put(nodeId, nodeData);
         }
@@ -151,36 +149,36 @@ public class SuperNode extends Node {
         return copy;
     }
 
-    public void addNode(Node value) {
+    public void addNode(BasicNode value) {
         mNodeList.add(value);
     }
 
-    public void removeNode(Node value) {
+    public void removeNode(BasicNode value) {
         mNodeList.remove(value);
     }
 
-    public Node getNodeAt(int index) {
+    public BasicNode getNodeAt(int index) {
         return mNodeList.get(index);
     }
 
-    public ArrayList<Node> getNodeList() {
+    public ArrayList<BasicNode> getNodeList() {
         return mNodeList;
     }
 
-    public ArrayList<Node> getCopyOfNodeList() {
-        ArrayList<Node> copy = new ArrayList<Node>();
+    public ArrayList<BasicNode> getCopyOfNodeList() {
+        ArrayList<BasicNode> copy = new ArrayList<BasicNode>();
 
-        for (Node node : mNodeList) {
+        for (BasicNode node : mNodeList) {
             copy.add(node.getCopy());
         }
 
         return copy;
     }
 
-    public ArrayList<Node> getNodeAndSuperNodeList() {
-        ArrayList<Node> list = new ArrayList<Node>();
+    public ArrayList<BasicNode> getNodeAndSuperNodeList() {
+        ArrayList<BasicNode> list = new ArrayList<BasicNode>();
 
-        for (Node n : mNodeList) {
+        for (BasicNode n : mNodeList) {
             list.add(n);
         }
 
@@ -191,10 +189,10 @@ public class SuperNode extends Node {
         return list;
     }
 
-    public ArrayList<Node> getCopyOfNodeAndSuperNodeList() {
-        ArrayList<Node> copy = new ArrayList<Node>();
+    public ArrayList<BasicNode> getCopyOfNodeAndSuperNodeList() {
+        ArrayList<BasicNode> copy = new ArrayList<BasicNode>();
 
-        for (Node n : mNodeList) {
+        for (BasicNode n : mNodeList) {
             copy.add(n.getCopy());
         }
 
@@ -205,8 +203,8 @@ public class SuperNode extends Node {
         return copy;
     }
 
-    public Node getChildNodeById(String id) {
-        for (Node node : getNodeAndSuperNodeList()) {
+    public BasicNode getChildNodeById(String id) {
+        for (BasicNode node : getNodeAndSuperNodeList()) {
             if (node.getId().equals(id)) {
                 return node;
             }
@@ -235,7 +233,7 @@ public class SuperNode extends Node {
     public void establishTargetNodes() {
         super.establishTargetNodes();
 
-        for (Node node : getNodeAndSuperNodeList()) {
+        for (BasicNode node : getNodeAndSuperNodeList()) {
             node.establishTargetNodes();
         }
     }
@@ -252,22 +250,22 @@ public class SuperNode extends Node {
 
     // TODO:
     public void establishAltStartNodes() {
-        for (Node node : getNodeAndSuperNodeList()) {
-            for (Edge edge : node.getEdgeList()) {
+        for (BasicNode node : getNodeAndSuperNodeList()) {
+            for (AbstractEdge edge : node.getEdgeList()) {
                 if (edge.getTargetNode() instanceof SuperNode) {
 
                     // First establish the start nodes
-                    for (TPLTuple<String, Node> startNodePair : edge.getAltStartNodeMap().keySet()) {
+                    for (TPLTuple<String, BasicNode> startNodePair : edge.getAltStartNodeMap().keySet()) {
                         if (!startNodePair.getFirst().equals("")) {
-                            Node n = ((SuperNode) edge.getTargetNode()).getChildNodeById(startNodePair.getFirst());
+                            BasicNode n = ((SuperNode) edge.getTargetNode()).getChildNodeById(startNodePair.getFirst());
 
                             startNodePair.setSecond(n);
                         }
                     }
 
                     // Second establish the alternative nodes
-                    for (TPLTuple<String, Node> altStartNodePair : edge.getAltStartNodeMap().values()) {
-                        Node n = ((SuperNode) edge.getTargetNode()).getChildNodeById(altStartNodePair.getFirst());
+                    for (TPLTuple<String, BasicNode> altStartNodePair : edge.getAltStartNodeMap().values()) {
+                        BasicNode n = ((SuperNode) edge.getTargetNode()).getChildNodeById(altStartNodePair.getFirst());
 
                         altStartNodePair.setSecond(n);
                     }
@@ -289,9 +287,8 @@ public class SuperNode extends Node {
             start += id + ";";
         }
 
-        out.println("<SuperNode id=\"" + mId + "\" name=\"" + mName + "\" comment=\"" + mComment + "\" exhaustive=\""
-                    + mExhaustive + "\" preserving=\"" + mPreserving + "\" hideLocalVar=\"" + mHideLocalVarBadge
-                    + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" start=\"" + start + "\">").push();
+        out.println("<SuperNode id=\"" + mId + "\" name=\"" + mName + "\" comment=\"" + mComment + "\" hideLocalVar=\"" + mHideLocalVarBadge
+                + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" start=\"" + start + "\">").push();
 
         int i = 0;
 
@@ -366,12 +363,10 @@ public class SuperNode extends Node {
 
     @Override
     public void parseXML(Element element) throws XMLParseError {
-        mId                 = element.getAttribute("id");
-        mName               = element.getAttribute("name");
-        mComment            = element.getAttribute("comment");
-        mExhaustive         = Boolean.valueOf(element.getAttribute("exhaustive"));
-        mPreserving         = Boolean.valueOf(element.getAttribute("preserving"));
-        mHideLocalVarBadge  = Boolean.valueOf(element.getAttribute("hideLocalVar"));
+        mId = element.getAttribute("id");
+        mName = element.getAttribute("name");
+        mComment = element.getAttribute("comment");
+        mHideLocalVarBadge = Boolean.valueOf(element.getAttribute("hideLocalVar"));
         mHideGlobalVarBadge = Boolean.valueOf(element.getAttribute("hideGlobalVar"));
 
         String[] arr = element.getAttribute("start").split(";");
@@ -429,7 +424,7 @@ public class SuperNode extends Node {
                     comment.setParentNode(superNode);
                     mCommentList.add(comment);
                 } else if (tag.equals("Node")) {
-                    Node node = new Node();
+                    BasicNode node = new BasicNode();
 
                     node.parseXML(element);
                     node.setParentNode(superNode);
@@ -445,7 +440,7 @@ public class SuperNode extends Node {
                     node.setParentNode(superNode);
                     mSuperNodeList.add(node);
                 } else if (tag.equals("Graphics")) {
-                    mGraphics = new Graphics();
+                    mGraphics = new NodeGraphics();
                     mGraphics.parseXML(element);
                 } else if (tag.equals("CEdge")) {
                     CEdge edge = new CEdge();
@@ -491,8 +486,8 @@ public class SuperNode extends Node {
                     mDEdge = edge;
                 } else {
                     throw new XMLParseError(null,
-                                            "Cannot parse the element with the tag \"" + tag
-                                            + "\" into a supernode child!");
+                            "Cannot parse the element with the tag \"" + tag
+                            + "\" into a supernode child!");
                 }
             }
         });
@@ -501,13 +496,13 @@ public class SuperNode extends Node {
     public int getHashCode() {
 
         // Add hash of General Attributes
-        int hashCode =  ((mName == null)? 0: mName.hashCode()) +
-                        ((mComment == null)? 0 : mComment.hashCode()) + 
-                        ((mGraphics == null)? 0: mGraphics.toString().hashCode()) +
-                        ((mHistoryNode == null)? 0: mHistoryNode.hashCode()) + 
-                        ((mLocalVariableBadge == null)? 0: mLocalVariableBadge.hashCode()) + 
-                        ((mGlobalVariableBadge == null)? 0: mGlobalVariableBadge.hashCode()) + 
-                        ((mHideLocalVarBadge == true)? 1: 0) + ((mHideGlobalVarBadge == true)? 1: 0);
+        int hashCode = ((mName == null) ? 0 : mName.hashCode())
+                + ((mComment == null) ? 0 : mComment.hashCode())
+                + ((mGraphics == null) ? 0 : mGraphics.toString().hashCode())
+                + ((mHistoryNode == null) ? 0 : mHistoryNode.hashCode())
+                + ((mLocalVariableBadge == null) ? 0 : mLocalVariableBadge.hashCode())
+                + ((mGlobalVariableBadge == null) ? 0 : mGlobalVariableBadge.hashCode())
+                + ((mHideLocalVarBadge == true) ? 1 : 0) + ((mHideGlobalVarBadge == true) ? 1 : 0);
 
         // Add hash of all commands inside SuperNode
         for (int cntCommand = 0; cntCommand < getSizeOfCmdList(); cntCommand++) {
@@ -517,14 +512,14 @@ public class SuperNode extends Node {
         // Add hash of all TypeDef inside SuperNode
         for (int cntType = 0; cntType < getSizeOfTypeDefList(); cntType++) {
             hashCode += mTypeDefList.get(cntType).hashCode() + mTypeDefList.get(cntType).getName().hashCode()
-                        + mTypeDefList.get(cntType).toString().hashCode();
+                    + mTypeDefList.get(cntType).toString().hashCode();
         }
 
         // Add hash of all VarDef inside SuperNode
         for (int cntVar = 0; cntVar < getVarDefList().size(); cntVar++) {
             hashCode += getVarDefList().get(cntVar).getName().hashCode()
-                        + getVarDefList().get(cntVar).getType().hashCode()
-                        + getVarDefList().get(cntVar).toString().hashCode();
+                    + getVarDefList().get(cntVar).getType().hashCode()
+                    + getVarDefList().get(cntVar).toString().hashCode();
         }
 
         // Add hash of all Nodes inside SuperNode
@@ -542,37 +537,37 @@ public class SuperNode extends Node {
         // Add hash of all Conditional Edges
         for (int cntEdge = 0; cntEdge < getSizeOfCEdgeList(); cntEdge++) {
             hashCode += mCEdgeList.get(cntEdge).hashCode() + mCEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mCEdgeList.get(cntEdge).mCondition.hashCode() + mCEdgeList.get(cntEdge).mSource.hashCode()
-                        + mCEdgeList.get(cntEdge).mTarget.hashCode();
+                    + mCEdgeList.get(cntEdge).mCondition.hashCode() + mCEdgeList.get(cntEdge).mSource.hashCode()
+                    + mCEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Add hash of all Probability Edges
         for (int cntEdge = 0; cntEdge < getSizeOfPEdgeList(); cntEdge++) {
             hashCode += mPEdgeList.get(cntEdge).hashCode() + mPEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mPEdgeList.get(cntEdge).getProbability() + mPEdgeList.get(cntEdge).mSource.hashCode()
-                        + mPEdgeList.get(cntEdge).mTarget.hashCode();
+                    + mPEdgeList.get(cntEdge).getProbability() + mPEdgeList.get(cntEdge).mSource.hashCode()
+                    + mPEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Add hash of all Fork Edges
         for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
             hashCode += mFEdgeList.get(cntEdge).hashCode() + mFEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mFEdgeList.get(cntEdge).mSource.hashCode() + mFEdgeList.get(cntEdge).mTarget.hashCode();
+                    + mFEdgeList.get(cntEdge).mSource.hashCode() + mFEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Add hash of all Interruptive Edges
         for (int cntEdge = 0; cntEdge < getSizeOfIEdgeList(); cntEdge++) {
             hashCode += mIEdgeList.get(cntEdge).hashCode() + mIEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mIEdgeList.get(cntEdge).mCondition.hashCode() + mIEdgeList.get(cntEdge).mSource.hashCode()
-                        + mIEdgeList.get(cntEdge).mTarget.hashCode();
+                    + mIEdgeList.get(cntEdge).mCondition.hashCode() + mIEdgeList.get(cntEdge).mSource.hashCode()
+                    + mIEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Check existing SuperNodes inside of this SuperNode
         for (int cntSNode = 0; cntSNode < mSuperNodeList.size(); cntSNode++) {
             hashCode += getSuperNodeAt(cntSNode).getHashCode();
         }
-        
+
         // Add hash of all comments on workspace
-        for (int cntComment = 0; cntComment < getCommentList().size(); cntComment++) {          
+        for (int cntComment = 0; cntComment < getCommentList().size(); cntComment++) {
             hashCode += mCommentList.get(cntComment).mGraphics.getRect().hashCode();
             //hashCode += mCommentList.get(cntComment).getHTMLText().hashCode();
         }

@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class Object extends Constant {
+public class Object extends LiteralExpression {
     private java.lang.Object mValue;
 
     public Object() {

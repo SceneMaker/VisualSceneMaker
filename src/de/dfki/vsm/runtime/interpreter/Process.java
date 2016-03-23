@@ -7,10 +7,10 @@ import de.dfki.vsm.editor.event.NodeStartedEvent;
 import de.dfki.vsm.editor.event.NodeTerminatedEvent;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.EEdge;
-import de.dfki.vsm.model.sceneflow.Edge;
+import de.dfki.vsm.model.sceneflow.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
@@ -39,10 +39,10 @@ public class Process extends java.lang.Thread {
 	private boolean mIsTerminationRequested = false;
 	private boolean mIsRunning = false;
 	private boolean mWasExecuted = false;
-	private Node mCurrentNode = null;
-	private Edge mInterruptEdge = null;
-	private Edge mNextEdge = null;
-	private Edge mIncomingEdge = null;
+	private BasicNode mCurrentNode = null;
+	private AbstractEdge mInterruptEdge = null;
+	private AbstractEdge mNextEdge = null;
+	private AbstractEdge mIncomingEdge = null;
 	private final ArrayList<Process> mChildThreadList = new ArrayList<Process>();
 	private final ArrayList<Process> mAddChildThreadList = new ArrayList<Process>();
 	private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -57,7 +57,7 @@ public class Process extends java.lang.Thread {
 	private final Process mParentThread;
 	private Interpreter mInterpreter;
 
-	public Process(String name, ThreadGroup group, Node currentNode, Environment environment, int level,
+	public Process(String name, ThreadGroup group, BasicNode currentNode, Environment environment, int level,
 	  Process parent, Interpreter interpreter) {
 		super(group, name);
 		mCurrentNode = currentNode;
@@ -81,7 +81,7 @@ public class Process extends java.lang.Thread {
 		return mLevel;
 	}
 
-	public Node getNode() {
+	public BasicNode getNode() {
 		return mCurrentNode;
 	}
 
@@ -174,7 +174,7 @@ public class Process extends java.lang.Thread {
 		interrupt();
 	}
 
-	public void requestInterruption(Edge edge) {
+	public void requestInterruption(AbstractEdge edge) {
 		if (mIsInterruptionRequested || mIsTerminationRequested) {
 			return;
 		}
@@ -578,7 +578,7 @@ public class Process extends java.lang.Thread {
 					/////////////////////////////////////////////////////////////
 					// EXECUTE REGULAR NEXT EDGE
 					////////////////////////////////////////////////////////////
-					Edge nextEdge = null;
+					AbstractEdge nextEdge = null;
 
 					while (nextEdge == null) {
 						try {
@@ -605,7 +605,7 @@ public class Process extends java.lang.Thread {
 						}
 
 						// Default edge
-						Edge dedge = mCurrentNode.getDedge();
+						AbstractEdge dedge = mCurrentNode.getDedge();
 
 						if (dedge instanceof TEdge) {
 							TEdge tedge = (TEdge) dedge;
@@ -674,7 +674,7 @@ public class Process extends java.lang.Thread {
 
 					ArrayList<Process> forkThreadList = new ArrayList<Process>();
 
-					for (Edge edge : nextEdgeList) {
+					for (AbstractEdge edge : nextEdgeList) {
 						Environment env = mParentThread.mEnvironment.getCopy();
 						Process thread = new Process(edge.getTargetNode().getId(), null, edge.getTargetNode(), env,
 						  mLevel, mParentThread, mInterpreter);
@@ -728,7 +728,7 @@ public class Process extends java.lang.Thread {
 	/**
 	 */
 	private void executeStartNodeList() throws InterruptionSignal, TerminationSignal, InterpreterError {
-		ArrayList<Node> startNodeList = computeStartNodeList();
+		ArrayList<BasicNode> startNodeList = computeStartNodeList();
 
 		if (!startNodeList.isEmpty()) {
 			mInterpreter.lock();
@@ -737,7 +737,7 @@ public class Process extends java.lang.Thread {
 			/**
 			 *
 			 */
-			for (Node node : startNodeList) {
+			for (BasicNode node : startNodeList) {
 				Process thread = new Process(node.getId(), null, node, mEnvironment.getCopy(), mLevel + 1, this,
 				  mInterpreter);
 
@@ -859,16 +859,16 @@ public class Process extends java.lang.Thread {
 
 	/**
 	 */
-	private ArrayList<Node> computeStartNodeList() {
+	private ArrayList<BasicNode> computeStartNodeList() {
 
 		/**
 		 */
-		ArrayList<Node> startNodeList = new ArrayList<Node>();
+		ArrayList<BasicNode> startNodeList = new ArrayList<BasicNode>();
 
 		/**
 		 * Get the history node of the current node
 		 */
-		Node historyNode = ((SuperNode) mCurrentNode).getHistoryNode();
+		BasicNode historyNode = ((SuperNode) mCurrentNode).getHistoryNode();
 
 		/**
 		 * Look if there exists a history for the current node
@@ -901,12 +901,12 @@ public class Process extends java.lang.Thread {
 		/**
 		 * Get the start node list of the current node
 		 */
-		Collection<Node> commonStartNodeList = ((SuperNode) mCurrentNode).getStartNodeMap().values();
+		Collection<BasicNode> commonStartNodeList = ((SuperNode) mCurrentNode).getStartNodeMap().values();
 
 		/**
 		 * Fill the next start node list with these start nodes
 		 */
-		for (Node node : commonStartNodeList) {
+		for (BasicNode node : commonStartNodeList) {
 			startNodeList.add(node);
 		}
 
@@ -918,8 +918,8 @@ public class Process extends java.lang.Thread {
 //        Iterator it = mIncomingEdge.getAltStartNodeMap().entrySet().iterator();
 //        while (it.hasNext()) {
 //          Map.Entry pairs = (Map.Entry) it.next();
-//          Pair<String, Node> startNodePair = (Pair<String, Node>) pairs.getKey();
-//          Pair<String, Node> altStartNodePair = (Pair<String, Node>) pairs.getValue();
+//          Pair<String, BasicNode> startNodePair = (Pair<String, BasicNode>) pairs.getKey();
+//          Pair<String, BasicNode> altStartNodePair = (Pair<String, BasicNode>) pairs.getValue();
 //          if (startNodePair.getSecond() == null) {
 //            startNodeList.add(altStartNodePair.getSecond());
 //          } else {

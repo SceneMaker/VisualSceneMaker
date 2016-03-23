@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition.constant;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
+import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -15,44 +15,37 @@ import org.w3c.dom.Element;
 
 
 /**
+ * A struct constant.
  *
  * @author Not me
  */
-public class List extends Constant {
+public class StructRecord extends LiteralExpression {
 
     // private java.lang.String mType;
-    private ArrayList<Expression> mExpList;
+    // private ArrayList<Expression> mExpList;
+    private ArrayList<Assignment> mExpList;
 
-    public List() {
+    public StructRecord() {
 
         // mType = new java.lang.String();
-        mExpList = new ArrayList<Expression>();
+        // mExpList = new ArrayList<Expression>();
+        mExpList = new ArrayList<Assignment>();
     }
 
-    public List( /* java.lang.String type, */ArrayList<Expression> expList) {
+    public StructRecord( /* java.lang.String type,ArrayList<Expression> */ArrayList<Assignment> expList) {
 
         // mType = type;
         mExpList = expList;
     }
 
-    // public java.lang.String getType() {
-    // return mType;
-    // }
-    // public void setType(java.lang.String type) {
-    // mType = type;
-    // }
-    public ArrayList<Expression> getExpList() {
+    public /* ArrayList<Expression> */ ArrayList<Assignment> getExpList() {
         return mExpList;
     }
 
-    public void setExpList(ArrayList<Expression> expList) {
-        mExpList = expList;
-    }
+    public ArrayList< /* Expression */Assignment> getCopyOfExpList() {
+        ArrayList< /* Expression */Assignment> copy = new ArrayList< /* Expression */Assignment>();
 
-    public ArrayList<Expression> getCopyOfExpList() {
-        ArrayList<Expression> copy = new ArrayList<Expression>();
-
-        for (Expression exp : mExpList) {
+        for ( /* Expression */Assignment exp : mExpList) {
             copy.add(exp.getCopy());
         }
 
@@ -60,7 +53,7 @@ public class List extends Constant {
     }
 
     public ConstType getConstType() {
-        return ConstType.LIST;
+        return ConstType.STRUCT;
     }
 
     public java.lang.String getAbstractSyntax() {
@@ -74,11 +67,11 @@ public class List extends Constant {
             }
         }
 
-        return "List(" + desc + ")";
+        return "Struct(" + desc + ")";
     }
 
     public java.lang.String getConcreteSyntax() {
-        java.lang.String desc = /* mType + */ "[ ";
+        java.lang.String desc = "{ ";
 
         for (int i = 0; i < mExpList.size(); i++) {
             desc += mExpList.get(i).getConcreteSyntax();
@@ -88,11 +81,11 @@ public class List extends Constant {
             }
         }
 
-        return desc + " ]";
+        return desc + " }";
     }
 
     public java.lang.String getFormattedSyntax() {
-        java.lang.String desc = /* mType + */ "[ ";
+        java.lang.String desc = "{ ";
 
         for (int i = 0; i < mExpList.size(); i++) {
             desc += mExpList.get(i).getFormattedSyntax();
@@ -102,23 +95,23 @@ public class List extends Constant {
             }
         }
 
-        return desc + " ]";
+        return desc + " }";
     }
 
-    public List getCopy() {
-        return new List( /* mType, */getCopyOfExpList());
+    public StructRecord getCopy() {
+        return new StructRecord( /* mType, */getCopyOfExpList());
     }
 
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
 
-        // out.println("<List type=\"" + mType + "\">").push();
-        out.println("<List>").push();
+        // out.println("<Struct type=\"" + mType + "\">").push();
+        out.println("<Struct>").push();
 
         for (int i = 0; i < mExpList.size(); i++) {
             mExpList.get(i).writeXML(out);
         }
 
-        out.pop().println("</List>");
+        out.pop().println("</Struct>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
@@ -126,8 +119,11 @@ public class List extends Constant {
         // mType = element.getAttribute("type");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
-                Expression exp = Expression.parse(element);
 
+                /* Expression */
+                Assignment exp = new Assignment();    /* Expression.parse(element); */
+
+                exp.parseXML(element);
                 mExpList.add(exp);
             }
         });

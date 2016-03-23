@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class Float extends Constant {
+public class Float extends LiteralExpression {
     private float mValue;
 
     public Float() {

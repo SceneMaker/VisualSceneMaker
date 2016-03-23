@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
+import de.dfki.vsm.model.sceneflow.graphics.node.NodeGraphics;
 import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -69,8 +69,6 @@ public class ChangeNodeTypeAction extends NodeAction {
         mDataNode   = newDataNode.getCopy();
         mDataNodeId = mIDManager.getNextFreeSuperNodeID();
         mDataNode.setNameAndId(mDataNodeId);
-        mDataNode.setExhaustive(false);
-        mDataNode.setPreserving(false);
        
        
         if(newDataNode.getDedge()!=null){
@@ -79,14 +77,12 @@ public class ChangeNodeTypeAction extends NodeAction {
             }
         }
        
-        de.dfki.vsm.model.sceneflow.Node mHistoryDataNode = new de.dfki.vsm.model.sceneflow.Node();
+        de.dfki.vsm.model.sceneflow.BasicNode mHistoryDataNode = new de.dfki.vsm.model.sceneflow.BasicNode();
 
         mHistoryDataNode.setHistoryNodeFlag(true);
         mHistoryDataNode.setName("History");
         mHistoryDataNode.setId(mWorkSpace.getSceneFlowManager().getIDManager().getNextFreeNodeID());
-        mHistoryDataNode.setExhaustive(false);
-        mHistoryDataNode.setPreserving(false);
-        mHistoryDataNode.setGraphics(new Graphics(0, 0));
+        mHistoryDataNode.setGraphics(new NodeGraphics(0, 0));
         mHistoryDataNode.setParentNode((SuperNode) mDataNode);
         ((SuperNode) mDataNode).addNode(mHistoryDataNode);
         ((SuperNode) mDataNode).setHistoryNode(mHistoryDataNode);
@@ -107,7 +103,7 @@ public class ChangeNodeTypeAction extends NodeAction {
         
         for (Edge edge : mConnectedEdgesVector) {
             
-            de.dfki.vsm.model.sceneflow.Edge newDataEdge      = edge.getDataEdge().getCopy();
+            de.dfki.vsm.model.sceneflow.AbstractEdge newDataEdge      = edge.getDataEdge().getCopy();
             Edge.TYPE newEdgeType      = edge.getType();
             Node      newSourceGUINode = (edge.getSourceNode().equals(mOldGUINode))? mGUINode : edge.getSourceNode();
             Node      newTargetGUINode = (edge.getTargetNode().equals(mOldGUINode))? mGUINode : edge.getTargetNode();

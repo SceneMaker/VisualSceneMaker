@@ -224,7 +224,7 @@ public class GridManager {
         int w = 0;
         int h = 0;
 
-        for (de.dfki.vsm.model.sceneflow.Node n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
+        for (de.dfki.vsm.model.sceneflow.BasicNode n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
             if (n.getGraphics().getPosition().getXPos() > w) {
                 w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
             }

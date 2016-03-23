@@ -22,10 +22,10 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.EmptyCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.ArrVarExp;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.MemVarExp;
@@ -110,7 +110,7 @@ public class Evaluator {
             // Try To Evaluate The Name Expression
             final AbstractValue name = evaluate(((PlayDialogueAct) cmd).getArg(), env);
 
-            // Try To Evaluate The Feature List
+            // Try To Evaluate The Feature ListRecord
             LinkedList<AbstractValue> valueList = evaluateExpList(((PlayDialogueAct) cmd).getArgList(), env);
 
             // Check The Type of The Name Expression
@@ -125,7 +125,7 @@ public class Evaluator {
                 // Relock The Interpreter Lock Now
                 mInterpreter.lock();
             } else {
-                java.lang.String errorMsg = "An error occured while executing thread "
+                java.lang.StringLiteral errorMsg = "An error occured while executing thread "
                         + Process.currentThread().toString() + " : "
                         + "The dialogue act argument of the playback command '"
                         + cmd.getConcreteSyntax() + " was evaluated to '"
@@ -244,14 +244,14 @@ public class Evaluator {
             return new IntValue(((Int) exp).getValue());
         } else if (exp instanceof Float) {
             return new FloatValue(((Float) exp).getValue());
-        } else if (exp instanceof String) {
-            return new StringValue(((String) exp).getValue());
+        } else if (exp instanceof StringLiteral) {
+            return new StringValue(((StringLiteral) exp).getValue());
         } else if (exp instanceof Object) {
             return new ObjectValue(((Object) exp).getValue());
-        } else if (exp instanceof List) {
-            return new ListValue(evaluateExpList(((List) exp).getExpList(), env));
-        } else if (exp instanceof Struct) {
-            return new StructValue(evaluateAsgList(((Struct) exp).getExpList(), env));
+        } else if (exp instanceof ListRecord) {
+            return new ListValue(evaluateExpList(((ListRecord) exp).getExpList(), env));
+        } else if (exp instanceof StructRecord) {
+            return new StructValue(evaluateAsgList(((StructRecord) exp).getExpList(), env));
         } //
         ////////////////////////////////////////////////////////////////////
         // BINARY EXPRESSIONS
@@ -351,7 +351,7 @@ public class Evaluator {
                     // Convert The Left Expression
                     final ListValue listValue = (ListValue) left;
 
-                    // Get The Java List From Value
+                    // Get The Java ListRecord From Value
                     final LinkedList<AbstractValue> list = listValue.getValueList();
 
                     // Add The Abstract Value Here
@@ -784,7 +784,7 @@ public class Evaluator {
             } else if (result instanceof java.lang.String) {
                 return new StringValue((java.lang.String) result);
             } else {
-//                java.lang.String errorMsg = "An error occured while executing thread "
+//                java.lang.StringLiteral errorMsg = "An error occured while executing thread "
 //                        + Process.currentThread().toString() + " : " + "The return value '"
 //                        + result + "' of the user command call '" + exp.getConcreteSyntax()
 //                        + "' has an invalid type.";    /// TODO NOT BEING USED
@@ -926,7 +926,7 @@ public class Evaluator {
             // System.err.println("Argument is " + argInstList[i] + "(" + argDscrList[i]+")");
         }
 
-        // System.err.println("Argument List is " + argList);
+        // System.err.println("Argument ListRecord is " + argList);
         // / Do the right array conversion
         for (int i = 0; i < paramClassList.length; i++) {
             if (paramClassList[i].isArray()) {
