@@ -10,10 +10,10 @@
       <Feature key="srport" val="19220"/>
     </Plugin>
     <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tricat.TWorldExecutor">
-      <Feature key="tworlddir" val="D:\SubVersion\Gregor\Projects\EmpaTDFKI\software\EmpaT\"/>
+      <Feature key="tworlddir" val="D:\EmpaT\software\EmpaT\"/>
       <Feature key="tworldexe" val="EmpaT.exe"/>
       <Feature key="tworldcmd" val="-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 -CharActorIP 127.0.0.1 -CharActorPort 4000"/>
-      <Feature key="cactordir" val="D:\SubVersion\Gregor\Projects\EmpaTDFKI\software\EmpaT\CharActorServer\"/>
+      <Feature key="cactordir" val="D:\EmpaT\software\EmpaT\CharActorServer\"/>
       <Feature key="cactorexe" val="EmpatTest.exe"/>
       <Feature key="cactorcmd" val=""/>
     </Plugin>

@@ -1,16 +1,29 @@
 package de.dfki.vsm.xtension.tricat;
 
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommand;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommandObject;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectAction;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectAmbientSetupAction;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectCharamelDummyAction;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectMoveToLoactionAction;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectSetSoundAmbientAction;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 
 /**
@@ -29,6 +42,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
+    // The execution id
+    private int sId = 0;
 
     // Construct the executor
     public TWorldExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -130,15 +145,76 @@ public final class TWorldExecutor extends ActivityExecutor {
         return "\\mrk=" + id + "\\";
     }
 
+    private final String getExecutionId() {
+        return "" + sId++;
+    }
+
+    // get the value of a feature (added PG) - quick and dirty
+    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+        for (ActionFeature af : features) {
+            if (af.getKey().equalsIgnoreCase(name)) {
+                return af.getVal();
+            }
+        }
+        return "";
+    }
+
     @Override
     public final void execute(
             final AbstractActivity activity,
             final ActivityManager scheduler) {
         // Compile the activity
-        final String command = activity.toString();
-        // Print some information
-        //System.err.println("Command '" + command + "'");
-        //
+//        final String command = activity.toString();
+//        // Print some information
+//        //System.err.println("Command '" + command + "'");
+//        //
+
+        // get action information
+        final String actor = activity.getActor();
+        final String name = activity.getName();
+        final LinkedList<ActionFeature> features = activity.getFeatureList();
+        
+        mLogger.message("Execute Actor " + actor + ", command " + name);
+
+        // build command
+        TWorldCommand mTWC;
+        TWorldCommandObjectAction twcoa = null;
+
+        if (name.equalsIgnoreCase("MoveTo")) {
+            twcoa = new TWorldCommandObjectMoveToLoactionAction(getActionFeatureValue("location", features));
+        }
+
+        if (name.equalsIgnoreCase("SetAmbient")) {
+            twcoa = new TWorldCommandObjectAmbientSetupAction(getActionFeatureValue("value", features));
+        }
+
+        if (name.equalsIgnoreCase("SetSound")) {
+            twcoa = new TWorldCommandObjectSetSoundAmbientAction(getActionFeatureValue("value", features));
+        }
+        
+        if (name.equalsIgnoreCase("Speak")) {
+            twcoa = new TWorldCommandObjectCharamelDummyAction("caixml");
+        }
+        
+        String executionId = getExecutionId();
+        twcoa.setId(executionId);
+
+        // finalize build command
+        TWorldCommandObject twco = new TWorldCommandObject(actor, executionId, twcoa);
+        mTWC = new TWorldCommand();
+        mTWC.addObject(twco);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        IOSIndentWriter iosw = new IOSIndentWriter(out);
+        boolean r = XMLUtilities.writeToXMLWriter(mTWC, iosw);
+
+        // log TWorld command
+        try {
+            mLogger.message(new String(out.toByteArray(), "UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            mLogger.failure(ex.getMessage());
+        }
+
         final String message = ""
                 + "<TWorldCommand>\n"
                 + "<object name=\"Susanne\">\n"
@@ -164,7 +240,6 @@ public final class TWorldExecutor extends ActivityExecutor {
                 + "</action>\n"
                 + "</object>\n"
                 + "</TWorldCommand>";
-        broadcast(message);
 
         synchronized (mActivityWorkerMap) {
             // send command to platform 
@@ -188,8 +263,6 @@ public final class TWorldExecutor extends ActivityExecutor {
             mLogger.warning("ActivityWorker 734 done ....");
 
         }
-        // Return when terminated
-
         // Return when terminated
     }
 
