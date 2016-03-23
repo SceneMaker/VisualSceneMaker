@@ -213,7 +213,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         synchronized (mActivityWorkerMap) {
             if (message.contains("734")) {
                 mActivityWorkerMap.remove("734");
-                notifyAll();
+                mActivityWorkerMap.notifyAll();
             }
         }
     }
