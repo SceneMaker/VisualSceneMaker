@@ -110,7 +110,8 @@ public final class ReactivePlayer extends RunTimePlayer {
                                                         action.getActor(),
                                                         action.getMode(),
                                                         action.getName(),
-                                                        action.getText(map)),
+                                                        action.getText(map),
+                                                        action.getFeatureList()),
                                                 actionActorExecutor));
                             } else {
                                 // Append the text to the activity

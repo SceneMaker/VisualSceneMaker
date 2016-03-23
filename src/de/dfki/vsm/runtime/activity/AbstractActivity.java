@@ -1,5 +1,8 @@
 package de.dfki.vsm.runtime.activity;
 
+import de.dfki.vsm.model.scenescript.ActionFeature;
+import java.util.LinkedList;
+
 /**
  * @author Gregor Mehlmann
  */
@@ -20,6 +23,8 @@ public abstract class AbstractActivity {
     protected final String mMode;
     // The activity name
     protected final String mName;
+    // The related action features
+    protected final LinkedList<ActionFeature> mFeatureList;
 
     // Construct the activity
     public AbstractActivity(
@@ -31,6 +36,21 @@ public abstract class AbstractActivity {
         mActor = actor;
         mMode = mode;
         mName = name;
+        mFeatureList = null;
+    }
+    
+    // Construct the activity (added PG)
+    public AbstractActivity(
+            final Policy type,
+            final String actor,
+            final String mode,
+            final String name,
+            final LinkedList<ActionFeature> featureList) {
+        mType = type;
+        mActor = actor;
+        mMode = mode;
+        mName = name;
+        mFeatureList = featureList;
     }
 
     // Get the scheduling type
@@ -41,5 +61,20 @@ public abstract class AbstractActivity {
     // Get the activity actor
     public final String getActor() {
         return mActor;
+    }
+
+    // Get the activity mode (added PG)
+    public final String getMode() {
+        return mMode;
+    }
+    
+    // Get the activity name (added PG)
+    public final String getName() {
+        return mName;
+    }
+    
+        // Get the activity name (added PG)
+    public final LinkedList<ActionFeature> getFeatureList() {
+        return mFeatureList;
     }
 }

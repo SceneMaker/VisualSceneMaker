@@ -252,7 +252,7 @@ public class EditorStarter extends JPanel {
 	// Draws the image on the background
 	@Override
 	public final void paintComponent(final Graphics graphics) {
-//		mWelcomeStickman.setVisible(isVisible() && mShowStickman);
+		mWelcomeStickman.setVisible(isVisible() && mShowStickman);
 		mParentFrame.getGlassPane().setVisible(isVisible() && mShowStickman);
 
 		super.paintComponent(graphics);
@@ -321,7 +321,7 @@ public class EditorStarter extends JPanel {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				// mEditorInstance.newProject();
 				NewProjectDialog npd = new NewProjectDialog();
-				//mWelcomeStickman.setVisible(false);
+				mWelcomeStickman.setVisible(false);
 			}
 
 			@Override
@@ -355,7 +355,7 @@ public class EditorStarter extends JPanel {
 		mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				mEditorInstance.openProject();
-				//mWelcomeStickman.setVisible(false);
+				mWelcomeStickman.setVisible(false);
 			}
 
 			public void mouseEntered(MouseEvent me) {
@@ -431,7 +431,7 @@ public class EditorStarter extends JPanel {
 						public void mouseClicked(MouseEvent me) {
 							// mEditorInstance.toggleProjectEditorList(true);
 							mEditorInstance.openProject(projectDir.getPath());
-							//mWelcomeStickman.setVisible(false);
+							mWelcomeStickman.setVisible(false);
 						}
 
 						@Override
@@ -531,7 +531,7 @@ public class EditorStarter extends JPanel {
 					public void mouseClicked(MouseEvent me) {
 						// mEditorInstance.toggleProjectEditorList(true);
 						mEditorInstance.openProject(tutorialProj.getPath());
-						//mWelcomeStickman.setVisible(false);
+						mWelcomeStickman.setVisible(false);
 					}
 
 					@Override
@@ -656,7 +656,7 @@ public class EditorStarter extends JPanel {
 				public void mouseClicked(MouseEvent me) {
 					// mEditorInstance.toggleProjectEditorList(true);
 					mEditorInstance.openProject(sampleDir);
-					//mWelcomeStickman.setVisible(false);
+					mWelcomeStickman.setVisible(false);
 				}
 
 				@Override
