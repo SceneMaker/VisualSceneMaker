@@ -23,9 +23,9 @@ public class InStateCond extends LogicalCond {
         return mState;
     }
 
-    public LogicalType getLogicalType() {
-        return LogicalType.STATE;
-    }
+//    public LogicalType getLogicalType() {
+//        return LogicalType.STATE;
+//    }
 
     public String getAbstractSyntax() {
         return "In( " + mState + " )";

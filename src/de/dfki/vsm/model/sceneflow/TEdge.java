@@ -4,7 +4,7 @@ package de.dfki.vsm.model.sceneflow;
 
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.graphics.edge.Graphics;
+import de.dfki.vsm.model.sceneflow.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -29,14 +29,14 @@ public class TEdge extends AbstractEdge {
     public TEdge() {}
 
     // PG: Allow expression for mor flexibility. Consistency check through GUI
-    public TEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, Graphics graphics,
+    public TEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, EdgeGraphics graphics,
                  ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap,
                  Expression expression) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
         mExpression = expression;
     }
 
-    public TEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, Graphics graphics,
+    public TEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, EdgeGraphics graphics,
                  ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap,
                  long timeout) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
@@ -140,7 +140,7 @@ public class TEdge extends AbstractEdge {
                 java.lang.String tag = element.getTagName();
 
                 if (tag.equals("Graphics")) {
-                    mGraphics = new Graphics();
+                    mGraphics = new EdgeGraphics();
                     mGraphics.parseXML(element);
                 } else if (tag.equals("Commands")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {

@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.graphics.edge.Graphics;
+import de.dfki.vsm.model.sceneflow.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -25,7 +25,7 @@ import java.util.Map;
 public class FEdge extends AbstractEdge {
     public FEdge() {}
 
-    public FEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, Graphics graphics,
+    public FEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, EdgeGraphics graphics,
                  ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
     }
@@ -105,7 +105,7 @@ public class FEdge extends AbstractEdge {
                 java.lang.String tag = element.getTagName();
 
                 if (tag.equals("Graphics")) {
-                    mGraphics = new Graphics();
+                    mGraphics = new EdgeGraphics();
                     mGraphics.parseXML(element);
                 } else if (tag.equals("Commands")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {

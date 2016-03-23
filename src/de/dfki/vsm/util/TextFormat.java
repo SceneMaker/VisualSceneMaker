@@ -1,12 +1,10 @@
 package de.dfki.vsm.util;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
@@ -17,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import javafx.util.Pair;
 
 /**
  * @author Not me
@@ -42,8 +41,7 @@ public class TextFormat {
      *
      */
     public static TPLTuple<String, AttributedString> fillWithAttributes(String inputString) {
-        HashMap<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>> attributeMap =
-            new HashMap<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>>();
+        HashMap<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>> attributeMap = new HashMap();
         String unformattedString = new String();
 
         while (true) {
@@ -55,9 +53,9 @@ public class TextFormat {
                 break;
             }
 
-            int    j              = inputString.indexOf(' ', i);
-            int    k              = 0;
-            String subString      = "";
+            int j = inputString.indexOf(' ', i);
+            int k = 0;
+            String subString = "";
             String newInputString = "";
 
             if (j == -1) {
@@ -69,7 +67,7 @@ public class TextFormat {
                 k = j;
 
                 // Get infix
-                subString      = inputString.substring(i + 3, k);
+                subString = inputString.substring(i + 3, k);
                 newInputString = inputString.substring(k);
             }
 
@@ -83,90 +81,102 @@ public class TextFormat {
             String postString = inputString.substring(i + 3);
 
             //
-            TPLTuple<Integer, Integer> position = new TPLTuple<Integer,
-                                                      Integer>(unformattedString.length() + preString.length(),
-                                                          unformattedString.length() + preString.length()
-                                                          + subString.length());
+            TPLTuple<Integer, Integer> position
+                    = new TPLTuple<Integer, Integer>(
+                            unformattedString.length() + preString.length(),
+                            unformattedString.length() + preString.length() + subString.length());
 
             if (c == 'b') {
-
-                // Bold Weight
-                TPLTuple<TextAttribute, Object> attribute = new TPLTuple<TextAttribute, Object>(TextAttribute.WEIGHT,
-                                                                TextAttribute.WEIGHT_BOLD);
-
+                // Highlight with bold weight
+                TPLTuple attribute
+                        = new TPLTuple(
+                                TextAttribute.WEIGHT,
+                                TextAttribute.WEIGHT_BOLD);
                 attributeMap.put(attribute, position);
+                
             } else if (c == 'i') {
-
-                // Italic Posture
-                TPLTuple<TextAttribute, Object> attribute = new TPLTuple<TextAttribute, Object>(TextAttribute.POSTURE,
-                                                                TextAttribute.POSTURE_OBLIQUE);
-
+                // Highlight with italic posture
+                TPLTuple attribute
+                        = new TPLTuple(
+                                TextAttribute.POSTURE,
+                                TextAttribute.POSTURE_OBLIQUE);
                 attributeMap.put(attribute, position);
             } else if (c == 'r') {
-
-                // Reserved Words
-                TPLTuple<TextAttribute, Object> attribute1 = new TPLTuple<TextAttribute,
-                                                                 Object>(TextAttribute.FOREGROUND, Color.BLUE);
-                TPLTuple<TextAttribute, Object> attribute2 = new TPLTuple<TextAttribute, Object>(TextAttribute.WEIGHT,
-                                                                 TextAttribute.WEIGHT_BOLD);
+                // Highlight like reserved word
+                TPLTuple attribute1
+                        = new TPLTuple(
+                                TextAttribute.FOREGROUND, Color.BLUE);
+                TPLTuple attribute2
+                        = new TPLTuple(
+                                TextAttribute.WEIGHT,
+                                TextAttribute.WEIGHT_BOLD);
 
                 attributeMap.put(attribute1, position);
                 attributeMap.put(attribute2, position);
             } else if (c == 'c') {
 
                 // Constant Literals
-                TPLTuple<TextAttribute, Object> attribute = new TPLTuple<TextAttribute,
-                                                                Object>(TextAttribute.FOREGROUND, Color.RED.darker());
+                TPLTuple attribute
+                        = new TPLTuple(
+                                TextAttribute.FOREGROUND,
+                                Color.RED.darker());
 
                 attributeMap.put(attribute, position);
             } else if (c == 't') {
 
                 // User-Defined Type Names
-                TPLTuple<TextAttribute, Object> attribute = new TPLTuple<TextAttribute,
-                                                                Object>(TextAttribute.FOREGROUND,
-                                                                    Color.MAGENTA.darker());
+                TPLTuple attribute
+                        = new TPLTuple(
+                                TextAttribute.FOREGROUND,
+                                Color.MAGENTA.darker());
 
                 attributeMap.put(attribute, position);
             } else if (c == 'h') {
 
                 // Struct or List Definitions
-                TPLTuple<TextAttribute, Object> attribute = new TPLTuple<TextAttribute,
-                                                                Object>(TextAttribute.FOREGROUND, Color.BLACK);
+                TPLTuple attribute
+                        = new TPLTuple(
+                                TextAttribute.FOREGROUND, Color.BLACK);
 
                 attributeMap.put(attribute, position);
             } else if (c == 'p') {
+                // Highlight predefined commands
+                TPLTuple attribute1
+                        = new TPLTuple(
+                                TextAttribute.FOREGROUND,
+                                Color.GREEN.darker().darker().darker());
+                TPLTuple attribute2
+                        = new TPLTuple(
+                                TextAttribute.WEIGHT,
+                                TextAttribute.WEIGHT_BOLD);
 
-                // Predefined System Commands
-                // attributeMap.put(new Pair<TextAttribute, Object>(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD), position);
-                attributeMap.put(new TPLTuple<TextAttribute, Object>(TextAttribute.FOREGROUND,
-                                              Color.GREEN.darker().darker().darker()), position);
+                attributeMap.put(attribute1, position);
+                attributeMap.put(attribute2, position);
             }
 
             unformattedString = unformattedString.concat(preString).concat(subString);
-            inputString       = newInputString;
+            inputString = newInputString;
         }
 
         AttributedString attributedString = new AttributedString(unformattedString);
 
-        
         attributedString.addAttribute(TextAttribute.FOREGROUND, Color.BLACK);
         attributedString.addAttribute(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
         attributedString.addAttribute(TextAttribute.FAMILY, Font.SANS_SERIF);
-        
-        if(EditorInstance.getInstance().getSelectedProjectEditor()!= null){
+
+        if (EditorInstance.getInstance().getSelectedProjectEditor() != null) {
             attributedString.addAttribute(TextAttribute.SIZE, EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE);
-        } 
-        else{
+        } else {
             attributedString.addAttribute(TextAttribute.SIZE, 12);
         }
-       
+
         // Fill the attributed string with attributes
         Iterator it = attributeMap.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry                       entry = (Map.Entry) it.next();
-            TPLTuple<TextAttribute, Object> key   = (TPLTuple<TextAttribute, Object>) entry.getKey();
-            TPLTuple<Integer, Integer>      value = (TPLTuple<Integer, Integer>) entry.getValue();
+            Map.Entry entry = (Map.Entry) it.next();
+            TPLTuple<TextAttribute, Object> key = (TPLTuple<TextAttribute, Object>) entry.getKey();
+            TPLTuple<Integer, Integer> value = (TPLTuple<Integer, Integer>) entry.getValue();
 
             attributedString.addAttribute(key.getFirst(), key.getSecond(), value.getFirst(), value.getSecond());
         }
@@ -175,8 +185,8 @@ public class TextFormat {
     }
 
     public static String formatConstantStringLiteral(String valueString) {
-        ArrayList<Character> charList  = new ArrayList<Character>();
-        char[]               charArray = valueString.toCharArray();
+        ArrayList<Character> charList = new ArrayList<Character>();
+        char[] charArray = valueString.toCharArray();
 
         for (int i = 0; i < charArray.length; i++) {
             if (charArray[i] == ' ') {

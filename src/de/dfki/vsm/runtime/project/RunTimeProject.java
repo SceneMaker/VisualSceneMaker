@@ -333,7 +333,7 @@ public class RunTimeProject {
         }
 
         if (!XMLUtilities.parseFromXMLStream(mSceneFlow, inputStream)) {
-            mLogger.failure("Error: Cannot parse sceneflow configuration file  in path" + path);
+            mLogger.failure("Error: Cannot parse sceneflow file  in path" + path);
             return false;
         }
         // Perform all the postprocessing steps

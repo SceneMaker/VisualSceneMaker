@@ -4,7 +4,7 @@ package de.dfki.vsm.model.sceneflow;
 
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
-import de.dfki.vsm.model.sceneflow.graphics.edge.Graphics;
+import de.dfki.vsm.model.sceneflow.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -28,7 +28,7 @@ public class IEdge extends AbstractEdge {
 
     public IEdge() {}
 
-    public IEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, Graphics graphics,
+    public IEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, EdgeGraphics graphics,
                  ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap,
                  Condition condition) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
@@ -122,7 +122,7 @@ public class IEdge extends AbstractEdge {
                 String tag = element.getTagName();
 
                 if (tag.equals("Graphics")) {
-                    mGraphics = new Graphics();
+                    mGraphics = new EdgeGraphics();
                     mGraphics.parseXML(element);
                 } else if (tag.equals("Commands")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {

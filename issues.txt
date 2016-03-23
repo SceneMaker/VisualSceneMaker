@@ -1,0 +1,2 @@
+- Plugins müssen Funktionen registrieren können um sie vom behavior flow aus aufzurufen.
+- Das Sceneflow Modell muss angepasst werden: Keine Klammern mehr notwendig, vereinfacht, siehe Diss

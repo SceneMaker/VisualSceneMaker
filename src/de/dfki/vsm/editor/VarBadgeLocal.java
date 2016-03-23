@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.VariableEntry;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.model.sceneflow.graphics.Position;
+import de.dfki.vsm.model.sceneflow.graphics.node.NodePosition;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -219,7 +219,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         setLocation(new Point(getLocation().x + vector.x, getLocation().y + vector.y));
 
         // Set the location on data model
-        mSuperNode.getLocalVariableBadge().setPosition(new Position(getLocation().x, getLocation().y));
+        mSuperNode.getLocalVariableBadge().setPosition(new NodePosition(getLocation().x, getLocation().y));
     }
 
     @Override

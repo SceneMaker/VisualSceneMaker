@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.command;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.model.sceneflow.SyntaxObject;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public abstract class Command extends Syntax {
+public abstract class Command implements SyntaxObject {
     public enum CmdType {
         PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD
     }

@@ -100,6 +100,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "false" { return new Symbol(ChartFields.BOOLEAN, new java.lang.Boolean(yytext())); }
 "null"  { return new Symbol(ChartFields.NULL); }
 "new"   { return new Symbol(ChartFields.NEW); }
+"query" { return new Symbol(ChartFields.QUERY); }
 
 [0-9]+\.[0-9]+ { return new Symbol(ChartFields.FLOAT, new java.lang.Float(yytext())); }
 [0-9]+ { return new Symbol(ChartFields.INTEGER, new java.lang.Integer(yytext())); }

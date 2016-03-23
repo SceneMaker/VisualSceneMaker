@@ -38,10 +38,10 @@ public class UnaryCond extends LogicalCond {
     public Operator getOperator() {
         return mOperator;
     }
-
-    public LogicalType getLogicalType() {
-        return LogicalType.UN;
-    }
+//
+//    public LogicalType getLogicalType() {
+//        return LogicalType.UN;
+//    }
 
     public String getAbstractSyntax() {
         return ((mOperator != null)

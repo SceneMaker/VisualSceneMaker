@@ -58,8 +58,7 @@ public class StringLiteral extends LiteralExpression {
 
     @Override
     public void writeXML(IOSIndentWriter out) {
-        out.print("<String><![CDATA[" + mValue + "]]></String>");
-        //value=\"" + mValue + "\"/>");
+        out.println("<String><![CDATA[" + mValue + "]]></String>");
     }
 
     @Override

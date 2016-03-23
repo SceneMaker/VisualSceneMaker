@@ -52,6 +52,7 @@ terminal DEFAULT, IN, EMPTY, TIMEOUT, PSG, PDA, USG, UASG;
 terminal HISTORYCLEAR, HISTORYDEEPCLEAR, HISTORYCONTAINSSTATE, HISTORYVALUEOF, HISTORYSETDEPTH, HISTORYRUNTIMEOF;
 terminal VALUEOF;
 terminal NEW;
+terminal QUERY;
 terminal java.lang.String VARIABLE;
 terminal java.lang.Integer INTEGER; 
 terminal java.lang.Float FLOAT; 
@@ -70,7 +71,7 @@ non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.L
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression lexpression;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultCond default_condition;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.InStateCond instate_condition;
-non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologCond prolog_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologQuery prolog_condition;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond unary_condition;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond binary_condition;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond comparision_condition;
@@ -154,9 +155,9 @@ expression_list ::=
 | expression:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
 | expression_list:x COMMA expression:y                                          {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
 
-/*
- * EXPRESSION
- */
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Expressions
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 expression ::=
   condition:x                                                                   {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } :}
 | conditional_expression:x                                                      {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
@@ -308,11 +309,9 @@ instate_condition ::=
   IN LPAREN VARIABLE:x RPAREN                                                   {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.InStateCond(x); :};
 
 
-/*
- * PROLOG CONDITION
- */
+// Query expression
 prolog_condition ::=
-  AT usrcmd_expression:x                                                       {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologCond(x); :};
+  QUERY LPAREN expression:x RPAREN                                                           {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologQuery(x); :};
 
 /*
  * DEFAULT CONDITION
