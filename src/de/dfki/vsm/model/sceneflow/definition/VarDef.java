@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.definition;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.model.sceneflow.SyntaxObject;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.Environment;
@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class VarDef extends Syntax {
+public class VarDef implements SyntaxObject {
     private String      mType;
     private String      mName;
     private Expression  mExp;

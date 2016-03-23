@@ -1,7 +1,8 @@
 package de.dfki.vsm.model.sceneflow;
 
+import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.graphics.edge.Graphics;
+import de.dfki.vsm.model.sceneflow.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,13 +12,13 @@ import java.util.ArrayList;
 /**
  * @author Not me
  */
-public abstract class AbstractEdge extends Syntax {
+public abstract class AbstractEdge implements ModelObject {
 
     protected String mTarget = new String();
     protected String mSource = new String();
     protected BasicNode mTargetNode = null;
     protected BasicNode mSourceNode = null;
-    protected Graphics mGraphics = null;
+    protected EdgeGraphics mGraphics = null;
     protected ArrayList<Command> mCmdList = new ArrayList<Command>();
     protected HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> mAltStartNodeMap = new HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>>();
 
@@ -29,7 +30,7 @@ public abstract class AbstractEdge extends Syntax {
     public AbstractEdge() {
     }
 
-    public AbstractEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, Graphics graphics,
+    public AbstractEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, EdgeGraphics graphics,
             ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap) {
         mTarget = target;
         mSource = source;
@@ -72,11 +73,11 @@ public abstract class AbstractEdge extends Syntax {
         mSourceNode = value;
     }
 
-    public Graphics getGraphics() {
+    public EdgeGraphics getGraphics() {
         return mGraphics;
     }
 
-    public void setGraphics(Graphics value) {
+    public void setGraphics(EdgeGraphics value) {
         mGraphics = value;
     }
 

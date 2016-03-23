@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.definition;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.model.sceneflow.SyntaxObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class MemberDef extends Syntax {
+public class MemberDef implements SyntaxObject {
     private String mType;
     private String mName;
 

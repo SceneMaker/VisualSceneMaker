@@ -52,9 +52,9 @@ public class ComparisionCond extends LogicalCond {
         return mOperator;
     }
 
-    public LogicalType getLogicalType() {
-        return LogicalType.COMP;
-    }
+//    public LogicalType getLogicalType() {
+//        return LogicalType.COMP;
+//    }
 
     public String getAbstractSyntax() {
         return ((mOperator != null)

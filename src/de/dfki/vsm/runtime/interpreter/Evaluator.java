@@ -35,7 +35,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.Comparis
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.InStateCond;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologCond;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologQuery;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
@@ -52,6 +52,9 @@ import de.dfki.vsm.runtime.interpreter.value.LongValue;
 import de.dfki.vsm.runtime.interpreter.value.ObjectValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
+import de.dfki.vsm.util.jpl.JPLEngine;
+import de.dfki.vsm.util.jpl.JPLResult;
+import de.dfki.vsm.util.jpl.JPLUtility;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -63,6 +66,7 @@ import java.util.ArrayList;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -105,37 +109,36 @@ public class Evaluator {
         // PLAY DIALOGUE ACT
         ////////////////////////////////////////////////////////////////////
         /*
-        else if (cmd instanceof PlayDialogueAct) {
+         else if (cmd instanceof PlayDialogueAct) {
 
-            // Try To Evaluate The Name Expression
-            final AbstractValue name = evaluate(((PlayDialogueAct) cmd).getArg(), env);
+         // Try To Evaluate The Name Expression
+         final AbstractValue name = evaluate(((PlayDialogueAct) cmd).getArg(), env);
 
-            // Try To Evaluate The Feature ListRecord
-            LinkedList<AbstractValue> valueList = evaluateExpList(((PlayDialogueAct) cmd).getArgList(), env);
+         // Try To Evaluate The Feature ListRecord
+         LinkedList<AbstractValue> valueList = evaluateExpList(((PlayDialogueAct) cmd).getArgList(), env);
 
-            // Check The Type of The Name Expression
-            if (name.getType() == AbstractValue.Type.STRING) {
+         // Check The Type of The Name Expression
+         if (name.getType() == AbstractValue.Type.STRING) {
 
-                // Unlock The Interpreter Lock Now
-                mInterpreter.unlock();
+         // Unlock The Interpreter Lock Now
+         mInterpreter.unlock();
 
-                // Execute The Dialogue Act Player
-                mInterpreter.getDialogPlayer().play(((StringValue) name).getValue(), valueList);
+         // Execute The Dialogue Act Player
+         mInterpreter.getDialogPlayer().play(((StringValue) name).getValue(), valueList);
 
-                // Relock The Interpreter Lock Now
-                mInterpreter.lock();
-            } else {
-                java.lang.StringLiteral errorMsg = "An error occured while executing thread "
-                        + Process.currentThread().toString() + " : "
-                        + "The dialogue act argument of the playback command '"
-                        + cmd.getConcreteSyntax() + " was evaluated to '"
-                        + name.getConcreteSyntax() + "' which is not a string constant";
+         // Relock The Interpreter Lock Now
+         mInterpreter.lock();
+         } else {
+         java.lang.StringLiteral errorMsg = "An error occured while executing thread "
+         + Process.currentThread().toString() + " : "
+         + "The dialogue act argument of the playback command '"
+         + cmd.getConcreteSyntax() + " was evaluated to '"
+         + name.getConcreteSyntax() + "' which is not a string constant";
 
-                throw new InterpreterError(cmd, errorMsg);
-            }
-        } 
-        */
-        ////////////////////////////////////////////////////////////////////
+         throw new InterpreterError(cmd, errorMsg);
+         }
+         } 
+         */ ////////////////////////////////////////////////////////////////////
         // UnblockSceneGroup
         ////////////////////////////////////////////////////////////////////
         else if (cmd instanceof UnblockSceneGroup) {
@@ -707,10 +710,18 @@ public class Evaluator {
         else if (exp instanceof InStateCond) {
             return new BooleanValue(mInterpreter.getConfiguration().isInState(((InStateCond) exp).getState()));
         } ////////////////////////////////////////////////////////////////////
-        // IN-STATE CONDITION
+        // PROLOG CONDITION
         ////////////////////////////////////////////////////////////////////
-        else if (exp instanceof PrologCond) {
-            return evaluate(((PrologCond) exp).getUsrCmd(), env);
+        else if (exp instanceof PrologQuery) {
+            //return evaluate(((PrologQuery) exp).getExpression(), env);
+
+            final AbstractValue query = evaluate(((PrologQuery) exp).getExpression(), env);
+            if (query instanceof StringValue) {
+                return new BooleanValue(executeQuery(((StringValue) query).getValue(), env));
+            } else {
+                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+            }
+
         } //
         ////////////////////////////////////////////////////////////////////
         // VALUE-OF EXPRESSION
@@ -760,9 +771,9 @@ public class Evaluator {
             try {
                 result = executeUsrCmd((UsrCmd) exp, env);
             } catch (Exception e) {
-                
+
                 e.printStackTrace();
-                
+
                 throw new InterpreterError(exp, "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
             }
             if (result instanceof Boolean) {
@@ -1045,5 +1056,52 @@ public class Evaluator {
             throw e;
         }
         //return null;
+    }
+
+    public final boolean executeQuery(final String querystr, final Environment env) {
+
+        mLogger.warning("Executing Prolog Query '" + querystr + "'");
+        
+        // Make The Query To The KB
+        final JPLResult result = JPLEngine.query(querystr);
+
+        // Check The Query Results
+        if (result.size() == 1) {
+
+            // Get The First And Single Substitution
+            HashMap<String, String> subst = result.getFirst();
+
+            // Try To Set The Variables Locally
+            // Because A Local Thread Is Trying
+//            try {
+            // Set The Variables In The Environment
+            for (Map.Entry<String, String> entry : subst.entrySet()) {
+                try {
+
+                    mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue() + " Via Prolog Query");
+
+                    // This call returns nothing if the variable exists and and throws an exeption
+                    env.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
+
+                } catch (Exception exc) {
+
+                    // Print Debug Information
+                    mLogger.failure(exc.toString());
+                }
+            }
+//            } 
+//            catch (Exception exc) {
+//
+//                // Try To Set The Variables Globally
+//                // Because An Extern Thread Is Trying
+//                for (Map.Entry<String, String> entry : subst.entrySet()) {
+//                    RunTimeInstance.getInstance().setVariable(mProject, entry.getKey(), entry.getValue());
+//                }
+//            }
+
+            return true;
+        } else {
+            return false;
+        }
     }
 }

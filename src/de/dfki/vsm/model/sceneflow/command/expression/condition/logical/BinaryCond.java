@@ -48,9 +48,9 @@ public class BinaryCond extends LogicalCond {
         return mOperator;
     }
 
-    public LogicalType getLogicalType() {
-        return LogicalType.BIN;
-    }
+//    public LogicalType getLogicalType() {
+//        return LogicalType.BIN;
+//    }
 
     public String getAbstractSyntax() {
         return ((mOperator != null)
