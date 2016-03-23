@@ -7,12 +7,12 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.runtime.interpreter.symbol.SymbolTable;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
+import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -100,7 +100,7 @@ public class SystemHistory {
 //  ////////////////
     public static class Entry implements Copyable {
         private final HashMap<String, Node> mChildNodeMap = new HashMap<String, Node>();
-        private final Vector<Command>       mCommandList  = new Vector<Command>();
+        private final ArrayList<Command>       mCommandList  = new ArrayList<Command>();
         private final Node                  mNode;
         private SymbolTable                 mSymbolTable;
         private final long                  mStartTime;

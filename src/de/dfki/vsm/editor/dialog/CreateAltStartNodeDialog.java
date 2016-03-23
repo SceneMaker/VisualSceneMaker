@@ -13,7 +13,7 @@ import de.dfki.vsm.model.sceneflow.Node;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 
@@ -140,7 +140,7 @@ public class CreateAltStartNodeDialog extends Dialog {
     private void loadSubstitutableStartNodes() {
 
         // Create the nodes to select as  start nodes
-        Vector<Node> substitutableStartNodeList = mAltStartNodeManager.getSubstitutableStartNodes();
+        ArrayList<Node> substitutableStartNodeList = mAltStartNodeManager.getSubstitutableStartNodes();
 
         ((DefaultComboBoxModel) mStartNodeComboBox.getModel()).addElement("none");
 

@@ -6,31 +6,31 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * @author Not me
  */
 public class UsrCmd extends Expression {
     private String             mName;
-    private Vector<Expression> mArgList;
+    private ArrayList<Expression> mArgList;
 
     public UsrCmd() {
         mName    = new String();
-        mArgList = new Vector<Expression>();
+        mArgList = new ArrayList<Expression>();
     }
 
     public UsrCmd(String name) {
         mName    = name;
-        mArgList = new Vector<Expression>();
+        mArgList = new ArrayList<Expression>();
     }
 
-    public UsrCmd(String name, Vector<Expression> argList) {
+    public UsrCmd(String name, ArrayList<Expression> argList) {
         mName    = name;
         mArgList = argList;
     }
@@ -43,11 +43,11 @@ public class UsrCmd extends Expression {
         mName = value;
     }
 
-    public Vector<Expression> getArgList() {
+    public ArrayList<Expression> getArgList() {
         return mArgList;
     }
 
-    public void setArgList(Vector<Expression> value) {
+    public void setArgList(ArrayList<Expression> value) {
         mArgList = value;
     }
 
@@ -55,8 +55,8 @@ public class UsrCmd extends Expression {
         return mArgList.size();
     }
 
-    public Vector<Expression> getCopyOfArgList() {
-        Vector<Expression> copy = new Vector<Expression>();
+    public ArrayList<Expression> getCopyOfArgList() {
+        ArrayList<Expression> copy = new ArrayList<Expression>();
 
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());

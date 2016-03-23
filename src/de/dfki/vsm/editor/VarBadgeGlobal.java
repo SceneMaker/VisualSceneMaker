@@ -1,7 +1,5 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.VariableEntry;
@@ -12,9 +10,6 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,29 +21,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
-
 import java.text.AttributedString;
-
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Vector;
-
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class VarBadgeGlobal extends JComponent implements EventListener, ActionListener, Observer {
 
     //
-    private final Vector<VariableEntry> mEntryList = new Vector<VariableEntry>();
+    private final ArrayList<VariableEntry> mEntryList = new ArrayList<VariableEntry>();
 
     // TODO: Make format of variable badge as global preferences
-    private final int              mPositionOffset = 10;
-    private final LOGDefaultLogger mLogger         = LOGDefaultLogger.getInstance();
+    private final int mPositionOffset = 10;
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     // The supernode
     private final SuperNode mSuperNode;
@@ -61,7 +53,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     //
     private final JMenuItem mHideBadgeMenuItem;
     private final JMenuItem mShowBadgeMenuItem;
-    private boolean         mIsHidden;
+    private boolean mIsHidden;
 
     public VarBadgeGlobal(SuperNode superNode, boolean hidden) {
 
@@ -74,11 +66,11 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         mEntryList.clear();
 
         while (parentNode != null) {
-            Vector<VarDef> varDefList = parentNode.getVarDefList();
+            ArrayList<VarDef> varDefList = parentNode.getVarDefList();
 
             for (VarDef varDef : varDefList) {
                 mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                                         TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                        TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
             }
 
             parentNode = parentNode.getParentNode();
@@ -87,8 +79,8 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         // Initialize size and location
         setSize(new Dimension(1, 1));
         setLocation(superNode.getGlobalVariableBadge().getPosition().getXPos(),
-                    superNode.getGlobalVariableBadge().getPosition().getYPos());
-        mIsHidden          = hidden;
+                superNode.getGlobalVariableBadge().getPosition().getYPos());
+        mIsHidden = hidden;
         mHideBadgeMenuItem = new JMenuItem("Hide");
         mHideBadgeMenuItem.addActionListener(this);
         mShowBadgeMenuItem = new JMenuItem("Show");
@@ -96,12 +88,12 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     private Dimension computeTextRectSize(Graphics2D graphics) {
-        int width  = 0,
-            height = 0;
+        int width = 0,
+                height = 0;
 
         for (VariableEntry entry : mEntryList) {
             TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
-            int        advance    = (int) textLayout.getVisibleAdvance();
+            int advance = (int) textLayout.getVisibleAdvance();
 
             if (advance > width) {
                 width = advance;
@@ -123,7 +115,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     public synchronized void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
 
-        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE &&!mEntryList.isEmpty()) {
+        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE && !mEntryList.isEmpty()) {
             if (mIsHidden) {
 
                 // Enable antialiasing
@@ -167,14 +159,14 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
                 for (VariableEntry entry : mEntryList) {
                     AttributedString attributedString = entry.getAttributed();
-                    TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
-                                                            graphics.getFontRenderContext());
+                    TextLayout textLayout = new TextLayout(attributedString.getIterator(),
+                            graphics.getFontRenderContext());
 
                     currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
                     graphics.drawString(attributedString.getIterator(), mPositionOffset,
-                                        mPositionOffset + currentDrawingOffset);
+                            mPositionOffset + currentDrawingOffset);
                     currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
-                                           + (int) textLayout.getDescent();
+                            + (int) textLayout.getDescent();
                 }
             }
         }
@@ -226,7 +218,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
             }
 
             menu.show(this, (int) (this.getAlignmentX() + this.getWidth()),
-                      (int) (this.getAlignmentY() + this.getHeight()));
+                    (int) (this.getAlignmentY() + this.getHeight()));
         }
     }
 
@@ -243,7 +235,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     // TODO: do we need this?
     public void deSelect() {
         mSelected = false;
-        mDragged  = false;
+        mDragged = false;
     }
 
     public void updateLocation(Point vector) {
@@ -254,7 +246,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         // Set the location on data model
         mSuperNode.getGlobalVariableBadge().setPosition(new Position(getLocation().x, getLocation().y));
     }
-    
+
     @Override
     public void update(Observable o, Object obj) {
 
@@ -271,7 +263,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
                 // if (!containsEntryFor(varName)) {
                 mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                                         TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                        TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
 
                 // }
             }
@@ -290,12 +282,11 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
             repaint();
         }
     }
-    
+
     private void updateVariable(TPLTuple<String, String> varVal) {
-        
-        synchronized(mEntryList) {
-            
-            
+
+        synchronized (mEntryList) {
+
             // System.err.println("updateVariable");
             for (VariableEntry entry : mEntryList) {
                 String var = entry.getVarName();    // the name of the current variable
@@ -303,13 +294,13 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
                 if (var.equals(varVal.getFirst())) {
                     TPLTuple<String, AttributedString> formatedPair = TextFormat.fillWithAttributes("#r#" + typ + " " + var
-                                                                         + " = " + varVal.getSecond());
+                            + " = " + varVal.getSecond());
 
                     entry.setFormatted(formatedPair.getFirst());
                     entry.setAttributed(formatedPair.getSecond());
                     entry.setHasChanged(true);
                 }
             }
-        } 
+        }
     }
 }

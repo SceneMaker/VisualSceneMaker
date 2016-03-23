@@ -7,12 +7,12 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * A struct constant.
@@ -22,28 +22,28 @@ import java.util.Vector;
 public class Struct extends Constant {
 
     // private java.lang.String mType;
-    // private Vector<Expression> mExpList;
-    private Vector<Assignment> mExpList;
+    // private ArrayList<Expression> mExpList;
+    private ArrayList<Assignment> mExpList;
 
     public Struct() {
 
         // mType = new java.lang.String();
-        // mExpList = new Vector<Expression>();
-        mExpList = new Vector<Assignment>();
+        // mExpList = new ArrayList<Expression>();
+        mExpList = new ArrayList<Assignment>();
     }
 
-    public Struct( /* java.lang.String type,Vector<Expression> */Vector<Assignment> expList) {
+    public Struct( /* java.lang.String type,ArrayList<Expression> */ArrayList<Assignment> expList) {
 
         // mType = type;
         mExpList = expList;
     }
 
-    public /* Vector<Expression> */ Vector<Assignment> getExpList() {
+    public /* ArrayList<Expression> */ ArrayList<Assignment> getExpList() {
         return mExpList;
     }
 
-    public Vector< /* Expression */Assignment> getCopyOfExpList() {
-        Vector< /* Expression */Assignment> copy = new Vector< /* Expression */Assignment>();
+    public ArrayList< /* Expression */Assignment> getCopyOfExpList() {
+        ArrayList< /* Expression */Assignment> copy = new ArrayList< /* Expression */Assignment>();
 
         for ( /* Expression */Assignment exp : mExpList) {
             copy.add(exp.getCopy());

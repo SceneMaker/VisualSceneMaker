@@ -32,9 +32,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.AttributedString;
-
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -55,8 +53,8 @@ public class MonitorDialog extends JDialog implements EventListener
     private JTable mLocalVariableTable;
     private HintTextField mInputTextField;
     private JScrollPane mVariableScrollPane;
-    private Vector<VarDef> mGlobalVarDefListData;
-    private Vector<VarDef> mLocalVarDefListData;
+    private ArrayList<VarDef> mGlobalVarDefListData;
+    private ArrayList<VarDef> mLocalVarDefListData;
     private static EditorProject mEditorProject;
     private JLabel errorMsg;
     

@@ -11,12 +11,12 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -28,13 +28,13 @@ public class Node extends Syntax {
     protected String          mComment       = new String();
     protected boolean         mExhaustive    = Boolean.FALSE;
     protected boolean         mPreserving    = Boolean.FALSE;
-    protected Vector<TypeDef> mTypeDefList   = new Vector<TypeDef>();
-    protected Vector<VarDef>  mVarDefList    = new Vector<VarDef>();
-    protected Vector<Command> mCmdList       = new Vector<Command>();
-    protected Vector<CEdge>   mCEdgeList     = new Vector<CEdge>();
-    protected Vector<PEdge>   mPEdgeList     = new Vector<PEdge>();
-    protected Vector<IEdge>   mIEdgeList     = new Vector<IEdge>();
-    protected Vector<FEdge>   mFEdgeList     = new Vector<FEdge>();
+    protected ArrayList<TypeDef> mTypeDefList   = new ArrayList<TypeDef>();
+    protected ArrayList<VarDef>  mVarDefList    = new ArrayList<VarDef>();
+    protected ArrayList<Command> mCmdList       = new ArrayList<Command>();
+    protected ArrayList<CEdge>   mCEdgeList     = new ArrayList<CEdge>();
+    protected ArrayList<PEdge>   mPEdgeList     = new ArrayList<PEdge>();
+    protected ArrayList<IEdge>   mIEdgeList     = new ArrayList<IEdge>();
+    protected ArrayList<FEdge>   mFEdgeList     = new ArrayList<FEdge>();
     protected Edge            mDEdge         = null;
     protected Graphics        mGraphics      = null;
     protected SuperNode       mParentNode    = null;
@@ -260,23 +260,23 @@ public class Node extends Syntax {
     }
 
     public void setVarDefAt(VarDef varDef, int index) {
-        mVarDefList.setElementAt(varDef, index);
+        mVarDefList.set(index, varDef);
     }
 
     public void removeVarDefAt(int index) {
-        mVarDefList.removeElementAt(index);
+        mVarDefList.remove(index);
     }
 
-    public void setVarDefList(Vector<VarDef> value) {
+    public void setVarDefList(ArrayList<VarDef> value) {
         mVarDefList = value;
     }
 
-    public Vector<VarDef> getVarDefList() {
+    public ArrayList<VarDef> getVarDefList() {
         return mVarDefList;
     }
 
-    public Vector<VarDef> getCopyOfVarDefList() {
-        Vector<VarDef> copy = new Vector<VarDef>();
+    public ArrayList<VarDef> getCopyOfVarDefList() {
+        ArrayList<VarDef> copy = new ArrayList<VarDef>();
         for (VarDef varDef : mVarDefList) {
             copy.add(varDef.getCopy());
         }
@@ -292,18 +292,18 @@ public class Node extends Syntax {
     }
 
     public void setCmdAt(Command cmd, int index) {
-        mCmdList.setElementAt(cmd, index);
+        mCmdList.set(index, cmd);
     }
 
     public void removeCmdAt(int index) {
-        mCmdList.removeElementAt(index);
+        mCmdList.remove(index);
     }
 
-    public void setCmdList(Vector<Command> value) {
+    public void setCmdList(ArrayList<Command> value) {
         mCmdList = value;
     }
 
-    public Vector<Command> getCmdList() {
+    public ArrayList<Command> getCmdList() {
         return mCmdList;
     }
 
@@ -311,8 +311,8 @@ public class Node extends Syntax {
         return mCmdList.size();
     }
 
-    public Vector<Command> getCopyOfCmdList() {
-        Vector<Command> copy = new Vector<Command>();
+    public ArrayList<Command> getCopyOfCmdList() {
+        ArrayList<Command> copy = new ArrayList<Command>();
 
         for (Command cmd : mCmdList) {
             copy.add(cmd.getCopy());
@@ -330,18 +330,18 @@ public class Node extends Syntax {
     }
 
     public void setTypeDefAt(TypeDef typeDef, int index) {
-        mTypeDefList.setElementAt(typeDef, index);
+        mTypeDefList.set(index, typeDef);
     }
 
     public void removeTypeDefAt(int index) {
-        mTypeDefList.removeElementAt(index);
+        mTypeDefList.remove(index);
     }
 
-    public Vector<TypeDef> getTypeDefList() {
+    public ArrayList<TypeDef> getTypeDefList() {
         return mTypeDefList;
     }
 
-    public void setTypeDefList(Vector<TypeDef> value) {
+    public void setTypeDefList(ArrayList<TypeDef> value) {
         mTypeDefList = value;
     }
 
@@ -349,8 +349,8 @@ public class Node extends Syntax {
         return mTypeDefList.size();
     }
 
-    public Vector<TypeDef> getCopyOfTypeDefList() {
-        Vector<TypeDef> copy = new Vector<TypeDef>();
+    public ArrayList<TypeDef> getCopyOfTypeDefList() {
+        ArrayList<TypeDef> copy = new ArrayList<TypeDef>();
         
         for (TypeDef def : mTypeDefList) {
             copy.add(def.getCopy());
@@ -372,19 +372,19 @@ public class Node extends Syntax {
     }
 
     public void removeAllCEdges() {
-        mCEdgeList = new Vector<CEdge>();
+        mCEdgeList = new ArrayList<CEdge>();
     }
 
     public int getSizeOfCEdgeList() {
         return mCEdgeList.size();
     }
 
-    public Vector<CEdge> getCEdgeList() {
+    public ArrayList<CEdge> getCEdgeList() {
         return mCEdgeList;
     }
 
-    public Vector<CEdge> getCopyOfCEdgeList() {
-        Vector<CEdge> copy = new Vector<CEdge>();
+    public ArrayList<CEdge> getCopyOfCEdgeList() {
+        ArrayList<CEdge> copy = new ArrayList<CEdge>();
 
         for (CEdge edge : mCEdgeList) {
             copy.add(edge.getCopy());
@@ -402,10 +402,10 @@ public class Node extends Syntax {
     }
 
     public void removeAllFEdges() {
-        mFEdgeList = new Vector<FEdge>();
+        mFEdgeList = new ArrayList<FEdge>();
     }
 
-    public Vector<FEdge> getFEdgeList() {
+    public ArrayList<FEdge> getFEdgeList() {
         return mFEdgeList;
     }
 
@@ -422,19 +422,19 @@ public class Node extends Syntax {
     }
 
     public void removeAllPEdges() {
-        mPEdgeList = new Vector<PEdge>();
+        mPEdgeList = new ArrayList<PEdge>();
     }
 
     public int getSizeOfPEdgeList() {
         return mPEdgeList.size();
     }
 
-    public Vector<PEdge> getPEdgeList() {
+    public ArrayList<PEdge> getPEdgeList() {
         return mPEdgeList;
     }
 
-    public Vector<PEdge> getCopyOfPEdgeList() {
-        Vector<PEdge> copy = new Vector<PEdge>();
+    public ArrayList<PEdge> getCopyOfPEdgeList() {
+        ArrayList<PEdge> copy = new ArrayList<PEdge>();
 
         for (PEdge edge : mPEdgeList) {
             copy.add(edge.getCopy());
@@ -456,19 +456,19 @@ public class Node extends Syntax {
     }
 
     public void removeAllIEdges() {
-        mIEdgeList = new Vector<IEdge>();
+        mIEdgeList = new ArrayList<IEdge>();
     }
 
     public int getSizeOfIEdgeList() {
         return mIEdgeList.size();
     }
 
-    public Vector<IEdge> getIEdgeList() {
+    public ArrayList<IEdge> getIEdgeList() {
         return mIEdgeList;
     }
 
-    public Vector<IEdge> getCopyOfIEdgeList() {
-        Vector<IEdge> copy = new Vector<IEdge>();
+    public ArrayList<IEdge> getCopyOfIEdgeList() {
+        ArrayList<IEdge> copy = new ArrayList<IEdge>();
 
         for (IEdge edge : mIEdgeList) {
             copy.add(edge.getCopy());
@@ -477,8 +477,8 @@ public class Node extends Syntax {
         return copy;
     }
 
-    public Vector<Edge> getEdgeList() {
-        Vector<Edge> edgeList = new Vector<Edge>();
+    public ArrayList<Edge> getEdgeList() {
+        ArrayList<Edge> edgeList = new ArrayList<Edge>();
 
         for (CEdge edge : mCEdgeList) {
             edgeList.add(edge);
@@ -509,8 +509,8 @@ public class Node extends Syntax {
         }
     }
 
-    public Vector<Node> getReachableNodeList() {
-        Vector<Node> reachableNodeList = new Vector<Node>();
+    public ArrayList<Node> getReachableNodeList() {
+        ArrayList<Node> reachableNodeList = new ArrayList<Node>();
 
         reachableNodeList.add(this);
         fillReachableNodeList(reachableNodeList);
@@ -518,7 +518,7 @@ public class Node extends Syntax {
         return reachableNodeList;
     }
 
-    private void fillReachableNodeList(Vector<Node> fromSourceReachableNodeList) {
+    private void fillReachableNodeList(ArrayList<Node> fromSourceReachableNodeList) {
         for (Edge edge : getEdgeList()) {
             Node targetNode = edge.getTargetNode();
 

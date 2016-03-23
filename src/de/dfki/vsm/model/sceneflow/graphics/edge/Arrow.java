@@ -6,12 +6,12 @@ import de.dfki.vsm.model.sceneflow.Syntax;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * An arrow of an edge.
@@ -19,21 +19,21 @@ import java.util.Vector;
  * @author Not me
  */
 public class Arrow extends Syntax {
-    private Vector<Point> mPointList;
+    private ArrayList<Point> mPointList;
 
     public Arrow() {
-        mPointList = new Vector<Point>();
+        mPointList = new ArrayList<Point>();
     }
 
-    public Arrow(Vector<Point> pointList) {
+    public Arrow(ArrayList<Point> pointList) {
         mPointList = pointList;
     }
 
-    public void setPointList(Vector<Point> value) {
+    public void setPointList(ArrayList<Point> value) {
         mPointList = value;
     }
 
-    public Vector<Point> getPointList() {
+    public ArrayList<Point> getPointList() {
         return mPointList;
     }
 
@@ -41,8 +41,8 @@ public class Arrow extends Syntax {
         return mPointList.size();
     }
 
-    public Vector<Point> getCopyOfPointList() {
-        Vector<Point> copy = new Vector<Point>();
+    public ArrayList<Point> getCopyOfPointList() {
+        ArrayList<Point> copy = new ArrayList<Point>();
 
         for (Point point : mPointList) {
             copy.add(point.getCopy());

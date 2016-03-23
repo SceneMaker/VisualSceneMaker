@@ -7,12 +7,12 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  *
@@ -21,15 +21,15 @@ import java.util.Vector;
 public class List extends Constant {
 
     // private java.lang.String mType;
-    private Vector<Expression> mExpList;
+    private ArrayList<Expression> mExpList;
 
     public List() {
 
         // mType = new java.lang.String();
-        mExpList = new Vector<Expression>();
+        mExpList = new ArrayList<Expression>();
     }
 
-    public List( /* java.lang.String type, */Vector<Expression> expList) {
+    public List( /* java.lang.String type, */ArrayList<Expression> expList) {
 
         // mType = type;
         mExpList = expList;
@@ -41,16 +41,16 @@ public class List extends Constant {
     // public void setType(java.lang.String type) {
     // mType = type;
     // }
-    public Vector<Expression> getExpList() {
+    public ArrayList<Expression> getExpList() {
         return mExpList;
     }
 
-    public void setExpList(Vector<Expression> expList) {
+    public void setExpList(ArrayList<Expression> expList) {
         mExpList = expList;
     }
 
-    public Vector<Expression> getCopyOfExpList() {
-        Vector<Expression> copy = new Vector<Expression>();
+    public ArrayList<Expression> getCopyOfExpList() {
+        ArrayList<Expression> copy = new ArrayList<Expression>();
 
         for (Expression exp : mExpList) {
             copy.add(exp.getCopy());

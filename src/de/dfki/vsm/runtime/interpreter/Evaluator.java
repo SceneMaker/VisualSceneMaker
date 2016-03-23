@@ -6,7 +6,6 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
 import de.dfki.vsm.model.sceneflow.command.HistoryDeepClear;
 import de.dfki.vsm.model.sceneflow.command.HistorySetDepth;
-import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups;
 import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
@@ -60,11 +59,11 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -802,7 +801,7 @@ public class Evaluator {
      * Evaluate a list of expressions
      *
      */
-    public LinkedList<AbstractValue> evaluateExpList(Vector<Expression> expList, Environment env)
+    public LinkedList<AbstractValue> evaluateExpList(ArrayList<Expression> expList, Environment env)
             throws InterpreterError /*
      * , InterruptException, TerminatedException
      */ {
@@ -822,7 +821,7 @@ public class Evaluator {
      * Evaluate a list of struct member assignments
      *
      */
-    public HashMap<java.lang.String, AbstractValue> evaluateAsgList(Vector<Assignment> expList, Environment env)
+    public HashMap<java.lang.String, AbstractValue> evaluateAsgList(ArrayList<Assignment> expList, Environment env)
             throws InterpreterError /*
      * , InterruptException, TerminatedException
      */ {

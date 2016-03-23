@@ -40,6 +40,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
+import java.util.ArrayList;
 
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -48,7 +49,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 import java.util.Timer;
-import java.util.Vector;
 
 import javax.swing.JComponent;
 
@@ -657,9 +657,9 @@ public final class Node extends JComponent implements EventListener, Observer {
         return dp;
     }
 
-    public Vector<Point> getEdgeStartPoints() {
-        Vector<Point> fDP    = mDockingManager.getFreeDockPoints();
-        Vector<Point> points = new Vector<>();
+    public ArrayList<Point> getEdgeStartPoints() {
+        ArrayList<Point> fDP    = mDockingManager.getFreeDockPoints();
+        ArrayList<Point> points = new ArrayList<>();
         Point         loc    = getLocation();
 
         for (Point p : fDP) {

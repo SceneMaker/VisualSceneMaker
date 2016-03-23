@@ -1,46 +1,42 @@
 package de.dfki.vsm.model.sceneflow;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.graphics.edge.Graphics;
 import de.dfki.vsm.util.tpl.TPLTuple;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * @author Not me
  */
 public abstract class Edge extends Syntax {
-    protected String                                                  mTarget          = new String();
-    protected String                                                  mSource          = new String();
-    protected Node                                                    mTargetNode      = null;
-    protected Node                                                    mSourceNode      = null;
-    protected Graphics                                                mGraphics        = null;
-    protected Vector<Command>                                         mCmdList         = new Vector<Command>();
-    protected HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> mAltStartNodeMap = new HashMap<TPLTuple<String,
-                                                                                             Node>, TPLTuple<String,
-                                                                                                 Node>>();
+
+    protected String mTarget = new String();
+    protected String mSource = new String();
+    protected Node mTargetNode = null;
+    protected Node mSourceNode = null;
+    protected Graphics mGraphics = null;
+    protected ArrayList<Command> mCmdList = new ArrayList<Command>();
+    protected HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> mAltStartNodeMap = new HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>>();
 
     public enum Type {
+
         CEdge, EEdge, IEdge, PEdge, TEdge, FEdge
     }
 
-    public Edge() {}
+    public Edge() {
+    }
 
     public Edge(String target, String source, Node targetNode, Node sourceNode, Graphics graphics,
-                Vector<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap) {
-        mTarget          = target;
-        mSource          = source;
-        mTargetNode      = targetNode;
-        mSourceNode      = sourceNode;
-        mGraphics        = graphics;
-        mCmdList         = cmdList;
+            ArrayList<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap) {
+        mTarget = target;
+        mSource = source;
+        mTargetNode = targetNode;
+        mSourceNode = sourceNode;
+        mGraphics = graphics;
+        mCmdList = cmdList;
         mAltStartNodeMap = altStartNodeMap;
     }
 
@@ -84,16 +80,16 @@ public abstract class Edge extends Syntax {
         mGraphics = value;
     }
 
-    public Vector<Command> getCmdList() {
+    public ArrayList<Command> getCmdList() {
         return mCmdList;
     }
 
-    public void setCmdList(Vector<Command> value) {
+    public void setCmdList(ArrayList<Command> value) {
         mCmdList = value;
     }
 
-    public Vector<Command> getCopyOfCmdList() {
-        Vector<Command> copy = new Vector<Command>();
+    public ArrayList<Command> getCopyOfCmdList() {
+        ArrayList<Command> copy = new ArrayList<Command>();
 
         for (Command cmd : mCmdList) {
             copy.add(cmd.getCopy());
@@ -102,8 +98,8 @@ public abstract class Edge extends Syntax {
         return copy;
     }
 
-    public Vector<Node> getAltStartNodeList() {
-        Vector<Node> altStartNodeList = new Vector<Node>();
+    public ArrayList<Node> getAltStartNodeList() {
+        ArrayList<Node> altStartNodeList = new ArrayList<Node>();
 
         for (TPLTuple<String, Node> pair : mAltStartNodeMap.values()) {
             altStartNodeList.add(pair.getSecond());
@@ -122,18 +118,17 @@ public abstract class Edge extends Syntax {
 
     // TODO: This is not yet a deep copy
     public HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> getCopyOfAltStartNodeMap() {
-        HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> copy = new HashMap<TPLTuple<String, Node>,
-                                                                           TPLTuple<String, Node>>();
+        HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> copy = new HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>>();
         Iterator it = mAltStartNodeMap.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry              pairs             = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair     = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodePair  = (TPLTuple<String, Node>) pairs.getValue();
+            Map.Entry pairs = (Map.Entry) it.next();
+            TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
+            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
             TPLTuple<String, Node> startNodePairCopy = new TPLTuple<String, Node>(startNodePair.getFirst(),
-                                                           startNodePair.getSecond());
+                    startNodePair.getSecond());
             TPLTuple<String, Node> altStartNodePairCopy = new TPLTuple<String, Node>(altStartNodePair.getFirst(),
-                                                              altStartNodePair.getSecond());
+                    altStartNodePair.getSecond());
 
             copy.put(startNodePairCopy, altStartNodePairCopy);
         }
@@ -143,13 +138,13 @@ public abstract class Edge extends Syntax {
 
     // TODO: do this over the list of strings
     public String getAltStartNodesAsString() {
-        String   result = "";
-        Iterator it     = mAltStartNodeMap.entrySet().iterator();
+        String result = "";
+        Iterator it = mAltStartNodeMap.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry              pairs = (Map.Entry) it.next();
+            Map.Entry pairs = (Map.Entry) it.next();
             TPLTuple<String, Node> start = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> alt   = (TPLTuple<String, Node>) pairs.getValue();
+            TPLTuple<String, Node> alt = (TPLTuple<String, Node>) pairs.getValue();
 
             result += start.getFirst() + "/" + alt.getFirst() + ";";
         }

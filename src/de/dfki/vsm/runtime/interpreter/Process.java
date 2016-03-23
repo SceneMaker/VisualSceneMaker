@@ -23,11 +23,11 @@ import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.util.Collection;
 import java.util.Random;
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -43,8 +43,8 @@ public class Process extends java.lang.Thread {
 	private Edge mInterruptEdge = null;
 	private Edge mNextEdge = null;
 	private Edge mIncomingEdge = null;
-	private final Vector<Process> mChildThreadList = new Vector<Process>();
-	private final Vector<Process> mAddChildThreadList = new Vector<Process>();
+	private final ArrayList<Process> mChildThreadList = new ArrayList<Process>();
+	private final ArrayList<Process> mAddChildThreadList = new ArrayList<Process>();
 	private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 	private final Configuration mConfiguration;
 	private final SystemHistory mSystemHistory;
@@ -571,7 +571,7 @@ public class Process extends java.lang.Thread {
 				/////////////////////////////////////////////////////////////
 				// FIND NEXT EDGE
 				////////////////////////////////////////////////////////////
-				Vector<FEdge> nextEdgeList = mCurrentNode.getFEdgeList();
+				ArrayList<FEdge> nextEdgeList = mCurrentNode.getFEdgeList();
 
 				if (nextEdgeList.isEmpty()) {
 
@@ -672,7 +672,7 @@ public class Process extends java.lang.Thread {
 					mInterpreter.lock();
 					checkStatus();
 
-					Vector<Process> forkThreadList = new Vector<Process>();
+					ArrayList<Process> forkThreadList = new ArrayList<Process>();
 
 					for (Edge edge : nextEdgeList) {
 						Environment env = mParentThread.mEnvironment.getCopy();
@@ -728,7 +728,7 @@ public class Process extends java.lang.Thread {
 	/**
 	 */
 	private void executeStartNodeList() throws InterruptionSignal, TerminationSignal, InterpreterError {
-		Vector<Node> startNodeList = computeStartNodeList();
+		ArrayList<Node> startNodeList = computeStartNodeList();
 
 		if (!startNodeList.isEmpty()) {
 			mInterpreter.lock();
@@ -827,7 +827,7 @@ public class Process extends java.lang.Thread {
 		/**
 		 * Create a list with already dead childs
 		 */
-		Vector<Process> deadChildList = new Vector<Process>();
+		ArrayList<Process> deadChildList = new ArrayList<Process>();
 
 		for (Process thread : mChildThreadList) {
 			if (!thread.isAlive()) {
@@ -859,11 +859,11 @@ public class Process extends java.lang.Thread {
 
 	/**
 	 */
-	private Vector<Node> computeStartNodeList() {
+	private ArrayList<Node> computeStartNodeList() {
 
 		/**
 		 */
-		Vector<Node> startNodeList = new Vector<Node>();
+		ArrayList<Node> startNodeList = new ArrayList<Node>();
 
 		/**
 		 * Get the history node of the current node

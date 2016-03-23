@@ -6,13 +6,13 @@ import de.dfki.vsm.model.sceneflow.Edge;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.tpl.TPLTuple;
+import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * @author Patrick Gebhard
@@ -51,8 +51,8 @@ public class AltStartNodeManager {
         }
     }
 
-    public Vector<Node> getSubstitutableStartNodes() {
-        Vector<Node> substitutableStartNodeList = new Vector<Node>();
+    public ArrayList<Node> getSubstitutableStartNodes() {
+        ArrayList<Node> substitutableStartNodeList = new ArrayList<Node>();
 
         for (Node node : ((SuperNode) mEdge.getTargetNode()).getStartNodeMap().values()) {
             substitutableStartNodeList.add(node);
@@ -68,8 +68,8 @@ public class AltStartNodeManager {
         return substitutableStartNodeList;
     }
 
-    public Vector<Node> getValidAltStartNodesFor(String id) {
-        Vector<Node> validAltStartNodeList = new Vector<Node>();
+    public ArrayList<Node> getValidAltStartNodesFor(String id) {
+        ArrayList<Node> validAltStartNodeList = new ArrayList<Node>();
 
         // /
         SuperNode targetNode   = (SuperNode) mEdge.getTargetNode();
@@ -81,7 +81,7 @@ public class AltStartNodeManager {
         if (selectedNode == null) {
 
             // rwchability map
-            HashMap<Node, Vector<Node>> reachableNodeMap = new HashMap<Node, Vector<Node>>();
+            HashMap<Node, ArrayList<Node>> reachableNodeMap = new HashMap<Node, ArrayList<Node>>();
 
             for (Node node : ((SuperNode) mEdge.getTargetNode()).getStartNodeMap().values()) {
                 reachableNodeMap.put(node, node.getReachableNodeList());
@@ -91,9 +91,9 @@ public class AltStartNodeManager {
                 reachableNodeMap.put(p.getSecond(), p.getSecond().getReachableNodeList());
             }
 
-            // Vector<Node>
-            Vector<Node> possililities = ((SuperNode) mEdge.getTargetNode()).getNodeAndSuperNodeList();
-            Vector<Node> finals        = new Vector<Node>();
+            // ArrayList<Node>
+            ArrayList<Node> possililities = ((SuperNode) mEdge.getTargetNode()).getNodeAndSuperNodeList();
+            ArrayList<Node> finals        = new ArrayList<Node>();
 
             // /
             for (Node node : possililities) {
@@ -105,7 +105,7 @@ public class AltStartNodeManager {
                 while (it.hasNext()) {
                     Map.Entry    pairs = (Map.Entry) it.next();
                     Node         n     = (Node) pairs.getKey();
-                    Vector<Node> v     = (Vector<Node>) pairs.getValue();
+                    ArrayList<Node> v     = (ArrayList<Node>) pairs.getValue();
 
                     if (v.contains(node)) {
                         valid = false;
@@ -124,7 +124,7 @@ public class AltStartNodeManager {
 
             /////
             for (Node n : finals) {
-                Vector<Node> reverse = n.getReachableNodeList();
+                ArrayList<Node> reverse = n.getReachableNodeList();
 
                 ////
                 Iterator it = mAltStartNodeMap.entrySet().iterator();
@@ -146,7 +146,7 @@ public class AltStartNodeManager {
 
             // return finals;
         } else {
-            Vector<Node> reachableNodeList = selectedNode.getReachableNodeList();
+            ArrayList<Node> reachableNodeList = selectedNode.getReachableNodeList();
 
             for (Node node : reachableNodeList) {
                 if (!node.getId().equals(id)) {

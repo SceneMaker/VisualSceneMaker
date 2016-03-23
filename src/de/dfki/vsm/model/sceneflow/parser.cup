@@ -91,9 +91,9 @@ non terminal de.dfki.vsm.model.sceneflow.command.expression.Constructor construc
 non terminal de.dfki.vsm.model.sceneflow.command.expression.Expression expression;
 non terminal de.dfki.vsm.model.sceneflow.command.Assignment assignment;
 non terminal de.dfki.vsm.model.sceneflow.command.Command command;
-non terminal java.util.Vector expression_list;
-non terminal java.util.Vector assignment_list;
-non terminal java.util.Vector non_empty_expression_list;
+non terminal java.util.ArrayList expression_list;
+non terminal java.util.ArrayList assignment_list;
+non terminal java.util.ArrayList non_empty_expression_list;
 /*
  * OPERATOR PRECEDENCE DEFINITION
  */
@@ -133,26 +133,26 @@ assignment ::=
  * ASSIGNMENT LIST
  */
 assignment_list ::=
-                                                                                {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.Assignment> vec = new java.util.Vector<de.dfki.vsm.model.sceneflow.command.Assignment>(); RESULT = vec; :}
-| assignment:x                                                                  {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.Assignment> vec = new java.util.Vector<de.dfki.vsm.model.sceneflow.command.Assignment>(); vec.add(x); RESULT = vec; :}
-| assignment_list:x COMMA assignment:y                                           {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.Assignment> vec = x; vec.add(y); RESULT = x; :};
+                                                                                {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment>(); RESULT = vec; :}
+| assignment:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment>(); vec.add(x); RESULT = vec; :}
+| assignment_list:x COMMA assignment:y                                           {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment> vec = x; vec.add(y); RESULT = x; :};
 
 
 /*
  * NON_EMPTY EXPRESSION LIST
  */
 non_empty_expression_list ::=
-  expression:x                                                                  {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
-| expression_list:x COMMA expression:y                                          {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
+  expression:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
 
 
 /*
  * EXPRESSION LIST
  */
 expression_list ::= 
-                                                                                {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); RESULT = vec; :}
-| expression:x                                                                  {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
-| expression_list:x COMMA expression:y                                          {: java.util.Vector<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
+                                                                                {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); RESULT = vec; :}
+| expression:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
 
 /*
  * EXPRESSION

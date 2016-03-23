@@ -9,6 +9,7 @@ import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
@@ -17,7 +18,6 @@ import org.w3c.dom.Element;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -30,14 +30,14 @@ public class TEdge extends Edge {
 
     // PG: Allow expression for mor flexibility. Consistency check through GUI
     public TEdge(String target, String source, Node targetNode, Node sourceNode, Graphics graphics,
-                 Vector<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap,
+                 ArrayList<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap,
                  Expression expression) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
         mExpression = expression;
     }
 
     public TEdge(String target, String source, Node targetNode, Node sourceNode, Graphics graphics,
-                 Vector<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap,
+                 ArrayList<Command> cmdList, HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> altStartNodeMap,
                  long timeout) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
         mTimeout = timeout;

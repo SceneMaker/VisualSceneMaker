@@ -43,7 +43,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import java.util.HashMap;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -54,6 +53,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
 import static java.awt.Component.RIGHT_ALIGNMENT;
+import java.util.ArrayList;
 
 ///**
 // * @author Gregor Mehlmann
@@ -1164,7 +1164,7 @@ class StartNodeEditor extends AttributeEditor
     {
 
         // Create list of child nodes
-        Vector<String> nodeDataList = new Vector<>();
+        ArrayList<String> nodeDataList = new ArrayList<>();
 
         for (Node node : ((SuperNode) mDataNode).getNodeAndSuperNodeList())
         {

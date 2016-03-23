@@ -68,7 +68,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -93,7 +92,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -164,7 +162,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
     //
     private final LinkedList<VarBadgeLocal> mVarBadgeStack = new LinkedList<>();
-    private Vector<CmdBadge> mCmdBadgeList = new Vector<CmdBadge>();
+    private ArrayList<CmdBadge> mCmdBadgeList = new ArrayList<CmdBadge>();
 
     // Drag & Drop support
     private DropTarget mDropTarget;
@@ -559,7 +557,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         ArrayList<String> globalTypeDefList = new ArrayList<>();
         ArrayList<String> localVarDefList = new ArrayList<>();
         ArrayList<String> globalVarDefList = new ArrayList<>();
-        Vector<TypeDef> typeDefs = node.getDataNode().getTypeDefList();
+        ArrayList<TypeDef> typeDefs = node.getDataNode().getTypeDefList();
 
         for (TypeDef typeDef : typeDefs) {
             localTypeDefList.add(typeDef.getFormattedSyntax());
@@ -573,7 +571,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         if (parentSNss != null) {
             for (SuperNode sn : parentSNss) {
-                Vector<TypeDef> snTypeDefs = sn.getTypeDefList();
+                ArrayList<TypeDef> snTypeDefs = sn.getTypeDefList();
 
                 if (snTypeDefs.size() > 0) {
                     for (TypeDef typeDef : snTypeDefs) {
@@ -583,7 +581,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
         }
 
-        Vector<VarDef> varDefs = node.getDataNode().getVarDefList();
+        ArrayList<VarDef> varDefs = node.getDataNode().getVarDefList();
 
         for (VarDef varDef : varDefs) {
             localVarDefList.add(varDef.getFormattedSyntax());
@@ -597,7 +595,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         if (parentSNs != null) {
             for (SuperNode sn : parentSNs) {
-                Vector<VarDef> snVarDefs = sn.getVarDefList();
+                ArrayList<VarDef> snVarDefs = sn.getVarDefList();
 
                 if (snVarDefs.size() > 0) {
                     for (VarDef varDef : snVarDefs) {
@@ -1340,7 +1338,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         mEdgeSet.clear();
         mCmtSet.clear();
         mCmdBadgeMap.clear();
-        mCmdBadgeList.removeAllElements();
+        mCmdBadgeList.clear();
         mCmtSet.clear();
         removeAll();
         super.removeAll();
@@ -1374,7 +1372,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void showNodesOnWorkSpace() {
-        Vector<de.dfki.vsm.model.sceneflow.Node> nodeList
+        ArrayList<de.dfki.vsm.model.sceneflow.Node> nodeList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
 
         for (de.dfki.vsm.model.sceneflow.Node n : nodeList) {
@@ -1391,7 +1389,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             addCmdBadge(guiNode, cmdBadge);
         }
 
-        Vector<de.dfki.vsm.model.sceneflow.Comment> commentList
+        ArrayList<de.dfki.vsm.model.sceneflow.Comment> commentList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getCommentList();
 
         for (de.dfki.vsm.model.sceneflow.Comment n : commentList) {

@@ -1,16 +1,10 @@
 package de.dfki.vsm.editor.action;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import java.util.Vector;
-
+import java.util.ArrayList;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -19,7 +13,7 @@ import javax.swing.undo.CannotUndoException;
  * @author Not me
  */
 public class RemoveNodeAction extends NodeAction {
-    Vector<RemoveEdgeAction> mRemoveEdgeActionList = new Vector<RemoveEdgeAction>();
+    ArrayList<RemoveEdgeAction> mRemoveEdgeActionList = new ArrayList<RemoveEdgeAction>();
 
     public RemoveNodeAction(WorkSpacePanel workSpace, Node node) {
         mWorkSpace        = workSpace;
