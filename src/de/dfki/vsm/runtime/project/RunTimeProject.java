@@ -6,17 +6,9 @@ import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.scenescript.ActionObject;
-import de.dfki.vsm.model.scenescript.SceneEntity;
-import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.model.scenescript.SceneTurn;
-import de.dfki.vsm.model.scenescript.SceneUttr;
-import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.dialog.DialogActInterface;
-import de.dfki.vsm.runtime.dialog.DummyDialogAct;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
@@ -30,9 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * @author Gregor Mehlmann
@@ -56,12 +45,8 @@ public class RunTimeProject {
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
-    private final RunTimePlayer mScenePlayer;
-
-    // TODO:  Refactor The Dialog Act Stuff
-    // Maybe use a configuration file for that
-    private final DialogActInterface mDialogueAct = new DummyDialogAct();
-
+    private final RunTimePlayer mScenePlayer;   
+    // The runtime plugin map of the project
     private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
     // Construct an empty runtime project
@@ -282,9 +267,9 @@ public class RunTimeProject {
         return true;
     }
 
-    public void clearPlayersList() {
-        mProjectConfig.cleanPlayerList();
-    }
+//    public void clearPlayersList() {
+//        mProjectConfig.cleanPlayerList();
+//    }
 
     public boolean parseProjectConfigFromString(String xml) {
         //Parse the config file for project from a string
@@ -670,49 +655,6 @@ public class RunTimeProject {
         mLogger.message("Saved visicon configuration file '" + file + "':\n" + mVisiconConfig);
         // Return success if the project was saved
         return true;
-    }
-
-    // TODO: refactor this
-    // Get the default dialog act taxonomy of the project
-    public final DialogActInterface getDialogAct() {
-        return mDialogueAct;
-    }
-
-    private Set<String> getCharacters(SceneScript scenescript) {
-        //
-        Set<String> speakersSet = new HashSet<>();
-
-        for (SceneEntity scene : scenescript.getEntityList()) {
-
-            LinkedList<SceneTurn> sturns = ((SceneObject) scene).getTurnList();
-
-            for (SceneTurn t : sturns) {
-                if (!speakersSet.contains(t.getSpeaker())) {
-                    speakersSet.add(t.getSpeaker());
-                }
-
-                LinkedList<SceneUttr> suttr = t.getUttrList();
-
-                for (SceneUttr u : suttr) {
-                    LinkedList<UtteranceElement> words = u.getWordList();
-
-                    for (UtteranceElement word : words) {
-                        if (word instanceof ActionObject) {
-                            ActionObject ao = ((ActionObject) word);
-
-                            String agent = ao.getActor();
-
-                            if ((agent != null) && !agent.trim().isEmpty()) {
-                                if (!speakersSet.contains(agent)) {
-                                    speakersSet.add(agent);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return speakersSet;
     }
 
     // Get the hash code of the project

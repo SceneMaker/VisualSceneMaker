@@ -90,13 +90,13 @@ public class OptionsDialog extends JDialog
     private JButton mDeleteRecentFileListButton;
     private JButton mDeleteRecentFileButton;
 
-    private JComboBox mScenePlayersCombo;
+    //private JComboBox mScenePlayersCombo;
 
     private final EditorConfig mEditorConfig;
 
-    private static ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
-    private static ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
-    private JLabel mScenePlayersLabel;
+    //private static ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
+    //private static ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
+    //private JLabel mScenePlayersLabel;
 
     private OptionsDialog()
     {
@@ -473,6 +473,7 @@ public class OptionsDialog extends JDialog
 
     }
 
+    /*
     public static void loadClass()
     {
         try
@@ -483,7 +484,8 @@ public class OptionsDialog extends JDialog
             e.printStackTrace();
         }
     }
-
+    */
+    /*
     public static void getClassNamesFromPackage(String packageName) throws IOException
     {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -569,6 +571,7 @@ public class OptionsDialog extends JDialog
             }
         }
     }
+    */
 
     private void initScriptPanel()
     {
@@ -622,9 +625,9 @@ public class OptionsDialog extends JDialog
         fontAndSize.add(Box.createHorizontalGlue());
 
         //mLaunchDefaultPlayerCheckBox = new JCheckBox("Launch Default Scene Player", false);
-        loadClass();
-        mScenePlayersCombo = new JComboBox(new DefaultComboBoxModel(mScenePlayersShortNames.toArray()));
-        mScenePlayersCombo.setMaximumSize(new Dimension(200, 30));
+        //loadClass();
+        //mScenePlayersCombo = new JComboBox(new DefaultComboBoxModel(mScenePlayersShortNames.toArray()));
+        //mScenePlayersCombo.setMaximumSize(new Dimension(200, 30));
         /*mLaunchDefaultPlayerCheckBox.setOpaque(false);
         mLaunchDefaultPlayerCheckBox.addActionListener(new ActionListener() {
             @Override
@@ -634,20 +637,20 @@ public class OptionsDialog extends JDialog
             }
         });*/
 
-        mScenePlayersCombo.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                saveEditorConfig(false);
-                mEditor.refresh();
-            }
-        });
-        mScenePlayersLabel = new JLabel(" Default Scene Player");
-        Box scenePlayersBox = Box.createHorizontalBox();
-        scenePlayersBox.add(mScenePlayersLabel);
-        scenePlayersBox.add(Box.createHorizontalStrut(15));
-        scenePlayersBox.add(mScenePlayersCombo);
+//        mScenePlayersCombo.addActionListener(new ActionListener()
+//        {
+//            @Override
+//            public void actionPerformed(ActionEvent e)
+//            {
+//                saveEditorConfig(false);
+//                mEditor.refresh();
+//            }
+//        });
+        //mScenePlayersLabel = new JLabel(" Default Scene Player");
+        //Box scenePlayersBox = Box.createHorizontalBox();
+        //scenePlayersBox.add(mScenePlayersLabel);
+        //scenePlayersBox.add(Box.createHorizontalStrut(15));
+        //scenePlayersBox.add(mScenePlayersCombo);
 
         mScriptPanel = new JPanel();
         mScriptPanel.setBackground(Color.white);
@@ -656,8 +659,8 @@ public class OptionsDialog extends JDialog
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
         mScriptPanel.add(fontAndSize);
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
-        mScriptPanel.add(scenePlayersBox);
-        mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
+        //mScriptPanel.add(scenePlayersBox);
+        //mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
 
     }
 
@@ -704,6 +707,7 @@ public class OptionsDialog extends JDialog
             Integer.toString(((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty("scriptfonttype", mScriptFontComboBox.getSelectedItem().toString());
 
+        /*
         if (mScenePlayersCombo.getSelectedIndex() > 0 && dispose)
         { // 0 Is for the default configuration
 
@@ -719,7 +723,7 @@ public class OptionsDialog extends JDialog
             project.clearPlayersList();
             project.parseProjectConfigFromString(newPlayer);
         }
-
+        */
         //mEditorConfig.setProperty("launchPlayer", Boolean.toString(mLaunchDefaultPlayerCheckBox.isSelected()));
 //      Preferences.setProperty("selectedsceneplayer",
 //              (String) mScenePlayerComboBox.getSelectedItem());

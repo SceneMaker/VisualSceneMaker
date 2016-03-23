@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor.project.auxiliary.functions;
 
-//~--- non-JDK imports --------------------------------------------------------
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
@@ -11,8 +10,6 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.ParamDef;
 import de.dfki.vsm.util.evt.EventDispatcher;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.Color;
@@ -23,15 +20,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -55,13 +49,13 @@ import javax.swing.text.PlainDocument;
 /**
  *
  * @author Sergio Soto
- * 
- * Patrick Dec. 2015: This code has to be redesigned. The current approach works. The next implementation
- * should not follow the concept of constantly rebuilding every SingleFunctionContainer
- * when a new function is added. 
- * The next implementation should follow the pattern Model - View - Control. In the
+ *
+ * Patrick Dec. 2015: This code has to be redesigned. The current approach
+ * works. The next implementation should not follow the concept of constantly
+ * rebuilding every SingleFunctionContainer when a new function is added. The
+ * next implementation should follow the pattern Model - View - Control. In the
  * current implementation control is mixed with view.
- * 
+ *
  * Current status: BETA
  */
 public class SingleFunctionContainer extends JPanel {
@@ -377,7 +371,7 @@ public class SingleFunctionContainer extends JPanel {
 
             @Override
             public void keyReleased(KeyEvent evt) {
-                
+
                 //PG: This is bad code - just to fix some issues
                 initMethodComboBox(getClassNameInput().getText().trim());
                 updateFunDef();
@@ -558,7 +552,7 @@ public class SingleFunctionContainer extends JPanel {
 
         boolean isClass = true;
         boolean isObject = true;
-        
+
         try {
             Class javaClass = Class.forName(className);
 
@@ -610,7 +604,7 @@ public class SingleFunctionContainer extends JPanel {
 
             mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
 
-           mMethodComboBox.setToolTipText("");
+            mMethodComboBox.setToolTipText("");
 
             resizeArgNameList();
 
@@ -699,7 +693,7 @@ public class SingleFunctionContainer extends JPanel {
 
             if (previousSelectedMethod != null) {
 
-               if (mSelectedMethod.toString().equalsIgnoreCase(previousSelectedMethod.toString())) {
+                if (mSelectedMethod.toString().equalsIgnoreCase(previousSelectedMethod.toString())) {
 
                     // assign the previous argument name
                     for (int i = 0; (i < mFunDefBackup.getSizeOfParamList()) && (i < mArgNameList.size()); i++) {
