@@ -34,15 +34,13 @@ import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public class OptionsDialog extends JDialog
-{
+public class OptionsDialog extends JDialog {
 
     private static OptionsDialog sSingeltonInstance = null;
 
-    // private JComboBox mScenePlayerComboBox;
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final EditorInstance mEditor = EditorInstance.getInstance();
     private final Dimension mLabelDimension = new Dimension(100, 10);
@@ -51,7 +49,6 @@ public class OptionsDialog extends JDialog
     private JPanel mMainPanel;
     private JPanel mPrefPanel;
 
-    // private JPanel mScenePlayerPanel;
     private JPanel mButtonsPanel;
     private JPanel mFileListPanel;
     private JList mRecentFileList;
@@ -90,16 +87,9 @@ public class OptionsDialog extends JDialog
     private JButton mDeleteRecentFileListButton;
     private JButton mDeleteRecentFileButton;
 
-    //private JComboBox mScenePlayersCombo;
-
     private final EditorConfig mEditorConfig;
 
-    //private static ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
-    //private static ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
-    //private JLabel mScenePlayersLabel;
-
-    private OptionsDialog()
-    {
+    private OptionsDialog() {
         super(EditorInstance.getInstance(), "Preferences", false);
         EditorInstance.getInstance().addEscapeListener(this);
         mEditorConfig = mEditor.getSelectedProjectEditor().getEditorProject().getEditorConfig();
@@ -108,10 +98,8 @@ public class OptionsDialog extends JDialog
 
     }
 
-    public static OptionsDialog getInstance()
-    {
-        if (sSingeltonInstance == null)
-        {
+    public static OptionsDialog getInstance() {
+        if (sSingeltonInstance == null) {
             sSingeltonInstance = new OptionsDialog();
         }
 
@@ -120,8 +108,7 @@ public class OptionsDialog extends JDialog
         return sSingeltonInstance;
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
         initGeneralPanel();
         initFileListPanel();
         initGraphicsPanel();
@@ -133,20 +120,16 @@ public class OptionsDialog extends JDialog
         mButtonsPanel.setLayout(new BoxLayout(mButtonsPanel, BoxLayout.X_AXIS));
         mButtonsPanel.setOpaque(false);
         mOkButton = new OKButton();
-        mOkButton.addMouseListener(new java.awt.event.MouseAdapter()
-        {
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt)
-            {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 saveEditorConfig(true);
             }
         });
         mCancelButton = new CancelButton();
-        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter()
-        {
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt)
-            {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 dispose();
             }
         });
@@ -172,17 +155,13 @@ public class OptionsDialog extends JDialog
         mMainPanel.add(mPrefPanel);
         mMainPanel.add(mButtonsPanel);
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher()
-        {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
 
             @Override
-            public boolean dispatchKeyEvent(KeyEvent ke)
-            {
+            public boolean dispatchKeyEvent(KeyEvent ke) {
                 //boolean keyHandled = false;
-                if (ke.getID() == KeyEvent.KEY_PRESSED)
-                {
-                    if (ke.getKeyCode() == KeyEvent.VK_ENTER)
-                    {
+                if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                    if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
                         saveEditorConfig(true);
                     }
                 }
@@ -194,11 +173,10 @@ public class OptionsDialog extends JDialog
         setResizable(false);
         pack();
         setLocation(getParent().getLocation().x + (getParent().getWidth() - getWidth()) / 2,
-            getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
+                getParent().getLocation().y + (getParent().getHeight() - getHeight()) / 2);
     }
 
-    private void initGeneralPanel()
-    {
+    private void initGeneralPanel() {
         mXMLNSLabel = new JLabel("Namespace:");
         mXMLNSLabel.setMinimumSize(mLabelDimension);
         mXMLNSLabel.setPreferredSize(mLabelDimension);
@@ -222,18 +200,15 @@ public class OptionsDialog extends JDialog
         mXSDFileButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/search_icon_blue.png"));
         mXSDFileButton.setOpaque(false);
         mXSDFileButton.setContentAreaFilled(false);
-        mXSDFileButton.addActionListener(new ActionListener()
-        {
+        mXSDFileButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 JFileChooser file = new JFileChooser(sUSER_DIR);
 
                 file.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 file.showDialog(EditorInstance.getInstance(), "Select Sceneflow XSD");
 
-                if (file.getSelectedFile() != null)
-                {
+                if (file.getSelectedFile() != null) {
                     mXSDFileTextField.setText(file.getSelectedFile().getPath());
                 }
             }
@@ -283,33 +258,27 @@ public class OptionsDialog extends JDialog
         mGeneralPanel.add(Box.createRigidArea(new Dimension(1, 20)));
     }
 
-    private void initFileListPanel()
-    {
+    private void initFileListPanel() {
         mRecentFileList = new JList(new DefaultListModel());
         mRecentFileList.setOpaque(false);
         mRecentFileScrollPane = new JScrollPane(mRecentFileList);
         mRecentFileScrollPane.setOpaque(false);
         mRecentFileScrollPane.setBounds(140, 95, 230, 100);
         mDeleteRecentFileButton = new JButton("Remove Item");
-        mDeleteRecentFileButton.addActionListener(new ActionListener()
-        {
+        mDeleteRecentFileButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 int index = mRecentFileList.getSelectedIndex();
 
-                if (index >= 0)
-                {
+                if (index >= 0) {
                     ((DefaultListModel) mRecentFileList.getModel()).remove(index);
                 }
             }
         });
         mDeleteRecentFileListButton = new JButton("Delete List");
-        mDeleteRecentFileListButton.addActionListener(new ActionListener()
-        {
+        mDeleteRecentFileListButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 ((DefaultListModel) mRecentFileList.getModel()).clear();
             }
         });
@@ -339,17 +308,14 @@ public class OptionsDialog extends JDialog
         mFileListPanel.add(recentFileButtons);
     }
 
-    private void initGraphicsPanel()
-    {
+    private void initGraphicsPanel() {
         mGridScaleLabel = new JLabel("Grid Scale:");
         mWorkspaceFontSizeLabel = new JLabel("Font Size:");
         mGridCheckBox = new JCheckBox("Draw Grid", true);
         mGridCheckBox.setOpaque(false);
-        mGridCheckBox.addActionListener(new ActionListener()
-        {
+        mGridCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
@@ -364,55 +330,45 @@ public class OptionsDialog extends JDialog
         ((JSpinner.NumberEditor) mGridScaleSpinner.getEditor()).getTextField().setEditable(false);
         mVisualizationCheckBox = new JCheckBox("Activitiy Visualization", true);
         mVisualizationCheckBox.setOpaque(false);
-        mVisualizationCheckBox.addActionListener(new ActionListener()
-        {
+        mVisualizationCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
         });
         mVisualizationTraceCheckBox = new JCheckBox("Activity Trace", true);
         mVisualizationTraceCheckBox.setOpaque(false);
-        mVisualizationTraceCheckBox.addActionListener(new ActionListener()
-        {
+        mVisualizationTraceCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
         });
         mShowNodeIDCheckBox = new JCheckBox("Draw Node ID", true);
         mShowNodeIDCheckBox.setOpaque(false);
-        mShowNodeIDCheckBox.addActionListener(new ActionListener()
-        {
+        mShowNodeIDCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
         });
         mShowVariablesCheckBox = new JCheckBox("Show Variables", true);
         mShowVariablesCheckBox.setOpaque(false);
-        mShowVariablesCheckBox.addActionListener(new ActionListener()
-        {
+        mShowVariablesCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
         });
         mShowSmartPathDebugCheckBox = new JCheckBox("Show Smart Path Calculation", false);
         mShowSmartPathDebugCheckBox.setOpaque(false);
-        mShowSmartPathDebugCheckBox.addActionListener(new ActionListener()
-        {
+        mShowSmartPathDebugCheckBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
@@ -473,108 +429,7 @@ public class OptionsDialog extends JDialog
 
     }
 
-    /*
-    public static void loadClass()
-    {
-        try
-        {
-            getClassNamesFromPackage("de.dfki.vsm.players");
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    */
-    /*
-    public static void getClassNamesFromPackage(String packageName) throws IOException
-    {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        URL packageURL;
-        ArrayList<String> names = new ArrayList<String>();;
-
-        packageName = packageName.replace(".", "/");
-        packageURL = classLoader.getResource(packageName);
-        if (mScenePlayersShortNames.size() <= 0)
-        {
-            mScenePlayersShortNames.add("Non selected");
-
-            if (packageURL.getProtocol().equals("jar"))
-            {
-                String jarFileName;
-                JarFile jf;
-                Enumeration<JarEntry> jarEntries;
-                String entryName;
-
-                // build jar file name, then loop through zipped entries
-                jarFileName = URLDecoder.decode(packageURL.getFile(), "UTF-8");
-                jarFileName = jarFileName.substring(5, jarFileName.indexOf("!"));
-                System.out.println(">" + jarFileName);
-                jf = new JarFile(jarFileName);
-                jarEntries = jf.entries();
-
-                while (jarEntries.hasMoreElements())
-                {
-                    entryName = jarEntries.nextElement().getName();
-                    if (entryName.startsWith(packageName) && entryName.length() > packageName.length() + 5)
-                    {
-                        try
-                        {
-                            String fullClassName = entryName.replace("/", ".");
-                            entryName = fullClassName.substring(0, entryName.lastIndexOf('.'));
-                            Class classEntry = Class.forName(entryName);
-                            Class[] interfaces = classEntry.getInterfaces();
-
-                            for (Class inter : interfaces)
-                            {
-                                if (inter.getSimpleName().equals("RunTimePlayer"))
-                                {
-                                    mScenePlayersLongNames.add(entryName);
-                                    mScenePlayersShortNames.add(entryName.substring(entryName.lastIndexOf('.') + 1));
-                                }
-                            }
-                        } catch (StringIndexOutOfBoundsException e)
-                        {
-                            System.out.println(entryName);
-                            continue;
-                        } catch (ClassNotFoundException e)
-                        {
-                            System.out.println("Class not found");
-                            continue;
-                        }
-
-                    }
-                }
-
-                // loop through files in classpath
-            }
-            else
-            {
-                URI uri = null;
-                try
-                {
-                    uri = new URI(packageURL.toString());
-                } catch (URISyntaxException e)
-                {
-                    e.printStackTrace();
-                }
-                File folder = new File(uri.getPath());
-                // won't work with path which contains blank (%20)
-                // File folder = new File(packageURL.getFile());
-                File[] contenuti = folder.listFiles();
-                String entryName;
-                for (File actual : contenuti)
-                {
-                    entryName = actual.getName();
-                    entryName = entryName.substring(0, entryName.lastIndexOf('.'));
-                    names.add(entryName);
-                }
-            }
-        }
-    }
-    */
-
-    private void initScriptPanel()
-    {
+    private void initScriptPanel() {
 
         mScriptFontTypeLabel = new JLabel("Font Type:");
 
@@ -582,10 +437,8 @@ public class OptionsDialog extends JDialog
         String[] allFonts = g.getAvailableFontFamilyNames();
         Vector<String> fonts = new Vector<String>();
 
-        for (String font : allFonts)
-        {
-            if (font.contains("Mono"))
-            {
+        for (String font : allFonts) {
+            if (font.contains("Mono")) {
                 fonts.add(font);
             }
         }
@@ -594,11 +447,9 @@ public class OptionsDialog extends JDialog
         mScriptFontComboBox = new JComboBox(fonts);
         mScriptFontComboBox.setOpaque(false);
         mScriptFontComboBox.setSelectedItem(mEditorConfig.sSCRIPT_FONT_TYPE);
-        mScriptFontComboBox.addActionListener(new ActionListener()
-        {
+        mScriptFontComboBox.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
@@ -606,9 +457,7 @@ public class OptionsDialog extends JDialog
         mScriptFontSizeLabel = new JLabel("Font Size:");
         mScriptFontSizeSpinner = new JSpinner(new SpinnerNumberModel(mEditorConfig.sSCRIPT_FONT_SIZE, 8, 16, 1));
 
-        // Do the Layout - pack all stuff into little small cute boxesÏ
         JPanel fontAndSize = new JPanel();
-
         fontAndSize.setOpaque(false);
         fontAndSize.setLayout(new BoxLayout(fontAndSize, BoxLayout.X_AXIS));
         fontAndSize.add(Box.createRigidArea(new Dimension(5, 0)));
@@ -624,34 +473,6 @@ public class OptionsDialog extends JDialog
         fontAndSize.add(Box.createRigidArea(new Dimension(5, 0)));
         fontAndSize.add(Box.createHorizontalGlue());
 
-        //mLaunchDefaultPlayerCheckBox = new JCheckBox("Launch Default Scene Player", false);
-        //loadClass();
-        //mScenePlayersCombo = new JComboBox(new DefaultComboBoxModel(mScenePlayersShortNames.toArray()));
-        //mScenePlayersCombo.setMaximumSize(new Dimension(200, 30));
-        /*mLaunchDefaultPlayerCheckBox.setOpaque(false);
-        mLaunchDefaultPlayerCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveEditorConfig(false);
-                mEditor.refresh();
-            }
-        });*/
-
-//        mScenePlayersCombo.addActionListener(new ActionListener()
-//        {
-//            @Override
-//            public void actionPerformed(ActionEvent e)
-//            {
-//                saveEditorConfig(false);
-//                mEditor.refresh();
-//            }
-//        });
-        //mScenePlayersLabel = new JLabel(" Default Scene Player");
-        //Box scenePlayersBox = Box.createHorizontalBox();
-        //scenePlayersBox.add(mScenePlayersLabel);
-        //scenePlayersBox.add(Box.createHorizontalStrut(15));
-        //scenePlayersBox.add(mScenePlayersCombo);
-
         mScriptPanel = new JPanel();
         mScriptPanel.setBackground(Color.white);
         mScriptPanel.setLayout(new BoxLayout(mScriptPanel, BoxLayout.Y_AXIS));
@@ -659,267 +480,118 @@ public class OptionsDialog extends JDialog
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
         mScriptPanel.add(fontAndSize);
         mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
-        //mScriptPanel.add(scenePlayersBox);
-        //mScriptPanel.add(Box.createRigidArea(new Dimension(5, 20)));
-
     }
 
-//  private void initScenePlayerPanel() {
-//      mScenePlayerPanel = new JPanel();
-//      mScenePlayerPanel.setLayout(new BoxLayout(mScenePlayerPanel, BoxLayout.X_AXIS));
-//      mScenePlayerPanel.setBorder(BorderFactory.createTitledBorder(" Scene Player Preferences "));
-//
-//      mScenePlayerPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-//      mScenePlayerPanel.add(new JLabel("Model"));
-//
-//      mScenePlayerComboBox = new JComboBox(new DefaultComboBoxModel());
-//      mScenePlayerPanel.add(mScenePlayerComboBox);
-//      mScenePlayerPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-//
-//  }
-    private void saveEditorConfig(boolean dispose)
-    {
 
-        // mLogger.message("\r\nSaving Preferences:");
-//        mEditorConfig.setProperty("xmlns", mXMLNSTextField.getText().trim());
-//        mEditorConfig.setProperty("xmlns_xsi", mXMLInstanceTextField.getText().trim());
-//        mEditorConfig.setProperty("xsi_schemeLocation", mXSDFileTextField.getText().trim());
+    private void saveEditorConfig(boolean dispose) {
+
         mEditorConfig.setProperty(
-            "node_width", Integer.toString(((SpinnerNumberModel) mNodeSizeSpinner.getModel()).getNumber().intValue()));
+                "node_width", Integer.toString(((SpinnerNumberModel) mNodeSizeSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty(
-            "node_height", Integer.toString(((SpinnerNumberModel) mNodeSizeSpinner.getModel()).getNumber().intValue()));
+                "node_height", Integer.toString(((SpinnerNumberModel) mNodeSizeSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty(
-            "grid_x", Integer.toString(((SpinnerNumberModel) mGridScaleSpinner.getModel()).getNumber().intValue()));
+                "grid_x", Integer.toString(((SpinnerNumberModel) mGridScaleSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty(
-            "grid_y", Integer.toString(((SpinnerNumberModel) mGridScaleSpinner.getModel()).getNumber().intValue()));
+                "grid_y", Integer.toString(((SpinnerNumberModel) mGridScaleSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty(
-            "workspace_fontsize",
-            Integer.toString(((SpinnerNumberModel) mWorkspaceFontSizeSpinner.getModel()).getNumber().intValue()));
+                "workspace_fontsize",
+                Integer.toString(((SpinnerNumberModel) mWorkspaceFontSizeSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty("grid", Boolean.toString(mGridCheckBox.isSelected()));
         mEditorConfig.setProperty("visualization", Boolean.toString(mVisualizationCheckBox.isSelected()));
         mEditorConfig.setProperty("visualizationtrace", Boolean.toString(mVisualizationTraceCheckBox.isSelected()));
         mEditorConfig.setProperty("shownodeid", Boolean.toString(mShowNodeIDCheckBox.isSelected()));
         mEditorConfig.setProperty("showvariables", Boolean.toString(mShowVariablesCheckBox.isSelected()));
         mEditorConfig.setProperty("showsmartpathcalculations",
-            Boolean.toString(mShowSmartPathDebugCheckBox.isSelected()));
+                Boolean.toString(mShowSmartPathDebugCheckBox.isSelected()));
         mEditorConfig.setProperty(
-            "scriptfonsize",
-            Integer.toString(((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).getNumber().intValue()));
+                "scriptfonsize",
+                Integer.toString(((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).getNumber().intValue()));
         mEditorConfig.setProperty("scriptfonttype", mScriptFontComboBox.getSelectedItem().toString());
 
-        /*
-        if (mScenePlayersCombo.getSelectedIndex() > 0 && dispose)
-        { // 0 Is for the default configuration
-
-            EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
-
-            String newPlayer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                + "<Project name=\"" + project.getProjectName() + "\">"
-                + "<Players>"
-                + "<Player name=\"defaultsceneplayer\" class=\"" + mScenePlayersLongNames.get(mScenePlayersCombo.getSelectedIndex() - 1) + "\">"
-                + "</Player>"
-                + "</Players>"
-                + "</Project>";
-            project.clearPlayersList();
-            project.parseProjectConfigFromString(newPlayer);
-        }
-        */
-        //mEditorConfig.setProperty("launchPlayer", Boolean.toString(mLaunchDefaultPlayerCheckBox.isSelected()));
-//      Preferences.setProperty("selectedsceneplayer",
-//              (String) mScenePlayerComboBox.getSelectedItem());
-        // Write sceneplayers
-//      int size = ((DefaultComboBoxModel) mScenePlayerComboBox.getModel()).getSize();
-//      int i = 0;
-//      for (i = 0; i < size; i++) {
-//          String value = (String) ((DefaultComboBoxModel) mScenePlayerComboBox.getModel()).getElementAt(i);
-//
-//          if (value.trim().equalsIgnoreCase("")) {
-//              Preferences.removeProperty("sceneplayer" + i);
-//              mLogger.message("  Removing sceneplayer" + i + " ");
-//          } else {
-//              Preferences.setProperty("sceneplayer" + i, value);
-//              mLogger.message("  Setting sceneplayer" + i + " to " + value);
-//          }
-//
-//      }
-//      for (; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
-//          Preferences.removeProperty("sceneplayer" + i);
-//          mLogger.message("  Removing sceneplayer" + i + " ");
-//      }
-//
-        // Write recent file list
-//      int size = ((DefaultListModel) mRecentFileList.getModel()).size();
-//      int i = 0;
-//      for (i = 0; i < size; i++) {
-//          String value = (String) ((DefaultListModel) mRecentFileList.getModel()).get(i);
-//          if (value.trim().equalsIgnoreCase("")) {
-//              Preferences.removeProperty("recentfile" + i);
-//              mLogger.message("  Removing recentfile" + i + " ");
-//          } else {
-//              Preferences.setProperty("recentfile" + i, value);
-//              mLogger.message("  Setting recentfile" + i + " to " + value);
-//          }
-//
-//      }
-//      for (; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
-//          Preferences.removeProperty("recentfile" + i);
-//          mLogger.message("  Removing recentfile" + i + " ");
-//      }
         mEditorConfig.save(mEditor.getSelectedProjectEditor().getEditorProject().getProjectFile());
-        
+
         EventDispatcher.getInstance().convey(new ProjectChangedEvent(this));
 //        EditorInstance.getInstance().save();
-        if (dispose)
-        {
+        if (dispose) {
             dispose();
         }
     }
 
-    private void initEditorConfig()
-    {
+    private void initEditorConfig() {
 
-        // ((DefaultListModel) mRecentFileList.getModel()).clear();
-//      ((DefaultComboBoxModel) mScenePlayerComboBox.getModel()).removeAllElements();
-        for (Object keyObj : mEditorConfig.getKeySet())
-        {
+        for (Object keyObj : mEditorConfig.getKeySet()) {
             String key = (String) keyObj;
 
-            if (key.startsWith("recentfile"))
-            {
+            if (key.startsWith("recentfile")) {
                 ((DefaultListModel) mRecentFileList.getModel()).addElement(mEditorConfig.getProperty(key));
-            }    // else if (key.startsWith("sceneplayer")) {
-
-            // ((DefaultComboBoxModel) mScenePlayerComboBox.getModel()).addElement(Preferences.getProperty(key));
-            // }
-            else if (key.equals("node_width"))
-            {
+            } else if (key.equals("node_width")) {
                 ((SpinnerNumberModel) mNodeSizeSpinner.getModel()).setValue(
-                    Integer.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("node_height"))
-            {
+                        Integer.valueOf(mEditorConfig.getProperty(key)));
+            } else if (key.equals("node_height")) {
                 ((SpinnerNumberModel) mNodeSizeSpinner.getModel()).setValue(
-                    Integer.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("grid_x"))
-            {
+                        Integer.valueOf(mEditorConfig.getProperty(key)));
+            } else if (key.equals("grid_x")) {
                 ((SpinnerNumberModel) mGridScaleSpinner.getModel()).setValue(
-                    Integer.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("grid_y"))
-            {
+                        Integer.valueOf(mEditorConfig.getProperty(key)));
+            } else if (key.equals("grid_y")) {
                 ((SpinnerNumberModel) mGridScaleSpinner.getModel()).setValue(
-                    Integer.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("grid"))
-            {
+                        Integer.valueOf(mEditorConfig.getProperty(key)));
+            } else if (key.equals("grid")) {
                 mGridCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("scriptfontype"))
-            {
+            } else if (key.equals("scriptfontype")) {
                 mVisualizationCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("scriptfonsize"))
-            {
+            } else if (key.equals("scriptfonsize")) {
                 ((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).setValue(
-                    Integer.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("scriptfonttype"))
-            {
+                        Integer.valueOf(mEditorConfig.getProperty(key)));
+            } else if (key.equals("scriptfonttype")) {
                 mScriptFontComboBox.setSelectedItem(mEditorConfig.getProperty(key));
-            }
-            else if (key.equals("visualizationtrace"))
-            {
+            } else if (key.equals("visualizationtrace")) {
                 mVisualizationTraceCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("launchPlayer"))
-            {
+            } else if (key.equals("launchPlayer")) {
                 //mLaunchDefaultPlayerCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("shownodeid"))
-            {
+            } else if (key.equals("shownodeid")) {
                 mShowNodeIDCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("showvariables"))
-            {
+            } else if (key.equals("showvariables")) {
                 mShowVariablesCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
-            }
-            else if (key.equals("showsmartpathcalculations"))
-            {
+            } else if (key.equals("showsmartpathcalculations")) {
                 mShowSmartPathDebugCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
-//            } else if (key.equals("xmlns")) {
-//                mXMLNSTextField.setText(mEditorConfig.getProperty(key));
-//            } else if (key.equals("xmlns_xsi")) {
-//                mXMLInstanceTextField.setText(mEditorConfig.getProperty(key));
-//            } else if (key.equals("xsi_schemeLocation")) {
-//                mXSDFileTextField.setText(mEditorConfig.getProperty(key));
-            }
-            else if (key.equals("workspace_fontsize"))
-            {
+            } else if (key.equals("workspace_fontsize")) {
                 ((SpinnerNumberModel) mWorkspaceFontSizeSpinner.getModel()).setValue(
-                    Integer.valueOf(mEditorConfig.getProperty(key)));
+                        Integer.valueOf(mEditorConfig.getProperty(key)));
             }
 
-        }
-        /*
-        EditorProject project = mEditor.getSelectedProjectEditor().getEditorProject();
-        DeviceConfig defaultPlayer = project.getCurrentPlayer();
-        int index = 0;
-        if (defaultPlayer != null)
-        {
-            for (String player : mScenePlayersLongNames)
-            {
-                if (player.equals(defaultPlayer.getClassName()))
-                {
-                    mScenePlayersCombo.setSelectedIndex(index + 1);
-                }
-                index++;
-            }
-        }
-        else
-        {
-            mScenePlayersCombo.setSelectedIndex(0);
-        }
-        */
+        } 
         // Add specific listeners
-        mNodeSizeSpinner.addChangeListener(new ChangeListener()
-        {
+        mNodeSizeSpinner.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e)
-            {
+            public void stateChanged(ChangeEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
         });
 
         // Add specific listeners
-        mScriptFontSizeSpinner.addChangeListener(new ChangeListener()
-        {
+        mScriptFontSizeSpinner.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e)
-            {
+            public void stateChanged(ChangeEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
         });
 
         // Add specific listeners
-        mGridScaleSpinner.addChangeListener(new ChangeListener()
-        {
+        mGridScaleSpinner.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e)
-            {
+            public void stateChanged(ChangeEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }
         });
 
         // Add specific listeners
-        mWorkspaceFontSizeSpinner.addChangeListener(new ChangeListener()
-        {
+        mWorkspaceFontSizeSpinner.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e)
-            {
+            public void stateChanged(ChangeEvent e) {
                 saveEditorConfig(false);
                 mEditor.refresh();
             }

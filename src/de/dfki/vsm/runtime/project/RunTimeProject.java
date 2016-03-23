@@ -45,7 +45,7 @@ public class RunTimeProject {
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
-    private final RunTimePlayer mScenePlayer;   
+    private final RunTimePlayer mScenePlayer;
     // The runtime plugin map of the project
     private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
@@ -266,10 +266,6 @@ public class RunTimeProject {
         // Return success if the project was loaded
         return true;
     }
-
-//    public void clearPlayersList() {
-//        mProjectConfig.cleanPlayerList();
-//    }
 
     public boolean parseProjectConfigFromString(String xml) {
         //Parse the config file for project from a string

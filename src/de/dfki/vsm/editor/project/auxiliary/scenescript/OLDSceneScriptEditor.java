@@ -60,7 +60,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     // The event dispatcher instance
     private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
 
-    
     // The Script Editor Pane
     private final JScrollPane mScrollPane;
     private final JTabbedPane mTabPane;
@@ -68,14 +67,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final ScriptEditorPane mEditorPane;
     private final CaretStatusLabel mStatusLabel;
     private final SceneElementDisplay mElementPane;
-    private final SceneScript mSceneScript;
 
     private final FunctionsEditor mFunctionEditor;
-//    private final DialogActEditor mDialogActEditor;
+
     private final JPanel mScriptTabPanel = new JPanel();
-          
-    private final EditorConfig mPreferences;
-    //private final String              mPreferencesFileName;
+
     private ArrayList<Integer> searchOffsets;
     private String lastSearchedScene;
     private int lastIndex;
@@ -84,32 +80,32 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private JButton mGesticonButton;
     private final JSplitPane scriptSplitPane;
 
-    // The current editor project
-    private final EditorProject mProject;
     private final JButton mPinButton;
     //PIN icons
     private final ImageIcon ICON_PIN_STANDARD = ResourceLoader.loadImageIcon("/res/img/pin.png");
     private final ImageIcon ICON_PIN_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/pin_blue.png");
     //PIN status
     private boolean pinPricked = false;
-    
-    //Editor configuration
+
+    // The current project data
+    private final EditorProject mEditorProject;
     private final EditorConfig mEditorConfig;
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    private final SceneScript mSceneScript;
+
+    //
     public OLDSceneScriptEditor(final EditorProject project) {
         // Initialize the editor project
-        mProject = project;
+        mEditorProject = project;
         // Initialize the scene script
-        mSceneScript = mProject.getSceneScript();
+        mSceneScript = mEditorProject.getSceneScript();
         // Initialize the editor config
-        mPreferences = mProject.getEditorConfig();
+        mEditorConfig = mEditorProject.getEditorConfig();
+
         // Initialize The Status Label
         mStatusLabel = new CaretStatusLabel("");
 
         // Initialize The Editor Pane
-        mEditorPane = new ScriptEditorPane(mProject);
+        mEditorPane = new ScriptEditorPane(mEditorProject);
         mEditorPane.addCaretListener(mStatusLabel);
         mEditorPane.getDocument().addDocumentListener(this);
 
@@ -118,21 +114,19 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mScrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
         // Initialize The Function Definition Panel
-        mFunctionEditor = new FunctionsEditor(mProject);
-        //
-        mEditorConfig = mProject.getEditorConfig();
-        
+        mFunctionEditor = new FunctionsEditor(mEditorProject);
+
         mTabPane = new JTabbedPane();
         mTabPane.setUI(new BasicTabbedPaneUI());
         mTabPane.setOpaque(false);
+
         // Initialize The Scroll Pane
-        mElementPane = new SceneElementDisplay(mProject);
-//        mObservable.addObserver(mElementPane);
-//        mObservable.addObserver(mEditorPane);
-        mGesticonButton = new JButton(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
+        mElementPane = new SceneElementDisplay(mEditorProject);
+
+        mGesticonButton = new JButton(Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))
                 ? Preferences.ICON_MORE_STANDARD
                 : Preferences.ICON_LESS_STANDARD);
-        mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
+        mGesticonButton.setRolloverIcon(Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))
                 ? Preferences.ICON_MORE_ROLLOVER
                 : Preferences.ICON_LESS_ROLLOVER);
         mGesticonButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -154,10 +148,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         scriptSplitPane.setLeftComponent(mElementPane);
         scriptSplitPane.setRightComponent(mScrollPane);
 
-        if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
+        if (Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))) {
             scriptSplitPane.setDividerLocation(250);
         }
-        if (!Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
+        if (!Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))) {
             scriptSplitPane.setDividerLocation(0);
         }
         Box bxBottom = Box.createHorizontalBox();
@@ -176,7 +170,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         setLayout(new OverlayLayout(this));
         setBorder(BorderFactory.createEmptyBorder());
         //add(mTabPane, BorderLayout.CENTER);
-        
+
         mPinButton = new JButton();
         pinPricked = mEditorConfig.sAUTOHIDE_BOTTOMPANEL;
         setPin(pinPricked);
@@ -200,7 +194,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         add(VpinBox, BorderLayout.AFTER_LINE_ENDS);
         add(mTabPane, BorderLayout.CENTER);
         add(mStatusLabel, BorderLayout.SOUTH);
-        
+
         // Register As Event Listener
         mEventDispatcher.register(this);
 
@@ -221,14 +215,15 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
 
     }
+
     // Set the pin pricked flag
     public final void setPin(boolean state) {
         pinPricked = state;
-        mPinButton.setIcon(pinPricked? ICON_PIN_ROLLOVER: ICON_PIN_STANDARD);
-        mPinButton.setRolloverIcon(pinPricked? ICON_PIN_STANDARD : ICON_PIN_ROLLOVER);
+        mPinButton.setIcon(pinPricked ? ICON_PIN_ROLLOVER : ICON_PIN_STANDARD);
+        mPinButton.setRolloverIcon(pinPricked ? ICON_PIN_STANDARD : ICON_PIN_ROLLOVER);
         mEditorConfig.setProperty("autohidebottombar", String.valueOf(pinPricked));
     }
-    
+
     private void sanitizeTinyButton(JButton b) {
         Dimension bDim = new Dimension(30, 30);
 
@@ -241,17 +236,17 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 //      b.setFocusable(false);
         b.setBorder(BorderFactory.createEmptyBorder());
     }
-    
+
     //Adds a tab to the tabbedpane with a plus icon
     void addTab(String tabName, final JComponent content) {
-        
+
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
-   
+
         mTabPane.addTab(null, new JScrollPane(ep));
-        
+
         JLabel tabLabel = new JLabel(tabName);
-       
+
         // Create an AddButton
         final AddButton mAddButton = new AddButton();
         mAddButton.setTabPos(tabCounter - 1);
@@ -274,10 +269,9 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
                     if (content instanceof FunctionsEditor) {
                         ((FunctionsEditor) content).addNewFunction();
-                    }
-//                    else if (content instanceof DialogActEditor) {
-//                        //PLUS ACTION FOR DIALGOACTEDITOR
-//                    }
+                    } //                    else if (content instanceof DialogActEditor) {
+                    //                        //PLUS ACTION FOR DIALGOACTEDITOR
+                    //                    }
                     else {
                         mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n");
                         mEditorPane.requestFocusInWindow();
@@ -305,6 +299,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     }
 //
 //    // Set the pin pricked flag
+
     public void setPinPricked() {
         setPin(true); // true pricks the pin
     }
@@ -345,7 +340,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
                 mTabPane.setSelectedComponent(mScriptTabPanel);
             } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Functions")) {
                 mTabPane.setSelectedComponent(mFunctionEditor);
-            } 
+            }
 //            else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Dialog")) {
 //                mTabPane.setSelectedComponent(mDialogActEditor);
 //            }
@@ -472,18 +467,18 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     ////////////////////////////////////////////////////////////////////////////
     public void showElementDisplay() {
 
-        if (Boolean.valueOf(mPreferences.getProperty("showsceneelements"))) {
+        if (Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))) {
             mGesticonButton.setIcon(Preferences.ICON_LESS_STANDARD);
-            mPreferences.setProperty("showsceneelements", "false");
+            mEditorConfig.setProperty("showsceneelements", "false");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(0);
         } else {
             mGesticonButton.setIcon(Preferences.ICON_MORE_STANDARD);
-            mPreferences.setProperty("showsceneelements", "true");
+            mEditorConfig.setProperty("showsceneelements", "true");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(250);
         }
-        mGesticonButton.setRolloverIcon(Boolean.valueOf(mPreferences.getProperty("showsceneelements"))
+        mGesticonButton.setRolloverIcon(Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))
                 ? Preferences.ICON_MORE_ROLLOVER
                 : Preferences.ICON_LESS_ROLLOVER);
     }
