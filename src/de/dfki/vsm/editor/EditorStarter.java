@@ -5,7 +5,6 @@ import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.SceneMaker3;
-import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BorderLayout;
@@ -52,7 +51,7 @@ public class EditorStarter extends JPanel {
 	private final static Font sMENUHEADLINEFONT = new Font("Helvetica", Font.PLAIN, 24);
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
 	// Welcome Stickman
-	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
+	//private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
 	private boolean mShowStickman = true;
 	
 	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
@@ -197,9 +196,10 @@ public class EditorStarter extends JPanel {
 		JPanel p = (JPanel) mParentFrame.getGlassPane();
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 		p.setOpaque(false);
-		p.add(mWelcomeStickman);
+		//p.add(mWelcomeStickman);
 
-		this.addMouseListener(new java.awt.event.MouseAdapter() {
+		/*
+                this.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				if (mWelcomeStickman.mHead.getBounds().contains(evt.getX(), evt.getY())) {
@@ -213,7 +213,7 @@ public class EditorStarter extends JPanel {
 				}
 			}
 		});
-
+                */
 		// add the content
 		add(content);
 
@@ -224,6 +224,7 @@ public class EditorStarter extends JPanel {
 		setBackground(new Color(235, 235, 235));
         //setBackground(Color.white);
 
+                /*
 		// Let the user welcome
 		new java.util.Timer().schedule(
 		  new java.util.TimerTask() {
@@ -239,7 +240,7 @@ public class EditorStarter extends JPanel {
 		  },
 		  1000
 		);
-
+                */
 	}
 	
 	public final void showWelcomeStickman(boolean show) {
@@ -250,7 +251,7 @@ public class EditorStarter extends JPanel {
 	// Draws the image on the background
 	@Override
 	public final void paintComponent(final Graphics graphics) {
-		mWelcomeStickman.setVisible(isVisible() && mShowStickman);
+//		mWelcomeStickman.setVisible(isVisible() && mShowStickman);
 		mParentFrame.getGlassPane().setVisible(isVisible() && mShowStickman);
 
 		super.paintComponent(graphics);
@@ -319,7 +320,7 @@ public class EditorStarter extends JPanel {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				// mEditorInstance.newProject();
 				NewProjectDialog npd = new NewProjectDialog();
-				mWelcomeStickman.setVisible(false);
+				//mWelcomeStickman.setVisible(false);
 			}
 
 			@Override
@@ -353,7 +354,7 @@ public class EditorStarter extends JPanel {
 		mOpenProjectMenu.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				mEditorInstance.openProject();
-				mWelcomeStickman.setVisible(false);
+				//mWelcomeStickman.setVisible(false);
 			}
 
 			public void mouseEntered(MouseEvent me) {
@@ -429,7 +430,7 @@ public class EditorStarter extends JPanel {
 						public void mouseClicked(MouseEvent me) {
 							// mEditorInstance.toggleProjectEditorList(true);
 							mEditorInstance.openProject(projectDir.getPath());
-							mWelcomeStickman.setVisible(false);
+							//mWelcomeStickman.setVisible(false);
 						}
 
 						@Override
@@ -529,7 +530,7 @@ public class EditorStarter extends JPanel {
 					public void mouseClicked(MouseEvent me) {
 						// mEditorInstance.toggleProjectEditorList(true);
 						mEditorInstance.openProject(tutorialProj.getPath());
-						mWelcomeStickman.setVisible(false);
+						//mWelcomeStickman.setVisible(false);
 					}
 
 					@Override
@@ -654,7 +655,7 @@ public class EditorStarter extends JPanel {
 				public void mouseClicked(MouseEvent me) {
 					// mEditorInstance.toggleProjectEditorList(true);
 					mEditorInstance.openProject(sampleDir);
-					mWelcomeStickman.setVisible(false);
+					//mWelcomeStickman.setVisible(false);
 				}
 
 				@Override

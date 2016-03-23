@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 /**
  * @author Gregor Mehlmann
  */
-public final class TricatExecutor implements ActivityExecutor {
+public final class TricatExecutor extends ActivityExecutor {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
@@ -22,7 +22,7 @@ public final class TricatExecutor implements ActivityExecutor {
     // The executor's name
     private final String mName;
     // The runtime project
-    private final RunTimeProject mProject;
+    //private final RunTimeProject mProject;
     //
     private TricatListener mServer;
     // The mao of processes
@@ -32,10 +32,12 @@ public final class TricatExecutor implements ActivityExecutor {
 
     // Construct the executor
     public TricatExecutor(final String name, final RunTimeProject project) {
+        // Initialize the plugin
+        super(project);
         // Initialize the name
         mName = name;
         // Initialize the project
-        mProject = project;
+        //mProject = project;
     }
 
     // Launch the executor 
@@ -185,6 +187,11 @@ public final class TricatExecutor implements ActivityExecutor {
 
     // Handle some message
     public void handle(final String message, final TWorldHandler client) {
+        mLogger.warning("Handling " + message + "");
+    }
+    
+     // Handle some message
+    public void handle(final String message, final SSIEventHandler handler) {
         mLogger.warning("Handling " + message + "");
     }
 

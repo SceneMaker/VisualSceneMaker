@@ -12,19 +12,23 @@ public final class PlannedPlayer extends ScenePlayer {
 
     // Create the planned player
     public PlannedPlayer(final RunTimeProject project) {
+        // Initialize the player
         super(project);
+        // Print some information
         mLogger.message("Creating planned player '" + this + "' for project '" + project + "'");
     }
 
     // Launch the planned player
     @Override
     public final void launch() {
+        // Print some information
         mLogger.message("Launching planned player '" + this + "'");
     }
 
     // Unload the planned player
     @Override
     public final void unload() {
+        // Print some information
         mLogger.message("Unloading planned player '" + this + "'");
     }
 

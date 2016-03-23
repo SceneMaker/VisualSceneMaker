@@ -1,13 +1,18 @@
 package de.dfki.vsm.runtime.player;
 
 import de.dfki.vsm.runtime.values.AbstractValue;
-import de.dfki.vsm.runtime.plugin.DEPRECATEDRunTimePluginDEPRECATED;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.util.LinkedList;
 
 /**
  * @author Gregor Mehlmann
  */
-public interface DEPRECATEDRunTimePlayerDEPRECATED extends DEPRECATEDRunTimePluginDEPRECATED {
+public abstract class DEPRECATEDRunTimePlayerDEPRECATED extends RunTimePlugin {
+
+    public DEPRECATEDRunTimePlayerDEPRECATED(final RunTimeProject project) {
+        super(project);
+    }
 
     // Play with given arguments
     public abstract void play(final String name, final LinkedList<AbstractValue> args);
