@@ -1,6 +1,7 @@
 package de.dfki.vsm.editor;
 
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+import de.dfki.stickman.Stickman;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
@@ -51,7 +52,7 @@ public class EditorStarter extends JPanel {
 	private final static Font sMENUHEADLINEFONT = new Font("Helvetica", Font.PLAIN, 24);
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
 	// Welcome Stickman
-	//private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
+	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
 	private boolean mShowStickman = true;
 	
 	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
@@ -196,9 +197,9 @@ public class EditorStarter extends JPanel {
 		JPanel p = (JPanel) mParentFrame.getGlassPane();
 		p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
 		p.setOpaque(false);
-		//p.add(mWelcomeStickman);
+		p.add(mWelcomeStickman);
 
-		/*
+		
                 this.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -213,7 +214,7 @@ public class EditorStarter extends JPanel {
 				}
 			}
 		});
-                */
+                
 		// add the content
 		add(content);
 
@@ -224,7 +225,7 @@ public class EditorStarter extends JPanel {
 		setBackground(new Color(235, 235, 235));
         //setBackground(Color.white);
 
-                /*
+                
 		// Let the user welcome
 		new java.util.Timer().schedule(
 		  new java.util.TimerTask() {
@@ -240,7 +241,7 @@ public class EditorStarter extends JPanel {
 		  },
 		  1000
 		);
-                */
+                
 	}
 	
 	public final void showWelcomeStickman(boolean show) {
