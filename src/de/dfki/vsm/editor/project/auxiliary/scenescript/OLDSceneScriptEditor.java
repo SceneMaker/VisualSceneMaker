@@ -7,7 +7,6 @@ import de.dfki.vsm.editor.project.auxiliary.functions.FunctionsEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.project.auxiliary.dialogact.DialogActEditor;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -72,7 +71,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final SceneScript mSceneScript;
 
     private final FunctionsEditor mFunctionEditor;
-    private final DialogActEditor mDialogActEditor;
+//    private final DialogActEditor mDialogActEditor;
     private final JPanel mScriptTabPanel = new JPanel();
           
     private final EditorConfig mPreferences;
@@ -120,13 +119,8 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         // Initialize The Function Definition Panel
         mFunctionEditor = new FunctionsEditor(mProject);
-
-        // Initialize The Dialog Act Panel
-        mDialogActEditor = new DialogActEditor(mProject);
         //
         mEditorConfig = mProject.getEditorConfig();
-        // Initialize Tabbed Pane
-     //   mTabPane = new JTabbedPane();
         
         mTabPane = new JTabbedPane();
         mTabPane.setUI(new BasicTabbedPaneUI());
@@ -176,7 +170,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         addTab("Scenes        ", mScriptTabPanel);
         addTab("Functions     ", mFunctionEditor);
-        addTab("DialogAct [Experimental]", mDialogActEditor);
+//        addTab("DialogAct [Experimental]", mDialogActEditor);
 
         // Initialize The Components
         setLayout(new OverlayLayout(this));
@@ -281,9 +275,9 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
                     if (content instanceof FunctionsEditor) {
                         ((FunctionsEditor) content).addNewFunction();
                     }
-                    else if (content instanceof DialogActEditor) {
-                        //PLUS ACTION FOR DIALGOACTEDITOR
-                    }
+//                    else if (content instanceof DialogActEditor) {
+//                        //PLUS ACTION FOR DIALGOACTEDITOR
+//                    }
                     else {
                         mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n");
                         mEditorPane.requestFocusInWindow();
@@ -351,9 +345,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
                 mTabPane.setSelectedComponent(mScriptTabPanel);
             } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Functions")) {
                 mTabPane.setSelectedComponent(mFunctionEditor);
-            } else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Dialog")) {
-                mTabPane.setSelectedComponent(mDialogActEditor);
-            }
+            } 
+//            else if (((TreeEntrySelectedEvent) event).getmEntry().getText().contains("Dialog")) {
+//                mTabPane.setSelectedComponent(mDialogActEditor);
+//            }
         }
     }
 
