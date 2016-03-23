@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.evt;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class EventObject {
 

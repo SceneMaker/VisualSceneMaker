@@ -18,8 +18,8 @@ import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.dialog.DialogActInterface;
 import de.dfki.vsm.runtime.dialog.DummyDialogAct;
-import de.dfki.vsm.runtime.player.ScenePlayer;
-import de.dfki.vsm.runtime.player.reactive.ReactivePlayer;
+import de.dfki.vsm.runtime.player.RunTimePlayer;
+import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.ByteArrayInputStream;
@@ -56,7 +56,7 @@ public class RunTimeProject {
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
-    private final ScenePlayer mScenePlayer;
+    private final RunTimePlayer mScenePlayer;
 
     // TODO:  Refactor The Dialog Act Stuff
     // Maybe use a configuration file for that
@@ -128,7 +128,7 @@ public class RunTimeProject {
         return mGesticonConfig;
     }
 
-    public final ScenePlayer getScenePlayer() {
+    public final RunTimePlayer getScenePlayer() {
         return mScenePlayer;
     }
 

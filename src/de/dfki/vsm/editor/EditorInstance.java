@@ -10,7 +10,7 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
-import de.dfki.vsm.runtime.event.AbortionEvent;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -993,11 +993,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Update whenever an event has happened
     @Override
     public final void update(final EventObject event) {
-        if (event instanceof AbortionEvent) {
+        if (event instanceof TerminationEvent) {
             // Get the error dialog
             final ErrorDialog errorDialog = ErrorDialog.getInstance();
             // Appen the error message
-            errorDialog.addError((AbortionEvent) event);
+            errorDialog.addError((TerminationEvent) event);
             // Show the error dialog
             errorDialog.setVisible(true);
         }

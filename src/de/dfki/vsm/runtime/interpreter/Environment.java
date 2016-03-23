@@ -2,9 +2,9 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.runtime.exception.InterpretException;
-import de.dfki.vsm.runtime.symbol.SymbolTable;
-import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
+import de.dfki.vsm.runtime.interpreter.symbol.SymbolTable;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -51,14 +51,14 @@ public class Environment implements Copyable {
         return new Environment(getCopyOfSymbolTableList());
     }
 
-    public void create(String symbol, AbstractValue value) throws InterpretException {
+    public void create(String symbol, AbstractValue value) throws InterpreterError {
         if (mSymbolTableList.isEmpty()) {
-            throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' cannot be declared.");
+            throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' cannot be declared.");
         }
 
         for (SymbolTable symbolTable : mSymbolTableList) {
             if (symbolTable.contains(symbol)) {
-                throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is already defined.");
+                throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' is already defined.");
             }
         }
 
@@ -69,63 +69,63 @@ public class Environment implements Copyable {
         return mSymbolTableList.getFirst();
     }
 
-    public AbstractValue read(String symbol) throws InterpretException {
+    public AbstractValue read(String symbol) throws InterpreterError {
         for (SymbolTable table : mSymbolTableList) {
             if (table.contains(symbol)) {
                 return table.read(symbol);
             }
         }
 
-        throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
+        throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
-    public AbstractValue read(String symbol, int index) throws InterpretException {
+    public AbstractValue read(String symbol, int index) throws InterpreterError {
         for (SymbolTable table : mSymbolTableList) {
             if (table.contains(symbol)) {
                 return table.read(symbol, index);
             }
         }
 
-        throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
+        throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
-    public AbstractValue read(String symbol, String member) throws InterpretException {
+    public AbstractValue read(String symbol, String member) throws InterpreterError {
         for (SymbolTable table : mSymbolTableList) {
             if (table.contains(symbol)) {
                 return table.read(symbol, member);
             }
         }
 
-        throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
+        throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
-    public AbstractValue write(String symbol, AbstractValue value) throws InterpretException {
+    public AbstractValue write(String symbol, AbstractValue value) throws InterpreterError {
         for (SymbolTable table : mSymbolTableList) {
             if (table.contains(symbol)) {
                 return table.write(symbol, value);
             }
         }
 
-        throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
+        throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
-    public AbstractValue write(String symbol, int index, AbstractValue value) throws InterpretException {
+    public AbstractValue write(String symbol, int index, AbstractValue value) throws InterpreterError {
         for (SymbolTable table : mSymbolTableList) {
             if (table.contains(symbol)) {
                 return table.write(symbol, index, value);
             }
         }
 
-        throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
+        throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
-    public AbstractValue write(String symbol, String member, AbstractValue value) throws InterpretException {
+    public AbstractValue write(String symbol, String member, AbstractValue value) throws InterpreterError {
         for (SymbolTable table : mSymbolTableList) {
             if (table.contains(symbol)) {
                 return table.write(symbol, member, value);
             }
         }
 
-        throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
+        throw new InterpreterError(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 }
