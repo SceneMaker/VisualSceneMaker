@@ -1,6 +1,6 @@
 package de.dfki.vsm.xtension.tricat;
 
-import de.dfki.vsm.model.project.DeviceConfig;
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -20,50 +20,42 @@ public final class TWorldExecutor extends ActivityExecutor {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
-    // The executor's name
-    private final String mName;
-    // The runtime project
-    //private final RunTimeProject mProject;
-    //
-    private TWorldListener mServer;
-    // The mao of processes
+    // The tworld listener
+    private TWorldListener mListener;
+    // The map of processes
     private final HashMap<String, Process> mProcessMap = new HashMap();
     // The client thread list
     private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
 
     // Construct the executor
-    public TWorldExecutor(final String name, final RunTimeProject project) {
+    public TWorldExecutor(final PluginConfig config, final RunTimeProject project) {
         // Initialize the plugin
-        super(project);
-        // Initialize the name
-        mName = name;
-        // Initialize the project
-        //mProject = project;
+        super(config, project);
     }
 
     // Launch the executor 
     @Override
     public void launch() {
+// Get the plugin configuration
+        final String tworlddir = mConfig.getProperty("tworlddir");
+        final String tworldexe = mConfig.getProperty("tworldexe");
+        final String tworldcmd = mConfig.getProperty("tworldcmd");
+        final String cactordir = mConfig.getProperty("cactordir");
+        final String cactorexe = mConfig.getProperty("cactorexe");
+        final String cactorcmd = mConfig.getProperty("cactorcmd");
+        // Create the plugin's processes
         try {
-            mProcessMap.put("EmpatTest.exe", Runtime.getRuntime().exec(
-                    "cmd /c start \"" + "\" EmpatTest.exe", null,
-                    new File("D:\\EmpaT\\software\\EmpaT\\CharActorServer")));
-
-            mProcessMap.put("EmpaT.exe", Runtime.getRuntime().exec(
-                    "cmd /c start \"" + "\" EmpaT.exe "
-                    + "-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 "
-                    + "-CharActorIP 127.0.0.1 -CharActorPort 4000", null,
-                    new File("D:\\EmpaT\\software\\EmpaT")));
+            mProcessMap.put(cactorexe, Runtime.getRuntime().exec(
+                    "cmd /c start " + cactorexe + " " + cactorcmd, null, new File(cactordir)));
+            mProcessMap.put(tworldexe, Runtime.getRuntime().exec(
+                    "cmd /c start " + tworldexe + " " + tworldcmd, null, new File(tworlddir)));
         } catch (final Exception exc) {
             mLogger.failure(exc.toString());
         }
-
-        // Parse the configuration
-        final DeviceConfig config = mProject.getDeviceConfig(mName);
         // Create the connection
-        mServer = new TWorldListener(8000, this);
+        mListener = new TWorldListener(8000, this);
         // Start the connection
-        mServer.start();
+        mListener.start();
         //
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for TWorld");
@@ -95,9 +87,9 @@ public final class TWorldExecutor extends ActivityExecutor {
         mClientMap.clear();
         // Abort the server thread
         try {
-            mServer.abort();
+            mListener.abort();
             // Join the client thread
-            mServer.join();
+            mListener.join();
             // Print some information 
             mLogger.message("Joining server thread");
         } catch (final Exception exc) {
@@ -124,6 +116,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 mLogger.failure(exc.toString());
             }
         }
+
         // Clear the map of processes 
         mProcessMap.clear();
     }
@@ -190,12 +183,12 @@ public final class TWorldExecutor extends ActivityExecutor {
     public void handle(final String message, final TWorldHandler client) {
         mLogger.warning("Handling " + message + "");
     }
-    
-     // Handle some message
+
+    // Handle some message
     public void handle(final String message, final SSIRunTimePlugin plugin) {
         mLogger.warning("Handling " + message + "");
         //
-        
+
     }
 
     // Broadcast some message

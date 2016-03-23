@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime.player;
 
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.interpreter.Process;
 import java.util.LinkedList;
@@ -10,9 +11,9 @@ import java.util.LinkedList;
 public final class PlannedPlayer extends RunTimePlayer {
 
     // Create the planned player
-    public PlannedPlayer(final RunTimeProject project) {
+    public PlannedPlayer(final PluginConfig config, final RunTimeProject project) {
         // Initialize the player
-        super(project);
+        super(config, project);
         // Print some information
         mLogger.message("Creating planned player '" + this + "' for project '" + project + "'");
     }

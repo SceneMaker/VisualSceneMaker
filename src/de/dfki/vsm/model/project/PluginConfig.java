@@ -15,9 +15,11 @@ import org.w3c.dom.Element;
  */
 public class PluginConfig extends ConfigElement {
 
-    // The Name Of The Plugin
+    // The type of the plugin
+    private String mPluginType;
+    // The name of the plugin
     private String mPluginName;
-    // The Class Of The Plugin
+    // The class of the plugin
     private String mClassName;
 
     // Construct A New Plugin
@@ -30,23 +32,32 @@ public class PluginConfig extends ConfigElement {
     }
 
     // Construct A New Plugin
-    public PluginConfig(final String name, final String clazz) {
+    public PluginConfig(final String type, final String name, final String clazz) {
         // Initialize The Config
         super("Plugin", "Feature");
         // Initialize The Members
+        mPluginType = type;
         mPluginName = name;
         mClassName = clazz;
     }
 
     // Construct A New Plugin
     public PluginConfig(
-            final String name, final String clazz,
+            final String type,
+            final String name,
+            final String clazz,
             final ArrayList<ConfigFeature> features) {
         // Initialize The Config
         super("Plugin", "Feature", features);
         // Initialize The Members
+        mPluginType = type;
         mPluginName = name;
         mClassName = clazz;
+    }
+
+    // Get Plugin Name
+    public final String getPluginType() {
+        return mPluginType;
     }
 
     // Get Plugin Name
@@ -62,7 +73,7 @@ public class PluginConfig extends ConfigElement {
     // Write A Plugin As XML
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.println("<Plugin name=\"" + mPluginName + "\" class=\"" + mClassName + "\">");
+        stream.println("<Plugin type=\"" + mPluginType + "\" name=\"" + mPluginName + "\" class=\"" + mClassName + "\">");
         stream.push();
         for (final ConfigFeature entry : mFeatureList) {
             entry.writeXML(stream);
@@ -79,6 +90,7 @@ public class PluginConfig extends ConfigElement {
         // Check The Type Of The Config
         if (tag.equals("Plugin")) {
             // Get The Attributes
+            mPluginType = element.getAttribute("type");
             mPluginName = element.getAttribute("name");
             mClassName = element.getAttribute("class");
             // Parse The Entries
@@ -98,7 +110,7 @@ public class PluginConfig extends ConfigElement {
     // Get Copy Of Plugin Config
     @Override
     public final PluginConfig getCopy() {
-        return new PluginConfig(mPluginName, mClassName, copyEntryList());
+        return new PluginConfig(mPluginType, mPluginName, mClassName, copyEntryList());
     }
 
 }

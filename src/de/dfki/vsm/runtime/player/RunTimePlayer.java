@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime.player;
 
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.util.LinkedList;
@@ -10,8 +11,8 @@ import java.util.LinkedList;
 public abstract class RunTimePlayer extends RunTimePlugin {
 
     // Construct the player
-    public RunTimePlayer(final RunTimeProject project) {
-        super(project);
+    public RunTimePlayer(final PluginConfig config, final RunTimeProject project) {
+        super(config, project);
     }
 
     // Call the playback method

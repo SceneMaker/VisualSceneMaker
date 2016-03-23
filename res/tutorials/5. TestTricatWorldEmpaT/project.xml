@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="TestTricatWorldEmpaT">
+<Project name="EmpaT">
   <Plugins>
-	<Plugin name="ssihandler" class="de.dfki.vsm.xtension.tricat.SSIEventHandler">
+    <Plugin type="default" name="ssi" class="de.dfki.vsm.xtension.ssi.SSIRunTimePlugin">
+      <Feature key="hlhost" val="127.0.0.1"/>
+      <Feature key="hlport" val="22191"/>
+      <Feature key="slhost" val="127.0.0.1"/>
+      <Feature key="slport" val="22192"/>
+      <Feature key="srhost" val="127.0.0.1"/>
+      <Feature key="srport" val="19220"/>
     </Plugin>
-	<Plugin name="ssisender" class="de.dfki.vsm.xtension.tricat.SSIEventSender">
+    <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tricat.TWorldExecutor">
+      <Feature key="tworlddir" val="D:\SubVersion\Gregor\Projects\EmpaTDFKI\software\EmpaT\"/>
+      <Feature key="tworldexe" val="EmpaT.exe"/>
+      <Feature key="tworldcmd" val="-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 -CharActorIP 127.0.0.1 -CharActorPort 4000"/>
+      <Feature key="cactordir" val="D:\SubVersion\Gregor\Projects\EmpaTDFKI\software\EmpaT\CharActorServer\"/>
+      <Feature key="cactorexe" val="EmpatTest.exe"/>
+      <Feature key="cactorcmd" val=""/>
     </Plugin>
   </Plugins>
-  <Devices>
-    <Device name="tricat" class="de.dfki.vsm.xtension.tricat.TWorldExecutor">
-      <Feature key="tworlddir" val="D:\SubVersion\Gregor\Projects\EmpaTDFKI\software\EmpaT"/>
-      <Feature key="cactordir" val="D:\SubVersion\Gregor\Projects\EmpaTDFKI\software\EmpaT\CharActorServer"/>
-      <Feature key="tworldexe" val="EmpaT.exe"/>
-      <Feature key="cactorexe" val="EmpatTest.exe"/>
-    </Device>
-  </Devices>
   <Agents>
-    <Agent name="susanne" device="tricat">
+    <Agent name="susanne" device="tworld">
     </Agent>
-    <Agent name="patrick" device="tricat">
+    <Agent name="patrick" device="tworld">
     </Agent>
   </Agents>
 </Project>

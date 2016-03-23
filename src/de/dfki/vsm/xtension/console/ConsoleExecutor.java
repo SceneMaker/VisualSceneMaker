@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.console;
 
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
@@ -24,9 +25,9 @@ public final class ConsoleExecutor extends  ActivityExecutor {
     private final JTextArea mTextArea;
     private final JScrollPane mScrollPane;
 
-    public ConsoleExecutor(final RunTimeProject project) {
+    public ConsoleExecutor(final PluginConfig config, final RunTimeProject project) {
         //
-        super(project);
+        super(config, project);
         // Create the text area
         mTextArea = new JTextArea();
         mScrollPane = new JScrollPane(mTextArea);

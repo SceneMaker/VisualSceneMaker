@@ -4,7 +4,6 @@ import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.AgentConfig;
-import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.ActionObject;
@@ -20,6 +19,7 @@ import de.dfki.vsm.runtime.dialog.DialogActInterface;
 import de.dfki.vsm.runtime.dialog.DummyDialogAct;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.player.ReactivePlayer;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.ByteArrayInputStream;
@@ -62,12 +62,12 @@ public class RunTimeProject {
     // Maybe use a configuration file for that
     private final DialogActInterface mDialogueAct = new DummyDialogAct();
 
-    private final HashMap<String, ActivityExecutor> mDevices = new HashMap();
+    private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
     // Construct an empty runtime project
     public RunTimeProject() {
         // Initialize the scene player
-        mScenePlayer = new ReactivePlayer(this);
+        mScenePlayer = new ReactivePlayer(null, this);
     }
 
     // Construct a project from a directory
@@ -75,7 +75,7 @@ public class RunTimeProject {
         // Call the local parsing method
         parse(file.getPath());
         // Initialize the scene players
-        mScenePlayer = new ReactivePlayer(this);
+        mScenePlayer = new ReactivePlayer(null, this);
     }
 
     // Get the name of the project's configuration
@@ -86,11 +86,6 @@ public class RunTimeProject {
     // Set the name in the project's configuration
     public final void setProjectName(final String name) {
         mProjectConfig.setProjectName(name);
-    }
-
-    // Get a specific config from the map of devices
-    public final DeviceConfig getDeviceConfig(final String name) {
-        return mProjectConfig.getDeviceConfig(name);
     }
 
     // Get a specific config from the map of plugins
@@ -132,20 +127,19 @@ public class RunTimeProject {
         return mScenePlayer;
     }
 
-    // TODO: launch in project
-    public final HashMap<String, ActivityExecutor> getExecutorList() {
-        return mDevices;
-    }
-
-    public final ActivityExecutor getExecutorOf(final String agent) {
+    public final ActivityExecutor getAgentDevice(final String agent) {
         // Get the agent config 
         final AgentConfig config = mProjectConfig.getAgentConfig(agent);
-        // Get the decice name
-        final String device = config.getDeviceName();
-        // Get the executor
-        final ActivityExecutor executor = mDevices.get(device);
-        // return the executor
-        return executor;
+        // Get the plugin now
+        final RunTimePlugin plugin = mPluginMap.get(config.getDeviceName());
+        // Check the plugin 
+        if (plugin instanceof ActivityExecutor) {
+            // Return the executor now
+            return (ActivityExecutor) plugin;
+        } else {
+            // Return NULL at failure
+            return null;
+        }
     }
 
     public boolean parse(final String file) {
@@ -163,7 +157,7 @@ public class RunTimeProject {
                 && parseActiconConfig(file)
                 && parseVisiconConfig(file)
                 && parseGesticonConfig(file)
-                && loadRunTimeObjects());
+                && loadRunTimePlugins());
 
     }
 
@@ -200,32 +194,30 @@ public class RunTimeProject {
     }
 
     // Load the executors of the project
-    public final boolean loadRunTimeObjects() {
+    public final boolean loadRunTimePlugins() {
         // Get the list of devices
-        for (final DeviceConfig config : mProjectConfig.getDeviceConfigList()) {
+        for (final PluginConfig config : mProjectConfig.getPluginConfigList()) {
+            // Get the plugin attributes
+            final String type = config.getPluginType();
+            final String name = config.getPluginName();
+            final String clasn = config.getClassName();
             // Load the device executor
             try {
                 // Get the class object
-                final Class clazz = Class.forName(config.getClassName());
+                final Class clazz = Class.forName(clasn);
                 // Get the constructor
-                final Constructor<ActivityExecutor> constructor
-                        = clazz.getConstructor(String.class, RunTimeProject.class);
+                final Constructor constructor
+                        = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
                 // Call the constructor
-                final ActivityExecutor executor = constructor.newInstance(config.getDeviceName(), this);
+                final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, this);
                 // Add the executor then
-                mDevices.put(config.getDeviceName(), executor);
+                mPluginMap.put(name, plugin);
                 // Print some information
-                mLogger.message("Loading executor object '" + executor + "'");
+                mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
             } catch (final Exception exc) {
                 mLogger.failure(exc.toString());
             }
         }
-        
-        // Get the list of devices
-        for (final PluginConfig config : mProjectConfig.getPluginConfigList()) {
-            
-        }
-
         // Return true at success
         return true;
     }
@@ -238,15 +230,24 @@ public class RunTimeProject {
 
     // Launch the runtime objects of the project
     public final boolean launch() {
+        // Launch the scene player
         mScenePlayer.launch();
+        // Launch all plugins
+        for (final RunTimePlugin plugin : mPluginMap.values()) {
+            plugin.launch();
+        }
         // Return true at success
         return true;
     }
 
     // Unload the runtime objects of the project
     public final boolean unload() {
-
+        // Unload the scene player
         mScenePlayer.unload();
+        // Unload all plugins
+        for (final RunTimePlugin plugin : mPluginMap.values()) {
+            plugin.unload();
+        }
         // Return true at success
         return true;
     }
