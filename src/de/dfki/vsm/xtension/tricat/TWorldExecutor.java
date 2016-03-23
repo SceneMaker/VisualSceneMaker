@@ -4,6 +4,7 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
@@ -26,6 +27,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, Process> mProcessMap = new HashMap();
     // The client thread list
     private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
+    // The map of activity worker
+    private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
 
     // Construct the executor
     public TWorldExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -163,6 +166,30 @@ public final class TWorldExecutor extends ActivityExecutor {
                 + "</TWorldCommand>";
         broadcast(message);
 
+        synchronized (mActivityWorkerMap) {
+            // send command to platform 
+            broadcast(message);
+
+            // organize wait for feedback
+            ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+            mActivityWorkerMap.put("734", cAW);
+
+            // wait until we got feedback
+            mLogger.warning("ActivityWorker 734 waiting ....");
+
+            while (mActivityWorkerMap.containsValue(cAW)) {
+                try {
+                    mActivityWorkerMap.wait();
+                } catch (InterruptedException exc) {
+                    mLogger.failure(exc.toString());
+                }
+            }
+
+            mLogger.warning("ActivityWorker 734 done ....");
+
+        }
+        // Return when terminated
+
         // Return when terminated
     }
 
@@ -182,6 +209,13 @@ public final class TWorldExecutor extends ActivityExecutor {
     // Handle some message
     public void handle(final String message, final TWorldHandler client) {
         mLogger.warning("Handling " + message + "");
+
+        synchronized (mActivityWorkerMap) {
+            if (message.contains("734")) {
+                mActivityWorkerMap.remove("734");
+                notifyAll();
+            }
+        }
     }
 
     // Handle some message
