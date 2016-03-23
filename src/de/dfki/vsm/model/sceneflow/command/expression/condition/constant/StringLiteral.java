@@ -11,15 +11,15 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class String extends Constant {
+public class StringLiteral extends LiteralExpression {
 
     private java.lang.String mValue;
 
-    public String() {
+    public StringLiteral() {
         mValue = null;
     }
 
-    public String(java.lang.String value) {
+    public StringLiteral(java.lang.String value) {
         mValue = value;
     }
 
@@ -52,8 +52,8 @@ public class String extends Constant {
     }
 
     @Override
-    public String getCopy() {
-        return new String(mValue);
+    public StringLiteral getCopy() {
+        return new StringLiteral(mValue);
     }
 
     @Override

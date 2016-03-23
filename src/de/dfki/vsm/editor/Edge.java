@@ -86,7 +86,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private TYPE mType = null;
 
     // Reference to data model edges and nodes
-    private de.dfki.vsm.model.sceneflow.Edge mDataEdge = null;
+    private de.dfki.vsm.model.sceneflow.AbstractEdge mDataEdge = null;
 
     // The two graphical nodes to which this edge is connected
     private Node mSourceNode = null;
@@ -199,7 +199,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         initEditBox();
     }
 
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode)
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode)
     {
         mDataEdge = edge;
         mWorkSpace = ws;
@@ -221,7 +221,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     // TODO: Neuer Konstruktor, der Source und Target dockpoint "mitbekommt"
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode,
             Point sourceDockPoint, Point targetDockpoint)
     {
         mDataEdge = edge;
@@ -247,11 +247,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     public void update(Observable o, Object obj)
     {
 
-        // mLogger.message("Edge.update(" + obj + ")");
+        // mLogger.message("AbstractEdge.update(" + obj + ")");
         update();
     }
 
-    public de.dfki.vsm.model.sceneflow.Edge getDataEdge()
+    public de.dfki.vsm.model.sceneflow.AbstractEdge getDataEdge()
     {
         return mDataEdge;
     }
@@ -1145,7 +1145,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         {
             if (event instanceof EdgeExecutedEvent)
             {
-                de.dfki.vsm.model.sceneflow.Edge edge = ((EdgeExecutedEvent) event).getEdge();
+                de.dfki.vsm.model.sceneflow.AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
 
                 if (edge.equals(mDataEdge))
                 {

@@ -675,7 +675,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPDA(Node node, String name) {
         PlayDialogueAct pdaCmd = new PlayDialogueAct();
 
-        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
+        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(name));
         node.getDataNode().addCmd(pdaCmd);
     }
 
@@ -686,7 +686,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPSG(Node node, String name) {
         PlaySceneGroup psgCmd = new PlaySceneGroup();
 
-        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
+        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(name));
         node.getDataNode().addCmd(psgCmd);
     }
 
@@ -707,7 +707,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     }
 
     /**
-     * Edge creation
+     * AbstractEdge creation
      *
      */
     public void createNewEdgeSelectSourceNode(Edge edge, int x, int y) {
@@ -1043,7 +1043,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         JMenuItem item = null;
 
         if (!node.getDataNode().isHistoryNode()) {
-            HashMap<String, de.dfki.vsm.model.sceneflow.Node> startNodes
+            HashMap<String, de.dfki.vsm.model.sceneflow.BasicNode> startNodes
                     = node.getDataNode().getParentNode().getStartNodeMap();
 
             item = new JMenuItem((startNodes.containsKey(node.getDataNode().getId()))
@@ -1243,7 +1243,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 //        int nc = mClipboard.size();
 //        JMenuItem item = new JMenuItem((nc > 1)
 //                ? "Paste " + nc + " Nodes"
-//                : "Paste Node");
+//                : "Paste BasicNode");
 //        PasteNodesAction pasteAction = new PasteNodesAction(this);
 //
 //        item.addActionListener(pasteAction.getActionListener());
@@ -1372,10 +1372,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void showNodesOnWorkSpace() {
-        ArrayList<de.dfki.vsm.model.sceneflow.Node> nodeList
+        ArrayList<de.dfki.vsm.model.sceneflow.BasicNode> nodeList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
 
-        for (de.dfki.vsm.model.sceneflow.Node n : nodeList) {
+        for (de.dfki.vsm.model.sceneflow.BasicNode n : nodeList) {
             Point p = mGridManager.getNodeLocation(new Point(n.getGraphics().getPosition().getXPos(),
                     n.getGraphics().getPosition().getYPos()));
 
@@ -1411,7 +1411,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, cedge, Edge.TYPE.CEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1424,7 +1424,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, pedge, Edge.TYPE.PEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1437,7 +1437,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, fedge, Edge.TYPE.FEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1450,7 +1450,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, iedge, Edge.TYPE.IEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1458,7 +1458,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
 
             // Show the DEdge
-            de.dfki.vsm.model.sceneflow.Edge dedge = sourceNode.getDataNode().getDedge();
+            de.dfki.vsm.model.sceneflow.AbstractEdge dedge = sourceNode.getDataNode().getDedge();
             Edge.TYPE dEdgeType = null;
 
             if (dedge != null) {
@@ -1473,7 +1473,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                     // Error
                 }
 
-                // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                 Edge edge = new Edge(this, dedge, dEdgeType, sourceNode, targetNode);
 
                 add(edge);
@@ -2745,7 +2745,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      *
      */
-    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.Node> {
+    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.BasicNode> {
     }
 
     /**

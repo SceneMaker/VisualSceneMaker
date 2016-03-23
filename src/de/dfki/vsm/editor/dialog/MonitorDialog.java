@@ -14,9 +14,9 @@ import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.model.sceneflow.ChartParser;
@@ -235,11 +235,11 @@ public class MonitorDialog extends JDialog implements EventListener
                 {
                     return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                 }
-                else if (exp instanceof String)
+                else if (exp instanceof StringLiteral)
                 {
-                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((String) exp).getValue());
+                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((StringLiteral) exp).getValue());
                 }
-                else if (exp instanceof List)
+                else if (exp instanceof ListRecord)
                 {
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
@@ -247,7 +247,7 @@ public class MonitorDialog extends JDialog implements EventListener
                     // Environment env = interpreter.getEnvironment();
                     // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
                 }
-                else if (exp instanceof Struct)
+                else if (exp instanceof StructRecord)
                 {
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                 }

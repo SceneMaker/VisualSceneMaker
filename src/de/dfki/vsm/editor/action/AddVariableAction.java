@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.dialog.VarDefDialog;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -25,7 +25,7 @@ import java.util.Queue;
 public class AddVariableAction extends EditorAction {
     private LinkedList<VarDef> varDefsList;
     private UndoManager mUndoManager = null;
-    private final Node mCurrentSuperNode;
+    private final BasicNode mCurrentSuperNode;
     private WorkSpacePanel                             mWorkSpace   = null;
     public AddVariableAction(WorkSpacePanel  workSpace) {
         mWorkSpace = workSpace;

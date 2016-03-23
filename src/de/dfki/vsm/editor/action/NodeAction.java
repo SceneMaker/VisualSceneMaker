@@ -9,7 +9,7 @@ import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 
 import static de.dfki.vsm.editor.Node.Type.BasicNode;
@@ -38,7 +38,7 @@ public abstract class NodeAction extends EditorAction {
     protected SceneFlowManager   mSceneFlowManager = null;
     protected IDManager          mIDManager        = null;
     protected String             mDataNodeId       = null;
-    protected Node               mDataNode         = null;
+    protected BasicNode               mDataNode         = null;
     protected SuperNode          mParentDataNode   = null;
 
     //
@@ -63,7 +63,7 @@ public abstract class NodeAction extends EditorAction {
         }
 
         // Check the start node status of the removed node
-        HashMap<String, de.dfki.vsm.model.sceneflow.Node> startNodeMap = mParentDataNode.getStartNodeMap();
+        HashMap<String, de.dfki.vsm.model.sceneflow.BasicNode> startNodeMap = mParentDataNode.getStartNodeMap();
 
         if (startNodeMap.containsKey(mDataNode.getId())) {
             startNodeMap.remove(mDataNode.getId());
@@ -79,12 +79,12 @@ public abstract class NodeAction extends EditorAction {
                     } else {
 
                         // Get a supernode as start node
-                        de.dfki.vsm.model.sceneflow.Node newStartNode = mParentDataNode.getSuperNodeAt(0);
+                        de.dfki.vsm.model.sceneflow.BasicNode newStartNode = mParentDataNode.getSuperNodeAt(0);
 
                         mParentDataNode.getStartNodeMap().put(newStartNode.getId(), newStartNode);
                     }
                 } else {
-                    for (de.dfki.vsm.model.sceneflow.Node n : mParentDataNode.getNodeList()) {
+                    for (de.dfki.vsm.model.sceneflow.BasicNode n : mParentDataNode.getNodeList()) {
                         if (n.isHistoryNode()) {
                             continue;
                         } else {
@@ -93,7 +93,7 @@ public abstract class NodeAction extends EditorAction {
                     }
 
                     // Get a node as start node
-                    // de.dfki.vsm.xml.sceneflow.Node newStartNode =
+                    // de.dfki.vsm.xml.sceneflow.BasicNode newStartNode =
                     // mParentDataNode.getNodeAt(0);
                     // mParentDataNode.getStartNodeMap().put(newStartNode.getId(), newStartNode);
                 }
@@ -125,7 +125,7 @@ public abstract class NodeAction extends EditorAction {
 
     public void create() {
 
-        // System.out.println("Node action create!");
+        // System.out.println("BasicNode action create!");
         // Set the parent node
         // System.err.println("Setting parent node to " + mParentDataNode.getId());
         mDataNode.setParentNode(mParentDataNode);
@@ -146,7 +146,7 @@ public abstract class NodeAction extends EditorAction {
         }
 
         // TODO: Take the grid position!!!!!!!!!!!
-        // Add the GUI-Node
+        // Add the GUI-BasicNode
         mWorkSpace.addNode(mGUINode);
         mWorkSpace.addCmdBadge(mGUINode, mCmdBadge);
 

@@ -2,21 +2,21 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Edge;
+import de.dfki.vsm.model.sceneflow.AbstractEdge;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
  * @author Sergio Soto
  */
 public class EdgeEditEvent extends EventObject {
-    private Edge mEdge;
+    private AbstractEdge mEdge;
 
-    public EdgeEditEvent(Object source, Edge edge) {
+    public EdgeEditEvent(Object source, AbstractEdge edge) {
         super(source);
         mEdge = edge;
     }
 
-    public Edge getEdge() {
+    public AbstractEdge getEdge() {
         return mEdge;
     }
     

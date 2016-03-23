@@ -12,7 +12,7 @@ import de.dfki.vsm.editor.dialog.Dialog.Button;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
 import de.dfki.vsm.model.sceneflow.ChartParser;
@@ -73,7 +73,7 @@ public class ModifyIEdgeDialog extends Dialog {
         loadAltStartNodeMap();
     }
 
-    public ModifyIEdgeDialog(Node sourceNode, Node targetNode) {
+    public ModifyIEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
         super(EditorInstance.getInstance(), "Create Interruptive Edge", true);
         // Init edge data
         mIEdge = new IEdge();
@@ -300,8 +300,8 @@ public class ModifyIEdgeDialog extends Dialog {
             Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry              pairs            = (Map.Entry) it.next();
-                TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+                TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+                TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
                         startNodePair.getFirst() + "/" + altStartNodePair.getFirst());
                 ////System.err.println("loading start node "+startNodePair.getSecond());
@@ -329,8 +329,8 @@ public class ModifyIEdgeDialog extends Dialog {
         Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+            TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+            TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                     + altStartNodePair.getFirst());

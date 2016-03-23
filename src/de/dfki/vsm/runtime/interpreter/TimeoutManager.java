@@ -11,8 +11,8 @@ import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.EmptyCond;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.ArrVarExp;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond;
@@ -133,12 +133,12 @@ public class TimeoutManager {
     }
 
     public void startTimeoutHandler(Expression exp, Environment env) throws InterpreterError {
-        if (exp instanceof List) {
-            for (Expression arg : ((List) exp).getExpList()) {
+        if (exp instanceof ListRecord) {
+            for (Expression arg : ((ListRecord) exp).getExpList()) {
                 startTimeoutHandler(arg, env);
             }
-        } else if (exp instanceof Struct) {
-            for (Assignment arg : ((Struct) exp).getExpList()) {
+        } else if (exp instanceof StructRecord) {
+            for (Assignment arg : ((StructRecord) exp).getExpList()) {
                 startTimeoutHandler(arg, env);
             }
         } else if (exp instanceof BinaryExp) {

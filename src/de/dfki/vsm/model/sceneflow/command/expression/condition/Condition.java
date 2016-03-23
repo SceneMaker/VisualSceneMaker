@@ -3,7 +3,7 @@ package de.dfki.vsm.model.sceneflow.command.expression.condition;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Constant;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.LiteralExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TemporalCond;
@@ -43,7 +43,7 @@ public abstract class Condition extends Expression {
             cond = LExpression.parse(element);
         } else if (tag.equals("Int") || tag.equals("Float") || tag.equals("Object") || tag.equals("Bool")
                    || tag.equals("String") || tag.equals("List") || tag.equals("Struct")) {
-            cond = Constant.parse(element);
+            cond = LiteralExpression.parse(element);
         } else if (tag.equals("TimeoutCondition")) {
             cond = TemporalCond.parse(element);
         } else {

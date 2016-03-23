@@ -38,7 +38,7 @@ public class CreateEdgeAction extends EdgeAction {
     }
 
     public CreateEdgeAction(WorkSpacePanel workSpace, Node sourceNode, Node targetNode,
-                            de.dfki.vsm.model.sceneflow.Edge dataEdge, Edge.TYPE type) {
+                            de.dfki.vsm.model.sceneflow.AbstractEdge dataEdge, Edge.TYPE type) {
         mWorkSpace     = workSpace;
         mTargetGUINode = targetNode;
         mSourceGUINode = sourceNode;

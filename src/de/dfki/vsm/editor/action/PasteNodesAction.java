@@ -6,10 +6,10 @@ import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.Edge;
+import de.dfki.vsm.model.sceneflow.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import java.util.ArrayList;
@@ -30,11 +30,11 @@ import javax.swing.undo.CannotUndoException;
 public class PasteNodesAction extends EditorAction {
     Set<CreateNodeAction>          mCreateNodeActions = new HashSet<CreateNodeAction>();
     WorkSpacePanel                      mWorkSpace         = null;
-    Hashtable<Node, ArrayList<CEdge>> mNodesCEdges       = new Hashtable<Node, ArrayList<CEdge>>();
-    Hashtable<Node, ArrayList<PEdge>> mNodesPEdges       = new Hashtable<Node, ArrayList<PEdge>>();
-    Hashtable<Node, ArrayList<FEdge>> mNodesFEdges       = new Hashtable<Node, ArrayList<FEdge>>();
-    Hashtable<Node, ArrayList<IEdge>> mNodesIEdges       = new Hashtable<Node, ArrayList<IEdge>>();
-    Hashtable<Node, Edge>          mNodesDefaultEdge  = new Hashtable<Node, Edge>();
+    Hashtable<BasicNode, ArrayList<CEdge>> mNodesCEdges       = new Hashtable<BasicNode, ArrayList<CEdge>>();
+    Hashtable<BasicNode, ArrayList<PEdge>> mNodesPEdges       = new Hashtable<BasicNode, ArrayList<PEdge>>();
+    Hashtable<BasicNode, ArrayList<FEdge>> mNodesFEdges       = new Hashtable<BasicNode, ArrayList<FEdge>>();
+    Hashtable<BasicNode, ArrayList<IEdge>> mNodesIEdges       = new Hashtable<BasicNode, ArrayList<IEdge>>();
+    Hashtable<BasicNode, AbstractEdge>          mNodesDefaultEdge  = new Hashtable<BasicNode, AbstractEdge>();
     SceneFlowEditor                mSceneFlowEditor;
 
     public PasteNodesAction(WorkSpacePanel workSpace) {
@@ -50,9 +50,9 @@ public class PasteNodesAction extends EditorAction {
         IDManager im = mWorkSpace.getSceneFlowManager().getIDManager();
 
         // make a copy
-        Set<Node> nodes = new HashSet<Node>();
+        Set<BasicNode> nodes = new HashSet<BasicNode>();
 
-        for (Node node : mWorkSpace.getClipBoard()) {
+        for (BasicNode node : mWorkSpace.getClipBoard()) {
             nodes.add(node.getCopy());
         }
 
@@ -60,7 +60,7 @@ public class PasteNodesAction extends EditorAction {
         im.reassignAllIDs(nodes);
 
         // Remove edges
-        for (Node node : nodes) {
+        for (BasicNode node : nodes) {
             if (node.hasEdge()) {
                 switch (node.getFlavour()) {
                 case CNODE :
@@ -130,7 +130,7 @@ public class PasteNodesAction extends EditorAction {
         }
 
         // now paste each stored edge to sceneflow
-        for (Node node : nodes) {
+        for (BasicNode node : nodes) {
 
             // cedge
             if (mNodesCEdges.containsKey(node)) {
@@ -186,7 +186,7 @@ public class PasteNodesAction extends EditorAction {
 
             // dedge
             if (mNodesDefaultEdge.containsKey(node)) {
-                Edge             e   = mNodesDefaultEdge.get(node);
+                AbstractEdge             e   = mNodesDefaultEdge.get(node);
                 CreateEdgeAction cea = null;
 
                 if (TEdge.class.isInstance(e)) {

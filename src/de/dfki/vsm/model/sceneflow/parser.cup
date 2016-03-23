@@ -12,7 +12,7 @@ parser code {:
   public static de.dfki.vsm.model.sceneflow.command.expression.Expression expResult;
   public static de.dfki.vsm.model.sceneflow.command.expression.condition.Condition cndResult;
   public static de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond logResult;
-  //public static de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Constant constResult;
+ 
 
   public static final short CMD = 0;
   public static final short EXP = 1;
@@ -63,10 +63,10 @@ non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.O
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int integer_constant;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float float_constant;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool bool_constant;
-non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String string_constant;
-non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List list_constant;
-non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct struct_constant;
-non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Constant constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral string_constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord list_constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord struct_constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.LiteralExpression constant;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression lexpression;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultCond default_condition;
 non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.InStateCond instate_condition;
@@ -267,13 +267,13 @@ float_constant ::=
 bool_constant ::= 
   BOOLEAN:x                                                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool(x); :};
 string_constant ::= 
-  STRING:x                                                                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(ChartParser.trimString(x)); :};
+  STRING:x                                                                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(ChartParser.trimString(x)); :};
 null_constant ::=
   NULL                                                                          {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object(); :};
 list_constant ::= 
-  LBRACK expression_list:y RBRACK                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List(/*x,*/ y); :};
+  LBRACK expression_list:y RBRACK                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord(/*x,*/ y); :};
 struct_constant ::= 
-  LBRACE assignment_list:y RBRACE                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct(/*x,*/ y); :};
+  LBRACE assignment_list:y RBRACE                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord(/*x,*/ y); :};
 
 /*
  * EMPTY CONDITION

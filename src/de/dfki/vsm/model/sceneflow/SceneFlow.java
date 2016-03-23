@@ -19,15 +19,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * @author Not me
- * @author Patrick Gebhard
+ * @author Gregor Mehlmann
  */
 public class SceneFlow extends SuperNode {
 
-    // protected Logger mLogger = Logger.getInstance();
-    // protected String mSceneFileName = new String();
-    // protected String mSceneInfoFileName = new String();
-    // protected VariableBadge mVariableBadge = null;
     protected String mXMLNameSpace = new String();
     protected String mXMLSchemeInstance = new String();
     protected String mXMLSchemeLocation = new String();
@@ -142,9 +137,11 @@ public class SceneFlow extends SuperNode {
         }
 
         //out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        out.println("<SceneFlow " + "id=\"" + mId + "\" " + "name=\"" + mName + "\" " + "comment=\"" + mComment
-                + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
-                + "exhaustive=\"" + mExhaustive + "\" " + "preserving=\"" + mPreserving + "\" " + "modifDate=\"" + Preferences.sDATE_FORMAT.format(new Date()) + "\" " + "start=\""
+        out.println("<SceneFlow " 
+                + "id=\"" + mId + "\" " 
+                + "name=\"" + mName + "\" " 
+                + "comment=\"" + mComment + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
+                + "modifDate=\"" + Preferences.sDATE_FORMAT.format(new Date()) + "\" " + "start=\""
                 + start + "\" "
                 // + "context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "
                 + "context=\"" + mContextClass + "\" " + "package=\"" + mPackageName + "\" "
@@ -246,160 +243,6 @@ public class SceneFlow extends SuperNode {
         out.pop().print("</SceneFlow>");
     }
 
-    /*
-    public void parseFromXMLFile(URL url) throws
-           
-            XMLParseError {
-        DocumentBuilder parser = null;
-        Schema schema = null;
-        Document document = null;
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-
-        documentBuilderFactory.setNamespaceAware(true);
-
-        // Create parser
-        try {
-            parser = documentBuilderFactory.newDocumentBuilder();
-
-            // Logger.getInstance().info("XML Parser configuration successfull!");
-        } catch (ParserConfigurationException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: XML Parser configuration failed!");
-        }
-
-        // Create the XML schema validator
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-        try {
-
-            // PG: XSD is loaded from scenemaker.jar!
-            URL sceneFlowXSDURL = null;
-
-            try {
-                sceneFlowXSDURL = getClass().getResource("data/xsd/sceneflow.xsd");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            schema = schemaFactory.newSchema(sceneFlowXSDURL);
-            LOGDefaultLogger.getInstance().message("XML Schema configuration successfull!");
-        } catch (SAXException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: XML Schema configuration failed!");
-        }
-
-        Validator validator = schema.newValidator();
-
-        // added PG: Parse from URL
-        try {
-            document = parser.parse(url.openStream());
-
-            // Logger.getInstance().info("Parsing of file '" + url.getPath() + "' successfull!");
-        } catch (IOException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().message("ERROR: Cannot read file '" + url.getPath() + "'!");
-
-            // throw e;
-        } catch (SAXException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: Cannot parse file '" + url.getPath() + "'!");
-
-            // throw e;
-        }
-
-        // Validate
-        try {
-            validator.validate(new DOMSource(document));
-            LOGDefaultLogger.getInstance().message("Validation of file '" + url.getPath() + "' successfull!");
-        } catch (IOException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: Cannot read file '" + url.getPath() + "'!");
-
-            // throw e;
-        } catch (SAXException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: Cannot validate file '" + url.getPath() + "'!");
-
-            // throw e;
-        }
-
-        parseXML(document.getDocumentElement());
-    }
-*/
-/*
-    public void parseFromXMLFile(File file) throws
-          
-            XMLParseError {
-        DocumentBuilder parser = null;
-        Schema schema = null;
-        Document document = null;
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-
-        documentBuilderFactory.setNamespaceAware(true);
-
-        // Create parser
-        try {
-            parser = documentBuilderFactory.newDocumentBuilder();
-
-            // Logger.getInstance().info("XML Parser configuration successfull!");
-        } catch (ParserConfigurationException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: XML Parser configuration failed!");
-        }
-
-        // Create the XML schema validator
-//      SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-//      try {
-//          // TODO: get the properties file xsd
-//          schema = schemaFactory.newSchema(new StreamSource(new File("data/xsd/sceneflow.xsd")));//ResourceLoader.class.getResourceAsStream("data/xsd/sceneflow.xsd")
-//          Logger.getInstance().info("XML Schema configuration successfull!");
-//      } catch (SAXException e) {
-//          e.printStackTrace();
-//          Logger.getInstance().info("ERROR: XML Schema configuration failed!");
-//      }
-//      Validator validator = schema.newValidator();
-        // Parse
-        try {
-            document = parser.parse(file);
-
-            // Logger.getInstance().info("Parsing of file '" + file.getAbsolutePath() + "' successfull!");
-        } catch (IOException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: Cannot read file '" + file.getAbsolutePath() + "'!");
-
-            // throw e;
-        } catch (SAXException e) {
-
-            // e.printStackTrace();
-            LOGDefaultLogger.getInstance().failure("ERROR: Cannot parse file '" + file.getAbsolutePath() + "'!");
-
-            // throw e;
-        }
-
-        // Validate
-//      try {
-//          validator.validate(new DOMSource(document));
-//          Logger.getInstance().info("Validation of file '" + file.getAbsolutePath() + "' successfull!");
-//      } catch (IOException e) {
-//          //e.printStackTrace();
-//          Logger.getInstance().info("ERROR: Cannot read file '" + file.getAbsolutePath() + "'!");
-//          //throw e;
-//      } catch (SAXException e) {
-//          //e.printStackTrace();
-//          Logger.getInstance().info("ERROR: Cannot validate file '" + file.getAbsolutePath() + "'!");
-//          //throw e;
-//      }
-        parseXML(document.getDocumentElement());
-    }
-*/
     @Override
     public void parseXML(Element element) throws XMLParseError {
         mId = element.getAttribute("id");
@@ -410,16 +253,12 @@ public class SceneFlow extends SuperNode {
 
         mContextClass = element.getAttribute("context");
         mPackageName = element.getAttribute("package");
-        mExhaustive = Boolean.valueOf(element.getAttribute("exhaustive"));
-        mPreserving = Boolean.valueOf(element.getAttribute("preserving"));
         mXMLSchemeLocation = element.getAttribute("xsi:schemaLocation");
         mXMLNameSpace = element.getAttribute("xmlns");
         mXMLSchemeInstance = element.getAttribute("xmlns:xsi");
         mHideLocalVarBadge = Boolean.valueOf(element.getAttribute("hideLocalVar"));
         mHideGlobalVarBadge = Boolean.valueOf(element.getAttribute("hideGlobalVar"));
         mModifDate = element.getAttribute("modifDate");
-        // mSceneFileName = element.getAttribute("scenefile");
-        // mSceneInfoFileName = element.getAttribute("sceneinfo");
 
         /**
          * Construct start node list from the start string
@@ -473,7 +312,7 @@ public class SceneFlow extends SuperNode {
                     comment.setParentNode(sceneFlow);
                     mCommentList.add(comment);
                 } else if (tag.equals("Node")) {
-                    Node node = new Node();
+                    BasicNode node = new BasicNode();
 
                     node.parseXML(element);
                     node.setParentNode(sceneFlow);

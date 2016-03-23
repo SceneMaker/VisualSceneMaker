@@ -9,7 +9,7 @@ package de.dfki.vsm.editor.util;
 import de.dfki.vsm.model.sceneflow.CEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class IDManager {
             }
 
             // Set<Node> ns = sn.getNodeSet();
-            ArrayList<Node> ns = sn.getNodeList();
+            ArrayList<BasicNode> ns = sn.getNodeList();
 
             collectNodeIDs(ns);
 
@@ -65,8 +65,8 @@ public class IDManager {
         }
     }
 
-    private void collectNodeIDs(ArrayList<Node> ns) {
-        for (Node n : ns) {
+    private void collectNodeIDs(ArrayList<BasicNode> ns) {
+        for (BasicNode n : ns) {
             String id = n.getId();
 
             if (id.startsWith("N")) {
@@ -146,13 +146,13 @@ public class IDManager {
     /*
      * resets recursively all ids of a given node or supernode and used edges.
      */
-    public void reassignAllIDs(Set<Node> nodes) {
+    public void reassignAllIDs(Set<BasicNode> nodes) {
 
         // DEBUG System.out.println("reassignAllIDs");
         Hashtable<String, String> relationOldNewIDs = new Hashtable<String, String>();
-        ArrayList<Node>              nodesVector       = new ArrayList<Node>();
+        ArrayList<BasicNode>              nodesVector       = new ArrayList<BasicNode>();
 
-        for (Node n : nodes) {
+        for (BasicNode n : nodes) {
             nodesVector.add(n);
         }
 
@@ -163,10 +163,10 @@ public class IDManager {
         // TODO reassign alternative Startnode information in Edges
     }
 
-    private Hashtable<String, String> reassignNodesID(ArrayList<Node> nodes, Hashtable<String, String> lastOldNewIDRef) {
+    private Hashtable<String, String> reassignNodesID(ArrayList<BasicNode> nodes, Hashtable<String, String> lastOldNewIDRef) {
         Hashtable<String, String> currentOldNewIDRef = lastOldNewIDRef;
 
-        for (Node node : nodes) {
+        for (BasicNode node : nodes) {
             if (SuperNode.class.isInstance(node)) {
                 String oldID = node.getId();
                 String newID = getNextFreeSuperNodeID();
@@ -176,7 +176,7 @@ public class IDManager {
                 node.setId(newID);
                 currentOldNewIDRef.put(oldID, newID);
 
-                ArrayList<Node> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
+                ArrayList<BasicNode> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
 
                 // reassign recursively other nodes id
                 currentOldNewIDRef = reassignNodesID(childNodes, currentOldNewIDRef);
@@ -185,7 +185,7 @@ public class IDManager {
                 String newID = getNextFreeNodeID();
 
                 // DEBUG
-                // System.out.println("Node " + node.getName() + " has old id " + oldID + " gets " + newID);
+                // System.out.println("BasicNode " + node.getName() + " has old id " + oldID + " gets " + newID);
                 node.setId(newID);
                 currentOldNewIDRef.put(oldID, newID);
             }
@@ -197,8 +197,8 @@ public class IDManager {
     private void reassignSubSuperNodeStartNodeIDs(SuperNode sn, Hashtable<String, String> relationOldNewIDRef) {
         System.out.println("Checking start node IDs of sub super node " + sn.getId());
 
-        HashMap<String, Node> newSNM = new HashMap<String, Node>();
-        HashMap<String, Node> snm    = sn.getStartNodeMap();
+        HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
+        HashMap<String, BasicNode> snm    = sn.getStartNodeMap();
 
         for (String key : snm.keySet()) {
 
@@ -217,16 +217,16 @@ public class IDManager {
         }
     }
 
-    private void reassignStartNodeIDs(ArrayList<Node> nodes, Hashtable<String, String> relationOldNewIDRef) {
-        ArrayList<Node> subNodes = new ArrayList<Node>();
+    private void reassignStartNodeIDs(ArrayList<BasicNode> nodes, Hashtable<String, String> relationOldNewIDRef) {
+        ArrayList<BasicNode> subNodes = new ArrayList<BasicNode>();
 
-        for (Node node : nodes) {
+        for (BasicNode node : nodes) {
             if (node instanceof SuperNode) {
 
                 // System.out.println("Checking start node IDs of super node " + node.getId());
-                HashMap<String, Node> newSNM = new HashMap<String, Node>();
+                HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
                 SuperNode             sn     = (SuperNode) node;
-                HashMap<String, Node> snm    = sn.getStartNodeMap();
+                HashMap<String, BasicNode> snm    = sn.getStartNodeMap();
 
                 for (String key : snm.keySet()) {
 
@@ -247,8 +247,8 @@ public class IDManager {
         }
     }
 
-    private void reassignEdgesID(ArrayList<Node> nodes, Hashtable<String, String> relationOldNewIDRef) {
-        for (Node node : nodes) {
+    private void reassignEdgesID(ArrayList<BasicNode> nodes, Hashtable<String, String> relationOldNewIDRef) {
+        for (BasicNode node : nodes) {
             if (node.hasEdge()) {
                 switch (node.getFlavour()) {
                 case CNODE :
@@ -406,7 +406,7 @@ public class IDManager {
             }
 
             if (SuperNode.class.isInstance(node)) {
-                ArrayList<Node> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
+                ArrayList<BasicNode> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
 
                 reassignEdgesID(childNodes, relationOldNewIDRef);
             }

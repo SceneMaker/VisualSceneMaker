@@ -1,57 +1,54 @@
 package de.dfki.vsm.model.sceneflow;
 
-//~--- non-JDK imports --------------------------------------------------------
-
+import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.model.sceneflow.graphics.node.Graphics;
+import de.dfki.vsm.model.sceneflow.graphics.node.NodeGraphics;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
-
 import org.w3c.dom.Element;
 
-//~--- JDK imports ------------------------------------------------------------
-
-
 /**
- * @author Not me
- * @author Patrick Gebhard
+ * @author Gregor Mehlmann
  */
-public class Node extends Syntax {
-    protected String          mId            = new String();
-    protected String          mName          = new String();
-    protected String          mComment       = new String();
-    protected boolean         mExhaustive    = Boolean.FALSE;
-    protected boolean         mPreserving    = Boolean.FALSE;
-    protected ArrayList<TypeDef> mTypeDefList   = new ArrayList<TypeDef>();
-    protected ArrayList<VarDef>  mVarDefList    = new ArrayList<VarDef>();
-    protected ArrayList<Command> mCmdList       = new ArrayList<Command>();
-    protected ArrayList<CEdge>   mCEdgeList     = new ArrayList<CEdge>();
-    protected ArrayList<PEdge>   mPEdgeList     = new ArrayList<PEdge>();
-    protected ArrayList<IEdge>   mIEdgeList     = new ArrayList<IEdge>();
-    protected ArrayList<FEdge>   mFEdgeList     = new ArrayList<FEdge>();
-    protected Edge            mDEdge         = null;
-    protected Graphics        mGraphics      = null;
-    protected SuperNode       mParentNode    = null;
-    protected boolean         mIsHistoryNode = false;
-    
-    public Byte              hasNone        = new Byte("0");
-    public Byte              hasOne         = new Byte("1");
-    public Byte              hasMany        = new Byte("2");
-    
+public class BasicNode implements ModelObject {
+
+    protected String mId = new String();
+    protected String mName = new String();
+    protected String mComment = new String();
+    //
+    protected ArrayList<TypeDef> mTypeDefList = new ArrayList();
+    protected ArrayList<VarDef> mVarDefList = new ArrayList();
+    protected ArrayList<Command> mCmdList = new ArrayList();
+    protected ArrayList<CEdge> mCEdgeList = new ArrayList();
+    protected ArrayList<PEdge> mPEdgeList = new ArrayList();
+    protected ArrayList<IEdge> mIEdgeList = new ArrayList();
+    protected ArrayList<FEdge> mFEdgeList = new ArrayList();
+    //
+    protected AbstractEdge mDEdge = null;
+    protected NodeGraphics mGraphics = null;
+    protected SuperNode mParentNode = null;
+    protected boolean mIsHistoryNode = false;
+
+    public Byte hasNone = new Byte("0");
+    public Byte hasOne = new Byte("1");
+    public Byte hasMany = new Byte("2");
+
     public enum FLAVOUR {
+
         NONE, ENODE, TNODE, CNODE, PNODE, INODE, FNODE
+    };
+
+    public BasicNode() {
     }
 
-    ;
-    public Node() {}
-
-    public boolean isSubNodeOf(Node node) {
+    //
+    public boolean isSubNodeOf(BasicNode node) {
         if (node instanceof SuperNode) {
             SuperNode parentNode = mParentNode;
 
@@ -63,7 +60,6 @@ public class Node extends Syntax {
                 }
             }
         }
-
         return false;
     }
 
@@ -92,7 +88,7 @@ public class Node extends Syntax {
     }
 
     public void setNameAndId(String value) {
-        mId   = value;
+        mId = value;
         mName = value;
     }
 
@@ -104,22 +100,21 @@ public class Node extends Syntax {
         return mComment;
     }
 
-    public void setExhaustive(boolean value) {
-        mExhaustive = value;
-    }
-
-    public boolean getExhaustive() {
-        return mExhaustive;
-    }
-
-    public void setPreserving(boolean value) {
-        mPreserving = value;
-    }
-
-    public boolean getPreserving() {
-        return mPreserving;
-    }
-
+//    public void setExhaustive(boolean value) {
+//        mExhaustive = value;
+//    }
+//
+//    public boolean getExhaustive() {
+//        return mExhaustive;
+//    }
+//
+//    public void setPreserving(boolean value) {
+//        mPreserving = value;
+//    }
+//
+//    public boolean getPreserving() {
+//        return mPreserving;
+//    }
     public boolean hasComment() {
         if (mComment == null) {
             return false;
@@ -133,7 +128,7 @@ public class Node extends Syntax {
     }
 
     public boolean hasEdge() {
-        
+
         if (mDEdge != null) {
             return true;
         }
@@ -163,28 +158,28 @@ public class Node extends Syntax {
         }
         return false;
     }
+
     /**
-     * Tells if the node has more than 0 Probabilistic edge
-     * in case true, it is necessary to reorganise the values of probabilities
-     * Used when deleting an edge
-     * @return 
+     * Tells if the node has more than 0 Probabilistic edge in case true, it is
+     * necessary to reorganise the values of probabilities Used when deleting an
+     * edge
+     *
+     * @return
      */
-    public byte hasPEdges()
-    {
-        if(mPEdgeList.size() == 1)
-        {
+    public byte hasPEdges() {
+        if (mPEdgeList.size() == 1) {
             return hasOne;
         }
-        if(mPEdgeList.size() > 1)
-        {
+        if (mPEdgeList.size() > 1) {
             return hasMany;
         }
         return hasNone;
     }
-    public PEdge getFirstPEdge()
-    {
+
+    public PEdge getFirstPEdge() {
         return mPEdgeList.get(0);
     }
+
     public boolean hasDEdge() {
         return (mDEdge != null);
     }
@@ -216,18 +211,18 @@ public class Node extends Syntax {
 
         if (mDEdge != null) {
             return (mDEdge instanceof TEdge)
-                   ? FLAVOUR.TNODE
-                   : FLAVOUR.ENODE;
+                    ? FLAVOUR.TNODE
+                    : FLAVOUR.ENODE;
         }
 
         return FLAVOUR.NONE;
     }
 
-    public void setDedge(Edge value) {
+    public void setDedge(AbstractEdge value) {
         mDEdge = value;
     }
 
-    public Edge getDedge() {
+    public AbstractEdge getDedge() {
         return mDEdge;
     }
 
@@ -235,11 +230,11 @@ public class Node extends Syntax {
         mDEdge = null;
     }
 
-    public void setGraphics(Graphics value) {
+    public void setGraphics(NodeGraphics value) {
         mGraphics = value;
     }
 
-    public Graphics getGraphics() {
+    public NodeGraphics getGraphics() {
         return mGraphics;
     }
 
@@ -351,7 +346,7 @@ public class Node extends Syntax {
 
     public ArrayList<TypeDef> getCopyOfTypeDefList() {
         ArrayList<TypeDef> copy = new ArrayList<TypeDef>();
-        
+
         for (TypeDef def : mTypeDefList) {
             copy.add(def.getCopy());
         }
@@ -477,8 +472,8 @@ public class Node extends Syntax {
         return copy;
     }
 
-    public ArrayList<Edge> getEdgeList() {
-        ArrayList<Edge> edgeList = new ArrayList<Edge>();
+    public ArrayList<AbstractEdge> getEdgeList() {
+        ArrayList<AbstractEdge> edgeList = new ArrayList<AbstractEdge>();
 
         for (CEdge edge : mCEdgeList) {
             edgeList.add(edge);
@@ -504,13 +499,13 @@ public class Node extends Syntax {
     }
 
     protected void establishTargetNodes() {
-        for (Edge edge : getEdgeList()) {
+        for (AbstractEdge edge : getEdgeList()) {
             edge.setTargetNode(mParentNode.getChildNodeById(edge.getTarget()));
         }
     }
 
-    public ArrayList<Node> getReachableNodeList() {
-        ArrayList<Node> reachableNodeList = new ArrayList<Node>();
+    public ArrayList<BasicNode> getReachableNodeList() {
+        ArrayList<BasicNode> reachableNodeList = new ArrayList<BasicNode>();
 
         reachableNodeList.add(this);
         fillReachableNodeList(reachableNodeList);
@@ -518,9 +513,9 @@ public class Node extends Syntax {
         return reachableNodeList;
     }
 
-    private void fillReachableNodeList(ArrayList<Node> fromSourceReachableNodeList) {
-        for (Edge edge : getEdgeList()) {
-            Node targetNode = edge.getTargetNode();
+    private void fillReachableNodeList(ArrayList<BasicNode> fromSourceReachableNodeList) {
+        for (AbstractEdge edge : getEdgeList()) {
+            BasicNode targetNode = edge.getTargetNode();
 
             if (!fromSourceReachableNodeList.contains(targetNode)) {
                 fromSourceReachableNodeList.add(targetNode);
@@ -541,13 +536,12 @@ public class Node extends Syntax {
         return null;
     }
 
-    public Node getCopy() {
-        return (Node) CopyTool.copy(this);
+    public BasicNode getCopy() {
+        return (BasicNode) CopyTool.copy(this);
     }
 
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<Node id=\"" + mId + "\" name=\"" + mName + "\" exhaustive=\"" + mExhaustive + "\" preserving=\""
-                    + mPreserving + "\" history=\"" + mIsHistoryNode + "\">").push();
+        out.println("<Node id=\"" + mId + "\" name=\"" + mName + "\" history=\"" + mIsHistoryNode + "\">").push();
 
         int i = 0;
 
@@ -601,13 +595,11 @@ public class Node extends Syntax {
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        mId            = element.getAttribute("id");
-        mName          = element.getAttribute("name");
-        mExhaustive    = Boolean.valueOf(element.getAttribute("exhaustive"));
-        mPreserving    = Boolean.valueOf(element.getAttribute("preserving"));
+        mId = element.getAttribute("id");
+        mName = element.getAttribute("name");
         mIsHistoryNode = Boolean.valueOf(element.getAttribute("history"));
 
-        final Node node = this;
+        final BasicNode node = this;
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
@@ -635,7 +627,7 @@ public class Node extends Syntax {
                         }
                     });
                 } else if (tag.equals("Graphics")) {
-                    mGraphics = new Graphics();
+                    mGraphics = new NodeGraphics();
                     mGraphics.parseXML(element);
                 } else if (tag.equals("CEdge")) {
                     CEdge edge = new CEdge();
@@ -681,7 +673,7 @@ public class Node extends Syntax {
                     mDEdge = edge;
                 } else {
                     throw new XMLParseError(null,
-                                            "Cannot parse the element with the tag \"" + tag + "\" into a node child!");
+                            "Cannot parse the element with the tag \"" + tag + "\" into a node child!");
                 }
             }
         });
@@ -691,29 +683,29 @@ public class Node extends Syntax {
 
         // Add hash of General Attributes
         int hashCode = ((mName == null)
-                        ? 0
-                        : mName.hashCode()) + ((mComment == null)
+                ? 0
+                : mName.hashCode()) + ((mComment == null)
                 ? 0
                 : mComment.hashCode()) + ((mGraphics == null)
-                                          ? 0
-                                          : mGraphics.getPosition().hashCode());
+                ? 0
+                : mGraphics.getPosition().hashCode());
 
-        // Add hash of all commands inside Node
+        // Add hash of all commands inside BasicNode
         for (int cntCommand = 0; cntCommand < mCmdList.size(); cntCommand++) {
             hashCode += mCmdList.get(cntCommand).hashCode();
         }
 
-        // Add hash of all TypeDef inside Node
+        // Add hash of all TypeDef inside BasicNode
         for (int cntType = 0; cntType < mTypeDefList.size(); cntType++) {
             hashCode += mTypeDefList.get(cntType).hashCode() + mTypeDefList.get(cntType).getName().hashCode()
-                        + mTypeDefList.get(cntType).toString().hashCode();
+                    + mTypeDefList.get(cntType).toString().hashCode();
         }
 
-        // Add hash of all Vars inside Node
+        // Add hash of all Vars inside BasicNode
         for (int cntVar = 0; cntVar < mVarDefList.size(); cntVar++) {
             hashCode += ((mVarDefList.get(cntVar).getName() == null)
-                         ? 0
-                         : mVarDefList.get(cntVar).getName().hashCode()) + ((mVarDefList.get(cntVar).getType() == null)
+                    ? 0
+                    : mVarDefList.get(cntVar).getName().hashCode()) + ((mVarDefList.get(cntVar).getType() == null)
                     ? 0
                     : mVarDefList.get(cntVar).getType().hashCode()) + ((mVarDefList.get(cntVar).toString() == null)
                     ? 0
@@ -730,21 +722,21 @@ public class Node extends Syntax {
         // Add hash of all Conditional Edges
         for (int cntEdge = 0; cntEdge < getSizeOfCEdgeList(); cntEdge++) {
             hashCode += mCEdgeList.get(cntEdge).hashCode() + mCEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mCEdgeList.get(cntEdge).mCondition.hashCode() + mCEdgeList.get(cntEdge).mSource.hashCode()
-                        + mCEdgeList.get(cntEdge).mTarget.hashCode();
+                    + mCEdgeList.get(cntEdge).mCondition.hashCode() + mCEdgeList.get(cntEdge).mSource.hashCode()
+                    + mCEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Add hash of all Probability Edges
         for (int cntEdge = 0; cntEdge < getSizeOfPEdgeList(); cntEdge++) {
             hashCode += mPEdgeList.get(cntEdge).hashCode() + mPEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mPEdgeList.get(cntEdge).getProbability() + mPEdgeList.get(cntEdge).mSource.hashCode()
-                        + mPEdgeList.get(cntEdge).mTarget.hashCode();
+                    + mPEdgeList.get(cntEdge).getProbability() + mPEdgeList.get(cntEdge).mSource.hashCode()
+                    + mPEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         // Add hash of all Fork Edges
         for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
             hashCode += mFEdgeList.get(cntEdge).hashCode() + mFEdgeList.get(cntEdge).mGraphics.getHashCode()
-                        + mFEdgeList.get(cntEdge).mSource.hashCode() + mFEdgeList.get(cntEdge).mTarget.hashCode();
+                    + mFEdgeList.get(cntEdge).mSource.hashCode() + mFEdgeList.get(cntEdge).mTarget.hashCode();
         }
 
         return hashCode;

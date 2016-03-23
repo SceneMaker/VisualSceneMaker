@@ -29,7 +29,7 @@ public final class EdgeGraphics
 {
 
     Edge mEdge = null;
-    de.dfki.vsm.model.sceneflow.Edge mDataEdge = null;
+    de.dfki.vsm.model.sceneflow.AbstractEdge mDataEdge = null;
     Node mSourceNode = null;
     Node mTargetNode = null;
     public Point[] mCoordList = new Point[4];    // the edge curve control points

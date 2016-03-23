@@ -13,18 +13,18 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class Graphics extends Syntax {
+public class NodeGraphics extends Syntax {
     private Position mPosition;
 
-    public Graphics() {
+    public NodeGraphics() {
         mPosition = new Position();
     }
 
-    public Graphics(Position position) {
+    public NodeGraphics(Position position) {
         mPosition = position;
     }
 
-    public Graphics(int xPos, int yPos) {
+    public NodeGraphics(int xPos, int yPos) {
         mPosition = new Position(xPos, yPos);
     }
 
@@ -57,8 +57,8 @@ public class Graphics extends Syntax {
         return "";
     }
 
-    public Graphics getCopy() {
-        return new Graphics(mPosition.getCopy());
+    public NodeGraphics getCopy() {
+        return new NodeGraphics(mPosition.getCopy());
     }
 
     public void writeXML(IOSIndentWriter out) {
