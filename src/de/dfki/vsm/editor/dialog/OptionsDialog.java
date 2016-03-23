@@ -31,7 +31,6 @@ import javax.swing.event.ChangeListener;
 
 import static de.dfki.vsm.Preferences.sUSER_DIR;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
-import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.util.evt.EventDispatcher;
 
 /**

@@ -7,11 +7,9 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
-import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -432,7 +430,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return false;
         }
         final EditorProject project = new EditorProject();
-        // Try to loadRunTimeObjects it from the file
+        // Try to loadRunTimePlugins it from the file
         if (project.parse(path)) {
             // Toggle the editor main screen
             if (mProjectEditors.getTabCount() == 0) {
@@ -917,7 +915,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
         } else {
 			// Launch the current project in the runtime
-            //if (mRunTime.loadRunTimeObjects(project)) {
+            //if (mRunTime.loadRunTimePlugins(project)) {
             if (mRunTime.launch(project)) {
                     // Print some information
                 //mLogger.message("Launching project '" + project + "'");
@@ -944,7 +942,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
 			//} else {
             // Print an error message
-            //	mLogger.failure("Error: Cannot loadRunTimeObjects project '" + project + "'");
+            //	mLogger.failure("Error: Cannot loadRunTimePlugins project '" + project + "'");
             // Return false at failure
             //	return false;
             //}

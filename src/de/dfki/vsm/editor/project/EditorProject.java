@@ -44,7 +44,7 @@ public class EditorProject extends RunTimeProject {
      }
      // First set the project file 
      mProjectFile = base;
-     // And then loadRunTimeObjects the project
+     // And then loadRunTimePlugins the project
      return parse();
      }*/
     @Override
@@ -65,7 +65,7 @@ public class EditorProject extends RunTimeProject {
             if (base.exists()) {
                 // First set the project file
                 mProjectFile = base;
-                // And then loadRunTimeObjects the project
+                // And then loadRunTimePlugins the project
                 return parse();
             } else {
                 // Print an error message

@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime.player;
 
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
@@ -35,33 +36,25 @@ public final class ReactivePlayer extends RunTimePlayer {
     private final ActivityManager mManager = new ActivityManager();
 
     // Create the scene player
-    public ReactivePlayer(final RunTimeProject project) {
+    public ReactivePlayer(final PluginConfig config, final RunTimeProject project) {
         // Initialize the player
-        super(project);
+        super(config, project);
         // Print some information
-        mLogger.message("Creating scene player '" + this + "' for project '" + project + "'");
+        mLogger.message("Creating reactive player '" + this + "' for project '" + project + "'");
     }
 
     // Launch the scene player
     @Override
     public final void launch() {
         // Print some information
-        mLogger.message("Launching scene player '" + this + "'");
-        // Launch all executors
-        for (final ActivityExecutor executor : mProject.getExecutorList().values()) {
-            executor.launch();
-        }
+        mLogger.message("Launching reactive player '" + this + "'");
     }
 
     // Unload the scene player
     @Override
     public final void unload() {
         // Print some information
-        mLogger.message("Unloading scene player '" + this + "'");
-        // Unload all executors
-        for (final ActivityExecutor executor : mProject.getExecutorList().values()) {
-            executor.unload();
-        }
+        mLogger.message("Unloading reactive player '" + this + "'");
     }
 
     // Call the playback method
@@ -73,7 +66,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         final String task = process.getName() + ":" + name + "@";
         // TODO: Append VSM framework time to name
         // Print some information
-        mLogger.message("Playing '" + name + "' in process '" + process + "' on scene player '" + this + "'");
+        mLogger.message("Playing '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
         // Translate the arguments
         final HashMap map = new HashMap();
         if (args != null && !args.isEmpty()) {
@@ -92,7 +85,7 @@ public final class ReactivePlayer extends RunTimePlayer {
             public void run() {
                 for (SceneTurn turn : scene.getTurnList()) {
                     // Get executor for this turn
-                    final ActivityExecutor turnActorExecutor = mProject.getExecutorOf(turn.getSpeaker());
+                    final ActivityExecutor turnActorExecutor = mProject.getAgentDevice(turn.getSpeaker());
                     // Serially play the utterances
                     for (SceneUttr uttr : turn.getUttrList()) {
                         final LinkedList<String> textBuilder = new LinkedList();
@@ -104,7 +97,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                                 final String actor = action.getActor();
                                 // Get the executor for this action
                                 final ActivityExecutor actionActorExecutor
-                                        = (actor != null ? mProject.getExecutorOf(actor) : turnActorExecutor);
+                                        = (actor != null ? mProject.getAgentDevice(actor) : turnActorExecutor);
                                 // Create a new marker for the action
                                 final String marker = actionActorExecutor.marker(newId());
                                 // Append the marker to the activity

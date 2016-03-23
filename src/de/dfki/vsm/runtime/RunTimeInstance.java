@@ -53,7 +53,7 @@ public final class RunTimeInstance {
     }
 
     /*
-    public final boolean loadRunTimeObjects(final RunTimeProject project) {
+    public final boolean loadRunTimePlugins(final RunTimeProject project) {
 
         // Check if the project is already registered
         if (mProjectMap.containsKey(project)) {
@@ -62,10 +62,10 @@ public final class RunTimeInstance {
             // Return false at error
             return false;
         }
-        // Try to loadRunTimeObjects all runtime objects
-        if (!project.loadRunTimeObjects()) {
+        // Try to loadRunTimePlugins all runtime objects
+        if (!project.loadRunTimePlugins()) {
             // Print an error message
-            mLogger.failure("Failure: Cannot loadRunTimeObjects runtime objects of project '" + project + "'");
+            mLogger.failure("Failure: Cannot loadRunTimePlugins runtime objects of project '" + project + "'");
             // Return false at error
             return false;
         } else {
@@ -87,10 +87,10 @@ public final class RunTimeInstance {
             // Return false at error
             return false;
         }
-        // Try to loadRunTimeObjects all runtime objects
-//        if (!project.loadRunTimeObjects()) {
+        // Try to loadRunTimePlugins all runtime objects
+//        if (!project.loadRunTimePlugins()) {
 //            // Print an error message
-//            mLogger.failure("Failure: Cannot loadRunTimeObjects runtime objects of project '" + project + "'");
+//            mLogger.failure("Failure: Cannot loadRunTimePlugins runtime objects of project '" + project + "'");
 //            // Return false at error
 //            return false;
 //        } else {

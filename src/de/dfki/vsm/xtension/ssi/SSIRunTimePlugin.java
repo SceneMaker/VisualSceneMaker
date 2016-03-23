@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.ssi;
 
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
@@ -13,13 +14,23 @@ public class SSIRunTimePlugin extends RunTimePlugin {
     // The SSI event handler
     private final SSIEventSender mSender;
 
-    public SSIRunTimePlugin(final RunTimeProject project) {
+    public SSIRunTimePlugin(final PluginConfig config, final RunTimeProject project) {
         // Initialize the runtime plugin
-        super(project);
+        super(config, project);
+        // Get the plugin configuration
+        final String hlhost = mConfig.getProperty("hlhost");
+        final String hlport = mConfig.getProperty("hlport");
+        final String slhost = mConfig.getProperty("slhost");
+        final String slport = mConfig.getProperty("slport");
+        final String srhost = mConfig.getProperty("srhost");
+        final String srport = mConfig.getProperty("srport");
         // Initialize the event handler
-        mHandler = new SSIEventHandler(this, "127.0.0.1", 1991);
+        mHandler = new SSIEventHandler(this,
+                hlhost, Integer.parseInt(hlport));
         // Initialize the event sender
-        mSender = new SSIEventSender(this, "127.0.0.1", 1992, "127.0.0.1", 1992);
+        mSender = new SSIEventSender(this,
+                slhost, Integer.parseInt(slport),
+                srhost, Integer.parseInt(srport));
 
     }
 
