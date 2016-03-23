@@ -16,11 +16,11 @@ import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.exception.InterruptException;
-import de.dfki.vsm.runtime.exception.InterpretException;
-import de.dfki.vsm.runtime.exception.TerminateException;
-import de.dfki.vsm.runtime.event.AbortionEvent;
-import de.dfki.vsm.runtime.values.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.signal.InterruptionSignal;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
+import de.dfki.vsm.runtime.interpreter.signal.TerminationSignal;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
+import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -93,15 +93,15 @@ public class Process extends java.lang.Thread {
 		return mEnvironment;
 	}
 
-	public void checkStatus() throws TerminateException, InterruptException {
+	public void checkStatus() throws TerminationSignal, InterruptionSignal {
 		checkPaused();
 
 		if (mIsTerminationRequested) {
-			throw new TerminateException(this, null);
+			throw new TerminationSignal(this, null);
 		}
 
 		if (mIsInterruptionRequested) {
-			throw new InterruptException(this, null);
+			throw new InterruptionSignal(this, null);
 		}
 	}
 
@@ -193,7 +193,7 @@ public class Process extends java.lang.Thread {
 		interrupt();
 	}
 
-	public void handleStart() throws InterpretException {
+	public void handleStart() throws InterpreterError {
 
 		/**
 		 * Set the new current node start time
@@ -242,7 +242,7 @@ public class Process extends java.lang.Thread {
 		EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
 	}
 
-	public void handleTermination() throws InterpretException {
+	public void handleTermination() throws InterpreterError {
 		if (mParentThread != null) {
 
 			/**
@@ -292,7 +292,7 @@ public class Process extends java.lang.Thread {
 		EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
 	}
 
-	public void handleForkTermination() throws InterpretException {
+	public void handleForkTermination() throws InterpreterError {
 
 		/**
 		 * Update the history entry with the current symbol table and the curent
@@ -325,7 +325,7 @@ public class Process extends java.lang.Thread {
 		EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
 	}
 
-	public void handleInterruption() throws InterpretException {
+	public void handleInterruption() throws InterpreterError {
 
 		/**
 		 * Set the new incoming edge to the interruptive edge that caused this
@@ -402,7 +402,7 @@ public class Process extends java.lang.Thread {
 		EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
 	}
 
-	public void handleContinuation() throws InterpretException {
+	public void handleContinuation() throws InterpreterError {
 
 		/**
 		 * Set the new incoming edge to the next edge that has to be executed
@@ -490,14 +490,14 @@ public class Process extends java.lang.Thread {
 		// PathLogger.register(this);
 		try {
 			execute();
-		} catch (InterpretException e) {
+		} catch (InterpreterError e) {
 
 			// PathLogger.deregister(this);
 			/**
 			 * Multicast the events for visualization
 			 */
 			// mLogger.message("Interpreter: Aborting execution");
-			EventDispatcher.getInstance().convey(new AbortionEvent(this, e));
+			EventDispatcher.getInstance().convey(new TerminationEvent(this, e));
 
 			/**
 			 * Stop the interpreter
@@ -507,16 +507,16 @@ public class Process extends java.lang.Thread {
 		}
 	}
 
-	private void execute() throws InterpretException {
+	private void execute() throws InterpreterError {
 		mInterpreter.lock();
 
 		try {
 			checkStatus();
-		} catch (InterruptException e) {
+		} catch (InterruptionSignal e) {
 
 			// mLogger.message("Interpreter: Process " + getName() + " has catched an interruption request");
 			handleInterruption();
-		} catch (TerminateException e) {
+		} catch (TerminationSignal e) {
 
 			// mLogger.message("Interpreter: Process " + getName() + " has catched a termination request");
 			handleTermination();
@@ -706,13 +706,13 @@ public class Process extends java.lang.Thread {
 			/////////////////////////////////////////////////////////////
 			// HANDLE INTERRUPTION REQUESTS AND TERMINATIOJ REQUESTS
 			////////////////////////////////////////////////////////////
-			catch (InterruptException e) {
+			catch (InterruptionSignal e) {
 
 				// mLogger.message("Interpreter: Process " + getName() + " catched an interruption request");
 				handleInterruption();
 
 				continue;
-			} catch (TerminateException e) {
+			} catch (TerminationSignal e) {
 
 				// mLogger.message("Interpreter: Process " + getName() + " catched a termination request");
 				handleTermination();
@@ -727,7 +727,7 @@ public class Process extends java.lang.Thread {
 
 	/**
 	 */
-	private void executeStartNodeList() throws InterruptException, TerminateException, InterpretException {
+	private void executeStartNodeList() throws InterruptionSignal, TerminationSignal, InterpreterError {
 		Vector<Node> startNodeList = computeStartNodeList();
 
 		if (!startNodeList.isEmpty()) {
@@ -935,7 +935,7 @@ public class Process extends java.lang.Thread {
 
 	/**
 	 */
-	private void processVarDefList() throws InterpretException {
+	private void processVarDefList() throws InterpreterError {
 		for (VarDef varDef : mCurrentNode.getVarDefList()) {
 			mEvaluator.declare(varDef, mEnvironment);
 		}
@@ -943,7 +943,7 @@ public class Process extends java.lang.Thread {
 
 	/**
 	 */
-	private void processTimeoutConditionList() throws InterpretException {
+	private void processTimeoutConditionList() throws InterpreterError {
 		for (VarDef varDef : mCurrentNode.getVarDefList()) {
 			mTimeoutManager.startTimeoutHandler(varDef, mEnvironment);
 		}
@@ -963,7 +963,7 @@ public class Process extends java.lang.Thread {
 
 	/**
 	 */
-	private CEdge checkCEdgeList() throws InterpretException {
+	private CEdge checkCEdgeList() throws InterpreterError {
 		for (CEdge cedge : mCurrentNode.getCEdgeList()) {
 			try {
 				BooleanValue value = (BooleanValue) mEvaluator.evaluate(cedge.getCondition(), mEnvironment);
@@ -980,7 +980,7 @@ public class Process extends java.lang.Thread {
 				  + "' to node '" + cedge.getTarget()
 				  + "' could not be evaluated to a boolean value.";
 
-				throw new InterpretException(this, errorMsg);
+				throw new InterpreterError(this, errorMsg);
 			}
 		}
 

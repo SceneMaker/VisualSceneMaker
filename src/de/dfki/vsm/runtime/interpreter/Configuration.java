@@ -4,7 +4,7 @@ package de.dfki.vsm.runtime.interpreter;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.runtime.exception.InterpretException;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 
@@ -35,9 +35,9 @@ public class Configuration {
         mConfiguration.get(state.getNode()).addLast(state);
     }
 
-    public void exitState(Node state, Process thread) throws InterpretException {
+    public void exitState(Node state, Process thread) throws InterpreterError {
         if (mConfiguration.get(state) == null) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: There is no thread currently executing node " + state);
         }
 
@@ -50,13 +50,13 @@ public class Configuration {
         }
 
         if (removableStateList.isEmpty()) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
                                        + ") is not currently executing node " + state);
         }
 
         if (removableStateList.size() > 1) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
                                        + ") cannot be executing node " + state + " more than once at one time");
         }
@@ -70,15 +70,15 @@ public class Configuration {
         }
     }
 
-    public State getState(Node node) throws InterpretException {
+    public State getState(Node node) throws InterpreterError {
         if (mConfiguration.get(node) == null) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Node " + node.getId()
                                        + " is currently not executed by any thread");
         }
 
         if (mConfiguration.get(node).isEmpty()) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Node " + node.getId()
                                        + " is currently not executed by any thread");
         }
@@ -86,14 +86,14 @@ public class Configuration {
         return mConfiguration.get(node).getLast();
     }
 
-    public State getState(String id) throws InterpretException {
+    public State getState(String id) throws InterpreterError {
         for (Node node : mConfiguration.keySet()) {
             if (node.getId().equals(id)) {
                 return getState(node);
             }
         }
 
-        throw new InterpretException(this,
+        throw new InterpreterError(this,
                                    "Configuration Error: Node " + id + " is currently not executed by any thread");
     }
 

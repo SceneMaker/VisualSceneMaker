@@ -20,10 +20,10 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultC
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.exception.InterpretException;
-import de.dfki.vsm.runtime.values.AbstractValue;
-import de.dfki.vsm.runtime.values.IntValue;
-import de.dfki.vsm.runtime.values.StringValue;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -105,11 +105,11 @@ public class TimeoutManager {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    public void startTimeoutHandler(VarDef def, Environment env) throws InterpretException {
+    public void startTimeoutHandler(VarDef def, Environment env) throws InterpreterError {
         startTimeoutHandler(def.getExp(), env);
     }
 
-    public void startTimeoutHandler(Command cmd, Environment env) throws InterpretException {
+    public void startTimeoutHandler(Command cmd, Environment env) throws InterpreterError {
         if (cmd instanceof PlaySceneGroup) {
             startTimeoutHandler(((PlaySceneGroup) cmd).getArg(), env);
 
@@ -132,7 +132,7 @@ public class TimeoutManager {
         }
     }
 
-    public void startTimeoutHandler(Expression exp, Environment env) throws InterpretException {
+    public void startTimeoutHandler(Expression exp, Environment env) throws InterpreterError {
         if (exp instanceof List) {
             for (Expression arg : ((List) exp).getExpList()) {
                 startTimeoutHandler(arg, env);
@@ -176,7 +176,7 @@ public class TimeoutManager {
             } else if (value.getType() == AbstractValue.Type.STRING) {
                 start((TimeoutCond) exp, Integer.parseInt(((StringValue) value).getValue()));
             } else {
-                throw new InterpretException(this, "timeout argument not integer");
+                throw new InterpreterError(this, "timeout argument not integer");
             }
         } else if (exp instanceof DefaultCond) {
             startTimeoutHandler(((DefaultCond) exp).getCondition(), env);

@@ -17,7 +17,7 @@ public class TWorldHandler extends Thread {
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
     // The executor instance
-    private final TricatExecutor mExecutor;
+    private final TWorldExecutor mExecutor;
     // The client socket
     private final Socket mSocket;
     // The socket streams
@@ -31,7 +31,7 @@ public class TWorldHandler extends Thread {
     private boolean mDone = false;
 
     // Create the client thread
-    public TWorldHandler(final Socket socket, final TricatExecutor executor) {
+    public TWorldHandler(final Socket socket, final TWorldExecutor executor) {
         // Initialize the socket
         mSocket = socket;
         // Initialize the executor

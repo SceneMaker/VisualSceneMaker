@@ -4,8 +4,8 @@ package de.dfki.vsm.runtime.interpreter;
 
 import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.runtime.symbol.SymbolTable;
-import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.symbol.SymbolTable;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
 
 //~--- JDK imports ------------------------------------------------------------

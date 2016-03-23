@@ -5,14 +5,14 @@ import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.runtime.exception.InterpretException;
-import de.dfki.vsm.runtime.event.AbortionEvent;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.Configuration.State;
-import de.dfki.vsm.runtime.player.ScenePlayer;
-import de.dfki.vsm.runtime.player.reactive.ReactivePlayer;
+import de.dfki.vsm.runtime.player.RunTimePlayer;
+import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.symbol.SymbolTable;
-import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.symbol.SymbolTable;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTriple;
@@ -37,9 +37,9 @@ public class Interpreter {
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
     //private final RunTimePlayer mScenePlayer;
-    private final ScenePlayer mScenePlayer;
+    private final RunTimePlayer mScenePlayer;
     //private final RunTimePlayer mDialogPlayer;
-    //private final ScenePlayer mDialogPlayer;
+    //private final RunTimePlayer mDialogPlayer;
     private final RunTimeProject mRunTimeProject;
     private Process mSceneFlowThread;
 
@@ -110,7 +110,7 @@ public class Interpreter {
     }
 
     // Get the scene player
-    public final ScenePlayer getScenePlayer() {
+    public final RunTimePlayer getScenePlayer() {
         try {
             lock();
             return mScenePlayer;
@@ -191,8 +191,8 @@ public class Interpreter {
                 try {
                     mSceneFlowThread.handleStart();
                     mEventObserver.update();
-                } catch (InterpretException e) {
-                    mEventMulticaster.convey(new AbortionEvent(this, e));
+                } catch (InterpreterError e) {
+                    mEventMulticaster.convey(new TerminationEvent(this, e));
                     mSceneFlowThread.requestTermination();
 
                     // Wait here until terminated and clear data structures
@@ -302,7 +302,7 @@ public class Interpreter {
             mEvaluator.execute(cmd, mConfiguration.getState(nodeId).getThread().getEnvironment());
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -314,7 +314,7 @@ public class Interpreter {
             lock();
 
             return mEvaluator.evaluate(exp, mConfiguration.getState(nodeId).getThread().getEnvironment());
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return null;
         } finally {
             unlock();
@@ -331,7 +331,7 @@ public class Interpreter {
             setVariable(varName, value);
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -347,7 +347,7 @@ public class Interpreter {
             mEventObserver.update();
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             e.printStackTrace();
 
             return false;
@@ -363,7 +363,7 @@ public class Interpreter {
             mEventObserver.update();
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -377,7 +377,7 @@ public class Interpreter {
             mEventObserver.update();
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -390,7 +390,7 @@ public class Interpreter {
 
             return mConfiguration.getState(nodeId).getThread().getEnvironment().getActiveSymbolTable().contains(
                     varName);
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -403,7 +403,7 @@ public class Interpreter {
             mConfiguration.getState(nodeId).getThread().getEnvironment().write(varName, value);
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -416,7 +416,7 @@ public class Interpreter {
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName);
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -429,7 +429,7 @@ public class Interpreter {
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, index);
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return false;
         } finally {
             unlock();
@@ -442,7 +442,7 @@ public class Interpreter {
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, member);
 
             return true;
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
 
             return false;
         } finally {
@@ -455,7 +455,7 @@ public class Interpreter {
             lock();
 
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName);
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return null;
         } finally {
             unlock();
@@ -468,7 +468,7 @@ public class Interpreter {
             lock();
 
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, index);
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return null;
         } finally {
             unlock();
@@ -480,7 +480,7 @@ public class Interpreter {
             lock();
 
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, member);
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             return null;
         } finally {
             unlock();
