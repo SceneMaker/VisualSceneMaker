@@ -104,6 +104,12 @@ public class TWorldHandler extends Thread {
                     mReceivingFeedback = false;
                     mFeedbackCollected = true;
                 }
+                                if (message.contains("</action>")) {
+                    mLogger.warning("Received Shortend TWorld Feedback " + mTworldFeedback);
+                    mReceivingFeedback = false;
+                    mFeedbackCollected = true;
+                }
+                
             }
 
             if (message.contains("<TWorldFeedback>")) {
