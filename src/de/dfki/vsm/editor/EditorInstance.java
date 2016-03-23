@@ -432,7 +432,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return false;
         }
         final EditorProject project = new EditorProject();
-        // Try to load it from the file
+        // Try to loadRunTimeObjects it from the file
         if (project.parse(path)) {
             // Toggle the editor main screen
             if (mProjectEditors.getTabCount() == 0) {
@@ -917,7 +917,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
         } else {
 			// Launch the current project in the runtime
-            //if (mRunTime.load(project)) {
+            //if (mRunTime.loadRunTimeObjects(project)) {
             if (mRunTime.launch(project)) {
                     // Print some information
                 //mLogger.message("Launching project '" + project + "'");
@@ -944,7 +944,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             }
 			//} else {
             // Print an error message
-            //	mLogger.failure("Error: Cannot load project '" + project + "'");
+            //	mLogger.failure("Error: Cannot loadRunTimeObjects project '" + project + "'");
             // Return false at failure
             //	return false;
             //}

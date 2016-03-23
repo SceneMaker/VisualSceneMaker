@@ -37,9 +37,9 @@ public final class ReactivePlayer extends ScenePlayer {
 
     // Create the scene player
     public ReactivePlayer(final RunTimeProject project) {
-        // Initialize the project
+        // Initialize the player
         super(project);
-// Print some information
+        // Print some information
         mLogger.message("Creating scene player '" + this + "' for project '" + project + "'");
     }
 

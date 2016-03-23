@@ -55,11 +55,8 @@ public class RunTimeProject {
     private final VisiconConfig mVisiconConfig = new VisiconConfig();
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
-
     // The default scene player of the project
-    private ScenePlayer mScenePlayer = null;
-    // The default scene player of the project
-    //private ScenePlayer mDialogPlayer = null;
+    private final ScenePlayer mScenePlayer;
 
     // TODO:  Refactor The Dialog Act Stuff
     // Maybe use a configuration file for that
@@ -69,9 +66,7 @@ public class RunTimeProject {
 
     // Construct an empty runtime project
     public RunTimeProject() {
-        // Print some information
-        mLogger.message("Creating a new empty runtime project");
-        // Initialize the scene players
+        // Initialize the scene player
         mScenePlayer = new ReactivePlayer(this);
     }
 
@@ -161,15 +156,14 @@ public class RunTimeProject {
             // Return false at error
             return false;
         }
-
-        // Parse the project from the base directory
+        // Parse the project from file
         return (parseProjectConfig(file)
                 && parseSceneFlow(file)
                 && parseSceneScript(file)
                 && parseActiconConfig(file)
                 && parseVisiconConfig(file)
                 && parseGesticonConfig(file)
-                && load());
+                && loadRunTimeObjects());
 
     }
 
@@ -206,7 +200,7 @@ public class RunTimeProject {
     }
 
     // Load the executors of the project
-    public final boolean load() {
+    public final boolean loadRunTimeObjects() {
         // Get the list of devices
         for (final DeviceConfig config : mProjectConfig.getDeviceConfigList()) {
             // Load the device executor
@@ -226,6 +220,11 @@ public class RunTimeProject {
                 mLogger.failure(exc.toString());
             }
         }
+        
+        // Get the list of devices
+        for (final PluginConfig config : mProjectConfig.getPluginConfigList()) {
+            
+        }
 
         // Return true at success
         return true;
@@ -233,10 +232,10 @@ public class RunTimeProject {
 
     // TODO: Load Plugins and call methods on them via the evaluator in the interpreter
     // Make a new command type in the syntax for that purpose
-    public final Object call (final String name, final String method ) {
+    public final Object call(final String name, final String method) {
         return null;
     }
-    
+
     // Launch the runtime objects of the project
     public final boolean launch() {
         mScenePlayer.launch();

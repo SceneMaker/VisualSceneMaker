@@ -18,24 +18,29 @@ import javax.swing.JTextArea;
 /**
  * @author Gregor Mehlmann
  */
-public final class ConsoleExecutor extends JFrame implements ActivityExecutor {
+public final class ConsoleExecutor extends  ActivityExecutor {
 
+    private final JFrame mMainFrame;
     private final JTextArea mTextArea;
     private final JScrollPane mScrollPane;
 
     public ConsoleExecutor(final RunTimeProject project) {
+        //
+        super(project);
         // Create the text area
         mTextArea = new JTextArea();
         mScrollPane = new JScrollPane(mTextArea);
         mScrollPane.setMinimumSize(new Dimension(400, 300));
         mScrollPane.setMaximumSize(new Dimension(400, 300));
         mScrollPane.setPreferredSize(new Dimension(400, 300));
-        // Set the content pane
-        setContentPane(mScrollPane);
-        // TODO: Get the agent name for this executor object here
-        setTitle(project.getProjectName());
         //
-        pack();
+        mMainFrame = new JFrame();
+        // Set the content pane
+        mMainFrame.setContentPane(mScrollPane);
+        // TODO: Get the agent name for this executor object here
+        mMainFrame.setTitle(project.getProjectName());
+        //
+        mMainFrame.pack();
     }
 
     @Override
@@ -43,12 +48,12 @@ public final class ConsoleExecutor extends JFrame implements ActivityExecutor {
         // Clear the text area
         mTextArea.setText("");
         // Set frame visible
-        setVisible(true);
+        mMainFrame.setVisible(true);
     }
 
     @Override
     public void unload() {
-        setVisible(false);
+        mMainFrame.setVisible(false);
     }
 
     @Override

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="TestTricatWorldEmpaT">
   <Plugins>
+	<Plugin name="ssihandler" class="de.dfki.vsm.xtension.tricat.SSIEventHandler">
+    </Plugin>
+	<Plugin name="ssisender" class="de.dfki.vsm.xtension.tricat.SSIEventSender">
+    </Plugin>
   </Plugins>
   <Devices>
     <Device name="tricat" class="de.dfki.vsm.xtension.tricat.TricatExecutor">

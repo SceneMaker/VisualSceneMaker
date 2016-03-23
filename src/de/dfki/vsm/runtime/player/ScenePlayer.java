@@ -1,31 +1,18 @@
 package de.dfki.vsm.runtime.player;
 
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.LinkedList;
 
 /**
  * @author Gregor Mehlmann
  */
-public abstract class ScenePlayer {
-
-    // The defaut system logger
-    protected final LOGDefaultLogger mLogger
-            = LOGDefaultLogger.getInstance();
-
-    // The runtime project
-    protected final RunTimeProject mProject;
+public abstract class ScenePlayer extends RunTimePlugin {
 
     // Construct the player
     public ScenePlayer(final RunTimeProject project) {
-        mProject = project;
+        super(project);
     }
-
-    // Launch the scene player
-    public abstract void launch();
-
-    // Unload the scene player
-    public abstract void unload();
 
     // Call the playback method
     public abstract void play(final String name, final LinkedList args);
