@@ -7,12 +7,12 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -23,22 +23,22 @@ public class PlayDialogueAct extends Command {
     private Expression mDialogueAct;
 
     // The List Of Additional Features
-    private Vector<Expression> mFeatureList;
+    private ArrayList<Expression> mFeatureList;
 
     // Construct A Playback Command
     public PlayDialogueAct() {
         mDialogueAct = null;
-        mFeatureList = new Vector<>();
+        mFeatureList = new ArrayList<>();
     }
 
     // Construct A Playback Command
     public PlayDialogueAct(final Expression dialogueAct) {
         mDialogueAct = dialogueAct;
-        mFeatureList = new Vector<>();
+        mFeatureList = new ArrayList<>();
     }
 
     // Construct A Playback Command
-    public PlayDialogueAct(final Expression dialogueAct, final Vector<Expression> featureList) {
+    public PlayDialogueAct(final Expression dialogueAct, final ArrayList<Expression> featureList) {
         mDialogueAct = dialogueAct;
         mFeatureList = featureList;
     }
@@ -54,12 +54,12 @@ public class PlayDialogueAct extends Command {
     }
 
     // Get The Feature List
-    public final Vector<Expression> getArgList() {
+    public final ArrayList<Expression> getArgList() {
         return mFeatureList;
     }
 
     // Set The Feature List
-    // public final void setFeatureList(final Vector<Expression> value) {
+    // public final void setFeatureList(final ArrayList<Expression> value) {
     // mFeatureList = value;
     // }
     // Get Specific Feature At
@@ -79,8 +79,8 @@ public class PlayDialogueAct extends Command {
     // return mFeatureList.size();
     // }
     // Copy The feature List
-    public final Vector<Expression> getCopyOfArgList() {
-        final Vector<Expression> copy = new Vector<>();
+    public final ArrayList<Expression> getCopyOfArgList() {
+        final ArrayList<Expression> copy = new ArrayList<>();
 
         for (final Expression exp : mFeatureList) {
             copy.add(exp.getCopy());
@@ -168,7 +168,7 @@ public class PlayDialogueAct extends Command {
     // Parse This Instance XML
     @Override
     public final void parseXML(Element element) throws XMLParseError {
-        final Vector<Expression> expList = new Vector<>();
+        final ArrayList<Expression> expList = new ArrayList<>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override

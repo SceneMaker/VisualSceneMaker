@@ -7,6 +7,7 @@ import de.dfki.vsm.model.sceneflow.Node;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
@@ -15,7 +16,6 @@ import org.w3c.dom.Element;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -41,7 +41,7 @@ public class Configuration {
                                        "Configuration Error: There is no thread currently executing node " + state);
         }
 
-        Vector<State> removableStateList = new Vector<State>();
+        ArrayList<State> removableStateList = new ArrayList<State>();
 
         for (State configState : mConfiguration.get(state)) {
             if (configState.getThread().equals(thread)) {
@@ -102,7 +102,7 @@ public class Configuration {
     public Object[] getOrderedStates() {
 
         // Make a list with all config states
-        Vector<State> configStateList = new Vector<State>();
+        ArrayList<State> configStateList = new ArrayList<State>();
 
         for (LinkedList<State> stateVec : mConfiguration.values()) {
             for (State state : stateVec) {

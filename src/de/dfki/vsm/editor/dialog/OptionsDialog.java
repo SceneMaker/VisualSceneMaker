@@ -4,7 +4,6 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -15,15 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -435,7 +426,7 @@ public class OptionsDialog extends JDialog {
 
         GraphicsEnvironment g = GraphicsEnvironment.getLocalGraphicsEnvironment();
         String[] allFonts = g.getAvailableFontFamilyNames();
-        Vector<String> fonts = new Vector<String>();
+        ArrayList<String> fonts = new ArrayList<String>();
 
         for (String font : allFonts) {
             if (font.contains("Mono")) {
@@ -444,7 +435,7 @@ public class OptionsDialog extends JDialog {
         }
 
 //      JPanel controlPanel = new JPanel();
-        mScriptFontComboBox = new JComboBox(fonts);
+        mScriptFontComboBox = new JComboBox(fonts.toArray());
         mScriptFontComboBox.setOpaque(false);
         mScriptFontComboBox.setSelectedItem(mEditorConfig.sSCRIPT_FONT_TYPE);
         mScriptFontComboBox.addActionListener(new ActionListener() {

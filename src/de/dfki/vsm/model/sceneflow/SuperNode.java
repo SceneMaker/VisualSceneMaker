@@ -12,6 +12,7 @@ import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
@@ -20,15 +21,14 @@ import org.w3c.dom.Element;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * @author Not me
  */
 public class SuperNode extends Node {
-    protected Vector<Comment>       mCommentList         = new Vector<Comment>();
-    protected Vector<Node>          mNodeList            = new Vector<Node>();
-    protected Vector<SuperNode>     mSuperNodeList       = new Vector<SuperNode>();
+    protected ArrayList<Comment>       mCommentList         = new ArrayList<Comment>();
+    protected ArrayList<Node>          mNodeList            = new ArrayList<Node>();
+    protected ArrayList<SuperNode>     mSuperNodeList       = new ArrayList<SuperNode>();
     protected HashMap<String, Node> mStartNodeMap        = new HashMap<String, Node>();
     protected Node                  mHistoryNode         = null;
     protected boolean               mHideLocalVarBadge   = false;
@@ -81,7 +81,7 @@ public class SuperNode extends Node {
         mCommentList.remove(value);
     }
 
-    public Vector<Comment> getCommentList() {
+    public ArrayList<Comment> getCommentList() {
         return mCommentList;
     }
 
@@ -137,12 +137,12 @@ public class SuperNode extends Node {
         return mSuperNodeList.get(index);
     }
 
-    public Vector<SuperNode> getSuperNodeList() {
+    public ArrayList<SuperNode> getSuperNodeList() {
         return mSuperNodeList;
     }
 
-    public Vector<SuperNode> getCopyOfSuperNodeList() {
-        Vector<SuperNode> copy = new Vector<SuperNode>();
+    public ArrayList<SuperNode> getCopyOfSuperNodeList() {
+        ArrayList<SuperNode> copy = new ArrayList<SuperNode>();
 
         for (SuperNode node : mSuperNodeList) {
             copy.add(node.getCopy());
@@ -163,12 +163,12 @@ public class SuperNode extends Node {
         return mNodeList.get(index);
     }
 
-    public Vector<Node> getNodeList() {
+    public ArrayList<Node> getNodeList() {
         return mNodeList;
     }
 
-    public Vector<Node> getCopyOfNodeList() {
-        Vector<Node> copy = new Vector<Node>();
+    public ArrayList<Node> getCopyOfNodeList() {
+        ArrayList<Node> copy = new ArrayList<Node>();
 
         for (Node node : mNodeList) {
             copy.add(node.getCopy());
@@ -177,8 +177,8 @@ public class SuperNode extends Node {
         return copy;
     }
 
-    public Vector<Node> getNodeAndSuperNodeList() {
-        Vector<Node> list = new Vector<Node>();
+    public ArrayList<Node> getNodeAndSuperNodeList() {
+        ArrayList<Node> list = new ArrayList<Node>();
 
         for (Node n : mNodeList) {
             list.add(n);
@@ -191,8 +191,8 @@ public class SuperNode extends Node {
         return list;
     }
 
-    public Vector<Node> getCopyOfNodeAndSuperNodeList() {
-        Vector<Node> copy = new Vector<Node>();
+    public ArrayList<Node> getCopyOfNodeAndSuperNodeList() {
+        ArrayList<Node> copy = new ArrayList<Node>();
 
         for (Node n : mNodeList) {
             copy.add(n.getCopy());

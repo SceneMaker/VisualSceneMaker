@@ -1,42 +1,41 @@
 package de.dfki.vsm.model.sceneflow.command.expression.condition.logical;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.LinkedList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
-
-import java.util.Vector;
-
 /**
  * A comparision logical condition.
  *
  * @author Not me
  */
 public class ComparisionCond extends LogicalCond {
+
     public static String sID = "ComparisionCond";
-    private Expression   mLeftExp;
-    private Expression   mRightExp;
-    private Operator     mOperator;
+    private Expression mLeftExp;
+    private Expression mRightExp;
+    private Operator mOperator;
 
     public enum Operator {
+
         Eq, Ge, Gt, Le, Lt, Neq
     }
 
     public ComparisionCond() {
-        mLeftExp  = null;
+        mLeftExp = null;
         mRightExp = null;
         mOperator = null;
     }
 
     public ComparisionCond(Expression leftCond, Expression rightCond, Operator operator) {
-        mLeftExp  = leftCond;
+        mLeftExp = leftCond;
         mRightExp = rightCond;
         mOperator = operator;
     }
@@ -61,48 +60,48 @@ public class ComparisionCond extends LogicalCond {
         return ((mOperator != null)
                 ? mOperator.name()
                 : "") + "(" + ((mLeftExp != null)
-                               ? mLeftExp.getAbstractSyntax()
-                               : "") + "," + ((mRightExp != null)
+                ? mLeftExp.getAbstractSyntax()
+                : "") + "," + ((mRightExp != null)
                 ? mRightExp.getAbstractSyntax()
                 : "") + ")";
     }
 
     public String getConcreteSyntax() {
         String out = "( " + ((mLeftExp != null)
-                             ? mLeftExp.getConcreteSyntax()
-                             : "");
+                ? mLeftExp.getConcreteSyntax()
+                : "");
 
         if (mOperator != null) {
             switch (mOperator) {
-            case Eq :
-                out += " == ";
+                case Eq:
+                    out += " == ";
 
-                break;
+                    break;
 
-            case Ge :
-                out += " >= ";
+                case Ge:
+                    out += " >= ";
 
-                break;
+                    break;
 
-            case Gt :
-                out += " > ";
+                case Gt:
+                    out += " > ";
 
-                break;
+                    break;
 
-            case Le :
-                out += " <= ";
+                case Le:
+                    out += " <= ";
 
-                break;
+                    break;
 
-            case Lt :
-                out += " < ";
+                case Lt:
+                    out += " < ";
 
-                break;
+                    break;
 
-            case Neq :
-                out += " != ";
+                case Neq:
+                    out += " != ";
 
-                break;
+                    break;
             }
         }
 
@@ -115,40 +114,40 @@ public class ComparisionCond extends LogicalCond {
 
     public String getFormattedSyntax() {
         String out = "( " + ((mLeftExp != null)
-                             ? mLeftExp.getConcreteSyntax()
-                             : "");
+                ? mLeftExp.getConcreteSyntax()
+                : "");
 
         if (mOperator != null) {
             switch (mOperator) {
-            case Eq :
-                out += " == ";
+                case Eq:
+                    out += " == ";
 
-                break;
+                    break;
 
-            case Ge :
-                out += " >= ";
+                case Ge:
+                    out += " >= ";
 
-                break;
+                    break;
 
-            case Gt :
-                out += " > ";
+                case Gt:
+                    out += " > ";
 
-                break;
+                    break;
 
-            case Le :
-                out += " <= ";
+                case Le:
+                    out += " <= ";
 
-                break;
+                    break;
 
-            case Lt :
-                out += " < ";
+                case Lt:
+                    out += " < ";
 
-                break;
+                    break;
 
-            case Neq :
-                out += " != ";
+                case Neq:
+                    out += " != ";
 
-                break;
+                    break;
             }
         }
 
@@ -159,10 +158,12 @@ public class ComparisionCond extends LogicalCond {
         return out;
     }
 
+    @Override
     public ComparisionCond getCopy() {
         return new ComparisionCond(mLeftExp.getCopy(), mRightExp.getCopy(), mOperator);
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<" + mOperator.name() + ">").push();
         mLeftExp.writeXML(out);
@@ -170,17 +171,19 @@ public class ComparisionCond extends LogicalCond {
         out.pop().println("</" + mOperator.name() + ">");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
 
-        final Vector<Expression> expList = new Vector<Expression>();
+        final LinkedList<Expression> expList = new LinkedList<>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
             public void run(Element element) throws XMLParseError {
                 expList.add(Expression.parse(element));
             }
         });
-        mLeftExp  = expList.firstElement();
-        mRightExp = expList.lastElement();
+        mLeftExp = expList.getFirst();
+        mRightExp = expList.getLast();
     }
 }

@@ -10,10 +10,10 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.awt.Point;
+import java.util.ArrayList;
 
 import java.util.Hashtable;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * EdgeNodeDockingManager manages incoming and outgoing edges of a
@@ -25,7 +25,7 @@ import java.util.Vector;
 public class DockingManager {
     private Node                       mGUINode              = null;
     private Node.Type                  mNodeType             = null;    // The type defines the location of the dock points
-    private Vector<DockPoint>          mDockPoints           = new Vector<DockPoint>();
+    private ArrayList<DockPoint>          mDockPoints           = new ArrayList<DockPoint>();
     private Hashtable<Edge, DockPoint> mEdgeDockPoints       = new Hashtable<Edge, DockPoint>();
     private Hashtable<Edge, DockPoint> mEdgeSecondDockPoints = new Hashtable<Edge, DockPoint>();
     private final LOGDefaultLogger     mLogger               = LOGDefaultLogger.getInstance();
@@ -63,8 +63,8 @@ public class DockingManager {
         }
     }
 
-    public Vector<Point> getFreeDockPoints() {
-        Vector<Point> points = new Vector<Point>();
+    public ArrayList<Point> getFreeDockPoints() {
+        ArrayList<Point> points = new ArrayList<Point>();
 
         for (DockPoint dp : mDockPoints) {
             if (!dp.mOccupied) {
@@ -75,8 +75,8 @@ public class DockingManager {
         return points;
     }
 
-    public Vector<Point> getOccupiedDockPoints() {
-        Vector<Point> points = new Vector<Point>();
+    public ArrayList<Point> getOccupiedDockPoints() {
+        ArrayList<Point> points = new ArrayList<Point>();
 
         for (DockPoint dp : mDockPoints) {
             if (dp.mOccupied) {

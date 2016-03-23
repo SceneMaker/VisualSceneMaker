@@ -39,7 +39,7 @@ public final class TWorldExecutor extends ActivityExecutor {
     // Launch the executor 
     @Override
     public void launch() {
-// Get the plugin configuration
+        // Get the plugin configuration
         final String tworlddir = mConfig.getProperty("tworlddir");
         final String tworldexe = mConfig.getProperty("tworldexe");
         final String tworldcmd = mConfig.getProperty("tworldcmd");

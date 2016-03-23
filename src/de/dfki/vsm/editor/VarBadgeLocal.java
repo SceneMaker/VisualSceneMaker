@@ -28,10 +28,10 @@ import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
 
 import java.text.AttributedString;
+import java.util.ArrayList;
 
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Vector;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -42,7 +42,7 @@ import javax.swing.JPopupMenu;
  * @author Patrick Gebhard
  */
 public class VarBadgeLocal extends JComponent implements EventListener, ActionListener, Observer {
-    private final Vector<VariableEntry> mEntryList = new Vector<VariableEntry>();
+    private final ArrayList<VariableEntry> mEntryList = new ArrayList<VariableEntry>();
 
     // TODO: Make format of variable badge as global preferences
     private final int              mPositionOffset = 10;
@@ -64,7 +64,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         SuperNode parentNode = mSuperNode;
         mEntryList.clear();
 
-        Vector<VarDef> varDefList = parentNode.getVarDefList();
+        ArrayList<VarDef> varDefList = parentNode.getVarDefList();
 
         for (VarDef varDef : varDefList) {
             mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
@@ -175,7 +175,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         return false;
     }
 
-    public Vector<VariableEntry> getEntryList() {
+    public ArrayList<VariableEntry> getEntryList() {
         return mEntryList;
     }
 

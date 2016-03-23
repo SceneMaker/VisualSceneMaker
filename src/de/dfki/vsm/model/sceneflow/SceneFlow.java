@@ -12,12 +12,11 @@ import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -35,7 +34,7 @@ public class SceneFlow extends SuperNode {
     protected String mPackageName = new String();
     protected String mContextClass = new String();
     protected String mContextCode = new String();
-    protected Vector<String> mClassPathList = new Vector<String>();
+    protected ArrayList<String> mClassPathList = new ArrayList<String>();
     protected HashMap<String, FunDef> mUserCmdDefMap = new HashMap<String, FunDef>();
     protected String mModifDate = new String();
 
@@ -66,16 +65,16 @@ public class SceneFlow extends SuperNode {
         mPackageName = value;
     }
 
-    public Vector<String> getClassPathList() {
+    public ArrayList<String> getClassPathList() {
         return mClassPathList;
     }
 
-    public void setClassPathList(Vector<String> classPath) {
+    public void setClassPathList(ArrayList<String> classPath) {
         mClassPathList = classPath;
     }
 
-    public Vector<String> getCopyOfClassPathList() {
-        Vector<String> copy = new Vector<String>();
+    public ArrayList<String> getCopyOfClassPathList() {
+        ArrayList<String> copy = new ArrayList<String>();
 
         for (String str : mClassPathList) {
             copy.add(str);

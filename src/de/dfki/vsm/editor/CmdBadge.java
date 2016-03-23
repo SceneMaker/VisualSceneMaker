@@ -197,7 +197,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      * Resets badge to its default visual behavior
      */
     public synchronized void endEditMode() {
-        Vector<Command> copyOfCmdList = new Vector<>();
+        ArrayList<Command> copyOfCmdList = new ArrayList<>();
 
         if (mEditMode) {
             for (int i = 0; i < mStringList.size(); i++) {
@@ -315,7 +315,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      */
     private void update() {
         ArrayList<String> strings      = new ArrayList<>();
-        Vector<Command>   nodeCommands = mNode.getDataNode().getCmdList();
+        ArrayList<Command>   nodeCommands = mNode.getDataNode().getCmdList();
 
         if ((nodeCommands != null) && (nodeCommands.size() > 0)) {
             for (Command cmd : nodeCommands) {
