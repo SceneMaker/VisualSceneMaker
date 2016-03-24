@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.tricat;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
@@ -15,9 +16,9 @@ import de.dfki.vsm.xtension.tricat.command.TWorldCommand;
 import de.dfki.vsm.xtension.tricat.command.TWorldCommandObject;
 import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectAction;
 import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectAmbientSetupAction;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectCharamelDummyAction;
 import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectMoveToLoactionAction;
 import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectSetSoundAmbientAction;
+import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectCharamelSpeakAction;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -173,10 +174,10 @@ public final class TWorldExecutor extends ActivityExecutor {
         final String actor = activity.getActor();
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
-        
+
         mLogger.message("Execute Actor " + actor + ", command " + name);
 
-        // build command
+        // initialize build command
         TWorldCommand mTWC;
         TWorldCommandObjectAction twcoa = null;
 
@@ -191,16 +192,20 @@ public final class TWorldExecutor extends ActivityExecutor {
         if (name.equalsIgnoreCase("SetSound")) {
             twcoa = new TWorldCommandObjectSetSoundAmbientAction(getActionFeatureValue("value", features));
         }
-        
+
         if (name.equalsIgnoreCase("Speak")) {
-            twcoa = new TWorldCommandObjectCharamelDummyAction("caixml");
+            if (activity instanceof SpeechActivity) {
+                SpeechActivity sa = (SpeechActivity) activity;
+                twcoa = new TWorldCommandObjectCharamelSpeakAction(sa.getBlocks(), sa.getPunctuation());
+            }
         }
-        
+
+        // set the command id
         String executionId = getExecutionId();
         twcoa.setId(executionId);
 
         // finalize build command
-        TWorldCommandObject twco = new TWorldCommandObject(actor, executionId, twcoa);
+        TWorldCommandObject twco = new TWorldCommandObject(actor, twcoa);
         mTWC = new TWorldCommand();
         mTWC.addObject(twco);
 
@@ -241,8 +246,8 @@ public final class TWorldExecutor extends ActivityExecutor {
                 + "</object>\n"
                 + "</TWorldCommand>";
 
+        // send command to platform 
         synchronized (mActivityWorkerMap) {
-            // send command to platform 
             broadcast(message);
 
             // organize wait for feedback
@@ -261,7 +266,6 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
 
             mLogger.warning("ActivityWorker 734 done ....");
-
         }
         // Return when terminated
     }
@@ -295,7 +299,6 @@ public final class TWorldExecutor extends ActivityExecutor {
     public void handle(final String message, final SSIRunTimePlugin plugin) {
         mLogger.warning("Handling " + message + "");
         //
-
     }
 
     // Broadcast some message
