@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Stickworld">
+  <Plugins>
+    <Plugin type="default" name="ssi" class="de.dfki.vsm.xtension.ssi.SSIRunTimePlugin">
+      <Feature key="hlhost" val="127.0.0.1"/>
+      <Feature key="hlport" val="22191"/>
+      <Feature key="slhost" val="127.0.0.1"/>
+      <Feature key="slport" val="22192"/>
+      <Feature key="srhost" val="127.0.0.1"/>
+      <Feature key="srport" val="19220"/>
+    </Plugin>
+    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor">
+      <Feature key="smhost" val="127.0.0.1"/>
+      <Feature key="smport" val="8000"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="susanne" device="stickman">
+    </Agent>
+    <Agent name="patrick" device="stickman">
+    </Agent>
+  </Agents>
+</Project>

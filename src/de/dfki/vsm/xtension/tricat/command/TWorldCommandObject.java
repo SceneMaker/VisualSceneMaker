@@ -22,16 +22,14 @@ import org.w3c.dom.Element;
 public class TWorldCommandObject implements XMLParseable, XMLWriteable {
 
     String mName = "";
-    String mID = "";
     TWorldCommandObjectAction mAction = null;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public TWorldCommandObject(String name, String id, TWorldCommandObjectAction a) {
+    public TWorldCommandObject(String name,TWorldCommandObjectAction a) {
         mName = name;
-        mID = id;
-        mAction = a;
+       mAction = a;
     }
 
     public TWorldCommandObject() {
@@ -43,7 +41,7 @@ public class TWorldCommandObject implements XMLParseable, XMLWriteable {
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<Object name=\"" + mName + "\" id=\"" + mID + "\">").push();
+        out.println("<Object name=\"" + mName + "\">").push();
 
         mAction.writeXML(out);
 
@@ -53,8 +51,7 @@ public class TWorldCommandObject implements XMLParseable, XMLWriteable {
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mID = element.getAttribute("id");
-
+        
         // Process The Child Nodes
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
@@ -79,7 +76,7 @@ public class TWorldCommandObject implements XMLParseable, XMLWriteable {
                         mAction.parseXML(element);
                     }
                     if (actionName.equalsIgnoreCase("caixml")) {
-                        mAction = new TWorldCommandObjectCharamelDummyAction();
+                        mAction = new TWorldCommandObjectCharamelAction();
                         mAction.parseXML(element);
                     }
                 }

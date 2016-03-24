@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.tricat;
+package de.dfki.vsm.xtension.stickman;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.BufferedReader;
@@ -9,15 +9,15 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 /**
- * @author Gregor Mehlmann
+ * @author Patrick Gebhard
  */
-public class TWorldHandler extends Thread {
+public class StickmanHandler extends Thread {
 
     // The logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
     // The executor instance
-    private final TWorldExecutor mExecutor;
+    private final StickmanExecutor mExecutor;
     // The client socket
     private final Socket mSocket;
     // The socket streams
@@ -27,7 +27,7 @@ public class TWorldHandler extends Thread {
     private boolean mDone = false;
 
     // Create the client thread
-    public TWorldHandler(final Socket socket, final TWorldExecutor executor) {
+    public StickmanHandler(final Socket socket, final StickmanExecutor executor) {
         // Initialize the socket
         mSocket = socket;
         // Initialize the executor

@@ -25,6 +25,33 @@ public final class SpeechActivity extends AbstractActivity {
     //public Policy getPolicy() {
     //    return mPolicy;
     //}
+    
+    // Get the text and time mark blocks (added by PG)
+    public final LinkedList getBlocks() {
+        return mList;
+    }
+
+    // Get the text only - without time mark blocks (added by PG)
+    public final String getTextOnly(String markerSign) {
+        final StringBuilder builder = new StringBuilder();
+        for (final Object item : mList) {
+            if (!item.toString().contains(markerSign)) {
+                builder.append(item.toString());
+                if (!item.equals(mList.getLast())) {
+                    builder.append(' ');
+                } else {
+                    builder.append(mMark);
+                }
+            }
+        }
+        return builder.toString();
+    }
+
+    // Get the punctuation information (added by PG)
+    public final String getPunctuation() {
+        return mMark;
+    }
+
     // Get representation
     @Override
     public final String toString() {
