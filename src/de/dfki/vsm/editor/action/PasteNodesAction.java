@@ -2,24 +2,23 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.Edge;
+import de.dfki.vsm.model.sceneflow.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.FEdge;
 import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
+import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -31,11 +30,11 @@ import javax.swing.undo.CannotUndoException;
 public class PasteNodesAction extends EditorAction {
     Set<CreateNodeAction>          mCreateNodeActions = new HashSet<CreateNodeAction>();
     WorkSpacePanel                      mWorkSpace         = null;
-    Hashtable<Node, Vector<CEdge>> mNodesCEdges       = new Hashtable<Node, Vector<CEdge>>();
-    Hashtable<Node, Vector<PEdge>> mNodesPEdges       = new Hashtable<Node, Vector<PEdge>>();
-    Hashtable<Node, Vector<FEdge>> mNodesFEdges       = new Hashtable<Node, Vector<FEdge>>();
-    Hashtable<Node, Vector<IEdge>> mNodesIEdges       = new Hashtable<Node, Vector<IEdge>>();
-    Hashtable<Node, Edge>          mNodesDefaultEdge  = new Hashtable<Node, Edge>();
+    Hashtable<BasicNode, ArrayList<CEdge>> mNodesCEdges       = new Hashtable<BasicNode, ArrayList<CEdge>>();
+    Hashtable<BasicNode, ArrayList<PEdge>> mNodesPEdges       = new Hashtable<BasicNode, ArrayList<PEdge>>();
+    Hashtable<BasicNode, ArrayList<FEdge>> mNodesFEdges       = new Hashtable<BasicNode, ArrayList<FEdge>>();
+    Hashtable<BasicNode, ArrayList<IEdge>> mNodesIEdges       = new Hashtable<BasicNode, ArrayList<IEdge>>();
+    Hashtable<BasicNode, AbstractEdge>          mNodesDefaultEdge  = new Hashtable<BasicNode, AbstractEdge>();
     SceneFlowEditor                mSceneFlowEditor;
 
     public PasteNodesAction(WorkSpacePanel workSpace) {
@@ -51,9 +50,9 @@ public class PasteNodesAction extends EditorAction {
         IDManager im = mWorkSpace.getSceneFlowManager().getIDManager();
 
         // make a copy
-        Set<Node> nodes = new HashSet<Node>();
+        Set<BasicNode> nodes = new HashSet<BasicNode>();
 
-        for (Node node : mWorkSpace.getClipBoard()) {
+        for (BasicNode node : mWorkSpace.getClipBoard()) {
             nodes.add(node.getCopy());
         }
 
@@ -61,11 +60,11 @@ public class PasteNodesAction extends EditorAction {
         im.reassignAllIDs(nodes);
 
         // Remove edges
-        for (Node node : nodes) {
+        for (BasicNode node : nodes) {
             if (node.hasEdge()) {
                 switch (node.getFlavour()) {
                 case CNODE :
-                    Vector<CEdge> ces = node.getCEdgeList();
+                    ArrayList<CEdge> ces = node.getCEdgeList();
 
                     mNodesCEdges.put(node, ces);
                     node.removeAllCEdges();
@@ -78,7 +77,7 @@ public class PasteNodesAction extends EditorAction {
                     break;
 
                 case PNODE :
-                    Vector<PEdge> pes = node.getPEdgeList();
+                    ArrayList<PEdge> pes = node.getPEdgeList();
 
                     mNodesPEdges.put(node, pes);
                     node.removeAllPEdges();
@@ -86,7 +85,7 @@ public class PasteNodesAction extends EditorAction {
                     break;
 
                 case FNODE :
-                    Vector<FEdge> fes = node.getFEdgeList();
+                    ArrayList<FEdge> fes = node.getFEdgeList();
 
                     mNodesFEdges.put(node, fes);
                     node.removeAllFEdges();
@@ -94,7 +93,7 @@ public class PasteNodesAction extends EditorAction {
                     break;
 
                 case INODE :
-                    Vector<IEdge> ies = node.getIEdgeList();
+                    ArrayList<IEdge> ies = node.getIEdgeList();
 
                     mNodesIEdges.put(node, ies);
                     node.removeAllIEdges();
@@ -131,11 +130,11 @@ public class PasteNodesAction extends EditorAction {
         }
 
         // now paste each stored edge to sceneflow
-        for (Node node : nodes) {
+        for (BasicNode node : nodes) {
 
             // cedge
             if (mNodesCEdges.containsKey(node)) {
-                Vector<CEdge> ces = mNodesCEdges.get(node);
+                ArrayList<CEdge> ces = mNodesCEdges.get(node);
 
                 for (CEdge c : ces) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
@@ -148,7 +147,7 @@ public class PasteNodesAction extends EditorAction {
 
             // pedge
             if (mNodesPEdges.containsKey(node)) {
-                Vector<PEdge> pes = mNodesPEdges.get(node);
+                ArrayList<PEdge> pes = mNodesPEdges.get(node);
 
                 for (PEdge p : pes) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
@@ -161,7 +160,7 @@ public class PasteNodesAction extends EditorAction {
 
             // fedge
             if (mNodesFEdges.containsKey(node)) {
-                Vector<FEdge> fes = mNodesFEdges.get(node);
+                ArrayList<FEdge> fes = mNodesFEdges.get(node);
 
                 for (FEdge f : fes) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
@@ -174,7 +173,7 @@ public class PasteNodesAction extends EditorAction {
 
             // iedge
             if (mNodesIEdges.containsKey(node)) {
-                Vector<IEdge> ies = mNodesIEdges.get(node);
+                ArrayList<IEdge> ies = mNodesIEdges.get(node);
 
                 for (IEdge i : ies) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
@@ -187,7 +186,7 @@ public class PasteNodesAction extends EditorAction {
 
             // dedge
             if (mNodesDefaultEdge.containsKey(node)) {
-                Edge             e   = mNodesDefaultEdge.get(node);
+                AbstractEdge             e   = mNodesDefaultEdge.get(node);
                 CreateEdgeAction cea = null;
 
                 if (TEdge.class.isInstance(e)) {

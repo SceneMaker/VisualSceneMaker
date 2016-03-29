@@ -9,7 +9,7 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -56,8 +56,8 @@ public class ModifyPEdgeDialog extends Dialog {
     private final Dimension buttonSize = new Dimension(150, 30);
     private final Dimension smallButtonSize = new Dimension(30, 30);
     // Data model components
-    private final Node mSourceNode;
-    private final Node mTargetNode;
+    private final BasicNode mSourceNode;
+    private final BasicNode mTargetNode;
     private final PEdge mPEdge;
 
     //
@@ -101,7 +101,7 @@ public class ModifyPEdgeDialog extends Dialog {
     private final ImageIcon ICON_UNIFORM_STANDARD = ResourceLoader.loadImageIcon("/res/img/uniform_gray.png");
     private final ImageIcon ICON_UNIFORM_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/uniform_blue.png");
     
-    public ModifyPEdgeDialog(Node sourceNode, Node targetNode) {
+    public ModifyPEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
         super(EditorInstance.getInstance(), "Create Probability Edge", true);
         mSourceNode = sourceNode;
         mTargetNode = targetNode;
@@ -574,8 +574,8 @@ public class ModifyPEdgeDialog extends Dialog {
 
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry) it.next();
-                TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
-                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+                TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
+                TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                         + altStartNodePair.getFirst());
@@ -608,8 +608,8 @@ public class ModifyPEdgeDialog extends Dialog {
 
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+            TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
+            TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                     + altStartNodePair.getFirst());

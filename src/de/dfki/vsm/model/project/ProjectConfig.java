@@ -25,7 +25,7 @@ public final class ProjectConfig implements ModelObject {
     // The list of plugin configurations
     private final ArrayList<PluginConfig> mPluginList;
     // The list of device configurations
-    private final ArrayList<DeviceConfig> mDeviceList;
+//    private final ArrayList<DeviceConfig> mDeviceList;
     // The list of agent configurations
     private final ArrayList<AgentConfig> mAgentList;
 
@@ -36,7 +36,7 @@ public final class ProjectConfig implements ModelObject {
         // Initialize The Plugin List
         mPluginList = new ArrayList<>();
         // Initialize The Player List
-        mDeviceList = new ArrayList<>();
+//        mDeviceList = new ArrayList<>();
         // Initialize The Agent List
         mAgentList = new ArrayList<>();
     }
@@ -44,14 +44,14 @@ public final class ProjectConfig implements ModelObject {
     // Construct an empty project
     public ProjectConfig(final String name,
             final ArrayList<PluginConfig> plugins,
-            final ArrayList<DeviceConfig> devices,
+//            final ArrayList<DeviceConfig> devices,
             final ArrayList<AgentConfig> agents) {
         // Initialize The Project Name
         mProjectName = name;
         // Initialize The Plugin List
         mPluginList = plugins;
         // Initialize The Player List
-        mDeviceList = devices;
+//        mDeviceList = devices;
         // Initialize The Agent List
         mAgentList = agents;
     }
@@ -84,33 +84,24 @@ public final class ProjectConfig implements ModelObject {
         return null;
     }
 
-    public final DeviceConfig getPlayerConfig(final String name) {
-        for (final DeviceConfig config : mDeviceList) {
-            if (config.getDeviceName().equals(name)) {
-                return config;
-            }
-        }
-        return null;
-    }
+//    public final DeviceConfig getDeviceConfig(final String name) {
+//        for (final DeviceConfig config : mDeviceList) {
+//            if (config.getDeviceName().equals(name)) {
+//                return config;
+//            }
+//        }
+//        return null;
+//    }
 
     // Get the list of agent configurations
     public final ArrayList<AgentConfig> getAgentConfigList() {
         return mAgentList;
     }
 
-    public void cleanAgentConfigList(ArrayList<String> realList) {
-        ArrayList<AgentConfig> temAgentList = mAgentList;
-        for (AgentConfig agentConfig : mAgentList) {
-            if (!realList.contains(agentConfig.getAgentName())) {
-                mAgentList.remove(agentConfig);
-            }
-        }
-    }
-
-    // Get the list of device configurations
-    public ArrayList<DeviceConfig> getDeviceConfigList() {
-        return mDeviceList;
-    }
+//    // Get the list of device configurations
+//    public ArrayList<DeviceConfig> getDeviceConfigList() {
+//        return mDeviceList;
+//    }
 
     // Get the list of plugin configurations
     public ArrayList<PluginConfig> getPluginConfigList() {
@@ -131,13 +122,13 @@ public final class ProjectConfig implements ModelObject {
         }
         stream.pop().println("</Plugins>");
 
-        // Write The Players As XML
-        stream.println("<Devices>").push();
-        for (final DeviceConfig player : mDeviceList) {
-            player.writeXML(stream);
-            //stream.endl();
-        }
-        stream.pop().println("</Devices>");
+//        // Write The Players As XML
+//        stream.println("<Devices>").push();
+//        for (final DeviceConfig player : mDeviceList) {
+//            player.writeXML(stream);
+//            //stream.endl();
+//        }
+//        stream.pop().println("</Devices>");
 
         // Write The Agents As XML
         stream.println("<Agents>").push();
@@ -151,7 +142,7 @@ public final class ProjectConfig implements ModelObject {
     }
 
     public void cleanPlayerList() {
-        mDeviceList.clear();
+//        mDeviceList.clear();
     }
 
     // Parse the project coonfiguration from XML
@@ -182,19 +173,21 @@ public final class ProjectConfig implements ModelObject {
                                 mPluginList.add(plugin);
                             }
                         });
-                    } else if (tag.equals("Devices")) {
-                        XMLParseAction.processChildNodes(element, "Device", new XMLParseAction() {
-                            @Override
-                            public void run(Element element) throws XMLParseError {
-                                // Create A New Project Player
-                                final DeviceConfig device = new DeviceConfig();
-                                // And Parse The Project Player 
-                                device.parseXML(element);
-                                // And Add It To The Player List
-                                mDeviceList.add(device);
-                            }
-                        });
-                    } else if (tag.equals("Agents")) {
+                    } 
+//                    else if (tag.equals("Devices")) {
+//                        XMLParseAction.processChildNodes(element, "Device", new XMLParseAction() {
+//                            @Override
+//                            public void run(Element element) throws XMLParseError {
+//                                // Create A New Project Player
+//                                final DeviceConfig device = new DeviceConfig();
+//                                // And Parse The Project Player 
+//                                device.parseXML(element);
+//                                // And Add It To The Player List
+//                                mDeviceList.add(device);
+//                            }
+//                        });
+//                    } 
+                    else if (tag.equals("Agents")) {
                         XMLParseAction.processChildNodes(element, "Agent", new XMLParseAction() {
                             @Override
                             public void run(Element element) throws XMLParseError {
@@ -231,6 +224,6 @@ public final class ProjectConfig implements ModelObject {
     @Override
     public ProjectConfig getCopy() {
         // TODO: Use copies of the lists
-        return new ProjectConfig(mProjectName, null, null, null);
+        return new ProjectConfig(mProjectName, null, null);
     }
 }

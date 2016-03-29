@@ -79,14 +79,14 @@ public final class ConfigFeature implements ModelObject, Comparable {
         // Check The Type Of The Config
         if (tag.equals(mFeatureName)) {
             mFeatureKey = element.getAttribute("key");
-            mFeatureValue = element.getAttribute("value");
+            mFeatureValue = element.getAttribute("val");
         }
     }
 
     // Get String Representation
     @Override
     public final String toString() {
-        return "<" + mFeatureName + " key=\"" + mFeatureKey + "\" value=\"" + mFeatureValue + "\"/>";
+        return "<" + mFeatureName + " key=\"" + mFeatureKey + "\" val=\"" + mFeatureValue + "\"/>";
     }
 
     // Get A Copy Of This Entry

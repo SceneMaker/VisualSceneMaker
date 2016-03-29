@@ -23,30 +23,6 @@ public class EditorProject extends RunTimeProject {
         mProjectFile = null;
     }
 
-    /*// Load the editor project
-     @Override
-     public final boolean parse(final File file) {
-     // Check if the file is null
-     if (file == null) {
-     // Print an error message
-     mLogger.failure("Error: Cannot parse editor project from a bad file");
-     // Return false at error
-     return false;
-     }
-     // Get the absolute file for this directory
-     final File base = file.getAbsoluteFile();
-     // Check if the project directory does exist
-     if (!base.exists()) {
-     // Print an error message
-     mLogger.failure("Error: Cannot find editor project directory '" + base + "'");
-     // Return false at error
-     return false;
-     }
-     // First set the project file 
-     mProjectFile = base;
-     // And then load the project
-     return parse();
-     }*/
     @Override
     public final boolean parse(final String path) {
         // Check if the file is null
@@ -56,19 +32,14 @@ public class EditorProject extends RunTimeProject {
             // Return false at error
             return false;
         }
-        // Get the absolute file for this directory
-        //final File base = file.getAbsoluteFile();
-        // Check if the project directory does exist
-
-
-
+        // Get the a file for this path
         final File file = new File(path);
         if (file.exists()) {
             final File base = file.getAbsoluteFile();
             if (base.exists()) {
                 // First set the project file
                 mProjectFile = base;
-                // And then load the project
+                // And then loadRunTimePlugins the project
                 return parse();
             } else {
                 // Print an error message

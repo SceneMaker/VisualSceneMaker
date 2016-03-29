@@ -22,7 +22,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -50,7 +50,7 @@ public class TypeDefDialog extends Dialog {
 
     //
     // The list of member definitions if the type definition is a struct.
-    // private Vector<MemberDef> mMemberDefListData = new Vector<MemberDef>();
+    // private ArrayList<MemberDef> mMemberDefListData = new ArrayList<MemberDef>();
     // GUI Components
     private JLabel           mFlavourLabel;
     private JComboBox        mFlavourComboBox;
@@ -91,7 +91,7 @@ public class TypeDefDialog extends Dialog {
             } else {
 
                 // Create the default struct type def
-                Vector<MemberDef> memberDefList = new Vector<MemberDef>();
+                ArrayList<MemberDef> memberDefList = new ArrayList<MemberDef>();
 
                 memberDefList.add(new MemberDef("someMember", "Bool"));
                 mStructTypeDef = new StructTypeDef("SomeStruct", memberDefList);
@@ -105,7 +105,7 @@ public class TypeDefDialog extends Dialog {
             mListTypeDef = new ListTypeDef("IntList", "Int");
 
             // Create the default struct type def
-            Vector<MemberDef> memberDefList = new Vector<MemberDef>();
+            ArrayList<MemberDef> memberDefList = new ArrayList<MemberDef>();
 
             memberDefList.add(new MemberDef("someMember", "Bool"));
             mStructTypeDef = new StructTypeDef("SomeStruct", memberDefList);

@@ -11,5 +11,5 @@ public interface ModelObject extends XMLParseable, XMLWriteable, Copyable {
 
     // Get a deep copy of the model object
     @Override
-    public abstract ModelObject getCopy();        
+    public abstract ModelObject getCopy();
 }

@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public class Bool extends Constant {
+public class Bool extends LiteralExpression {
     private boolean mValue;
 
     public Bool() {

@@ -4,7 +4,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.graphics.comment.Rect;
+import de.dfki.vsm.model.sceneflow.graphics.comment.CommentBoundary;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -90,10 +90,10 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
                          mEditorConfig.sWORKSPACEFONTSIZE /* : sBUILDING_BLOCK_FONT_SIZE */);
 
         // size setup
-        Rectangle rect = new Rectangle(mDataComment.getGraphics().getRect().getXPos(),
-                                       mDataComment.getGraphics().getRect().getYPos(),
-                                       mDataComment.getGraphics().getRect().getWidth(),
-                                       mDataComment.getGraphics().getRect().getHeight());
+        Rectangle rect = new Rectangle(mDataComment.getGraphics().getRectangle().getXPos(),
+                                       mDataComment.getGraphics().getRectangle().getYPos(),
+                                       mDataComment.getGraphics().getRectangle().getWidth(),
+                                       mDataComment.getGraphics().getRectangle().getHeight());
 
         setBounds(rect);
         mTextLabel = new JLabel();
@@ -213,7 +213,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // update data
         Rectangle r2 = getBounds();
 
-        mDataComment.getGraphics().setRect(new Rect(r2.x, r2.y, r2.width, r2.height));
+        mDataComment.getGraphics().setRectangle(new CommentBoundary(r2.x, r2.y, r2.width, r2.height));
 
         // DEBUG System.out.println("size " + getBounds());
     }
@@ -358,6 +358,6 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         // update data
         Rectangle r = getBounds();
 
-        mDataComment.getGraphics().setRect(new Rect(r.x, r.y, r.width, r.height));
+        mDataComment.getGraphics().setRectangle(new CommentBoundary(r.x, r.y, r.width, r.height));
     }
 }

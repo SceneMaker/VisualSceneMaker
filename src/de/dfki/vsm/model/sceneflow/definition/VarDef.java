@@ -3,14 +3,14 @@ package de.dfki.vsm.model.sceneflow.definition;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.model.sceneflow.SyntaxObject;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.runtime.exception.InterpretException;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.Environment;
 import de.dfki.vsm.runtime.interpreter.Evaluator;
 import de.dfki.vsm.runtime.interpreter.Interpreter;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
 /**
  * @author Not me
  */
-public class VarDef extends Syntax {
+public class VarDef implements SyntaxObject {
     private String      mType;
     private String      mName;
     private Expression  mExp;
@@ -128,7 +128,7 @@ public class VarDef extends Syntax {
         for(VarDef var: EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getSceneFlow().getVarDefList()){
             try {
                 evaluator.declare(var, env);
-            } catch (InterpretException e) {
+            } catch (InterpreterError e) {
                 e.printStackTrace();
                 setmErrorMsg("Do not match the data type selected");
                 return false;
@@ -144,7 +144,7 @@ public class VarDef extends Syntax {
                 return false;
             }
 
-        } catch (InterpretException e) {
+        } catch (InterpreterError e) {
             e.printStackTrace();
             setmErrorMsg(e.getMessage());
             return false;
@@ -156,7 +156,7 @@ public class VarDef extends Syntax {
         if(isNewVar) {
             try {
                 evaluator.declare(this, env);
-            } catch (InterpretException e) {
+            } catch (InterpreterError e) {
                 e.printStackTrace();
                 setmErrorMsg(e.getMessage());
                return false;

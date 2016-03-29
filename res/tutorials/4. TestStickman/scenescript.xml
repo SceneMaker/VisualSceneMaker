@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="87" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="25" upper="87" speaker="susanne">
+      <SceneUttr lower="34" upper="87" punct="?">
+        <SceneWord lower="34" upper="39" text="Hello"/>
+        <SceneWord lower="40" upper="45" text="world"/>
+        <ActionObject lower="46" upper="68" actor="patrick" mode="gesture" name="wave" >
+        </ActionObject>
+        <SceneWord lower="69" upper="72" text="how"/>
+        <SceneWord lower="73" upper="76" text="are"/>
+        <SceneWord lower="77" upper="80" text="you"/>
+        <SceneWord lower="81" upper="86" text="today"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="89" upper="167" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="114" upper="167" speaker="patrick">
+      <SceneUttr lower="123" upper="167" punct="?">
+        <SceneWord lower="123" upper="128" text="Hello"/>
+        <ActionObject lower="129" upper="148" actor="susanne" mode="face" name="fear" >
+        </ActionObject>
+        <SceneWord lower="149" upper="152" text="how"/>
+        <SceneWord lower="153" upper="156" text="are"/>
+        <SceneWord lower="157" upper="160" text="you"/>
+        <SceneWord lower="161" upper="166" text="today"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

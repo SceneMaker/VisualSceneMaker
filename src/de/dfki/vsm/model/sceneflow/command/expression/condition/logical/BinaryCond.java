@@ -7,12 +7,12 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.LinkedList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -48,9 +48,9 @@ public class BinaryCond extends LogicalCond {
         return mOperator;
     }
 
-    public LogicalType getLogicalType() {
-        return LogicalType.BIN;
-    }
+//    public LogicalType getLogicalType() {
+//        return LogicalType.BIN;
+//    }
 
     public String getAbstractSyntax() {
         return ((mOperator != null)
@@ -116,14 +116,14 @@ public class BinaryCond extends LogicalCond {
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
 
-        final Vector<Condition> condList = new Vector<Condition>();
+        final LinkedList<Condition> condList = new LinkedList<Condition>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
                 condList.add(Condition.parse(element));
             }
         });
-        mLeftCond  = condList.firstElement();
-        mRightCond = condList.lastElement();
+        mLeftCond  = condList.getFirst();
+        mRightCond = condList.getLast();
     }
 }

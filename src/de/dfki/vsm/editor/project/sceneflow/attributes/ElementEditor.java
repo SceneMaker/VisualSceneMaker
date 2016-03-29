@@ -16,10 +16,10 @@ import de.dfki.vsm.editor.dialog.VarDefDialog;
 import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.Edge;
-import de.dfki.vsm.model.sceneflow.Edge.Type;
+import de.dfki.vsm.model.sceneflow.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.AbstractEdge.Type;
 import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
@@ -29,7 +29,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalC
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.RegularExpressions;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -43,7 +43,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import java.util.HashMap;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -54,6 +53,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
 import static java.awt.Component.RIGHT_ALIGNMENT;
+import java.util.ArrayList;
 
 ///**
 // * @author Gregor Mehlmann
@@ -61,7 +61,7 @@ import static java.awt.Component.RIGHT_ALIGNMENT;
 //abstract class AttributeEditor extends JPanel implements EventListener {
 //
 //    // The maintained data model node
-//    protected Node mDataNode;
+//    protected BasicNode mDataNode;
 //
 //    // GUI Components
 //    protected final DefaultListModel mListModel;
@@ -462,12 +462,12 @@ class ConditionEditor extends JPanel implements EventListener
 
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) && !_SFSLParser_.errorFlag)
+            if ((log != null) && !ChartParser.errorFlag)
             {
                 mDataCEdge.setCondition(log);
             }
@@ -524,7 +524,7 @@ class EdgeEditor extends JPanel implements EventListener
         {
 
             // Get the selected node
-            Edge edge = ((EdgeSelectedEvent) event).getEdge();
+            AbstractEdge edge = ((EdgeSelectedEvent) event).getEdge();
 
             if (edge instanceof TEdge)
             {
@@ -826,12 +826,12 @@ class InterruptEditor extends JPanel implements EventListener
 
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) && !_SFSLParser_.errorFlag)
+            if ((log != null) && !ChartParser.errorFlag)
             {
                 mDataIEdge.setCondition(log);
             }
@@ -857,7 +857,7 @@ class NameEditor extends JPanel implements EventListener
 {
 
     private JTextField mNameField;
-    private Node mDataNode;
+    private BasicNode mDataNode;
 
     public NameEditor()
     {
@@ -979,7 +979,7 @@ class NodeEditor extends JPanel implements EventListener
         {
 
             // Get the selected node
-            Node node = ((NodeSelectedEvent) event).getNode();
+            BasicNode node = ((NodeSelectedEvent) event).getNode();
 
             // Show or hide the start node editor
             if (node instanceof SuperNode)
@@ -1146,7 +1146,7 @@ class StartNodeEditor extends AttributeEditor
             {
                 mListModel.clear();
 
-                for (Node startNode : ((SuperNode) mDataNode).getStartNodeMap().values())
+                for (BasicNode startNode : ((SuperNode) mDataNode).getStartNodeMap().values())
                 {
                     mListModel.addElement(startNode.getName() + "(" + startNode.getId() + ")");
                 }
@@ -1164,9 +1164,9 @@ class StartNodeEditor extends AttributeEditor
     {
 
         // Create list of child nodes
-        Vector<String> nodeDataList = new Vector<>();
+        ArrayList<String> nodeDataList = new ArrayList<>();
 
-        for (Node node : ((SuperNode) mDataNode).getNodeAndSuperNodeList())
+        for (BasicNode node : ((SuperNode) mDataNode).getNodeAndSuperNodeList())
         {
             if (!node.isHistoryNode())
             {
@@ -1185,7 +1185,7 @@ class StartNodeEditor extends AttributeEditor
             String id = RegularExpressions.getMatches(value, "\\((\\w*)\\)", 2).get(1);
 
             // Get the new start node
-            Node oldStartNode = ((SuperNode) mDataNode).getChildNodeById(id);
+            BasicNode oldStartNode = ((SuperNode) mDataNode).getChildNodeById(id);
 
             ((SuperNode) mDataNode).removeStartNode(oldStartNode);
             EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getNode(id).removeStartSign();

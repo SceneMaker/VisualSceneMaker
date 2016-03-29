@@ -7,31 +7,31 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * @author Not me
  */
 public class PlaySceneGroup extends Command {
     private Expression         mArg;
-    private Vector<Expression> mArgList;
+    private ArrayList<Expression> mArgList;
 
     public PlaySceneGroup() {
         mArg     = null;
-        mArgList = new Vector<Expression>();
+        mArgList = new ArrayList<Expression>();
     }
 
     public PlaySceneGroup(Expression arg) {
         mArg     = arg;
-        mArgList = new Vector<Expression>();
+        mArgList = new ArrayList<Expression>();
     }
 
-    public PlaySceneGroup(Expression arg, Vector<Expression> argList) {
+    public PlaySceneGroup(Expression arg, ArrayList<Expression> argList) {
         mArg     = arg;
         mArgList = argList;
     }
@@ -44,11 +44,11 @@ public class PlaySceneGroup extends Command {
         mArg = arg;
     }
 
-    public Vector<Expression> getArgList() {
+    public ArrayList<Expression> getArgList() {
         return mArgList;
     }
 
-    public void setArgList(Vector<Expression> value) {
+    public void setArgList(ArrayList<Expression> value) {
         mArgList = value;
     }
 
@@ -68,8 +68,8 @@ public class PlaySceneGroup extends Command {
         return mArgList.size();
     }
 
-    public Vector<Expression> getCopyOfArgList() {
-        Vector<Expression> copy = new Vector<Expression>();
+    public ArrayList<Expression> getCopyOfArgList() {
+        ArrayList<Expression> copy = new ArrayList<Expression>();
 
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
@@ -143,7 +143,7 @@ public class PlaySceneGroup extends Command {
     }
 
     public void parseXML(Element element) throws XMLParseError {
-        final Vector<Expression> expList = new Vector<Expression>();
+        final ArrayList<Expression> expList = new ArrayList<Expression>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {

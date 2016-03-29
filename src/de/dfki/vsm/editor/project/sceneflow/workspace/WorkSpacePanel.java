@@ -57,7 +57,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.model.sceneflow.graphics.Position;
+import de.dfki.vsm.model.sceneflow.graphics.node.NodePosition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -68,7 +68,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -93,7 +92,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -164,7 +162,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
     //
     private final LinkedList<VarBadgeLocal> mVarBadgeStack = new LinkedList<>();
-    private Vector<CmdBadge> mCmdBadgeList = new Vector<CmdBadge>();
+    private ArrayList<CmdBadge> mCmdBadgeList = new ArrayList<CmdBadge>();
 
     // Drag & Drop support
     private DropTarget mDropTarget;
@@ -559,7 +557,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         ArrayList<String> globalTypeDefList = new ArrayList<>();
         ArrayList<String> localVarDefList = new ArrayList<>();
         ArrayList<String> globalVarDefList = new ArrayList<>();
-        Vector<TypeDef> typeDefs = node.getDataNode().getTypeDefList();
+        ArrayList<TypeDef> typeDefs = node.getDataNode().getTypeDefList();
 
         for (TypeDef typeDef : typeDefs) {
             localTypeDefList.add(typeDef.getFormattedSyntax());
@@ -573,7 +571,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         if (parentSNss != null) {
             for (SuperNode sn : parentSNss) {
-                Vector<TypeDef> snTypeDefs = sn.getTypeDefList();
+                ArrayList<TypeDef> snTypeDefs = sn.getTypeDefList();
 
                 if (snTypeDefs.size() > 0) {
                     for (TypeDef typeDef : snTypeDefs) {
@@ -583,7 +581,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
         }
 
-        Vector<VarDef> varDefs = node.getDataNode().getVarDefList();
+        ArrayList<VarDef> varDefs = node.getDataNode().getVarDefList();
 
         for (VarDef varDef : varDefs) {
             localVarDefList.add(varDef.getFormattedSyntax());
@@ -597,7 +595,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         if (parentSNs != null) {
             for (SuperNode sn : parentSNs) {
-                Vector<VarDef> snVarDefs = sn.getVarDefList();
+                ArrayList<VarDef> snVarDefs = sn.getVarDefList();
 
                 if (snVarDefs.size() > 0) {
                     for (VarDef varDef : snVarDefs) {
@@ -677,7 +675,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPDA(Node node, String name) {
         PlayDialogueAct pdaCmd = new PlayDialogueAct();
 
-        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
+        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(name));
         node.getDataNode().addCmd(pdaCmd);
     }
 
@@ -688,7 +686,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPSG(Node node, String name) {
         PlaySceneGroup psgCmd = new PlaySceneGroup();
 
-        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(name));
+        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(name));
         node.getDataNode().addCmd(psgCmd);
     }
 
@@ -709,7 +707,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     }
 
     /**
-     * Edge creation
+     * AbstractEdge creation
      *
      */
     public void createNewEdgeSelectSourceNode(Edge edge, int x, int y) {
@@ -1045,7 +1043,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         JMenuItem item = null;
 
         if (!node.getDataNode().isHistoryNode()) {
-            HashMap<String, de.dfki.vsm.model.sceneflow.Node> startNodes
+            HashMap<String, de.dfki.vsm.model.sceneflow.BasicNode> startNodes
                     = node.getDataNode().getParentNode().getStartNodeMap();
 
             item = new JMenuItem((startNodes.containsKey(node.getDataNode().getId()))
@@ -1245,7 +1243,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 //        int nc = mClipboard.size();
 //        JMenuItem item = new JMenuItem((nc > 1)
 //                ? "Paste " + nc + " Nodes"
-//                : "Paste Node");
+//                : "Paste BasicNode");
 //        PasteNodesAction pasteAction = new PasteNodesAction(this);
 //
 //        item.addActionListener(pasteAction.getActionListener());
@@ -1340,7 +1338,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         mEdgeSet.clear();
         mCmtSet.clear();
         mCmdBadgeMap.clear();
-        mCmdBadgeList.removeAllElements();
+        mCmdBadgeList.clear();
         mCmtSet.clear();
         removeAll();
         super.removeAll();
@@ -1374,10 +1372,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void showNodesOnWorkSpace() {
-        Vector<de.dfki.vsm.model.sceneflow.Node> nodeList
+        ArrayList<de.dfki.vsm.model.sceneflow.BasicNode> nodeList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
 
-        for (de.dfki.vsm.model.sceneflow.Node n : nodeList) {
+        for (de.dfki.vsm.model.sceneflow.BasicNode n : nodeList) {
             Point p = mGridManager.getNodeLocation(new Point(n.getGraphics().getPosition().getXPos(),
                     n.getGraphics().getPosition().getYPos()));
 
@@ -1391,7 +1389,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             addCmdBadge(guiNode, cmdBadge);
         }
 
-        Vector<de.dfki.vsm.model.sceneflow.Comment> commentList
+        ArrayList<de.dfki.vsm.model.sceneflow.Comment> commentList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getCommentList();
 
         for (de.dfki.vsm.model.sceneflow.Comment n : commentList) {
@@ -1413,7 +1411,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, cedge, Edge.TYPE.CEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1426,7 +1424,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, pedge, Edge.TYPE.PEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1439,7 +1437,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, fedge, Edge.TYPE.FEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1452,7 +1450,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 if (targetNode != null) {
 
                     // Why should this be null????????
-                    // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                    // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                     Edge edge = new Edge(this, iedge, Edge.TYPE.IEDGE, sourceNode, targetNode);
 
                     add(edge);
@@ -1460,7 +1458,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
 
             // Show the DEdge
-            de.dfki.vsm.model.sceneflow.Edge dedge = sourceNode.getDataNode().getDedge();
+            de.dfki.vsm.model.sceneflow.AbstractEdge dedge = sourceNode.getDataNode().getDedge();
             Edge.TYPE dEdgeType = null;
 
             if (dedge != null) {
@@ -1475,7 +1473,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                     // Error
                 }
 
-                // Create a new GUI-Edge and add the new GUI-Edge to the workspace.
+                // Create a new GUI-AbstractEdge and add the new GUI-AbstractEdge to the workspace.
                 Edge edge = new Edge(this, dedge, dEdgeType, sourceNode, targetNode);
 
                 add(edge);
@@ -2286,7 +2284,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
             // mLocalVarDisplay.setPosition(new Point(event.getXOnScreen(), event.getYOnScreen()));
             getSceneFlowManager().getCurrentActiveSuperNode().getLocalVariableBadge().setPosition(
-                    new Position(event.getX(), event.getY()));
+                    new NodePosition(event.getX(), event.getY()));
 
             if (mSelectedLocalVariableBadge.mSelected) {
 
@@ -2311,7 +2309,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             Point currentMousePosition = event.getPoint();
 
             getSceneFlowManager().getCurrentActiveSuperNode().getGlobalVariableBadge().setPosition(
-                    new Position(event.getX(), event.getY()));
+                    new NodePosition(event.getX(), event.getY()));
 
             if (mSelectedGlobalVariableBadge.mSelected) {
 
@@ -2747,7 +2745,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      *
      */
-    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.Node> {
+    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.BasicNode> {
     }
 
     /**

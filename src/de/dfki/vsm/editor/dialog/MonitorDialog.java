@@ -14,12 +14,12 @@ import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral;
+import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.RunTimeInstance;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -32,9 +32,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.AttributedString;
-
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -55,8 +53,8 @@ public class MonitorDialog extends JDialog implements EventListener
     private JTable mLocalVariableTable;
     private HintTextField mInputTextField;
     private JScrollPane mVariableScrollPane;
-    private Vector<VarDef> mGlobalVarDefListData;
-    private Vector<VarDef> mLocalVarDefListData;
+    private ArrayList<VarDef> mGlobalVarDefListData;
+    private ArrayList<VarDef> mLocalVarDefListData;
     private static EditorProject mEditorProject;
     private JLabel errorMsg;
     
@@ -205,13 +203,13 @@ public class MonitorDialog extends JDialog implements EventListener
     {
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
-            _SFSLParser_.run(value);
+            ChartParser.parseResultType = ChartParser.EXP;
+            ChartParser.run(value);
             
-            Expression exp = _SFSLParser_.expResult;
+            Expression exp = ChartParser.expResult;
 
             //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
-            if ((exp != null) && !_SFSLParser_.errorFlag)
+            if ((exp != null) && !ChartParser.errorFlag)
             {
                 if (exp instanceof Bool)
                 {
@@ -237,11 +235,11 @@ public class MonitorDialog extends JDialog implements EventListener
                 {
                     return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                 }
-                else if (exp instanceof String)
+                else if (exp instanceof StringLiteral)
                 {
-                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((String) exp).getValue());
+                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((StringLiteral) exp).getValue());
                 }
-                else if (exp instanceof List)
+                else if (exp instanceof ListRecord)
                 {
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
@@ -249,7 +247,7 @@ public class MonitorDialog extends JDialog implements EventListener
                     // Environment env = interpreter.getEnvironment();
                     // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
                 }
-                else if (exp instanceof Struct)
+                else if (exp instanceof StructRecord)
                 {
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                 }

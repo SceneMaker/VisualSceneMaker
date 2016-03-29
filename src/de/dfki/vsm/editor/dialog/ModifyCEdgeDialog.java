@@ -11,10 +11,10 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 
@@ -70,7 +70,7 @@ public class ModifyCEdgeDialog extends Dialog {
     private Dimension textFielSize = new Dimension(230, 30);
     private JLabel errorMsg;
 
-    public ModifyCEdgeDialog(Node sourceNode, Node targetNode) {
+    public ModifyCEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
         super(EditorInstance.getInstance(), "Create Conditional Edge", true);
         // Set the edge data
         mCEdge = new CEdge();
@@ -282,12 +282,12 @@ public class ModifyCEdgeDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) &&!_SFSLParser_.errorFlag) {
+            if ((log != null) &&!ChartParser.errorFlag) {
                 mCEdge.setCondition(log);
                 mAltStartNodeManager.saveAltStartNodeMap();
                 return true;
@@ -307,8 +307,8 @@ public class ModifyCEdgeDialog extends Dialog {
 
             while (it.hasNext()) {
                 Map.Entry              pairs            = (Map.Entry) it.next();
-                TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-                TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+                TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+                TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                         + altStartNodePair.getFirst());
@@ -341,8 +341,8 @@ public class ModifyCEdgeDialog extends Dialog {
 
         while (it.hasNext()) {
             Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, Node> startNodePair    = (TPLTuple<String, Node>) pairs.getKey();
-            TPLTuple<String, Node> altStartNodePair = (TPLTuple<String, Node>) pairs.getValue();
+            TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+            TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                     + altStartNodePair.getFirst());

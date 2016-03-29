@@ -1,24 +1,17 @@
 package de.dfki.vsm.runtime.project;
 
 import de.dfki.vsm.model.acticon.ActiconConfig;
-import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
+import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.AgentConfig;
-import de.dfki.vsm.model.project.DeviceConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.scenescript.ActionObject;
-import de.dfki.vsm.model.scenescript.SceneEntity;
-import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.model.scenescript.SceneTurn;
-import de.dfki.vsm.model.scenescript.SceneUttr;
-import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.model.visicon.VisiconConfig;
-import de.dfki.vsm.runtime.dialog.DialogActInterface;
-import de.dfki.vsm.runtime.dialog.DummyDialogAct;
-import de.dfki.vsm.runtime.player.ScenePlayer;
-import de.dfki.vsm.runtime.player.reactive.ReactivePlayer;
+import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.player.RunTimePlayer;
+import de.dfki.vsm.runtime.player.ReactivePlayer;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import java.io.ByteArrayInputStream;
@@ -27,10 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
@@ -54,18 +45,14 @@ public class RunTimeProject {
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
-    private ScenePlayer mScenePlayer = null;
-    // The default scene player of the project
-    //private ScenePlayer mDialogPlayer = null;
-
-    // TODO:  Refactor The Dialog Act Stuff
-    // Maybe use a configuration file for that
-    private final DialogActInterface mDialogueAct = new DummyDialogAct();
+    private final RunTimePlayer mScenePlayer;
+    // The runtime plugin map of the project
+    private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
     // Construct an empty runtime project
     public RunTimeProject() {
-        // Print some information
-        mLogger.message("Creating a new empty runtime project");
+        // Initialize the scene player
+        mScenePlayer = new ReactivePlayer(null, this);
     }
 
     // Construct a project from a directory
@@ -73,8 +60,7 @@ public class RunTimeProject {
         // Call the local parsing method
         parse(file.getPath());
         // Initialize the scene players
-        mScenePlayer = new ReactivePlayer(this);
-        //mDialogPlayer = new DefaultPlayer(this);
+        mScenePlayer = new ReactivePlayer(null, this);
     }
 
     // Get the name of the project's configuration
@@ -87,11 +73,6 @@ public class RunTimeProject {
         mProjectConfig.setProjectName(name);
     }
 
-    // Get a specific config from the map of players
-    public final DeviceConfig getPlayerConfig(final String name) {
-        return mProjectConfig.getPlayerConfig(name);
-    }
-
     // Get a specific config from the map of plugins
     public final PluginConfig getPluginConfig(final String name) {
         return mProjectConfig.getPluginConfig(name);
@@ -102,36 +83,6 @@ public class RunTimeProject {
         return mProjectConfig.getAgentConfig(name);
     }
 
-    /*
-
-     // Get the project specific name of a player
-     public final String getDeviceName(final RunTimePlayer player)
-     {
-     for (final Entry<String, RunTimePlayer> entry : mPlayerMap.entrySet())
-     {
-     if (entry.getValue().equals(player))
-     {
-     return entry.getKey();
-     }
-     }
-     return null;
-     }
-     */
-
-    /*
-     // Get the project specific name of a plugin
-     public final String getPluginName(final RunTimePlugin plugin)
-     {
-     for (final Entry<String, RunTimePlugin> entry : mPluginMap.entrySet())
-     {
-     if (entry.getValue().equals(plugin))
-     {
-     return entry.getKey();
-     }
-     }
-     return null;
-     }
-     */
     // Get the sceneflow of the project
     public final SceneFlow getSceneFlow() {
         return mSceneFlow;
@@ -157,8 +108,23 @@ public class RunTimeProject {
         return mGesticonConfig;
     }
 
-    public final ScenePlayer getScenePlayer() {
+    public final RunTimePlayer getScenePlayer() {
         return mScenePlayer;
+    }
+
+    public final ActivityExecutor getAgentDevice(final String agent) {
+        // Get the agent config 
+        final AgentConfig config = mProjectConfig.getAgentConfig(agent);
+        // Get the plugin now
+        final RunTimePlugin plugin = mPluginMap.get(config.getDeviceName());
+        // Check the plugin 
+        if (plugin instanceof ActivityExecutor) {
+            // Return the executor now
+            return (ActivityExecutor) plugin;
+        } else {
+            // Return NULL at failure
+            return null;
+        }
     }
 
     public boolean parse(final String file) {
@@ -169,14 +135,14 @@ public class RunTimeProject {
             // Return false at error
             return false;
         }
-
-        // Parse the project from the base directory
+        // Parse the project from file
         return (parseProjectConfig(file)
                 && parseSceneFlow(file)
                 && parseSceneScript(file)
                 && parseActiconConfig(file)
                 && parseVisiconConfig(file)
-                && parseGesticonConfig(file));
+                && parseGesticonConfig(file)
+                && loadRunTimePlugins());
 
     }
 
@@ -212,22 +178,61 @@ public class RunTimeProject {
                 && writeGesticonConfig(base));
     }
 
-    // Load the runtime objects of the project
-    public final boolean load() {
+    // Load the executors of the project
+    public final boolean loadRunTimePlugins() {
+        // Get the list of devices
+        for (final PluginConfig config : mProjectConfig.getPluginConfigList()) {
+            // Get the plugin attributes
+            final String type = config.getPluginType();
+            final String name = config.getPluginName();
+            final String clasn = config.getClassName();
+            // Load the device executor
+            try {
+                // Get the class object
+                final Class clazz = Class.forName(clasn);
+                // Get the constructor
+                final Constructor constructor
+                        = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
+                // Call the constructor
+                final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, this);
+                // Add the executor then
+                mPluginMap.put(name, plugin);
+                // Print some information
+                mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
+            } catch (final Exception exc) {
+                mLogger.failure(exc.toString());
+            }
+        }
         // Return true at success
         return true;
     }
 
+    // TODO: Load Plugins and call methods on them via the evaluator in the interpreter
+    // Make a new command type in the syntax for that purpose
+    public final Object call(final String name, final String method) {
+        return null;
+    }
+
     // Launch the runtime objects of the project
     public final boolean launch() {
+        // Launch the scene player
         mScenePlayer.launch();
+        // Launch all plugins
+        for (final RunTimePlugin plugin : mPluginMap.values()) {
+            plugin.launch();
+        }
         // Return true at success
         return true;
     }
 
     // Unload the runtime objects of the project
     public final boolean unload() {
+        // Unload the scene player
         mScenePlayer.unload();
+        // Unload all plugins
+        for (final RunTimePlugin plugin : mPluginMap.values()) {
+            plugin.unload();
+        }
         // Return true at success
         return true;
     }
@@ -260,10 +265,6 @@ public class RunTimeProject {
         mLogger.message("Loaded project from path '" + path + "':\n" + mProjectConfig);
         // Return success if the project was loaded
         return true;
-    }
-
-    public void clearPlayersList() {
-        mProjectConfig.cleanPlayerList();
     }
 
     public boolean parseProjectConfigFromString(String xml) {
@@ -332,7 +333,7 @@ public class RunTimeProject {
         }
 
         if (!XMLUtilities.parseFromXMLStream(mSceneFlow, inputStream)) {
-            mLogger.failure("Error: Cannot parse sceneflow configuration file  in path" + path);
+            mLogger.failure("Error: Cannot parse sceneflow file  in path" + path);
             return false;
         }
         // Perform all the postprocessing steps
@@ -613,8 +614,6 @@ public class RunTimeProject {
             return false;
         }
 
-        // Print an information message in this case
-//        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n" + mVisiconConfig);
         mLogger.message("Loaded visicon configuration file in path'" + path + "':\n");
         // Return success if the project was loaded
         return true;
@@ -654,379 +653,11 @@ public class RunTimeProject {
         return true;
     }
 
-    /*
-     // Load the plugins of the project
-     private boolean loadPlugins()
-     {
-     for (final PluginConfig config : mProjectConfig.getPluginConfigList())
-     {
-     // Get the class and plugin name
-     final String className = config.getClassName();
-     final String pluginName = config.getPluginName();
-     try
-     {
-     // Find the plugin class by name
-     final Class clazz = Class.forName(className);
-     // Get the initialization method
-     final Method method = clazz.getMethod("getInstance");
-     // Call the initialization method
-     final RunTimePlugin plugin = (RunTimePlugin) method.invoke(null);
-     // Check if plugin has been created
-     if (plugin == null)
-     {
-     // Print an error message 
-     mLogger.failure("Failure: Cannot load plugin of class '" + className + "'");
-     // Return false at error
-     return false;
-     }
-     else
-     {
-     // Set the default scene player then
-     mPluginMap.put(pluginName, plugin);
-     // Print an information message here
-     mLogger.message("Loading plugin '" + plugin + "' with plugin config:\n" + config);
-     }
-     } catch (final Exception exc)
-     {
-     // Print an error message
-     mLogger.failure("Failure: Cannot load plugin of class '" + className + "'");
-     // Print an error message
-     mLogger.failure(exc.toString());
-     }
-     }
-     // Return true at success
-     return true;
-     }
-     */
-    /*
-     // Load the players of the project
-     private boolean loadPlayers()
-     {
-     //
-     for (final DeviceConfig config : mProjectConfig.getDeviceConfigList())
-     {
-     // Get the class and plugin name
-     final String className = config.getClassName();
-     final String playerName = config.getDeviceName();
-     try
-     {
-     // Find the plugin class by name
-     final Class clazz = Class.forName(className);
-     // Get the initialization method
-     final Method method = clazz.getMethod("getInstance");
-     // Call the initialization method
-     final RunTimePlayer player = (RunTimePlayer) method.invoke(null);
-     // Check if plugin has been created
-     if (player == null)
-     {
-     // Print an error message 
-     mLogger.failure("Failure: Cannot load player of class '" + className + "'");
-     // Return false at error
-     return false;
-     }
-     else
-     {
-     // Set the default scene player then
-     mPlayerMap.put(playerName, player);
-     //new TPLTuple<Player, DeviceConfig>(player, config)
-     // Print an information message here
-     mLogger.message("Loading player '" + player + "' with plugin config:\n" + config);
-     }
-     } catch (final Exception exc)
-     {
-     // Print an error message
-     mLogger.failure("Failure: Cannot load player of class '" + className + "'");
-     // Print an error message
-     mLogger.failure(exc.toString());
-     }
-     }
-     // Return true at success
-     return true;
-     }
-    
-     // Launch the players of the project
-     private boolean launchPlayers()
-     {
-     // Initialize the result flag
-     boolean success = true;
-     // Try launching all the players
-     for (final RunTimePlayer player : mPlayerMap.values())
-     {
-     if (!player.launch(this))
-     {
-     success = false;
-     }
-     }
-     return success;
-     }
-     */
-
-    /*
-     // Launch the plugins of the project
-     private boolean launchPlugins()
-     {
-     // Initialize the result flag
-     boolean success = true;
-     // Try launching all the plugins
-     for (final RunTimePlugin plugin : mPluginMap.values())
-     {
-     if (!plugin.launch(this))
-     {
-     success = false;
-     }
-     }
-     return success;
-     }
-     */
-    /*
-     // Unload the players of the project
-     private boolean unloadPlayers()
-     {
-     // Initialize the result flag
-     boolean success = true;
-     // Try unloading all the players
-     for (final RunTimePlayer player : mPlayerMap.values())
-     {
-     if (!player.unload())
-     {
-     success = false;
-     }
-     }
-     return success;
-     }
-     */
-    /*
-     // Unload the plugins of the project
-     private boolean unloadPlugins()
-     {
-     // Initialize the result flag
-     boolean success = true;
-     // Try unloading all the plugins
-     for (final RunTimePlugin plugin : mPluginMap.values())
-     {
-     if (!plugin.unload())
-     {
-     success = false;
-     }
-     }
-     return success;
-     }
-     */
-//        //%%
-//        if (mDialogActClassName != null) {
-//            try {
-//                Class daClass = Class.forName(mDialogActClassName);
-//
-//                mDialogueAct = (DialogActInterface) daClass.getConstructor().newInstance();
-//            } catch (Exception exc) {
-//
-//                // do nothing
-//            }
-//        } //else {
-//
-//        //}
-    // TODO: refactor this
-    // Get the default dialog act taxonomy of the project
-    public final DialogActInterface getDialogAct() {
-        return mDialogueAct;
-    }
-
-    /*
-     // Get a specific player from the map of players
-     public final RunTimePlayer getPlayer(final String name)
-     {
-     return mPlayerMap.get(name);
-     }
-
-     // Get a specific plugin from the map of plugins
-     public final RunTimePlugin getPlugin(final String name)
-     {
-     return mPluginMap.get(name);
-     }
-     */
-    /*
-     // Get the default config from the map of players
-     public final DeviceConfig getDefaultScenePlayerConfig()
-     {
-     return mProjectConfig.getPlayerConfig("defaultsceneplayer");
-     }
-
-     // Get the default config from the map of players
-     public final DeviceConfig getDefaultDialogPlayerConfig()
-     {
-     return mProjectConfig.getPlayerConfig("defaultdialogplayer");
-     }
-     */
-    /*
-     public final DeviceConfig getCurrentPlayer()
-     {
-     //System.out.println(mProjectConfig.getDeviceConfigList());
-     if (mProjectConfig != null && mProjectConfig.getDeviceConfigList().size() > 0)
-     {
-            
-     return mProjectConfig.getDeviceConfigList().get(0);
-     }
-     return null;
-     }
-     */
-    /*
-     // Get the scene player of the project
-     public final RunTimePlayer getDefaultScenePlayer()
-     {
-     // Get the player from the map
-     final RunTimePlayer player = getPlayer("defaultsceneplayer");
-     // Check if the player exists
-     if (player != null)
-     {
-     // And return it in this case
-     return player;
-     }
-     else
-     {
-     // Or construct a default scene 
-     // player without a configuration
-     return DefaultScenePlayer.getInstance();
-     }
-     }
-     */
-    /*
-     // Get the dialog player of the project
-     public final RunTimePlayer getDefaultDialogPlayer()
-     {
-     // Get the player from the map
-     final RunTimePlayer player = getPlayer("defaultdialogplayer");
-     // Check if the player exists
-     if (player != null)
-     {
-     // And return it in this case
-     return player;
-     }
-     else
-     {
-     // Or construct a default scene 
-     // player without a configuration
-     return DefaultDialogPlayer.getInstance();
-     }
-     }
-     */
-    /*
-     // Get the dialog player of the project
-     public final void setDefaulPlayer(DeviceConfig player)
-     {
-     // Get the player from the map
-
-     mProjectConfig.getDeviceConfigList().add(player);
-
-     }
-     */
-    // Parse the project data from a directory
-    /*public boolean parse(final File file) {
-     // Check if the file is null
-     if (file == null) {
-     // Print an error message
-     mLogger.failure("Error: Cannot parse runtime project from a bad file");
-     // Return false at error
-     return false;
-     }
-     // Get the absolute file for this directory
-     final File base = file.getAbsoluteFile();
-     // Check if the project directory does exist
-     if (!base.exists()) {
-     // Print an error message
-     mLogger.failure("Error: Cannot find runtime project directory '" + base + "'");
-     // Return false at error
-     return false;
-     }
-     // Parse the project from the base directory
-     return (parseProjectConfig(base)
-     && parseSceneFlow(base)
-     && parseSceneScript(base)
-     && parseActiconConfig(base)
-     && parseVisiconConfig(base)
-     && parseGesticonConfig(base));
-     }*/
-    public ArrayList<String> checkPlayersAndAgents() {
-        //Check if all the agents are registered. Return array of missing ones
-
-        ArrayList<String> missingAgents = new ArrayList<>();
-        boolean found = false;
-        int i = 0;
-        while (i < mProjectConfig.getDeviceConfigList().size() && !found) {
-            if (mProjectConfig.getDeviceConfigList().get(i).getClassName().contains("StickmanScenePlayer")) {
-                found = true;
-            }
-            i++;
-        }
-        //Only show it for stickman players
-        if (found) {
-            getCharacters(mSceneScript).stream().forEach((c)
-                    -> {
-                        AgentConfig ac = mProjectConfig.getAgentConfig(c);
-                        if (ac == null) { //Not mapped
-                            missingAgents.add(c);
-                        }
-                    });
-        }
-        return missingAgents;
-
-    }
-
-    public void clearAgentList() {
-        ArrayList<String> existingAgents = new ArrayList<>();
-        getCharacters(mSceneScript).stream().forEach((c)
-                -> {
-                    AgentConfig ac = mProjectConfig.getAgentConfig(c);
-                    if (ac != null) { //Not mapped
-                        existingAgents.add(c);
-                    }
-                }
-        );
-        mProjectConfig.cleanAgentConfigList(existingAgents);
-    }
-
-    private Set<String> getCharacters(SceneScript scenescript) {
-        //
-        Set<String> speakersSet = new HashSet<>();
-
-        for (SceneEntity scene : scenescript.getEntityList()) {
-
-            LinkedList<SceneTurn> sturns = ((SceneObject) scene).getTurnList();
-
-            for (SceneTurn t : sturns) {
-                if (!speakersSet.contains(t.getSpeaker())) {
-                    speakersSet.add(t.getSpeaker());
-                }
-
-                LinkedList<SceneUttr> suttr = t.getUttrList();
-
-                for (SceneUttr u : suttr) {
-                    LinkedList<UtteranceElement> words = u.getWordList();
-
-                    for (UtteranceElement word : words) {
-                        if (word instanceof ActionObject) {
-                            ActionObject ao = ((ActionObject) word);
-
-                            String agent = ao.getActor();
-
-                            if ((agent != null) && !agent.trim().isEmpty()) {
-                                if (!speakersSet.contains(agent)) {
-                                    speakersSet.add(agent);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return speakersSet;
-    }
-// Get the hash code of the project
-
+    // Get the hash code of the project
     protected synchronized int getHashCode() {
         int hashCode = ((mSceneFlow == null)
                 ? 0
                 : mSceneFlow.getHashCode());
-
         // TODO: Why Is The Hash Computed
         // Only Based On The SceneFlow's 
         // Hash And Not Based Also On The 

@@ -3,10 +3,11 @@ package de.dfki.vsm.runtime.interpreter;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.model.sceneflow.Node;
-import de.dfki.vsm.runtime.exception.InterpretException;
+import de.dfki.vsm.model.sceneflow.BasicNode;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
@@ -15,13 +16,12 @@ import org.w3c.dom.Element;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * @author Not me
  */
 public class Configuration {
-    private final HashMap<Node, LinkedList<State>> mConfiguration = new HashMap<Node, LinkedList<State>>();
+    private final HashMap<BasicNode, LinkedList<State>> mConfiguration = new HashMap<BasicNode, LinkedList<State>>();
 
     public void clear() {
         mConfiguration.clear();
@@ -35,13 +35,13 @@ public class Configuration {
         mConfiguration.get(state.getNode()).addLast(state);
     }
 
-    public void exitState(Node state, Process thread) throws InterpretException {
+    public void exitState(BasicNode state, Process thread) throws InterpreterError {
         if (mConfiguration.get(state) == null) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: There is no thread currently executing node " + state);
         }
 
-        Vector<State> removableStateList = new Vector<State>();
+        ArrayList<State> removableStateList = new ArrayList<State>();
 
         for (State configState : mConfiguration.get(state)) {
             if (configState.getThread().equals(thread)) {
@@ -50,13 +50,13 @@ public class Configuration {
         }
 
         if (removableStateList.isEmpty()) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
                                        + ") is not currently executing node " + state);
         }
 
         if (removableStateList.size() > 1) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Thread " + thread.getName() + "(" + thread.getId()
                                        + ") cannot be executing node " + state + " more than once at one time");
         }
@@ -70,15 +70,15 @@ public class Configuration {
         }
     }
 
-    public State getState(Node node) throws InterpretException {
+    public State getState(BasicNode node) throws InterpreterError {
         if (mConfiguration.get(node) == null) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Node " + node.getId()
                                        + " is currently not executed by any thread");
         }
 
         if (mConfiguration.get(node).isEmpty()) {
-            throw new InterpretException(this,
+            throw new InterpreterError(this,
                                        "Configuration Error: Node " + node.getId()
                                        + " is currently not executed by any thread");
         }
@@ -86,14 +86,14 @@ public class Configuration {
         return mConfiguration.get(node).getLast();
     }
 
-    public State getState(String id) throws InterpretException {
-        for (Node node : mConfiguration.keySet()) {
+    public State getState(String id) throws InterpreterError {
+        for (BasicNode node : mConfiguration.keySet()) {
             if (node.getId().equals(id)) {
                 return getState(node);
             }
         }
 
-        throw new InterpretException(this,
+        throw new InterpreterError(this,
                                    "Configuration Error: Node " + id + " is currently not executed by any thread");
     }
 
@@ -102,7 +102,7 @@ public class Configuration {
     public Object[] getOrderedStates() {
 
         // Make a list with all config states
-        Vector<State> configStateList = new Vector<State>();
+        ArrayList<State> configStateList = new ArrayList<State>();
 
         for (LinkedList<State> stateVec : mConfiguration.values()) {
             for (State state : stateVec) {
@@ -120,7 +120,7 @@ public class Configuration {
     }
 
     public boolean isInState(String state) {
-        for (Node node : mConfiguration.keySet()) {
+        for (BasicNode node : mConfiguration.keySet()) {
             if (node.getId().equals(state)) {
                 if (mConfiguration.get(node) != null) {
                     if (!mConfiguration.get(node).isEmpty()) {
@@ -134,15 +134,15 @@ public class Configuration {
     }
 
     public static class State implements Comparable, ModelObject {
-        private final transient Node    mNode;
+        private final transient BasicNode    mNode;
         private final transient Process mThread;
 
-        public State(Node node, Process thread) {
+        public State(BasicNode node, Process thread) {
             mNode   = node;
             mThread = thread;
         }
 
-        public Node getNode() {
+        public BasicNode getNode() {
             return mNode;
         }
 

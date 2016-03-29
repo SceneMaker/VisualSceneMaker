@@ -1,11 +1,11 @@
 package de.dfki.vsm.editor;
 
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+import de.dfki.stickman.Stickman;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.SceneMaker3;
-import de.dfki.vsm.players.stickman.Stickman;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BorderLayout;
@@ -199,7 +199,8 @@ public class EditorStarter extends JPanel {
 		p.setOpaque(false);
 		p.add(mWelcomeStickman);
 
-		this.addMouseListener(new java.awt.event.MouseAdapter() {
+		
+                this.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				if (mWelcomeStickman.mHead.getBounds().contains(evt.getX(), evt.getY())) {
@@ -213,7 +214,7 @@ public class EditorStarter extends JPanel {
 				}
 			}
 		});
-
+                
 		// add the content
 		add(content);
 
@@ -224,6 +225,7 @@ public class EditorStarter extends JPanel {
 		setBackground(new Color(235, 235, 235));
         //setBackground(Color.white);
 
+                
 		// Let the user welcome
 		new java.util.Timer().schedule(
 		  new java.util.TimerTask() {
@@ -239,7 +241,7 @@ public class EditorStarter extends JPanel {
 		  },
 		  1000
 		);
-
+                
 	}
 	
 	public final void showWelcomeStickman(boolean show) {
