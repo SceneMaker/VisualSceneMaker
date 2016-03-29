@@ -2,11 +2,11 @@ package de.dfki.vsm.runtime.interpreter;
 
 import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
-import de.dfki.vsm.runtime.exception.InterpretException;
-import de.dfki.vsm.runtime.event.AbortionEvent;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.Configuration.State;
-import de.dfki.vsm.runtime.values.AbstractValue;
-import de.dfki.vsm.runtime.values.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -52,9 +52,9 @@ public final class Interruptor {
                         // Stop update loop if an edge has been found
                         break;
                     }
-                } catch (final InterpretException exc) {
+                } catch (final InterpreterError exc) {
                     mLogger.warning("detecting abort in observer");
-                    EventDispatcher.getInstance().convey(new AbortionEvent(this, exc));
+                    EventDispatcher.getInstance().convey(new TerminationEvent(this, exc));
                     mInterpreter.abort();
                     mLogger.warning("returnning from observer after runtimeexception");
 
@@ -68,9 +68,9 @@ public final class Interruptor {
                             + "' of the interruptive edge from node '" + iedge.getSource()
                             + "' to node '" + iedge.getTarget()
                             + "' could not be evaluated to a boolean value.";
-                    InterpretException exception = new InterpretException(this, errorMsg);
+                    InterpreterError exception = new InterpreterError(this, errorMsg);
 
-                    EventDispatcher.getInstance().convey(new AbortionEvent(this, exception));
+                    EventDispatcher.getInstance().convey(new TerminationEvent(this, exception));
                     mInterpreter.abort();
 
                     return;

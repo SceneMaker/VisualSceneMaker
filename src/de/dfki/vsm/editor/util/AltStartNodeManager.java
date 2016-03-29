@@ -2,27 +2,27 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Edge;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.util.tpl.TPLTuple;
+import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * @author Patrick Gebhard
  * @author Not me
  */
 public class AltStartNodeManager {
-    public Edge                                                    mEdge;
-    public HashMap<TPLTuple<String, Node>, TPLTuple<String, Node>> mAltStartNodeMap;
+    public AbstractEdge                                                    mEdge;
+    public HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> mAltStartNodeMap;
 
-    public AltStartNodeManager(Edge edge) {
+    public AltStartNodeManager(AbstractEdge edge) {
         mEdge            = edge;
         mAltStartNodeMap = mEdge.getCopyOfAltStartNodeMap();
     }
@@ -36,9 +36,9 @@ public class AltStartNodeManager {
     }
 
     public void removeAltStartNode(String id) {
-        TPLTuple<String, Node> pair = null;
+        TPLTuple<String, BasicNode> pair = null;
 
-        for (TPLTuple<String, Node> p : mAltStartNodeMap.keySet()) {
+        for (TPLTuple<String, BasicNode> p : mAltStartNodeMap.keySet()) {
             if (p.getFirst().equals(id)) {
                 pair = p;
 
@@ -51,15 +51,15 @@ public class AltStartNodeManager {
         }
     }
 
-    public Vector<Node> getSubstitutableStartNodes() {
-        Vector<Node> substitutableStartNodeList = new Vector<Node>();
+    public ArrayList<BasicNode> getSubstitutableStartNodes() {
+        ArrayList<BasicNode> substitutableStartNodeList = new ArrayList<BasicNode>();
 
-        for (Node node : ((SuperNode) mEdge.getTargetNode()).getStartNodeMap().values()) {
+        for (BasicNode node : ((SuperNode) mEdge.getTargetNode()).getStartNodeMap().values()) {
             substitutableStartNodeList.add(node);
         }
 
         //
-        for (TPLTuple<String, Node> startNodePair : mAltStartNodeMap.keySet()) {
+        for (TPLTuple<String, BasicNode> startNodePair : mAltStartNodeMap.keySet()) {
             if (!startNodePair.getFirst().equals("none")) {
                 substitutableStartNodeList.remove(startNodePair.getSecond());
             }
@@ -68,12 +68,12 @@ public class AltStartNodeManager {
         return substitutableStartNodeList;
     }
 
-    public Vector<Node> getValidAltStartNodesFor(String id) {
-        Vector<Node> validAltStartNodeList = new Vector<Node>();
+    public ArrayList<BasicNode> getValidAltStartNodesFor(String id) {
+        ArrayList<BasicNode> validAltStartNodeList = new ArrayList<BasicNode>();
 
         // /
         SuperNode targetNode   = (SuperNode) mEdge.getTargetNode();
-        Node      selectedNode = targetNode.getChildNodeById(id);
+        BasicNode      selectedNode = targetNode.getChildNodeById(id);
 
         System.err.println("Selected node=" + selectedNode);
 
@@ -81,22 +81,22 @@ public class AltStartNodeManager {
         if (selectedNode == null) {
 
             // rwchability map
-            HashMap<Node, Vector<Node>> reachableNodeMap = new HashMap<Node, Vector<Node>>();
+            HashMap<BasicNode, ArrayList<BasicNode>> reachableNodeMap = new HashMap<BasicNode, ArrayList<BasicNode>>();
 
-            for (Node node : ((SuperNode) mEdge.getTargetNode()).getStartNodeMap().values()) {
+            for (BasicNode node : ((SuperNode) mEdge.getTargetNode()).getStartNodeMap().values()) {
                 reachableNodeMap.put(node, node.getReachableNodeList());
             }
 
-            for (TPLTuple<String, Node> p : mAltStartNodeMap.values()) {
+            for (TPLTuple<String, BasicNode> p : mAltStartNodeMap.values()) {
                 reachableNodeMap.put(p.getSecond(), p.getSecond().getReachableNodeList());
             }
 
-            // Vector<Node>
-            Vector<Node> possililities = ((SuperNode) mEdge.getTargetNode()).getNodeAndSuperNodeList();
-            Vector<Node> finals        = new Vector<Node>();
+            // ArrayList<Node>
+            ArrayList<BasicNode> possililities = ((SuperNode) mEdge.getTargetNode()).getNodeAndSuperNodeList();
+            ArrayList<BasicNode> finals        = new ArrayList<BasicNode>();
 
             // /
-            for (Node node : possililities) {
+            for (BasicNode node : possililities) {
                 System.err.println("looking if " + node.getId() + " is valid");
 
                 boolean  valid = true;
@@ -104,8 +104,8 @@ public class AltStartNodeManager {
 
                 while (it.hasNext()) {
                     Map.Entry    pairs = (Map.Entry) it.next();
-                    Node         n     = (Node) pairs.getKey();
-                    Vector<Node> v     = (Vector<Node>) pairs.getValue();
+                    BasicNode         n     = (BasicNode) pairs.getKey();
+                    ArrayList<BasicNode> v     = (ArrayList<BasicNode>) pairs.getValue();
 
                     if (v.contains(node)) {
                         valid = false;
@@ -118,21 +118,21 @@ public class AltStartNodeManager {
             }
 
             /////
-            for (Node n : finals) {
+            for (BasicNode n : finals) {
                 validAltStartNodeList.add(n);
             }
 
             /////
-            for (Node n : finals) {
-                Vector<Node> reverse = n.getReachableNodeList();
+            for (BasicNode n : finals) {
+                ArrayList<BasicNode> reverse = n.getReachableNodeList();
 
                 ////
                 Iterator it = mAltStartNodeMap.entrySet().iterator();
 
                 while (it.hasNext()) {
                     Map.Entry              pairs = (Map.Entry) it.next();
-                    TPLTuple<String, Node> p1    = (TPLTuple<String, Node>) pairs.getKey();
-                    TPLTuple<String, Node> p2    = (TPLTuple<String, Node>) pairs.getValue();
+                    TPLTuple<String, BasicNode> p1    = (TPLTuple<String, BasicNode>) pairs.getKey();
+                    TPLTuple<String, BasicNode> p2    = (TPLTuple<String, BasicNode>) pairs.getValue();
 
                     if (reverse.contains(p2.getSecond())) {
 
@@ -146,9 +146,9 @@ public class AltStartNodeManager {
 
             // return finals;
         } else {
-            Vector<Node> reachableNodeList = selectedNode.getReachableNodeList();
+            ArrayList<BasicNode> reachableNodeList = selectedNode.getReachableNodeList();
 
-            for (Node node : reachableNodeList) {
+            for (BasicNode node : reachableNodeList) {
                 if (!node.getId().equals(id)) {
                     validAltStartNodeList.add(node);
                 }
@@ -163,10 +163,10 @@ public class AltStartNodeManager {
         String                 x     = (s.equals("none")
                                         ? ""
                                         : s);
-        Node                   n1    = ((SuperNode) mEdge.getTargetNode()).getChildNodeById(x);
-        Node                   n2    = ((SuperNode) mEdge.getTargetNode()).getChildNodeById(a);
-        TPLTuple<String, Node> pair1 = new TPLTuple<String, Node>(x, n1);
-        TPLTuple<String, Node> pair2 = new TPLTuple<String, Node>(a, n2);
+        BasicNode                   n1    = ((SuperNode) mEdge.getTargetNode()).getChildNodeById(x);
+        BasicNode                   n2    = ((SuperNode) mEdge.getTargetNode()).getChildNodeById(a);
+        TPLTuple<String, BasicNode> pair1 = new TPLTuple<String, BasicNode>(x, n1);
+        TPLTuple<String, BasicNode> pair2 = new TPLTuple<String, BasicNode>(a, n2);
 
         mAltStartNodeMap.put(pair1, pair2);
     }

@@ -6,12 +6,12 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import java.util.LinkedList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * @author Not me
@@ -207,14 +207,14 @@ public class BinaryExp extends Expression {
     public void parseXML(Element element) throws XMLParseError {
         mOperator = Operator.valueOf(element.getTagName());
 
-        final Vector<Expression> expList = new Vector<Expression>();
+        final LinkedList<Expression> expList = new LinkedList<Expression>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             public void run(Element element) throws XMLParseError {
                 expList.add(Expression.parse(element));
             }
         });
-        mLeftExp  = expList.firstElement();
-        mRightExp = expList.lastElement();
+        mLeftExp  = expList.getFirst();
+        mRightExp = expList.getLast();
     }
 }

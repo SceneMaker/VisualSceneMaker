@@ -1,44 +1,41 @@
 package de.dfki.vsm.model.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.model.sceneflow.graphics.comment.Graphics;
+import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.model.sceneflow.graphics.comment.CommentGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
 
-
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Font;
 
 import javax.swing.JEditorPane;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * @author Not me
  * @author Patrick Gebhard
  */
-public class Comment extends Syntax {
+public class Comment implements ModelObject {
+
     protected SuperNode mParentNode = null;
-    protected String    mHTMLText   = "";
-    protected Graphics  mGraphics;
-    protected int       mFontSize;
-    JEditorPane         mTextEditor;
+    protected String mHTMLText = "";
+    protected CommentGraphics mGraphics;
+    protected int mFontSize;
+    JEditorPane mTextEditor;
 
     public void setParentNode(SuperNode value) {
         mParentNode = value;
     }
 
-    public Graphics getGraphics() {
+    public CommentGraphics getGraphics() {
         return mGraphics;
     }
 
-    public void setGraphics(Graphics value) {
+    public void setGraphics(CommentGraphics value) {
         mGraphics = value;
     }
 
@@ -54,36 +51,20 @@ public class Comment extends Syntax {
         mHTMLText = text.trim();
     }
 
-    @Override
-    public String getAbstractSyntax() {
-        return "";
-    }
-
-    @Override
-    public String getConcreteSyntax() {
-        return "";
-    }
-
-    @Override
-    public String getFormattedSyntax() {
-        return "";
-    }
-
     private void formatHTML() {
-        mFontSize =
-            EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
+        mFontSize
+                = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
 
         if (mTextEditor == null) {
             mTextEditor = new JEditorPane();
         }
 
         //mTextEditor.setContentType(new HTMLEditorKit().getContentType());
-
         // now use the same font than the label!
-        Font   mFont    = new Font("SansSerif", Font.PLAIN, mFontSize);
+        Font mFont = new Font("SansSerif", Font.PLAIN, mFontSize);
         String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
 
-       // ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
+        // ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
         mTextEditor.setText(mHTMLText);
         mHTMLText = mTextEditor.getText();
     }
@@ -94,14 +75,14 @@ public class Comment extends Syntax {
                 String tag = element.getTagName();
 
                 if (tag.equals("Graphics")) {
-                    mGraphics = new Graphics();
+                    mGraphics = new CommentGraphics();
                     mGraphics.parseXML(element);
                 } else if (tag.equals("Text")) {
                     mHTMLText = element.getTextContent();
                 } else {
                     throw new XMLParseError(null,
-                                            "Cannot parse the element with the tag \"" + tag
-                                            + "\" into a comment child!");
+                            "Cannot parse the element with the tag \"" + tag
+                            + "\" into a comment child!");
                 }
             }
         });
@@ -121,7 +102,7 @@ public class Comment extends Syntax {
         out.pop().println("</Comment>");
     }
 
-    public Syntax getCopy() {
+    public SyntaxObject getCopy() {
         return null;
     }
 }

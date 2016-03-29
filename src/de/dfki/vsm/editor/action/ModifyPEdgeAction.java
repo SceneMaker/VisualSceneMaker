@@ -9,7 +9,7 @@ import de.dfki.vsm.model.sceneflow.PEdge;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -19,8 +19,8 @@ import javax.swing.undo.CannotUndoException;
  * @author Not me
  */
 public class ModifyPEdgeAction extends ModifyEdgeAction {
-    private Vector<Integer> mOldProbList = new Vector<Integer>();
-    private Vector<Integer> mNewProbList = new Vector<Integer>();
+    private ArrayList<Integer> mOldProbList = new ArrayList<Integer>();
+    private ArrayList<Integer> mNewProbList = new ArrayList<Integer>();
 
     public ModifyPEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);

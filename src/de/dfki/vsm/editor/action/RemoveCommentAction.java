@@ -12,7 +12,7 @@ import de.dfki.vsm.model.sceneflow.SuperNode;
 
 import java.awt.Point;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -23,7 +23,7 @@ import javax.swing.undo.UndoManager;
  * @author Patrick Gebhard
  */
 public class RemoveCommentAction extends EditorAction {
-    Vector<RemoveEdgeAction>                    mRemoveEdgeActionList = new Vector<RemoveEdgeAction>();
+    ArrayList<RemoveEdgeAction>                    mRemoveEdgeActionList = new ArrayList<RemoveEdgeAction>();
     private WorkSpacePanel                           mWorkSpace;
     private SceneFlowEditor                     mSceneFlowPane;
     private SceneFlowManager                    mSceneFlowManager;

@@ -89,7 +89,7 @@ public class DeflectEdgeAction extends EdgeAction {
         // Revalidate data node and graphical node types
         switch (mSourceGUINode.getDataNode().getFlavour()) {
         case NONE :
-            de.dfki.vsm.model.sceneflow.Edge dedge = mSourceGUINode.getDataNode().getDedge();
+            de.dfki.vsm.model.sceneflow.AbstractEdge dedge = mSourceGUINode.getDataNode().getDedge();
 
             if (dedge instanceof EEdge) {
                 mSourceGUINode.setFlavour(Flavour.ENode);

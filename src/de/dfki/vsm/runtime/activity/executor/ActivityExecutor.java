@@ -1,20 +1,23 @@
 package de.dfki.vsm.runtime.activity.executor;
 
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 
 /**
  * @author Gregor Mehlmann
  */
-public interface ActivityExecutor {
+public abstract class ActivityExecutor extends RunTimePlugin {
 
-    public void launch();
+    public ActivityExecutor(final PluginConfig config, final RunTimeProject project) {
+        super(config, project);
+    }
 
-    public void unload();
+    public abstract String marker(final long id);
 
-    public String marker(final long id);
-
-    public void execute(
+    public abstract void execute(
             final AbstractActivity activity,
             final ActivityManager player);
 

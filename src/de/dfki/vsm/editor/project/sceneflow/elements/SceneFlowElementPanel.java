@@ -3,22 +3,18 @@ package de.dfki.vsm.editor.project.sceneflow.elements;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.TreeEntry;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.dialog.DialogActAttributes;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
-import de.dfki.vsm.editor.event.DialogActSelectedEvent;
 import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.dialogact.DialogAct;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.definition.FunDef;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.runtime.dialog.DialogActInterface;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
@@ -100,8 +96,6 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     private final TreeEntry mSceneFlowEntry = new TreeEntry("Scenes", null, null);
     //Tree entry for functions
     private final TreeEntry mFunctionsEntry = new TreeEntry("Functions", null, null);
-    //Tree entry for DialogActs
-    private final TreeEntry mDialogActsEntry = new TreeEntry("Dialog Acts", null, null);
     
     //Global element tree
     private final TreeEntry mElementTree = new TreeEntry("SceneFlow", Preferences.ICON_ROOT_FOLDER, null);
@@ -117,7 +111,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     private final EditorProject mProject;
-    private final DialogActInterface mDialogAct;
+    //private final DialogActInterface mDialogAct;
     // The sceneflow of the project
     private final SceneFlow mSceneFlow;
 
@@ -151,7 +145,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         mSceneFlow = project.getSceneFlow();
         //mSceneScriptEditor = scriptEditor;
         mProject = project;
-        mDialogAct = mProject.getDialogAct();
+        //mDialogAct = mProject.getDialogAct();
         setBorder(BorderFactory.createEmptyBorder());
         setCellRenderer(new CellRenderer());
         setBackground(Color.WHITE);
@@ -194,13 +188,15 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 FunDef selectedDef = (FunDef) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchFunctionSelectedEvent(selectedDef);
-            } else if (parentPath.getLastPathComponent().equals(mDialogActsEntry)) {
-                //mScriptEditorPanel.getTabPane().setSelectedIndex(2);
-
-                DialogAct selectedDA = (DialogAct) ((TreeEntry) path.getLastPathComponent()).getData();
-
-                launchDASelectedEvent(selectedDA);
-            } else if (lastPathComponent.getData()!=null){
+            } 
+//            else if (parentPath.getLastPathComponent().equals(mDialogActsEntry)) {
+//                //mScriptEditorPanel.getTabPane().setSelectedIndex(2);
+//
+//                DialogAct selectedDA = (DialogAct) ((TreeEntry) path.getLastPathComponent()).getData();
+//
+//                launchDASelectedEvent(selectedDA);
+//            } 
+            else if (lastPathComponent.getData()!=null){
                 
                 if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.scenescript.SceneGroup.class)) {
                 //mScriptEditorPanel.getTabPane().setSelectedIndex(0);
@@ -294,7 +290,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 //      }
         mElementTree.add(mSceneFlowEntry);
         mElementTree.add(mFunctionsEntry);
-        mElementTree.add(mDialogActsEntry);
+//        mElementTree.add(mDialogActsEntry);
         
         //
         ((DefaultTreeModel) getModel()).setRoot(mElementTree);
@@ -313,7 +309,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         //mLogger.message("Refreshing '" + this + "'");
         updateSceneList();
         updateFunctions();
-        updateDialogActs();
+//        updateDialogActs();
         //remove empty scenes
         for(int i = 0; i < mSceneFlowEntry.getChildCount(); i++)
         {
@@ -404,39 +400,13 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         expandAll();
     }
 
-    /**
-     * Refresh the list of dialog acts
-     */
-    void updateDialogActs() {
-        mDialogActsEntry.removeAllChildren();
 
-        Map<String, List<String>> attributeValueMap = new HashMap();
-        List<String> valueList = new ArrayList<>();
-
-        // Populate attributeValueMap with DA attributes and its values
-        for (String att : mProject.getDialogAct().getNLGAttributes()) {
-            for (String val : mProject.getDialogAct().getNLGAttributeValues(att)) {
-                valueList.add(val);
-            }
-
-            attributeValueMap.put(att, valueList);
-        }
-
-        for (String phase : mProject.getDialogAct().getDialogueActPhases()) {
-            for (String da : mProject.getDialogAct().getDialogueActs(phase)) {
-                mDialogActsEntry.add(new TreeEntry(da + " (" + phase + ")", null, new DialogAct(da, phase, attributeValueMap)));
-            }
-        }
-    }
 
    
-    /**
-     * Control of clicks for the popup menu
-     * @param tree
-     * @return 
-     */
+    //
     public MouseAdapter getMouseAdapter(final JTree tree) {
         return new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent e) {
                 TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 
@@ -482,14 +452,15 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
                             modifyFunctionAction(entry);
                         }
-                    } else if (parentPath.getLastPathComponent().equals(mDialogActsEntry)) {
-                        if (e.isPopupTrigger()) {
-                        } else if ((e.getClickCount() == 2) && !e.isConsumed()) {
-                            TreeEntry entry = (TreeEntry) path.getLastPathComponent();
-
-                            modifyDialogAct(entry);
-                        }
-                    }
+                    } 
+//                    else if (parentPath.getLastPathComponent().equals(mDialogActsEntry)) {
+//                        if (e.isPopupTrigger()) {
+//                        } else if ((e.getClickCount() == 2) && !e.isConsumed()) {
+//                            TreeEntry entry = (TreeEntry) path.getLastPathComponent();
+//
+//                            modifyDialogAct(entry);
+//                        }
+//                    }
                 }
 
                 if (showPopup) {
@@ -509,13 +480,13 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 mEventCaster.convey(ev);
             }
 
-            private void modifyDialogAct(TreeEntry entry) {
-                if (entry != null) {
-                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct, entry.getText());
-
-                    daAttributeDialog.run();
-                }
-            }
+//            private void modifyDialogAct(TreeEntry entry) {
+//                if (entry != null) {
+//                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct, entry.getText());
+//
+//                    daAttributeDialog.run();
+//                }
+//            }
         };
     }
 
@@ -607,11 +578,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         mEventCaster.convey(ev);
     }
 
-    private void launchDASelectedEvent(DialogAct dialogAct) {
-        DialogActSelectedEvent ev = new DialogActSelectedEvent(this, dialogAct);
-
-        mEventCaster.convey(ev);
-    }
+   
 
     /**
      * Drag and Drop support

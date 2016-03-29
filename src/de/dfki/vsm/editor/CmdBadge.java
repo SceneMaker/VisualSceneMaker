@@ -1,24 +1,18 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.event.SceneExecutedEvent;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,14 +23,11 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.font.TextLayout;
-
 import java.text.AttributedString;
-
 import java.util.ArrayList;
 import java.util.Observer;
 import java.util.Timer;
 import java.util.Vector;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -206,7 +197,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      * Resets badge to its default visual behavior
      */
     public synchronized void endEditMode() {
-        Vector<Command> copyOfCmdList = new Vector<>();
+        ArrayList<Command> copyOfCmdList = new ArrayList<>();
 
         if (mEditMode) {
             for (int i = 0; i < mStringList.size(); i++) {
@@ -216,12 +207,12 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
                     Command command;
 
                     try {
-                        _SFSLParser_.parseResultType = _SFSLParser_.CMD;
-                        _SFSLParser_.run(text);
+                        ChartParser.parseResultType = ChartParser.CMD;
+                        ChartParser.run(text);
 
-                        Command cmd = _SFSLParser_.cmdResult;
+                        Command cmd = ChartParser.cmdResult;
 
-                        if ((cmd != null) &&!_SFSLParser_.errorFlag) {
+                        if ((cmd != null) &&!ChartParser.errorFlag) {
                             command = cmd;
                         } else {
                             return;
@@ -324,7 +315,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
      */
     private void update() {
         ArrayList<String> strings      = new ArrayList<>();
-        Vector<Command>   nodeCommands = mNode.getDataNode().getCmdList();
+        ArrayList<Command>   nodeCommands = mNode.getDataNode().getCmdList();
 
         if ((nodeCommands != null) && (nodeCommands.size() > 0)) {
             for (Command cmd : nodeCommands) {

@@ -5,7 +5,7 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.Node;
+import de.dfki.vsm.model.sceneflow.BasicNode;
 import de.dfki.vsm.model.sceneflow.SuperNode;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
@@ -14,12 +14,12 @@ import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
 import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.runtime.exception.InterpretException;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.Environment;
 import de.dfki.vsm.runtime.interpreter.Evaluator;
 import de.dfki.vsm.runtime.interpreter.Interpreter;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.values.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -49,7 +49,7 @@ import javax.swing.JPanel;
 public class VarDefDialog extends Dialog
 {
 
-    private final Node mNode;
+    private final BasicNode mNode;
     private VarDef mVarDef;
 
     // GUI Components
@@ -68,7 +68,7 @@ public class VarDefDialog extends Dialog
     private JLabel errorMsg;
     private boolean isNewVariable = true;
 
-    public VarDefDialog(Node node, VarDef varDef)
+    public VarDefDialog(BasicNode node, VarDef varDef)
     {
         super(EditorInstance.getInstance(), "Create/Modify Variable Definition", true);
         mNode = node;
@@ -168,7 +168,7 @@ public class VarDefDialog extends Dialog
                         ;
                         break;
                     case "String":
-                        mVarDef = new VarDef("NewVar", "String", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.String(""));
+                        mVarDef = new VarDef("NewVar", "String", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(""));
                         ;
                         break;
 
@@ -185,10 +185,10 @@ public class VarDefDialog extends Dialog
                             {
                                 if (def instanceof ListTypeDef)
                                 {
-                                    mVarDef = new VarDef("NewVar", "List", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.List());;
+                                    mVarDef = new VarDef("NewVar", "List", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord());;
                                 } else if (def instanceof StructTypeDef)
                                 {
-                                    mVarDef = new VarDef("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Struct());;
+                                    mVarDef = new VarDef("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord());;
                                 }
                             }
 

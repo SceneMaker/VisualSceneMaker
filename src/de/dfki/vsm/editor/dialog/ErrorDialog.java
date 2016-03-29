@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.dialog;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.runtime.event.AbortionEvent;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -53,7 +53,7 @@ public class ErrorDialog extends JDialog {
         return sSingeltonInstance;
     }
 
-    public void addError(AbortionEvent event) {
+    public void addError(TerminationEvent event) {
 
         //
         // TODO: clear old error list

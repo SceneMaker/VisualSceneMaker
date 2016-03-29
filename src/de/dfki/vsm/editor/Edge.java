@@ -17,7 +17,7 @@ import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -86,7 +86,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private TYPE mType = null;
 
     // Reference to data model edges and nodes
-    private de.dfki.vsm.model.sceneflow.Edge mDataEdge = null;
+    private de.dfki.vsm.model.sceneflow.AbstractEdge mDataEdge = null;
 
     // The two graphical nodes to which this edge is connected
     private Node mSourceNode = null;
@@ -199,7 +199,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         initEditBox();
     }
 
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode)
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode)
     {
         mDataEdge = edge;
         mWorkSpace = ws;
@@ -221,7 +221,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     // TODO: Neuer Konstruktor, der Source und Target dockpoint "mitbekommt"
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Edge edge, TYPE type, Node sourceNode, Node targetNode,
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode,
             Point sourceDockPoint, Point targetDockpoint)
     {
         mDataEdge = edge;
@@ -247,11 +247,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     public void update(Observable o, Object obj)
     {
 
-        // mLogger.message("Edge.update(" + obj + ")");
+        // mLogger.message("AbstractEdge.update(" + obj + ")");
         update();
     }
 
-    public de.dfki.vsm.model.sceneflow.Edge getDataEdge()
+    public de.dfki.vsm.model.sceneflow.AbstractEdge getDataEdge()
     {
         return mDataEdge;
     }
@@ -429,12 +429,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         try
         {
-            _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.LOG;
+            ChartParser.run(inputString);
 
-            LogicalCond log = _SFSLParser_.logResult;
+            LogicalCond log = ChartParser.logResult;
 
-            return (log != null) && !_SFSLParser_.errorFlag;
+            return (log != null) && !ChartParser.errorFlag;
         } catch (Exception e)
         {
 
@@ -572,12 +572,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         {
             try
             {
-                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-                _SFSLParser_.run(input);
+                ChartParser.parseResultType = ChartParser.LOG;
+                ChartParser.run(input);
 
-                LogicalCond log = _SFSLParser_.logResult;
+                LogicalCond log = ChartParser.logResult;
 
-                if ((log != null) && !_SFSLParser_.errorFlag)
+                if ((log != null) && !ChartParser.errorFlag)
                 {
                     ((CEdge) mDataEdge).setCondition(log);
                 }
@@ -596,12 +596,12 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         {
             try
             {
-                _SFSLParser_.parseResultType = _SFSLParser_.LOG;
-                _SFSLParser_.run(input);
+                ChartParser.parseResultType = ChartParser.LOG;
+                ChartParser.run(input);
 
-                LogicalCond log = _SFSLParser_.logResult;
+                LogicalCond log = ChartParser.logResult;
 
-                if ((log != null) && !_SFSLParser_.errorFlag)
+                if ((log != null) && !ChartParser.errorFlag)
                 {
                     ((IEdge) mDataEdge).setCondition(log);
                 }
@@ -1145,7 +1145,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         {
             if (event instanceof EdgeExecutedEvent)
             {
-                de.dfki.vsm.model.sceneflow.Edge edge = ((EdgeExecutedEvent) event).getEdge();
+                de.dfki.vsm.model.sceneflow.AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
 
                 if (edge.equals(mDataEdge))
                 {

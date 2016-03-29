@@ -30,9 +30,9 @@ public class DefaultCond extends LogicalCond {
         return mCondition;
     }
 
-    public LogicalType getLogicalType() {
-        return LogicalType.DEFAULT;
-    }
+//    public LogicalType getLogicalType() {
+//        return LogicalType.DEFAULT;
+//    }
 
     public String getAbstractSyntax() {
         return "Default(" + ((mCondition != null)

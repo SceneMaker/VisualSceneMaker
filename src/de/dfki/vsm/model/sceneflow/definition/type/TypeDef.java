@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.definition.type;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.model.sceneflow.SyntaxObject;
 import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
  *
  * @author Not me
  */
-public abstract class TypeDef extends Syntax {
+public abstract class TypeDef implements SyntaxObject {
     protected String mName;
 
     public enum Flavour { List, Struct }

@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.sfsl.parser._SFSLParser_;
+import de.dfki.vsm.model.sceneflow.ChartParser;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -139,12 +139,12 @@ public class CreateExpDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            _SFSLParser_.parseResultType = _SFSLParser_.EXP;
-            _SFSLParser_.run(inputString);
+            ChartParser.parseResultType = ChartParser.EXP;
+            ChartParser.run(inputString);
 
-            Expression exp = _SFSLParser_.expResult;
+            Expression exp = ChartParser.expResult;
 
-            if ((exp != null) &&!_SFSLParser_.errorFlag) {
+            if ((exp != null) &&!ChartParser.errorFlag) {
                 mExpression = exp;
 
                 return true;

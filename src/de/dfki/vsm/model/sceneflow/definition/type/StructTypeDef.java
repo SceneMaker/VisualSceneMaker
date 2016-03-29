@@ -6,12 +6,12 @@ import de.dfki.vsm.model.sceneflow.definition.MemberDef;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
+import java.util.ArrayList;
 
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.util.Vector;
 
 /**
  * A struct type definition.
@@ -19,22 +19,22 @@ import java.util.Vector;
  * @author Not me
  */
 public class StructTypeDef extends TypeDef {
-    private Vector<MemberDef> mMemberDefList;
+    private ArrayList<MemberDef> mMemberDefList;
 
     public StructTypeDef() {
-        mMemberDefList = new Vector<MemberDef>();
+        mMemberDefList = new ArrayList<MemberDef>();
     }
 
-    public StructTypeDef(String name, Vector<MemberDef> memberList) {
+    public StructTypeDef(String name, ArrayList<MemberDef> memberList) {
         super(name);
         mMemberDefList = memberList;
     }
 
-    public Vector<MemberDef> getMemberDefList() {
+    public ArrayList<MemberDef> getMemberDefList() {
         return mMemberDefList;
     }
 
-    public void setMemberDefList(Vector<MemberDef> value) {
+    public void setMemberDefList(ArrayList<MemberDef> value) {
         mMemberDefList = value;
     }
 
@@ -42,8 +42,8 @@ public class StructTypeDef extends TypeDef {
         return mMemberDefList.size();
     }
 
-    public Vector<MemberDef> getCopyOfMemberDefList() {
-        Vector<MemberDef> copy = new Vector<MemberDef>();
+    public ArrayList<MemberDef> getCopyOfMemberDefList() {
+        ArrayList<MemberDef> copy = new ArrayList<MemberDef>();
 
         for (MemberDef member : mMemberDefList) {
             copy.add(member.getCopy());

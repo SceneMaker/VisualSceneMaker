@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.acticon.ActiconAction;
@@ -11,8 +10,6 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;

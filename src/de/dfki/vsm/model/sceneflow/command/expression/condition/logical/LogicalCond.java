@@ -18,7 +18,7 @@ public abstract class LogicalCond extends Condition {
         UN, BIN, COMP, DEFAULT, STATE, HC, PROLOG
     }
 
-    public abstract LogicalType getLogicalType();
+   // public abstract LogicalType getLogicalType();
 
     public abstract LogicalCond getCopy();
 
@@ -43,8 +43,8 @@ public abstract class LogicalCond extends Condition {
             log = new InStateCond();
         } else if (tag.equals("HistoryContainsState")) {
             log = new HistoryContainsState();
-        } else if (tag.equals("PrologCondition")) {
-            log = new PrologCond();
+        } else if (tag.equals("PrologQuery")) {
+            log = new PrologQuery();
         } else {
             throw new XMLParseError(null,
                                     "Cannot parse the element with the tag \"" + tag + "\" into a logical condition!");

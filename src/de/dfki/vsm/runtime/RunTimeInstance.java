@@ -2,11 +2,11 @@ package de.dfki.vsm.runtime;
 
 import de.dfki.vsm.runtime.interpreter.Interpreter;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.values.AbstractValue;
-import de.dfki.vsm.runtime.values.BooleanValue;
-import de.dfki.vsm.runtime.values.FloatValue;
-import de.dfki.vsm.runtime.values.IntValue;
-import de.dfki.vsm.runtime.values.StringValue;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +53,7 @@ public final class RunTimeInstance {
     }
 
     /*
-    public final boolean load(final RunTimeProject project) {
+    public final boolean loadRunTimePlugins(final RunTimeProject project) {
 
         // Check if the project is already registered
         if (mProjectMap.containsKey(project)) {
@@ -62,10 +62,10 @@ public final class RunTimeInstance {
             // Return false at error
             return false;
         }
-        // Try to load all runtime objects
-        if (!project.load()) {
+        // Try to loadRunTimePlugins all runtime objects
+        if (!project.loadRunTimePlugins()) {
             // Print an error message
-            mLogger.failure("Failure: Cannot load runtime objects of project '" + project + "'");
+            mLogger.failure("Failure: Cannot loadRunTimePlugins runtime objects of project '" + project + "'");
             // Return false at error
             return false;
         } else {
@@ -87,10 +87,10 @@ public final class RunTimeInstance {
             // Return false at error
             return false;
         }
-        // Try to load all runtime objects
-//        if (!project.load()) {
+        // Try to loadRunTimePlugins all runtime objects
+//        if (!project.loadRunTimePlugins()) {
 //            // Print an error message
-//            mLogger.failure("Failure: Cannot load runtime objects of project '" + project + "'");
+//            mLogger.failure("Failure: Cannot loadRunTimePlugins runtime objects of project '" + project + "'");
 //            // Return false at error
 //            return false;
 //        } else {

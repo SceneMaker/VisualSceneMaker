@@ -2,7 +2,7 @@ package de.dfki.vsm.model.sceneflow.definition;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.Syntax;
+import de.dfki.vsm.model.sceneflow.SyntaxObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -13,18 +13,18 @@ import org.w3c.dom.Element;
 
 import java.lang.reflect.Field;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * A user command definition.
  *
  * @author Not me
  */
-public class FunDef extends Syntax implements Comparable<FunDef> {
+public class FunDef implements SyntaxObject, Comparable<FunDef> {
     private String           mName;
     private String           mClassName;
     private String           mMethod;
-    private Vector<ParamDef> mParamList;
+    private ArrayList<ParamDef> mParamList;
     private boolean          active = true;
 
     
@@ -32,17 +32,17 @@ public class FunDef extends Syntax implements Comparable<FunDef> {
         mName      = new String();
         mClassName = new String();
         mMethod    = new String();
-        mParamList = new Vector<ParamDef>();
+        mParamList = new ArrayList<ParamDef>();
     }
 
     public FunDef(String name, String className, String method) {
         mName      = name;
         mClassName = className;
         mMethod    = method;
-        mParamList = new Vector<ParamDef>();
+        mParamList = new ArrayList<ParamDef>();
     }
 
-    public FunDef(String name, String className, String method, Vector<ParamDef> paramList) {
+    public FunDef(String name, String className, String method, ArrayList<ParamDef> paramList) {
         mName      = name;
         mClassName = className;
         mMethod    = method;
@@ -79,11 +79,11 @@ public class FunDef extends Syntax implements Comparable<FunDef> {
         mMethod = value;
     }
 
-    public Vector<ParamDef> getParamList() {
+    public ArrayList<ParamDef> getParamList() {
         return mParamList;
     }
 
-    public void setParamList(Vector<ParamDef> value) {
+    public void setParamList(ArrayList<ParamDef> value) {
         mParamList = value;
     }
 
@@ -91,8 +91,8 @@ public class FunDef extends Syntax implements Comparable<FunDef> {
         return mParamList.size();
     }
 
-    public Vector<ParamDef> getCopyOfParamList() {
-        Vector<ParamDef> copy = new Vector<ParamDef>();
+    public ArrayList<ParamDef> getCopyOfParamList() {
+        ArrayList<ParamDef> copy = new ArrayList<ParamDef>();
 
         for (ParamDef param : mParamList) {
             copy.add(param.getCopy());
