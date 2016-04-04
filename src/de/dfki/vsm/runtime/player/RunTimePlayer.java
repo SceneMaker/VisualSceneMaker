@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.player;
 
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.util.LinkedList;
@@ -9,6 +10,9 @@ import java.util.LinkedList;
  * @author Gregor Mehlmann
  */
 public abstract class RunTimePlayer extends RunTimePlugin {
+	
+    // The activity manager
+    protected final ActivityManager mManager = new ActivityManager(); // moved from ReactivePlayer to here PG 4.4.2016
 
     // Construct the player
     public RunTimePlayer(final PluginConfig config, final RunTimeProject project) {
@@ -17,6 +21,11 @@ public abstract class RunTimePlayer extends RunTimePlugin {
 
     // Call the playback method
     public abstract void play(final String name, final LinkedList args);
+	
+	// get the ActivityManager for handling activities ...
+	public ActivityManager getActivityManager() {
+		return mManager;
+	}
 
     // The scene player worker
     public class PlayerWorker extends Thread {

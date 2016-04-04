@@ -11,7 +11,6 @@ import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
@@ -32,8 +31,6 @@ public final class ReactivePlayer extends RunTimePlayer {
         return ++sId;
     }
 
-    // The activity scheduler
-    private final ActivityManager mManager = new ActivityManager();
 
     // Create the scene player
     public ReactivePlayer(final PluginConfig config, final RunTimeProject project) {
