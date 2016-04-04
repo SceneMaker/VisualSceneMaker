@@ -10,7 +10,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
  * @author Gregor Mehlmann
  */
 public abstract class ActivityExecutor extends RunTimePlugin {
-
+	
     public ActivityExecutor(final PluginConfig config, final RunTimeProject project) {
         super(config, project);
     }
@@ -19,6 +19,6 @@ public abstract class ActivityExecutor extends RunTimePlugin {
 
     public abstract void execute(
             final AbstractActivity activity,
-            final ActivityManager player);
+            final ActivityManager player); // this can be removed ...
 
 }

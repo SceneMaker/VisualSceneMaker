@@ -3,6 +3,7 @@ package de.dfki.vsm.runtime.activity.manager;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Policy;
 import de.dfki.vsm.runtime.activity.ActionActivity;
+import de.dfki.vsm.runtime.activity.PauseActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.feedback.ActivityFeedback;
 import de.dfki.vsm.runtime.activity.feedback.StatusFeedback;
@@ -23,7 +24,7 @@ public final class ActivityManager {
 
     // The list of detected marks
     private final HashMap<String, ActivityWorker> mWorkerMap = new HashMap();
-
+	
     // Handle activity feedback
     public final void handle(final ActivityFeedback object) {
         // Get the activity 
