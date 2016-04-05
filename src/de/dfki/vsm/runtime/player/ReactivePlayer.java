@@ -24,14 +24,11 @@ import java.util.LinkedList;
 public final class ReactivePlayer extends RunTimePlayer {
 
     // The static marker id
-    private static Long sId = 0x0L;
+    private static long sId = 0x0L;
 
     // Get unique marker id
-    private Long newId() {
-        mLogger.message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ID requested " + this);
-        sId++;
-        mLogger.message("ID is  " + sId);
-        return sId;
+    private synchronized Long newId() {
+        return sId++;
     }
 
 
