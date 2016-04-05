@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @author Gregor Mehlmann
  */
-public final class ActivityManager {
+public final class ActivityScheduler {
 
     // The defaut system logger
     private final LOGDefaultLogger mLogger
