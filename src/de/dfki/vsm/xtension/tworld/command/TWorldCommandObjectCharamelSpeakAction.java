@@ -25,7 +25,7 @@ public class TWorldCommandObjectCharamelSpeakAction extends TWorldCommandObjectA
 
     private final LinkedList mTextBlocks;
     private final String mPunctuation;
-    private final int mCharamelCharacterId = 2;
+    private final int mCharamelCharacterId = 1;
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 

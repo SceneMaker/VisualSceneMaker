@@ -6,7 +6,6 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -20,13 +19,18 @@ import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectAmbientSetupAction
 import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectMoveToLoactionAction;
 import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectSetSoundAmbientAction;
 import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectCharamelSpeakAction;
+import de.dfki.vsm.xtension.tworld.feedback.TWorldFeedback;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Gregor Mehlmann
@@ -46,8 +50,6 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     // The execution id
     private int sId = 0;
-    // my current activity
-    private AbstractActivity mActivity = null;
 
     // Construct the executor
     public TWorldExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -175,7 +177,7 @@ public final class TWorldExecutor extends ActivityExecutor {
 //        //
 
         // get action information
-        final String actor = activity.getActor();
+        final String actor = "Susanne";//activity.getActor();
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
 
@@ -253,17 +255,14 @@ public final class TWorldExecutor extends ActivityExecutor {
 //                + "</TWorldCommand>";
         // send command to platform 
         synchronized (mActivityWorkerMap) {
-            // Remember activity
-            mActivity = activity;
             broadcast(message);
 
             // organize wait for feedback
-            String id = getExecutionId();
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(id, cAW);
+            mActivityWorkerMap.put(executionId, cAW);
 
             // wait until we got feedback
-            mLogger.warning("ActivityWorker " + id + " waiting ....");
+            mLogger.warning("ActivityWorker " + executionId + " waiting ....");
 
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
@@ -273,7 +272,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 }
             }
 
-            mLogger.warning("ActivityWorker " + id + " done ....");
+            mLogger.warning("ActivityWorker " + executionId + " done ....");
         }
         // Return when terminated
     }
@@ -293,30 +292,46 @@ public final class TWorldExecutor extends ActivityExecutor {
 
     // Handle some message
     public void handle(final String message, final TWorldHandler client) {
-        mLogger.warning("Handling " + message + "");
-
+        // sanitize message
+        String clean = message.replaceAll("..xml\\s+version........", "");
+        mLogger.warning("Handling " + clean + "");
         synchronized (mActivityWorkerMap) {
-            if (message.contains("action id=")) {
 
-                int start = message.lastIndexOf("#") + 1;
-                String animId = message.substring(start);
+            TWorldFeedback twf = new TWorldFeedback();
+            InputStream stream;
+            try {
+                stream = new ByteArrayInputStream(clean.getBytes("UTF-8"));
+                XMLUtilities.parseFromXMLStream(twf, stream);
+            } catch (UnsupportedEncodingException ex) {
+                mLogger.failure("Feedback is not in TWorldFeedback format, will not be handled!");
+                return;
+            }
 
-                if (mActivityWorkerMap.containsKey(animId)) {
-                    mActivityWorkerMap.remove(animId);
+            String actionType = twf.mFeedbackAction.mName;
+            String id = twf.mFeedbackAction.mId;
+            String actionStatusType = twf.mFeedbackAction.mActionFeedback.mName;
+            String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
+
+            mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
+
+            // handling caixml feedback
+            if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
+                mLogger.message("1");
+                if (mActivityWorkerMap.containsKey(id)) {
+                    mLogger.message("2");
+                    mActivityWorkerMap.remove(id);
                 }
                 // wake me up ..
                 mActivityWorkerMap.notifyAll();
-
             }
 
-            if (message.contains("$(")) {
-
-                // wake me up ..
-                mActivityWorkerMap.notifyAll();
-                // play the acitiviy
-                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(mActivity, message));
-
-            }
+//            if (message.contains("$(")) {
+//
+//                // wake me up ..
+//                mActivityWorkerMap.notifyAll();
+//                // play the acitiviy
+//                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(mActivity, message));
+//            }
         }
 //        synchronized (mActivityWorkerMap) {
 //            if (message.contains("734")) {
