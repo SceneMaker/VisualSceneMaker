@@ -74,7 +74,7 @@ public class StickmanHandler extends Thread {
             // Receive The Next Line
             final String message = mInStream.readLine();
             // Debug Some Information
-            mLogger.warning("Receiving '" + message + "'");
+            mLogger.message("Receiving '" + message + "'");
             // Return Received Data
             return message;
         } catch (final IOException exc) {

@@ -86,8 +86,6 @@ public class StickmanExecutor extends ActivityExecutor {
 		final String name = activity.getName();
 		final LinkedList<ActionFeature> features = activity.getFeatureList();
 
-		mLogger.message("Execute Actor " + actor + ", command " + name);
-
 		Animation stickmanAnimation = new Animation();
 
 		if (activity instanceof SpeechActivity) {
@@ -105,13 +103,16 @@ public class StickmanExecutor extends ActivityExecutor {
 				}
 			}
 
-				// TODO add some mouth open animations ...mProject.getScenePlayer().getActivityManager().schedule(100, blocks, new , this);
+			// schedule Mouth_open and Mouth closed activities
+			scheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
+			scheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
+			
 			stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
 			stickmanAnimation.mParameter = wts;
 
 			executeAnimationAndWait(stickmanAnimation, stickmanAnimation.mID);
 		} else if (activity instanceof ActionActivity) {
-			stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 500, false);
+			stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
 			if (stickmanAnimation != null) {
 				executeAnimation(stickmanAnimation);
 			}
@@ -150,7 +151,7 @@ public class StickmanExecutor extends ActivityExecutor {
 			mActivityWorkerMap.put(animId, cAW);
 
 			// wait until we got feedback
-			mLogger.warning("ActivityWorker " + animId + " waiting ....");
+			mLogger.message("ActivityWorker " + animId + " waiting ....");
 
 			while (mActivityWorkerMap.containsValue(cAW)) {
 				try {
@@ -160,7 +161,7 @@ public class StickmanExecutor extends ActivityExecutor {
 				}
 			}
 
-			mLogger.warning("ActivityWorker " + animId + "  done ....");
+			mLogger.message("ActivityWorker " + animId + "  done ....");
 		}
 		// Return when terminated
 	}
@@ -231,7 +232,7 @@ public class StickmanExecutor extends ActivityExecutor {
 
 	// Handle some message
 	public void handle(final String message, final StickmanHandler client) {
-		mLogger.warning("Handling " + message + "");
+		mLogger.message("Handling " + message + "");
 
 		if (message.contains("#ANIM#end#")) {
 
