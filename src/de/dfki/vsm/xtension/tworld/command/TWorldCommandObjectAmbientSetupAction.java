@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tricat.command;
+package de.dfki.vsm.xtension.tworld.command;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -15,29 +15,29 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Patrick Gebhard
- *
+ * 
  */
-public class TWorldCommandObjectMoveToLoactionAction extends TWorldCommandObjectAction implements XMLParseable, XMLWriteable {
+public class TWorldCommandObjectAmbientSetupAction extends TWorldCommandObjectAction implements XMLParseable, XMLWriteable{
+  
+    String mValue = "";
 
-    String mLocation = "";
-
-    public TWorldCommandObjectMoveToLoactionAction(String location) {
-        mName = "MoveToLocation";
-        mLocation = location;
+    public TWorldCommandObjectAmbientSetupAction(String value) {
+        mName = "ambient_setup";
+        mValue = value;
     }
 
-    public TWorldCommandObjectMoveToLoactionAction() {
+    public TWorldCommandObjectAmbientSetupAction() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + " id=\"" + mId + "\" locname=\"" + mLocation + "\"/>");
+        out.push().println("<Action name=\"" + mName + " id=\"" + mId + "\" value=\"" + mValue + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mLocation = element.getAttribute("locname");
+        mValue = element.getAttribute("value");
         mId = element.getAttribute("id");
-    }
+    }  
 }
