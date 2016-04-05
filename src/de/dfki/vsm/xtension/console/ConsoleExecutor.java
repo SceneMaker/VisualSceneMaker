@@ -4,7 +4,7 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
 import de.dfki.vsm.runtime.project.RunTimeProject;
@@ -60,7 +60,7 @@ public final class ConsoleExecutor extends  ActivityExecutor {
     @Override
     public final void execute(
             final AbstractActivity object,
-            final ActivityManager scheduler) {
+            final ActivityScheduler scheduler) {
         // Execute the command
         System.err.println("Console executing activity '" + object + "'");
         // Give some feedback

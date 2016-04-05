@@ -4,7 +4,7 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
@@ -163,7 +163,7 @@ public final class TWorldExecutor extends ActivityExecutor {
     @Override
     public final void execute(
             final AbstractActivity activity,
-            final ActivityManager scheduler) {
+            final ActivityScheduler scheduler) {
         // Compile the activity
 //        final String command = activity.toString();
 //        // Print some information

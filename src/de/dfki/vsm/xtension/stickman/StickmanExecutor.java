@@ -21,7 +21,7 @@ import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
-import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -78,7 +78,7 @@ public class StickmanExecutor extends ActivityExecutor {
 	}
 
 	@Override
-	public void execute(AbstractActivity activity, ActivityManager manager) {
+	public void execute(AbstractActivity activity, ActivityScheduler scheduler) {
 		// Remember activity
 		mActivity = activity;
 		// get action information
@@ -90,42 +90,35 @@ public class StickmanExecutor extends ActivityExecutor {
 
 		Animation stickmanAnimation = new Animation();
 
-		if (name.equalsIgnoreCase("Speak")) {
-			if (activity instanceof SpeechActivity) {
-				SpeechActivity sa = (SpeechActivity) activity;
+		if (activity instanceof SpeechActivity) {
+			SpeechActivity sa = (SpeechActivity) activity;
 
-				// create a new word time mark sequence based on the current utterance blocks
-				WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
+			// create a new word time mark sequence based on the current utterance blocks
+			WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
 
-				LinkedList blocks = sa.getBlocks();
-				for (final Object item : blocks) {
-					if (!item.toString().contains("$")) {
-						wts.add(new Word(item.toString()));
-					} else {
-						wts.add(new TimeMark(item.toString()));
-					}
+			LinkedList blocks = sa.getBlocks();
+			for (final Object item : blocks) {
+				if (!item.toString().contains("$")) {
+					wts.add(new Word(item.toString()));
+				} else {
+					wts.add(new TimeMark(item.toString()));
 				}
+			}
 
 				// TODO add some mouth open animations ...mProject.getScenePlayer().getActivityManager().schedule(100, blocks, new , this);
-				
-				stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
-				stickmanAnimation.mParameter = wts;
+			stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
+			stickmanAnimation.mParameter = wts;
 
-				executeAnimationAndWait(stickmanAnimation, stickmanAnimation.mID);
-			}
-		} else {
-			if (activity instanceof ActionActivity) {
-				stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 1000, false);
-				if (stickmanAnimation != null) {
-					executeAnimation(stickmanAnimation);
-				}
-			} else {
-				return;
+			executeAnimationAndWait(stickmanAnimation, stickmanAnimation.mID);
+		} else if (activity instanceof ActionActivity) {
+			stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 500, false);
+			if (stickmanAnimation != null) {
+				executeAnimation(stickmanAnimation);
 			}
 		}
 	}
 
-	private  void executeAnimation(Animation stickmanAnimation) {
+	private void executeAnimation(Animation stickmanAnimation) {
 		// executeAnimation command to platform 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		IOSIndentWriter iosw = new IOSIndentWriter(out);
@@ -138,7 +131,7 @@ public class StickmanExecutor extends ActivityExecutor {
 		}
 	}
 
-	private  void executeAnimationAndWait(Animation stickmanAnimation, String animId) {
+	private void executeAnimationAndWait(Animation stickmanAnimation, String animId) {
 		// executeAnimation command to platform 
 		synchronized (mActivityWorkerMap) {
 			// executeAnimation command to platform 
