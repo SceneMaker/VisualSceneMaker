@@ -6,6 +6,7 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -45,6 +46,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     // The execution id
     private int sId = 0;
+    // my current activity
+    private AbstractActivity mActivity = null;
 
     // Construct the executor
     public TWorldExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -143,7 +146,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     @Override
     public final String marker(final long id) {
         // TWorld style bookmarks
-        return "\\mrk=" + id + "\\";
+        //return "\\mrk=" + id + "\\";
+        return "$(" + id + ")";
     }
 
     private final String getExecutionId() {
@@ -213,49 +217,53 @@ public final class TWorldExecutor extends ActivityExecutor {
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(mTWC, iosw);
 
+        String message = "";
         // log TWorld command
         try {
+            message = new String(out.toByteArray(), "UTF-8").replace("\n", " ");
             mLogger.message(new String(out.toByteArray(), "UTF-8"));
         } catch (UnsupportedEncodingException ex) {
             mLogger.failure(ex.getMessage());
         }
 
-        final String message = ""
-                + "<TWorldCommand>\n"
-                + "<object name=\"Susanne\">\n"
-                + "<action name=\"caixml\" id=\"734\">\n"
-                + "<!-- Charamel Command -->\n"
-                + "<cai_request version='1.0'>\n"
-                + "<cai_command id=\"2\">\n"
-                + "RenderXML\n"
-                + "<animation_track>\n"
-                + "<pause>\n"
-                + "</pause>\n"
-                + "<motion \n"
-                + "speed='1.0' \n"
-                + "attack='1000' \n"
-                + "decay='1000' \n"
-                + "start='0' \n"
-                + "duration='2000'>\n"
-                + "walk/turns/turn_90r\n"
-                + "</motion>\n"
-                + "</animation_track>\n"
-                + "</cai_command>\n"
-                + "</cai_request>\n"
-                + "</action>\n"
-                + "</object>\n"
-                + "</TWorldCommand>";
-
+//        final String message = ""
+//                + "<TWorldCommand>\n"
+//                + "<object name=\"Susanne\">\n"
+//                + "<action name=\"caixml\" id=\"734\">\n"
+//                + "<!-- Charamel Command -->\n"
+//                + "<cai_request version='1.0'>\n"
+//                + "<cai_command id=\"2\">\n"
+//                + "RenderXML\n"
+//                + "<animation_track>\n"
+//                + "<pause>\n"
+//                + "</pause>\n"
+//                + "<motion \n"
+//                + "speed='1.0' \n"
+//                + "attack='1000' \n"
+//                + "decay='1000' \n"
+//                + "start='0' \n"
+//                + "duration='2000'>\n"
+//                + "walk/turns/turn_90r\n"
+//                + "</motion>\n"
+//                + "</animation_track>\n"
+//                + "</cai_command>\n"
+//                + "</cai_request>\n"
+//                + "</action>\n"
+//                + "</object>\n"
+//                + "</TWorldCommand>";
         // send command to platform 
         synchronized (mActivityWorkerMap) {
+            // Remember activity
+            mActivity = activity;
             broadcast(message);
 
             // organize wait for feedback
+            String id = getExecutionId();
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put("734", cAW);
+            mActivityWorkerMap.put(id, cAW);
 
             // wait until we got feedback
-            mLogger.warning("ActivityWorker 734 waiting ....");
+            mLogger.warning("ActivityWorker " + id + " waiting ....");
 
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
@@ -265,7 +273,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 }
             }
 
-            mLogger.warning("ActivityWorker 734 done ....");
+            mLogger.warning("ActivityWorker " + id + " done ....");
         }
         // Return when terminated
     }
@@ -288,11 +296,34 @@ public final class TWorldExecutor extends ActivityExecutor {
         mLogger.warning("Handling " + message + "");
 
         synchronized (mActivityWorkerMap) {
-            if (message.contains("734")) {
-                mActivityWorkerMap.remove("734");
+            if (message.contains("action id=")) {
+
+                int start = message.lastIndexOf("#") + 1;
+                String animId = message.substring(start);
+
+                if (mActivityWorkerMap.containsKey(animId)) {
+                    mActivityWorkerMap.remove(animId);
+                }
+                // wake me up ..
                 mActivityWorkerMap.notifyAll();
+
+            }
+
+            if (message.contains("$(")) {
+
+                // wake me up ..
+                mActivityWorkerMap.notifyAll();
+                // play the acitiviy
+                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(mActivity, message));
+
             }
         }
+//        synchronized (mActivityWorkerMap) {
+//            if (message.contains("734")) {
+//                mActivityWorkerMap.remove("734");
+//                mActivityWorkerMap.notifyAll();
+//            }
+//        }
     }
 
     // Handle some message

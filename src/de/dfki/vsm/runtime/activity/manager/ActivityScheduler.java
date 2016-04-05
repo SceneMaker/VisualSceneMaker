@@ -24,7 +24,7 @@ public final class ActivityScheduler {
 
     // The list of detected marks
     private final HashMap<String, ActivityWorker> mWorkerMap = new HashMap();
-	
+
     // Handle activity feedback
     public final void handle(final ActivityFeedback object) {
         // Get the activity 
@@ -114,4 +114,15 @@ public final class ActivityScheduler {
         return task;
     }
 
+    // get Activity from Worker related to Marker - added by PG 5.4.2016
+    public final AbstractActivity getMarkerActivity(final String marker) {
+        synchronized (mWorkerMap) {
+            if (mWorkerMap.containsKey(marker)) {
+                ActivityWorker task = mWorkerMap.get(marker);
+                return task.getActivity();
+            } else {
+                return null;
+            }
+        }
+    }
 }
