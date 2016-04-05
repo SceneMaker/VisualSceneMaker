@@ -27,8 +27,11 @@ public final class ReactivePlayer extends RunTimePlayer {
     private static Long sId = 0x0L;
 
     // Get unique marker id
-    private static Long newId() {
-        return ++sId;
+    private Long newId() {
+        mLogger.message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ID requested " + this);
+        sId++;
+        mLogger.message("ID is  " + sId);
+        return sId;
     }
 
 

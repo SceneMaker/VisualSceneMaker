@@ -37,6 +37,11 @@ public final class ActivityWorker extends Thread {
 	public final boolean isDone() {
 		return mDone;
 	}
+        
+        // Get Activity - added by PG 5.4.2016
+        public final AbstractActivity getActivity() {
+            return mActivity;
+        }
 
 	// Construct with a name
 	public ActivityWorker(
