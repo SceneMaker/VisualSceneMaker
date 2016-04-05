@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.tricat;
+package de.dfki.vsm.xtension.tworld;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -12,13 +12,13 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommand;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommandObject;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectAction;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectAmbientSetupAction;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectMoveToLoactionAction;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectSetSoundAmbientAction;
-import de.dfki.vsm.xtension.tricat.command.TWorldCommandObjectCharamelSpeakAction;
+import de.dfki.vsm.xtension.tworld.command.TWorldCommand;
+import de.dfki.vsm.xtension.tworld.command.TWorldCommandObject;
+import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectAction;
+import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectAmbientSetupAction;
+import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectMoveToLoactionAction;
+import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectSetSoundAmbientAction;
+import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectCharamelSpeakAction;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.UnsupportedEncodingException;

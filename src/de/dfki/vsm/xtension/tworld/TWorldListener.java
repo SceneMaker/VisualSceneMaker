@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.tricat;
+package de.dfki.vsm.xtension.tworld;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.IOException;
