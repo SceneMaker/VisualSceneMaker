@@ -101,10 +101,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                                 textBuilder.add(marker);
                                 // Register the activity with marker
                                 observedWorkerList.add(
-                                        mManager.register(
+                                        mScheduler.register(
                                                 marker, // Execute at this marker
                                                 new ActionActivity(
-                                                        action.getActor(),
+                                                        (action.getActor() == null) ? turn.getSpeaker() : action.getActor(), // added PG 5.4.2016
                                                         action.getMode(),
                                                         action.getName(),
                                                         action.getText(map),
@@ -118,7 +118,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         // 
                         final String punctuation = uttr.getPunctuationMark();
                         // Schedule the activity
-                        mManager.schedule(
+                        mScheduler.schedule(
                                 0, // Schedule without delay
                                 observedWorkerList,
                                 new SpeechActivity(

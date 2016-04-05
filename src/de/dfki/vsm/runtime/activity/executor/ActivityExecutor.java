@@ -2,7 +2,7 @@ package de.dfki.vsm.runtime.activity.executor;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
@@ -19,6 +19,6 @@ public abstract class ActivityExecutor extends RunTimePlugin {
 
     public abstract void execute(
             final AbstractActivity activity,
-            final ActivityManager player); // this can be removed ...
+            final ActivityScheduler player); // this can be removed ...
 
 }

@@ -23,7 +23,7 @@ public final class ActivityWorker extends Thread {
 	// The activity data
 	private final AbstractActivity mActivity;
 	private final ActivityExecutor mExecutor;
-	private final ActivityManager mScheduler;
+	private final ActivityScheduler mScheduler;
 
 	// Abort the execution
 	public final void abort() {
@@ -44,7 +44,7 @@ public final class ActivityWorker extends Thread {
 	  final List<ActivityWorker> workers,
 	  final AbstractActivity activity,
 	  final ActivityExecutor executor,
-	  final ActivityManager player) {
+	  final ActivityScheduler player) {
 		super(activity.toString());
 		// Initialize the flag
 		mDone = false;
