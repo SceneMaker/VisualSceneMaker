@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tworld.command;
+package de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel;
 
 import de.dfki.charactor.v4235.AnimationTrack;
 import de.dfki.charactor.v4235.ComplexAnimationGenerator;
@@ -13,6 +13,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
 import java.util.LinkedList;
 import org.w3c.dom.Element;
 
@@ -21,7 +22,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class TWorldCommandObjectCharamelSpeakAction extends TWorldCommandObjectAction implements XMLParseable, XMLWriteable {
+public class Speak extends Action implements XMLParseable, XMLWriteable {
 
     private final LinkedList mTextBlocks;
     private final String mPunctuation;
@@ -30,13 +31,13 @@ public class TWorldCommandObjectCharamelSpeakAction extends TWorldCommandObjectA
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public TWorldCommandObjectCharamelSpeakAction(LinkedList textblocks, String punct) {
+    public Speak(LinkedList textblocks, String punct) {
         mName = "caixml";
         mTextBlocks = textblocks;
         mPunctuation = punct;
     }
 
-    public TWorldCommandObjectCharamelSpeakAction() {
+    public Speak() {
         mName = "caixml";
         mTextBlocks = new LinkedList();
         mPunctuation = "";

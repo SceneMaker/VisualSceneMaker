@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tworld.command;
+package de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel;
 
 import de.dfki.charactor.v4235.AnimationTrack;
 import de.dfki.charactor.v4235.ComplexAnimationGenerator;
@@ -13,6 +13,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
 import org.w3c.dom.Element;
 
 /**
@@ -20,7 +21,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class TWorldCommandObjectCharamelAction extends TWorldCommandObjectAction implements XMLParseable, XMLWriteable {
+public class CharamelAction extends Action implements XMLParseable, XMLWriteable {
 
     private final String mCharamelCmd;
     private final int mCharamelCharacterId = 2;
@@ -28,12 +29,12 @@ public class TWorldCommandObjectCharamelAction extends TWorldCommandObjectAction
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public TWorldCommandObjectCharamelAction(String value) {
+    public CharamelAction(String value) {
         mName = "caixml";
         mCharamelCmd = value;
     }
 
-    public TWorldCommandObjectCharamelAction() {
+    public CharamelAction() {
         mName = "caixml";
         mCharamelCmd = "";
     }

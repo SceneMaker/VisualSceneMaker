@@ -2,24 +2,28 @@ package de.dfki.vsm.xtension.tworld;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
+import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
+import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
-import de.dfki.vsm.xtension.tworld.command.TWorldCommand;
-import de.dfki.vsm.xtension.tworld.command.TWorldCommandObject;
-import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectAction;
-import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectAmbientSetupAction;
-import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectMoveToLoactionAction;
-import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectSetSoundAmbientAction;
-import de.dfki.vsm.xtension.tworld.command.TWorldCommandObjectCharamelSpeakAction;
-import de.dfki.vsm.xtension.tworld.feedback.TWorldFeedback;
+import de.dfki.vsm.xtension.tworld.xml.command.TWorldCommand;
+import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.AmbientSetup;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveToLocation;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.SetSoundAmbient;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.Speak;
+import de.dfki.vsm.xtension.tworld.xml.feedback.TWorldFeedback;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -29,8 +33,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Gregor Mehlmann
@@ -185,24 +187,24 @@ public final class TWorldExecutor extends ActivityExecutor {
 
         // initialize build command
         TWorldCommand mTWC;
-        TWorldCommandObjectAction twcoa = null;
+        Action twcoa = null;
 
         if (name.equalsIgnoreCase("MoveTo")) {
-            twcoa = new TWorldCommandObjectMoveToLoactionAction(getActionFeatureValue("location", features));
+            twcoa = new MoveToLocation(getActionFeatureValue("location", features));
         }
 
         if (name.equalsIgnoreCase("SetAmbient")) {
-            twcoa = new TWorldCommandObjectAmbientSetupAction(getActionFeatureValue("value", features));
+            twcoa = new AmbientSetup(getActionFeatureValue("value", features));
         }
 
         if (name.equalsIgnoreCase("SetSound")) {
-            twcoa = new TWorldCommandObjectSetSoundAmbientAction(getActionFeatureValue("value", features));
+            twcoa = new SetSoundAmbient(getActionFeatureValue("value", features));
         }
 
         if (name.equalsIgnoreCase("Speak")) {
             if (activity instanceof SpeechActivity) {
                 SpeechActivity sa = (SpeechActivity) activity;
-                twcoa = new TWorldCommandObjectCharamelSpeakAction(sa.getBlocks(), sa.getPunctuation());
+                twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
             }
         }
 
@@ -211,7 +213,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         twcoa.setId(executionId);
 
         // finalize build command
-        TWorldCommandObject twco = new TWorldCommandObject(actor, twcoa);
+        Object twco = new Object(actor, twcoa);
         mTWC = new TWorldCommand();
         mTWC.addObject(twco);
 
@@ -295,8 +297,8 @@ public final class TWorldExecutor extends ActivityExecutor {
         // sanitize message
         String clean = message.replaceAll("..xml\\s+version........", "");
         mLogger.warning("Handling " + clean + "");
-        synchronized (mActivityWorkerMap) {
 
+        synchronized (mActivityWorkerMap) {
             TWorldFeedback twf = new TWorldFeedback();
             InputStream stream;
             try {
@@ -307,22 +309,37 @@ public final class TWorldExecutor extends ActivityExecutor {
                 return;
             }
 
-            String actionType = twf.mFeedbackAction.mName;
-            String id = twf.mFeedbackAction.mId;
-            String actionStatusType = twf.mFeedbackAction.mActionFeedback.mName;
-            String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
+            if (twf.hasActionFeedback()) {
+                String actionType = twf.mFeedbackAction.mName;
+                String id = twf.mFeedbackAction.mId;
+                String actionStatusType = twf.mFeedbackAction.mActionFeedback.mName;
+                String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
 
-            mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
+                mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
 
-            // handling caixml feedback
-            if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
-                mLogger.message("1");
-                if (mActivityWorkerMap.containsKey(id)) {
-                    mLogger.message("2");
-                    mActivityWorkerMap.remove(id);
+                // handling caixml feedback
+                if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
+                    if (mActivityWorkerMap.containsKey(id)) {
+                        mActivityWorkerMap.remove(id);
+                    }
+                    // wake me up ..
+                    mActivityWorkerMap.notifyAll();
                 }
-                // wake me up ..
-                mActivityWorkerMap.notifyAll();
+            }
+
+            if (twf.hasObjectFeedback()) {
+                HashMap<String, AbstractValue> values = new HashMap<>();
+                values.put("type", new StringValue(twf.mFeedbackObject.mObjectFeedback.mName));
+                values.put("elicitor", new StringValue(twf.mFeedbackObject.mObjectFeedback.mTriggerObject));
+                values.put("name", new StringValue(twf.mFeedbackObject.mName));
+
+                try {
+                    RunTimeInstance runTime = RunTimeInstance.getInstance();
+                    StructValue struct = new StructValue(values);
+                    runTime.setVariable(mProject, "feedback", struct);
+                } catch (Exception e) {
+                    // System.out.println("not running");
+                }
             }
 
 //            if (message.contains("$(")) {

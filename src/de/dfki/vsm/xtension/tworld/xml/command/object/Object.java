@@ -3,8 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tworld.command;
+package de.dfki.vsm.xtension.tworld.xml.command.object;
 
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveToLocation;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.SetSoundAmbient;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.CharamelAction;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.AmbientSetup;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -19,23 +24,23 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class TWorldCommandObject implements XMLParseable, XMLWriteable {
+public class Object implements XMLParseable, XMLWriteable {
 
     String mName = "";
-    TWorldCommandObjectAction mAction = null;
+    Action mAction = null;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public TWorldCommandObject(String name,TWorldCommandObjectAction a) {
+    public Object(String name,Action a) {
         mName = name;
        mAction = a;
     }
 
-    public TWorldCommandObject() {
+    public Object() {
     }
 
-    public void setAction(TWorldCommandObjectAction a) {
+    public void setAction(Action a) {
         mAction = a;
     }
 
@@ -62,21 +67,21 @@ public class TWorldCommandObject implements XMLParseable, XMLWriteable {
                     String actionName = element.getAttribute("name");
 
                     if (actionName.equalsIgnoreCase("MovetoLocation")) {
-                        mAction = new TWorldCommandObjectMoveToLoactionAction();
+                        mAction = new MoveToLocation();
                         mAction.parseXML(element);
                     }
 
                     if (actionName.equalsIgnoreCase("ambient_setup")) {
-                        mAction = new TWorldCommandObjectAmbientSetupAction();
+                        mAction = new AmbientSetup();
                         mAction.parseXML(element);
                     }
 
                     if (actionName.equalsIgnoreCase("set_sound_ambient")) {
-                        mAction = new TWorldCommandObjectSetSoundAmbientAction();
+                        mAction = new SetSoundAmbient();
                         mAction.parseXML(element);
                     }
                     if (actionName.equalsIgnoreCase("caixml")) {
-                        mAction = new TWorldCommandObjectCharamelAction();
+                        mAction = new CharamelAction();
                         mAction.parseXML(element);
                     }
                 }

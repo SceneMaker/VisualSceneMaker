@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tworld.command;
+package de.dfki.vsm.xtension.tworld.xml.command;
 
+import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -22,7 +23,7 @@ import org.w3c.dom.Element;
  */
 public class TWorldCommand implements XMLParseable, XMLWriteable {
 
-    public ArrayList<TWorldCommandObject> mObjects = new ArrayList<>();
+    public ArrayList<Object> mObjects = new ArrayList<>();
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -31,7 +32,7 @@ public class TWorldCommand implements XMLParseable, XMLWriteable {
 
     }
 
-    public void addObject(TWorldCommandObject o) {
+    public void addObject(Object o) {
         mObjects.add(o);
     }
 
@@ -60,7 +61,7 @@ public class TWorldCommand implements XMLParseable, XMLWriteable {
                 final String name = element.getTagName();
 
                 if (name.equalsIgnoreCase("Object")) {
-                    TWorldCommandObject o = new TWorldCommandObject();
+                    Object o = new Object();
 
                     o.parseXML(element);
 

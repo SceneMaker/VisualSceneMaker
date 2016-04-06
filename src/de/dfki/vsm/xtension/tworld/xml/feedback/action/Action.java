@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tworld.feedback;
+package de.dfki.vsm.xtension.tworld.xml.feedback.action;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -19,21 +19,21 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class TWorldFeedbackAction implements XMLParseable, XMLWriteable {
+public class Action implements XMLParseable, XMLWriteable {
 
     public String mName = "";
     public String mId = "";
-    public TWorldFeedbackActionFeedback mActionFeedback;
+    public Feedback mActionFeedback;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public TWorldFeedbackAction(String name, String id) {
+    public Action(String name, String id) {
         mName = name;
        mId = id;
     }
 
-    public TWorldFeedbackAction() {
+    public Action() {
     }
 
     @Override
@@ -48,7 +48,7 @@ public class TWorldFeedbackAction implements XMLParseable, XMLWriteable {
                 final String name = element.getTagName();
 
                 if (name.equalsIgnoreCase("feedback")) {
-                    mActionFeedback = new TWorldFeedbackActionFeedback();
+                    mActionFeedback = new Feedback();
                     mActionFeedback.parseXML(element);
         
                 }
