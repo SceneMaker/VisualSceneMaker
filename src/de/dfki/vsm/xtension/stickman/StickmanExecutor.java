@@ -17,9 +17,11 @@ import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.manager.ActivityManager;
+import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
+import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -47,8 +49,6 @@ public class StickmanExecutor extends ActivityExecutor {
     private final HashMap<String, StickmanHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
-    // The execution id
-    private int sId = 0;
 
     // Construct the executor
     public StickmanExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -76,42 +76,62 @@ public class StickmanExecutor extends ActivityExecutor {
     }
 
     @Override
-    public void execute(AbstractActivity activity, ActivityManager scheduler) {
+    public void execute(AbstractActivity activity, ActivityScheduler scheduler) {
         // get action information
         final String actor = activity.getActor();
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
 
-        mLogger.message("Execute Actor " + actor + ", command " + name);
-
         Animation stickmanAnimation = new Animation();
-        String animId = "";
 
-        if (name.equalsIgnoreCase("Speak")) {
-            if (activity instanceof SpeechActivity) {
-                SpeechActivity sa = (SpeechActivity) activity;
+        if (activity instanceof SpeechActivity) {
+            SpeechActivity sa = (SpeechActivity) activity;
 
-                // create a new word time mark sequence based on the current utterance blocks
-                WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
+            // create a new word time mark sequence based on the current utterance blocks
+            WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
 
-                LinkedList blocks = sa.getBlocks();
-                for (final Object item : blocks) {
-                    if (!item.toString().contains("$")) {
-                        wts.add(new Word(item.toString()));
-                    } else {
-                        wts.add(new TimeMark(item.toString()));
-                    }
+            LinkedList blocks = sa.getBlocks();
+            for (final Object item : blocks) {
+                if (!item.toString().contains("$")) {
+                    wts.add(new Word(item.toString()));
+                } else {
+                    wts.add(new TimeMark(item.toString()));
                 }
+            }
 
-                stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, true);
-                stickmanAnimation.mParameter = wts;
-                animId = stickmanAnimation.mID;
+            // schedule Mouth_open and Mouth closed activities
+            scheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
+            scheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
+
+            stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
+            stickmanAnimation.mParameter = wts;
+
+            executeAnimationAndWait(activity, stickmanAnimation, stickmanAnimation.mID);
+        } else if (activity instanceof ActionActivity) {
+            stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
+            if (stickmanAnimation != null) {
+                executeAnimation(stickmanAnimation);
             }
         }
+    }
 
-        // send command to platform 
+    private void executeAnimation(Animation stickmanAnimation) {
+        // executeAnimation command to platform 
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        IOSIndentWriter iosw = new IOSIndentWriter(out);
+        boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
+
+        try {
+            broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
+        } catch (UnsupportedEncodingException exc) {
+            mLogger.warning(exc.getMessage());
+        }
+    }
+
+    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation, String animId) {
+        // executeAnimation command to platform 
         synchronized (mActivityWorkerMap) {
-            // send command to platform 
+            // executeAnimation command to platform 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             IOSIndentWriter iosw = new IOSIndentWriter(out);
             boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
@@ -127,7 +147,7 @@ public class StickmanExecutor extends ActivityExecutor {
             mActivityWorkerMap.put(animId, cAW);
 
             // wait until we got feedback
-            mLogger.warning("ActivityWorker " + animId + " waiting ....");
+            mLogger.message("ActivityWorker " + animId + " waiting ....");
 
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
@@ -137,7 +157,7 @@ public class StickmanExecutor extends ActivityExecutor {
                 }
             }
 
-            mLogger.warning("ActivityWorker " + animId + "  done ....");
+            mLogger.message("ActivityWorker " + animId + "  done ....");
         }
         // Return when terminated
     }
@@ -208,18 +228,26 @@ public class StickmanExecutor extends ActivityExecutor {
 
     // Handle some message
     public void handle(final String message, final StickmanHandler client) {
-        mLogger.warning("Handling " + message + "");
+        mLogger.message("Handling " + message + "");
 
-        if (message.contains("#ANIM#end#")) {
+        synchronized (mActivityWorkerMap) {
 
-            int start = message.lastIndexOf("#") + 1;
-            String animId = message.substring(start);
+            if (message.contains("#ANIM#end#")) {
+                int start = message.lastIndexOf("#") + 1;
+                String animId = message.substring(start);
 
-            synchronized (mActivityWorkerMap) {
                 if (mActivityWorkerMap.containsKey(animId)) {
                     mActivityWorkerMap.remove(animId);
                 }
+                // wake me up ..
                 mActivityWorkerMap.notifyAll();
+            } else if (message.contains("$")) {
+                // wake me up ..
+                mActivityWorkerMap.notifyAll();
+                // identify the related activity
+                AbstractActivity activity = mProject.getScenePlayer().getActivityManager().getMarkerActivity(message);
+                // play the activity
+                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(activity, message));
             }
         }
     }
