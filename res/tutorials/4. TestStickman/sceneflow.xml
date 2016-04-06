@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 24 Mär 2016 18:04:34" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 5 Apr 2016 15:56:16" start="N1;N4;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -19,7 +19,7 @@
     </Declare>
     <Commands>
     </Commands>
-    <TEdge target="N2" start="" timeout="3000">
+    <TEdge target="N2" start="" timeout="1000">
     <Graphics>
       <Connection>
         <ControlPoint xPos="118" yPos="63" ctrlXPos="182" ctrlYPos="45"/>
@@ -41,14 +41,14 @@
         <String><![CDATA[SusanneWelcome]]></String>
       </PlaySceneGroup>
     </Commands>
-    <EEdge target="N1" start ="">
+    <TEdge target="N1" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="306" yPos="97" ctrlXPos="247" ctrlYPos="130"/>
-        <ControlPoint xPos="114" yPos="98" ctrlXPos="172" ctrlYPos="132"/>
+        <ControlPoint xPos="300" yPos="75" ctrlXPos="232" ctrlYPos="75"/>
+        <ControlPoint xPos="120" yPos="75" ctrlXPos="187" ctrlYPos="75"/>
       </Connection>
     </Graphics>
-    </EEdge>
+    </TEdge>
     <Graphics>
       <Position xPos="300" yPos="30"/>
     </Graphics>

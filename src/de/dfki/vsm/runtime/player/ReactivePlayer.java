@@ -11,7 +11,6 @@ import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityManager;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
@@ -25,15 +24,13 @@ import java.util.LinkedList;
 public final class ReactivePlayer extends RunTimePlayer {
 
     // The static marker id
-    private static Long sId = 0x0L;
+    private static long sId = 0x0L;
 
     // Get unique marker id
-    private static Long newId() {
-        return ++sId;
+    private synchronized Long newId() {
+        return sId++;
     }
 
-    // The activity scheduler
-    private final ActivityManager mManager = new ActivityManager();
 
     // Create the scene player
     public ReactivePlayer(final PluginConfig config, final RunTimeProject project) {
@@ -104,10 +101,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                                 textBuilder.add(marker);
                                 // Register the activity with marker
                                 observedWorkerList.add(
-                                        mManager.register(
+                                        mScheduler.register(
                                                 marker, // Execute at this marker
                                                 new ActionActivity(
-                                                        action.getActor(),
+                                                        (action.getActor() == null) ? turn.getSpeaker() : action.getActor(), // added PG 5.4.2016
                                                         action.getMode(),
                                                         action.getName(),
                                                         action.getText(map),
@@ -121,7 +118,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         // 
                         final String punctuation = uttr.getPunctuationMark();
                         // Schedule the activity
-                        mManager.schedule(
+                        mScheduler.schedule(
                                 0, // Schedule without delay
                                 observedWorkerList,
                                 new SpeechActivity(

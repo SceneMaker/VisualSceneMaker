@@ -342,8 +342,13 @@ public class Interpreter {
         try {
 
             lock();
-            BasicNode currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
-            mConfiguration.getState(currentNode).getThread().getEnvironment().write(varName, value);
+            
+            mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
+            
+            
+            //BasicNode currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
+            //mConfiguration.getState(currentNode).getThread().getEnvironment().write(varName, value);
+            
             mEventObserver.update();
 
             return true;

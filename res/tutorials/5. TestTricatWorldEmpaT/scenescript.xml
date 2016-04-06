@@ -1,29 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="87" language="en" identifier="SusanneWelcome">
-    <SceneTurn lower="25" upper="87" speaker="susanne">
-      <SceneUttr lower="34" upper="87" punct="?">
-        <SceneWord lower="34" upper="39" text="Hello"/>
-        <SceneWord lower="40" upper="45" text="world"/>
-        <ActionObject lower="46" upper="68" actor="patrick" mode="gesture" name="wave" >
+  <SceneObject lower="0" upper="82" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="25" upper="82" speaker="susanne">
+      <SceneUttr lower="34" upper="82" punct="?">
+        <SceneWord lower="34" upper="39" text="Hallo"/>
+        <ActionObject lower="40" upper="62" actor="patrick" mode="gesture" name="wave" >
         </ActionObject>
-        <SceneWord lower="69" upper="72" text="how"/>
-        <SceneWord lower="73" upper="76" text="are"/>
-        <SceneWord lower="77" upper="80" text="you"/>
-        <SceneWord lower="81" upper="86" text="today"/>
+        <SceneWord lower="63" upper="66" text="wie"/>
+        <SceneAbbrev lower="67" upper="73" first="geht" second="s"/>
+        <SceneWord lower="74" upper="78" text="denn"/>
+        <SceneWord lower="79" upper="81" text="so"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="89" upper="167" language="en" identifier="PatrickWelcome">
-    <SceneTurn lower="114" upper="167" speaker="patrick">
-      <SceneUttr lower="123" upper="167" punct="?">
-        <SceneWord lower="123" upper="128" text="Hello"/>
-        <ActionObject lower="129" upper="148" actor="susanne" mode="face" name="fear" >
+  <SceneObject lower="84" upper="162" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="109" upper="162" speaker="patrick">
+      <SceneUttr lower="118" upper="162" punct="?">
+        <SceneWord lower="118" upper="123" text="Hello"/>
+        <ActionObject lower="124" upper="143" actor="susanne" mode="face" name="fear" >
         </ActionObject>
-        <SceneWord lower="149" upper="152" text="how"/>
-        <SceneWord lower="153" upper="156" text="are"/>
-        <SceneWord lower="157" upper="160" text="you"/>
-        <SceneWord lower="161" upper="166" text="today"/>
+        <SceneWord lower="144" upper="147" text="how"/>
+        <SceneWord lower="148" upper="151" text="are"/>
+        <SceneWord lower="152" upper="155" text="you"/>
+        <SceneWord lower="156" upper="161" text="today"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="164" upper="195" language="en" identifier="Feedback">
+    <SceneTurn lower="183" upper="195" speaker="susanne">
+      <SceneUttr lower="192" upper="195" punct="!">
+        <SceneWord lower="192" upper="194" text="Uh"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

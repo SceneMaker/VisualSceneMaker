@@ -354,7 +354,7 @@ word ::=
             identifier.getValue());
     :}
   | ACTIONHEAD:header 
-    IDENTIFIER:modality 
+    IDENTIFIER:activity 
     feature_sequence_opt:sequence 
     ACTIONFOOT:footer
     {:
@@ -362,13 +362,13 @@ word ::=
                 header.getLower(), 
                 footer.getUpper(),
                 null, // No actor
-                modality.getValue(), 
-                null, // No name
+                null, // No modality
+                activity.getValue(), // name
                 sequence);
     :}
   | ACTIONHEAD:header 
     IDENTIFIER:character 
-    IDENTIFIER:modality 
+    IDENTIFIER:activity 
     feature_sequence_opt:sequence 
     ACTIONFOOT:footer
     {:
@@ -376,8 +376,8 @@ word ::=
                 header.getLower(), 
                 footer.getUpper(),
                 character.getValue(),
-                modality.getValue(), 
-                null, // No name
+                null, // No modality
+                activity.getValue(), // name
                 sequence);
     :}
   | ACTIONHEAD:header 

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tricat.command;
+package de.dfki.vsm.xtension.tworld.xml.command.object.action;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -14,22 +14,30 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Patrick
+ * @author Patrick Gebhard
+ * 
  */
-public class TWorldCommandObjectAction implements XMLParseable, XMLWriteable {
+public class AmbientSetup extends Action implements XMLParseable, XMLWriteable{
+  
+    String mValue = "";
 
-    String mName = "";
-    String mId = "";
-    
-    public void setId(String id) {
-        mId = id;
+    public AmbientSetup(String value) {
+        mName = "ambient_setup";
+        mValue = value;
     }
-    
+
+    public AmbientSetup() {
+    }
+
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+        out.push().println("<Action name=\"" + mName + " id=\"" + mId + "\" value=\"" + mValue + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-    }
+        mName = element.getAttribute("name");
+        mValue = element.getAttribute("value");
+        mId = element.getAttribute("id");
+    }  
 }

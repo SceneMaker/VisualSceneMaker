@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.tricat.command;
+package de.dfki.vsm.xtension.tworld.xml.command.object.action;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -17,16 +17,16 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class TWorldCommandObjectSetSoundAmbientAction extends TWorldCommandObjectAction implements XMLParseable, XMLWriteable {
+public class SetSoundAmbient extends Action implements XMLParseable, XMLWriteable {
 
     String mValue = "";
 
-    public TWorldCommandObjectSetSoundAmbientAction(String value) {
+    public SetSoundAmbient(String value) {
         mName = "set_sound_ambient";
         mValue = value;
     }
 
-    public TWorldCommandObjectSetSoundAmbientAction() {
+    public SetSoundAmbient() {
     }
 
     @Override

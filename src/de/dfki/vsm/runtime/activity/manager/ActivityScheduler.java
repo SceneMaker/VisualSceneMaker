@@ -3,6 +3,7 @@ package de.dfki.vsm.runtime.activity.manager;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Policy;
 import de.dfki.vsm.runtime.activity.ActionActivity;
+import de.dfki.vsm.runtime.activity.PauseActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.feedback.ActivityFeedback;
 import de.dfki.vsm.runtime.activity.feedback.StatusFeedback;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * @author Gregor Mehlmann
  */
-public final class ActivityManager {
+public final class ActivityScheduler {
 
     // The defaut system logger
     private final LOGDefaultLogger mLogger
@@ -113,4 +114,15 @@ public final class ActivityManager {
         return task;
     }
 
+    // get Activity from Worker related to Marker - added by PG 5.4.2016
+    public final AbstractActivity getMarkerActivity(final String marker) {
+        synchronized (mWorkerMap) {
+            if (mWorkerMap.containsKey(marker)) {
+                ActivityWorker task = mWorkerMap.get(marker);
+                return task.getActivity();
+            } else {
+                return null;
+            }
+        }
+    }
 }
