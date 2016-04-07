@@ -17,11 +17,16 @@
       <Feature key="cactorexe" val="EmpatTest.exe"/>
       <Feature key="cactorcmd" val=""/>
     </Plugin>
+    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor">
+      <Feature key="strength1" val="Zielstrebig"/>
+    </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="tworld">
     </Agent>
     <Agent name="patrick" device="tworld">
+    </Agent>
+    <Agent name="qgui" device="questionnaire">
     </Agent>
   </Agents>
 </Project>

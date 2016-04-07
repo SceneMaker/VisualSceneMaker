@@ -13,11 +13,16 @@
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
     </Plugin>
+    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor">
+      <Feature key="strength1" val="Zielstrebig"/>
+    </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="stickman">
     </Agent>
     <Agent name="patrick" device="stickman">
+    </Agent>
+    <Agent name="qgui" device="questionnaire">
     </Agent>
   </Agents>
 </Project>
