@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="94" language="en" identifier="SusanneWelcome">
-    <SceneTurn lower="25" upper="94" speaker="susanne">
-      <SceneUttr lower="34" upper="94" punct="?">
+  <SceneObject lower="0" upper="106" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="25" upper="106" speaker="susanne">
+      <SceneUttr lower="34" upper="106" punct="?">
         <SceneWord lower="34" upper="39" text="Hello"/>
         <ActionObject lower="40" upper="50" actor="" mode="" name="WaveLeft" >
         </ActionObject>
@@ -12,20 +12,22 @@
         <SceneWord lower="76" upper="79" text="how"/>
         <SceneWord lower="80" upper="83" text="are"/>
         <SceneWord lower="84" upper="87" text="you"/>
-        <SceneWord lower="88" upper="93" text="today"/>
+        <ActionObject lower="88" upper="99" actor="qgui" mode="" name="show" >
+        </ActionObject>
+        <SceneWord lower="100" upper="105" text="today"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="96" upper="170" language="en" identifier="PatrickWelcome">
-    <SceneTurn lower="121" upper="170" speaker="patrick">
-      <SceneUttr lower="130" upper="170" punct="?">
-        <SceneWord lower="130" upper="135" text="Hello"/>
-        <ActionObject lower="136" upper="151" actor="susanne" mode="" name="Smile" >
+  <SceneObject lower="108" upper="182" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="133" upper="182" speaker="patrick">
+      <SceneUttr lower="142" upper="182" punct="?">
+        <SceneWord lower="142" upper="147" text="Hello"/>
+        <ActionObject lower="148" upper="163" actor="susanne" mode="" name="Smile" >
         </ActionObject>
-        <SceneWord lower="152" upper="155" text="how"/>
-        <SceneWord lower="156" upper="159" text="are"/>
-        <SceneWord lower="160" upper="163" text="you"/>
-        <SceneWord lower="164" upper="169" text="today"/>
+        <SceneWord lower="164" upper="167" text="how"/>
+        <SceneWord lower="168" upper="171" text="are"/>
+        <SceneWord lower="172" upper="175" text="you"/>
+        <SceneWord lower="176" upper="181" text="today"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

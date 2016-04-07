@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 6 Apr 2016 10:46:44" start="N1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 7 Apr 2016 15:14:18" start="N1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
     <StructType name="WorldFeedback">
       <Member type="String" name ="type"/>
@@ -49,8 +49,8 @@
     <TEdge target="N2" start="" timeout="3000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="118" yPos="153" ctrlXPos="182" ctrlYPos="135"/>
-        <ControlPoint xPos="302" yPos="153" ctrlXPos="237" ctrlYPos="135"/>
+        <ControlPoint xPos="120" yPos="165" ctrlXPos="187" ctrlYPos="165"/>
+        <ControlPoint xPos="300" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
       </Connection>
     </Graphics>
     </TEdge>
@@ -68,11 +68,11 @@
         <String><![CDATA[SusanneWelcome]]></String>
       </PlaySceneGroup>
     </Commands>
-    <EEdge target="N1" start ="">
+    <EEdge target="N15" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="306" yPos="187" ctrlXPos="247" ctrlYPos="220"/>
-        <ControlPoint xPos="114" yPos="188" ctrlXPos="172" ctrlYPos="222"/>
+        <ControlPoint xPos="390" yPos="165" ctrlXPos="412" ctrlYPos="165"/>
+        <ControlPoint xPos="480" yPos="165" ctrlXPos="457" ctrlYPos="165"/>
       </Connection>
     </Graphics>
     </EEdge>
@@ -119,6 +119,25 @@
     </TEdge>
     <Graphics>
       <Position xPos="30" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N15" name="N15" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N15" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="537" yPos="122" ctrlXPos="561" ctrlYPos="36"/>
+        <ControlPoint xPos="564" yPos="142" ctrlXPos="642" ctrlYPos="96"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="120"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="Prolog" comment="" hideLocalVar="false" hideGlobalVar="false" start="N6;">
@@ -201,7 +220,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="570" yPos="120"/>
+      <Position xPos="660" yPos="120"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
