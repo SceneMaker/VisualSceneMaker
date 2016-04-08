@@ -441,13 +441,14 @@ public final class RunTimeInstance {
 
         return null;
     }
-
-    public final /* synchronized */ ArrayList listActiveStates(final RunTimeProject project) {
+/*
+    public final  ArrayList listActiveStates(final RunTimeProject project) {
         if (project != null) {
             if (mProjectMap.containsKey(project)) {
                 return mProjectMap.get(project).listActiveStates();
             }
         }
         return null;
-    }  
+    }
+    */
 }
