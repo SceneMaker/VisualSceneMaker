@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -76,6 +77,11 @@ public class RunTimeProject {
     // Get a specific config from the map of plugins
     public final PluginConfig getPluginConfig(final String name) {
         return mProjectConfig.getPluginConfig(name);
+    }
+    
+    // Get the list of all configured agents in the project configuation (agged PG 8.4.2016)
+    public final ArrayList<String> getAgentNames() {
+        return mProjectConfig.getAgentNames();
     }
 
     // Get a specific config from the map of plugins

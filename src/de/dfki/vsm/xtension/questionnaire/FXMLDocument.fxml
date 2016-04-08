@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" fx:id="userinfo" blendMode="MULTIPLY" depthTest="ENABLE" prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #00000000;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.dfki.vsm.xtension.questionnaire.FXMLDocumentController">
+<AnchorPane id="AnchorPane" fx:id="userinfo" blendMode="MULTIPLY" depthTest="ENABLE" pickOnBounds="false" prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #ffffffff;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
     <children>
       <TextArea fx:id="weaknessregion" blendMode="MULTIPLY" depthTest="ENABLE" editable="false" focusTraversable="false" layoutX="262.0" layoutY="415.0" prefHeight="125.0" prefWidth="527.0" />
       <TextArea fx:id="strengthregion" blendMode="MULTIPLY" depthTest="ENABLE" editable="false" focusTraversable="false" layoutX="262.0" layoutY="276.0" prefHeight="125.0" prefWidth="527.0" />
