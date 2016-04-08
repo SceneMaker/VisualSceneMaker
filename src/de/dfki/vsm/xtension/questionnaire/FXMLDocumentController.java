@@ -41,29 +41,29 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private Slider jobinterviewslider;
     @FXML
-    private CheckBox strength1;
+    protected CheckBox strength1;
     @FXML
-    private CheckBox strength3;
+    protected CheckBox strength3;
     @FXML
-    private CheckBox strength5;
+    protected CheckBox strength5;
     @FXML
-    private CheckBox strength2;
+    protected CheckBox strength2;
     @FXML
-    private CheckBox strength4;
+    protected CheckBox strength4;
     @FXML
-    private CheckBox strength6;
+    protected CheckBox strength6;
     @FXML
-    private CheckBox weakness1;
+    protected CheckBox weakness1;
     @FXML
-    private CheckBox weakness2;
+    protected CheckBox weakness2;
     @FXML
-    private CheckBox weakness3;
+    protected CheckBox weakness3;
     @FXML
-    private CheckBox weakness4;
+    protected CheckBox weakness4;
     @FXML
-    private CheckBox weakness5;
+    protected CheckBox weakness5;
     @FXML
-    private CheckBox weakness6;
+    protected CheckBox weakness6;
     @FXML
     private RadioButton sexfemale;
     @FXML
@@ -125,6 +125,7 @@ public class FXMLDocumentController implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
+                nextbutton.setDisable(true);
                 namefield.requestFocus();
             }
         });
@@ -149,6 +150,7 @@ public class FXMLDocumentController implements Initializable {
             ageslider.requestFocus();
             agefield.setText("20");
         }
+        nextbutton.setDisable(false);
     }
 
     @FXML
@@ -165,6 +167,7 @@ public class FXMLDocumentController implements Initializable {
         }
 
         if (event.getEventType() == MouseEvent.MOUSE_CLICKED) {
+            nextbutton.setDisable(false);
             agefield.setText((agefield.getText().equalsIgnoreCase("") ? "20" : agefield.getText()));
         }
     }

@@ -5,6 +5,8 @@
  */
 package de.dfki.vsm.xtension.questionnaire;
 
+import de.dfki.vsm.model.config.ConfigFeature;
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -33,7 +35,9 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
     QuestionnaireGUI mQuestionnaireGUI;
     // The current ActivityWorker
     ActivityWorker mActivityWorker = null;
-    private final HashSet<ActivityWorker> mActivityWorkers = new HashSet();
+    private final HashSet<ActivityWorker> mActivityWorkers = new HashSet<>();
+    // Configuration values
+    private final HashMap<String, String> mPersonalValues = new HashMap<>();
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -53,7 +57,6 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
 
             if (name.equalsIgnoreCase("show")) {
                 mQuestionnaireGUI.setVisible(true);
-
                 // wait until we got feedback
                 mLogger.warning("ActivityWorker for Questionnaire waiting ....");
                 mActivityWorker = (ActivityWorker) Thread.currentThread();
@@ -77,7 +80,12 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
     @Override
     public void launch() {
         mQuestionnaireGUI = new QuestionnaireGUI();
-        SwingUtilities.invokeLater(() -> mQuestionnaireGUI.init(this));
+
+        for (ConfigFeature cf : mConfig.getEntryList()) {
+            mPersonalValues.put(cf.getKey(), cf.getValue());
+        }
+
+        SwingUtilities.invokeLater(() -> mQuestionnaireGUI.init(this, mPersonalValues));
     }
 
     @Override
@@ -105,7 +113,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
             }
         }
         values.put("interviews", new IntValue(interviews));
-        
+
         values.put("strength1", new BooleanValue(uservalues.get("strength1").equalsIgnoreCase("ja")));
         values.put("strength2", new BooleanValue(uservalues.get("strength2").equalsIgnoreCase("ja")));
         values.put("strength3", new BooleanValue(uservalues.get("strength3").equalsIgnoreCase("ja")));
