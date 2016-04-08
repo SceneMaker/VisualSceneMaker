@@ -113,6 +113,12 @@
         </copy>
         <!-- Copy Version -->
         <copy file="prj/version.ini" todir="${tmpdir}/res"/>
+        <!-- Copy FXML -->
+        <copy todir="${tmpdir}/res">
+            <fileset dir="src">
+                <include name="**/*.fxml"/>
+            </fileset>
+        </copy>
         <!-- Build JAR File -->
         <jar jarfile="${jarfile}" basedir="${tmpdir}" destfile="${jarfile}" includes="de/**/*.class,**/*.*">
             <zipgroupfileset dir="${libdir}" includes="*.jar"/>
