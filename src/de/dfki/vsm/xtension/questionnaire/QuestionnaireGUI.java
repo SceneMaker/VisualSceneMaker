@@ -14,17 +14,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 /**
  *
  * @author Patrick Gebhard
  */
 public class QuestionnaireGUI {
-    
-    private JFrame mFrame;
 
-    public void init() {
+    private JFrame mFrame;
+    private QuestionnaireExecutor mExecutor;
+
+    public void init(QuestionnaireExecutor executor) {
+        mExecutor = executor;
+
         mFrame = new JFrame("EmpaT User Info");
         mFrame.setLayout(new BorderLayout());
         final JFXPanel jfxPanel = new JFXPanel();
@@ -46,28 +48,39 @@ public class QuestionnaireGUI {
 
         Platform.runLater(() -> initFX(jfxPanel));
     }
-    
+
     public void setVisible(boolean visible) {
         mFrame.setVisible(visible);
     }
 
     private void initFX(JFXPanel jfxPanel) {
+        //try {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtension/questionnaire/FXMLDocument.fxml"));
+        //Parent root = fxmlLoader.load(getClass().getResource("/res/de/dfki/vsm/xtension/questionnaire/FXMLDocument.fxml"));
+//            Parent root = new Parent() {
+//};
+
+        FXMLDocumentController controller = new FXMLDocumentController();
+        fxmlLoader.setController(controller);
+
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/res/de/dfki/vsm/xtension/questionnaire/FXMLDocument.fxml"));
-            Scene scene = new Scene(root);
-
-            scene.setFill(new javafx.scene.paint.Color(0, 0, 0, 0));
-
-            // scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
-            jfxPanel.setScene(scene);
-        } catch (IOException exc) {
-            exc.printStackTrace();
-            System.exit(1);
+            fxmlLoader.load();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
         }
-    }
+        Parent root = fxmlLoader.getRoot();
 
-    public static void main(String[] args) {
-        QuestionnaireGUI test = new QuestionnaireGUI();
-        SwingUtilities.invokeLater(() -> test.init());
+        //System.out.println("controller" + controller);
+        controller.addListener(mExecutor);
+
+        Scene scene = new Scene(root);
+
+        //scene.setFill(new javafx.scene.paint.Color(0, 0, 0, 0));
+        // scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+        jfxPanel.setScene(scene);
+//        } catch (IOException exc) {
+//            exc.printStackTrace();
+//            System.exit(1);
+//        }
     }
 }

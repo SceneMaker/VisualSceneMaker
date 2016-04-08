@@ -44,7 +44,7 @@ public final class ProjectConfig implements ModelObject {
     // Construct an empty project
     public ProjectConfig(final String name,
             final ArrayList<PluginConfig> plugins,
-//            final ArrayList<DeviceConfig> devices,
+            //            final ArrayList<DeviceConfig> devices,
             final ArrayList<AgentConfig> agents) {
         // Initialize The Project Name
         mProjectName = name;
@@ -92,17 +92,24 @@ public final class ProjectConfig implements ModelObject {
 //        }
 //        return null;
 //    }
-
     // Get the list of agent configurations
     public final ArrayList<AgentConfig> getAgentConfigList() {
         return mAgentList;
+    }
+
+    // Get the list of agent names (added PG - 8.4.2016)
+    public final ArrayList<String> getAgentNames() {
+        ArrayList<String> agentNames = new ArrayList<>();
+        for (AgentConfig ac : getAgentConfigList()) {
+            agentNames.add(ac.getAgentName());
+        }
+        return agentNames;
     }
 
 //    // Get the list of device configurations
 //    public ArrayList<DeviceConfig> getDeviceConfigList() {
 //        return mDeviceList;
 //    }
-
     // Get the list of plugin configurations
     public ArrayList<PluginConfig> getPluginConfigList() {
         return mPluginList;
@@ -129,7 +136,6 @@ public final class ProjectConfig implements ModelObject {
 //            //stream.endl();
 //        }
 //        stream.pop().println("</Devices>");
-
         // Write The Agents As XML
         stream.println("<Agents>").push();
         for (final AgentConfig agent : mAgentList) {
@@ -173,20 +179,19 @@ public final class ProjectConfig implements ModelObject {
                                 mPluginList.add(plugin);
                             }
                         });
-                    } 
-//                    else if (tag.equals("Devices")) {
-//                        XMLParseAction.processChildNodes(element, "Device", new XMLParseAction() {
-//                            @Override
-//                            public void run(Element element) throws XMLParseError {
-//                                // Create A New Project Player
-//                                final DeviceConfig device = new DeviceConfig();
-//                                // And Parse The Project Player 
-//                                device.parseXML(element);
-//                                // And Add It To The Player List
-//                                mDeviceList.add(device);
-//                            }
-//                        });
-//                    } 
+                    } //                    else if (tag.equals("Devices")) {
+                    //                        XMLParseAction.processChildNodes(element, "Device", new XMLParseAction() {
+                    //                            @Override
+                    //                            public void run(Element element) throws XMLParseError {
+                    //                                // Create A New Project Player
+                    //                                final DeviceConfig device = new DeviceConfig();
+                    //                                // And Parse The Project Player 
+                    //                                device.parseXML(element);
+                    //                                // And Add It To The Player List
+                    //                                mDeviceList.add(device);
+                    //                            }
+                    //                        });
+                    //                    } 
                     else if (tag.equals("Agents")) {
                         XMLParseAction.processChildNodes(element, "Agent", new XMLParseAction() {
                             @Override
