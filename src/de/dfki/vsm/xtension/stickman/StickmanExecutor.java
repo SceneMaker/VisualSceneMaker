@@ -163,13 +163,15 @@ public class StickmanExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
+        // read config
+        final String host = mConfig.getProperty("smhost");
+        final String port = mConfig.getProperty("smport");
+
         // Create the connection
-        mListener = new StickmanListener(8000, this);
+        mListener = new StickmanListener(Integer.parseInt(port), this);
         // Start the connection
         mListener.start();
 
-        final String host = mConfig.getProperty("smhost");
-        final String port = mConfig.getProperty("smport");
         final boolean showStickmanNames = mConfig.containsKey("showstickmanname") ? mConfig.getProperty("showstickmanname").equalsIgnoreCase("true") : true;
 
         // Start the StickmanStage client application 
