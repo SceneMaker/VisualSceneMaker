@@ -29,6 +29,8 @@
       <Feature key="weakness6" val="Keine"/>
     </Plugin>
     <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor">
+      <Feature key="cat" val="img\cat.png"/>
+      <Feature key="dog" val="img\dog.png"/>
     </Plugin>
   </Plugins>
   <Agents>
