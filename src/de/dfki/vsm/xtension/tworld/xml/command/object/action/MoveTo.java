@@ -17,27 +17,27 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class SetSoundAmbient extends Action implements XMLParseable, XMLWriteable {
+public class MoveTo extends Action implements XMLParseable, XMLWriteable {
 
-    String mValue = "";
+    String mLocation = "";
 
-    public SetSoundAmbient(String value) {
-        mName = "set_sound_ambient";
-        mValue = value;
+    public MoveTo(String value) {
+        mName = "MoveToLocation";
+        mLocation = value;
     }
 
-    public SetSoundAmbient() {
+    public MoveTo() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + " id=\"" + mId + "\" value=\"" + mValue + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" locname=\"" + mLocation + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mValue = element.getAttribute("value");
+        mLocation = element.getAttribute("locname");
         mId = element.getAttribute("id");
     }
 }

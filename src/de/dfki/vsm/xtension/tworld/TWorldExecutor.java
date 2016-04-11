@@ -19,11 +19,12 @@ import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.tworld.xml.command.TWorldCommand;
 import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.AmbientSetup;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveToLocation;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.SetSoundAmbient;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.Ambient;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveTo;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.SoundAmbient;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.Speak;
 import de.dfki.vsm.xtension.tworld.xml.feedback.TWorldFeedback;
+import de.dfki.vsm.xtension.tworld.xml.util.ActionLoader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -179,32 +180,35 @@ public final class TWorldExecutor extends ActivityExecutor {
 //        //
 
         // get action information
-        final String actor = "Susanne";//activity.getActor();
-        final String name = activity.getName();
+        String actor = "";
+        final String cmd = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
-
-        mLogger.message("Execute Actor " + actor + ", command " + name);
 
         // initialize build command
         TWorldCommand mTWC;
         Action twcoa = null;
 
-        if (name.equalsIgnoreCase("MoveTo")) {
-            twcoa = new MoveToLocation(getActionFeatureValue("location", features));
-        }
+        if (activity instanceof SpeechActivity) {
+            // This is bad: Charamel needs first character of the character's name capitalized ...
+            actor = activity.getActor().substring(0, 1).toUpperCase() + activity.getActor().substring(1);
+            SpeechActivity sa = (SpeechActivity) activity;
+            twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
 
-        if (name.equalsIgnoreCase("SetAmbient")) {
-            twcoa = new AmbientSetup(getActionFeatureValue("value", features));
-        }
+        } else {
+            actor = activity.getActor();
+            if (cmd.equalsIgnoreCase("MoveTo")) {
+                twcoa = new MoveTo(getActionFeatureValue("location", features));
+            }
 
-        if (name.equalsIgnoreCase("SetSound")) {
-            twcoa = new SetSoundAmbient(getActionFeatureValue("value", features));
-        }
+            if (cmd.equalsIgnoreCase("Ambient")) {
+                mLogger.message("Hier!");
+                //twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
+                twcoa = new Ambient(getActionFeatureValue("value", features));
+                //actor = "Empat_Environment";
+            }
 
-        if (name.equalsIgnoreCase("Speak")) {
-            if (activity instanceof SpeechActivity) {
-                SpeechActivity sa = (SpeechActivity) activity;
-                twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
+            if (cmd.equalsIgnoreCase("SoundAmbient")) {
+                twcoa = new SoundAmbient(getActionFeatureValue("value", features));
             }
         }
 
@@ -221,6 +225,8 @@ public final class TWorldExecutor extends ActivityExecutor {
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(mTWC, iosw);
 
+        mLogger.message("Execute Actor " + actor + ", command " + cmd);
+
         String message = "";
         // log TWorld command
         try {
@@ -230,36 +236,11 @@ public final class TWorldExecutor extends ActivityExecutor {
             mLogger.failure(ex.getMessage());
         }
 
-//        final String message = ""
-//                + "<TWorldCommand>\n"
-//                + "<object name=\"Susanne\">\n"
-//                + "<action name=\"caixml\" id=\"734\">\n"
-//                + "<!-- Charamel Command -->\n"
-//                + "<cai_request version='1.0'>\n"
-//                + "<cai_command id=\"2\">\n"
-//                + "RenderXML\n"
-//                + "<animation_track>\n"
-//                + "<pause>\n"
-//                + "</pause>\n"
-//                + "<motion \n"
-//                + "speed='1.0' \n"
-//                + "attack='1000' \n"
-//                + "decay='1000' \n"
-//                + "start='0' \n"
-//                + "duration='2000'>\n"
-//                + "walk/turns/turn_90r\n"
-//                + "</motion>\n"
-//                + "</animation_track>\n"
-//                + "</cai_command>\n"
-//                + "</cai_request>\n"
-//                + "</action>\n"
-//                + "</object>\n"
-//                + "</TWorldCommand>";
         // send command to platform 
         synchronized (mActivityWorkerMap) {
             broadcast(message);
 
-            // organize wait for feedback
+            // organize wait for feedbackif (activity instanceof SpeechActivity) {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
             mActivityWorkerMap.put(executionId, cAW);
 
@@ -273,7 +254,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                     mLogger.failure(exc.toString());
                 }
             }
-
+            
             mLogger.warning("ActivityWorker " + executionId + " done ....");
         }
         // Return when terminated
@@ -316,9 +297,16 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
 
                 //mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
-
                 // handling caixml feedback
                 if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
+                    if (mActivityWorkerMap.containsKey(id)) {
+                        mActivityWorkerMap.remove(id);
+                    }
+                    // wake me up ..
+                    mActivityWorkerMap.notifyAll();
+                }
+                // handling ambient_setup feedback
+                if (actionType.equalsIgnoreCase("ambient_setup") && actionStatusType.equalsIgnoreCase("action_finished")) {
                     if (mActivityWorkerMap.containsKey(id)) {
                         mActivityWorkerMap.remove(id);
                     }
