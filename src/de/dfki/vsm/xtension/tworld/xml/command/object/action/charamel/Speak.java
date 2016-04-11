@@ -43,10 +43,14 @@ public class Speak extends Action implements XMLParseable, XMLWriteable {
         mPunctuation = "";
     }
 
-    private final String buildUtterance() {
+    private String buildUtterance() {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mTextBlocks) {
-            builder.append(item.toString());
+            String word = item.toString();
+            
+            // pronounciation mapping
+            
+            builder.append(word);
             if (!item.equals(mTextBlocks.getLast())) {
                 builder.append(' ');
             } else {

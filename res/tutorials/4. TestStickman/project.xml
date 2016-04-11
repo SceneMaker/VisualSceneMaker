@@ -12,12 +12,33 @@
     <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor">
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
+      <Feature key="showstickmanname" val="false"/>
+    </Plugin>
+    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor">
+      <Feature key="strength1" val="Zielstrebig"/>
+      <Feature key="strength2" val="Kommunikationsstark"/>
+      <Feature key="strength3" val="Teamfähig"/>
+      <Feature key="strength4" val="Organisiert"/>
+      <Feature key="strength5" val="Kritikfähig"/>
+      <Feature key="strength6" val="Keine"/>
+      <Feature key="weakness1" val="Schüchtern"/>
+      <Feature key="weakness2" val="Ungeduldig"/>
+      <Feature key="weakness3" val="Chaotisch"/>
+      <Feature key="weakness4" val="Detailverliebt"/>
+      <Feature key="weakness5" val="Stur"/>
+      <Feature key="weakness6" val="Keine"/>
+    </Plugin>
+    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor">
     </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="stickman">
     </Agent>
     <Agent name="patrick" device="stickman">
+    </Agent>
+    <Agent name="qgui" device="questionnaire">
+    </Agent>
+    <Agent name="display" device="mediadisplay">
     </Agent>
   </Agents>
 </Project>

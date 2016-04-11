@@ -315,7 +315,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String actionStatusType = twf.mFeedbackAction.mActionFeedback.mName;
                 String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
 
-                mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
+                //mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
 
                 // handling caixml feedback
                 if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
