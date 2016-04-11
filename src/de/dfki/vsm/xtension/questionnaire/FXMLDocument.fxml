@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" fx:id="userinfo" blendMode="MULTIPLY" depthTest="ENABLE" pickOnBounds="false" prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #ffffffff;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+      <TextArea fx:id="weaknessregion" blendMode="MULTIPLY" depthTest="ENABLE" editable="false" focusTraversable="false" layoutX="262.0" layoutY="415.0" prefHeight="125.0" prefWidth="527.0" />
+      <TextArea fx:id="strengthregion" blendMode="MULTIPLY" depthTest="ENABLE" editable="false" focusTraversable="false" layoutX="262.0" layoutY="276.0" prefHeight="125.0" prefWidth="527.0" />
+      <ButtonBar layoutX="19.0" layoutY="542.0" prefHeight="50.0" prefWidth="770.0">
+        <buttons>
+              <Button fx:id="nextbutton" focusTraversable="false" onMouseReleased="#nextbuttoncheck" text="Weiter">
+               <font>
+                  <Font size="23.0" />
+               </font>
+            </Button>
+        </buttons>
+      </ButtonBar>
+      <HBox alignment="CENTER_RIGHT" layoutX="133.0" layoutY="17.0" prefHeight="50.0" prefWidth="116.0">
+         <children>
+            <Label text="Name" textAlignment="RIGHT">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox alignment="CENTER_RIGHT" layoutX="133.0" layoutY="87.0" prefHeight="50.0" prefWidth="116.0">
+         <children>
+            <Label text="Alter" textAlignment="RIGHT">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox alignment="CENTER_RIGHT" layoutX="114.0" layoutY="147.0" prefHeight="50.0" prefWidth="135.0">
+         <children>
+            <Label text="Geschlecht" textAlignment="RIGHT">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <TextField fx:id="agefield" alignment="CENTER" blendMode="MULTIPLY" editable="false" focusTraversable="false" layoutX="262.0" layoutY="87.0" prefHeight="51.0" prefWidth="64.0" promptText="20">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </TextField>
+      <TextField fx:id="namefield" focusTraversable="false" layoutX="262.0" layoutY="17.0" onKeyPressed="#namefieldcheck" prefHeight="51.0" prefWidth="392.0" promptText="Maier">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </TextField>
+      <TextField fx:id="jobvinterviewfield" alignment="CENTER" blendMode="MULTIPLY" editable="false" focusTraversable="false" layoutX="262.0" layoutY="207.0" prefHeight="51.0" prefWidth="161.0" promptText="keine">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </TextField>
+      <Slider fx:id="ageslider" blockIncrement="1.0" layoutX="348.0" layoutY="101.0" majorTickUnit="60.0" max="40.0" min="-6.0" minorTickCount="0" onMouseClicked="#ageslidercheck" onMouseDragged="#ageslidercheck" onMouseReleased="#ageslidercheck" prefHeight="24.0" prefWidth="306.0" />
+      <Slider fx:id="jobinterviewslider" blockIncrement="1.0" focusTraversable="false" layoutX="447.0" layoutY="221.0" majorTickUnit="1.0" max="10.0" minorTickCount="0" onMouseClicked="#jobinterviewslidercheck" onMouseDragged="#jobinterviewslidercheck" onMouseReleased="#jobinterviewslidercheck" prefHeight="24.0" prefWidth="205.0" snapToTicks="true" />
+      <CheckBox fx:id="strength1" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="274.0" layoutY="281.0" mnemonicParsing="false" onMouseClicked="#strength1check" onMouseReleased="#strength1check" text="Zielstrebig" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="strength3" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="274.0" layoutY="320.0" mnemonicParsing="false" onMouseClicked="#strength3check" onMouseReleased="#strength3check" text="Teamfähig" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="strength5" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="274.0" layoutY="359.0" mnemonicParsing="false" onMouseClicked="#strength5check" onMouseReleased="#strength5check" text="Kritikfähig" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="strength2" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="503.0" layoutY="281.0" mnemonicParsing="false" onMouseClicked="#strength2check" onMouseReleased="#strength2check" text="Kommunikationsstark" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="strength4" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="503.0" layoutY="321.0" mnemonicParsing="false" onMouseClicked="#strength4check" onMouseReleased="#strength4check" text="Organisiert" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="strength6" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="503.0" layoutY="361.0" mnemonicParsing="false" onMouseClicked="#strength6check" onMouseReleased="#strength6check" text="Keine" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="weakness1" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="274.0" layoutY="419.0" mnemonicParsing="false" onMouseClicked="#weakness1check" onMouseReleased="#weakness1check" text="Schüchtern" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="weakness2" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="503.0" layoutY="420.0" mnemonicParsing="false" onMouseClicked="#weakness2check" onMouseReleased="#weakness2check" text="Ungeduldig" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="weakness3" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="274.0" layoutY="459.0" mnemonicParsing="false" onMouseClicked="#weakness3check" onMouseReleased="#weakness3check" text="Chaotisch" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="weakness4" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="503.0" layoutY="460.0" mnemonicParsing="false" onMouseClicked="#weakness4check" onMouseReleased="#weakness4check" text="Detailverliebt" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="weakness5" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="274.0" layoutY="499.0" mnemonicParsing="false" onMouseClicked="#weakness5check" onMouseReleased="#weakness5check" text="Stur" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <CheckBox fx:id="weakness6" alignment="CENTER" contentDisplay="CENTER" focusTraversable="false" layoutX="503.0" layoutY="500.0" mnemonicParsing="false" onMouseClicked="#weakness6check" onMouseReleased="#weakness6check" text="Keine" textAlignment="JUSTIFY">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </CheckBox>
+      <VBox alignment="CENTER_RIGHT" layoutX="44.0" layoutY="297.0" prefHeight="72.0" prefWidth="208.0">
+         <children>
+            <Label alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="205.0" text="Welche Stärken würden" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="222.0" text="Sie im Interview angeben" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER_RIGHT" prefHeight="0.0" prefWidth="208.0" text="(die wichtigsten 2)" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+      <VBox alignment="CENTER_RIGHT" layoutX="34.0" layoutY="437.0" prefHeight="81.0" prefWidth="218.0">
+         <children>
+            <Label alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="236.0" text="Welche Schwächen würden" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="222.0" text="Sie im Interview angeben" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER_RIGHT" prefHeight="0.0" prefWidth="208.0" text="(die wichtigsten 2)" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+      <VBox alignment="CENTER_RIGHT" layoutX="40.0" layoutY="206.0" prefHeight="51.0" prefWidth="208.0">
+         <children>
+            <Label alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="157.0" text="Bereits absolvierte" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="150.0" text="Jobinterviews" textAlignment="JUSTIFY">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+      <RadioButton fx:id="sexfemale" focusTraversable="false" layoutX="263.0" layoutY="152.0" mnemonicParsing="false" onMouseReleased="#sexfemalecheck" text="w">
+         <font>
+            <Font size="24.0" />
+         </font>
+         <toggleGroup>
+            <ToggleGroup fx:id="sex" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="sexmale" focusTraversable="false" layoutX="332.0" layoutY="152.0" mnemonicParsing="false" onMouseReleased="#sexmalecheck" text="m" toggleGroup="$sex">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </RadioButton>
+    </children>
+</AnchorPane>
