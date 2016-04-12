@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo, 11 Apr 2016 16:44:09" start="N1;N3;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 12 Apr 2016 12:21:50" start="N1;N15;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
     <StructType name="WorldFeedback">
       <Member type="String" name ="type"/>
@@ -63,7 +63,7 @@
   </GlobalVariableBadge>
   <Comment>
     <Graphics>
-      <Boundary xPos="774" yPos="120" width="100" height="100"/>
+      <Boundary xPos="386" yPos="112" width="100" height="100"/>
     </Graphics>
     <Text style="color:blue">
       timeout necessary since charamel speak does not wait
@@ -101,8 +101,8 @@
     <EEdge target="N17" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="390" yPos="165" ctrlXPos="502" ctrlYPos="165"/>
-        <ControlPoint xPos="660" yPos="165" ctrlXPos="547" ctrlYPos="165"/>
+        <ControlPoint xPos="390" yPos="165" ctrlXPos="412" ctrlYPos="165"/>
+        <ControlPoint xPos="480" yPos="165" ctrlXPos="457" ctrlYPos="165"/>
       </Connection>
     </Graphics>
     </EEdge>
@@ -120,13 +120,13 @@
     <TEdge target="N17" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="717" yPos="122" ctrlXPos="741" ctrlYPos="36"/>
-        <ControlPoint xPos="744" yPos="142" ctrlXPos="822" ctrlYPos="96"/>
+        <ControlPoint xPos="537" yPos="122" ctrlXPos="561" ctrlYPos="36"/>
+        <ControlPoint xPos="564" yPos="142" ctrlXPos="642" ctrlYPos="96"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="660" yPos="120"/>
+      <Position xPos="480" yPos="120"/>
     </Graphics>
   </Node>
   <Node id="N3" name="N3" history="false">
@@ -136,19 +136,19 @@
     </Declare>
     <Commands>
       <PlaySceneGroup>
-        <String><![CDATA[BertWelcome]]></String>
+        <String><![CDATA[BertAmbientCalm]]></String>
       </PlaySceneGroup>
     </Commands>
     <TEdge target="N4" start="" timeout="4000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="120" yPos="345" ctrlXPos="187" ctrlYPos="345"/>
-        <ControlPoint xPos="300" yPos="345" ctrlXPos="232" ctrlYPos="345"/>
+        <ControlPoint xPos="570" yPos="345" ctrlXPos="637" ctrlYPos="345"/>
+        <ControlPoint xPos="750" yPos="345" ctrlXPos="682" ctrlYPos="345"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="30" yPos="300"/>
+      <Position xPos="480" yPos="300"/>
     </Graphics>
   </Node>
   <Node id="N4" name="N4" history="false">
@@ -158,19 +158,63 @@
     </Declare>
     <Commands>
       <PlaySceneGroup>
-        <String><![CDATA[BertEnd]]></String>
+        <String><![CDATA[BertAmbientNervous]]></String>
       </PlaySceneGroup>
     </Commands>
     <TEdge target="N3" start="" timeout="4000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="302" yPos="357" ctrlXPos="237" ctrlYPos="375"/>
-        <ControlPoint xPos="118" yPos="357" ctrlXPos="182" ctrlYPos="375"/>
+        <ControlPoint xPos="752" yPos="357" ctrlXPos="687" ctrlYPos="375"/>
+        <ControlPoint xPos="568" yPos="357" ctrlXPos="632" ctrlYPos="375"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="300" yPos="300"/>
+      <Position xPos="750" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N15" name="N15" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Greeting]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="N18" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="120" yPos="345" ctrlXPos="142" ctrlYPos="345"/>
+        <ControlPoint xPos="210" yPos="345" ctrlXPos="187" ctrlYPos="345"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="30" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N18" name="N18" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[ShowPlan]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="300" yPos="345" ctrlXPos="367" ctrlYPos="345"/>
+        <ControlPoint xPos="480" yPos="345" ctrlXPos="412" ctrlYPos="345"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="210" yPos="300"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="Prolog" comment="" hideLocalVar="false" hideGlobalVar="false" start="N6;">
@@ -181,7 +225,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="840" yPos="300"/>
+      <Position xPos="840" yPos="120"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -256,7 +300,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="660" yPos="300"/>
+      <Position xPos="660" yPos="120"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -335,7 +379,7 @@
         </Graphics>
       </Node>
     </SuperNode>
-    <SuperNode id="S4" name="Proximity Entered" comment="" hideLocalVar="false" hideGlobalVar="false" start="N12;">
+    <SuperNode id="S4" name="Proximity Entered" comment="" hideLocalVar="false" hideGlobalVar="false" start="N19;">
       <Define>
       </Define>
       <Declare>
@@ -367,7 +411,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="30" yPos="120"/>
+          <Position xPos="1110" yPos="30"/>
         </Graphics>
       </Node>
       <Node id="N12" name="N12" history="false">
@@ -376,6 +420,27 @@
         <Declare>
         </Declare>
         <Commands>
+          <UserCommand name="printString">
+            <Add>
+              <String><![CDATA[type = ]]></String>
+              <Member name="feedback" member="type">
+              </Member>
+            </Add>
+          </UserCommand>
+          <UserCommand name="printString">
+            <Add>
+              <String><![CDATA[elicitor = ]]></String>
+              <Member name="feedback" member="elicitor">
+              </Member>
+            </Add>
+          </UserCommand>
+          <UserCommand name="printString">
+            <Add>
+              <String><![CDATA[name = ]]></String>
+              <Member name="feedback" member="name">
+              </Member>
+            </Add>
+          </UserCommand>
           <Assign>
             <Variable name="feedback"/>
             <Expression>
@@ -414,8 +479,8 @@
         <CEdge target="N16" start="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="384" yPos="188" ctrlXPos="466" ctrlYPos="236"/>
-              <ControlPoint xPos="576" yPos="322" ctrlXPos="493" ctrlYPos="273"/>
+              <ControlPoint xPos="208" yPos="357" ctrlXPos="320" ctrlYPos="388"/>
+              <ControlPoint xPos="482" yPos="423" ctrlXPos="369" ctrlYPos="391"/>
             </Connection>
           </Graphics>
           <Gt>
@@ -426,13 +491,13 @@
         <EEdge target="N13" start ="">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="390" yPos="165" ctrlXPos="457" ctrlYPos="165"/>
-            <ControlPoint xPos="570" yPos="165" ctrlXPos="502" ctrlYPos="165"/>
+            <ControlPoint xPos="208" yPos="333" ctrlXPos="320" ctrlYPos="301"/>
+            <ControlPoint xPos="482" yPos="267" ctrlXPos="369" ctrlYPos="298"/>
           </Connection>
         </Graphics>
         </EEdge>
         <Graphics>
-          <Position xPos="300" yPos="120"/>
+          <Position xPos="120" yPos="300"/>
         </Graphics>
       </Node>
       <Node id="N13" name="N13" history="false">
@@ -448,13 +513,13 @@
         <TEdge target="N14" start="" timeout="1000">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="660" yPos="165" ctrlXPos="727" ctrlYPos="165"/>
-            <ControlPoint xPos="840" yPos="165" ctrlXPos="772" ctrlYPos="165"/>
+            <ControlPoint xPos="568" yPos="267" ctrlXPos="680" ctrlYPos="298"/>
+            <ControlPoint xPos="842" yPos="333" ctrlXPos="729" ctrlYPos="301"/>
           </Connection>
         </Graphics>
         </TEdge>
         <Graphics>
-          <Position xPos="570" yPos="120"/>
+          <Position xPos="480" yPos="210"/>
         </Graphics>
       </Node>
       <Node id="N14" name="N14" history="false">
@@ -465,7 +530,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="840" yPos="120"/>
+          <Position xPos="840" yPos="300"/>
         </Graphics>
       </Node>
       <Node id="N16" name="N16" history="false">
@@ -487,13 +552,67 @@
         <TEdge target="N14" start="" timeout="1000">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="654" yPos="322" ctrlXPos="736" ctrlYPos="273"/>
-            <ControlPoint xPos="846" yPos="187" ctrlXPos="763" ctrlYPos="233"/>
+            <ControlPoint xPos="568" yPos="423" ctrlXPos="680" ctrlYPos="391"/>
+            <ControlPoint xPos="842" yPos="357" ctrlXPos="729" ctrlYPos="388"/>
           </Connection>
         </Graphics>
         </TEdge>
         <Graphics>
-          <Position xPos="570" yPos="300"/>
+          <Position xPos="480" yPos="390"/>
+        </Graphics>
+      </Node>
+      <Node id="N19" name="N19" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <CEdge target="N20" start="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="210" yPos="165" ctrlXPos="277" ctrlYPos="165"/>
+              <ControlPoint xPos="390" yPos="165" ctrlXPos="322" ctrlYPos="165"/>
+            </Connection>
+          </Graphics>
+          <Eq>
+            <Member name="feedback" member="name">
+            </Member>
+            <String><![CDATA[Susanne]]></String>
+          </Eq>
+        </CEdge>
+        <EEdge target="N12" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="165" yPos="210" ctrlXPos="165" ctrlYPos="232"/>
+            <ControlPoint xPos="165" yPos="300" ctrlXPos="165" ctrlYPos="277"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="120" yPos="120"/>
+        </Graphics>
+      </Node>
+      <Node id="N20" name="N20" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PlaySceneGroup>
+            <String><![CDATA[Flee]]></String>
+          </PlaySceneGroup>
+        </Commands>
+        <EEdge target="N12" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="396" yPos="187" ctrlXPos="313" ctrlYPos="233"/>
+            <ControlPoint xPos="204" yPos="322" ctrlXPos="286" ctrlYPos="273"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="390" yPos="120"/>
         </Graphics>
       </Node>
     </SuperNode>
