@@ -42,7 +42,7 @@
     </Plugin>
   </Plugins>
   <Agents>
-    <Agent name="susanne" device="tworld">
+    <Agent name="Susanne" device="tworld">
     </Agent>
     <Agent name="Empat_Environment" device="tworld">
     </Agent>

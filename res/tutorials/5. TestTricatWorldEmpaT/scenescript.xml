@@ -1,58 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="60" language="en" identifier="SusanneWelcome">
-    <SceneTurn lower="25" upper="60" speaker="susanne">
-      <SceneUttr lower="34" upper="40" punct=",">
-        <SceneWord lower="34" upper="39" text="Hallo"/>
+  <SceneComment lower="0" upper="35" comment="/* User questionnaire [qgui show]*/"/>
+  <SceneComment lower="37" upper="88" comment="/* picture display [display show image={cat|dog} */"/>
+  <SceneComment lower="90" upper="162" comment="/* picture hide [display hide], mandatory since display show is modal */"/>
+  <SceneComment lower="164" upper="231" comment="/* ambient sound [Empat_Environment Ambient value={calm|nervous} */"/>
+  <SceneObject lower="233" upper="293" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="258" upper="293" speaker="Susanne">
+      <SceneUttr lower="267" upper="273" punct=",">
+        <SceneWord lower="267" upper="272" text="Hallo"/>
       </SceneUttr>
-      <SceneUttr lower="41" upper="60" punct="?">
-        <SceneWord lower="41" upper="44" text="wie"/>
-        <SceneAbbrev lower="45" upper="51" first="geht" second="s"/>
-        <SceneWord lower="52" upper="56" text="denn"/>
-        <SceneWord lower="57" upper="59" text="so"/>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="62" upper="155" language="en" identifier="BertWelcome">
-    <SceneTurn lower="84" upper="155" speaker="bert">
-      <SceneUttr lower="90" upper="96" punct="!">
-        <SceneWord lower="90" upper="95" text="Hallo"/>
-      </SceneUttr>
-      <SceneUttr lower="97" upper="155" punct="!">
-        <SceneWord lower="97" upper="100" text="Ich"/>
-        <ActionObject lower="101" upper="142" actor="Empat_Environment" mode="" name="Ambient" >
-          <ActionFeature lower="128" upper="141" typ="IDENTIFIER" key="value" val="nervous"/></ActionObject>
-        <SceneWord lower="143" upper="146" text="bin"/>
-        <SceneWord lower="147" upper="151" text="auch"/>
-        <SceneWord lower="152" upper="154" text="da"/>
+      <SceneUttr lower="274" upper="293" punct="?">
+        <SceneWord lower="274" upper="277" text="wie"/>
+        <SceneAbbrev lower="278" upper="284" first="geht" second="s"/>
+        <SceneWord lower="285" upper="289" text="denn"/>
+        <SceneWord lower="290" upper="292" text="so"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="157" upper="248" language="en" identifier="BertEnd">
-    <SceneTurn lower="175" upper="248" speaker="bert">
-      <SceneUttr lower="181" upper="248" punct="!">
-        <SceneWord lower="181" upper="186" text="Jetzt"/>
-        <ActionObject lower="187" upper="198" actor="qgui" mode="" name="show" >
+  <SceneObject lower="295" upper="410" language="en" identifier="BertAmbientNervous">
+    <SceneTurn lower="324" upper="410" speaker="bert">
+      <SceneUttr lower="330" upper="340" punct=",">
+        <SceneWord lower="330" upper="333" text="Ich"/>
+        <SceneWord lower="334" upper="339" text="finde"/>
+      </SceneUttr>
+      <SceneUttr lower="341" upper="410" punct="!">
+        <SceneWord lower="341" upper="343" text="es"/>
+        <SceneWord lower="344" upper="350" text="könnte"/>
+        <SceneWord lower="351" upper="356" text="jetzt"/>
+        <SceneWord lower="357" upper="362" text="Abend"/>
+        <SceneWord lower="363" upper="367" text="sein"/>
+        <ActionObject lower="368" upper="409" actor="Empat_Environment" mode="" name="Ambient" >
+          <ActionFeature lower="395" upper="408" typ="IDENTIFIER" key="value" val="nervous"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="412" upper="519" language="en" identifier="BertAmbientCalm">
+    <SceneTurn lower="438" upper="519" speaker="bert">
+      <SceneUttr lower="444" upper="519" punct=".">
+        <SceneWord lower="444" upper="447" text="Die"/>
+        <SceneWord lower="448" upper="459" text="Morgensonne"/>
+        <SceneWord lower="460" upper="464" text="kann"/>
+        <SceneWord lower="465" upper="469" text="auch"/>
+        <SceneWord lower="470" upper="479" text="entzücken"/>
+        <ActionObject lower="480" upper="518" actor="Empat_Environment" mode="" name="Ambient" >
+          <ActionFeature lower="507" upper="517" typ="IDENTIFIER" key="value" val="calm"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="521" upper="618" language="en" identifier="Greeting">
+    <SceneTurn lower="540" upper="618" speaker="bert">
+      <SceneUttr lower="546" upper="552" punct="!">
+        <SceneWord lower="546" upper="551" text="Hallo"/>
+      </SceneUttr>
+      <SceneUttr lower="553" upper="618" punct="?">
+        <SceneWord lower="553" upper="559" text="Kannst"/>
+        <SceneWord lower="560" upper="562" text="Du"/>
+        <SceneWord lower="563" upper="566" text="mir"/>
+        <SceneWord lower="567" upper="570" text="ein"/>
+        <SceneWord lower="571" upper="575" text="paar"/>
+        <SceneWord lower="576" upper="589" text="Informationen"/>
+        <SceneWord lower="590" upper="594" text="über"/>
+        <SceneWord lower="595" upper="599" text="Dich"/>
+        <SceneWord lower="600" upper="605" text="sagen"/>
+        <ActionObject lower="606" upper="617" actor="qgui" mode="" name="show" >
         </ActionObject>
-        <SceneWord lower="199" upper="202" text="mal"/>
-        <SceneWord lower="203" upper="208" text="ruhig"/>
-        <ActionObject lower="209" upper="247" actor="Empat_Environment" mode="" name="Ambient" >
-          <ActionFeature lower="236" upper="246" typ="IDENTIFIER" key="value" val="calm"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="250" upper="281" language="en" identifier="Feedback">
-    <SceneTurn lower="269" upper="281" speaker="susanne">
-      <SceneUttr lower="278" upper="281" punct="!">
-        <SceneWord lower="278" upper="280" text="Uh"/>
+  <SceneObject lower="620" upper="792" language="en" identifier="ShowPlan">
+    <SceneTurn lower="639" upper="739" speaker="bert">
+      <SceneUttr lower="645" upper="710" punct=",">
+        <SceneWord lower="645" upper="648" text="Ich"/>
+        <ActionObject lower="649" upper="656" actor="" mode="" name="Smile" >
+        </ActionObject>
+        <SceneWord lower="657" upper="661" text="zeig"/>
+        <SceneWord lower="662" upper="665" text="Dir"/>
+        <SceneWord lower="666" upper="671" text="jetzt"/>
+        <SceneWord lower="672" upper="675" text="mal"/>
+        <SceneWord lower="676" upper="679" text="den"/>
+        <SceneWord lower="680" upper="684" text="Plan"/>
+        <ActionObject lower="685" upper="709" actor="display" mode="" name="show" >
+          <ActionFeature lower="699" upper="708" typ="IDENTIFIER" key="image" val="dog"/></ActionObject>
+      </SceneUttr>
+      <SceneUttr lower="711" upper="739" punct=".">
+        <SceneWord lower="711" upper="714" text="der"/>
+        <SceneWord lower="715" upper="725" text="eigentlich"/>
+        <SceneWord lower="726" upper="729" text="ein"/>
+        <SceneWord lower="730" upper="734" text="Hund"/>
+        <SceneWord lower="735" upper="738" text="ist"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="740" upper="792" speaker="bert">
+      <SceneUttr lower="746" upper="750" punct=",">
+        <SceneWord lower="746" upper="749" text="Gut"/>
+      </SceneUttr>
+      <SceneUttr lower="751" upper="792" punct=".">
+        <ActionObject lower="751" upper="758" actor="" mode="" name="Blink" >
+        </ActionObject>
+        <SceneWord lower="759" upper="765" text="machen"/>
+        <SceneWord lower="766" upper="769" text="wir"/>
+        <SceneWord lower="770" upper="776" text="weiter"/>
+        <ActionObject lower="777" upper="791" actor="display" mode="" name="hide" >
+        </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="283" upper="321" language="en" identifier="Bad_Feedback">
-    <SceneTurn lower="306" upper="321" speaker="susanne">
-      <SceneUttr lower="315" upper="321" punct="!">
-        <SceneWord lower="315" upper="317" text="Oh"/>
-        <SceneWord lower="318" upper="320" text="oh"/>
+  <SceneObject lower="794" upper="825" language="en" identifier="Feedback">
+    <SceneTurn lower="813" upper="825" speaker="Susanne">
+      <SceneUttr lower="822" upper="825" punct="!">
+        <SceneWord lower="822" upper="824" text="Uh"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="827" upper="865" language="en" identifier="Bad_Feedback">
+    <SceneTurn lower="850" upper="865" speaker="Susanne">
+      <SceneUttr lower="859" upper="865" punct="!">
+        <SceneWord lower="859" upper="861" text="Oh"/>
+        <SceneWord lower="862" upper="864" text="oh"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="867" upper="945" language="en" identifier="Flee">
+    <SceneTurn lower="882" upper="945" speaker="bert">
+      <SceneUttr lower="888" upper="945" punct="!">
+        <SceneWord lower="888" upper="895" text="Susanne"/>
+        <SceneWord lower="896" upper="902" text="flieht"/>
+        <SceneWord lower="903" upper="906" text="von"/>
+        <SceneWord lower="907" upper="910" text="Dir"/>
+        <ActionObject lower="911" upper="944" actor="Susanne" mode="" name="MoveTo" >
+          <ActionFeature lower="927" upper="943" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
