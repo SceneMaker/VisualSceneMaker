@@ -1,6 +1,9 @@
 package de.dfki.vsm.xtension.ssi;
 
+import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.xml.XMLUtilities;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
@@ -79,13 +82,15 @@ public final class SSIEventHandler extends Thread {
             final String message = recvString();
             // Check message content
             if (message != null) {
-                // Create an event object
-                final SSIEventObject event = new SSIEventObject();
-                // Parse the event object
                 try {
-                    event.parse(message);
-                    // Delegate the handling            
-                    mPlugin.handle(event);
+                    final ByteArrayInputStream stream = new ByteArrayInputStream(
+                            message.getBytes("UTF-8"));
+                    // Create an sequence object
+                    final SSIEventArray sequence = new SSIEventArray();
+                    if (XMLUtilities.parseFromXMLStream(sequence, stream)) {
+                        // Delegate sequence handling            
+                        mPlugin.handle(sequence);
+                    }
                 } catch (final Exception exc) {
                     mLogger.failure(exc.toString());
                 }
