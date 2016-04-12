@@ -36,43 +36,42 @@ public class ActionLoader {
 
     public String getNextID() {
         sID++;
-        return "a" + sID;
+        return "tw" + sID;
     }
 
-    private String getCommandClasspath(String name) {
+    private String getCommandClasspath(String cmd) {
         String classPath = "";
 
-        classPath = sCMDPATH + "." + name;
+        classPath = sCMDPATH + "." + cmd;
 
         try {
             Class.forName(classPath);
         } catch (ClassNotFoundException ex) {
-           mLogger.failure("Wrong classpath for TWorld Action " + name);
+           mLogger.failure("Wrong classpath for TWorld Action " + cmd);
         }
 
         return classPath;
     }
 
-    public Action loadAnimation(String name, String value) {
+    public Action loadAnimation(String cmd, String value) {
         Action a = null;
 
-        String cp = getCommandClasspath(name);
+        String cp = getCommandClasspath(cmd);
 
         try {
             Class c = Class.forName(cp);
             Constructor[] constructors = c.getConstructors();
             for (Constructor con : constructors) {
                 Class[] params = con.getParameterTypes();
-
-                if (params.length == 3) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("value")) {
+                if (params.length == 1) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string")) {
                         a = (Action) c.getDeclaredConstructor(params).newInstance(value);
                     }
                 }
 
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for TWorld Action " + name + " and value " + value);
+            mLogger.failure("No Class for TWorld Action " + cmd + " and value " + value);
         }
 
         if (a != null) {
