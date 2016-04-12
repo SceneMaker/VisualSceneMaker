@@ -6,6 +6,8 @@
 package de.dfki.vsm.xtension.questionnaire;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -26,7 +28,7 @@ import javafx.scene.layout.Region;
 /**
  * FXML Controller class
  *
- * @author EmpaT
+ * @author Patrick Gebhard
  */
 public class FXMLDocumentController implements Initializable {
 
@@ -39,29 +41,29 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private Slider jobinterviewslider;
     @FXML
-    private CheckBox strength1;
+    protected CheckBox strength1;
     @FXML
-    private CheckBox strength3;
+    protected CheckBox strength3;
     @FXML
-    private CheckBox strength5;
+    protected CheckBox strength5;
     @FXML
-    private CheckBox strength2;
+    protected CheckBox strength2;
     @FXML
-    private CheckBox strength4;
+    protected CheckBox strength4;
     @FXML
-    private CheckBox strength6;
+    protected CheckBox strength6;
     @FXML
-    private CheckBox weakness1;
+    protected CheckBox weakness1;
     @FXML
-    private CheckBox weakness2;
+    protected CheckBox weakness2;
     @FXML
-    private CheckBox weakness3;
+    protected CheckBox weakness3;
     @FXML
-    private CheckBox weakness4;
+    protected CheckBox weakness4;
     @FXML
-    private CheckBox weakness5;
+    protected CheckBox weakness5;
     @FXML
-    private CheckBox weakness6;
+    protected CheckBox weakness6;
     @FXML
     private RadioButton sexfemale;
     @FXML
@@ -82,20 +84,48 @@ public class FXMLDocumentController implements Initializable {
     private CheckBox lastSelectedWeakness = null;
     private CheckBox sndlastSelectedWeakness = null;
     private CheckBox thirdlastSelectedWeakness = null;
+    // listeners for updates
+    private ArrayList<QuestionnaireListener> mListeners = new java.util.ArrayList();
+    // collected values
+    private HashMap<String, String> mValues = new HashMap();
+
     @FXML
     private Region strengthregion;
     @FXML
     private TextArea weaknessregion;
 
+    public void addListener(QuestionnaireListener listener) {
+        if (!mListeners.contains(listener)) {
+            mListeners.add(listener);
+        }
+    }
+
     /**
      * Initializes the controller class.
      */
     @Override
-
     public void initialize(URL url, ResourceBundle rb) {
+        mValues.put("name", "Maier");
+        mValues.put("age", "20");
+        mValues.put("sex", "female");
+        mValues.put("interviews", "keine");
+        mValues.put("strength1", "nein");
+        mValues.put("strength2", "nein");
+        mValues.put("strength3", "nein");
+        mValues.put("strength4", "nein");
+        mValues.put("strength5", "nein");
+        mValues.put("strength6", "nein");
+        mValues.put("weakness1", "nein");
+        mValues.put("weakness2", "nein");
+        mValues.put("weakness3", "nein");
+        mValues.put("weakness4", "nein");
+        mValues.put("weakness5", "nein");
+        mValues.put("weakness6", "nein");
+
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
+                nextbutton.setDisable(true);
                 namefield.requestFocus();
             }
         });
@@ -104,17 +134,23 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private void nextbuttoncheck(MouseEvent event) {
-        System.out.println("next");
-       
+        mValues.put("name", namefield.getText());
+        
+        for (QuestionnaireListener l : mListeners) {
+            l.updateOnUestionnaire(mValues);
+        }
+
     }
 
     @FXML
     private void namefieldcheck(KeyEvent event) {
         if (event.getCode() == KeyCode.ENTER) {
-            System.out.println("namefieldvalue " + namefield.getText());
+            //System.out.println("namefieldvalue " + namefield.getText());
+            mValues.put("name", namefield.getText());
             ageslider.requestFocus();
             agefield.setText("20");
         }
+        nextbutton.setDisable(false);
     }
 
     @FXML
@@ -125,11 +161,13 @@ public class FXMLDocumentController implements Initializable {
         }
 
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            System.out.println("agefieldvalue " + agefield.getText());
+            //System.out.println("agefieldvalue " + agefield.getText());
+            mValues.put("age", agefield.getText());
             sexfemale.requestFocus();
         }
 
         if (event.getEventType() == MouseEvent.MOUSE_CLICKED) {
+            nextbutton.setDisable(false);
             agefield.setText((agefield.getText().equalsIgnoreCase("") ? "20" : agefield.getText()));
         }
     }
@@ -150,11 +188,13 @@ public class FXMLDocumentController implements Initializable {
         }
 
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            System.out.println("jobvinterviewfieldvalue " + jobvinterviewfield.getText());
+            //System.out.println("jobvinterviewfieldvalue " + jobvinterviewfield.getText());
+            mValues.put("interviews", jobvinterviewfield.getText());
             strengthregion.requestFocus();
         }
         if (event.getEventType() == MouseEvent.MOUSE_CLICKED) {
             jobvinterviewfield.setText((jobvinterviewfield.getText().equalsIgnoreCase("") ? "keine" : jobvinterviewfield.getText()));
+            mValues.put("interviews", jobvinterviewfield.getText());
         }
     }
 
@@ -162,6 +202,7 @@ public class FXMLDocumentController implements Initializable {
     private void strength1check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedStrength(strength1);
+            mValues.put("strength1", (strength1.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -169,6 +210,7 @@ public class FXMLDocumentController implements Initializable {
     private void strength3check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedStrength(strength3);
+            mValues.put("strength3", (strength3.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -176,6 +218,7 @@ public class FXMLDocumentController implements Initializable {
     private void strength5check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedStrength(strength5);
+            mValues.put("strength5", (strength5.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -183,6 +226,7 @@ public class FXMLDocumentController implements Initializable {
     private void strength2check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedStrength(strength2);
+            mValues.put("strength2", (strength2.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -190,18 +234,25 @@ public class FXMLDocumentController implements Initializable {
     private void strength4check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedStrength(strength4);
+            mValues.put("strength4", (strength4.isSelected() ? "ja" : "nein"));
         }
     }
 
     @FXML
     private void strength6check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            System.out.println("strengths : none");
+            //System.out.println("strengths : none");
+            mValues.put("strength6", (strength6.isSelected() ? "ja" : "nein"));
             strength1.setSelected(false);
+            mValues.put("strength1", (strength1.isSelected() ? "ja" : "nein"));
             strength2.setSelected(false);
+            mValues.put("strength2", (strength2.isSelected() ? "ja" : "nein"));
             strength3.setSelected(false);
+            mValues.put("strength3", (strength3.isSelected() ? "ja" : "nein"));
             strength4.setSelected(false);
+            mValues.put("strength4", (strength4.isSelected() ? "ja" : "nein"));
             strength5.setSelected(false);
+            mValues.put("strength5", (strength5.isSelected() ? "ja" : "nein"));
             weaknessregion.requestFocus();
         }
     }
@@ -210,6 +261,7 @@ public class FXMLDocumentController implements Initializable {
     private void weakness1check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedWeakness(weakness1);
+            mValues.put("weakness1", (weakness1.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -217,6 +269,7 @@ public class FXMLDocumentController implements Initializable {
     private void weakness2check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedWeakness(weakness2);
+            mValues.put("weakness2", (weakness2.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -224,6 +277,7 @@ public class FXMLDocumentController implements Initializable {
     private void weakness3check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedWeakness(weakness3);
+            mValues.put("weakness3", (weakness3.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -231,6 +285,7 @@ public class FXMLDocumentController implements Initializable {
     private void weakness4check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedWeakness(weakness4);
+            mValues.put("weakness4", (weakness4.isSelected() ? "ja" : "nein"));
         }
     }
 
@@ -238,18 +293,25 @@ public class FXMLDocumentController implements Initializable {
     private void weakness5check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
             checkSelectedWeakness(weakness5);
+            mValues.put("weakness5", (weakness5.isSelected() ? "ja" : "nein"));
         }
     }
 
     @FXML
     private void weakness6check(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            System.out.println("weakness : none");
+            //System.out.println("weakness : none");
+            mValues.put("weakness6", (weakness6.isSelected() ? "ja" : "nein"));
             weakness1.setSelected(false);
+            mValues.put("weakness1", (weakness1.isSelected() ? "ja" : "nein"));
             weakness2.setSelected(false);
+            mValues.put("weakness2", (weakness2.isSelected() ? "ja" : "nein"));
             weakness3.setSelected(false);
+            mValues.put("weakness3", (weakness3.isSelected() ? "ja" : "nein"));
             weakness4.setSelected(false);
+            mValues.put("weakness4", (weakness4.isSelected() ? "ja" : "nein"));
             weakness5.setSelected(false);
+            mValues.put("weakness5", (weakness5.isSelected() ? "ja" : "nein"));
             nextbutton.requestFocus();
         }
     }
@@ -257,7 +319,8 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private void sexfemalecheck(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            System.out.println("sex " + ((sex.getSelectedToggle() == sexfemale) ? "female" : "male"));
+            //System.out.println("sex " + ((sex.getSelectedToggle() == sexfemale) ? "female" : "male"));
+            mValues.put("sex", ((sex.getSelectedToggle() == sexfemale) ? "female" : "male"));
             jobinterviewslider.requestFocus();
             jobvinterviewfield.setText("keine");
         }
@@ -266,7 +329,8 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private void sexmalecheck(MouseEvent event) {
         if (event.getEventType() == MouseEvent.MOUSE_RELEASED) {
-            System.out.println("sex " + ((sex.getSelectedToggle() == sexfemale) ? "female" : "male"));
+            //System.out.println("sex " + ((sex.getSelectedToggle() == sexfemale) ? "female" : "male"));
+            mValues.put("sex", ((sex.getSelectedToggle() == sexfemale) ? "female" : "male"));
             jobinterviewslider.requestFocus();
             jobvinterviewfield.setText("keine");
         }

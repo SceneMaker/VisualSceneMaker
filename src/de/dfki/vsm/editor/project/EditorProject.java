@@ -171,14 +171,14 @@ public class EditorProject extends RunTimeProject {
         return mEditorConfig;
     }
 
-    // Get the project file's path
-    public final String getProjectPath() {
-        if (mProjectFile != null) {
-            return mProjectFile.getPath();
-        } else {
-            return null;
-        }
-    }
+//    // Get the project file's path (moved in super class RuntimeProject (PG 11.4.2016)
+//    public final String getProjectPath() {
+//        if (mProjectFile != null) {
+//            return mProjectFile.getPath();
+//        } else {
+//            return null;
+//        }
+//    }
 
     // Check if the hash code has changed
     public final boolean hasChanged() {

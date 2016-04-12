@@ -17,16 +17,40 @@
       <Feature key="cactorexe" val="EmpatTest.exe"/>
       <Feature key="cactorcmd" val=""/>
     </Plugin>
+    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor">
+      <Feature key="smhost" val="127.0.0.1"/>
+      <Feature key="smport" val="9000"/>
+      <Feature key="showstickmanname" val="true"/>
+    </Plugin>
     <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor">
       <Feature key="strength1" val="Zielstrebig"/>
+      <Feature key="strength2" val="Kommunikationsstark"/>
+      <Feature key="strength3" val="Teamfähig"/>
+      <Feature key="strength4" val="Organisiert"/>
+      <Feature key="strength5" val="Kritikfähig"/>
+      <Feature key="strength6" val="Keine"/>
+      <Feature key="weakness1" val="Schüchtern"/>
+      <Feature key="weakness2" val="Ungeduldig"/>
+      <Feature key="weakness3" val="Chaotisch"/>
+      <Feature key="weakness4" val="Detailverliebt"/>
+      <Feature key="weakness5" val="Stur"/>
+      <Feature key="weakness6" val="Keine"/>
+    </Plugin>
+    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor">
+      <Feature key="cat" val="img\cat.png"/>
+      <Feature key="dog" val="img\dog.png"/>
     </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="tworld">
     </Agent>
-    <Agent name="patrick" device="tworld">
+    <Agent name="Empat_Environment" device="tworld">
+    </Agent>
+    <Agent name="bert" device="stickman">
     </Agent>
     <Agent name="qgui" device="questionnaire">
+    </Agent>
+    <Agent name="display" device="mediadisplay">
     </Agent>
   </Agents>
 </Project>

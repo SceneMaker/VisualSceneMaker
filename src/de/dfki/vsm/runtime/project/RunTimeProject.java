@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -32,6 +33,8 @@ public class RunTimeProject {
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
 
+    // The project Path (added PG 11.4.2016);
+    private String mProjectPath = "";
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
     // The scenescript of the project
@@ -57,10 +60,17 @@ public class RunTimeProject {
 
     // Construct a project from a directory
     public RunTimeProject(final File file) {
+        // Remember Path
+        mProjectPath = file.getPath();
         // Call the local parsing method
-        parse(file.getPath());
+        parse(mProjectPath);
         // Initialize the scene players
         mScenePlayer = new ReactivePlayer(null, this);
+    }
+
+    // Get the path of the project (added PG 11.4.2016)
+    public final String getProjectPath() {
+        return mProjectPath;
     }
 
     // Get the name of the project's configuration
@@ -76,6 +86,11 @@ public class RunTimeProject {
     // Get a specific config from the map of plugins
     public final PluginConfig getPluginConfig(final String name) {
         return mProjectConfig.getPluginConfig(name);
+    }
+
+    // Get the list of all configured agents in the project configuation (agged PG 8.4.2016)
+    public final ArrayList<String> getAgentNames() {
+        return mProjectConfig.getAgentNames();
     }
 
     // Get a specific config from the map of plugins
@@ -135,6 +150,10 @@ public class RunTimeProject {
             // Return false at error
             return false;
         }
+        // remember Path (e.g. EditorProject calls this without instantiation of
+        // the RunTimeProject class, so mProjectPath is (re)set her (PG 11.4.2016)
+        mProjectPath = file;
+
         // Parse the project from file
         return (parseProjectConfig(file)
                 && parseSceneFlow(file)
@@ -244,7 +263,7 @@ public class RunTimeProject {
             try {
                 inputStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
-                mLogger.failure("Error: Cannot find sproject configuration file '" + file + "'");
+                mLogger.failure("Error: Cannot find project configuration file '" + file + "'");
             }
         } else {
             inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "project.xml");
