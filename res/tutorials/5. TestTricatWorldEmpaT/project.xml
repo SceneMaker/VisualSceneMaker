@@ -42,9 +42,49 @@
     </Plugin>
   </Plugins>
   <Agents>
+    <Agent name="Empat_Environment" device="tworld">
+    </Agent>
     <Agent name="Susanne" device="tworld">
     </Agent>
-    <Agent name="Empat_Environment" device="tworld">
+    <Agent name="npc1" device="tworld">
+    </Agent>
+    <Agent name="npc2" device="tworld">
+    </Agent>
+    <Agent name="npc3" device="tworld">
+    </Agent>
+    <Agent name="npc4" device="tworld">
+    </Agent>
+    <Agent name="npc5" device="tworld">
+    </Agent>
+    <Agent name="npc6" device="tworld">
+    </Agent>
+    <Agent name="npc7" device="tworld">
+    </Agent>
+    <Agent name="npc8" device="tworld">
+    </Agent>
+    <Agent name="npc9" device="tworld">
+    </Agent>
+    <Agent name="npc10" device="tworld">
+    </Agent>
+    <Agent name="npc11" device="tworld">
+    </Agent>
+    <Agent name="npc12" device="tworld">
+    </Agent>
+    <Agent name="npc13" device="tworld">
+    </Agent>
+    <Agent name="npc14" device="tworld">
+    </Agent>
+    <Agent name="npc15" device="tworld">
+    </Agent>
+    <Agent name="npc16" device="tworld">
+    </Agent>
+    <Agent name="npc17" device="tworld">
+    </Agent>
+    <Agent name="npc18" device="tworld">
+    </Agent>
+    <Agent name="npc19" device="tworld">
+    </Agent>
+    <Agent name="npc20" device="tworld">
     </Agent>
     <Agent name="bert" device="stickman">
     </Agent>
