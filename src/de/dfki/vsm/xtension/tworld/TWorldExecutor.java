@@ -190,31 +190,32 @@ public final class TWorldExecutor extends ActivityExecutor {
 
         if (activity instanceof SpeechActivity) {
             // This is bad: Charamel needs first character of the character's name capitalized ...
-            actor = activity.getActor().substring(0, 1).toUpperCase() + activity.getActor().substring(1);
+            actor = activity.getActor();//.substring(0, 1).toUpperCase() + activity.getActor().substring(1);
             SpeechActivity sa = (SpeechActivity) activity;
             twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
+            twcoa.setId(ActionLoader.getInstance().getNextID());
 
         } else {
             actor = activity.getActor();
             if (cmd.equalsIgnoreCase("MoveTo")) {
-                twcoa = new MoveTo(getActionFeatureValue("location", features));
+                //twcoa = new MoveTo(getActionFeatureValue("location", features));
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
             }
 
             if (cmd.equalsIgnoreCase("Ambient")) {
-                mLogger.message("Hier!");
-                //twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
-                twcoa = new Ambient(getActionFeatureValue("value", features));
-                //actor = "Empat_Environment";
+                //twcoa = new Ambient(getActionFeatureValue("value", features));
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
 
             if (cmd.equalsIgnoreCase("SoundAmbient")) {
-                twcoa = new SoundAmbient(getActionFeatureValue("value", features));
+                //twcoa = new SoundAmbient(getActionFeatureValue("value", features));
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
         }
-
-        // set the command id
-        String executionId = getExecutionId();
-        twcoa.setId(executionId);
+//
+//        // set the command id
+//        String executionId = getExecutionId();
+//        twcoa.setId(executionId);
 
         // finalize build command
         Object twco = new Object(actor, twcoa);
@@ -242,10 +243,10 @@ public final class TWorldExecutor extends ActivityExecutor {
 
             // organize wait for feedbackif (activity instanceof SpeechActivity) {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(executionId, cAW);
+            mActivityWorkerMap.put(twcoa.getId(), cAW);
 
             // wait until we got feedback
-            mLogger.warning("ActivityWorker " + executionId + " waiting ....");
+            mLogger.warning("ActivityWorker " + twcoa.getId() + " waiting ....");
 
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
@@ -254,8 +255,8 @@ public final class TWorldExecutor extends ActivityExecutor {
                     mLogger.failure(exc.toString());
                 }
             }
-            
-            mLogger.warning("ActivityWorker " + executionId + " done ....");
+
+            mLogger.warning("ActivityWorker " + twcoa.getId() + " done ....");
         }
         // Return when terminated
     }

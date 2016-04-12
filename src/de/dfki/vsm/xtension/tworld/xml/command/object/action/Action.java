@@ -25,6 +25,10 @@ public class Action implements XMLParseable, XMLWriteable {
         mId = id;
     }
     
+    public String getId() {
+        return mId;
+    }
+    
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
     }
