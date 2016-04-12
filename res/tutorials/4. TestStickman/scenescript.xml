@@ -44,4 +44,15 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
+  <SceneObject lower="620" upper="676" language="en" identifier="Test">
+    <SceneTurn lower="635" upper="676" speaker="susanne">
+      <SceneUttr lower="644" upper="676" punct=",">
+        <SceneWord lower="644" upper="647" text="Ich"/>
+        <SceneWord lower="648" upper="653" text="hätte"/>
+        <SceneWord lower="654" upper="659" text="gerne"/>
+        <SceneWord lower="660" upper="666" text="öfters"/>
+        <SceneWord lower="667" upper="675" text="überlegt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>
