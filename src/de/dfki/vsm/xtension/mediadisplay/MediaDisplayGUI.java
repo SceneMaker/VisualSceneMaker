@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.questionnaire;
+package de.dfki.vsm.xtension.mediadisplay;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import javafx.application.Platform;
@@ -24,22 +25,26 @@ import javax.swing.JPanel;
  *
  * @author Patrick Gebhard
  */
-public class QuestionnaireGUI {
+public class MediaDisplayGUI {
 
     private JFrame mFrame;
-    private QuestionnaireExecutor mExecutor;
+    private MediaDisplayExecutor mExecutor;
     private final Dimension mScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    // The JavaFX Panel
+    final JFXPanel mJFXPanel = new JFXPanel();
+    FXMLDocumentController mController = new FXMLDocumentController();
     // Configurable Values
-    private HashMap<String, String> mPersonalValues = new HashMap<>();
+    private HashMap<String, String> mDisplayValues = new HashMap<>();
+    // The current image
+    private String mImageResource;
 
-    public void init(QuestionnaireExecutor executor, HashMap<String, String> values) {
+    public void init(MediaDisplayExecutor executor, HashMap<String, String> values) {
         mExecutor = executor;
-        mPersonalValues = values;
+        mDisplayValues = values;
 
-        mFrame = new JFrame("EmpaT User Info");
+        mFrame = new JFrame("EmpaT Media Display");
         mFrame.setLayout(new BorderLayout());
-        final JFXPanel jfxPanel = new JFXPanel();
-        mFrame.add(jfxPanel, BorderLayout.CENTER);
+        mFrame.add(mJFXPanel, BorderLayout.CENTER);
 
         Dimension sideBorder = new Dimension((mScreenSize.width - 800) / 2, 200);
         Dimension topdownBorder = new Dimension(200, (mScreenSize.height - 600) / 2);
@@ -47,7 +52,7 @@ public class QuestionnaireGUI {
         JPanel mWestPanel = new JPanel();
         mWestPanel.setLayout(new BoxLayout(mWestPanel, BoxLayout.X_AXIS));
         mWestPanel.setBorder(null);
-        mWestPanel.setBackground(new Color(0, 0, 0, 1));
+        mWestPanel.setBackground(new Color(255, 255, 255, 1));
         mWestPanel.setMinimumSize(sideBorder);
         mWestPanel.setMaximumSize(sideBorder);
         mWestPanel.setPreferredSize(sideBorder);
@@ -56,7 +61,7 @@ public class QuestionnaireGUI {
         JPanel mNorthPanel = new JPanel();
         mNorthPanel.setLayout(new BoxLayout(mNorthPanel, BoxLayout.X_AXIS));
         mNorthPanel.setBorder(null);
-        mNorthPanel.setBackground(new Color(0, 0, 0, 1));
+        mNorthPanel.setBackground(new Color(255, 255, 255, 1));
         mNorthPanel.setMinimumSize(topdownBorder);
         mNorthPanel.setMaximumSize(topdownBorder);
         mNorthPanel.setPreferredSize(topdownBorder);
@@ -65,7 +70,7 @@ public class QuestionnaireGUI {
         JPanel mSouthPanel = new JPanel();
         mSouthPanel.setLayout(new BoxLayout(mSouthPanel, BoxLayout.X_AXIS));
         mSouthPanel.setBorder(null);
-        mSouthPanel.setBackground(new Color(0, 0, 0, 1));
+        mSouthPanel.setBackground(new Color(255, 255, 255, 1));
         mSouthPanel.setMinimumSize(topdownBorder);
         mSouthPanel.setMaximumSize(topdownBorder);
         mSouthPanel.setPreferredSize(topdownBorder);
@@ -74,7 +79,7 @@ public class QuestionnaireGUI {
         JPanel mEastPanel = new JPanel();
         mEastPanel.setLayout(new BoxLayout(mEastPanel, BoxLayout.X_AXIS));
         mEastPanel.setBorder(null);
-        mEastPanel.setBackground(new Color(0, 0, 0, 1));
+        mEastPanel.setBackground(new Color(255, 255, 255, 1));
         mEastPanel.setMinimumSize(sideBorder);
         mEastPanel.setMaximumSize(sideBorder);
         mEastPanel.setPreferredSize(sideBorder);
@@ -87,14 +92,27 @@ public class QuestionnaireGUI {
         // Set Undecorated
         mFrame.setUndecorated(true);
         // Set Transparent
-        mFrame.setBackground(new Color(0, 0, 0, 0));
+        mFrame.setBackground(new Color(255, 255, 255, 0));
 
         mFrame.setSize(mScreenSize);
+        //mFrame.setSize(800, 600);
         mFrame.setLocationRelativeTo(null);
         mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //mFrame.setVisible(true);
+        
+        Platform.runLater(() -> initFX(mJFXPanel));
+    }
 
-        Platform.runLater(() -> initFX(jfxPanel));
+    public void setImage(String name) {
+        if (mDisplayValues.containsKey(name)) {
+            mImageResource = "file:///" + mDisplayValues.get("path")  + File.separator + mDisplayValues.get(name);
+            mImageResource = mImageResource.replace("\\", "/").replace(" ", "%20");
+
+            mController.canvas.setStyle("-fx-background-image: url('" + mImageResource + "'); "
+                    + "-fx-background-position: center center; "
+                    + "-fx-background-repeat: no-repeat no-repeat;"
+                    + "-fx-background-size: contain;"
+                    + "-fx-background-color: #00000000;");
+        }
     }
 
     public void setVisible(boolean visible) {
@@ -102,10 +120,8 @@ public class QuestionnaireGUI {
     }
 
     private void initFX(JFXPanel jfxPanel) {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtension/questionnaire/FXMLDocument.fxml"));
-
-        FXMLDocumentController controller = new FXMLDocumentController();
-        fxmlLoader.setController(controller);
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtension/mediadisplay/FXMLDocument.fxml"));
+        fxmlLoader.setController(mController);
 
         try {
             fxmlLoader.load();
@@ -113,59 +129,19 @@ public class QuestionnaireGUI {
             throw new RuntimeException(exception);
         }
 
-        controller.addListener(mExecutor);
-
         Parent root = fxmlLoader.getRoot();
         Scene scene = new Scene(root);
 
-        root.setStyle("-fx-background-color: #FFFFFF10;");
-        //root.setStyle("-fx-background-color: radial-gradient(focus-distance 0% , center 50% 50% , radius 100% , #9ACD32AA ,#FFFFFF10);"
-        //root.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);");
-        
+        root.setStyle("-fx-background-color: null;");
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-
+        
         jfxPanel.setScene(scene);
 
-        // do personalisation
-        for (String key : mPersonalValues.keySet()) {
-            if (key.equalsIgnoreCase("strength1")) {
-                controller.strength1.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("strength2")) {
-                controller.strength2.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("strength3")) {
-                controller.strength3.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("strength4")) {
-                controller.strength4.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("strength5")) {
-                controller.strength5.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("strength6")) {
-                controller.strength6.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("weakness1")) {
-                controller.weakness1.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("weakness2")) {
-                controller.weakness2.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("weakness3")) {
-                controller.weakness3.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("weakness4")) {
-                controller.weakness4.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("weakness5")) {
-                controller.weakness5.setText(mPersonalValues.get(key));
-            }
-            if (key.equalsIgnoreCase("weakness6")) {
-                controller.weakness6.setText(mPersonalValues.get(key));
-            }
-
-        }
-
+        mImageResource = FXMLDocumentController.class.getResource("/res/img/docicon.png").toExternalForm();
+        mController.canvas.setStyle("-fx-background-image: url('" + mImageResource + "'); "
+                + "-fx-background-position: center center; "
+                + "-fx-background-repeat: no-repeat no-repeat;"
+                + "-fx-background-size: contain;"
+                + "-fx-background-color: #00000000;");
     }
 }

@@ -1,33 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="106" language="en" identifier="SusanneWelcome">
-    <SceneTurn lower="25" upper="106" speaker="susanne">
-      <SceneUttr lower="34" upper="106" punct="?">
-        <SceneWord lower="34" upper="39" text="Hello"/>
-        <ActionObject lower="40" upper="50" actor="" mode="" name="WaveLeft" >
+  <SceneComment lower="0" upper="104" comment="/* Available commands: Show image [display show image={dog,cat}], values are configured in project.xml*/"/>
+  <SceneComment lower="106" upper="254" comment="/*                     Hide image [display hide]. Important show image is modal (no mouse input for other windows), make sure to hide image again */"/>
+  <SceneComment lower="256" upper="384" comment="/*                     Show user data questionnaire [qgui show], values for strength, weaknesses are configured in project.xml*/"/>
+  <SceneObject lower="386" upper="526" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="411" upper="492" speaker="susanne">
+      <SceneUttr lower="420" upper="492" punct="?">
+        <SceneWord lower="420" upper="425" text="Hello"/>
+        <ActionObject lower="426" upper="436" actor="" mode="" name="WaveLeft" >
         </ActionObject>
-        <SceneWord lower="51" upper="56" text="world"/>
-        <ActionObject lower="57" upper="75" actor="patrick" mode="" name="WaveLeft" >
+        <SceneWord lower="437" upper="442" text="world"/>
+        <ActionObject lower="443" upper="461" actor="patrick" mode="" name="WaveLeft" >
         </ActionObject>
-        <SceneWord lower="76" upper="79" text="how"/>
-        <SceneWord lower="80" upper="83" text="are"/>
-        <SceneWord lower="84" upper="87" text="you"/>
-        <ActionObject lower="88" upper="99" actor="qgui" mode="" name="show" >
+        <SceneWord lower="462" upper="465" text="how"/>
+        <SceneWord lower="466" upper="469" text="are"/>
+        <SceneWord lower="470" upper="473" text="you"/>
+        <ActionObject lower="474" upper="485" actor="qgui" mode="" name="show" >
         </ActionObject>
-        <SceneWord lower="100" upper="105" text="today"/>
+        <SceneWord lower="486" upper="491" text="today"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="493" upper="526" speaker="susanne">
+      <SceneUttr lower="502" upper="526" punct=".">
+        <SceneWord lower="502" upper="505" text="Ich"/>
+        <SceneWord lower="506" upper="511" text="mache"/>
+        <SceneWord lower="512" upper="514" text="es"/>
+        <SceneWord lower="515" upper="521" text="wieder"/>
+        <SceneWord lower="522" upper="525" text="weg"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="108" upper="182" language="en" identifier="PatrickWelcome">
-    <SceneTurn lower="133" upper="182" speaker="patrick">
-      <SceneUttr lower="142" upper="182" punct="?">
-        <SceneWord lower="142" upper="147" text="Hello"/>
-        <ActionObject lower="148" upper="163" actor="susanne" mode="" name="Smile" >
+  <SceneObject lower="528" upper="618" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="553" upper="618" speaker="patrick">
+      <SceneUttr lower="562" upper="618" punct="?">
+        <SceneWord lower="562" upper="567" text="Hello"/>
+        <ActionObject lower="568" upper="583" actor="susanne" mode="" name="Smile" >
         </ActionObject>
-        <SceneWord lower="164" upper="167" text="how"/>
-        <SceneWord lower="168" upper="171" text="are"/>
-        <SceneWord lower="172" upper="175" text="you"/>
-        <SceneWord lower="176" upper="181" text="today"/>
+        <SceneWord lower="584" upper="587" text="how"/>
+        <ActionObject lower="588" upper="603" actor="susanne" mode="" name="Blink" >
+        </ActionObject>
+        <SceneWord lower="604" upper="607" text="are"/>
+        <SceneWord lower="608" upper="611" text="you"/>
+        <SceneWord lower="612" upper="617" text="today"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

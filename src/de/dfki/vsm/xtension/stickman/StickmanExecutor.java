@@ -13,7 +13,7 @@ import de.dfki.stickman.animationlogic.Animation;
 import de.dfki.stickman.animationlogic.AnimationLoader;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.util.ios.IOSIndentWriter;
-import de.dfki.vsm.model.config.ConfigFeature;
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -159,33 +159,36 @@ public class StickmanExecutor extends ActivityExecutor {
 
             mLogger.message("ActivityWorker " + animId + "  done ....");
         }
-        // Return when terminated
     }
 
     @Override
     public void launch() {
+        // read config
+        final String host = mConfig.getProperty("smhost");
+        final String port = mConfig.getProperty("smport");
+
         // Create the connection
-        mListener = new StickmanListener(8000, this);
+        mListener = new StickmanListener(Integer.parseInt(port), this);
         // Start the connection
         mListener.start();
 
-        // Get the plugin configuration
-        for (ConfigFeature cf : mConfig.getEntryList()) {
-            mLogger.message("Stickman Plugin Config: " + cf.getKey() + " = " + cf.getValue());
-        }
-
-        final String host = mConfig.getProperty("smhost");
-        final String port = mConfig.getProperty("smport");
+        final boolean showStickmanNames = mConfig.containsKey("showstickmanname") ? mConfig.getProperty("showstickmanname").equalsIgnoreCase("true") : true;
 
         // Start the StickmanStage client application 
         mLogger.message("Starting StickmanStage Client Application ...");
         mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
+        mStickmanStage.showStickmanName(showStickmanNames);
 
-        // TODO - read config
-        StickmanStage.addStickman("susanne");
-        StickmanStage.addStickman("patrick");
+        // Get Stickman agents configuration
+        for (String name : mProject.getAgentNames()) {
+            AgentConfig ac = mProject.getAgentConfig(name);
 
-        // wait for stickman stage 
+            if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
+                StickmanStage.addStickman(name);
+            }
+        }
+
+        // Wait for stickman stage to be initialized 
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for StickmanStage");
             try {

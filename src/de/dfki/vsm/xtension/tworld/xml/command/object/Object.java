@@ -5,10 +5,10 @@
  */
 package de.dfki.vsm.xtension.tworld.xml.command.object;
 
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveToLocation;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.SetSoundAmbient;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveTo;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.SoundAmbient;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.CharamelAction;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.AmbientSetup;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.Ambient;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -67,17 +67,17 @@ public class Object implements XMLParseable, XMLWriteable {
                     String actionName = element.getAttribute("name");
 
                     if (actionName.equalsIgnoreCase("MovetoLocation")) {
-                        mAction = new MoveToLocation();
+                        mAction = new MoveTo();
                         mAction.parseXML(element);
                     }
 
                     if (actionName.equalsIgnoreCase("ambient_setup")) {
-                        mAction = new AmbientSetup();
+                        mAction = new Ambient();
                         mAction.parseXML(element);
                     }
 
                     if (actionName.equalsIgnoreCase("set_sound_ambient")) {
-                        mAction = new SetSoundAmbient();
+                        mAction = new SoundAmbient();
                         mAction.parseXML(element);
                     }
                     if (actionName.equalsIgnoreCase("caixml")) {
