@@ -104,30 +104,45 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="794" upper="825" language="en" identifier="Feedback">
-    <SceneTurn lower="813" upper="825" speaker="Susanne">
-      <SceneUttr lower="822" upper="825" punct="!">
-        <SceneWord lower="822" upper="824" text="Uh"/>
+  <SceneObject lower="794" upper="886" language="en" identifier="SendNPCtoKitchen">
+    <SceneTurn lower="821" upper="886" speaker="bert">
+      <SceneUttr lower="827" upper="886" punct=".">
+        <SceneWord lower="827" upper="830" text="Nun"/>
+        <SceneWord lower="831" upper="834" text="NPC"/>
+        <SceneWord lower="835" upper="836" text="1"/>
+        <ActionObject lower="837" upper="867" actor="npc1" mode="" name="MoveTo" >
+          <ActionFeature lower="850" upper="866" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
+        <SceneWord lower="868" upper="872" text="geht"/>
+        <SceneWord lower="873" upper="875" text="in"/>
+        <SceneWord lower="876" upper="879" text="die"/>
+        <SceneWord lower="880" upper="885" text="Küche"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="827" upper="865" language="en" identifier="Bad_Feedback">
-    <SceneTurn lower="850" upper="865" speaker="Susanne">
-      <SceneUttr lower="859" upper="865" punct="!">
-        <SceneWord lower="859" upper="861" text="Oh"/>
-        <SceneWord lower="862" upper="864" text="oh"/>
+  <SceneObject lower="888" upper="919" language="en" identifier="Feedback">
+    <SceneTurn lower="907" upper="919" speaker="Susanne">
+      <SceneUttr lower="916" upper="919" punct="!">
+        <SceneWord lower="916" upper="918" text="Uh"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="867" upper="945" language="en" identifier="Flee">
-    <SceneTurn lower="882" upper="945" speaker="bert">
-      <SceneUttr lower="888" upper="945" punct="!">
-        <SceneWord lower="888" upper="895" text="Susanne"/>
-        <SceneWord lower="896" upper="902" text="flieht"/>
-        <SceneWord lower="903" upper="906" text="von"/>
-        <SceneWord lower="907" upper="910" text="Dir"/>
-        <ActionObject lower="911" upper="944" actor="Susanne" mode="" name="MoveTo" >
-          <ActionFeature lower="927" upper="943" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
+  <SceneObject lower="921" upper="959" language="en" identifier="Bad_Feedback">
+    <SceneTurn lower="944" upper="959" speaker="Susanne">
+      <SceneUttr lower="953" upper="959" punct="!">
+        <SceneWord lower="953" upper="955" text="Oh"/>
+        <SceneWord lower="956" upper="958" text="oh"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="961" upper="1039" language="en" identifier="Flee">
+    <SceneTurn lower="976" upper="1039" speaker="bert">
+      <SceneUttr lower="982" upper="1039" punct="!">
+        <SceneWord lower="982" upper="989" text="Susanne"/>
+        <SceneWord lower="990" upper="996" text="flieht"/>
+        <SceneWord lower="997" upper="1000" text="von"/>
+        <SceneWord lower="1001" upper="1004" text="Dir"/>
+        <ActionObject lower="1005" upper="1038" actor="Susanne" mode="" name="MoveTo" >
+          <ActionFeature lower="1021" upper="1037" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 12 Apr 2016 15:34:22" start="N1;N15;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 12 Apr 2016 15:52:02" start="N1;N15;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
     <StructType name="WorldFeedback">
       <Member type="String" name ="type"/>
@@ -142,13 +142,13 @@
     <TEdge target="N4" start="" timeout="4000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="570" yPos="345" ctrlXPos="637" ctrlYPos="345"/>
-        <ControlPoint xPos="750" yPos="345" ctrlXPos="682" ctrlYPos="345"/>
+        <ControlPoint xPos="570" yPos="255" ctrlXPos="637" ctrlYPos="255"/>
+        <ControlPoint xPos="750" yPos="255" ctrlXPos="682" ctrlYPos="255"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="480" yPos="300"/>
+      <Position xPos="480" yPos="210"/>
     </Graphics>
   </Node>
   <Node id="N4" name="N4" history="false">
@@ -164,13 +164,13 @@
     <TEdge target="N3" start="" timeout="4000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="752" yPos="357" ctrlXPos="687" ctrlYPos="375"/>
-        <ControlPoint xPos="568" yPos="357" ctrlXPos="632" ctrlYPos="375"/>
+        <ControlPoint xPos="752" yPos="267" ctrlXPos="687" ctrlYPos="285"/>
+        <ControlPoint xPos="568" yPos="267" ctrlXPos="632" ctrlYPos="285"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="750" yPos="300"/>
+      <Position xPos="750" yPos="210"/>
     </Graphics>
   </Node>
   <Node id="N15" name="N15" history="false">
@@ -205,16 +205,38 @@
         <String><![CDATA[ShowPlan]]></String>
       </PlaySceneGroup>
     </Commands>
-    <EEdge target="N3" start ="">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="300" yPos="345" ctrlXPos="367" ctrlYPos="345"/>
-        <ControlPoint xPos="480" yPos="345" ctrlXPos="412" ctrlYPos="345"/>
-      </Connection>
-    </Graphics>
-    </EEdge>
+    <FEdge target="N3" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="298" yPos="333" ctrlXPos="369" ctrlYPos="313"/>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="410" ctrlYPos="286"/>
+        </Connection>
+      </Graphics>
+    </FEdge>
+    <FEdge target="N21" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="298" yPos="357" ctrlXPos="369" ctrlYPos="376"/>
+          <ControlPoint xPos="482" yPos="423" ctrlXPos="410" ctrlYPos="403"/>
+        </Connection>
+      </Graphics>
+    </FEdge>
     <Graphics>
       <Position xPos="210" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N21" name="N21" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[SendNPCtoKitchen]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <Graphics>
+      <Position xPos="480" yPos="390"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="Prolog" comment="" hideLocalVar="false" hideGlobalVar="false" start="N6;">
