@@ -150,6 +150,15 @@
             <classpath refid="clspath"/>
         </java>
     </target>
+    
+     <!-- Execute to Welcome Screen -->
+    <target name="test">
+        <java classname="de.dfki.vsm.xtesting.TestSSIPlugin" fork="true">
+            <!-- <arg line="runtime res/prj/test"/> -->
+            <!-- <arg line="editor res/prj/test"/> -->
+            <classpath refid="clspath"/>
+        </java>
+    </target>
     <!-- Execute Project -->
     <!--    <target name="exec">
             <java classname="de.dfki.vsm.ProjectEditor" fork="true">
