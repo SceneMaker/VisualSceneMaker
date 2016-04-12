@@ -26,7 +26,6 @@ import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -106,7 +105,7 @@ public class StickmanExecutor extends ActivityExecutor {
             stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
             stickmanAnimation.mParameter = wts;
 
-            executeAnimationAndWait(activity, stickmanAnimation, stickmanAnimation.mID);
+            executeAnimationAndWait(activity, stickmanAnimation);
         } else if (activity instanceof ActionActivity) {
             stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
@@ -120,35 +119,24 @@ public class StickmanExecutor extends ActivityExecutor {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
-
-        try {
-            broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
-        } catch (UnsupportedEncodingException exc) {
-            mLogger.warning(exc.getMessage());
-        }
+        broadcast(out.toString().replace("\n", " "));
     }
 
-    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation, String animId) {
+    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation) {
         // executeAnimation command to platform 
         synchronized (mActivityWorkerMap) {
             // executeAnimation command to platform 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             IOSIndentWriter iosw = new IOSIndentWriter(out);
             boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
-
-            try {
-                broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
-            } catch (UnsupportedEncodingException exc) {
-                mLogger.warning(exc.getMessage());
-            }
+            broadcast(out.toString().replace("\n", " "));
 
             // organize wait for feedback
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(animId, cAW);
+            mActivityWorkerMap.put(stickmanAnimation.mID, cAW);
 
             // wait until we got feedback
-            mLogger.message("ActivityWorker " + animId + " waiting ....");
-
+            mLogger.message("ActivityWorker " + stickmanAnimation.mID + " waiting ....");
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
                     mActivityWorkerMap.wait();
@@ -156,8 +144,7 @@ public class StickmanExecutor extends ActivityExecutor {
                     mLogger.failure(exc.toString());
                 }
             }
-
-            mLogger.message("ActivityWorker " + animId + "  done ....");
+            mLogger.message("ActivityWorker " + stickmanAnimation.mID + "  done ....");
         }
     }
 
@@ -261,5 +248,4 @@ public class StickmanExecutor extends ActivityExecutor {
             client.send(message);
         }
     }
-
 }
