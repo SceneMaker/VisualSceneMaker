@@ -80,7 +80,7 @@ public final class SceneMaker3 {
         //
         sLogger.message("Starting VSM editor with file '" + file + "'");
         // Get the singelton runtime instance
-        final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
+        //final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
         // Get the singelton editor instance
         final EditorInstance sEditor = EditorInstance.getInstance();
         // Get an editor project from file 

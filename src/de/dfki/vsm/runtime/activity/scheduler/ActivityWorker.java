@@ -1,8 +1,7 @@
-package de.dfki.vsm.runtime.activity.manager;
+package de.dfki.vsm.runtime.activity.scheduler;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-//import de.dfki.vsm.runtime.activity.feedback.ActivityFeedback;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.List;
 
@@ -23,7 +22,6 @@ public final class ActivityWorker extends Thread {
     // The activity data
     private final AbstractActivity mActivity;
     private final ActivityExecutor mExecutor;
-    private final ActivityScheduler mScheduler;
 
     // Abort the execution
     public final void abort() {
@@ -38,18 +36,12 @@ public final class ActivityWorker extends Thread {
         return mDone;
     }
 
-    // Get Activity - added by PG 5.4.2016
-    public final AbstractActivity getActivity() {
-        return mActivity;
-    }
-
     // Construct with a name
     public ActivityWorker(
             final long timeout,
             final List<ActivityWorker> workers,
             final AbstractActivity activity,
-            final ActivityExecutor executor,
-            final ActivityScheduler player) {
+            final ActivityExecutor executor) {
         super(activity.toString());
         // Initialize the flag
         mDone = false;
@@ -59,7 +51,6 @@ public final class ActivityWorker extends Thread {
         mTimeout = timeout;
         mActivity = activity;
         mExecutor = executor;
-        mScheduler = player;
     }
 
     @Override
@@ -79,7 +70,7 @@ public final class ActivityWorker extends Thread {
             // Print some information
             mLogger.message("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
             // Execute the activity
-            mExecutor.execute(mActivity/*, mScheduler*/);
+            mExecutor.execute(mActivity);
         }
         // Wait for workers
         if (mList != null) {
@@ -91,7 +82,7 @@ public final class ActivityWorker extends Thread {
                     worker.join();
                     // Print some information
                     mLogger.message("Joining activity worker '" + worker + "'");
-                                        // TODO: Remove the worker from thread
+                    // TODO: Remove the worker from thread
                     // or clear the list after joinig all
                 } catch (final InterruptedException exc) {
                     // Print some information

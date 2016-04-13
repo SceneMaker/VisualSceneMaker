@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.player;
 
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.util.LinkedList;
@@ -12,8 +12,7 @@ import java.util.LinkedList;
 public abstract class RunTimePlayer extends RunTimePlugin {
 
     // The activity manager
-    protected final ActivityScheduler mScheduler = new ActivityScheduler(); 
-   // moved from ReactivePlayer to here PG 4.4.2016
+    protected final ActivityScheduler mScheduler = new ActivityScheduler();
 
     // Construct the player
     public RunTimePlayer(

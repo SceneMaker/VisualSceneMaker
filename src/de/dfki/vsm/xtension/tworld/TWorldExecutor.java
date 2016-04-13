@@ -5,9 +5,8 @@ import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
@@ -15,13 +14,9 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.tworld.xml.command.TWorldCommand;
 import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.Ambient;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveTo;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.SoundAmbient;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.Speak;
 import de.dfki.vsm.xtension.tworld.xml.feedback.TWorldFeedback;
 import de.dfki.vsm.xtension.tworld.xml.util.ActionLoader;
@@ -172,16 +167,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     }
 
     @Override
-    public final void execute(
-            final AbstractActivity activity/*,
-     final ActivityScheduler scheduler*/) {
-        // Compile the activity
-//        final String command = activity.toString();
-//        // Print some information
-//        //System.err.println("Command '" + command + "'");
-//        //
-
-        // get action information
+    public final void execute(final AbstractActivity activity) {
+        // Get action information
         String actor = "";
         final String cmd = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
@@ -349,11 +336,6 @@ public final class TWorldExecutor extends ActivityExecutor {
 //        }
     }
 
-    // Handle some message
-    //public void handle(final String message, final SSIRunTimePlugin plugin) {
-    //    mLogger.warning("Handling " + message + "");
-    //
-    //}
     // Broadcast some message
     private void broadcast(final String message) {
         for (final TWorldHandler client : mClientMap.values()) {

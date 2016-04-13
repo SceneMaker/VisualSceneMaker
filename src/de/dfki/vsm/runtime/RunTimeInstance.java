@@ -8,9 +8,7 @@ import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Gregor Mehlmann
@@ -42,6 +40,7 @@ public final class RunTimeInstance {
         return sInstance;
     }
 
+    /*
     public ReentrantLock getLock(final RunTimeProject project) {
         if (!mProjectMap.containsKey(project)) {
             // Print an error message
@@ -51,7 +50,8 @@ public final class RunTimeInstance {
         }
         return mProjectMap.get(project).getLock();
     }
-
+    */
+    
     /*
     public final boolean loadRunTimePlugins(final RunTimeProject project) {
 
