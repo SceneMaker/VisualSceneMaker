@@ -7,7 +7,7 @@ package de.dfki.vsm.xtension.questionnaire;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -130,9 +130,10 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
         values.put("weakness6", new BooleanValue(uservalues.get("weakness6").equalsIgnoreCase("ja")));
 
         try {
-            RunTimeInstance runTime = RunTimeInstance.getInstance();
+            //RunTimeInstance runTime = RunTimeInstance.getInstance();
             StructValue struct = new StructValue(values);
-            runTime.setVariable(mProject, "userdata", struct);
+            //runTime.setVariable(mProject, "userdata", struct);
+            mProject.setVariable("userdata", struct);//GM
         } catch (Exception e) {
             // System.out.println("not running");
         }

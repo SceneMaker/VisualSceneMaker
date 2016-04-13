@@ -2,7 +2,7 @@ package de.dfki.vsm.xtension.tworld;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -312,9 +312,10 @@ public final class TWorldExecutor extends ActivityExecutor {
                 values.put("name", new StringValue(twf.mFeedbackObject.mName));
 
                 try {
-                    RunTimeInstance runTime = RunTimeInstance.getInstance();
+                    //RunTimeInstance runTime = RunTimeInstance.getInstance();
                     StructValue struct = new StructValue(values);
-                    runTime.setVariable(mProject, "feedback", struct);
+                    //runTime.setVariable(mProject, "feedback", struct);
+                    mProject.setVariable("feedback", struct);//GM
                 } catch (Exception e) {
                     // System.out.println("not running");
                 }

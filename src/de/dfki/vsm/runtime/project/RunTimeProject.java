@@ -9,6 +9,12 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.interpreter.Interpreter;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
@@ -49,6 +55,9 @@ public class RunTimeProject {
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
     private final RunTimePlayer mRunTimePlayer;
+    //
+    private Interpreter mInterpreter;
+
     // The runtime plugin map of the project
     private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
@@ -240,6 +249,8 @@ public class RunTimeProject {
         for (final RunTimePlugin plugin : mPluginMap.values()) {
             plugin.launch();
         }
+        // Create an interpreter
+        mInterpreter = new Interpreter(this);//GM
         // Return true at success
         return true;
     }
@@ -252,8 +263,80 @@ public class RunTimeProject {
         for (final RunTimePlugin plugin : mPluginMap.values()) {
             plugin.unload();
         }
+        // Remove the interpreter
+        mInterpreter = null;//GM
         // Return true at success
         return true;
+    }
+
+    //GM
+    public final boolean start() {
+        if (mInterpreter != null) {
+            // Start the interpreter
+            return mInterpreter.start();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean abort() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.abort();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean pause() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.pause();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean proceed() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.proceed();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean isRunning() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.isRunning();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean isPaused() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.isPaused();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean wasExecuted() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.wasExecuted();
+        }
+        //
+        return false;
     }
 
     private boolean parseProjectConfig(final String path) {
@@ -683,5 +766,155 @@ public class RunTimeProject {
         // Other Project Data Structures?
         hashCode += mSceneScript.getHashCode();
         return hashCode;
+    }
+
+    public final boolean setVariable(final String name, final int value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new IntValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, final int value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new IntValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, final int value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new IntValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, float value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new FloatValue(value));
+
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, float value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new FloatValue(value));
+
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, float value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new FloatValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, boolean value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new BooleanValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, boolean value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new BooleanValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, boolean value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new BooleanValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new StringValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, final String value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new StringValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, final String value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new StringValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final AbstractValue value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, value);
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, final AbstractValue value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, value);
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, final AbstractValue value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, value);
+        }
+        return false;
+    }
+
+    public final boolean hasVariable(final String name) {
+        if (mInterpreter != null) {
+            mInterpreter.hasVariable(name);
+        }
+        return false;
+    }
+
+    public final boolean hasVariable(final String name, final int index) {
+        if (mInterpreter != null) {
+            mInterpreter.hasVariable(name, index);
+        }
+        return false;
+    }
+
+    public final boolean hasVariable(final String name, final String member) {
+        if (mInterpreter != null) {
+            mInterpreter.hasVariable(name, member);
+
+        }
+        return false;
+    }
+
+    public final AbstractValue getValueOf(final String name) {
+        if (mInterpreter != null) {
+            mInterpreter.getValueOf(name);
+        }
+        return null;
+    }
+
+    public final AbstractValue getValueOf(final String name, final int index) {
+        if (mInterpreter != null) {
+            mInterpreter.getValueOf(name, index);
+        }
+        return null;
+    }
+
+    public final AbstractValue getValueOf(final String name, final String member) {
+        if (mInterpreter != null) {
+            mInterpreter.getValueOf(name, member);
+        }
+        return null;
     }
 }
