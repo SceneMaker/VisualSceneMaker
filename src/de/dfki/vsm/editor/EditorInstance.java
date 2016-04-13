@@ -8,7 +8,7 @@ import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -58,7 +58,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The singelton editor instance
     public static EditorInstance sInstance = null;
     // The singelton runtime instance
-    private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
+    //private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
     // The singelton logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The singelton event multicaster
@@ -665,7 +665,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 save(editor);
             }
             // Stop project execution if running
-            if (mRunTime.isRunning(editor.getEditorProject())) {
+            if (/*mRunTime.isRunning(editor.getEditorProject())*/editor.getEditorProject().isRunning()) {
                 stop(editor.getEditorProject());
             }
             // Close the project editor itself
@@ -686,7 +686,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return exitMessage;
         } else {
             // Stop project execution if running
-            if (mRunTime.isRunning(editor.getEditorProject())) {
+            if (/*mRunTime.isRunning(editor.getEditorProject())*/editor.getEditorProject().isRunning()) {
                 stop(editor.getEditorProject());
             }
             // Close the project editor itself
@@ -883,9 +883,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Play the execution of the current project
     public final boolean play(final EditorProject project) {
         // Check State Of Execution
-        if (mRunTime.isRunning(project)) {
-            if (mRunTime.isPaused(project)) {
-                if (mRunTime.proceed(project)) {
+        if (/*mRunTime.isRunning(project)*/project.isRunning()) {
+            if (/*mRunTime.isPaused(project)*/project.isPaused()) {
+                if (/*mRunTime.proceed(project)*/project.proceed()) {
                     // Print some information
                     mLogger.message("Proceeding project '" + project + "'");
                     // Refresh the appearance
@@ -899,7 +899,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                     return false;
                 }
             } else {
-                if (mRunTime.pause(project)) {
+                if (/*mRunTime.pause(project)*/project.pause()) {
                     // Print some information
                     mLogger.message("Pausing project '" + project + "'");
                     // Refresh the appearance
@@ -916,11 +916,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         } else {
 			// Launch the current project in the runtime
             //if (mRunTime.loadRunTimePlugins(project)) {
-            if (mRunTime.launch(project)) {
+            if (/*mRunTime.launch(project)*/project.launch()) {
                     // Print some information
                 //mLogger.message("Launching project '" + project + "'");
                 // Start the interpreter for that project
-                if (mRunTime.start(project)) {
+                if (/*mRunTime.start(project)*/project.start()) {
                     // Print some information
                     //mLogger.message("Starting project '" + project + "'");
                     // Refresh the appearance
@@ -961,11 +961,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Stop the execution of a specific project
     public final boolean stop(final EditorProject project) {
         // Abort the interpreter for that project
-        if (mRunTime.abort(project)) {
+        if (/*mRunTime.abort(project)*/project.abort()) {
             // Print some information
             //mLogger.message("Aborting project '" + project + "'");
             // Unload the current project in the runtime
-            if (mRunTime.unload(project)) {
+            if (/*mRunTime.unload(project)*/project.unload()) {
                 // Print some information
                 //mLogger.message("Unloading project '" + project + "'");
                 // Launch event to unselect nodes and edges
