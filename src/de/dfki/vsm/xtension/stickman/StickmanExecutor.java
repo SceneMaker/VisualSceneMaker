@@ -75,7 +75,7 @@ public class StickmanExecutor extends ActivityExecutor {
     }
 
     @Override
-    public void execute(AbstractActivity activity, ActivityScheduler scheduler) {
+    public void execute(AbstractActivity activity/*, ActivityScheduler scheduler*/) {
         // get action information
         final String actor = activity.getActor();
         final String name = activity.getName();
@@ -99,8 +99,8 @@ public class StickmanExecutor extends ActivityExecutor {
             }
 
             // schedule Mouth_open and Mouth closed activities
-            scheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
-            scheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
+            mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
+            mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
 
             stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
             stickmanAnimation.mParameter = wts;
@@ -235,9 +235,11 @@ public class StickmanExecutor extends ActivityExecutor {
                 // wake me up ..
                 mActivityWorkerMap.notifyAll();
                 // identify the related activity
-                AbstractActivity activity = mProject.getScenePlayer().getActivityManager().getMarkerActivity(message);
+                //AbstractActivity activity = mProject.getRunTimePlayer().getActivityScheduler().getMarkerActivity(message);
                 // play the activity
-                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(activity, message));
+                //mProject.getRunTimePlayer().getActivityScheduler().handle(new MarkerFeedback(activity, message));
+                mProject.getRunTimePlayer().getActivityScheduler().handle(new MarkerFeedback(message));
+                
             }
         }
     }

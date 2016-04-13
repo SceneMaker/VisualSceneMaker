@@ -45,7 +45,7 @@ public class MediaDisplayExecutor extends ActivityExecutor {
     }
     
     @Override
-    public void execute(AbstractActivity activity, ActivityScheduler player) {
+    public void execute(AbstractActivity activity/*, ActivityScheduler player*/) {
         if (activity instanceof ActionActivity) {
             final String name = activity.getName();
             

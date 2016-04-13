@@ -17,7 +17,7 @@ public class TestSSIPlugin {
     public static void main(String args[]) {
 
         final String xmldata = ""
-                + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                // + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<ssi>\n"
                 + "    <voice>\n"
                 + "        <activity>0</activity>\n"
@@ -102,7 +102,9 @@ public class TestSSIPlugin {
                 + "        type=\"XML\"\n"
                 + "        state=\"COMPLETED\"\n"
                 + "        glue=\"0\">"
-                + "<![CDATA[" + xmldata + "]]>"
+                + "<![CDATA["
+                + xmldata
+                + "]]>"
                 + "    </event>\n"
                 + "</events>\n";
 
@@ -134,7 +136,7 @@ public class TestSSIPlugin {
         System.out.println(mSSIData.getVoiceData().getPraatData().getPitchSD());
 
        //  System.out.println(mSSIData.getHeadData().getNodData());
-       //  System.out.println(mSSIData.getHeadData().getShakeData());
+        //  System.out.println(mSSIData.getHeadData().getShakeData());
         System.out.println(mSSIData.getHeadData().getPosData().getX());
         System.out.println(mSSIData.getHeadData().getPosData().getY());
 
@@ -156,7 +158,7 @@ public class TestSSIPlugin {
         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIdentifier());
         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDetected());
         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDuration());
-        System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIntensity());        
+        System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIntensity());
 
         System.out.println(mSSIData.getFaceData().getExpData("smile").getIdentifier());
         System.out.println(mSSIData.getFaceData().getExpData("smile").getDetected());

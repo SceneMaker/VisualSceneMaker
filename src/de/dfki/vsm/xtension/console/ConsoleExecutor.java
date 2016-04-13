@@ -59,8 +59,8 @@ public final class ConsoleExecutor extends  ActivityExecutor {
 
     @Override
     public final void execute(
-            final AbstractActivity object,
-            final ActivityScheduler scheduler) {
+            final AbstractActivity object/*,
+            final ActivityScheduler scheduler*/) {
         // Execute the command
         System.err.println("Console executing activity '" + object + "'");
         // Give some feedback
@@ -89,7 +89,7 @@ public final class ConsoleExecutor extends  ActivityExecutor {
                     // Check for bookmark
                     final String id = matcher.group(1);
                     // Give some feedback
-                    scheduler.handle(new MarkerFeedback(activity, token));
+                    mScheduler.handle(new MarkerFeedback(activity, token));
                 } else {
                     try {
                         // Give some feedback

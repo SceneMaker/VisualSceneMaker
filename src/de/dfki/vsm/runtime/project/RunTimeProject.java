@@ -48,14 +48,14 @@ public class RunTimeProject {
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
-    private final RunTimePlayer mScenePlayer;
+    private final RunTimePlayer mRunTimePlayer;
     // The runtime plugin map of the project
     private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
     // Construct an empty runtime project
     public RunTimeProject() {
         // Initialize the scene player
-        mScenePlayer = new ReactivePlayer(null, this);
+        mRunTimePlayer = new ReactivePlayer(null, this);
     }
 
     // Construct a project from a directory
@@ -65,7 +65,7 @@ public class RunTimeProject {
         // Call the local parsing method
         parse(mProjectPath);
         // Initialize the scene players
-        mScenePlayer = new ReactivePlayer(null, this);
+        mRunTimePlayer = new ReactivePlayer(null, this);
     }
 
     // Get the path of the project (added PG 11.4.2016)
@@ -123,8 +123,8 @@ public class RunTimeProject {
         return mGesticonConfig;
     }
 
-    public final RunTimePlayer getScenePlayer() {
-        return mScenePlayer;
+    public final RunTimePlayer getRunTimePlayer() {
+        return mRunTimePlayer;
     }
 
     public final ActivityExecutor getAgentDevice(final String agent) {
@@ -235,7 +235,7 @@ public class RunTimeProject {
     // Launch the runtime objects of the project
     public final boolean launch() {
         // Launch the scene player
-        mScenePlayer.launch();
+        mRunTimePlayer.launch();
         // Launch all plugins
         for (final RunTimePlugin plugin : mPluginMap.values()) {
             plugin.launch();
@@ -247,7 +247,7 @@ public class RunTimeProject {
     // Unload the runtime objects of the project
     public final boolean unload() {
         // Unload the scene player
-        mScenePlayer.unload();
+        mRunTimePlayer.unload();
         // Unload all plugins
         for (final RunTimePlugin plugin : mPluginMap.values()) {
             plugin.unload();

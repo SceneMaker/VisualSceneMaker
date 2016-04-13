@@ -13,6 +13,14 @@ public final class MarkerFeedback extends ActivityFeedback {
 
     private final String mMarker;
 
+    public MarkerFeedback(final String marker) {
+        // Initialize the feedback
+        super();
+        // Initialize the marker
+        mMarker = marker;
+    }
+    
+   
     public MarkerFeedback(
             final AbstractActivity activity, final String marker) {
         // Initialize the feedback
@@ -20,7 +28,8 @@ public final class MarkerFeedback extends ActivityFeedback {
         // Initialize the marker
         mMarker = marker;
     }
-
+    
+    
     // Get the marker
     public final String getMarker() {
         return mMarker;

@@ -55,7 +55,9 @@ public final class TWorldExecutor extends ActivityExecutor {
     private int sId = 0;
 
     // Construct the executor
-    public TWorldExecutor(final PluginConfig config, final RunTimeProject project) {
+    public TWorldExecutor(
+            final PluginConfig config,
+            final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
     }
@@ -171,8 +173,8 @@ public final class TWorldExecutor extends ActivityExecutor {
 
     @Override
     public final void execute(
-            final AbstractActivity activity,
-            final ActivityScheduler scheduler) {
+            final AbstractActivity activity/*,
+     final ActivityScheduler scheduler*/) {
         // Compile the activity
 //        final String command = activity.toString();
 //        // Print some information
@@ -348,11 +350,10 @@ public final class TWorldExecutor extends ActivityExecutor {
     }
 
     // Handle some message
-    public void handle(final String message, final SSIRunTimePlugin plugin) {
-        mLogger.warning("Handling " + message + "");
-        //
-    }
-
+    //public void handle(final String message, final SSIRunTimePlugin plugin) {
+    //    mLogger.warning("Handling " + message + "");
+    //
+    //}
     // Broadcast some message
     private void broadcast(final String message) {
         for (final TWorldHandler client : mClientMap.values()) {

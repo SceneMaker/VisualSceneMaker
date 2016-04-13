@@ -50,7 +50,7 @@ public class Interpreter {
         // Initialize the sceneflow object
         mSceneFlow = mRunTimeProject.getSceneFlow();
         // TODO: We want only one scene player
-        mScenePlayer = mRunTimeProject.getScenePlayer();
+        mScenePlayer = mRunTimeProject.getRunTimePlayer();
         //mDialogPlayer = new DefaultPlayer(project);
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
