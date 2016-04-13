@@ -31,7 +31,7 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 /**
- * @author Gregor Mehlmann
+ * @author Gregor Mehlmann, Patrick Gebhard
  */
 public final class TWorldExecutor extends ActivityExecutor {
 
@@ -46,8 +46,6 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
-    // The execution id
-    private int sId = 0;
 
     // Construct the executor
     public TWorldExecutor(
@@ -146,14 +144,9 @@ public final class TWorldExecutor extends ActivityExecutor {
     }
 
     @Override
-    public final String marker(final long id) {
+    public synchronized final String marker(final long id) {
         // TWorld style bookmarks
-        //return "\\mrk=" + id + "\\";
         return "$(" + id + ")";
-    }
-
-    private final String getExecutionId() {
-        return "" + sId++;
     }
 
     // get the value of a feature (added PG) - quick and dirty
@@ -201,10 +194,6 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
         }
-//
-//        // set the command id
-//        String executionId = getExecutionId();
-//        twcoa.setId(executionId);
 
         // finalize build command
         Object twco = new Object(actor, twcoa);
@@ -230,7 +219,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         synchronized (mActivityWorkerMap) {
             broadcast(message);
 
-            // organize wait for feedbackif (activity instanceof SpeechActivity) {
+            // organize wait for feedback if (activity instanceof SpeechActivity) {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
             mActivityWorkerMap.put(twcoa.getId(), cAW);
 
@@ -320,21 +309,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                     // System.out.println("not running");
                 }
             }
-
-//            if (message.contains("$(")) {
-//
-//                // wake me up ..
-//                mActivityWorkerMap.notifyAll();
-//                // play the acitiviy
-//                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(mActivity, message));
-//            }
         }
-//        synchronized (mActivityWorkerMap) {
-//            if (message.contains("734")) {
-//                mActivityWorkerMap.remove("734");
-//                mActivityWorkerMap.notifyAll();
-//            }
-//        }
     }
 
     // Broadcast some message
