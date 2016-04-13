@@ -8,7 +8,7 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -117,7 +117,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
     // The singelton logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The singelton runtime instance
-    private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
+    //private final RunTimeInstance mRunTime = RunTimeInstance.getInstance();
     // The singelton editor instance
     private final EditorInstance mEditorInstance = EditorInstance.getInstance();
     // The singelton system clipboard
@@ -551,10 +551,10 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         //*************************************
         //mLogger.message("Check execution status '" + this + "'");
         //refresh the play button when running the scene player
-        if (mRunTime.isRunning(mEditorProject)) {
+        if (/*mRunTime.isRunning(mEditorProject)*/mEditorProject.isRunning()) {
             // Print some information
             //mLogger.message("Running");
-            if (mRunTime.isPaused(mEditorProject)) {
+            if (/*mRunTime.isPaused(mEditorProject)*/mEditorProject.isPaused()) {
                 // Print some information
                 //mLogger.message("Paused");
                 mPlayButton.setIcon(ICON_PLAY_STANDARD);
@@ -575,9 +575,9 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             
             mPlayButton.setToolTipText("Initialize project/Start the execution of the sceneflow");
             // if an execution has been ended disable the play button
-            if (mRunTime.wasExecuted(mEditorProject) && mStopButton.isEnabled()) {
+            if (/*mRunTime.wasExecuted(mEditorProject)*/mEditorProject.wasExecuted() && mStopButton.isEnabled()) {
                 mPlayButton.setEnabled(false);
-            } else if (!mRunTime.isRunning(mEditorProject)){
+            } else if (!/*mRunTime.isRunning(mEditorProject)*/mEditorProject.isRunning()){
                 mPlayButton.setEnabled(true);
                 mStopButton.setEnabled(false);
             }

@@ -4,9 +4,7 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.awt.Dimension;
 import java.util.Scanner;
@@ -19,7 +17,7 @@ import javax.swing.JTextArea;
 /**
  * @author Gregor Mehlmann
  */
-public final class ConsoleExecutor extends  ActivityExecutor {
+public final class ConsoleExecutor extends ActivityExecutor {
 
     private final JFrame mMainFrame;
     private final JTextArea mTextArea;
@@ -59,14 +57,10 @@ public final class ConsoleExecutor extends  ActivityExecutor {
 
     @Override
     public final void execute(
-            final AbstractActivity object,
-            final ActivityScheduler scheduler) {
+            final AbstractActivity object) {
         // Execute the command
         System.err.println("Console executing activity '" + object + "'");
-        // Give some feedback
-        //scheduler.handle(new StatusFeedback(object, STARTED));
         try {
-            //           
             mTextArea.getDocument().insertString(
                     mTextArea.getDocument().getLength(), "\n", null);
             mTextArea.getDocument().insertString(
@@ -89,12 +83,9 @@ public final class ConsoleExecutor extends  ActivityExecutor {
                     // Check for bookmark
                     final String id = matcher.group(1);
                     // Give some feedback
-                    scheduler.handle(new MarkerFeedback(activity, token));
+                    mScheduler.handle(token);
                 } else {
                     try {
-                        // Give some feedback
-                        //scheduler.handle(new StatusFeedback(activity, RUNNING));
-                        //
                         mTextArea.getDocument().insertString(
                                 mTextArea.getDocument().getLength(), token, null);
                         mTextArea.getDocument().insertString(
@@ -103,8 +94,6 @@ public final class ConsoleExecutor extends  ActivityExecutor {
                         Thread.sleep(500);
                     } catch (final Exception exc) {
                         System.err.println(exc.toString());
-                        // Give some feedback
-                        //scheduler.handle(new StatusFeedback(activity, ABORTED));
                         // Return when aborted
                         return;
                     }

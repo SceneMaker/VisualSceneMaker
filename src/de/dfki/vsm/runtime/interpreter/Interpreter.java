@@ -50,7 +50,7 @@ public class Interpreter {
         // Initialize the sceneflow object
         mSceneFlow = mRunTimeProject.getSceneFlow();
         // TODO: We want only one scene player
-        mScenePlayer = mRunTimeProject.getScenePlayer();
+        mScenePlayer = mRunTimeProject.getRunTimePlayer();
         //mDialogPlayer = new DefaultPlayer(project);
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
@@ -265,32 +265,37 @@ public class Interpreter {
     public boolean isPaused() {
         try {
             lock();
-
-            return mSceneFlowThread.isPauseRequested();
+            if (mSceneFlowThread != null) {
+                return mSceneFlowThread.isPauseRequested();
+            }
         } finally {
             unlock();
         }
-
+        return false;
     }
 
     public boolean isRunning() {
         try {
             lock();
-
-            return mSceneFlowThread.isRunning();
+            if (mSceneFlowThread != null) {
+                return mSceneFlowThread.isRunning();
+            }
         } finally {
             unlock();
         }
+        return false;
     }
 
     public boolean wasExecuted() {
         try {
             lock();
-
-            return mSceneFlowThread.wasExecuted();
+            if (mSceneFlowThread != null) {
+                return mSceneFlowThread.wasExecuted();
+            }
         } finally {
             unlock();
         }
+        return false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -492,36 +497,37 @@ public class Interpreter {
         }
     }
 
-    public ArrayList listActiveStates() {
+    /*
+     public ArrayList listActiveStates() {
 
-        try {
-            // First lock the interpreter
-            lock();
-            // Create the result list
-            final ArrayList list = new ArrayList();
-            // List all active state 
-            final Object[] states = mConfiguration.getOrderedStates();
-            //
-            for (final Object object : states) {
-                final State state = (State) object;
-                //
-                final String pname = state.getThread().getName();
-                final String nname = state.getNode().getName();
-                //
-                final Environment env = state.getThread().getEnvironment();
-                final SymbolTable table = env.getActiveSymbolTable();
-                final HashMap map = table.copySymbolTable();
-                //
-                final TPLTriple triple = new TPLTriple(pname, nname, map);
-                //
-                list.add(triple);
-            }
-            // Return the result list
-            return list;
-            //return new ArrayList(Arrays.asList(Arrays.copyOf(states, states.length)));
-        } finally {
-            // Finally unlock the interpreter
-            unlock();
-        }
-    }
+     try {
+     // First lock the interpreter
+     lock();
+     // Create the result list
+     final ArrayList list = new ArrayList();
+     // List all active state 
+     final Object[] states = mConfiguration.getOrderedStates();
+     //
+     for (final Object object : states) {
+     final State state = (State) object;
+     //
+     final String pname = state.getThread().getName();
+     final String nname = state.getNode().getName();
+     //
+     final Environment env = state.getThread().getEnvironment();
+     final SymbolTable table = env.getActiveSymbolTable();
+     final HashMap map = table.copySymbolTable();
+     //
+     final TPLTriple triple = new TPLTriple(pname, nname, map);
+     //
+     list.add(triple);
+     }
+     // Return the result list
+     return list;
+     //return new ArrayList(Arrays.asList(Arrays.copyOf(states, states.length)));
+     } finally {
+     // Finally unlock the interpreter
+     unlock();
+     }
+     }*/
 }

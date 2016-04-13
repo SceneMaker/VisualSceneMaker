@@ -17,21 +17,21 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  * 
  */
-public class AmbientSetup extends Action implements XMLParseable, XMLWriteable{
+public class Ambient extends Action implements XMLParseable, XMLWriteable{
   
     String mValue = "";
 
-    public AmbientSetup(String value) {
+    public Ambient(String value) {
         mName = "ambient_setup";
         mValue = value;
     }
 
-    public AmbientSetup() {
+    public Ambient() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + " id=\"" + mId + "\" value=\"" + mValue + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" value=\"" + mValue + "\"/>");
     }
 
     @Override
