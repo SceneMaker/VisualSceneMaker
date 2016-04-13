@@ -10,22 +10,25 @@ import java.util.LinkedList;
  * @author Gregor Mehlmann
  */
 public abstract class RunTimePlayer extends RunTimePlugin {
-	
+
     // The activity manager
-    protected final ActivityScheduler mScheduler = new ActivityScheduler(); // moved from ReactivePlayer to here PG 4.4.2016
+    protected final ActivityScheduler mScheduler = new ActivityScheduler(); 
+   // moved from ReactivePlayer to here PG 4.4.2016
 
     // Construct the player
-    public RunTimePlayer(final PluginConfig config, final RunTimeProject project) {
+    public RunTimePlayer(
+            final PluginConfig config,
+            final RunTimeProject project) {
         super(config, project);
+    }
+
+    // Get the activity scheduler
+    public ActivityScheduler getActivityScheduler() {
+        return mScheduler;
     }
 
     // Call the playback method
     public abstract void play(final String name, final LinkedList args);
-	
-	// get the ActivityScheduler for handling activities ...
-	public ActivityScheduler getActivityManager() {
-		return mScheduler;
-	}
 
     // The scene player worker
     public class PlayerWorker extends Thread {
