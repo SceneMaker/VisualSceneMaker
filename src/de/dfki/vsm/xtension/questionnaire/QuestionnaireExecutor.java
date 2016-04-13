@@ -6,14 +6,13 @@
 package de.dfki.vsm.xtension.questionnaire;
 
 import de.dfki.vsm.model.config.ConfigFeature;
-import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
-import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.interpreter.value.IntValue;
@@ -51,7 +50,9 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
     }
 
     @Override
-    public void execute(AbstractActivity activity, ActivityScheduler player) {
+    public void execute(
+            AbstractActivity activity/*, 
+     ActivityScheduler player*/) {
         if (activity instanceof ActionActivity) {
             final String name = activity.getName();
 
@@ -112,6 +113,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
                 interviews = 9;
             }
         }
+
         values.put("interviews", new IntValue(interviews));
 
         values.put("strength1", new BooleanValue(uservalues.get("strength1").equalsIgnoreCase("ja")));
@@ -126,10 +128,12 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
         values.put("weakness4", new BooleanValue(uservalues.get("weakness4").equalsIgnoreCase("ja")));
         values.put("weakness5", new BooleanValue(uservalues.get("weakness5").equalsIgnoreCase("ja")));
         values.put("weakness6", new BooleanValue(uservalues.get("weakness6").equalsIgnoreCase("ja")));
+
         try {
-            RunTimeInstance runTime = RunTimeInstance.getInstance();
+            //RunTimeInstance runTime = RunTimeInstance.getInstance();
             StructValue struct = new StructValue(values);
-            runTime.setVariable(mProject, "userdata", struct);
+            //runTime.setVariable(mProject, "userdata", struct);
+            mProject.setVariable("userdata", struct);//GM
         } catch (Exception e) {
             // System.out.println("not running");
         }

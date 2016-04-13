@@ -9,6 +9,12 @@ import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.interpreter.Interpreter;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
@@ -33,6 +39,8 @@ public class RunTimeProject {
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
 
+    // The project Path (added PG 11.4.2016);
+    private String mProjectPath = "";
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
     // The scenescript of the project
@@ -46,22 +54,32 @@ public class RunTimeProject {
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
-    private final RunTimePlayer mScenePlayer;
+    private final RunTimePlayer mRunTimePlayer;
+    //
+    private Interpreter mInterpreter;
+
     // The runtime plugin map of the project
     private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
     // Construct an empty runtime project
     public RunTimeProject() {
         // Initialize the scene player
-        mScenePlayer = new ReactivePlayer(null, this);
+        mRunTimePlayer = new ReactivePlayer(null, this);
     }
 
     // Construct a project from a directory
     public RunTimeProject(final File file) {
+        // Remember Path
+        mProjectPath = file.getPath();
         // Call the local parsing method
-        parse(file.getPath());
+        parse(mProjectPath);
         // Initialize the scene players
-        mScenePlayer = new ReactivePlayer(null, this);
+        mRunTimePlayer = new ReactivePlayer(null, this);
+    }
+
+    // Get the path of the project (added PG 11.4.2016)
+    public final String getProjectPath() {
+        return mProjectPath;
     }
 
     // Get the name of the project's configuration
@@ -78,7 +96,7 @@ public class RunTimeProject {
     public final PluginConfig getPluginConfig(final String name) {
         return mProjectConfig.getPluginConfig(name);
     }
-    
+
     // Get the list of all configured agents in the project configuation (agged PG 8.4.2016)
     public final ArrayList<String> getAgentNames() {
         return mProjectConfig.getAgentNames();
@@ -114,8 +132,8 @@ public class RunTimeProject {
         return mGesticonConfig;
     }
 
-    public final RunTimePlayer getScenePlayer() {
-        return mScenePlayer;
+    public final RunTimePlayer getRunTimePlayer() {
+        return mRunTimePlayer;
     }
 
     public final ActivityExecutor getAgentDevice(final String agent) {
@@ -141,6 +159,10 @@ public class RunTimeProject {
             // Return false at error
             return false;
         }
+        // remember Path (e.g. EditorProject calls this without instantiation of
+        // the RunTimeProject class, so mProjectPath is (re)set her (PG 11.4.2016)
+        mProjectPath = file;
+
         // Parse the project from file
         return (parseProjectConfig(file)
                 && parseSceneFlow(file)
@@ -222,11 +244,13 @@ public class RunTimeProject {
     // Launch the runtime objects of the project
     public final boolean launch() {
         // Launch the scene player
-        mScenePlayer.launch();
+        mRunTimePlayer.launch();
         // Launch all plugins
         for (final RunTimePlugin plugin : mPluginMap.values()) {
             plugin.launch();
         }
+        // Create an interpreter
+        mInterpreter = new Interpreter(this);//GM
         // Return true at success
         return true;
     }
@@ -234,13 +258,85 @@ public class RunTimeProject {
     // Unload the runtime objects of the project
     public final boolean unload() {
         // Unload the scene player
-        mScenePlayer.unload();
+        mRunTimePlayer.unload();
         // Unload all plugins
         for (final RunTimePlugin plugin : mPluginMap.values()) {
             plugin.unload();
         }
+        // Remove the interpreter
+        mInterpreter = null;//GM
         // Return true at success
         return true;
+    }
+
+    //GM
+    public final boolean start() {
+        if (mInterpreter != null) {
+            // Start the interpreter
+            return mInterpreter.start();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean abort() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.abort();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean pause() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.pause();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean proceed() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.proceed();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean isRunning() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.isRunning();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean isPaused() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.isPaused();
+        }
+        //
+        return false;
+    }
+
+    //GM
+    public final boolean wasExecuted() {
+        if (mInterpreter != null) {
+            // Abort the interpreter
+            return mInterpreter.wasExecuted();
+        }
+        //
+        return false;
     }
 
     private boolean parseProjectConfig(final String path) {
@@ -250,7 +346,7 @@ public class RunTimeProject {
             try {
                 inputStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
-                mLogger.failure("Error: Cannot find sproject configuration file '" + file + "'");
+                mLogger.failure("Error: Cannot find project configuration file '" + file + "'");
             }
         } else {
             inputStream = ClassLoader.getSystemResourceAsStream(path + System.getProperty("file.separator") + "project.xml");
@@ -670,5 +766,155 @@ public class RunTimeProject {
         // Other Project Data Structures?
         hashCode += mSceneScript.getHashCode();
         return hashCode;
+    }
+
+    public final boolean setVariable(final String name, final int value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new IntValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, final int value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new IntValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, final int value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new IntValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, float value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new FloatValue(value));
+
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, float value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new FloatValue(value));
+
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, float value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new FloatValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, boolean value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new BooleanValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, boolean value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new BooleanValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, boolean value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new BooleanValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, new StringValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, final String value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, new StringValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, final String value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, new StringValue(value));
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final AbstractValue value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, value);
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final int index, final AbstractValue value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, index, value);
+        }
+        return false;
+    }
+
+    public final boolean setVariable(final String name, final String member, final AbstractValue value) {
+        if (mInterpreter != null) {
+            mInterpreter.setVariable(name, member, value);
+        }
+        return false;
+    }
+
+    public final boolean hasVariable(final String name) {
+        if (mInterpreter != null) {
+            mInterpreter.hasVariable(name);
+        }
+        return false;
+    }
+
+    public final boolean hasVariable(final String name, final int index) {
+        if (mInterpreter != null) {
+            mInterpreter.hasVariable(name, index);
+        }
+        return false;
+    }
+
+    public final boolean hasVariable(final String name, final String member) {
+        if (mInterpreter != null) {
+            mInterpreter.hasVariable(name, member);
+
+        }
+        return false;
+    }
+
+    public final AbstractValue getValueOf(final String name) {
+        if (mInterpreter != null) {
+            mInterpreter.getValueOf(name);
+        }
+        return null;
+    }
+
+    public final AbstractValue getValueOf(final String name, final int index) {
+        if (mInterpreter != null) {
+            mInterpreter.getValueOf(name, index);
+        }
+        return null;
+    }
+
+    public final AbstractValue getValueOf(final String name, final String member) {
+        if (mInterpreter != null) {
+            mInterpreter.getValueOf(name, member);
+        }
+        return null;
     }
 }

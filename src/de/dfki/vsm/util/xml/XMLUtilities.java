@@ -2,6 +2,7 @@ package de.dfki.vsm.util.xml;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import java.io.ByteArrayInputStream;
 import org.w3c.dom.Document;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
@@ -24,6 +26,20 @@ public final class XMLUtilities {
 
     // The singelton logger instance
     private final static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+
+    // Parse a parseable object from a string
+    public final static boolean parseFromXMLString(final XMLParseable parsable, final String string, final String charset) {
+        try {
+            final ByteArrayInputStream stream = new ByteArrayInputStream(
+                    string.getBytes(charset));
+            //
+            return parseFromXMLStream(parsable, stream);
+        } catch (final UnsupportedEncodingException exc) {
+            exc.printStackTrace();
+        }
+        //
+        return false;
+    }
 
     // Parse a parseable object from a stream
     public final static boolean parseFromXMLStream(final XMLParseable parsable, final InputStream stream) {

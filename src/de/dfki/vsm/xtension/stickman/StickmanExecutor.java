@@ -20,13 +20,10 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
-import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
-import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -76,7 +73,7 @@ public class StickmanExecutor extends ActivityExecutor {
     }
 
     @Override
-    public void execute(AbstractActivity activity, ActivityScheduler scheduler) {
+    public void execute(AbstractActivity activity/*, ActivityScheduler scheduler*/) {
         // get action information
         final String actor = activity.getActor();
         final String name = activity.getName();
@@ -100,13 +97,13 @@ public class StickmanExecutor extends ActivityExecutor {
             }
 
             // schedule Mouth_open and Mouth closed activities
-            scheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
-            scheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
+            mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
+            mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
 
             stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
             stickmanAnimation.mParameter = wts;
 
-            executeAnimationAndWait(activity, stickmanAnimation, stickmanAnimation.mID);
+            executeAnimationAndWait(activity, stickmanAnimation);
         } else if (activity instanceof ActionActivity) {
             stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
@@ -120,35 +117,24 @@ public class StickmanExecutor extends ActivityExecutor {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
-
-        try {
-            broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
-        } catch (UnsupportedEncodingException exc) {
-            mLogger.warning(exc.getMessage());
-        }
+        broadcast(out.toString().replace("\n", " "));
     }
 
-    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation, String animId) {
+    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation) {
         // executeAnimation command to platform 
         synchronized (mActivityWorkerMap) {
             // executeAnimation command to platform 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             IOSIndentWriter iosw = new IOSIndentWriter(out);
             boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
-
-            try {
-                broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
-            } catch (UnsupportedEncodingException exc) {
-                mLogger.warning(exc.getMessage());
-            }
+            broadcast(out.toString().replace("\n", " "));
 
             // organize wait for feedback
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(animId, cAW);
+            mActivityWorkerMap.put(stickmanAnimation.mID, cAW);
 
             // wait until we got feedback
-            mLogger.message("ActivityWorker " + animId + " waiting ....");
-
+            mLogger.message("ActivityWorker " + stickmanAnimation.mID + " waiting ....");
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
                     mActivityWorkerMap.wait();
@@ -156,20 +142,21 @@ public class StickmanExecutor extends ActivityExecutor {
                     mLogger.failure(exc.toString());
                 }
             }
-
-            mLogger.message("ActivityWorker " + animId + "  done ....");
+            mLogger.message("ActivityWorker " + stickmanAnimation.mID + "  done ....");
         }
     }
 
     @Override
     public void launch() {
+        // read config
+        final String host = mConfig.getProperty("smhost");
+        final String port = mConfig.getProperty("smport");
+
         // Create the connection
-        mListener = new StickmanListener(8000, this);
+        mListener = new StickmanListener(Integer.parseInt(port), this);
         // Start the connection
         mListener.start();
 
-        final String host = mConfig.getProperty("smhost");
-        final String port = mConfig.getProperty("smport");
         final boolean showStickmanNames = mConfig.containsKey("showstickmanname") ? mConfig.getProperty("showstickmanname").equalsIgnoreCase("true") : true;
 
         // Start the StickmanStage client application 
@@ -246,18 +233,19 @@ public class StickmanExecutor extends ActivityExecutor {
                 // wake me up ..
                 mActivityWorkerMap.notifyAll();
                 // identify the related activity
-                AbstractActivity activity = mProject.getScenePlayer().getActivityManager().getMarkerActivity(message);
+                //AbstractActivity activity = mProject.getRunTimePlayer().getActivityScheduler().getMarkerActivity(message);
                 // play the activity
-                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(activity, message));
+                //mProject.getRunTimePlayer().getActivityScheduler().handle(new MarkerFeedback(activity, message));
+                mProject.getRunTimePlayer().getActivityScheduler().handle(message);
+
             }
         }
     }
 
-// Broadcast some message
+    // Broadcast some message
     private void broadcast(final String message) {
         for (final StickmanHandler client : mClientMap.values()) {
             client.send(message);
         }
     }
-
 }

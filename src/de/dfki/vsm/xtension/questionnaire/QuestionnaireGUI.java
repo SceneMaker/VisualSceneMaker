@@ -117,7 +117,13 @@ public class QuestionnaireGUI {
 
         Parent root = fxmlLoader.getRoot();
         Scene scene = new Scene(root);
-        //scene.setFill(new javafx.scene.paint.Color(0, 0, 0, 0));
+
+        root.setStyle("-fx-background-color: #FFFFFF10;");
+        //root.setStyle("-fx-background-color: radial-gradient(focus-distance 0% , center 50% 50% , radius 100% , #9ACD32AA ,#FFFFFF10);"
+        //root.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);");
+        
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+
         jfxPanel.setScene(scene);
 
         // do personalisation
@@ -140,7 +146,7 @@ public class QuestionnaireGUI {
             if (key.equalsIgnoreCase("strength6")) {
                 controller.strength6.setText(mPersonalValues.get(key));
             }
-                        if (key.equalsIgnoreCase("weakness1")) {
+            if (key.equalsIgnoreCase("weakness1")) {
                 controller.weakness1.setText(mPersonalValues.get(key));
             }
             if (key.equalsIgnoreCase("weakness2")) {
@@ -158,7 +164,7 @@ public class QuestionnaireGUI {
             if (key.equalsIgnoreCase("weakness6")) {
                 controller.weakness6.setText(mPersonalValues.get(key));
             }
-            
+
         }
 
     }

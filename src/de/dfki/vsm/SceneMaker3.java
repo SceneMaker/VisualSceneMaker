@@ -1,7 +1,7 @@
 package de.dfki.vsm;
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.io.File;
@@ -80,7 +80,7 @@ public final class SceneMaker3 {
         //
         sLogger.message("Starting VSM editor with file '" + file + "'");
         // Get the singelton runtime instance
-        final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
+        //final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
         // Get the singelton editor instance
         final EditorInstance sEditor = EditorInstance.getInstance();
         // Get an editor project from file 
@@ -168,11 +168,11 @@ public final class SceneMaker3 {
         // Get an editor project from file 
         final RunTimeProject data = new RunTimeProject(file);
         // Get the singelton runtime instance
-        final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
+        //final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
         // Launch the runtime with the project
-        if (sRunTime.launch(data)) {
+        if (/*sRunTime.launch(data)*/data.launch()) {
             // Start the runtime with the project
-            if (sRunTime.start(data)) {
+            if (/*sRunTime.start(data)*/data.start()) {
                 // Wait until user aborts execution
                 System.err.println("Press Key To Abort ...");
                 // TODO: Stop waiting if execution
@@ -186,9 +186,11 @@ public final class SceneMaker3 {
                     // Do nothing
                 } finally {
                     // Abort the runtime with the project
-                    sRunTime.abort(data);
+                    //sRunTime.abort(data);
+                    data.abort();
                     // Unload the project from the runtime  
-                    sRunTime.unload(data);
+                    //sRunTime.unload(data);
+                    data.unload();
                 }
 
             }

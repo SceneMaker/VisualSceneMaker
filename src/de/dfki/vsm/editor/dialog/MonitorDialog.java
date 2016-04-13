@@ -18,7 +18,7 @@ import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRec
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral;
 import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord;
 import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.model.sceneflow.ChartParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -120,7 +120,7 @@ public class MonitorDialog extends JDialog implements EventListener
         mInputTextField = new HintTextField("Enter new value");
         mInputTextField.setBounds(20, 320, 360, 30);
         mWorkPanel.add(mVariableScrollPane);
-        if (!RunTimeInstance.getInstance().isRunning(mEditorProject))
+        if (!/*RunTimeInstance.getInstance().isRunning(mEditorProject)*/mEditorProject.isRunning())
         {
             mInputTextField.setEnabled(false);
         }
@@ -213,34 +213,41 @@ public class MonitorDialog extends JDialog implements EventListener
             {
                 if (exp instanceof Bool)
                 {
-                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
+                    return mEditorProject.setVariable(varDef.getName(), ((Bool) exp).getValue());
+                    //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
                 }
                 else if (exp instanceof Int)
                 {
-                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
+                    return mEditorProject.setVariable(varDef.getName(), ((Int) exp).getValue());
+                    //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
                 }
                 else if (exp instanceof UnaryExp)
                 {
                     if (((UnaryExp) exp).getExp() instanceof Int)
                     {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Int) ((UnaryExp) exp).getExp()).getValue());
+                        return mEditorProject.setVariable(varDef.getName(), -1 * ((Int) ((UnaryExp) exp).getExp()).getValue());
+                                //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Int) ((UnaryExp) exp).getExp()).getValue());
                     }
                     if (((UnaryExp) exp).getExp() instanceof Float)
                     {
-                        return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Float) ((UnaryExp) exp).getExp()).getValue());
+                        return mEditorProject.setVariable(varDef.getName(), -1 * ((Float) ((UnaryExp) exp).getExp()).getValue());
+                        //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Float) ((UnaryExp) exp).getExp()).getValue());
                     }
                     
                 }
                 else if (exp instanceof Float)
                 {
-                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
+                    return mEditorProject.setVariable(varDef.getName(), ((Float) exp).getValue());
+                    //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                 }
                 else if (exp instanceof StringLiteral)
                 {
-                    return RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((StringLiteral) exp).getValue());
+                    return mEditorProject.setVariable(varDef.getName(), ((StringLiteral) exp).getValue());
+                    //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((StringLiteral) exp).getValue());
                 }
                 else if (exp instanceof ListRecord)
                 {
+                    System.out.println("ListRecord could not be parsed");
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
                     // Evaluator eval = interpreter.getEvaluator();
@@ -249,6 +256,7 @@ public class MonitorDialog extends JDialog implements EventListener
                 }
                 else if (exp instanceof StructRecord)
                 {
+                    System.out.println("StructRecord could not be parsed");
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                 }
                 else

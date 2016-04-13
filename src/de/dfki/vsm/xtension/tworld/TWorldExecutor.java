@@ -2,12 +2,11 @@ package de.dfki.vsm.xtension.tworld;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
-import de.dfki.vsm.runtime.RunTimeInstance;
+//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
@@ -15,15 +14,12 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.tworld.xml.command.TWorldCommand;
 import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.AmbientSetup;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveToLocation;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.SetSoundAmbient;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.Speak;
 import de.dfki.vsm.xtension.tworld.xml.feedback.TWorldFeedback;
+import de.dfki.vsm.xtension.tworld.xml.util.ActionLoader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,7 +31,7 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 /**
- * @author Gregor Mehlmann
+ * @author Gregor Mehlmann, Patrick Gebhard
  */
 public final class TWorldExecutor extends ActivityExecutor {
 
@@ -50,11 +46,11 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
-    // The execution id
-    private int sId = 0;
 
     // Construct the executor
-    public TWorldExecutor(final PluginConfig config, final RunTimeProject project) {
+    public TWorldExecutor(
+            final PluginConfig config,
+            final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
     }
@@ -148,14 +144,9 @@ public final class TWorldExecutor extends ActivityExecutor {
     }
 
     @Override
-    public final String marker(final long id) {
+    public synchronized final String marker(final long id) {
         // TWorld style bookmarks
-        //return "\\mrk=" + id + "\\";
         return "$(" + id + ")";
-    }
-
-    private final String getExecutionId() {
-        return "" + sId++;
     }
 
     // get the value of a feature (added PG) - quick and dirty
@@ -169,57 +160,46 @@ public final class TWorldExecutor extends ActivityExecutor {
     }
 
     @Override
-    public final void execute(
-            final AbstractActivity activity,
-            final ActivityScheduler scheduler) {
-        // Compile the activity
-//        final String command = activity.toString();
-//        // Print some information
-//        //System.err.println("Command '" + command + "'");
-//        //
-
-        // get action information
-        final String actor = "Susanne";//activity.getActor();
-        final String name = activity.getName();
+    public final void execute(final AbstractActivity activity) {
+        // Get action information
+        final String cmd = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
-
-        mLogger.message("Execute Actor " + actor + ", command " + name);
 
         // initialize build command
         TWorldCommand mTWC;
         Action twcoa = null;
 
-        if (name.equalsIgnoreCase("MoveTo")) {
-            twcoa = new MoveToLocation(getActionFeatureValue("location", features));
-        }
+        if (activity instanceof SpeechActivity) {
+            SpeechActivity sa = (SpeechActivity) activity;
+            twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
+            twcoa.setId(ActionLoader.getInstance().getNextID());
+        } else {
+            if (cmd.equalsIgnoreCase("MoveTo")) {
+                //twcoa = new MoveTo(getActionFeatureValue("location", features));
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
+            }
 
-        if (name.equalsIgnoreCase("SetAmbient")) {
-            twcoa = new AmbientSetup(getActionFeatureValue("value", features));
-        }
+            if (cmd.equalsIgnoreCase("Ambient")) {
+                //twcoa = new Ambient(getActionFeatureValue("value", features));
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
+            }
 
-        if (name.equalsIgnoreCase("SetSound")) {
-            twcoa = new SetSoundAmbient(getActionFeatureValue("value", features));
-        }
-
-        if (name.equalsIgnoreCase("Speak")) {
-            if (activity instanceof SpeechActivity) {
-                SpeechActivity sa = (SpeechActivity) activity;
-                twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
+            if (cmd.equalsIgnoreCase("SoundAmbient")) {
+                //twcoa = new SoundAmbient(getActionFeatureValue("value", features));
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
         }
 
-        // set the command id
-        String executionId = getExecutionId();
-        twcoa.setId(executionId);
-
         // finalize build command
-        Object twco = new Object(actor, twcoa);
+        Object twco = new Object(activity.getActor(), twcoa);
         mTWC = new TWorldCommand();
         mTWC.addObject(twco);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(mTWC, iosw);
+
+        mLogger.message("Execute Actor " + activity.getActor() + ", command " + cmd);
 
         String message = "";
         // log TWorld command
@@ -230,41 +210,16 @@ public final class TWorldExecutor extends ActivityExecutor {
             mLogger.failure(ex.getMessage());
         }
 
-//        final String message = ""
-//                + "<TWorldCommand>\n"
-//                + "<object name=\"Susanne\">\n"
-//                + "<action name=\"caixml\" id=\"734\">\n"
-//                + "<!-- Charamel Command -->\n"
-//                + "<cai_request version='1.0'>\n"
-//                + "<cai_command id=\"2\">\n"
-//                + "RenderXML\n"
-//                + "<animation_track>\n"
-//                + "<pause>\n"
-//                + "</pause>\n"
-//                + "<motion \n"
-//                + "speed='1.0' \n"
-//                + "attack='1000' \n"
-//                + "decay='1000' \n"
-//                + "start='0' \n"
-//                + "duration='2000'>\n"
-//                + "walk/turns/turn_90r\n"
-//                + "</motion>\n"
-//                + "</animation_track>\n"
-//                + "</cai_command>\n"
-//                + "</cai_request>\n"
-//                + "</action>\n"
-//                + "</object>\n"
-//                + "</TWorldCommand>";
         // send command to platform 
         synchronized (mActivityWorkerMap) {
             broadcast(message);
 
-            // organize wait for feedback
+            // organize wait for feedback if (activity instanceof SpeechActivity) {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(executionId, cAW);
+            mActivityWorkerMap.put(twcoa.getId(), cAW);
 
             // wait until we got feedback
-            mLogger.warning("ActivityWorker " + executionId + " waiting ....");
+            mLogger.warning("ActivityWorker " + twcoa.getId() + " waiting ....");
 
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
@@ -274,7 +229,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 }
             }
 
-            mLogger.warning("ActivityWorker " + executionId + " done ....");
+            mLogger.warning("ActivityWorker " + twcoa.getId() + " done ....");
         }
         // Return when terminated
     }
@@ -316,9 +271,16 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
 
                 //mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
-
                 // handling caixml feedback
                 if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
+                    if (mActivityWorkerMap.containsKey(id)) {
+                        mActivityWorkerMap.remove(id);
+                    }
+                    // wake me up ..
+                    mActivityWorkerMap.notifyAll();
+                }
+                // handling ambient_setup feedback
+                if (actionType.equalsIgnoreCase("ambient_setup") && actionStatusType.equalsIgnoreCase("action_finished")) {
                     if (mActivityWorkerMap.containsKey(id)) {
                         mActivityWorkerMap.remove(id);
                     }
@@ -334,34 +296,15 @@ public final class TWorldExecutor extends ActivityExecutor {
                 values.put("name", new StringValue(twf.mFeedbackObject.mName));
 
                 try {
-                    RunTimeInstance runTime = RunTimeInstance.getInstance();
+                    //RunTimeInstance runTime = RunTimeInstance.getInstance();
                     StructValue struct = new StructValue(values);
-                    runTime.setVariable(mProject, "feedback", struct);
+                    //runTime.setVariable(mProject, "feedback", struct);
+                    mProject.setVariable("feedback", struct);//GM
                 } catch (Exception e) {
                     // System.out.println("not running");
                 }
             }
-
-//            if (message.contains("$(")) {
-//
-//                // wake me up ..
-//                mActivityWorkerMap.notifyAll();
-//                // play the acitiviy
-//                mProject.getScenePlayer().getActivityManager().handle(new MarkerFeedback(mActivity, message));
-//            }
         }
-//        synchronized (mActivityWorkerMap) {
-//            if (message.contains("734")) {
-//                mActivityWorkerMap.remove("734");
-//                mActivityWorkerMap.notifyAll();
-//            }
-//        }
-    }
-
-    // Handle some message
-    public void handle(final String message, final SSIRunTimePlugin plugin) {
-        mLogger.warning("Handling " + message + "");
-        //
     }
 
     // Broadcast some message
