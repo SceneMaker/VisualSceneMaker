@@ -20,9 +20,7 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
-import de.dfki.vsm.runtime.activity.manager.ActivityScheduler;
-import de.dfki.vsm.runtime.activity.manager.ActivityWorker;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.ByteArrayOutputStream;
@@ -238,13 +236,13 @@ public class StickmanExecutor extends ActivityExecutor {
                 //AbstractActivity activity = mProject.getRunTimePlayer().getActivityScheduler().getMarkerActivity(message);
                 // play the activity
                 //mProject.getRunTimePlayer().getActivityScheduler().handle(new MarkerFeedback(activity, message));
-                mProject.getRunTimePlayer().getActivityScheduler().handle(new MarkerFeedback(message));
-                
+                mProject.getRunTimePlayer().getActivityScheduler().handle(message);
+
             }
         }
     }
 
-// Broadcast some message
+    // Broadcast some message
     private void broadcast(final String message) {
         for (final StickmanHandler client : mClientMap.values()) {
             client.send(message);

@@ -2,6 +2,7 @@ package de.dfki.vsm.xtension.tworld;
 
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventObject;
@@ -13,6 +14,8 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIXMLData;
  */
 public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
+ 
+            
     public TWorldSSIPlugin(
             final PluginConfig config,
             final RunTimeProject project) {
@@ -29,7 +32,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 final TWorldSSIData data = new TWorldSSIData(
                         ((SSIXMLData) obj).getXML());
                 // TODO: Set variables ...
-                
+               // mProject.setVariable();
             }
         }
     }

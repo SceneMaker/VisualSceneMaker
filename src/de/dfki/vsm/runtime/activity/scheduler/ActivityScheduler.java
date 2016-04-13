@@ -1,14 +1,9 @@
-package de.dfki.vsm.runtime.activity.manager;
+package de.dfki.vsm.runtime.activity.scheduler;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Policy;
 import de.dfki.vsm.runtime.activity.ActionActivity;
-import de.dfki.vsm.runtime.activity.PauseActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.feedback.ActivityFeedback;
-import de.dfki.vsm.runtime.activity.feedback.StatusFeedback;
-import de.dfki.vsm.runtime.activity.feedback.StatusFeedback.Status;
-import de.dfki.vsm.runtime.activity.feedback.MarkerFeedback;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.HashMap;
 import java.util.List;
@@ -26,33 +21,33 @@ public final class ActivityScheduler {
     private final HashMap<String, ActivityWorker> mWorkerMap = new HashMap();
 
     // Handle activity feedback
-    public final void handle(final ActivityFeedback object) {
+    public final void handle(final String marker) {
         // Get the activity 
-        final AbstractActivity activity = object.getActivity();
+        //final AbstractActivity activity = object.getActivity();
         // Check the feedback
-        if (object instanceof StatusFeedback) {
-            final StatusFeedback feedback = (StatusFeedback) object;
-            // Get the status name 
-            final Status status = feedback.getStatus();
-            // Print some information
-            mLogger.message("Status of activity '" + feedback + "' is '" + status + "'");
-            // TODO: 
-            // Notify the waiting thread that its feedback is there
-        } else if (object instanceof MarkerFeedback) {
-            final MarkerFeedback feedback = (MarkerFeedback) object;
-            final String marker = feedback.getMarker();
-            // Print some information
-            mLogger.message("Marker '" + marker + "' detected during '" + activity + "'");
-            // Start the assigned task
-            synchronized (mWorkerMap) {
-                mWorkerMap.remove(marker).start();
-            }
+        //if (object instanceof StatusFeedback) {
+        //final StatusFeedback feedback = (StatusFeedback) object;
+        // Get the status name 
+        //final Status status = feedback.getStatus();
+        // Print some information
+        //mLogger.message("Status of activity '" + feedback + "' is '" + status + "'");
+        // TODO: 
+        // Notify the waiting thread that its feedback is there
+        //} else if (object instanceof MarkerFeedback) {
+        //final MarkerFeedback feedback = (MarkerFeedback) object;
+        //final String marker = feedback.getMarker();
+        // Print some information
+        mLogger.message("Marker '" + marker + "' detected");
+        // Start the assigned task
+        synchronized (mWorkerMap) {
+            mWorkerMap.remove(marker).start();
         }
+    //}
     }
 
     // Schedule an activity on an executor with a timeout
     public final void schedule(
-            final long timeout, // after a timeout
+            final long timeout,
             final List<ActivityWorker> list,
             final AbstractActivity activity,
             final ActivityExecutor executor) {
@@ -62,7 +57,7 @@ public final class ActivityScheduler {
                 + " on executor '" + executor + "'");
         // Create a new activity task
         final ActivityWorker task = new ActivityWorker(
-                timeout, list, activity, executor, this);
+                timeout, list, activity, executor);
         // Start the activity task
         task.start();
         // Check if we need to wait
@@ -96,7 +91,7 @@ public final class ActivityScheduler {
 
     // Register an activity on an executor with a marker
     public final ActivityWorker register(
-            final String marker, // at some marker
+            final String marker,
             final ActionActivity activity,
             final ActivityExecutor executor) {
         // Print some information
@@ -105,7 +100,7 @@ public final class ActivityScheduler {
                 + " on executor '" + executor + "'");
         // Create a new activity task
         final ActivityWorker task = new ActivityWorker(
-                -1, null, activity, executor, this);
+                -1, null, activity, executor);
         // Add the task to the mapping
         synchronized (mWorkerMap) {
             mWorkerMap.put(marker, task);
@@ -114,15 +109,15 @@ public final class ActivityScheduler {
         return task;
     }
 
-    // get Activity from Worker related to Marker - added by PG 5.4.2016
-    public final AbstractActivity getMarkerActivity(final String marker) {
-        synchronized (mWorkerMap) {
-            if (mWorkerMap.containsKey(marker)) {
-                ActivityWorker task = mWorkerMap.get(marker);
-                return task.getActivity();
-            } else {
-                return null;
-            }
-        }
-    }
+//    // get Activity from Worker related to Marker - added by PG 5.4.2016
+//    public final AbstractActivity getMarkerActivity(final String marker) {
+//        synchronized (mWorkerMap) {
+//            if (mWorkerMap.containsKey(marker)) {
+//                ActivityWorker task = mWorkerMap.get(marker);
+//                return task.getActivity();
+//            } else {
+//                return null;
+//            }
+//        }
+//    }
 }

@@ -2,6 +2,7 @@ package de.dfki.vsm.xtension.ssi;
 
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
@@ -14,10 +15,16 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
     private SSIEventHandler mHandler;
     // The SSI event handler
     private SSIEventSender mSender;
+    // The project sceneflow 
+    protected final SceneFlow mSceneFlow;
 
-    public SSIRunTimePlugin(final PluginConfig config, final RunTimeProject project) {
+    public SSIRunTimePlugin(
+            final PluginConfig config,
+            final RunTimeProject project) {
         // Initialize the runtime plugin
         super(config, project);
+        //
+        mSceneFlow = mProject.getSceneFlow();
     }
 
     // Launch SSI plugin
