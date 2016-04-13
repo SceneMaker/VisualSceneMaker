@@ -162,7 +162,6 @@ public final class TWorldExecutor extends ActivityExecutor {
     @Override
     public final void execute(final AbstractActivity activity) {
         // Get action information
-        String actor = "";
         final String cmd = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
 
@@ -171,14 +170,10 @@ public final class TWorldExecutor extends ActivityExecutor {
         Action twcoa = null;
 
         if (activity instanceof SpeechActivity) {
-            // This is bad: Charamel needs first character of the character's name capitalized ...
-            actor = activity.getActor();//.substring(0, 1).toUpperCase() + activity.getActor().substring(1);
             SpeechActivity sa = (SpeechActivity) activity;
             twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
             twcoa.setId(ActionLoader.getInstance().getNextID());
-
         } else {
-            actor = activity.getActor();
             if (cmd.equalsIgnoreCase("MoveTo")) {
                 //twcoa = new MoveTo(getActionFeatureValue("location", features));
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
@@ -196,7 +191,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         }
 
         // finalize build command
-        Object twco = new Object(actor, twcoa);
+        Object twco = new Object(activity.getActor(), twcoa);
         mTWC = new TWorldCommand();
         mTWC.addObject(twco);
 
@@ -204,7 +199,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(mTWC, iosw);
 
-        mLogger.message("Execute Actor " + actor + ", command " + cmd);
+        mLogger.message("Execute Actor " + activity.getActor() + ", command " + cmd);
 
         String message = "";
         // log TWorld command
