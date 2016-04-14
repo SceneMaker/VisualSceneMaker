@@ -517,7 +517,7 @@ public class EditorStarter extends JPanel {
                                         project.getSceneFlow().getNodeAndSuperNodeList().size() + 
                                         " global nodes, " +
                                         project.getSceneScript().copySceneList().size() +
-                                        " scenes ]");// + ", last edited: "
+                                        " scenes]");// + ", last edited: "
 				// + Preferences.sDATE_FORMAT.format(tutorialProj.lastModified()));
 
 				newTutorialProj.setLayout(new BoxLayout(newTutorialProj, BoxLayout.X_AXIS));
@@ -638,10 +638,9 @@ public class EditorStarter extends JPanel {
 		mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
 
 		for (final String sampleDir : listDirs) {
+                        RunTimeProject project = new RunTimeProject();
 
-			EditorProject project = new EditorProject();
-
-			project.parse(sampleDir);
+			project.parseForInformation(sampleDir);
 
 			JLabel newSampleProj = new JLabel(project.getProjectName() + "                         ");
 
