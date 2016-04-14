@@ -171,7 +171,27 @@ public class RunTimeProject {
                 && parseVisiconConfig(file)
                 && parseGesticonConfig(file)
                 && loadRunTimePlugins());
+    }
+    
+        public boolean parseForInformation(final String file) {
+        // Check if the file is null
+        if (file == null) {
+            // Print an error message
+            mLogger.failure("Error: Cannot parse for information a runtime project from a bad file");
+            // Return false at error
+            return false;
+        }
+        // remember Path (e.g. EditorProject calls this without instantiation of
+        // the RunTimeProject class, so mProjectPath is (re)set her (PG 11.4.2016)
+        mProjectPath = file;
 
+        // Parse the project from file
+        return (parseProjectConfig(file)
+                && parseSceneFlow(file)
+                && parseSceneScript(file)
+                && parseActiconConfig(file)
+                && parseVisiconConfig(file)
+                && parseGesticonConfig(file));
     }
 
     // Write the project data to a directory
@@ -214,6 +234,9 @@ public class RunTimeProject {
             final String type = config.getPluginType();
             final String name = config.getPluginName();
             final String clasn = config.getClassName();
+            
+            mLogger.message("Trying to load  plugin name '" + name + "' of class name '" + clasn + "'");
+            
             // Load the device executor
             try {
                 // Get the class object

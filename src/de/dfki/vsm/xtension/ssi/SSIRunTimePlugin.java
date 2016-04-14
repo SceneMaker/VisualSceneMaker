@@ -17,6 +17,8 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
     private SSIEventSender mSender;
     // The project sceneflow 
     protected final SceneFlow mSceneFlow;
+    // The plugin reference
+    protected SSIRunTimePlugin mPlugin;
 
     public SSIRunTimePlugin(
             final PluginConfig config,
@@ -25,6 +27,7 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
         super(config, project);
         //
         mSceneFlow = mProject.getSceneFlow();
+        mPlugin = this;
     }
 
     // Launch SSI plugin
@@ -38,10 +41,10 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
         final String srhost = mConfig.getProperty("srhost");
         final String srport = mConfig.getProperty("srport");
         // Initialize the event handler
-        mHandler = new SSIEventHandler(this,
+        mHandler = new SSIEventHandler(mPlugin,
                 hlhost, Integer.parseInt(hlport));
         // Initialize the event sender
-        mSender = new SSIEventSender(this,
+        mSender = new SSIEventSender(mPlugin,
                 slhost, Integer.parseInt(slport),
                 srhost, Integer.parseInt(srport));
         // Start the SSI event handler

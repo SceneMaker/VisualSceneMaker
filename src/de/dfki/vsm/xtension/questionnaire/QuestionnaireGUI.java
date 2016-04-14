@@ -6,8 +6,8 @@
 package de.dfki.vsm.xtension.questionnaire;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import javafx.application.Platform;
@@ -17,7 +17,9 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.Timer;
 
 /**
  *
@@ -55,14 +57,14 @@ public class QuestionnaireGUI {
         mFrame.setLocationRelativeTo(null);
         mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        Platform.runLater(() -> initFX(mJFXPanel));
+        Platform.runLater(() -> initFX());
     }
 
     public void setVisible(boolean visible) {
         mFrame.setVisible(visible);
     }
 
-    private void initFX(JFXPanel jfxPanel) {
+    private void initFX() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtension/questionnaire/FXMLDocument.fxml"));
         mController = new FXMLDocumentController();
         fxmlLoader.setController(mController);
@@ -95,7 +97,7 @@ public class QuestionnaireGUI {
         // build scene 
         Scene scene = new Scene(rootPane);
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-        jfxPanel.setScene(scene);
+        mJFXPanel.setScene(scene);
 
         // do personalisation
         for (String key : mPersonalValues.keySet()) {
@@ -135,8 +137,6 @@ public class QuestionnaireGUI {
             if (key.equalsIgnoreCase("weakness6")) {
                 mController.weakness6.setText(mPersonalValues.get(key));
             }
-
         }
-
     }
 }

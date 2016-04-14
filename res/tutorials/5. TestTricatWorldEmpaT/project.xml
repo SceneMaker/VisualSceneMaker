@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="EmpaT">
   <Plugins>
+    <Plugin type="default" name="ssi" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin">
+      <Feature key="hlhost" val="127.0.0.1"/>
+      <Feature key="hlport" val="22191"/>
+      <Feature key="slhost" val="127.0.0.1"/>
+      <Feature key="slport" val="22192"/>
+      <Feature key="srhost" val="127.0.0.1"/>
+      <Feature key="srport" val="19220"/>
+      <Feature key="ssidir" val="D:\EmpaT\software\EmpaT\"/>
+      <Feature key="ssibat" val="EMPAT_SSI.bat"/>
+    </Plugin>
     <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tworld.TWorldExecutor">
       <Feature key="tworlddir" val="D:\EmpaT\software\EmpaT\"/>
       <Feature key="tworldexe" val="EmpaT.exe"/>

@@ -28,6 +28,9 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
             final PluginConfig config,
             final RunTimeProject project) {
         super(config, project);
+        
+        // necessary for the internal assignment of the handler (should be this and not super!)
+        mPlugin = this;
     }
 
     // Launch SSI plugin
@@ -76,6 +79,9 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
     @Override
     public void handle(final SSIEventArray array) {
+         mLogger.message("TWORLD SSI PLUGIN HANDLING ...");
+        
+        
         HashMap<String, AbstractValue> values = new HashMap<>();
 
         for (final SSIEventObject event : array.getEventList()) {

@@ -6,6 +6,7 @@ import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.SceneMaker3;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BorderLayout;
@@ -509,13 +510,14 @@ public class EditorStarter extends JPanel {
 
 			if (tutorialProj.exists()) {
 				//File projectPath = new File(sampleDir.getPath() + "project.xml" );
-				EditorProject project = new EditorProject();
+				RunTimeProject project = new RunTimeProject();
 
-				project.parse(tutorialProj.getPath());
-//                                String scenePlayerName = project.getCurrentPlayer().getPlayerName();
-//                                scenePlayerName = scenePlayerName.substring(0, scenePlayerName.lastIndexOf("."));
-//                                scenePlayerName = scenePlayerName.substring(scenePlayerName.lastIndexOf("."));
-				JLabel newTutorialProj = new JLabel(project.getProjectName());// + ", last edited: "
+				project.parseForInformation(tutorialProj.getPath());
+				JLabel newTutorialProj = new JLabel(project.getProjectName() + " [" + 
+                                        project.getSceneFlow().getNodeAndSuperNodeList().size() + 
+                                        " global nodes, " +
+                                        project.getSceneScript().copySceneList().size() +
+                                        " scenes ]");// + ", last edited: "
 				// + Preferences.sDATE_FORMAT.format(tutorialProj.lastModified()));
 
 				newTutorialProj.setLayout(new BoxLayout(newTutorialProj, BoxLayout.X_AXIS));

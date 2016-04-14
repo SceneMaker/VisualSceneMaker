@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="MaryTTS">
   <Plugins>
-    <Plugin type="default" name="ssi" class="de.dfki.vsm.xtension.ssi.SSIRunTimePlugin">
-      <Feature key="hlhost" val="127.0.0.1"/>
-      <Feature key="hlport" val="22191"/>
-      <Feature key="slhost" val="127.0.0.1"/>
-      <Feature key="slport" val="22192"/>
-      <Feature key="srhost" val="127.0.0.1"/>
-      <Feature key="srport" val="19220"/>
-    </Plugin>
     <Plugin type="device" name="stickmanmarytts" class="de.dfki.vsm.xtension.stickmanmarytts.StickmanMaryttsExecutor">
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
-      <Feature key="mary.base" val="/home/alvaro/Documents/Universitat/TesisProject/marytts-5.1.2"/>
+      <Feature key="mary.base" val="D:\marytts-5.1.2"/>
     </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="stickmanmarytts">
     </Agent>
     <Agent name="patrick" device="stickmanmarytts">
+    </Agent>
+    <Agent name="qgui" device="questionnaire">
     </Agent>
   </Agents>
 </Project>
