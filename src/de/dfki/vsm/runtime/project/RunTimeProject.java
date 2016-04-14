@@ -237,8 +237,6 @@ public class RunTimeProject {
             final String name = config.getPluginName();
             final String clasn = config.getClassName();
 
-            mLogger.message("Trying to load  plugin name '" + name + "' of class name '" + clasn + "'");
-
             // Load the device executor
             try {
                 // Get the class object

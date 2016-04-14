@@ -3,7 +3,7 @@
   <Plugins>
     <Plugin type="default" name="ssi" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin">
       <Feature key="hlhost" val="127.0.0.1"/>
-      <Feature key="hlport" val="22191"/>
+      <Feature key="hlport" val="343"/>
       <Feature key="slhost" val="127.0.0.1"/>
       <Feature key="slport" val="22192"/>
       <Feature key="srhost" val="127.0.0.1"/>
