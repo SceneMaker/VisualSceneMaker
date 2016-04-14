@@ -35,7 +35,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private Button nextbutton;
     @FXML
-    private TextField namefield;
+    protected TextField namefield;
     @FXML
     private Slider ageslider;
     @FXML
@@ -135,6 +135,8 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private void nextbuttoncheck(MouseEvent event) {
         mValues.put("name", namefield.getText());
+        
+        System.out.println("hier");
         
         for (QuestionnaireListener l : mListeners) {
             l.updateOnUestionnaire(mValues);
