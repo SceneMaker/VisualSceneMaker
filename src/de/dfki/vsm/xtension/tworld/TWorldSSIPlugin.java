@@ -6,7 +6,7 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.xtension.ssi.SSIEventHandler;
+import de.dfki.vsm.xtension.ssi.SSIEventReceiver;
 import de.dfki.vsm.xtension.ssi.SSIEventSender;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventObject;
@@ -30,23 +30,24 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
         super(config, project);
         
         // necessary for the internal assignment of the handler (should be this and not super!)
-        mPlugin = this;
+        //mPlugin = this;
     }
 
     // Launch SSI plugin
     @Override
     public void launch() {
+        /* UNCOMMENT
         final String ssidir = mConfig.getProperty("ssidir");
         final String ssibat = mConfig.getProperty("ssibat");
 
         // Create the plugin's processes
         try {
             mProcessMap.put(ssibat, Runtime.getRuntime().exec(
-                    "cmd /c start " + ssibat + "" + /* place for arguments */ "", null, new File(ssidir)));
+                    "cmd /c start " + ssibat + "" + "", null, new File(ssidir)));
         } catch (final Exception exc) {
             mLogger.failure(exc.toString());
         }
-
+        */
         super.launch();
     }
 

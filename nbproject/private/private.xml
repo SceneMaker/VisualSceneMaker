@@ -2,6 +2,12 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/Users/Gregor/Desktop/VisualSceneMaker/src/de/dfki/vsm/xtesting/TestSSIPlugin.java</file>
+            <file>file:/C:/Users/Gregor/Desktop/VisualSceneMaker/src/de/dfki/vsm/xtension/tworld/TWorldSSIPlugin.java</file>
+            <file>file:/C:/Users/Gregor/Desktop/VisualSceneMaker/src/de/dfki/vsm/runtime/project/RunTimeProject.java</file>
+            <file>file:/C:/Users/Gregor/Desktop/VisualSceneMaker/src/de/dfki/vsm/xtension/ssi/SSIRunTimePlugin.java</file>
+            <file>file:/C:/Users/Gregor/Desktop/VisualSceneMaker/src/de/dfki/vsm/xtension/ssi/SSIEventReceiver.java</file>
+        </group>
     </open-files>
 </project-private>

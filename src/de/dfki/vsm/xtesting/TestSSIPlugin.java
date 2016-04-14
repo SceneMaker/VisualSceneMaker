@@ -1,13 +1,20 @@
 package de.dfki.vsm.xtesting;
 
+import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.xtension.ssi.event.data.SSIXMLData;
 import de.dfki.vsm.xtension.tworld.TWorldSSIData;
 import de.dfki.vsm.xtension.tworld.TWorldSSIData.VoiceData;
+import de.dfki.vsm.xtension.tworld.TWorldSSIPlugin;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
 
 /**
  * @author Gregor Mehlmann
@@ -16,6 +23,28 @@ public class TestSSIPlugin {
 
     public static void main(String args[]) {
 
+        
+        
+        
+         try {
+                //final RunTimeProject project = new RunTimeProject();
+                // Get the class object
+                final Class clazz = Class.forName("de.dfki.vsm.xtension.tworld.TWorldSSIPlugin");
+                // Get the constructor
+                final Constructor constructor
+                        = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
+                // Call the constructor
+                final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(null, null);
+                //
+                plugin.launch();
+                
+            } catch (final Exception exc) {
+               exc.printStackTrace();
+            }
+        
+     
+        /*
+        
         final String xmldata = ""
                 // + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<ssi>\n"
@@ -135,7 +164,7 @@ public class TestSSIPlugin {
         System.out.println(mSSIData.getVoiceData().getPraatData().getPitchMean());
         System.out.println(mSSIData.getVoiceData().getPraatData().getPitchSD());
 
-       //  System.out.println(mSSIData.getHeadData().getNodData());
+        //  System.out.println(mSSIData.getHeadData().getNodData());
         //  System.out.println(mSSIData.getHeadData().getShakeData());
         System.out.println(mSSIData.getHeadData().getPosData().getX());
         System.out.println(mSSIData.getHeadData().getPosData().getY());
@@ -168,5 +197,6 @@ public class TestSSIPlugin {
         System.out.println(mSSIData.getFaceData().getExpData("frown").getDetected());
         System.out.println(mSSIData.getFaceData().getExpData("frown").getDuration());
         System.out.println(mSSIData.getFaceData().getExpData("frown").getIntensity());
+        */
     }
 }
