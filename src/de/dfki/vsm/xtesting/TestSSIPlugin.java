@@ -1,19 +1,9 @@
 package de.dfki.vsm.xtesting;
 
-import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
-import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
-import de.dfki.vsm.xtension.ssi.event.data.SSIXMLData;
-import de.dfki.vsm.xtension.tworld.TWorldSSIData;
-import de.dfki.vsm.xtension.tworld.TWorldSSIData.VoiceData;
-import de.dfki.vsm.xtension.tworld.TWorldSSIPlugin;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.File;
 import java.lang.reflect.Constructor;
 
 /**
@@ -27,14 +17,18 @@ public class TestSSIPlugin {
         
         
          try {
-                //final RunTimeProject project = new RunTimeProject();
+                //
+                final RunTimeProject project = new RunTimeProject(
+                        new File("res/tutorials/5. TestTricatWorldEmpaT"));
+                //
+                final PluginConfig config = project.getPluginConfig("tworld_ssi_plugin");
                 // Get the class object
                 final Class clazz = Class.forName("de.dfki.vsm.xtension.tworld.TWorldSSIPlugin");
                 // Get the constructor
                 final Constructor constructor
                         = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
                 // Call the constructor
-                final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(null, null);
+                final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, project);
                 //
                 plugin.launch();
                 
