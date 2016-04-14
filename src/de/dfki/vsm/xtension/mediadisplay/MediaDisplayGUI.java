@@ -15,8 +15,11 @@ import java.util.HashMap;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -27,12 +30,15 @@ import javax.swing.JPanel;
  */
 public class MediaDisplayGUI {
 
+    private FXMLDocumentController mController;
+    private Region mRootRegion;
+    private Double mScaleFactor = 1.5d;
+
     private JFrame mFrame;
     private MediaDisplayExecutor mExecutor;
     private final Dimension mScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
     // The JavaFX Panel
     final JFXPanel mJFXPanel = new JFXPanel();
-    FXMLDocumentController mController = new FXMLDocumentController();
     // Configurable Values
     private HashMap<String, String> mDisplayValues = new HashMap<>();
     // The current image
@@ -42,48 +48,8 @@ public class MediaDisplayGUI {
         mExecutor = executor;
         mDisplayValues = values;
 
-        mFrame = new JFrame("EmpaT Media Display");
-        mFrame.setLayout(new BorderLayout());
-        mFrame.add(mJFXPanel, BorderLayout.CENTER);
-
-        Dimension sideBorder = new Dimension((mScreenSize.width - 800) / 2, 200);
-        Dimension topdownBorder = new Dimension(200, (mScreenSize.height - 600) / 2);
-
-        JPanel mWestPanel = new JPanel();
-        mWestPanel.setLayout(new BoxLayout(mWestPanel, BoxLayout.X_AXIS));
-        mWestPanel.setBorder(null);
-        mWestPanel.setBackground(new Color(255, 255, 255, 1));
-        mWestPanel.setMinimumSize(sideBorder);
-        mWestPanel.setMaximumSize(sideBorder);
-        mWestPanel.setPreferredSize(sideBorder);
-        mFrame.add(mWestPanel, BorderLayout.WEST);
-
-        JPanel mNorthPanel = new JPanel();
-        mNorthPanel.setLayout(new BoxLayout(mNorthPanel, BoxLayout.X_AXIS));
-        mNorthPanel.setBorder(null);
-        mNorthPanel.setBackground(new Color(255, 255, 255, 1));
-        mNorthPanel.setMinimumSize(topdownBorder);
-        mNorthPanel.setMaximumSize(topdownBorder);
-        mNorthPanel.setPreferredSize(topdownBorder);
-        mFrame.add(mNorthPanel, BorderLayout.NORTH);
-
-        JPanel mSouthPanel = new JPanel();
-        mSouthPanel.setLayout(new BoxLayout(mSouthPanel, BoxLayout.X_AXIS));
-        mSouthPanel.setBorder(null);
-        mSouthPanel.setBackground(new Color(255, 255, 255, 1));
-        mSouthPanel.setMinimumSize(topdownBorder);
-        mSouthPanel.setMaximumSize(topdownBorder);
-        mSouthPanel.setPreferredSize(topdownBorder);
-        mFrame.add(mSouthPanel, BorderLayout.SOUTH);
-
-        JPanel mEastPanel = new JPanel();
-        mEastPanel.setLayout(new BoxLayout(mEastPanel, BoxLayout.X_AXIS));
-        mEastPanel.setBorder(null);
-        mEastPanel.setBackground(new Color(255, 255, 255, 1));
-        mEastPanel.setMinimumSize(sideBorder);
-        mEastPanel.setMaximumSize(sideBorder);
-        mEastPanel.setPreferredSize(sideBorder);
-        mFrame.add(mEastPanel, BorderLayout.EAST);
+        mFrame = new JFrame("EmpaT Media Display");   
+        mFrame.add(mJFXPanel);
 
         // Set Not Rezizable
         mFrame.setResizable(false);
@@ -94,17 +60,16 @@ public class MediaDisplayGUI {
         // Set Transparent
         mFrame.setBackground(new Color(255, 255, 255, 0));
 
-        mFrame.setSize(mScreenSize);
-        //mFrame.setSize(800, 600);
+        mFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         mFrame.setLocationRelativeTo(null);
         mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+
         Platform.runLater(() -> initFX(mJFXPanel));
     }
 
     public void setImage(String name) {
         if (mDisplayValues.containsKey(name)) {
-            mImageResource = "file:///" + mDisplayValues.get("path")  + File.separator + mDisplayValues.get(name);
+            mImageResource = "file:///" + mDisplayValues.get("path") + File.separator + mDisplayValues.get(name);
             mImageResource = mImageResource.replace("\\", "/").replace(" ", "%20");
 
             mController.canvas.setStyle("-fx-background-image: url('" + mImageResource + "'); "
@@ -121,20 +86,35 @@ public class MediaDisplayGUI {
 
     private void initFX(JFXPanel jfxPanel) {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtension/mediadisplay/FXMLDocument.fxml"));
+        mController = new FXMLDocumentController();
         fxmlLoader.setController(mController);
 
         try {
-            fxmlLoader.load();
+            mRootRegion = (Region) fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
 
-        Parent root = fxmlLoader.getRoot();
-        Scene scene = new Scene(root);
+        // get root
+        Group group = new Group(mRootRegion);
 
-        root.setStyle("-fx-background-color: null;");
+        // set root background
+        mRootRegion.setStyle("-fx-background-color: #00000010;");
+
+        //scaling
+        group.setScaleX(group.getScaleX() * mScaleFactor);
+        group.setScaleY(group.getScaleY() * mScaleFactor);
+
+        // place centered
+        StackPane rootPane = new StackPane();
+        rootPane.getChildren().add(group);
+
+        // set general background, note alpha value must > 0 to ensure modal feature
+        rootPane.setStyle("-fx-background-color: #FFFFFF01;");
+
+        // build scene 
+        Scene scene = new Scene(rootPane);
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-        
         jfxPanel.setScene(scene);
 
         mImageResource = FXMLDocumentController.class.getResource("/res/img/docicon.png").toExternalForm();

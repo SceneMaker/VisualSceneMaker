@@ -65,6 +65,7 @@ public class Speak extends Action implements XMLParseable, XMLWriteable {
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
 
         ComplexAnimationGenerator ca = new ComplexAnimationGenerator();
+        ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
         AnimationTrack track1 = ca.addTrack();
         track1.addSpeakText(mCharamelCharacterId, buildUtterance());
         out.push().println(ca.getCaiXML());
