@@ -69,12 +69,12 @@ public class RunTimeProject {
 
     // Construct a project from a directory
     public RunTimeProject(final File file) {
-        // Remember Path
+         // Remember Path
         mProjectPath = file.getPath();
-        // Call the local parsing method
-        parse(mProjectPath);
         // Initialize the scene players
         mRunTimePlayer = new ReactivePlayer(null, this);
+        // Call the local parsing method
+        parse(mProjectPath);
     }
 
     // Get the path of the project (added PG 11.4.2016)
@@ -252,6 +252,7 @@ public class RunTimeProject {
                 mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
             } catch (final Exception exc) {
                 mLogger.failure(exc.toString());
+                exc.printStackTrace();
             }
         }
         // Return true at success

@@ -28,9 +28,6 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
             final PluginConfig config,
             final RunTimeProject project) {
         super(config, project);
-        
-        // necessary for the internal assignment of the handler (should be this and not super!)
-        //mPlugin = this;
     }
 
     // Launch SSI plugin
@@ -47,7 +44,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
         } catch (final Exception exc) {
             mLogger.failure(exc.toString());
         }
-        */
+        */         
         super.launch();
     }
 

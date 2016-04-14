@@ -75,13 +75,13 @@ public final class SSIEventReceiver extends Thread {
     // Execute the server thread
     @Override
     public final void run() {
+        
+        mLogger.message(mPlugin.getClass().getName()); //COMMENT
+        mPlugin.handle(new SSIEventArray());//  //COMMENT
+            
         // Receive while not done ...
         while (!mDone) {
             mLogger.message("Awaiting SSI events ...");
-            
-
-            mPlugin.handle(new SSIEventArray());//  //COMMENT
-            /* UNCOMMENT
             // Receive a new message
             final String message = recvString();            
            // Check message content
@@ -99,7 +99,6 @@ public final class SSIEventReceiver extends Thread {
                     mLogger.failure(exc.toString());
                 }
             }
-            */
         }
     }
 

@@ -24,14 +24,11 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
             final RunTimeProject project) {
         // Initialize the runtime plugin
         super(config, project);
-        //
-        //mPlugin = this;
     }
 
     // Launch SSI plugin
     @Override
-    public void launch() {
-        /* UNCOMMENT
+    public void launch() {        
         // Get the plugin configuration
         final String hlhost = mConfig.getProperty("hlhost");
         final String hlport = mConfig.getProperty("hlport");
@@ -39,17 +36,16 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
         final String slport = mConfig.getProperty("slport");
         final String srhost = mConfig.getProperty("srhost");
         final String srport = mConfig.getProperty("srport");
-        */
         // Initialize the event handler
         mReceiver = new SSIEventReceiver(this,//mPlugin,
-                //hlhost, Integer.parseInt(hlport)); UNCOMMENT
-                "127.0.0.1", Integer.parseInt("1000")); //COMMENT
+                hlhost, Integer.parseInt(hlport));
+                //"127.0.0.1", Integer.parseInt("1000")); //COMMENT
         // Initialize the event sender
         mSender = new SSIEventSender(this,//mPlugin,
-                //slhost, Integer.parseInt(slport), UNCOMMENT
-                "127.0.0.1", Integer.parseInt("2000"), //COMMENT
-                //srhost, Integer.parseInt(srport)); UNCOMMENT
-                "127.0.0.1", Integer.parseInt("3000")); //COMMENT
+                slhost, Integer.parseInt(slport), 
+                //"127.0.0.1", Integer.parseInt("2000"), //COMMENT
+                srhost, Integer.parseInt(srport)); 
+                //"127.0.0.1", Integer.parseInt("3000")); //COMMENT
         // Start the SSI event handler
         mReceiver.start();
         // Start the SSI event sender
