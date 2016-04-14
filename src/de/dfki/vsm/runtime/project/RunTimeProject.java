@@ -172,8 +172,10 @@ public class RunTimeProject {
                 && parseGesticonConfig(file)
                 && loadRunTimePlugins());
     }
-    
-        public boolean parseForInformation(final String file) {
+
+    // First attempt to parse Visual SceneMaker project files for information only
+    // added PG 14.4.2016
+    public boolean parseForInformation(final String file) {
         // Check if the file is null
         if (file == null) {
             // Print an error message
@@ -234,9 +236,9 @@ public class RunTimeProject {
             final String type = config.getPluginType();
             final String name = config.getPluginName();
             final String clasn = config.getClassName();
-            
+
             mLogger.message("Trying to load  plugin name '" + name + "' of class name '" + clasn + "'");
-            
+
             // Load the device executor
             try {
                 // Get the class object
