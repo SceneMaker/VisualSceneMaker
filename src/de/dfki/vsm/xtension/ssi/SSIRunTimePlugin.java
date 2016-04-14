@@ -12,27 +12,26 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 public abstract class SSIRunTimePlugin extends RunTimePlugin {
 
     // The SSI event handler
-    private SSIEventHandler mHandler;
+    private SSIEventReceiver mReceiver;
     // The SSI event handler
     private SSIEventSender mSender;
-    // The project sceneflow 
-    protected final SceneFlow mSceneFlow;
     // The plugin reference
-    protected SSIRunTimePlugin mPlugin;
+    //protected SSIRunTimePlugin mPlugin;
 
+     
     public SSIRunTimePlugin(
             final PluginConfig config,
             final RunTimeProject project) {
         // Initialize the runtime plugin
         super(config, project);
         //
-        mSceneFlow = mProject.getSceneFlow();
-        mPlugin = this;
+        //mPlugin = this;
     }
 
     // Launch SSI plugin
     @Override
     public void launch() {
+        /* UNCOMMENT
         // Get the plugin configuration
         final String hlhost = mConfig.getProperty("hlhost");
         final String hlport = mConfig.getProperty("hlport");
@@ -40,15 +39,19 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
         final String slport = mConfig.getProperty("slport");
         final String srhost = mConfig.getProperty("srhost");
         final String srport = mConfig.getProperty("srport");
+        */
         // Initialize the event handler
-        mHandler = new SSIEventHandler(mPlugin,
-                hlhost, Integer.parseInt(hlport));
+        mReceiver = new SSIEventReceiver(this,//mPlugin,
+                //hlhost, Integer.parseInt(hlport)); UNCOMMENT
+                "127.0.0.1", Integer.parseInt("1000")); //COMMENT
         // Initialize the event sender
-        mSender = new SSIEventSender(mPlugin,
-                slhost, Integer.parseInt(slport),
-                srhost, Integer.parseInt(srport));
+        mSender = new SSIEventSender(this,//mPlugin,
+                //slhost, Integer.parseInt(slport), UNCOMMENT
+                "127.0.0.1", Integer.parseInt("2000"), //COMMENT
+                //srhost, Integer.parseInt(srport)); UNCOMMENT
+                "127.0.0.1", Integer.parseInt("3000")); //COMMENT
         // Start the SSI event handler
-        mHandler.start();
+        mReceiver.start();
         // Start the SSI event sender
         mSender.start();
     }
@@ -57,20 +60,19 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
     @Override
     public void unload() {
         // Abort the SSI event handler
-        mHandler.abort();
+        mReceiver.abort();
         // Abort the SSI event sender
         mSender.abort();
         // Join the SSI event threads
         try {
             // Join the SSI event handler
-            mHandler.join();
+            mReceiver.join();
             // Join the SSI event sender
             mSender.join();
         } catch (final Exception exc) {
             mLogger.failure(exc.toString());
         }
     }
-
-    // Handle some SSI event
-    public abstract void handle(final SSIEventArray event);
+    
+    public abstract void handle(final SSIEventArray array);
 }
