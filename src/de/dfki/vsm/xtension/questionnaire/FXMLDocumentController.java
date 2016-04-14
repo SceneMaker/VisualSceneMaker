@@ -125,8 +125,8 @@ public class FXMLDocumentController implements Initializable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
+                
                 nextbutton.setDisable(true);
-                namefield.requestFocus();
             }
         });
 

@@ -8,7 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * @author Patrick Gebhard
+ * @author Alvaro Cepero
  */
 public class StickmanMaryttsListener extends Thread {
 

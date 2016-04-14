@@ -15,7 +15,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 /**
- * @author Patrick Gebhard
+ * @author Alvaro Cepero
  */
 public class StickmanMaryttsHandler extends Thread implements EventListener {
 
