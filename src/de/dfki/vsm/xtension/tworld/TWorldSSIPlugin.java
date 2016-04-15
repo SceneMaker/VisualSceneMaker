@@ -6,12 +6,10 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.xtension.ssi.SSIEventReceiver;
-import de.dfki.vsm.xtension.ssi.SSIEventSender;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventObject;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
-import de.dfki.vsm.xtension.ssi.event.data.SSIXMLData;
+import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +31,6 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     // Launch SSI plugin
     @Override
     public void launch() {
-        /* UNCOMMENT
         final String ssidir = mConfig.getProperty("ssidir");
         final String ssibat = mConfig.getProperty("ssibat");
 
@@ -44,7 +41,6 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
         } catch (final Exception exc) {
             mLogger.failure(exc.toString());
         }
-        */         
         super.launch();
     }
 
@@ -77,19 +73,20 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
     @Override
     public void handle(final SSIEventArray array) {
-         mLogger.message("TWORLD SSI PLUGIN HANDLING ...");
-        
-        
+        mLogger.message("TWORLD SSI PLUGIN HANDLING ...");
+
         HashMap<String, AbstractValue> values = new HashMap<>();
 
         for (final SSIEventObject event : array.getEventList()) {
             final SSIEventData obj = event.getData();
             //
-            if (obj instanceof SSIXMLData) {
+            if (obj instanceof SSIStringData) {
+                // TODO: Basically all events with XML content 
+                // should have type 'XML' and thus be parsed to
+                // an SSIXMLData object before this is called
                 final TWorldSSIData data = new TWorldSSIData(
-                        ((SSIXMLData) obj).getXML());
+                        ((SSIStringData) obj).toString());
 
-                //mLogger.message(".");
                 values.put("headxpos", new IntValue(new Integer(data.getHeadData().getPosData().getX())));
                 values.put("headypos", new IntValue(new Integer(data.getHeadData().getPosData().getY())));
 

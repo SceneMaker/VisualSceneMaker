@@ -75,10 +75,6 @@ public final class SSIEventReceiver extends Thread {
     // Execute the server thread
     @Override
     public final void run() {
-        
-        mLogger.message(mPlugin.getClass().getName()); //COMMENT
-        mPlugin.handle(new SSIEventArray());//  //COMMENT
-            
         // Receive while not done ...
         while (!mDone) {
             mLogger.message("Awaiting SSI events ...");
@@ -94,6 +90,8 @@ public final class SSIEventReceiver extends Thread {
                     if (XMLUtilities.parseFromXMLStream(sequence, stream)) {
                         // Delegate sequence handling            
                         mPlugin.handle(sequence);
+                    } else {
+                        
                     }
                 } catch (final Exception exc) {
                     mLogger.failure(exc.toString());
