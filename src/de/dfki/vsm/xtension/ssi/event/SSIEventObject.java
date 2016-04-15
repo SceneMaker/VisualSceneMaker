@@ -9,7 +9,6 @@ import de.dfki.vsm.util.xml.XMLWriteable;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
-import de.dfki.vsm.xtension.ssi.event.data.SSIXMLData;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Locale;
@@ -75,10 +74,8 @@ public final class SSIEventObject implements XMLParseable, XMLWriteable {
             } else if (mType.equals("STRING")) {
                 mData = new SSIStringData(
                         element.getTextContent());
-            } else if (mType.equals("XML")) {
-                mData = new SSIXMLData(
-                        element.getTextContent());
             } else if (mType.equals("NTUPLE")) {
+
                 final SSITupleData content = new SSITupleData();
                 try {
                     final byte[] xml = element.getTextContent().getBytes("UTF-8");
@@ -90,6 +87,7 @@ public final class SSIEventObject implements XMLParseable, XMLWriteable {
                 }
                 // Set the new data
                 mData = content;
+
             } else {
                 // Do nothing
             }

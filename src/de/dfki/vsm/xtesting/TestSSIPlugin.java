@@ -1,10 +1,12 @@
 package de.dfki.vsm.xtesting;
 
-import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.plugin.RunTimePlugin;
-import de.dfki.vsm.runtime.project.RunTimeProject;
-import java.io.File;
-import java.lang.reflect.Constructor;
+import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
+import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
+import de.dfki.vsm.xtension.tworld.TWorldSSIData;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author Gregor Mehlmann
@@ -13,34 +15,29 @@ public class TestSSIPlugin {
 
     public static void main(String args[]) {
 
-        
-        
-        
-         try {
-                //
-                final RunTimeProject project = new RunTimeProject(
-                        new File("res/tutorials/5. TestTricatWorldEmpaT"));
-                //
-                final PluginConfig config = project.getPluginConfig("tworld_ssi_plugin");
-                // Get the class object
-                final Class clazz = Class.forName("de.dfki.vsm.xtension.tworld.TWorldSSIPlugin");
-                // Get the constructor
-                final Constructor constructor
-                        = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
-                // Call the constructor
-                final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, project);
-                //
-                plugin.launch();
-                
-            } catch (final Exception exc) {
-               exc.printStackTrace();
-            }
-        
-     
         /*
-        
-        final String xmldata = ""
-                // + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+         try {
+         //
+         final RunTimeProject project = new RunTimeProject(
+         new File("res/tutorials/5. TestTricatWorldEmpaT"));
+         //
+         final PluginConfig config = project.getPluginConfig("tworld_ssi_plugin");
+         // Get the class object
+         final Class clazz = Class.forName("de.dfki.vsm.xtension.tworld.TWorldSSIPlugin");
+         // Get the constructor
+         final Constructor constructor
+         = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
+         // Call the constructor
+         final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, project);
+         //
+         plugin.launch();
+
+         } catch (final Exception exc) {
+         exc.printStackTrace();
+         }
+         */
+        final String xmldata = "\n"
+                //+ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<ssi>\n"
                 + "    <voice>\n"
                 + "        <activity>0</activity>\n"
@@ -117,12 +114,12 @@ public class TestSSIPlugin {
                 + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<events ssi-v=\"V2\">\n"
                 + "    <event\n"
-                + "        sender=\"xmlevent\"\n"
+                + "        sender=\"xml\"\n"
                 + "        event=\"xml\"\n"
                 + "        from=\"0\"\n"
                 + "        dur=\"0\"\n"
                 + "        prob=\"1.000000\"\n"
-                + "        type=\"XML\"\n"
+                + "        type=\"STRING\"\n"
                 + "        state=\"COMPLETED\"\n"
                 + "        glue=\"0\">"
                 + "<![CDATA["
@@ -130,8 +127,6 @@ public class TestSSIPlugin {
                 + "]]>"
                 + "    </event>\n"
                 + "</events>\n";
-
-        System.out.print(ssievents);
 
         final SSIEventArray array = new SSIEventArray();
         try {
@@ -149,48 +144,49 @@ public class TestSSIPlugin {
         }
 
         final TWorldSSIData mSSIData = new TWorldSSIData(
-                ((SSIXMLData) array.getEventList().get(0).getData()).getXML());
+                ((SSIStringData) array.getEventList().get(0).getData()).toString());
 
-        System.out.println(mSSIData.getVoiceData().getActivity());
-        System.out.println(mSSIData.getVoiceData().getKeyword());
-        System.out.println(mSSIData.getVoiceData().getPraatData().getSpeechRate());
-        System.out.println(mSSIData.getVoiceData().getPraatData().getIntensity());
-        System.out.println(mSSIData.getVoiceData().getPraatData().getPitchMean());
-        System.out.println(mSSIData.getVoiceData().getPraatData().getPitchSD());
+        
+         System.out.println(mSSIData.getVoiceData().getActivity());
+         System.out.println(mSSIData.getVoiceData().getKeyword());
+         System.out.println(mSSIData.getVoiceData().getPraatData().getSpeechRate());
+         System.out.println(mSSIData.getVoiceData().getPraatData().getIntensity());
+         System.out.println(mSSIData.getVoiceData().getPraatData().getPitchMean());
+         System.out.println(mSSIData.getVoiceData().getPraatData().getPitchSD());
+        
+         //  System.out.println(mSSIData.getHeadData().getNodData());
+         //  System.out.println(mSSIData.getHeadData().getShakeData());
+         System.out.println(mSSIData.getHeadData().getPosData().getX());
+         System.out.println(mSSIData.getHeadData().getPosData().getY());
 
-        //  System.out.println(mSSIData.getHeadData().getNodData());
-        //  System.out.println(mSSIData.getHeadData().getShakeData());
-        System.out.println(mSSIData.getHeadData().getPosData().getX());
-        System.out.println(mSSIData.getHeadData().getPosData().getY());
+         System.out.println(mSSIData.getBodyData().getActivity());
+         System.out.println(mSSIData.getBodyData().getOpeness());
+         System.out.println(mSSIData.getBodyData().getEnergy());
+         System.out.println(mSSIData.getBodyData().getLeanData("front").getIdentifier());
+         System.out.println(mSSIData.getBodyData().getLeanData("front").getDetected());
+         System.out.println(mSSIData.getBodyData().getLeanData("front").getDuration());
+         System.out.println(mSSIData.getBodyData().getLeanData("front").getIntensity());
+         System.out.println(mSSIData.getBodyData().getLeanData("back").getIdentifier());
+         System.out.println(mSSIData.getBodyData().getLeanData("back").getDetected());
+         System.out.println(mSSIData.getBodyData().getLeanData("back").getDuration());
+         System.out.println(mSSIData.getBodyData().getLeanData("back").getIntensity());
+         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getIdentifier());
+         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getDetected());
+         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getDuration());
+         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getIntensity());
+         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIdentifier());
+         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDetected());
+         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDuration());
+         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIntensity());
 
-        System.out.println(mSSIData.getBodyData().getActivity());
-        System.out.println(mSSIData.getBodyData().getOpeness());
-        System.out.println(mSSIData.getBodyData().getEnergy());
-        System.out.println(mSSIData.getBodyData().getLeanData("front").getIdentifier());
-        System.out.println(mSSIData.getBodyData().getLeanData("front").getDetected());
-        System.out.println(mSSIData.getBodyData().getLeanData("front").getDuration());
-        System.out.println(mSSIData.getBodyData().getLeanData("front").getIntensity());
-        System.out.println(mSSIData.getBodyData().getLeanData("back").getIdentifier());
-        System.out.println(mSSIData.getBodyData().getLeanData("back").getDetected());
-        System.out.println(mSSIData.getBodyData().getLeanData("back").getDuration());
-        System.out.println(mSSIData.getBodyData().getLeanData("back").getIntensity());
-        System.out.println(mSSIData.getBodyData().getGestData("armsopen").getIdentifier());
-        System.out.println(mSSIData.getBodyData().getGestData("armsopen").getDetected());
-        System.out.println(mSSIData.getBodyData().getGestData("armsopen").getDuration());
-        System.out.println(mSSIData.getBodyData().getGestData("armsopen").getIntensity());
-        System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIdentifier());
-        System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDetected());
-        System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDuration());
-        System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIntensity());
-
-        System.out.println(mSSIData.getFaceData().getExpData("smile").getIdentifier());
-        System.out.println(mSSIData.getFaceData().getExpData("smile").getDetected());
-        System.out.println(mSSIData.getFaceData().getExpData("smile").getDuration());
-        System.out.println(mSSIData.getFaceData().getExpData("smile").getIntensity());
-        System.out.println(mSSIData.getFaceData().getExpData("frown").getIdentifier());
-        System.out.println(mSSIData.getFaceData().getExpData("frown").getDetected());
-        System.out.println(mSSIData.getFaceData().getExpData("frown").getDuration());
-        System.out.println(mSSIData.getFaceData().getExpData("frown").getIntensity());
-        */
+         System.out.println(mSSIData.getFaceData().getExpData("smile").getIdentifier());
+         System.out.println(mSSIData.getFaceData().getExpData("smile").getDetected());
+         System.out.println(mSSIData.getFaceData().getExpData("smile").getDuration());
+         System.out.println(mSSIData.getFaceData().getExpData("smile").getIntensity());
+         System.out.println(mSSIData.getFaceData().getExpData("frown").getIdentifier());
+         System.out.println(mSSIData.getFaceData().getExpData("frown").getDetected());
+         System.out.println(mSSIData.getFaceData().getExpData("frown").getDuration());
+         System.out.println(mSSIData.getFaceData().getExpData("frown").getIntensity());
+        
     }
 }

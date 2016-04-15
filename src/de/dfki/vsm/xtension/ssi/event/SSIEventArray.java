@@ -30,7 +30,7 @@ public final class SSIEventArray implements XMLWriteable, XMLParseable {
     public final void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
         writer.println("<events ssi-v=\"" + mVersion + "\">").push();
         for (SSIEventObject event : mList) {
-            writer.print(event.toString());
+            event.writeXML(writer);
         }
         writer.pop().println("</events>");
     }
