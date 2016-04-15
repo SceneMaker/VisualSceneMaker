@@ -11,7 +11,6 @@ import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
