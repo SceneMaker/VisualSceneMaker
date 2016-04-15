@@ -135,6 +135,11 @@ public class RunTimeProject {
     public final RunTimePlayer getRunTimePlayer() {
         return mRunTimePlayer;
     }
+    
+    // Get the project configuration (added PG 15.4.2016)
+    public final ProjectConfig getProjectConfig() {
+        return mProjectConfig;
+    }
 
     public final ActivityExecutor getAgentDevice(final String agent) {
         // Get the agent config 
