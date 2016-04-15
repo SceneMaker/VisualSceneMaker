@@ -517,7 +517,10 @@ public class EditorStarter extends JPanel {
                                         project.getSceneFlow().getNodeAndSuperNodeList().size() + 
                                         " global nodes, " +
                                         project.getSceneScript().copySceneList().size() +
-                                        " scenes]");// + ", last edited: "
+                                        " scenes, " +
+                                        project.getProjectConfig().getPluginConfigList().size() + 
+                                        " plugins, " +
+                                        project.getProjectConfig().getAgentNames().size() + " agents]");// + ", last edited: "
 				// + Preferences.sDATE_FORMAT.format(tutorialProj.lastModified()));
 
 				newTutorialProj.setLayout(new BoxLayout(newTutorialProj, BoxLayout.X_AXIS));
