@@ -42,6 +42,10 @@
       <Feature key="cat" val="img\cat.png"/>
       <Feature key="dog" val="img\dog.png"/>
     </Plugin>
+    <Plugin type="device" name="alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor">
+      <Feature key="computation" val="affect\AffectComputation.aml"/>
+      <Feature key="definition" val="affect\CharacterDefinition.aml"/>
+    </Plugin>
   </Plugins>
   <Agents>
     <Agent name="Empat_Environment" device="tworld">
@@ -87,6 +91,8 @@
     <Agent name="npc19" device="tworld">
     </Agent>
     <Agent name="npc20" device="tworld">
+    </Agent>
+    <Agent name="appraise" device="alma">
     </Agent>
     <Agent name="bert" device="stickman">
     </Agent>
