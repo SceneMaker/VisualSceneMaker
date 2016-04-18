@@ -32,6 +32,6 @@
 <entry key="showelements">true</entry>
 <entry key="frame_title">Visual SceneMaker</entry>
 <entry key="workspace_fontsize">11</entry>
-<entry key="showsceneelements">true</entry>
+<entry key="showsceneelements">false</entry>
 <entry key="showscenefloweditor">true</entry>
 </properties>

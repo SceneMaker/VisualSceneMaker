@@ -179,14 +179,20 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
             }
 
-            if (cmd.equalsIgnoreCase("Ambient")) {
+            if (cmd.equalsIgnoreCase("AmbientLight")) {
                 //twcoa = new Ambient(getActionFeatureValue("value", features));
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
 
-            if (cmd.equalsIgnoreCase("SoundAmbient")) {
+            if (cmd.equalsIgnoreCase("AmbientSound")) {
                 //twcoa = new SoundAmbient(getActionFeatureValue("value", features));
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
+            }
+            if (cmd.equalsIgnoreCase("PlayerWarp")) {
+                //twcoa = new Ambient(getActionFeatureValue("value", features));
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
+                mLogger.message("Foobar");
+                mLogger.message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + twcoa.toString());
             }
         }
 
