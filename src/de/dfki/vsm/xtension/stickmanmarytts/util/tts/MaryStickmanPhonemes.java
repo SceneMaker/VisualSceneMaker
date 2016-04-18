@@ -26,7 +26,9 @@ public class MaryStickmanPhonemes {
     public LinkedList<Phoneme> getPhonemesSpeechActivity(SpeechActivity sa, Stickman.TYPE gender){
         LinkedList<Phoneme> phonemes = new LinkedList<>();
         try {
-            phonemes = mary.getWordPhonemeList(sa.getTextOnly("$"), gender);
+            if(!sa.getTextOnly("$").equals("")){
+                phonemes = mary.getWordPhonemeList(sa.getTextOnly("$"), gender);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
