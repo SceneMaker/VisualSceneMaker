@@ -63,7 +63,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
     public StickmanMaryttsExecutor(final PluginConfig config, final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
-        maryTTs = I4GMaryClient.instance();
+        //maryTTs = I4GMaryClient.instance();
         maryId = 0;
 
     }
