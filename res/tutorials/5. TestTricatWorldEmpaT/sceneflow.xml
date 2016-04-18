@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fr, 15 Apr 2016 16:03:19" start="N1;N15;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo, 18 Apr 2016 17:46:16" start="N1;N15;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
     <StructType name="WorldFeedback">
       <Member type="String" name ="type"/>
@@ -76,7 +76,7 @@
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position xPos="824" yPos="8"/>
+    <Position xPos="82" yPos="65"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
@@ -236,8 +236,8 @@
     <FEdge target="N21" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="298" yPos="447" ctrlXPos="369" ctrlYPos="466"/>
-          <ControlPoint xPos="482" yPos="513" ctrlXPos="410" ctrlYPos="493"/>
+          <ControlPoint xPos="298" yPos="447" ctrlXPos="622" ctrlYPos="537"/>
+          <ControlPoint xPos="1020" yPos="345" ctrlXPos="680" ctrlYPos="345"/>
         </Connection>
       </Graphics>
     </FEdge>
@@ -256,7 +256,40 @@
       </PlaySceneGroup>
     </Commands>
     <Graphics>
+      <Position xPos="1020" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N22" name="N22" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N23" start="" timeout="5000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="570" yPos="525" ctrlXPos="637" ctrlYPos="525"/>
+        <ControlPoint xPos="750" yPos="525" ctrlXPos="682" ctrlYPos="525"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
       <Position xPos="480" yPos="480"/>
+    </Graphics>
+  </Node>
+  <Node id="N23" name="N23" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[WarpToEntrance]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <Graphics>
+      <Position xPos="750" yPos="480"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="Prolog" comment="" hideLocalVar="false" hideGlobalVar="false" start="N6;">

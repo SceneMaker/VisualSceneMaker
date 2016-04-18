@@ -52,6 +52,8 @@
     </Agent>
     <Agent name="Susanne" device="tworld">
     </Agent>
+    <Agent name="player" device="tworld">
+    </Agent>
     <Agent name="npc1" device="tworld">
     </Agent>
     <Agent name="npc2" device="tworld">

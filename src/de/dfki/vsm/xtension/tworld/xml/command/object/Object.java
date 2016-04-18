@@ -8,7 +8,7 @@ package de.dfki.vsm.xtension.tworld.xml.command.object;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.MoveTo;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.SoundAmbient;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.CharamelAction;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.Ambient;
+import de.dfki.vsm.xtension.tworld.xml.command.object.action.AmbientLight;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -72,7 +72,7 @@ public class Object implements XMLParseable, XMLWriteable {
                     }
 
                     if (actionName.equalsIgnoreCase("ambient_setup")) {
-                        mAction = new Ambient();
+                        mAction = new AmbientLight();
                         mAction.parseXML(element);
                     }
 

@@ -17,16 +17,16 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  * 
  */
-public class Ambient extends Action implements XMLParseable, XMLWriteable{
+public class AmbientLight extends Action implements XMLParseable, XMLWriteable{
   
     String mValue = "";
 
-    public Ambient(String value) {
-        mName = "ambient_setup";
+    public AmbientLight(String value) {
+        mName = "ambientlight";
         mValue = value;
     }
 
-    public Ambient() {
+    public AmbientLight() {
     }
 
     @Override
