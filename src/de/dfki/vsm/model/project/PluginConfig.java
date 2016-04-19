@@ -22,7 +22,7 @@ public class PluginConfig extends ConfigElement {
     // The class of the plugin
     private String mClassName;
     // The information if plugin should be loaded
-    private boolean mLoad;
+    private boolean mLoad = true;
 
     // Construct A New Plugin
     public PluginConfig() {
@@ -52,7 +52,7 @@ public class PluginConfig extends ConfigElement {
         mPluginType = type;
         mPluginName = name;
         mClassName = clazz;
-        mLoad = false;
+        mLoad = true;
     }
 
     // Construct A New Plugin
@@ -114,7 +114,8 @@ public class PluginConfig extends ConfigElement {
             mPluginType = element.getAttribute("type");
             mPluginName = element.getAttribute("name");
             mClassName = element.getAttribute("class");
-            mLoad = (element.hasAttribute("load") ? Boolean.getBoolean(element.getAttribute("load")) : true);
+            
+            mLoad = (element.hasAttribute("load") ? Boolean.valueOf(element.getAttribute("load")) : true);
             
             // Parse The Entries
             XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
