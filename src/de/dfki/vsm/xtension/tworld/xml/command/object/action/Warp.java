@@ -17,27 +17,36 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class MoveTo extends Action implements XMLParseable, XMLWriteable {
+public class Warp extends Action implements XMLParseable, XMLWriteable {
 
     String mLocation = "";
+    String mViewtarget = "";
 
-    public MoveTo(String value) {
-        mName = "movetolocation";
-        mLocation = value;
+    public Warp(String location) {
+        mName = "warp";
+        mLocation = location;
     }
 
-    public MoveTo() {
+    public Warp(String location, String target) {
+        mName = "warp";
+        mLocation = location;
+        mViewtarget = target;
+    }
+
+    public Warp() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" locname=\"" + mLocation + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" locname=\"" + mLocation + ((mViewtarget.equalsIgnoreCase("")) ?"\" viewtarget=\"" + mViewtarget : "" )+ "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mLocation = element.getAttribute("locname");
+        mViewtarget = element.getAttribute("viewtarget");
+        mViewtarget = (mViewtarget == null) ? "" : mViewtarget;
         mId = element.getAttribute("id");
     }
 }

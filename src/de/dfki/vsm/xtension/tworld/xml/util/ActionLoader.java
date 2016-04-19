@@ -47,10 +47,37 @@ public class ActionLoader {
         try {
             Class.forName(classPath);
         } catch (ClassNotFoundException ex) {
-           mLogger.failure("Wrong classpath for TWorld Action " + cmd);
+            mLogger.failure("Wrong classpath for TWorld Action " + cmd);
         }
 
         return classPath;
+    }
+
+    public Action loadAnimation(String cmd) {
+        Action a = null;
+
+        String cp = getCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 0) {
+                    a = (Action) c.getDeclaredConstructor(params).newInstance();
+
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Action " + cmd);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
+        return a;
     }
 
     public Action loadAnimation(String cmd, String value) {
@@ -77,7 +104,63 @@ public class ActionLoader {
         if (a != null) {
             a.setId(getNextID());
         }
-        
+
+        return a;
+    }
+
+    public Action loadAnimation(String cmd, String value1, String value2) {
+        Action a = null;
+
+        String cp = getCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 2) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string")) {
+                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1, value2);
+                    }
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Action " + cmd + " and value " + value1);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
+        return a;
+    }
+
+    public Action loadAnimation(String cmd, String value1, String value2, String value3) {
+        Action a = null;
+
+        String cp = getCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 3) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string") && params[2].getSimpleName().equalsIgnoreCase("string")) {
+                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1, value2, value3);
+                    }
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Action " + cmd + " and value " + value1);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
         return a;
     }
 }

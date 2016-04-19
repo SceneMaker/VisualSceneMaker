@@ -15,32 +15,35 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Patrick Gebhard
- * 
+ *
  */
-public class PlayerWarp extends Action implements XMLParseable, XMLWriteable{
-  
-    String mValue = "";
-    String mViewtarget = "";
+public class SetColor extends Action implements XMLParseable, XMLWriteable {
 
-    public PlayerWarp(String value) {
-        mName = "player_warp";
-        mValue = value;
-        mViewtarget = mValue;
+    String mRed = "";
+    String mGreen = "";
+    String mBlue = "";
+
+    public SetColor(String red, String green, String blue) {
+        mName = "color";
+        mRed = red;
+        mGreen = green;
+        mBlue = blue;
     }
 
-    public PlayerWarp() {
+    public SetColor() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" locname=\"" + mValue + "\" viewtarget=\"" + mViewtarget + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" r=\"" + mRed + "\" g=\"" + mGreen + "\" b=\"" + mBlue + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mValue = element.getAttribute("locname");
-        mViewtarget = element.getAttribute("viewtarget");
+        mRed = element.getAttribute("r");
+        mGreen = element.getAttribute("g");
+        mBlue = element.getAttribute("b");
         mId = element.getAttribute("id");
-    }  
+    }
 }
