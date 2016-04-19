@@ -69,7 +69,7 @@ public class RunTimeProject {
 
     // Construct a project from a directory
     public RunTimeProject(final File file) {
-         // Remember Path
+        // Remember Path
         mProjectPath = file.getPath();
         // Initialize the scene players
         mRunTimePlayer = new ReactivePlayer(null, this);
@@ -135,7 +135,7 @@ public class RunTimeProject {
     public final RunTimePlayer getRunTimePlayer() {
         return mRunTimePlayer;
     }
-    
+
     // Get the project configuration (added PG 15.4.2016)
     public final ProjectConfig getProjectConfig() {
         return mProjectConfig;
@@ -241,23 +241,28 @@ public class RunTimeProject {
             final String type = config.getPluginType();
             final String name = config.getPluginName();
             final String clasn = config.getClassName();
-
-            // Load the device executor
-            try {
-                // Get the class object
-                final Class clazz = Class.forName(clasn);
-                // Get the constructor
-                final Constructor constructor
-                        = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
-                // Call the constructor
-                final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, this);
-                // Add the executor then
-                mPluginMap.put(name, plugin);
-                // Print some information
-                mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
-            } catch (final Exception exc) {
-                mLogger.failure(exc.toString());
-                exc.printStackTrace();
+            
+            // check if plugin show be loaded - added PG 19.4.2016
+            if (config.isMarkedtoLoad()) {
+                // Load the device executor
+                try {
+                    // Get the class object
+                    final Class clazz = Class.forName(clasn);
+                    // Get the constructor
+                    final Constructor constructor
+                            = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
+                    // Call the constructor
+                    final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, this);
+                    // Add the executor then
+                    mPluginMap.put(name, plugin);
+                    // Print some information
+                    mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
+                } catch (final Exception exc) {
+                    mLogger.failure(exc.toString());
+                    exc.printStackTrace();
+                }
+            } else {
+                mLogger.message("Plugin object '" + name + "' is marked as 'not load' - skipping loading plugin.");
             }
         }
         // Return true at success

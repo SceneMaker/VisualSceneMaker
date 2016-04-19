@@ -174,24 +174,68 @@ public final class TWorldExecutor extends ActivityExecutor {
             twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
             twcoa.setId(ActionLoader.getInstance().getNextID());
         } else {
-            if (cmd.equalsIgnoreCase("MoveTo")) {
-                //twcoa = new MoveTo(getActionFeatureValue("location", features));
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
-            }
-
             if (cmd.equalsIgnoreCase("AmbientLight")) {
-                //twcoa = new Ambient(getActionFeatureValue("value", features));
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
 
             if (cmd.equalsIgnoreCase("AmbientSound")) {
-                //twcoa = new SoundAmbient(getActionFeatureValue("value", features));
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
-            if (cmd.equalsIgnoreCase("PlayerWarp")) {
-                //twcoa = new Ambient(getActionFeatureValue("value", features));
+
+            if (cmd.equalsIgnoreCase("CancelMoveTo")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
+            }
+
+            if (cmd.equalsIgnoreCase("Load")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("url", features));
+            }
+
+            if (cmd.equalsIgnoreCase("MoveTo")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
-                mLogger.message("Foobar");
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            }
+
+            if (cmd.equalsIgnoreCase("Play")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
+            }
+
+            if (cmd.equalsIgnoreCase("Relase")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
+            }
+
+            if (cmd.equalsIgnoreCase("RelaseLookAt")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
+            }
+
+            if (cmd.equalsIgnoreCase("Say")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("url", features));
+            }
+
+            if (cmd.equalsIgnoreCase("SetColor")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("r", features), getActionFeatureValue("g", features), getActionFeatureValue("b", features));
+            }
+
+            if (cmd.equalsIgnoreCase("SitDown")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("chairname", features));
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            }
+
+            if (cmd.equalsIgnoreCase("Stop")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
+            }
+
+            if (cmd.equalsIgnoreCase("Warp")) {
+                String target = getActionFeatureValue("target", features);
+                if (target != null) {
+                    twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features), target);
+                } else {
+                    twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
+                }
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+
                 mLogger.message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + twcoa.toString());
             }
         }
