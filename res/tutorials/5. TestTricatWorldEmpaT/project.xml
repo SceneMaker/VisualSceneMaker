@@ -11,7 +11,7 @@
       <Feature key="ssidir" val="D:\EmpaT\software\EmpaT\"/>
       <Feature key="ssibat" val="EMPAT_SSI.bat"/>
     </Plugin>
-    <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tworld.TWorldExecutor" load="false">
+    <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tworld.TWorldExecutor" load="true">
       <Feature key="tworlddir" val="D:\EmpaT\software\EmpaT\"/>
       <Feature key="tworldexe" val="EmpaT.exe"/>
       <Feature key="tworldcmd" val="-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 -CharActorIP 127.0.0.1 -CharActorPort 4000"/>
@@ -19,12 +19,12 @@
       <Feature key="cactorexe" val="EmpatTest.exe"/>
       <Feature key="cactorcmd" val=""/>
     </Plugin>
-    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="false">
+    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="9000"/>
       <Feature key="showstickmanname" val="true"/>
     </Plugin>
-    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor" load="false">
+    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor" load="true">
       <Feature key="strength1" val="Zielstrebig"/>
       <Feature key="strength2" val="Kommunikationsstark"/>
       <Feature key="strength3" val="Teamfähig"/>
@@ -38,11 +38,11 @@
       <Feature key="weakness5" val="Stur"/>
       <Feature key="weakness6" val="Keine"/>
     </Plugin>
-    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor" load="false">
+    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor" load="true">
       <Feature key="cat" val="img\cat.png"/>
       <Feature key="dog" val="img\dog.png"/>
     </Plugin>
-    <Plugin type="device" name="alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="false">
+    <Plugin type="device" name="alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
       <Feature key="computation" val="affect\AffectComputation.aml"/>
       <Feature key="definition" val="affect\CharacterDefinition.aml"/>
     </Plugin>
