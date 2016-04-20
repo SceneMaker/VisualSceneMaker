@@ -15,33 +15,29 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Patrick Gebhard
+ * 
  */
-public class Action implements XMLParseable, XMLWriteable {
+public class AmbientLight extends Action implements XMLParseable, XMLWriteable{
+  
+    String mValue = "";
 
-    protected String mName = "";
-    protected String mId = "";
-
-    public void setId(String id) {
-        mId = id;
+    public AmbientLight(String value) {
+        mName = "ambientlight";
+        mValue = value;
     }
 
-    public String getId() {
-        return mId;
-    }
-
-    public String getActionCmd() {
-        return mName;
-    }
-
-    public void resetActionCmd(String newcmdname) {
-        mName = newcmdname;
+    public AmbientLight() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" value=\"" + mValue + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-    }
+        mName = element.getAttribute("name");
+        mValue = element.getAttribute("value");
+        mId = element.getAttribute("id");
+    }  
 }

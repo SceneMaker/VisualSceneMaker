@@ -21,6 +21,8 @@ public class PluginConfig extends ConfigElement {
     private String mPluginName;
     // The class of the plugin
     private String mClassName;
+    // The information if plugin should be loaded
+    private boolean mLoad = true;
 
     // Construct A New Plugin
     public PluginConfig() {
@@ -31,6 +33,17 @@ public class PluginConfig extends ConfigElement {
         mClassName = new String();
     }
 
+        // Construct A New Plugin
+    public PluginConfig(final String type, final String name, final String clazz, final boolean load) {
+        // Initialize The Config
+        super("Plugin", "Feature");
+        // Initialize The Members
+        mPluginType = type;
+        mPluginName = name;
+        mClassName = clazz;
+        mLoad = load;
+    }
+    
     // Construct A New Plugin
     public PluginConfig(final String type, final String name, final String clazz) {
         // Initialize The Config
@@ -39,6 +52,7 @@ public class PluginConfig extends ConfigElement {
         mPluginType = type;
         mPluginName = name;
         mClassName = clazz;
+        mLoad = true;
     }
 
     // Construct A New Plugin
@@ -46,6 +60,7 @@ public class PluginConfig extends ConfigElement {
             final String type,
             final String name,
             final String clazz,
+            final boolean load,
             final ArrayList<ConfigFeature> features) {
         // Initialize The Config
         super("Plugin", "Feature", features);
@@ -53,6 +68,7 @@ public class PluginConfig extends ConfigElement {
         mPluginType = type;
         mPluginName = name;
         mClassName = clazz;
+        mLoad = load;
     }
 
     // Get Plugin Name
@@ -69,11 +85,16 @@ public class PluginConfig extends ConfigElement {
     public final String getClassName() {
         return mClassName;
     }
+    
+        // Get Loading information
+    public final boolean isMarkedtoLoad() {
+        return mLoad;
+    }
 
     // Write A Plugin As XML
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.println("<Plugin type=\"" + mPluginType + "\" name=\"" + mPluginName + "\" class=\"" + mClassName + "\">");
+        stream.println("<Plugin type=\"" + mPluginType + "\" name=\"" + mPluginName + "\" class=\"" + mClassName + "\" load=\"" + mLoad + "\">");
         stream.push();
         for (final ConfigFeature entry : mFeatureList) {
             entry.writeXML(stream);
@@ -93,6 +114,9 @@ public class PluginConfig extends ConfigElement {
             mPluginType = element.getAttribute("type");
             mPluginName = element.getAttribute("name");
             mClassName = element.getAttribute("class");
+            
+            mLoad = (element.hasAttribute("load") ? Boolean.valueOf(element.getAttribute("load")) : true);
+            
             // Parse The Entries
             XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
                 @Override
@@ -110,7 +134,7 @@ public class PluginConfig extends ConfigElement {
     // Get Copy Of Plugin Config
     @Override
     public final PluginConfig getCopy() {
-        return new PluginConfig(mPluginType, mPluginName, mClassName, copyEntryList());
+        return new PluginConfig(mPluginType, mPluginName, mClassName, mLoad, copyEntryList());
     }
 
 }

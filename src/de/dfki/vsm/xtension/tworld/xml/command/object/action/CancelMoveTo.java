@@ -15,33 +15,28 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Patrick Gebhard
+ *
  */
-public class Action implements XMLParseable, XMLWriteable {
+public class CancelMoveTo extends Action implements XMLParseable, XMLWriteable {
 
-    protected String mName = "";
-    protected String mId = "";
+    String mLocation = "";
 
-    public void setId(String id) {
-        mId = id;
+    public CancelMoveTo(String value) {
+        mName = "cancelmoveto";
+        mLocation = value;
     }
 
-    public String getId() {
-        return mId;
-    }
-
-    public String getActionCmd() {
-        return mName;
-    }
-
-    public void resetActionCmd(String newcmdname) {
-        mName = newcmdname;
+    public CancelMoveTo() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
+        mName = element.getAttribute("name");
+        mId = element.getAttribute("id");
     }
 }

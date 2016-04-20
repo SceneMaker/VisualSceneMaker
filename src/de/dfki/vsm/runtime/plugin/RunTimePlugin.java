@@ -1,7 +1,6 @@
 package de.dfki.vsm.runtime.plugin;
 
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 

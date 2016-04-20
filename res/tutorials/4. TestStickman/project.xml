@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="Stickworld">
   <Plugins>
-    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor">
+    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="false"/>
     </Plugin>
-    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor">
+    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor" load="true">
       <Feature key="strength1" val="Zielstrebig"/>
       <Feature key="strength2" val="Kommunikationsstark"/>
       <Feature key="strength3" val="Teamfähig"/>
@@ -20,7 +20,7 @@
       <Feature key="weakness5" val="Stur"/>
       <Feature key="weakness6" val="Keine"/>
     </Plugin>
-    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor">
+    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor" load="true">
       <Feature key="cat" val="img\cat.png"/>
       <Feature key="dog" val="img\dog.png"/>
     </Plugin>

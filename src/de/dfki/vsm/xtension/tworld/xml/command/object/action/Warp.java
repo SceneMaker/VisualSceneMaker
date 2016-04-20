@@ -15,29 +15,38 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Patrick Gebhard
- * 
+ *
  */
-public class Ambient extends Action implements XMLParseable, XMLWriteable{
-  
-    String mValue = "";
+public class Warp extends Action implements XMLParseable, XMLWriteable {
 
-    public Ambient(String value) {
-        mName = "ambient_setup";
-        mValue = value;
+    String mLocation = "";
+    String mViewtarget = "";
+
+    public Warp(String location) {
+        mName = "warp";
+        mLocation = location;
     }
 
-    public Ambient() {
+    public Warp(String location, String target) {
+        mName = "warp";
+        mLocation = location;
+        mViewtarget = target;
+    }
+
+    public Warp() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" value=\"" + mValue + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" locname=\"" + mLocation + "\"" + ((!mViewtarget.equalsIgnoreCase("")) ? " viewtarget=\"" + mViewtarget + "\"" : "") + "/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mValue = element.getAttribute("value");
+        mLocation = element.getAttribute("locname");
+        mViewtarget = element.getAttribute("viewtarget");
+        mViewtarget = (mViewtarget == null) ? "" : mViewtarget;
         mId = element.getAttribute("id");
-    }  
+    }
 }
