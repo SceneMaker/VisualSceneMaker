@@ -3,55 +3,53 @@
   <SceneComment lower="0" upper="104" comment="/* Available commands: Show image [display show image={dog,cat}], values are configured in project.xml*/"/>
   <SceneComment lower="106" upper="254" comment="/*                     Hide image [display hide]. Important show image is modal (no mouse input for other windows), make sure to hide image again */"/>
   <SceneComment lower="256" upper="384" comment="/*                     Show user data questionnaire [qgui show], values for strength, weaknesses are configured in project.xml*/"/>
-  <SceneObject lower="386" upper="528" language="en" identifier="SusanneWelcome">
-    <SceneTurn lower="411" upper="494" speaker="susanne">
-      <SceneUttr lower="420" upper="494" punct="?">
-        <SceneWord lower="420" upper="425" text="Hello"/>
-        <ActionObject lower="426" upper="437" actor="qgui" mode="" name="show" >
+  <SceneObject lower="386" upper="424" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="411" upper="424" speaker="qgui">
+      <SceneUttr lower="417" upper="424" punct=".">
+        <ActionObject lower="417" upper="423" actor="" mode="" name="show" >
         </ActionObject>
-        <ActionObject lower="438" upper="448" actor="" mode="" name="WaveLeft" >
-        </ActionObject>
-        <SceneWord lower="449" upper="454" text="world"/>
-        <ActionObject lower="455" upper="475" actor="patrick" mode="" name="CoverMouth" >
-        </ActionObject>
-        <SceneWord lower="476" upper="479" text="how"/>
-        <SceneWord lower="480" upper="483" text="are"/>
-        <SceneWord lower="484" upper="487" text="you"/>
-        <SceneWord lower="488" upper="493" text="today"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="495" upper="528" speaker="susanne">
-      <SceneUttr lower="504" upper="528" punct=".">
-        <SceneWord lower="504" upper="507" text="Ich"/>
-        <SceneWord lower="508" upper="513" text="mache"/>
-        <SceneWord lower="514" upper="516" text="es"/>
-        <SceneWord lower="517" upper="523" text="wieder"/>
-        <SceneWord lower="524" upper="527" text="weg"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="530" upper="620" language="en" identifier="PatrickWelcome">
-    <SceneTurn lower="555" upper="620" speaker="patrick">
-      <SceneUttr lower="564" upper="620" punct="?">
-        <SceneWord lower="564" upper="569" text="Hello"/>
-        <ActionObject lower="570" upper="585" actor="susanne" mode="" name="Smile" >
+  <SceneObject lower="426" upper="504" language="en" identifier="Testt">
+    <SceneTurn lower="442" upper="504" speaker="susanne">
+      <SceneUttr lower="451" upper="504" punct="?">
+        <SceneWord lower="451" upper="456" text="Hello"/>
+        <ActionObject lower="457" upper="467" actor="" mode="" name="WaveLeft" >
         </ActionObject>
-        <SceneWord lower="586" upper="589" text="how"/>
-        <ActionObject lower="590" upper="605" actor="susanne" mode="" name="Blink" >
+        <SceneWord lower="468" upper="473" text="world"/>
+        <ActionObject lower="474" upper="485" actor="qgui" mode="" name="show" >
         </ActionObject>
-        <SceneWord lower="606" upper="609" text="are"/>
-        <SceneWord lower="610" upper="613" text="you"/>
-        <SceneWord lower="614" upper="619" text="today"/>
+        <SceneWord lower="486" upper="489" text="how"/>
+        <SceneWord lower="490" upper="493" text="are"/>
+        <SceneWord lower="494" upper="497" text="you"/>
+        <SceneWord lower="498" upper="503" text="today"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="622" upper="678" language="en" identifier="Test">
-    <SceneTurn lower="637" upper="678" speaker="susanne">
-      <SceneUttr lower="646" upper="678" punct=",">
-        <SceneWord lower="646" upper="649" text="Ich"/>
-        <SceneWord lower="650" upper="655" text="hätte"/>
-        <SceneWord lower="656" upper="661" text="gerne"/>
-        <SceneWord lower="662" upper="668" text="öfters"/>
-        <SceneWord lower="669" upper="677" text="überlegt"/>
+  <SceneObject lower="506" upper="596" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="531" upper="596" speaker="patrick">
+      <SceneUttr lower="540" upper="596" punct="?">
+        <SceneWord lower="540" upper="545" text="Hello"/>
+        <ActionObject lower="546" upper="561" actor="susanne" mode="" name="Smile" >
+        </ActionObject>
+        <SceneWord lower="562" upper="565" text="how"/>
+        <ActionObject lower="566" upper="581" actor="susanne" mode="" name="Blink" >
+        </ActionObject>
+        <SceneWord lower="582" upper="585" text="are"/>
+        <SceneWord lower="586" upper="589" text="you"/>
+        <SceneWord lower="590" upper="595" text="today"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="598" upper="654" language="en" identifier="Test">
+    <SceneTurn lower="613" upper="654" speaker="susanne">
+      <SceneUttr lower="622" upper="654" punct=",">
+        <SceneWord lower="622" upper="625" text="Ich"/>
+        <SceneWord lower="626" upper="631" text="hätte"/>
+        <SceneWord lower="632" upper="637" text="gerne"/>
+        <SceneWord lower="638" upper="644" text="öfters"/>
+        <SceneWord lower="645" upper="653" text="überlegt"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

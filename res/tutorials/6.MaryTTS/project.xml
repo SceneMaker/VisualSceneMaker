@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="MaryTTS">
   <Plugins>
-    <Plugin type="device" name="stickmanmarytts" class="de.dfki.vsm.xtension.stickmanmarytts.StickmanMaryttsExecutor">
+    <Plugin type="device" name="stickmanmarytts" class="de.dfki.vsm.xtension.stickmanmarytts.StickmanMaryttsExecutor" load="true">
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="false"/>

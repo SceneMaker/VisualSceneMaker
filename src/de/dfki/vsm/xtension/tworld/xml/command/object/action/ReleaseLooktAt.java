@@ -15,33 +15,28 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Patrick Gebhard
+ *
  */
-public class Action implements XMLParseable, XMLWriteable {
+public class ReleaseLooktAt extends Action implements XMLParseable, XMLWriteable {
 
-    protected String mName = "";
-    protected String mId = "";
+    String mLocation = "";
 
-    public void setId(String id) {
-        mId = id;
+    public ReleaseLooktAt(String value) {
+        mName = "releaselookat";
+        mLocation = value;
     }
 
-    public String getId() {
-        return mId;
-    }
-
-    public String getActionCmd() {
-        return mName;
-    }
-
-    public void resetActionCmd(String newcmdname) {
-        mName = newcmdname;
+    public ReleaseLooktAt() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
+        mName = element.getAttribute("name");
+        mId = element.getAttribute("id");
     }
 }

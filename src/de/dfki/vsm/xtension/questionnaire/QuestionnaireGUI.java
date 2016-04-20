@@ -6,8 +6,6 @@
 package de.dfki.vsm.xtension.questionnaire;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import javafx.application.Platform;
@@ -17,9 +15,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.Timer;
 
 /**
  *
