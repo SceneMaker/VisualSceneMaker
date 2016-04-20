@@ -25,7 +25,6 @@ public final class SpeechActivity extends AbstractActivity {
     //public Policy getPolicy() {
     //    return mPolicy;
     //}
-    
     // Get the text and time mark blocks (added by PG)
     public final LinkedList getBlocks() {
         return mList;
@@ -45,6 +44,18 @@ public final class SpeechActivity extends AbstractActivity {
             }
         }
         return builder.toString();
+    }
+
+     // Get the punctuation information (added by PG 20.4.2016)
+    public final LinkedList<String> getTimeMarks(String markerSign) {
+        final LinkedList<String> tms = new LinkedList<>();
+        for (final Object item : mList) {
+            if (item.toString().contains(markerSign)) {
+                tms.add(item.toString());
+            }
+        }
+
+        return tms;
     }
 
     // Get the punctuation information (added by PG)
