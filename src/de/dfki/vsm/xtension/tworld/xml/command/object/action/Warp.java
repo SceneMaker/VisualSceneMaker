@@ -38,7 +38,7 @@ public class Warp extends Action implements XMLParseable, XMLWriteable {
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" locname=\"" + mLocation + ((mViewtarget.equalsIgnoreCase("")) ?"\" viewtarget=\"" + mViewtarget : "" )+ "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" locname=\"" + mLocation + "\"" + ((!mViewtarget.equalsIgnoreCase("")) ? " viewtarget=\"" + mViewtarget + "\"" : "") + "/>");
     }
 
     @Override

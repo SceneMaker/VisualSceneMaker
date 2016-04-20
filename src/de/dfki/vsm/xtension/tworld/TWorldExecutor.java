@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.tworld;
 
+import de.dfki.stickman.StickmanStage;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 //import de.dfki.vsm.runtime.RunTimeInstance;
@@ -171,8 +172,11 @@ public final class TWorldExecutor extends ActivityExecutor {
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
-            twcoa = new Speak(sa.getBlocks(), sa.getPunctuation());
-            twcoa.setId(ActionLoader.getInstance().getNextID());
+
+            // get the charamel avatar id
+            String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+            // build action
+            twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunctuation(), aid);
         } else {
             if (cmd.equalsIgnoreCase("AmbientLight")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
@@ -190,10 +194,20 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("url", features));
             }
 
+            if (cmd.equalsIgnoreCase("LookAt")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("viewtarget", features));
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
+            }
+
             if (cmd.equalsIgnoreCase("MoveTo")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
                 // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
             }
 
             if (cmd.equalsIgnoreCase("Play")) {
@@ -219,7 +233,9 @@ public final class TWorldExecutor extends ActivityExecutor {
             if (cmd.equalsIgnoreCase("SitDown")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("chairname", features));
                 // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
             }
 
             if (cmd.equalsIgnoreCase("Stop")) {
@@ -227,16 +243,16 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
 
             if (cmd.equalsIgnoreCase("Warp")) {
-                String target = getActionFeatureValue("target", features);
+                String target = getActionFeatureValue("viewtarget", features);
                 if (target != null) {
                     twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features), target);
                 } else {
                     twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
                 }
                 // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
-
-                mLogger.message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + twcoa.toString());
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
             }
         }
 
@@ -253,12 +269,14 @@ public final class TWorldExecutor extends ActivityExecutor {
 
         String message = "";
         // log TWorld command
-        try {
-            message = new String(out.toByteArray(), "UTF-8").replace("\n", " ");
-            mLogger.message(new String(out.toByteArray(), "UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            mLogger.failure(ex.getMessage());
-        }
+        //try {
+        // Fuck German Umlaute and Encoding
+        message = out.toString().replace("ö", "oe").replace("ä", "ae").replace("ü", "ue").replace("Ö", "Oe").replace("Ä", "Ae").replace("Ü", "Ue").replace("ß", "ss").replace("\n", " ").replace("   ", " ").replace("  ", " ");
+        //message = new String(out.toString().getBytes("ISO-8859-1"), "UTF-8");
+        mLogger.message(message);
+        //} catch (UnsupportedEncodingException ex) {
+        //    mLogger.failure(ex.getMessage());
+        //}
 
         // send command to platform 
         synchronized (mActivityWorkerMap) {
@@ -322,15 +340,15 @@ public final class TWorldExecutor extends ActivityExecutor {
 
                 //mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
                 // handling caixml feedback
-                if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
-                    if (mActivityWorkerMap.containsKey(id)) {
-                        mActivityWorkerMap.remove(id);
-                    }
-                    // wake me up ..
-                    mActivityWorkerMap.notifyAll();
-                }
-                // handling ambient_setup feedback
-                if (actionType.equalsIgnoreCase("ambient_setup") && actionStatusType.equalsIgnoreCase("action_finished")) {
+//                if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
+//                    if (mActivityWorkerMap.containsKey(id)) {
+//                        mActivityWorkerMap.remove(id);
+//                    }
+//                    // wake me up ..
+//                    mActivityWorkerMap.notifyAll();
+//                }
+                // handling every /*ambient_setup*/ feedback
+                if (/*actionType.equalsIgnoreCase("ambient_setup") && */actionStatusType.equalsIgnoreCase("action_finished")) {
                     if (mActivityWorkerMap.containsKey(id)) {
                         mActivityWorkerMap.remove(id);
                     }

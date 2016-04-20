@@ -65,8 +65,10 @@
     <Agent name="ceo_wall" device="tworld">
     </Agent>
     <Agent name="susanne" device="tworld">
+      <Feature key="aid" val="1"/>
     </Agent>
-    <Agent name="norbert" device="tworld">
+    <Agent name="tom" device="tworld">
+      <Feature key="aid" val="2"/>
     </Agent>
     <Agent name="player" device="tworld">
     </Agent>
