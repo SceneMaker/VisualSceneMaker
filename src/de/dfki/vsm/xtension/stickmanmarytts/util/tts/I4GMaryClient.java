@@ -53,6 +53,7 @@ import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.AudioOpened;
 import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStart;
 import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStop;
 import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
+
 import marytts.util.http.Address;
 
 
@@ -385,15 +386,16 @@ public class I4GMaryClient {
         return phoneticParams;
     }
 
-    public String getAllCousticParms(String word, Stickman.TYPE gender) throws IOException { //Get phonetic information from a word
-        VoiceName speakerVoice = getSpeakingVoince(gender);
+    public String getAllCousticParms(String word, Stickman.TYPE gender, VoiceName voiceName) throws IOException { //Get phonetic information from a word
+        VoiceName speakerVoice = null;
+        speakerVoice = getSpeakingVoice(gender, voiceName);
         String rawMaryXml = getRawMaryXml("", word, Language_EN);
         String phoneticParams = getAcoustParams("", rawMaryXml, speakerVoice);
         return phoneticParams;
     }
 
-    public long getWordDuration(String word, Stickman.TYPE gender) throws IOException {
-        String acousticParams = getAllCousticParms(word, gender);
+    public long getWordDuration(String word, Stickman.TYPE gender, VoiceName voiceName) throws IOException {
+        String acousticParams = getAllCousticParms(word, gender, voiceName);
         InputStream stream = new ByteArrayInputStream(acousticParams.getBytes(StandardCharsets.UTF_8));
         String endTime = null;
         try {
@@ -413,8 +415,8 @@ public class I4GMaryClient {
         return (long)0;
     }
 
-    public LinkedList getWordPhonemeList(String word, Stickman.TYPE gender) throws IOException {
-        String acousticParams = getAllCousticParms(word, gender);
+    public LinkedList getWordPhonemeList(String word, Stickman.TYPE gender, VoiceName voiceName) throws IOException {
+        String acousticParams = getAllCousticParms(word, gender, voiceName);
         InputStream stream = new ByteArrayInputStream(acousticParams.getBytes(StandardCharsets.UTF_8));
         String endTime = null;
         LinkedList<Phoneme> phonemes = new LinkedList<>();
@@ -462,7 +464,22 @@ public class I4GMaryClient {
     
     }
 
-    public VoiceName getSpeakingVoince(Stickman.TYPE gender){
+    public VoiceName getSpeakingVoice(Stickman.TYPE gender, VoiceName voiceName){
+        VoiceName speakerVoice = null;
+        if(voiceName != null){
+            return voiceName;
+        }
+
+        if(gender != null && gender == Stickman.TYPE.MALE){
+            speakerVoice  = I4GMaryClient.OBADIAH;
+        }
+        else{
+            speakerVoice = I4GMaryClient.POPPY;
+        }
+        return speakerVoice;
+    }
+
+    public VoiceName getSpeakingVoice(Stickman.TYPE gender){
         VoiceName speakerVoice = null;
         if(gender != null && gender == Stickman.TYPE.MALE){
             speakerVoice  = I4GMaryClient.OBADIAH;
@@ -477,7 +494,7 @@ public class I4GMaryClient {
             InterruptedException, Exception {
         String text = this.getPhrase();
         this.clearWordList();
-        VoiceName speakerVoice = getSpeakingVoince(gender);
+        VoiceName speakerVoice = getSpeakingVoice(gender);
 
         //mLogger.message("Speak: \"" + text + "\"");
         if(text.length()> 0) {
@@ -491,11 +508,14 @@ public class I4GMaryClient {
 
     }
 
-    public void speak(Stickman.TYPE gender, String executionId) throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public void speak(Stickman.TYPE gender, String executionId, VoiceName voiceName) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
         String text = this.getPhrase();
         this.clearWordList();
-        VoiceName speakerVoice = getSpeakingVoince(gender);
+        VoiceName speakerVoice;
+        speakerVoice = getSpeakingVoice(gender, voiceName);
+
+
 
         //mLogger.message("Speak: \"" + text + "\"");
         if(text.length()> 0) {
