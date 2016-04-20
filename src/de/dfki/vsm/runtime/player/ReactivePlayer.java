@@ -85,9 +85,14 @@ public final class ReactivePlayer extends RunTimePlayer {
                     final ActivityExecutor turnActorExecutor = mProject.getAgentDevice(turn.getSpeaker());
                     // Serially play the utterances
                     for (SceneUttr uttr : turn.getUttrList()) {
+                        
+                        mLogger.message("Utterance " + uttr.getText());
+                        
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
                         for (final UtteranceElement element : uttr.getWordList()) {
+                             mLogger.message("element " + element);
+                             
                             if (element instanceof ActionObject) {
                                 final ActionObject action = (ActionObject) element;
                                 // Get the actor name of this action
