@@ -59,34 +59,70 @@ public final class ReactivePlayer extends RunTimePlayer {
     public final void playActionActivity(final String name, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
+        // Make unique worker name
+        final String task = process.getName() + ":" + name + "@";
         // Print some information
         mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
 
-        // parsing actor, action, and features
-        String cmdString = name.trim();
-        String actor = "";
-        String action = "";
-        LinkedList<ActionFeature> features = new LinkedList<>();
+        // Create playback task
+        final PlayerWorker worker = new PlayerWorker(task) {
 
-        if (cmdString.startsWith("[") && cmdString.endsWith("]")) {
-            cmdString = cmdString.substring(1, cmdString.length() - 1);
-            String[] parts = cmdString.split("[ ]+");
-            int cnt = 0;
-            for (String part : parts) {
-                if (cnt == 0) {
-                    actor = part;
-                } else if (cnt == 1) {
-                    action = part;
-                } else if (part.contains("=")) {
-                    String[] pair = part.split("=");
-                    features.add(new ActionFeature(ActionFeature.Type.STRING, 0, pair[0].length(), pair[0], pair[1]));
+            @Override
+            public void run() {
+                // parsing actor, action, and features
+                String cmdString = name.trim();
+                String actor = "";
+                String action = "";
+                LinkedList<ActionFeature> features = new LinkedList<>();
+
+                if (cmdString.startsWith("[") && cmdString.endsWith("]")) {
+                    cmdString = cmdString.substring(1, cmdString.length() - 1);
+                    String[] parts = cmdString.split("[ ]+");
+                    int cnt = 0;
+                    for (String part : parts) {
+                        if (cnt == 0) {
+                            actor = part;
+                        } else if (cnt == 1) {
+                            action = part;
+                        } else if (part.contains("=")) {
+                            String[] pair = part.split("=");
+                            features.add(new ActionFeature(ActionFeature.Type.STRING, 0, pair[0].length(), pair[0], pair[1]));
+                        }
+                        cnt++;
+                    }
                 }
-                cnt++;
+
+                // Schedule the activity without delay
+                mScheduler.schedule(0, null, new ActionActivity(actor, "cmd", action, null, features), mProject.getAgentDevice(actor));
+                // Check for interruption
+                if (isDone()) {
+                    return;
+                }
+            }
+        };
+        // Start the playback task
+        worker.start();
+        // Wait for playback task
+        boolean finished = false;
+        while (!finished) {
+            try {
+                // Print some information
+                mLogger.message("Awaiting player worker '" + worker + "'");
+                // Join the playback task
+                worker.join();
+                // Continue after joining
+                finished = true;
+                // Print some information
+                mLogger.message("Joining player worker '" + worker + "'");
+            } catch (final InterruptedException exc) {
+                // Print some information
+                mLogger.warning("Aborting player worker '" + worker + "'");
+                // Terminate playback task
+                worker.abort();
             }
         }
-
-        // Schedule the activity without delay
-        mScheduler.schedule(0, null, new ActionActivity(actor, "cmd", action, null, features), mProject.getAgentDevice(actor));
+        // Print some information
+        mLogger.message("Continuing '" + process + "'");
     }
 
     // Call the play scene group method

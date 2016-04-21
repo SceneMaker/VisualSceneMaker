@@ -91,7 +91,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
 
     @Override
     public void launch() {
-        mQuestionnaireGUI = new QuestionnaireGUI();
+       mQuestionnaireGUI = new QuestionnaireGUI();
 
         for (ConfigFeature cf : mConfig.getEntryList()) {
             mPersonalValues.put(cf.getKey(), cf.getValue());
