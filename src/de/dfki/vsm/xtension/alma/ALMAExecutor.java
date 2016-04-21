@@ -5,7 +5,6 @@
  */
 package de.dfki.vsm.xtension.alma;
 
-import de.affect.emotion.Emotion;
 import de.affect.manage.AffectManager;
 import de.affect.manage.event.AffectUpdateEvent;
 import de.affect.manage.event.AffectUpdateListener;
@@ -14,6 +13,7 @@ import de.affect.xml.AffectInputDocument;
 import de.affect.xml.AffectOutputDocument;
 import de.affect.xml.EmotionType;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -65,39 +65,53 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             }
         } else {
             final String name = activity.getName();
+            final LinkedList<ActionFeature> features = activity.getFeatureList();
 
-            AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput("User", name, "1.0", "Scene");
-            mLogger.message("Processing " + ai.toString());
-            mALMA.processSignal(ai);
+            if (name.equalsIgnoreCase("reset")) {
+                mLogger.message("Reset affect processing for  " + activity.getActor());
+                mALMA.resetCharacters();
+            }
+            if (AppraisalTag.instance().isAppraisalTag(name)) {
+                String elcitor = getActionFeatureValue("elicitor", features);
+                elcitor = (elcitor.isEmpty()) ? "Scene" : elcitor;
+
+                AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), name, "1.0", elcitor);
+                mLogger.message("Processing " + ai.toString());
+                mALMA.processSignal(ai);
+            }
         }
     }
 
     @Override
     public void launch() {
         mLogger.message("Loading ALMA Regulated");
-        // read config
-        String sALMACOMP = mProject.getProjectPath() + File.separator + mConfig.getProperty("computation");
-        sALMACOMP = sALMACOMP.replace("\\", "/");
-        mLogger.message("Computation " + sALMACOMP);
+        if (mALMA == null) {
+            // read config
+            String sALMACOMP = mProject.getProjectPath() + File.separator + mConfig.getProperty("computation");
+            sALMACOMP = sALMACOMP.replace("\\", "/");
+            mLogger.message("Computation " + sALMACOMP);
 
-        String sALMADEF = mProject.getProjectPath() + File.separator + mConfig.getProperty("definition");
-        sALMADEF = sALMADEF.replace("\\", "/");
-        mLogger.message("Definition " + sALMACOMP);
+            String sALMADEF = mProject.getProjectPath() + File.separator + mConfig.getProperty("definition");
+            sALMADEF = sALMADEF.replace("\\", "/");
+            mLogger.message("Definition " + sALMACOMP);
 
-        try {
-            mALMA = new AffectManager(sALMACOMP, sALMADEF, true);
-        } catch (IOException | XmlException ex) {
-            mLogger.failure("Unable to load ALMA Regulated. ALMA Regulated not available.");
-            mLogger.failure(ex.getMessage());
+            try {
+                mALMA = new AffectManager(sALMACOMP, sALMADEF, true);
+            } catch (IOException | XmlException ex) {
+                mLogger.failure("Unable to load ALMA Regulated. ALMA Regulated not available.");
+                mLogger.failure(ex.getMessage());
+            }
+            mALMA.addAffectUpdateListener(this);
+        } else {
+            mALMA.startRealtimeOutput(mALMA.getDocumentManager().getAffectComputationParams());
         }
-        mALMA.addAffectUpdateListener(this);
+        
+        mALMA.stepwiseAffectComputation();
     }
 
     @Override
     public void unload() {
         mALMA.stopAll();
-        mALMA.removeAffectUpdateListener(this);
-        mALMA = null;
     }
 
     @Override
@@ -120,7 +134,6 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
                 // get the intensity of all active emotions of the character
                 for (EmotionType et : character.getEmotions().getEmotionList()) {
-                    mLogger.message("Adding active emotion " + et.getName().toString());
                     if (Float.parseFloat(et.getValue()) > 0.25f) {
                         StringValue sv = new StringValue(et.getName().toString());
                         valueList.add(sv);
@@ -138,4 +151,15 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             mLogger.failure("Exception during affect update");
         }
     }
+    // get the value of a feature (added PG) - quick and dirty
+
+    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+        for (ActionFeature af : features) {
+            if (af.getKey().equalsIgnoreCase(name)) {
+                return af.getVal();
+            }
+        }
+        return "";
+    }
+
 }
