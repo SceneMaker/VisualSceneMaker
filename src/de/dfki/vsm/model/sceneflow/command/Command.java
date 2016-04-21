@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
  */
 public abstract class Command implements SyntaxObject {
     public enum CmdType {
-        PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD
+        PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD, PLAY
     }
 
     public abstract CmdType getCmdType();
@@ -27,6 +27,9 @@ public abstract class Command implements SyntaxObject {
 
         if (tag.equals("PlaySceneGroup")) {
             cmd = new PlaySceneGroup();
+            cmd.parseXML(element);
+        } else  if (tag.equals("Play")) {
+            cmd = new Play();
             cmd.parseXML(element);
         } else if (tag.equals("PlayDialogueAct")) {
             cmd = new PlayDialogueAct();
