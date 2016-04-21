@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Affect with ALMA">
+  <Plugins>
+    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
+      <Feature key="smhost" val="127.0.0.1"/>
+      <Feature key="smport" val="9000"/>
+      <Feature key="showstickmanname" val="true"/>
+    </Plugin>
+    <Plugin type="device" name="alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
+      <Feature key="computation" val="affect\AffectComputation.aml"/>
+      <Feature key="definition" val="affect\CharacterDefinition.aml"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="user" device="alma">
+    </Agent>
+    <Agent name="susanne" device="stickman">
+    </Agent>
+  </Agents>
+</Project>

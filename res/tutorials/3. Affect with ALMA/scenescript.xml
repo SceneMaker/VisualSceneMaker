@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="98" language="en" identifier="Welcome">
+    <SceneTurn lower="18" upper="72" speaker="user">
+      <SceneUttr lower="24" upper="72" punct=".">
+        <ActionObject lower="24" upper="35" actor="" mode="" name="GoodEvent" >
+        </ActionObject>
+        <ActionObject lower="36" upper="48" actor="" mode="" name="BadActSelf" >
+        </ActionObject>
+        <ActionObject lower="49" upper="71" actor="" mode="" name="BadLikelyFutureEvent" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="73" upper="98" speaker="susanne">
+      <SceneUttr lower="82" upper="98" punct="!">
+        <SceneWord lower="82" upper="87" text="Hello"/>
+        <SceneWord lower="88" upper="90" text="my"/>
+        <SceneWord lower="91" upper="97" text="Friend"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
