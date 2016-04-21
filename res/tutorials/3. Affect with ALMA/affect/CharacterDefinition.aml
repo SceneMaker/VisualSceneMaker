@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AffectDefinition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="xml.affect.de" xsi:schemaLocation="xml.affect.de Affect.xsd">
+    <CharacterAffect name="User" monitored="true" docu="User Emotion Modelling">
+        <PersonalitySpecification emotioninfluence="0.0" openness="0.0" conscientiousness="0.0" extraversion="0.0" agreeableness="0.0" neurotism="0.0"/>
+        <MoodSpecification decaytime="600000" decayperiod="500" neurotismstability="false"/>
+        <EmotionSpecification decaytime="24000" decayperiod="500" decayfunction="hyperbolic" baseline="0.4"/>
+        <Appraisal>
+            <Basic>
+                <GoodActOther praiseworthiness="0.5" agency="other"/>
+                <EventDisconfirmed realization="false"/>
+                <GoodEvent desirability="0.5"/>
+                <GoodActSelf praiseworthiness="0.4" agency="self"/>
+                <BadEvent desirability="-0.5"/>
+                <BadLikelyFutureEvent desirability="-1.0" likelihood="1.0"/>
+                <NiceThing appealingness="0.5"/>
+                <BadEventForGoodOther desirability="-0.2" liking="0.5" agency="other"/>
+                <BadUnlikelyFutureEvent desirability="-1.0" likelihood="-0.5"/>
+                <GoodLikelyFutureEvent desirability="1.0" likelihood="0.5"/>
+                <BadEventForBadOther desirability="-0.5" liking="-1.0" agency="other"/>
+                <NastyThing appealingness="-0.5"/>
+                <EventConfirmed realization="true"/>
+                <BadActSelf praiseworthiness="-0.5" agency="self"/>
+                <GoodEventForBadOther desirability="0.5" liking="-1.0" agency="other"/>
+                <GoodUnlikelyFutureEvent desirability="1.0" likelihood="-1.0"/>
+                <GoodEventForGoodOther desirability="1.0" liking="1.0" agency="other"/>
+                <BadActOther praiseworthiness="-0.5" agency="other"/>
+            </Basic>
+            <SelfAct type="Accuse">
+                <BadActOther praiseworthiness="-0.7" agency="other"/>
+            </SelfAct>
+            <SelfAct type="Calm">
+                <GoodActSelf praiseworthiness="0.7" agency="self"/>
+            </SelfAct>
+        </Appraisal>
+    </CharacterAffect>
+</AffectDefinition>

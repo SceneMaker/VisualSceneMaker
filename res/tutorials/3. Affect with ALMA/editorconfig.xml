@@ -25,13 +25,13 @@
 <entry key="defaultsupernodename">default</entry>
 <entry key="visualizationtrace">true</entry>
 <entry key="grid_y">1</entry>
-<entry key="propertiesdividerlocation">1400</entry>
+<entry key="propertiesdividerlocation">668</entry>
 <entry key="grid_x">1</entry>
 <entry key="icon_file">res/img/icon.png</entry>
 <entry key="showsmartpathcalculations">false</entry>
 <entry key="showelements">true</entry>
 <entry key="frame_title">Visual SceneMaker</entry>
 <entry key="workspace_fontsize">11</entry>
-<entry key="showsceneelements">false</entry>
+<entry key="showsceneelements">true</entry>
 <entry key="showscenefloweditor">true</entry>
 </properties>

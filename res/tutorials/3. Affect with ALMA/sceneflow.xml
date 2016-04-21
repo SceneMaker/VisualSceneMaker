@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="Wolrd of Affect" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 21 Apr 2016 14:26:54" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+    <ListType name="Emotions" type="Bool"/>
+  </Define>
+  <Declare>
+    <Variable type="Emotions" name ="useremotions">
+      <List>
+      </List>
+    </Variable>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="29" yPos="18"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="210" yPos="165" ctrlXPos="277" ctrlYPos="165"/>
+        <ControlPoint xPos="390" yPos="165" ctrlXPos="322" ctrlYPos="165"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="120" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Welcome]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="480" yPos="165" ctrlXPos="547" ctrlYPos="165"/>
+        <ControlPoint xPos="660" yPos="165" ctrlXPos="592" ctrlYPos="165"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="390" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N3" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="717" yPos="122" ctrlXPos="741" ctrlYPos="36"/>
+        <ControlPoint xPos="744" yPos="142" ctrlXPos="822" ctrlYPos="96"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="660" yPos="120"/>
+    </Graphics>
+  </Node>
+  <UserCommands>
+    <UserCommand name="printString" classname ="java.lang.System.out" method="println">
+      <Argument name="Arg0" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

@@ -5,12 +5,12 @@
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="false"/>
-      <Feature key="mary.base" val="/mnt/data2/WorkHiwi/marytts-5.1.2"/>
+      <Feature key="mary.base" val="D:\marytts-5.1.2"/>
     </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="stickmanmarytts">
-      <Feature key="voice" val="dfki-prudence"/>
+      <Feature key="voice" val="dfki-poppy"/>
     </Agent>
     <Agent name="patrick" device="stickmanmarytts">
       <Feature key="voice" val="dfki-spike"/>
