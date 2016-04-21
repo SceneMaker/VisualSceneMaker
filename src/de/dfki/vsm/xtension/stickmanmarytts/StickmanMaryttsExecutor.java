@@ -32,11 +32,13 @@ import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
 import de.dfki.vsm.xtension.stickmanmarytts.action.ActionMouthActivity;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  *
@@ -60,7 +62,6 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
     private I4GMaryClient maryTTs;
     private int maryId;
-
 
     // Construct the executor
     public StickmanMaryttsExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -101,10 +102,10 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
 
-        if(maryTTs == null){
+        if (maryTTs == null) {
             try {
                 maryTTs = I4GMaryClient.instance();
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("MaryTT not initiated yet");
             }
 
@@ -122,10 +123,10 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
             HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<>();
             int index = 0;
             MaryStickmanPhonemes mary = new MaryStickmanPhonemes();
-            phonemes = mary.getPhonemesAndMouthPosition(sa,mStickmanStage.getStickman(actor).mType, voiceName);
+            phonemes = mary.getPhonemesAndMouthPosition(sa, mStickmanStage.getStickman(actor).mType, voiceName);
             int lastPhoneme = 0;
-            if(phonemes.size()>0) {
-               lastPhoneme = (int) phonemes.get(phonemes.size() - 1).getLast().getmEnd();
+            if (phonemes.size() > 0) {
+                lastPhoneme = (int) phonemes.get(phonemes.size() - 1).getLast().getmEnd();
             }
             for (final Object item : blocks) {
                 if (!item.toString().contains("$")) {
@@ -133,8 +134,8 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
                     wts.add(w);
                     maryTTs.addWord(item.toString());
                     LinkedList<Phoneme> wordPhonemes = phonemes.get(index);
-                    for(Phoneme p: wordPhonemes){
-                        if(p.getLipPosition() == null){
+                    for (Phoneme p : wordPhonemes) {
+                        if (p.getLipPosition() == null) {
                             continue;
                         }
                         mScheduler.schedule((int) p.getmStart(), null, new ActionMouthActivity(actor, "face", "Mouth_" + p.getLipPosition(), null, (int) (p.getmEnd() - p.getmStart())), mProject.getAgentDevice(actor));
@@ -155,8 +156,8 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
         } else if (activity instanceof ActionActivity || activity instanceof ActionMouthActivity) {
             int duration = 500;
-            if(activity instanceof ActionMouthActivity){
-                duration =  ((ActionMouthActivity) activity).getDuration();
+            if (activity instanceof ActionMouthActivity) {
+                duration = ((ActionMouthActivity) activity).getDuration();
             }
             stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
@@ -164,8 +165,6 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
             }
         }
     }
-
-
 
     private void executeAnimation(Animation stickmanAnimation) {
         // executeAnimation command to platform 
@@ -180,11 +179,11 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void executeSpeachAndWait(AbstractActivity activity, Stickman.TYPE gender, String executionId, VoiceName voiceName){
+    private void executeSpeachAndWait(AbstractActivity activity, Stickman.TYPE gender, String executionId, VoiceName voiceName) {
         String text = ((SpeechActivity) activity).getTextOnly("$");
         synchronized (mActivityWorkerMap) {
             String phrase = maryTTs.getText();
-            if(phrase.length() > 0) {
+            if (phrase.length() > 0) {
 
                 try {
                     maryTTs.speak(gender, executionId, voiceName);
@@ -246,9 +245,6 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         // Return when terminated
     }
 
-
-
-
     @Override
     public void launch() {
         // Create the connection
@@ -263,18 +259,25 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         String cmd = "";
         String cmdName = "";
         ProcessBuilder pb = null;
-        cmd =  maryttsBaseDir + File.separator +"bin" + File.separator + "marytts-server";
-        if(isUnix() || isMac()){
-
+        cmd = maryttsBaseDir + File.separator + "bin" + File.separator + "marytts-server";
+        if (isUnix() || isMac()) {
             cmdName = "marytts.server.Mary";
             pb = new ProcessBuilder("/bin/bash", cmd);
-        }
-        else if(isWindows()){
+        } else if (isWindows()) {
             cmdName = "marytts.server.Mary";
-            cmd = cmd+ ".bat";
+            cmd = cmd + ".bat";
             String[] command = {"CMD", "/C", cmd};
             pb = new ProcessBuilder(command);
         }
+
+        final JDialog info = new JDialog();
+        info.setTitle("Info");
+        JPanel messagePane = new JPanel();
+        messagePane.add(new JLabel("Loading MaryTTS ..."));
+        info.add(messagePane);
+        info.pack();
+        info.setLocationRelativeTo(null);
+        info.setVisible(true);
 
         try {
             pb = pb.redirectErrorStream(true);
@@ -285,20 +288,19 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
             BufferedReader br = new BufferedReader(isr);
             String line;
             boolean started = false;
-            while (!started)
-            {
+            while (!started) {
                 line = br.readLine();
-                if(line.contains("started in")){
+                if (line.contains("started in")) {
                     started = true;
                 }
                 System.out.println(line);
             }
-
-
-
         } catch (final Exception exc) {
             mLogger.failure(exc.toString());
         }
+
+        info.setVisible(false);
+        info.dispose();
 
         // Get the plugin configuration
         for (ConfigFeature cf : mConfig.getEntryList()) {
@@ -367,18 +369,17 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
                 process.destroyForcibly();
                 // Kill the processes
                 Process killer = null;
-                if(isUnix() || isMac()){
-                    killCmd = "ps aux | grep '" + name +"' | awk '{print $2}' | xargs kill";
+                if (isUnix() || isMac()) {
+                    killCmd = "ps aux | grep '" + name + "' | awk '{print $2}' | xargs kill";
                     String[] cmd = {
-                            "/bin/sh",
-                            "-c",
-                            killCmd
+                        "/bin/sh",
+                        "-c",
+                        killCmd
                     };
-                    killer = Runtime.getRuntime().exec(cmd );
-                }
-                else if(isWindows()){
-                    killCmd = "wmic Path win32_process Where \"CommandLine Like '%" +  name + "%'\" Call Terminate";
-                    killer = Runtime.getRuntime().exec(killCmd );
+                    killer = Runtime.getRuntime().exec(cmd);
+                } else if (isWindows()) {
+                    killCmd = "wmic Path win32_process Where \"CommandLine Like '%" + name + "%'\" Call Terminate";
+                    killer = Runtime.getRuntime().exec(killCmd);
                 }
 
                 killer.waitFor();
@@ -420,7 +421,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
                 // play the activity
                 //mProject.getRunTimePlayer().getActivityScheduler().handle(new MarkerFeedback(activity, message));
                 mProject.getRunTimePlayer().getActivityScheduler().handle(message);
-            } else if(message.contains("#AUDIO#end#")){
+            } else if (message.contains("#AUDIO#end#")) {
                 int start = message.lastIndexOf("#") + 1;
                 String event_id = message.substring(start);
                 mActivityWorkerMap.remove(event_id);
@@ -438,16 +439,16 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private  boolean isWindows() {
+    private boolean isWindows() {
         return (OS.indexOf("win") >= 0);
     }
 
-    private  boolean isMac() {
+    private boolean isMac() {
         return (OS.indexOf("mac") >= 0);
     }
 
-    private  boolean isUnix() {
-        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 );
+    private boolean isUnix() {
+        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0);
     }
 
 }
