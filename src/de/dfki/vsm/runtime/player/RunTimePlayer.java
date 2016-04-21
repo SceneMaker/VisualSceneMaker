@@ -26,8 +26,11 @@ public abstract class RunTimePlayer extends RunTimePlugin {
         return mScheduler;
     }
 
-    // Call the playback method
-    public abstract void play(final String name, final LinkedList args);
+    // Call the play action activity method
+    public abstract void playActionActivity(final String name, final LinkedList args);
+
+    // Call the play scenegroup method
+    public abstract void playSceneGroup(final String name, final LinkedList args);
 
     // The scene player worker
     public class PlayerWorker extends Thread {
