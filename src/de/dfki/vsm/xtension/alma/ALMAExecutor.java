@@ -5,6 +5,7 @@
  */
 package de.dfki.vsm.xtension.alma;
 
+import de.affect.emotion.Emotion;
 import de.affect.manage.AffectManager;
 import de.affect.manage.event.AffectUpdateEvent;
 import de.affect.manage.event.AffectUpdateListener;
@@ -14,14 +15,17 @@ import de.affect.xml.AffectOutputDocument;
 import de.affect.xml.EmotionType;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.ListValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.LinkedList;
 import org.apache.xmlbeans.XmlException;
 
 /**
@@ -47,11 +51,25 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     @Override
     public void execute(AbstractActivity activity) {
 
-        final String name = activity.getName();
+        if (activity instanceof SpeechActivity) {
+            SpeechActivity sa = (SpeechActivity) activity;
+            String text = sa.getTextOnly("$(").trim();
+            LinkedList<String> timemarks = sa.getTimeMarks("$(");
 
-        AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput("User", name, "1.0", "Scene");
-        mLogger.message("Processing " + ai.toString());
-        mALMA.processSignal(ai);
+            // If text is empty - assume activity has empty text but has marker activities registered
+            if (text.isEmpty()) {
+                for (String tm : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
+            }
+        } else {
+            final String name = activity.getName();
+
+            AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput("User", name, "1.0", "Scene");
+            mLogger.message("Processing " + ai.toString());
+            mALMA.processSignal(ai);
+        }
     }
 
     @Override
@@ -77,7 +95,9 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
     @Override
     public void unload() {
-        //
+        mALMA.stopAll();
+        mALMA.removeAffectUpdateListener(this);
+        mALMA = null;
     }
 
     @Override
@@ -96,9 +116,22 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 String mIntensity = character.getMood().getIntensity().toString();
                 String mTendency = character.getMoodTendency().getMoodword().toString();
 
+                LinkedList<AbstractValue> valueList = new LinkedList<>();
+
                 // get the intensity of all active emotions of the character
-                for (Iterator<EmotionType> emo = character.getEmotions().getEmotionList().iterator(); emo.hasNext();) {
-                    EmotionType et = emo.next();
+                for (EmotionType et : character.getEmotions().getEmotionList()) {
+                    mLogger.message("Adding active emotion " + et.getName().toString());
+                    if (Float.parseFloat(et.getValue()) > 0.25f) {
+                        StringValue sv = new StringValue(et.getName().toString());
+                        valueList.add(sv);
+                    }
+                }
+
+                try {
+                    ListValue list = new ListValue(valueList);
+                    mProject.setVariable("useremotions", list);
+                } catch (Exception e) {
+                    // System.out.println("not running");
                 }
             }
         } catch (Exception e) {
