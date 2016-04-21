@@ -9,6 +9,7 @@ import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
 import de.dfki.vsm.model.scenescript.UtteranceElement;
+import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
@@ -66,7 +67,6 @@ public final class ReactivePlayer extends RunTimePlayer {
 
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
-
             @Override
             public void run() {
                 // parsing actor, action, and features
@@ -92,8 +92,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                     }
                 }
 
-                // Schedule the activity without delay
-                mScheduler.schedule(0, null, new ActionActivity(actor, "cmd", action, null, features), mProject.getAgentDevice(actor));
+                // Schedule the activity without delay but blocking
+                ActionActivity aa = new ActionActivity(actor, "cmd", action, null, features);
+                aa.setTyp(AbstractActivity.Policy.BLOCKING);
+                mScheduler.schedule(0, null, aa,  mProject.getAgentDevice(actor));
                 // Check for interruption
                 if (isDone()) {
                     return;
