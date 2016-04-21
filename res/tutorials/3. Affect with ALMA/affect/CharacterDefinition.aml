@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AffectDefinition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="xml.affect.de" xsi:schemaLocation="xml.affect.de Affect.xsd">
-    <CharacterAffect name="User" monitored="true" docu="User Emotion Modelling">
+    <CharacterAffect name="user" monitored="true" docu="User Emotion Modelling">
         <PersonalitySpecification emotioninfluence="0.0" openness="0.0" conscientiousness="0.0" extraversion="0.0" agreeableness="0.0" neurotism="0.0"/>
         <MoodSpecification decaytime="600000" decayperiod="500" neurotismstability="false"/>
         <EmotionSpecification decaytime="24000" decayperiod="500" decayfunction="hyperbolic" baseline="0.4"/>
