@@ -39,12 +39,12 @@ public final class PrologQuery extends LogicalCond {
 
     @Override
     public final String getConcreteSyntax() {
-        return "query (" + mExpression.getConcreteSyntax() + ")";
+        return "?- (" + mExpression.getConcreteSyntax() + ")";
     }
 
     @Override
     public String getFormattedSyntax() {
-        return "#p#query (" + mExpression.getFormattedSyntax() + ")";
+        return "#p#?- (" + mExpression.getFormattedSyntax() + ")";
     }
 
     @Override
