@@ -31,7 +31,7 @@ public final class TWorldSSIData {
         }
     }
 
-    private final String get(final String path, final Element root) {
+    private String get(final String path, final Element root) {
         final int index = path.indexOf(".");
         if (index != -1) {
             final NodeList list = root.getElementsByTagName(

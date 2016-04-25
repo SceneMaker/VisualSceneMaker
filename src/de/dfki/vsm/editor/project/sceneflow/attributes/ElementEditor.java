@@ -274,19 +274,15 @@ import java.util.ArrayList;
  *
  *
  */
-class CmdEditor extends AttributeEditor
-{
+class CmdEditor extends AttributeEditor {
 
-    public CmdEditor()
-    {
+    public CmdEditor() {
         super("Edit Command Executions:");
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
 
             // Update the selected node
             mDataNode = ((NodeSelectedEvent) event).getNode();
@@ -294,29 +290,23 @@ class CmdEditor extends AttributeEditor
             // Reload the command execution list
             mListModel.clear();
 
-            for (Command cmd : mDataNode.getCmdList())
-            {
+            for (Command cmd : mDataNode.getCmdList()) {
                 mListModel.addElement(cmd);
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
     @Override
-    protected void add()
-    {
+    protected void add() {
         de.dfki.vsm.editor.Node currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().getNode(mDataNode.getId());
-        if (currentNode != null)
-        {
+        if (currentNode != null) {
             EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().deselectAllOtherComponents(currentNode);
             Command cmd = new CmdDialog(null).run();
 
-            if (cmd != null)
-            {
+            if (cmd != null) {
                 mDataNode.addCmd(cmd);
                 mListModel.addElement(cmd);
             }
@@ -324,17 +314,14 @@ class CmdEditor extends AttributeEditor
     }
 
     @Override
-    protected void edit()
-    {
+    protected void edit() {
         int index = mList.getSelectedIndex();
 
-        if (index >= 0)
-        {
+        if (index >= 0) {
             Command oldCmd = mDataNode.getCmdAt(index);
             Command newCmd = new CmdDialog(oldCmd).run();
 
-            if (newCmd != null)
-            {
+            if (newCmd != null) {
                 mDataNode.setCmdAt(newCmd, index);
                 mListModel.set(index, newCmd);
             }
@@ -342,24 +329,20 @@ class CmdEditor extends AttributeEditor
     }
 
     @Override
-    protected void remove()
-    {
+    protected void remove() {
         int index = mList.getSelectedIndex();
 
-        if (index != -1)
-        {
+        if (index != -1) {
             mDataNode.removeCmdAt(index);
             mListModel.removeElementAt(index);
         }
     }
 
     @Override
-    protected void up()
-    {
+    protected void up() {
         int index = mList.getSelectedIndex();
 
-        if (index >= 1)
-        {
+        if (index >= 1) {
             Command thisCmd = mDataNode.getCmdAt(index);
             Command otherCmd = mDataNode.getCmdAt(index - 1);
 
@@ -372,12 +355,10 @@ class CmdEditor extends AttributeEditor
     }
 
     @Override
-    protected void down()
-    {
+    protected void down() {
         int index = mList.getSelectedIndex();
 
-        if ((index >= 0) && (index < mListModel.size() - 1))
-        {
+        if ((index >= 0) && (index < mListModel.size() - 1)) {
             Command thisCmd = mDataNode.getCmdAt(index);
             Command otherCmd = mDataNode.getCmdAt(index + 1);
 
@@ -397,33 +378,26 @@ class CmdEditor extends AttributeEditor
  *
  *
  */
-class ConditionEditor extends JPanel implements EventListener
-{
+class ConditionEditor extends JPanel implements EventListener {
 
     private CEdge mDataCEdge;
     private ModifyCEdgeDialog mCEdgeDialog;
 
-    public ConditionEditor()
-    {
+    public ConditionEditor() {
         initComponents();
         EventDispatcher.getInstance().register(this);
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
         setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof EdgeSelectedEvent)
-        {
-            if (event instanceof EdgeSelectedEvent)
-            {
-                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.CEdge))
-                {
+    public void update(EventObject event) {
+        if (event instanceof EdgeSelectedEvent) {
+            if (event instanceof EdgeSelectedEvent) {
+                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.CEdge)) {
                     mDataCEdge = (CEdge) ((EdgeSelectedEvent) event).getEdge();
                     mCEdgeDialog = new ModifyCEdgeDialog(mDataCEdge);
                     removeAll();
@@ -437,47 +411,37 @@ class ConditionEditor extends JPanel implements EventListener
                     mCEdgeDialog.getAltStartNodePanel().setAlignmentX(RIGHT_ALIGNMENT);
                     add(mCEdgeDialog.getInputPanel());
                     add(mCEdgeDialog.getAltStartNodePanel());
-                    mCEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter()
-                    {
+                    mCEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {
                         @Override
-                        public void keyReleased(KeyEvent event)
-                        {
+                        public void keyReleased(KeyEvent event) {
                             save();
                             EditorInstance.getInstance().refresh();
                         }
                     });
                 }
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
-    private void save()
-    {
+    private void save() {
         String inputString = mCEdgeDialog.getInputTextField().getText().trim();
 
-        try
-        {
+        try {
             ChartParser.parseResultType = ChartParser.LOG;
             ChartParser.run(inputString);
 
             LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) && !ChartParser.errorFlag)
-            {
+            if ((log != null) && !ChartParser.errorFlag) {
                 mDataCEdge.setCondition(log);
-            }
-            else
-            {
+            } else {
 
                 // Do nothing
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
         }
     }
 }
@@ -489,16 +453,14 @@ class ConditionEditor extends JPanel implements EventListener
  *
  *
  */
-class EdgeEditor extends JPanel implements EventListener
-{
+class EdgeEditor extends JPanel implements EventListener {
 
     private final TimeOutEditor mTimeOutEditor;
     private final ConditionEditor mConditionEditor;
     private final ProbabilityEditor mProbabilityEditor;
     private final InterruptEditor mInterruptEditor;
 
-    public EdgeEditor()
-    {
+    public EdgeEditor() {
 
         // Init the child editors
         mTimeOutEditor = new TimeOutEditor();
@@ -518,52 +480,36 @@ class EdgeEditor extends JPanel implements EventListener
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof EdgeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof EdgeSelectedEvent) {
 
             // Get the selected node
             AbstractEdge edge = ((EdgeSelectedEvent) event).getEdge();
 
-            if (edge instanceof TEdge)
-            {
+            if (edge instanceof TEdge) {
                 mTimeOutEditor.setVisible(true);
-            }
-            else
-            {
+            } else {
                 mTimeOutEditor.setVisible(false);
             }
 
-            if (edge instanceof CEdge)
-            {
+            if (edge instanceof CEdge) {
                 mConditionEditor.setVisible(true);
-            }
-            else
-            {
+            } else {
                 mConditionEditor.setVisible(false);
             }
 
-            if (edge instanceof IEdge)
-            {
+            if (edge instanceof IEdge) {
                 mInterruptEditor.setVisible(true);
-            }
-            else
-            {
+            } else {
                 mInterruptEditor.setVisible(false);
             }
 
-            if (edge instanceof PEdge)
-            {
+            if (edge instanceof PEdge) {
                 mProbabilityEditor.setVisible(true);
-            }
-            else
-            {
+            } else {
                 mProbabilityEditor.setVisible(false);
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
@@ -577,8 +523,7 @@ class EdgeEditor extends JPanel implements EventListener
  *
  *
  */
-public class ElementEditor extends JScrollPane implements EventListener
-{
+public class ElementEditor extends JScrollPane implements EventListener {
 
     //
     // private final Observable mObservable = new Observable();
@@ -587,8 +532,7 @@ public class ElementEditor extends JScrollPane implements EventListener
     private final NodeEditor mNodeEditor;
     private final EdgeEditor mEdgeEditor;
 
-    public ElementEditor()
-    {
+    public ElementEditor() {
 
         // Init node editor and edge editor
         mNodeEditor = new NodeEditor();
@@ -611,32 +555,25 @@ public class ElementEditor extends JScrollPane implements EventListener
         EventDispatcher.getInstance().register(this);
     }
 
-    public final void refresh()
-    {
+    public final void refresh() {
 
         // Print some information
         //mLogger.message("Refreshing '" + this + "'");
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
 
             // Update the node of the node editor
             // mNodeEditor.update(((NodeSelectedEvent) event).getNode());
             setViewportView(mNodeEditor);
-        }
-        else if (event instanceof EdgeSelectedEvent)
-        {
+        } else if (event instanceof EdgeSelectedEvent) {
 
             // Update the edge of the edge editor
             // mEdgeEditor.update(((EdgeSelectedEvent) event).getEdge());
             setViewportView(mEdgeEditor);
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
@@ -650,60 +587,48 @@ public class ElementEditor extends JScrollPane implements EventListener
  *
  *
  */
-class FunDefEditor extends AttributeEditor
-{
+class FunDefEditor extends AttributeEditor {
 
-    public FunDefEditor()
-    {
+    public FunDefEditor() {
         super("Edit Function Definitions:");
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
 
             // Update the selected node
             mDataNode = ((NodeSelectedEvent) event).getNode();
 
             // Reload the function definition map
-            if (mDataNode instanceof SceneFlow)
-            {
+            if (mDataNode instanceof SceneFlow) {
                 mListModel.clear();
 
-                for (FunDef def : ((SceneFlow) mDataNode).getUsrCmdDefMap().values())
-                {
+                for (FunDef def : ((SceneFlow) mDataNode).getUsrCmdDefMap().values()) {
                     mListModel.addElement(def);
                 }
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
     @Override
-    protected void add()
-    {
+    protected void add() {
         FunDef usrCmdDef = new FunDefDialog(null).run();
 
-        if (usrCmdDef != null)
-        {
+        if (usrCmdDef != null) {
             ((SceneFlow) mDataNode).putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
             mListModel.addElement(usrCmdDef);
         }
     }
 
     @Override
-    protected void edit()
-    {
+    protected void edit() {
         int index = mList.getSelectedIndex();
 
-        if (index >= 0)
-        {
+        if (index >= 0) {
             FunDef oldUsrCmdDef = (FunDef) mList.getSelectedValue();
 
             // Remove the old function definition from the sceneflow
@@ -712,8 +637,7 @@ class FunDefEditor extends AttributeEditor
             // Edit the old function definition
             FunDef newUsrCmdDef = new FunDefDialog(oldUsrCmdDef).run();
 
-            if (newUsrCmdDef != null)
-            {
+            if (newUsrCmdDef != null) {
 
                 // Put the new function definition to the sceneflow
                 ((SceneFlow) mDataNode).putUsrCmdDef(newUsrCmdDef.getName(), newUsrCmdDef);
@@ -725,12 +649,10 @@ class FunDefEditor extends AttributeEditor
     }
 
     @Override
-    protected void remove()
-    {
+    protected void remove() {
         FunDef oldUsrCmdDef = (FunDef) mList.getSelectedValue();
 
-        if (oldUsrCmdDef != null)
-        {
+        if (oldUsrCmdDef != null) {
 
             // Remove the old function definition from the sceneflow
             ((SceneFlow) mDataNode).removeUsrCmdDef(oldUsrCmdDef.getName());
@@ -742,13 +664,11 @@ class FunDefEditor extends AttributeEditor
 
     @Override
 
-    protected void up()
-    {
+    protected void up() {
     }
 
     @Override
-    protected void down()
-    {
+    protected void down() {
     }
 }
 
@@ -759,34 +679,27 @@ class FunDefEditor extends AttributeEditor
  *
  *
  */
-class InterruptEditor extends JPanel implements EventListener
-{
+class InterruptEditor extends JPanel implements EventListener {
 
     private IEdge mDataIEdge;
     private ModifyIEdgeDialog mIEdgeDialog;
 
-    public InterruptEditor()
-    {
+    public InterruptEditor() {
         initComponents();
         EventDispatcher.getInstance().register(this);
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
         setBackground(Color.white);
         setPreferredSize(new Dimension(500, 270));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof EdgeSelectedEvent)
-        {
-            if (event instanceof EdgeSelectedEvent)
-            {
-                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.IEdge))
-                {
+    public void update(EventObject event) {
+        if (event instanceof EdgeSelectedEvent) {
+            if (event instanceof EdgeSelectedEvent) {
+                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.IEdge)) {
                     mDataIEdge = (IEdge) ((EdgeSelectedEvent) event).getEdge();
                     mIEdgeDialog = new ModifyIEdgeDialog(mDataIEdge);
                     removeAll();
@@ -801,47 +714,37 @@ class InterruptEditor extends JPanel implements EventListener
                     add(mIEdgeDialog.getInputPanel());
                     add(mIEdgeDialog.getAltStartNodePanel());
                     add(Box.createVerticalGlue());
-                    mIEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter()
-                    {
+                    mIEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {
                         @Override
-                        public void keyReleased(KeyEvent event)
-                        {
+                        public void keyReleased(KeyEvent event) {
                             save();
                             EditorInstance.getInstance().refresh();
                         }
                     });
                 }
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
-    private void save()
-    {
+    private void save() {
         String inputString = mIEdgeDialog.getInputTextField().getText().trim();
 
-        try
-        {
+        try {
             ChartParser.parseResultType = ChartParser.LOG;
             ChartParser.run(inputString);
 
             LogicalCond log = ChartParser.logResult;
 
-            if ((log != null) && !ChartParser.errorFlag)
-            {
+            if ((log != null) && !ChartParser.errorFlag) {
                 mDataIEdge.setCondition(log);
-            }
-            else
-            {
+            } else {
 
                 // Do nothing
             }
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
         }
     }
 }
@@ -853,31 +756,26 @@ class InterruptEditor extends JPanel implements EventListener
  *
  *
  */
-class NameEditor extends JPanel implements EventListener
-{
+class NameEditor extends JPanel implements EventListener {
 
     private JTextField mNameField;
     private BasicNode mDataNode;
 
-    public NameEditor()
-    {
+    public NameEditor() {
         initComponents();
         EventDispatcher.getInstance().register(this);
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
 
         // Init the node name text field
         mNameField = new JTextField();
         mNameField.setMinimumSize(new Dimension(200, 20));
         mNameField.setMaximumSize(new Dimension(1000, 20));
         mNameField.setPreferredSize(new Dimension(200, 20));
-        mNameField.addKeyListener(new KeyAdapter()
-        {
+        mNameField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent event)
-            {
+            public void keyReleased(KeyEvent event) {
                 save();
                 EditorInstance.getInstance().refresh();
             }
@@ -892,33 +790,27 @@ class NameEditor extends JPanel implements EventListener
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
 
             // Update the selected node
             mDataNode = ((NodeSelectedEvent) event).getNode();
 
             // Reload the node name
             mNameField.setText(mDataNode.getName());
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
-    private void save()
-    {
+    private void save() {
 
         mDataNode.setName(sanitizeString(mNameField.getText().trim()));
     }
 
     //ESCAPES STRINGS
-    private String sanitizeString(String st)
-    {
+    private String sanitizeString(String st) {
         String output = st;
         output = output.replaceAll("'", "");
         output = output.replaceAll("\"", "");
@@ -933,8 +825,7 @@ class NameEditor extends JPanel implements EventListener
  *
  *
  */
-class NodeEditor extends JPanel implements EventListener
-{
+class NodeEditor extends JPanel implements EventListener {
 
     private final NameEditor mNameEditor;
     private final StartNodeEditor mStartNodeEditor;
@@ -944,8 +835,7 @@ class NodeEditor extends JPanel implements EventListener
     // private final FunDefEditor mFunDefEditor;
     private final CmdEditor mCmdEditor;
 
-    public NodeEditor()
-    {
+    public NodeEditor() {
 
         // Init the child editors
         mNameEditor = new NameEditor();
@@ -973,38 +863,28 @@ class NodeEditor extends JPanel implements EventListener
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
 
             // Get the selected node
             BasicNode node = ((NodeSelectedEvent) event).getNode();
 
             // Show or hide the start node editor
-            if (node instanceof SuperNode)
-            {
+            if (node instanceof SuperNode) {
                 mStartNodeEditor.setVisible(true);
-            }
-            else
-            {
+            } else {
                 mStartNodeEditor.setVisible(false);
             }
 
             // Show or hide the function definition editor
-            if (node instanceof SceneFlow)
-            {
+            if (node instanceof SceneFlow) {
 
                 // mFunDefEditor.setVisible(true);
-            }
-            else
-            {
+            } else {
 
                 // mFunDefEditor.setVisible(false);
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
@@ -1018,22 +898,19 @@ class NodeEditor extends JPanel implements EventListener
  *
  *
  */
-class ProbabilityEditor extends JPanel implements EventListener
-{
+class ProbabilityEditor extends JPanel implements EventListener {
 
     private final HashMap<PEdge, JTextField> mPEdgeMap = new HashMap<PEdge, JTextField>();
     private PEdge mDataPEdge;
     private ModifyPEdgeDialog mPEdgeDialog;
     private JPanel mButtonPanel;
 
-    public ProbabilityEditor()
-    {
+    public ProbabilityEditor() {
         initComponents();
         EventDispatcher.getInstance().register(this);
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
         setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setAlignmentY(CENTER_ALIGNMENT);
@@ -1041,12 +918,9 @@ class ProbabilityEditor extends JPanel implements EventListener
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof EdgeSelectedEvent)
-        {
-            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.PEdge))
-            {
+    public void update(EventObject event) {
+        if (event instanceof EdgeSelectedEvent) {
+            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.PEdge)) {
                 mDataPEdge = (PEdge) ((EdgeSelectedEvent) event).getEdge();
                 mPEdgeDialog = new ModifyPEdgeDialog(mDataPEdge);
                 removeAll();
@@ -1059,30 +933,23 @@ class ProbabilityEditor extends JPanel implements EventListener
                 mPEdgeDialog.getAltStartNodePanel().setPreferredSize(new Dimension(200, 150));
                 add(mPEdgeDialog.getAltStartNodePanel());
 
-                for (JTextField textField : mPEdgeDialog.getPEdgeMap().values())
-                {
-                    textField.addKeyListener(new KeyAdapter()
-                    {
+                for (JTextField textField : mPEdgeDialog.getPEdgeMap().values()) {
+                    textField.addKeyListener(new KeyAdapter() {
                         @Override
-                        public void keyReleased(KeyEvent event)
-                        {
+                        public void keyReleased(KeyEvent event) {
                             save();
                         }
                     });
                 }
 
-                mPEdgeDialog.getNormButton().addMouseListener(new java.awt.event.MouseAdapter()
-                {
-                    public void mouseClicked(java.awt.event.MouseEvent evt)
-                    {
+                mPEdgeDialog.getNormButton().addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
                         mPEdgeDialog.normalizeActionPerformed();
                         save();
                     }
                 });
-                mPEdgeDialog.getUniButton().addMouseListener(new java.awt.event.MouseAdapter()
-                {
-                    public void mouseClicked(java.awt.event.MouseEvent evt)
-                    {
+                mPEdgeDialog.getUniButton().addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
                         mPEdgeDialog.uniformActionPerformed();
                         save();
                     }
@@ -1098,16 +965,13 @@ class ProbabilityEditor extends JPanel implements EventListener
                 add(Box.createRigidArea(new Dimension(20, 20)));
                 add(mButtonPanel);
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
-    private void save()
-    {
+    private void save() {
         mPEdgeDialog.okActionPerformed();
         EditorInstance.getInstance().refresh();
 
@@ -1122,66 +986,53 @@ class ProbabilityEditor extends JPanel implements EventListener
  *
  *
  */
-class StartNodeEditor extends AttributeEditor
-{
+class StartNodeEditor extends AttributeEditor {
 
-    public StartNodeEditor()
-    {
+    public StartNodeEditor() {
         super("Edit Start Nodes:");
         disableAddButton();
         disableUpDownButtons();
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
 
             // Update the selected node
             mDataNode = ((NodeSelectedEvent) event).getNode();
 
             // Reload the start node list
-            if (mDataNode instanceof SuperNode)
-            {
+            if (mDataNode instanceof SuperNode) {
                 mListModel.clear();
 
-                for (BasicNode startNode : ((SuperNode) mDataNode).getStartNodeMap().values())
-                {
+                for (BasicNode startNode : ((SuperNode) mDataNode).getStartNodeMap().values()) {
                     mListModel.addElement(startNode.getName() + "(" + startNode.getId() + ")");
                 }
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
     @Override
-    protected void add()
-    {
+    protected void add() {
 
         // Create list of child nodes
         ArrayList<String> nodeDataList = new ArrayList<>();
 
-        for (BasicNode node : ((SuperNode) mDataNode).getNodeAndSuperNodeList())
-        {
-            if (!node.isHistoryNode())
-            {
+        for (BasicNode node : ((SuperNode) mDataNode).getNodeAndSuperNodeList()) {
+            if (!node.isHistoryNode()) {
                 nodeDataList.add(node.getName() + "(" + node.getId() + ")");
             }
         }
     }
 
     @Override
-    protected void remove()
-    {
+    protected void remove() {
         String value = (String) mList.getSelectedValue();
 
-        if (value != null)
-        {
+        if (value != null) {
             String id = RegularExpressions.getMatches(value, "\\((\\w*)\\)", 2).get(1);
 
             // Get the new start node
@@ -1199,18 +1050,15 @@ class StartNodeEditor extends AttributeEditor
     }
 
     @Override
-    protected void edit()
-    {
+    protected void edit() {
     }
 
     @Override
-    protected void up()
-    {
+    protected void up() {
     }
 
     @Override
-    protected void down()
-    {
+    protected void down() {
     }
 }
 
@@ -1221,32 +1069,26 @@ class StartNodeEditor extends AttributeEditor
  *
  *
  */
-class TimeOutEditor extends JPanel implements EventListener
-{
+class TimeOutEditor extends JPanel implements EventListener {
 
     private TEdge mDataTEdge;
     private ModifyTEdgeDialog mTEdgeDialog;
 
-    public TimeOutEditor()
-    {
+    public TimeOutEditor() {
         initComponents();
         EventDispatcher.getInstance().register(this);
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
         setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setAlignmentX(RIGHT_ALIGNMENT);
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof EdgeSelectedEvent)
-        {
-            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.TEdge))
-            {
+    public void update(EventObject event) {
+        if (event instanceof EdgeSelectedEvent) {
+            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.TEdge)) {
                 mDataTEdge = (TEdge) ((EdgeSelectedEvent) event).getEdge();
                 mTEdgeDialog = new ModifyTEdgeDialog(mDataTEdge);
                 removeAll();
@@ -1260,89 +1102,66 @@ class TimeOutEditor extends JPanel implements EventListener
                 mTEdgeDialog.getAltStartNodePanel().setAlignmentX(RIGHT_ALIGNMENT);
                 add(mTEdgeDialog.getInputPanel());
                 add(mTEdgeDialog.getAltStartNodePanel());
-                mTEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter()
-                {
+                mTEdgeDialog.getInputTextField().addKeyListener(new KeyAdapter() {
                     @Override
-                    public void keyReleased(KeyEvent event)
-                    {
+                    public void keyReleased(KeyEvent event) {
                         save();
                         EditorInstance.getInstance().refresh();
                     }
                 });
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
-    private void save()
-    {
+    private void save() {
         mDataTEdge.setTimeout(Integer.parseInt(mTEdgeDialog.getInputTextField().getText()));
     }
 }
 
 /**
- *
- *
  * @author Not me
- *
- *
  */
-class TypeDefEditor extends AttributeEditor
-{
+class TypeDefEditor extends AttributeEditor {
 
-    public TypeDefEditor()
-    {
+    public TypeDefEditor() {
         super("Edit Type Definitions:");
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
-
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
             // Update the selected node
             mDataNode = ((NodeSelectedEvent) event).getNode();
-
             // Reload the type definition list
             mListModel.clear();
-
-            for (TypeDef def : mDataNode.getTypeDefList())
-            {
+            for (TypeDef def : mDataNode.getTypeDefList()) {
                 mListModel.addElement(def);
             }
         }
     }
 
     @Override
-    protected void add()
-    {
-        TypeDef typeDef = new TypeDefDialog(null).run();
-
-        if (typeDef != null)
-        {
+    protected void add() {
+        final TypeDef typeDef = new TypeDefDialog(null).run();
+        if (typeDef != null) {
             mDataNode.addTypeDef(typeDef);
             mListModel.addElement(typeDef);
         }
     }
 
     @Override
-    protected void edit()
-    {
+    protected void edit() {
         int index = mList.getSelectedIndex();
 
-        if (index >= 0)
-        {
+        if (index >= 0) {
             TypeDef oldTypeDef = mDataNode.getTypeDefAt(index);
             TypeDef newTypeDef = new TypeDefDialog(oldTypeDef).run();
 
             //
-            if (newTypeDef != null)
-            {
+            if (newTypeDef != null) {
                 mDataNode.setTypeDefAt(newTypeDef, index);
                 mListModel.set(index, newTypeDef);
             }
@@ -1350,24 +1169,20 @@ class TypeDefEditor extends AttributeEditor
     }
 
     @Override
-    protected void remove()
-    {
+    protected void remove() {
         int index = mList.getSelectedIndex();
 
-        if (index != -1)
-        {
+        if (index != -1) {
             mDataNode.removeTypeDefAt(index);
             mListModel.removeElementAt(index);
         }
     }
 
     @Override
-    protected void up()
-    {
+    protected void up() {
         int index = mList.getSelectedIndex();
 
-        if (index >= 1)
-        {
+        if (index >= 1) {
             TypeDef thisTypeDef = mDataNode.getTypeDefAt(index);
             TypeDef otherTypeDef = mDataNode.getTypeDefAt(index - 1);
 
@@ -1380,12 +1195,10 @@ class TypeDefEditor extends AttributeEditor
     }
 
     @Override
-    protected void down()
-    {
+    protected void down() {
         int index = mList.getSelectedIndex();
 
-        if ((index >= 0) && (index < mListModel.size() - 1))
-        {
+        if ((index >= 0) && (index < mListModel.size() - 1)) {
             TypeDef thisTypeDef = mDataNode.getTypeDefAt(index);
             TypeDef otherTypeDef = mDataNode.getTypeDefAt(index + 1);
 
@@ -1405,19 +1218,15 @@ class TypeDefEditor extends AttributeEditor
  *
  *
  */
-class VarDefEditor extends AttributeEditor
-{
+class VarDefEditor extends AttributeEditor {
 
-    public VarDefEditor()
-    {
+    public VarDefEditor() {
         super("Edit Variable Definitions:");
     }
 
     @Override
-    public void update(EventObject event)
-    {
-        if (event instanceof NodeSelectedEvent)
-        {
+    public void update(EventObject event) {
+        if (event instanceof NodeSelectedEvent) {
 
             // Update the selected node
             mDataNode = ((NodeSelectedEvent) event).getNode();
@@ -1425,46 +1234,38 @@ class VarDefEditor extends AttributeEditor
             // Reload the variable definition list
             mListModel.clear();
 
-            for (VarDef def : mDataNode.getVarDefList())
-            {
+            for (VarDef def : mDataNode.getVarDefList()) {
                 mListModel.addElement(def);
             }
-        }
-        else
-        {
+        } else {
 
             // Do nothing
         }
     }
 
     @Override
-    public void add()
-    {
+    public void add() {
 
         // Show the variable definition dialog
         VarDef varDef = new VarDefDialog(mDataNode, null).run();
 
         // Add the new variable definition if the creation was successful
-        if (varDef != null)
-        {
+        if (varDef != null) {
             mDataNode.addVarDef(varDef);
             mListModel.addElement(varDef);
         }
     }
 
     @Override
-    public void edit()
-    {
+    public void edit() {
         int index = mList.getSelectedIndex();
 
-        if (index > -1)
-        {
+        if (index > -1) {
             VarDef oldVarDef = mDataNode.getVarDefAt(index);
             VarDef newVarDef = new VarDefDialog(mDataNode, oldVarDef).run();
 
             // Add the new variable definition if the creation was successful
-            if (newVarDef != null)
-            {
+            if (newVarDef != null) {
                 mDataNode.setVarDefAt(newVarDef, index);
                 mListModel.set(index, newVarDef);
             }
@@ -1472,24 +1273,20 @@ class VarDefEditor extends AttributeEditor
     }
 
     @Override
-    public void remove()
-    {
+    public void remove() {
         int index = mList.getSelectedIndex();
 
-        if (index != -1)
-        {
+        if (index != -1) {
             mDataNode.removeVarDefAt(index);
             mListModel.removeElementAt(index);
         }
     }
 
     @Override
-    public void up()
-    {
+    public void up() {
         int index = mList.getSelectedIndex();
 
-        if (index >= 1)
-        {
+        if (index >= 1) {
             VarDef thisVarDef = mDataNode.getVarDefAt(index);
             VarDef otherVarDef = mDataNode.getVarDefAt(index - 1);
 
@@ -1502,12 +1299,10 @@ class VarDefEditor extends AttributeEditor
     }
 
     @Override
-    public void down()
-    {
+    public void down() {
         int index = mList.getSelectedIndex();
 
-        if ((index >= 0) && (index < mListModel.size() - 1))
-        {
+        if ((index >= 0) && (index < mListModel.size() - 1)) {
             VarDef thisVarDef = mDataNode.getVarDefAt(index);
             VarDef otherVarDef = mDataNode.getVarDefAt(index + 1);
 

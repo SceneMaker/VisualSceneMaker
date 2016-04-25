@@ -33,6 +33,7 @@ public abstract class TypeDef implements SyntaxObject {
         return mName;
     }
 
+    @Override
     public abstract TypeDef getCopy();
 
     public abstract Flavour getFlavour();
@@ -52,5 +53,10 @@ public abstract class TypeDef implements SyntaxObject {
         type.parseXML(element);
 
         return type;
+    }
+    
+    @Override
+    public String toString() {
+        return getConcreteSyntax();
     }
 }
