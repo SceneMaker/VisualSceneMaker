@@ -66,6 +66,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 ////////////////////////////////////////////////////////////////////////////////
 // Start Token Definitions /////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+"Play" { return new Symbol(ChartFields.PLAY); }
 "PlaySceneGroup" { return new Symbol(ChartFields.PSG); }
 "PlayDialogueAct" { return new Symbol(ChartFields.PDA); }
 "UnblockSceneGroup" { return new Symbol(ChartFields.USG); }

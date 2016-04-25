@@ -24,17 +24,18 @@ import org.w3c.dom.Element;
  */
 public class Speak extends Action implements XMLParseable, XMLWriteable {
 
-    private final LinkedList mTextBlocks;
-    private final String mPunctuation;
-    private final int mCharamelCharacterId = 1;
+    private LinkedList mTextBlocks;
+    private String mPunctuation;
+    private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public Speak(LinkedList textblocks, String punct) {
+    public Speak(LinkedList textblocks, String punct, String aid) {
         mName = "caixml";
         mTextBlocks = textblocks;
         mPunctuation = punct;
+        mCharameAvatarId = aid;
     }
 
     public Speak() {
@@ -47,9 +48,8 @@ public class Speak extends Action implements XMLParseable, XMLWriteable {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mTextBlocks) {
             String word = item.toString();
-            
+
             // pronounciation mapping
-            
             builder.append(word);
             if (!item.equals(mTextBlocks.getLast())) {
                 builder.append(' ');
@@ -59,18 +59,20 @@ public class Speak extends Action implements XMLParseable, XMLWriteable {
         }
         return builder.toString();
     }
-    
+
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
 
         ComplexAnimationGenerator ca = new ComplexAnimationGenerator();
         ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
+        ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
         AnimationTrack track1 = ca.addTrack();
-        track1.addSpeakText(mCharamelCharacterId, buildUtterance());
+        track1.addSpeakText(Integer.parseInt(mCharameAvatarId), buildUtterance());
         out.push().println(ca.getCaiXML());
         out.pop().pop().println("</Action>");
     }
+
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {

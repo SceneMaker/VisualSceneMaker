@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="196" language="en" identifier="Welcome">
+    <SceneTurn lower="18" upper="170" speaker="user">
+      <SceneUttr lower="24" upper="170" punct=".">
+        <ActionObject lower="24" upper="31" actor="" mode="" name="reset" >
+        </ActionObject>
+        <ActionObject lower="32" upper="63" actor="" mode="" name="GoodEvent" >
+          <ActionFeature lower="43" upper="62" typ="STRING" key="elicitor" val="'Greeting'"/></ActionObject>
+        <ActionObject lower="64" upper="102" actor="" mode="" name="BadActSelf" >
+          <ActionFeature lower="76" upper="101" typ="STRING" key="elicitor" val="'Wrong Clothing'"/></ActionObject>
+        <ActionObject lower="103" upper="169" actor="" mode="" name="BadLikelyFutureEvent" >
+          <ActionFeature lower="125" upper="168" typ="STRING" key="elicitor" val="'Revelation wrong Statement in CV'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="171" upper="196" speaker="susanne">
+      <SceneUttr lower="180" upper="196" punct="!">
+        <SceneWord lower="180" upper="185" text="Hello"/>
+        <SceneWord lower="186" upper="188" text="my"/>
+        <SceneWord lower="189" upper="195" text="Friend"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="198" upper="229" language="en" identifier="ByeBye">
+    <SceneTurn lower="215" upper="229" speaker="user">
+      <SceneUttr lower="221" upper="229" punct=".">
+        <ActionObject lower="221" upper="228" actor="" mode="" name="reset" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

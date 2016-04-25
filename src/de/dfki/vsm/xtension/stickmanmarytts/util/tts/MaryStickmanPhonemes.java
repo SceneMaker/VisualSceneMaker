@@ -23,18 +23,20 @@ public class MaryStickmanPhonemes {
 
 
 
-    public LinkedList<Phoneme> getPhonemesSpeechActivity(SpeechActivity sa, Stickman.TYPE gender){
+    public LinkedList<Phoneme> getPhonemesSpeechActivity(SpeechActivity sa, Stickman.TYPE gender, VoiceName voiceName){
         LinkedList<Phoneme> phonemes = new LinkedList<>();
         try {
-            phonemes = mary.getWordPhonemeList(sa.getTextOnly("$"), gender);
+            if(!sa.getTextOnly("$").equals("")){
+                phonemes = mary.getWordPhonemeList(sa.getTextOnly("$"), gender, voiceName);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return phonemes;
     }
 
-    public HashMap<Integer, LinkedList<Phoneme>> getPhonemesAndMouthPosition(SpeechActivity sa, Stickman.TYPE gender){
-        LinkedList<Phoneme> phonemes = getPhonemesSpeechActivity(sa, gender);
+    public HashMap<Integer, LinkedList<Phoneme>> getPhonemesAndMouthPosition(SpeechActivity sa, Stickman.TYPE gender, VoiceName voiceName){
+        LinkedList<Phoneme> phonemes = getPhonemesSpeechActivity(sa, gender, voiceName);
        //For computing correctly the whole sentnce
         LinkedList blocks = sa.getBlocks();
         int index = 0;
@@ -45,7 +47,7 @@ public class MaryStickmanPhonemes {
                 try {
                     LinkedList<Phoneme> wordPhonems = new LinkedList<>();
                     //long wordDuration = mary.getWordDuration(w.toString());
-                    LinkedList<Phoneme> phonemes2 = mary.getWordPhonemeList(w.toString(), gender);
+                    LinkedList<Phoneme> phonemes2 = mary.getWordPhonemeList(w.toString(), gender, voiceName);
                     int i = 0;
                     for (; i < phonemes2.size(); i++) {
                         wordPhonems.add(phonemes.get(index + i));

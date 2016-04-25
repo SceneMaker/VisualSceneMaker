@@ -33,7 +33,15 @@ public final class PlannedPlayer extends RunTimePlayer {
     }
 
     @Override
-    public final void play(final String name, final LinkedList args) {
+    public final void playActionActivity(final String name, final LinkedList args) {
+        // Get the current process
+        final Process process = (Process) Thread.currentThread();
+        // Print some information
+        mLogger.message("Playing '" + name + "' in process '" + process + "' on planned player '" + this + "'");
+    }
+
+    @Override
+    public final void playSceneGroup(final String name, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Print some information

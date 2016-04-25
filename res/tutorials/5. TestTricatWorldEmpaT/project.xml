@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="EmpaT">
   <Plugins>
-    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin">
+    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="false">
       <Feature key="hlhost" val="127.0.0.1"/>
       <Feature key="hlport" val="343"/>
       <Feature key="slhost" val="127.0.0.1"/>
@@ -11,7 +11,7 @@
       <Feature key="ssidir" val="D:\EmpaT\software\EmpaT\"/>
       <Feature key="ssibat" val="EMPAT_SSI.bat"/>
     </Plugin>
-    <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tworld.TWorldExecutor">
+    <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tworld.TWorldExecutor" load="true">
       <Feature key="tworlddir" val="D:\EmpaT\software\EmpaT\"/>
       <Feature key="tworldexe" val="EmpaT.exe"/>
       <Feature key="tworldcmd" val="-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 -CharActorIP 127.0.0.1 -CharActorPort 4000"/>
@@ -19,12 +19,12 @@
       <Feature key="cactorexe" val="EmpatTest.exe"/>
       <Feature key="cactorcmd" val=""/>
     </Plugin>
-    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor">
+    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="9000"/>
       <Feature key="showstickmanname" val="true"/>
     </Plugin>
-    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor">
+    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor" load="true">
       <Feature key="strength1" val="Zielstrebig"/>
       <Feature key="strength2" val="Kommunikationsstark"/>
       <Feature key="strength3" val="Teamfähig"/>
@@ -38,55 +38,41 @@
       <Feature key="weakness5" val="Stur"/>
       <Feature key="weakness6" val="Keine"/>
     </Plugin>
-    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor">
+    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor" load="true">
       <Feature key="cat" val="img\cat.png"/>
       <Feature key="dog" val="img\dog.png"/>
     </Plugin>
+    <Plugin type="device" name="alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
+      <Feature key="computation" val="affect\AffectComputation.aml"/>
+      <Feature key="definition" val="affect\CharacterDefinition.aml"/>
+    </Plugin>
   </Plugins>
   <Agents>
-    <Agent name="Empat_Environment" device="tworld">
+    <Agent name="environment" device="tworld">
     </Agent>
-    <Agent name="Susanne" device="tworld">
+    <Agent name="meeting_wall1" device="tworld">
     </Agent>
-    <Agent name="npc1" device="tworld">
+    <Agent name="meeting_wall2" device="tworld">
     </Agent>
-    <Agent name="npc2" device="tworld">
+    <Agent name="npc_adjutant" device="tworld">
     </Agent>
-    <Agent name="npc3" device="tworld">
+    <Agent name="npc_counter" device="tworld">
     </Agent>
-    <Agent name="npc4" device="tworld">
+    <Agent name="npc_secretary" device="tworld">
     </Agent>
-    <Agent name="npc5" device="tworld">
+    <Agent name="videowall" device="tworld">
     </Agent>
-    <Agent name="npc6" device="tworld">
+    <Agent name="ceo_wall" device="tworld">
     </Agent>
-    <Agent name="npc7" device="tworld">
+    <Agent name="susanne" device="tworld">
+      <Feature key="aid" val="1"/>
     </Agent>
-    <Agent name="npc8" device="tworld">
+    <Agent name="tom" device="tworld">
+      <Feature key="aid" val="2"/>
     </Agent>
-    <Agent name="npc9" device="tworld">
+    <Agent name="player" device="tworld">
     </Agent>
-    <Agent name="npc10" device="tworld">
-    </Agent>
-    <Agent name="npc11" device="tworld">
-    </Agent>
-    <Agent name="npc12" device="tworld">
-    </Agent>
-    <Agent name="npc13" device="tworld">
-    </Agent>
-    <Agent name="npc14" device="tworld">
-    </Agent>
-    <Agent name="npc15" device="tworld">
-    </Agent>
-    <Agent name="npc16" device="tworld">
-    </Agent>
-    <Agent name="npc17" device="tworld">
-    </Agent>
-    <Agent name="npc18" device="tworld">
-    </Agent>
-    <Agent name="npc19" device="tworld">
-    </Agent>
-    <Agent name="npc20" device="tworld">
+    <Agent name="appraise" device="alma">
     </Agent>
     <Agent name="bert" device="stickman">
     </Agent>
