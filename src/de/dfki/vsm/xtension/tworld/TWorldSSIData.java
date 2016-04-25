@@ -1,490 +1,59 @@
 package de.dfki.vsm.xtension.tworld;
 
-import de.dfki.vsm.util.xml.XMLParseAction;
-import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLParseable;
-import de.dfki.vsm.util.xml.XMLUtilities;
-import java.util.HashMap;
+import java.io.ByteArrayInputStream;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class TWorldSSIData implements XMLParseable {
+public final class TWorldSSIData {
 
-    public final class VoiceData implements XMLParseable {
-
-        public final class PraatData implements XMLParseable {
-
-            private String mPitchMean;
-            private String mPitchSD;
-            private String mSpeechRate;
-            private String mIntensity;
-
-            public String getPitchSD() {
-                return mPitchSD;
-            }
-
-            public String getPitchMean() {
-                return mPitchMean;
-            }
-
-            public String getSpeechRate() {
-                return mSpeechRate;
-            }
-
-            public String getIntensity() {
-                return mIntensity;
-            }
-
-            @Override
-            public final void parseXML(final Element element) throws XMLParseError {
-                if (element.getTagName().equals("praat")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
-                        public void run(final Element element) throws XMLParseError {
-                            final String tag = element.getTagName();
-                            if (tag.equals("PitchMean")) {
-                                mPitchMean = element.getTextContent();
-                            } else if (tag.equals("PitchSD")) {
-                                mPitchSD = element.getTextContent();
-                            } else if (tag.equals("SpeechRate")) {
-                                mSpeechRate = element.getTextContent();
-                            } else if (tag.equals("Intensity")) {
-                                mIntensity = element.getTextContent();
-                            } else {
-                                // Do nothing
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        private String mActivity = new String();
-        private String mKeyword = new String();
-        private PraatData mPraatData = new PraatData();
-
-        public String getActivity() {
-            return mActivity;
-        }
-
-        public String getKeyword() {
-            return mKeyword;
-        }
-
-        public final PraatData getPraatData() {
-            return mPraatData;
-        }
-
-        @Override
-        public final void parseXML(final Element element) throws XMLParseError {
-            if (element.getTagName().equals("voice")) {
-                XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                    @Override
-                    public void run(final Element element) throws XMLParseError {
-                        final String tag = element.getTagName();
-
-                        if (tag.equals("praat")) {
-                            mPraatData = new PraatData();
-                            mPraatData.parseXML(element);
-                        } else if (tag.equals("activity")) {
-                            mActivity = element.getTextContent();
-                        } else if (tag.equals("keyword")) {
-                            mKeyword = element.getTextContent();
-                        } else {
-                            // Do nothing
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    public final class HeadData implements XMLParseable {
-
-        public final class PosData implements XMLParseable {
-
-            private String mX;
-            private String mY;
-
-            public String getX() {
-                return mX;
-            }
-
-            public String getY() {
-                return mY;
-            }
-
-            @Override
-            public final void parseXML(final Element element) throws XMLParseError {
-                if (element.getTagName().equals("pos")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
-                        public void run(final Element element) throws XMLParseError {
-                            final String tag = element.getTagName();
-                            if (tag.equals("x")) {
-                                mX = element.getTextContent();
-                            } else if (tag.equals("y")) {
-                                mY = element.getTextContent();
-                            } else {
-                                // Do nothing
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        private String mNod;
-        private String mShake;
-        private PosData mPosData;
-
-        public String getNod() {
-            return mNod;
-        }
-
-        public String getShake() {
-            return mShake;
-        }
-
-        public PosData getPosData() {
-            return mPosData;
-        }
-
-        @Override
-        public final void parseXML(final Element element) throws XMLParseError {
-            if (element.getTagName().equals("head")) {
-                XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                    @Override
-                    public void run(final Element element) throws XMLParseError {
-                        final String tag = element.getTagName();
-                        if (tag.equals("pos")) {
-                            mPosData = new PosData();
-                            mPosData.parseXML(element);
-                        } else if (tag.equals("nod")) {
-                            mNod = element.getTextContent();
-                        } else if (tag.equals("shake")) {
-                            mShake = element.getTextContent();
-                        } else {
-                            // Do nothing
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    public final class BodyData implements XMLParseable {
-
-        public final class LeanData implements XMLParseable {
-
-            private String mIdentifier;
-            private String mDetected;
-            private String mDuration;
-            private String mIntensity;
-
-            public String getIdentifier() {
-                return mIdentifier;
-            }
-
-            public String getDetected() {
-                return mDetected;
-            }
-
-            public String getDuration() {
-                return mDuration;
-            }
-
-            public String getIntensity() {
-                return mIntensity;
-            }
-
-            @Override
-            public final void parseXML(final Element element) throws XMLParseError {
-                if (element.getTagName().equals("lean")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
-                        public void run(final Element element) throws XMLParseError {
-                            final String tag = element.getTagName();
-                            if (tag.equals("identifier")) {
-                                mIdentifier = element.getTextContent();
-                            } else if (tag.equals("detected")) {
-                                mDetected = element.getTextContent();
-                            } else if (tag.equals("duration")) {
-                                mDuration = element.getTextContent();
-                            } else if (tag.equals("intensity")) {
-                                mIntensity = element.getTextContent();
-                            } else {
-                                // Do nothing
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        public final class GestData implements XMLParseable {
-
-            private String mIdentifier;
-            private String mDetected;
-            private String mDuration;
-            private String mIntensity;
-
-            public String getIdentifier() {
-                return mIdentifier;
-            }
-
-            public String getDetected() {
-                return mDetected;
-            }
-
-            public String getDuration() {
-                return mDuration;
-            }
-
-            public String getIntensity() {
-                return mIntensity;
-            }
-
-            @Override
-            public final void parseXML(final Element element) throws XMLParseError {
-                if (element.getTagName().equals("gest")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
-                        public void run(final Element element) throws XMLParseError {
-                            final String tag = element.getTagName();
-                            if (tag.equals("identifier")) {
-                                mIdentifier = element.getTextContent();
-                            } else if (tag.equals("detected")) {
-                                mDetected = element.getTextContent();
-                            } else if (tag.equals("duration")) {
-                                mDuration = element.getTextContent();
-                            } else if (tag.equals("intensity")) {
-                                mIntensity = element.getTextContent();
-                            } else {
-                                // Do nothing
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        private String mActivity;
-        private String mOpeness;
-        private String mEnergy;
-        final HashMap<String, LeanData> mLeanData = new HashMap();
-        final HashMap<String, GestData> mGestData = new HashMap();
-
-        public String getActivity() {
-            return mActivity;
-        }
-
-        public String getOpeness() {
-            return mOpeness;
-        }
-
-        public String getEnergy() {
-            return mEnergy;
-        }
-
-        public final LeanData getLeanData(final String name) {
-            return mLeanData.get(name);
-        }
-
-        public final GestData getGestData(final String name) {
-            return mGestData.get(name);
-        }
-
-        @Override
-        public final void parseXML(final Element element) throws XMLParseError {
-            if (element.getTagName().equals("body")) {
-                XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                    @Override
-                    public void run(final Element element) throws XMLParseError {
-                        final String tag = element.getTagName();
-                        if (tag.equals("activity")) {
-                            mActivity = element.getTextContent();
-                        } else if (tag.equals("openness")) {
-                            mOpeness = element.getTextContent();
-                        } else if (tag.equals("energy")) {
-                            mEnergy = element.getTextContent();
-                        } else if (tag.equals("leans")) {
-                            XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                                @Override
-                                public void run(final Element element) throws XMLParseError {
-                                    final String tag = element.getTagName();
-                                    if (tag.equals("lean")) {
-                                        final LeanData data = new LeanData();
-                                        data.parseXML(element);
-                                        mLeanData.put(data.mIdentifier, data);
-                                    } else {
-                                        // Do nothing
-                                    }
-                                }
-                            });
-                        } else if (tag.equals("gests")) {
-                            XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                                @Override
-                                public void run(final Element element) throws XMLParseError {
-                                    final String tag = element.getTagName();
-                                    if (tag.equals("gest")) {
-                                        final GestData data = new GestData();
-                                        data.parseXML(element);
-                                        mGestData.put(data.mIdentifier, data);
-                                    } else {
-                                        // Do nothing
-                                    }
-                                }
-                            });
-                        } else {
-                            // Do nothing
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    public final class FaceData implements XMLParseable {
-
-        public final class ExpData implements XMLParseable {
-
-            private String mIdentifier;
-            private String mDetected;
-            private String mDuration;
-            private String mIntensity;
-
-            public String getIdentifier() {
-                return mIdentifier;
-            }
-
-            public String getDetected() {
-                return mDetected;
-            }
-
-            public String getDuration() {
-                return mDuration;
-            }
-
-            public String getIntensity() {
-                return mIntensity;
-            }
-
-            @Override
-            public final void parseXML(final Element element) throws XMLParseError {
-                if (element.getTagName().equals("exp")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
-                        public void run(final Element element) throws XMLParseError {
-                            final String tag = element.getTagName();
-                            if (tag.equals("identifier")) {
-                                mIdentifier = element.getTextContent();
-                            } else if (tag.equals("detected")) {
-                                mDetected = element.getTextContent();
-                            } else if (tag.equals("duration")) {
-                                mDuration = element.getTextContent();
-                            } else if (tag.equals("intensity")) {
-                                mIntensity = element.getTextContent();
-                            } else {
-                                // Do nothing
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        final HashMap<String, ExpData> mExpData = new HashMap();
-
-        public final ExpData getExpData(final String name) {
-            return mExpData.get(name);
-        }
-
-        @Override
-        public final void parseXML(final Element element) throws XMLParseError {
-            if (element.getTagName().equals("face")) {
-                XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                    @Override
-                    public void run(final Element element) throws XMLParseError {
-                        final String tag = element.getTagName();
-                        if (tag.equals("exps")) {
-                            XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                                @Override
-                                public void run(final Element element) throws XMLParseError {
-                                    final String tag = element.getTagName();
-                                    if (tag.equals("exp")) {
-                                        final ExpData expData = new ExpData();
-                                        expData.parseXML(element);
-                                        mExpData.put(expData.mIdentifier, expData);
-                                    } else {
-                                        // Do nothing
-                                    }
-                                }
-                            });
-                        } else {
-                            // Do nothing
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    private VoiceData mVoiceData;
-    private HeadData mHeadData;
-    private BodyData mBodyData;
-    private FaceData mFaceData;
-
-    public final VoiceData getVoiceData() {
-        return mVoiceData;
-    }
-
-    public final HeadData getHeadData() {
-        return mHeadData;
-    }
-
-    public final BodyData getBodyData() {
-        return mBodyData;
-    }
-
-    public final FaceData getFaceData() {
-        return mFaceData;
-    }
+    private Document mDocument;
 
     public TWorldSSIData(final String xml) {
-        parse(xml);
-    }
+        try {
+            final ByteArrayInputStream stream = new ByteArrayInputStream(
+                    xml.getBytes("UTF-8"));
+            // Construct the XML document parser
+            final DocumentBuilder parser
+                    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            // Parse the XML document from the stream
+            mDocument = parser.parse(stream);
+            // Finally close the stream and the URL
+            stream.close();
 
-    private void parse(final String xml) {
-        XMLUtilities.parseFromXMLString(this, xml, "UTF-8");
-    }
-
-    @Override
-    public final void parseXML(final Element element) throws XMLParseError {
-        if (element.getTagName().equals("ssi")) {
-            XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                @Override
-                public void run(final Element element) throws XMLParseError {
-                    final String tag = element.getTagName();
-                    if (tag.equals("voice")) {
-                        mVoiceData = new VoiceData();
-                        mVoiceData.parseXML(element);
-                    } else if (tag.equals("head")) {
-                        mHeadData = new HeadData();
-                        mHeadData.parseXML(element);
-                    } else if (tag.equals("body")) {
-                        mBodyData = new BodyData();
-                        mBodyData.parseXML(element);
-                    } else if (tag.equals("face")) {
-                        mFaceData = new FaceData();
-                        mFaceData.parseXML(element);
-                    } else {
-                        // Do nothing
-                    }
-                }
-            });
+        } catch (final Exception exc) {
+            exc.printStackTrace();
         }
     }
+
+    private final String get(final String path, final Element root) {
+        final int index = path.indexOf(".");
+        if (index != -1) {
+            final NodeList list = root.getElementsByTagName(
+                    path.substring(0, index));
+            if (list.getLength() == 1) {
+                return get(path.substring(index + 1), (Element) list.item(0));
+            } else {
+                return null;
+            }
+        } else {
+            // We have a leaf element
+            final NodeList list = root.getElementsByTagName(path);
+            if (list.getLength() == 1) {
+                return ((Element) list.item(0)).getTextContent();
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public String get(final String path) {
+        return get(path, mDocument.getDocumentElement());
+    }
+
 }
