@@ -79,8 +79,8 @@ public final class SSIEventReceiver extends Thread {
         while (!mDone) {
             mLogger.message("Awaiting SSI events ...");
             // Receive a new message
-            final String message = recvString();            
-            
+            final String message = recvString();
+
             mLogger.success(message);
             // Check message content
             if (message != null) {
@@ -93,7 +93,7 @@ public final class SSIEventReceiver extends Thread {
                         // Delegate sequence handling            
                         mPlugin.handle(sequence);
                     } else {
-                        
+                        mLogger.message("ERROR: Cannot parse the SSI events ...");
                     }
                 } catch (final Exception exc) {
                     mLogger.failure(exc.toString());

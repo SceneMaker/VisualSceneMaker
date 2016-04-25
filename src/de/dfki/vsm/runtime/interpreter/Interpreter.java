@@ -427,6 +427,7 @@ public class Interpreter {
 
             return true;
         } catch (InterpreterError e) {
+            e.printStackTrace();
             return false;
         } finally {
             unlock();

@@ -73,53 +73,59 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
     @Override
     public void handle(final SSIEventArray array) {
-
+        // Print some information 
+        //mLogger.message("Handling SSI events " + array);
         for (final SSIEventObject event : array.getEventList()) {
             final SSIEventData obj = event.getData();
+            //mLogger.message("Handling SSI event " + obj);
             if (obj instanceof SSIStringData) {
                 final TWorldSSIData mSSIData = new TWorldSSIData(
                         ((SSIStringData) array.getEventList().get(0).getData()).toString());
 
+                //mLogger.message("Handling SSI data " + mSSIData);
                 final HashMap<String, AbstractValue> values = new HashMap<>();
-                values.put("voice.activity", new StringValue(mSSIData.get("voice.activity")));
-                values.put("voice.keyword", new StringValue(mSSIData.get("voice.keyword")));
-                values.put("voice.praat.pitchmean", new StringValue(mSSIData.get("voice.praat.pitchmean")));
-                values.put("voice.praat.pitchsd", new StringValue(mSSIData.get("voice.praat.pitchsd")));
-                values.put("voice.praat.speechrate", new StringValue(mSSIData.get("voice.praat.speechrate")));
-                values.put("voice.praat.intensity", new StringValue(mSSIData.get("voice.praat.intensity")));
-                values.put("head.position.x", new StringValue(mSSIData.get("head.position.x")));
-                values.put("head.position.y", new StringValue(mSSIData.get("head.position.y")));
-                values.put("head.orientation.roll", new StringValue(mSSIData.get("head.orientation.roll")));
-                values.put("head.orientation.pitch", new StringValue(mSSIData.get("head.orientation.pitch")));
-                values.put("head.orientation.yaw", new StringValue(mSSIData.get("head.orientation.yaw")));
-                values.put("head.movement.nod", new StringValue(mSSIData.get("head.movement.nod")));
-                values.put("head.movement.shake", new StringValue(mSSIData.get("head.movement.shake")));
-                values.put("body.activity", new StringValue(mSSIData.get("body.activity")));
-                values.put("body.energy", new StringValue(mSSIData.get("body.energy")));
-                values.put("body.posture.leanfront.detected", new StringValue(mSSIData.get("body.posture.leanfront.detected")));
-                values.put("body.posture.leanfront.duration", new StringValue(mSSIData.get("body.posture.leanfront.duration")));
-                values.put("body.posture.leanfront.intensity", new StringValue(mSSIData.get("body.posture.leanfront.intensity")));
-                values.put("body.posture.leanback.detected", new StringValue(mSSIData.get("body.posture.leanback.detected")));
-                values.put("body.posture.leanback.duration", new StringValue(mSSIData.get("body.posture.leanback.duration")));
-                values.put("body.posture.leanback.intensity", new StringValue(mSSIData.get("body.posture.leanback.intensity")));
-                values.put("body.gesture.armsopen.detected", new StringValue(mSSIData.get("body.gesture.armsopen.detected")));
-                values.put("body.gesture.armsopen.duration", new StringValue(mSSIData.get("body.gesture.armsopen.duration")));
-                values.put("body.gesture.armsopen.intensity", new StringValue(mSSIData.get("body.gesture.armsopen.intensity")));
-                values.put("body.gesture.armscrossed.detected", new StringValue(mSSIData.get("body.gesture.armscrossed.detected")));
-                values.put("body.gesture.armscrossed.duration", new StringValue(mSSIData.get("body.gesture.armscrossed.duration")));
-                values.put("body.gesture.armscrossed.intensity", new StringValue(mSSIData.get("body.gesture.armscrossed.intensity")));
-                values.put("body.gesture.lefthandheadtouch.detected", new StringValue(mSSIData.get("body.gesture.lefthandheadtouch.detected")));
-                values.put("body.gesture.lefthandheadtouch.duration", new StringValue(mSSIData.get("body.gesture.lefthandheadtouch.duration")));
-                values.put("body.gesture.righthandheadtouch.detected", new StringValue(mSSIData.get("body.gesture.righthandheadtouch.detected")));
-                values.put("body.gesture.righthandheadtouch.duration", new StringValue(mSSIData.get("body.gesture.righthandheadtouch.duration")));
-                values.put("face.expression.smile.detected", new StringValue(mSSIData.get("face.expression.smile.detected")));
-                values.put("face.expression.smile.duration", new StringValue(mSSIData.get("face.expression.smile.duration")));
-                values.put("face.expression.smile.intensity", new StringValue(mSSIData.get("face.expression.smile.intensity")));
+                values.put("voice_activity", new StringValue(mSSIData.get("voice.activity")));
+                values.put("voice_keyword", new StringValue(mSSIData.get("voice.keyword")));
+                values.put("voice_praat_pitchmean", new StringValue(mSSIData.get("voice.praat.pitchmean")));
+                values.put("voice_praat_pitchsd", new StringValue(mSSIData.get("voice.praat.pitchsd")));
+                values.put("voice_praat_speechrate", new StringValue(mSSIData.get("voice.praat.speechrate")));
+                values.put("voice_praat_intensity", new StringValue(mSSIData.get("voice.praat.intensity")));
+                values.put("head_position_x", new StringValue(mSSIData.get("head.position.x")));
+                values.put("head_position_y", new StringValue(mSSIData.get("head.position.y")));
+                values.put("head_orientation_roll", new StringValue(mSSIData.get("head.orientation.roll")));
+                values.put("head_orientation_pitch", new StringValue(mSSIData.get("head.orientation.pitch")));
+                values.put("head_orientation_yaw", new StringValue(mSSIData.get("head.orientation.yaw")));
+                values.put("head_movement_nod", new StringValue(mSSIData.get("head.movement.nod")));
+                values.put("head_movement_shake", new StringValue(mSSIData.get("head.movement.shake")));
+                values.put("body_activity", new StringValue(mSSIData.get("body.activity")));
+                values.put("body_energy", new StringValue(mSSIData.get("body.energy")));
+                values.put("body_posture_leanfront_detected", new StringValue(mSSIData.get("body.posture.leanfront.detected")));
+                values.put("body_posture_leanfront_duration", new StringValue(mSSIData.get("body.posture.leanfront.duration")));
+                values.put("body_posture_leanfront_intensity", new StringValue(mSSIData.get("body.posture.leanfront.intensity")));
+                values.put("body_posture_leanback_detected", new StringValue(mSSIData.get("body.posture.leanback.detected")));
+                values.put("body_posture_leanback_duration", new StringValue(mSSIData.get("body.posture.leanback.duration")));
+                values.put("body_posture_leanback_intensity", new StringValue(mSSIData.get("body.posture.leanback.intensity")));
+                values.put("body_gesture_armsopen_detected", new StringValue(mSSIData.get("body.gesture.armsopen.detected")));
+                values.put("body_gesture_armsopen_duration", new StringValue(mSSIData.get("body.gesture.armsopen.duration")));
+                values.put("body_gesture_armsopen_intensity", new StringValue(mSSIData.get("body.gesture.armsopen.intensity")));
+                values.put("body_gesture_armscrossed_detected", new StringValue(mSSIData.get("body.gesture.armscrossed.detected")));
+                values.put("body_gesture_armscrossed_duration", new StringValue(mSSIData.get("body.gesture.armscrossed.duration")));
+                values.put("body_gesture_armscrossed_intensity", new StringValue(mSSIData.get("body.gesture.armscrossed.intensity")));
+                values.put("body_gesture_lefthandheadtouch_detected", new StringValue(mSSIData.get("body.gesture.lefthandheadtouch.detected")));
+                values.put("body_gesture_lefthandheadtouch_duration", new StringValue(mSSIData.get("body.gesture.lefthandheadtouch.duration")));
+                values.put("body_gesture_righthandheadtouch_detected", new StringValue(mSSIData.get("body.gesture.righthandheadtouch.detected")));
+                values.put("body_gesture_righthandheadtouch_duration", new StringValue(mSSIData.get("body.gesture.righthandheadtouch.duration")));
+                values.put("face_expression_smile_detected", new StringValue(mSSIData.get("face.expression.smile.detected")));
+                values.put("face_expression_smile_duration", new StringValue(mSSIData.get("face.expression.smile.duration")));
+                values.put("face_expression_smile_intensity", new StringValue(mSSIData.get("face.expression.smile.intensity")));
 
                 //mProject.setVariable("usercues", new StructValue(values));
                 for (final Entry<String, AbstractValue> value : values.entrySet()) {
                     if (mProject.hasVariable(value.getKey())) {
                         mProject.setVariable(value.getKey(), value.getValue());
+                        //mLogger.success("Setting Variable " + value.getKey() + " to " + value.getValue().getConcreteSyntax());
+                    } else {
+                        //mLogger.warning("Variable " + value.getKey() + " not defined!");
                     }
                 }
             }
