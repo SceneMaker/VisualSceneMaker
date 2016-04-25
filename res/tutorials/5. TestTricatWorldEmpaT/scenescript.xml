@@ -3,146 +3,394 @@
   <SceneComment lower="0" upper="35" comment="/* User questionnaire [qgui show]*/"/>
   <SceneComment lower="37" upper="88" comment="/* picture display [display show image={cat|dog} */"/>
   <SceneComment lower="90" upper="162" comment="/* picture hide [display hide], mandatory since display show is modal */"/>
-  <SceneComment lower="164" upper="231" comment="/* ambient sound [Empat_Environment Ambient value={calm|nervous} */"/>
-  <SceneObject lower="233" upper="293" language="en" identifier="SusanneWelcome">
-    <SceneTurn lower="258" upper="293" speaker="Susanne">
-      <SceneUttr lower="267" upper="273" punct=",">
-        <SceneWord lower="267" upper="272" text="Hallo"/>
+  <SceneComment lower="164" upper="231" comment="/* ambient light [environment AmbientLight value={noon|evening}] */"/>
+  <SceneComment lower="233" upper="319" comment="/* npc, player control [{npc(nr)|player} {LookAt|MoveTo|SitDown} target=targetName] */"/>
+  <SceneComment lower="321" upper="394" comment="/* npc, player control [{npc(nr)|player} SitDown chairname=targetName] */"/>
+  <SceneComment lower="396" upper="487" comment="/* npc, player control [{npc(nr)|player} Warp location=locationName {target=targetName}] */"/>
+  <SceneComment lower="489" upper="567" comment="/* npc control [npc(nr)|susanne|norbert CancelMoveTo|Release|ReleaseLookAt] */"/>
+  <SceneComment lower="569" upper="608" comment="/* npc control [npc(nr) Say url=url] */"/>
+  <SceneComment lower="610" upper="710" comment="/* wall color [ceo_wall|meeting_wall1|meeting_wall2 SetColor r=0.0-255.0 g=0.0-255.0 b=0.0-255.0] */"/>
+  <SceneComment lower="712" upper="760" comment="/* video wall player [videowall Load url=url] */"/>
+  <SceneComment lower="762" upper="807" comment="/* video wall player [videowall Play|Stop] */"/>
+  <SceneObject lower="809" upper="2103" language="en" identifier="Test">
+    <SceneTurn lower="824" upper="871" speaker="bert">
+      <SceneUttr lower="830" upper="871" punct="!">
+        <SceneWord lower="830" upper="835" text="Augen"/>
+        <SceneWord lower="836" upper="839" text="auf"/>
+        <ActionObject lower="840" upper="870" actor="player" mode="" name="LookAt" >
+          <ActionFeature lower="855" upper="869" typ="IDENTIFIER" key="viewtarget" val="tom"/></ActionObject>
       </SceneUttr>
-      <SceneUttr lower="274" upper="293" punct="?">
-        <SceneWord lower="274" upper="277" text="wie"/>
-        <SceneAbbrev lower="278" upper="284" first="geht" second="s"/>
-        <SceneWord lower="285" upper="289" text="denn"/>
-        <SceneWord lower="290" upper="292" text="so"/>
+    </SceneTurn><SceneTurn lower="872" upper="919" speaker="tom">
+      <SceneUttr lower="877" upper="919" punct="!">
+        <SceneWord lower="877" upper="885" text="Herzlich"/>
+        <SceneWord lower="886" upper="896" text="Willkommen"/>
+        <SceneWord lower="897" upper="900" text="zum"/>
+        <SceneWord lower="901" upper="906" text="Empat"/>
+        <SceneWord lower="907" upper="918" text="Jobtraining"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="920" upper="970" speaker="qgui">
+      <SceneUttr lower="926" upper="970" punct=".">
+        <ActionObject lower="926" upper="962" actor="player" mode="" name="LookAt" >
+          <ActionFeature lower="941" upper="961" typ="IDENTIFIER" key="viewtarget" val="videowall"/></ActionObject>
+        <ActionObject lower="963" upper="969" actor="" mode="" name="show" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="971" upper="997" speaker="display">
+      <SceneUttr lower="980" upper="997" punct=".">
+        <ActionObject lower="980" upper="996" actor="" mode="" name="show" >
+          <ActionFeature lower="986" upper="995" typ="IDENTIFIER" key="image" val="dog"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="998" upper="1039" speaker="tom">
+      <SceneUttr lower="1003" upper="1039" punct=".">
+        <SceneWord lower="1003" upper="1007" text="Hier"/>
+        <SceneWord lower="1008" upper="1013" text="sehen"/>
+        <SceneWord lower="1014" upper="1017" text="Sie"/>
+        <SceneWord lower="1018" upper="1023" text="jetzt"/>
+        <SceneWord lower="1024" upper="1027" text="den"/>
+        <SceneWord lower="1028" upper="1038" text="Ablaufplan"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1040" upper="1105" speaker="tom">
+      <SceneUttr lower="1045" upper="1065" punct=",">
+        <SceneWord lower="1045" upper="1049" text="Nach"/>
+        <SceneWord lower="1050" upper="1053" text="der"/>
+        <SceneWord lower="1054" upper="1064" text="Einweisung"/>
+      </SceneUttr>
+      <SceneUttr lower="1066" upper="1105" punct=".">
+        <SceneWord lower="1066" upper="1072" text="werden"/>
+        <SceneWord lower="1073" upper="1076" text="sie"/>
+        <SceneWord lower="1077" upper="1080" text="zur"/>
+        <SceneWord lower="1081" upper="1086" text="Firma"/>
+        <SceneWord lower="1087" upper="1089" text="In"/>
+        <SceneWord lower="1090" upper="1096" text="Speier"/>
+        <SceneWord lower="1097" upper="1104" text="gebiemt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1106" upper="1122" speaker="display">
+      <SceneUttr lower="1115" upper="1122" punct=".">
+        <ActionObject lower="1115" upper="1121" actor="" mode="" name="hide" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1123" upper="1198" speaker="bert">
+      <SceneUttr lower="1129" upper="1198" punct="!">
+        <SceneWord lower="1129" upper="1134" text="Jetzt"/>
+        <SceneWord lower="1135" upper="1142" text="schauen"/>
+        <SceneWord lower="1143" upper="1146" text="Sie"/>
+        <SceneWord lower="1147" upper="1151" text="doch"/>
+        <SceneWord lower="1152" upper="1155" text="mal"/>
+        <SceneWord lower="1156" upper="1159" text="den"/>
+        <SceneWord lower="1160" upper="1163" text="Tom"/>
+        <ActionObject lower="1164" upper="1194" actor="player" mode="" name="LookAt" >
+          <ActionFeature lower="1179" upper="1193" typ="IDENTIFIER" key="viewtarget" val="tom"/></ActionObject>
+        <SceneWord lower="1195" upper="1197" text="an"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1199" upper="1258" speaker="tom">
+      <SceneUttr lower="1204" upper="1210" punct=",">
+        <SceneWord lower="1204" upper="1209" text="Hallo"/>
+      </SceneUttr>
+      <SceneUttr lower="1211" upper="1258" punct="!">
+        <SceneWord lower="1211" upper="1216" text="schön"/>
+        <ActionObject lower="1217" upper="1229" actor="bert" mode="" name="Blink" >
+        </ActionObject>
+        <SceneWord lower="1230" upper="1235" text="Ihnen"/>
+        <SceneWord lower="1236" upper="1238" text="in"/>
+        <SceneWord lower="1239" upper="1242" text="die"/>
+        <SceneWord lower="1243" upper="1248" text="Augen"/>
+        <SceneWord lower="1249" upper="1251" text="zu"/>
+        <SceneWord lower="1252" upper="1257" text="sehen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1259" upper="1336" speaker="bert">
+      <SceneUttr lower="1265" upper="1336" punct="!">
+        <SceneWord lower="1265" upper="1268" text="Ich"/>
+        <SceneWord lower="1269" upper="1272" text="bin"/>
+        <SceneWord lower="1273" upper="1278" text="beame"/>
+        <ActionObject lower="1279" upper="1286" actor="" mode="" name="Smile" >
+        </ActionObject>
+        <SceneWord lower="1287" upper="1291" text="Dich"/>
+        <SceneWord lower="1292" upper="1295" text="zum"/>
+        <SceneWord lower="1296" upper="1303" text="Eingang"/>
+        <ActionObject lower="1304" upper="1335" actor="player" mode="" name="Warp" >
+          <ActionFeature lower="1317" upper="1334" typ="IDENTIFIER" key="location" val="entrance"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1337" upper="1434" speaker="bert">
+      <SceneUttr lower="1343" upper="1434" punct=".">
+        <SceneWord lower="1343" upper="1349" text="Weiter"/>
+        <SceneAbbrev lower="1350" upper="1356" first="geht" second="s"/>
+        <SceneWord lower="1357" upper="1360" text="zur"/>
+        <SceneWord lower="1361" upper="1367" text="Lounge"/>
+        <ActionObject lower="1368" upper="1420" actor="player" mode="" name="Warp" >
+          <ActionFeature lower="1381" upper="1400" typ="IDENTIFIER" key="location" val="ceo_lounge"/>
+          <ActionFeature lower="1401" upper="1419" typ="IDENTIFIER" key="viewtarget" val="susanne"/></ActionObject>
+        <SceneWord lower="1421" upper="1424" text="vom"/>
+        <SceneWord lower="1425" upper="1433" text="Chefbüro"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1435" upper="1492" speaker="susanne">
+      <SceneUttr lower="1444" upper="1455" punct="!">
+        <SceneWord lower="1444" upper="1454" text="Wundervoll"/>
+      </SceneUttr>
+      <SceneUttr lower="1456" upper="1492" punct="!">
+        <SceneWord lower="1456" upper="1459" text="Sie"/>
+        <SceneWord lower="1460" upper="1465" text="haben"/>
+        <SceneWord lower="1466" upper="1468" text="es"/>
+        <SceneWord lower="1469" upper="1472" text="bis"/>
+        <SceneWord lower="1473" upper="1477" text="hier"/>
+        <SceneWord lower="1478" upper="1481" text="her"/>
+        <SceneWord lower="1482" upper="1491" text="geschafft"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1493" upper="1589" speaker="bert">
+      <SceneUttr lower="1499" upper="1589" punct=".">
+        <SceneWord lower="1499" upper="1504" text="Jetzt"/>
+        <ActionObject lower="1505" upper="1512" actor="" mode="" name="Blink" >
+        </ActionObject>
+        <SceneWord lower="1513" upper="1518" text="färbe"/>
+        <SceneWord lower="1519" upper="1522" text="ich"/>
+        <SceneWord lower="1523" upper="1526" text="die"/>
+        <SceneWord lower="1527" upper="1531" text="Wand"/>
+        <SceneWord lower="1532" upper="1536" text="beim"/>
+        <SceneWord lower="1537" upper="1541" text="Chef"/>
+        <ActionObject lower="1542" upper="1583" actor="ceo_wall" mode="" name="SetColor" >
+          <ActionFeature lower="1561" upper="1567" typ="FLOATING" key="r" val="10.0"/>
+          <ActionFeature lower="1568" upper="1575" typ="FLOATING" key="g" val="255.0"/>
+          <ActionFeature lower="1576" upper="1582" typ="FLOATING" key="b" val="10.0"/></ActionObject>
+        <SceneWord lower="1584" upper="1588" text="grün"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1590" upper="1674" speaker="bert">
+      <SceneUttr lower="1596" upper="1599" punct=",">
+        <SceneWord lower="1596" upper="1598" text="So"/>
+      </SceneUttr>
+      <SceneUttr lower="1600" upper="1674" punct=".">
+        <SceneWord lower="1600" upper="1603" text="ich"/>
+        <SceneWord lower="1604" upper="1609" text="beame"/>
+        <SceneWord lower="1610" upper="1614" text="Dich"/>
+        <SceneWord lower="1615" upper="1618" text="zum"/>
+        <SceneWord lower="1619" upper="1630" text="Meetingraum"/>
+        <ActionObject lower="1631" upper="1673" actor="player" mode="" name="Warp" >
+          <ActionFeature lower="1644" upper="1672" typ="IDENTIFIER" key="location" val="meeting_application"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1675" upper="1794" speaker="bert">
+      <SceneUttr lower="1681" upper="1794" punct=".">
+        <SceneWord lower="1681" upper="1684" text="Und"/>
+        <SceneWord lower="1685" upper="1690" text="jetzt"/>
+        <ActionObject lower="1691" upper="1698" actor="" mode="" name="Blink" >
+        </ActionObject>
+        <SceneWord lower="1699" upper="1704" text="färbe"/>
+        <SceneWord lower="1705" upper="1708" text="ich"/>
+        <SceneWord lower="1709" upper="1712" text="die"/>
+        <SceneWord lower="1713" upper="1717" text="eine"/>
+        <SceneWord lower="1718" upper="1722" text="Wand"/>
+        <SceneWord lower="1723" upper="1725" text="im"/>
+        <SceneWord lower="1726" upper="1737" text="Meetingraum"/>
+        <SceneWord lower="1738" upper="1742" text="blau"/>
+        <ActionObject lower="1743" upper="1789" actor="meeting_wall1" mode="" name="SetColor" >
+          <ActionFeature lower="1767" upper="1773" typ="FLOATING" key="r" val="10.0"/>
+          <ActionFeature lower="1774" upper="1780" typ="FLOATING" key="g" val="10.0"/>
+          <ActionFeature lower="1781" upper="1788" typ="FLOATING" key="b" val="255.0"/></ActionObject>
+        <SceneWord lower="1790" upper="1793" text="ein"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1795" upper="1895" speaker="bert">
+      <SceneUttr lower="1801" upper="1895" punct=".">
+        <SceneWord lower="1801" upper="1804" text="Und"/>
+        <SceneWord lower="1805" upper="1810" text="jetzt"/>
+        <ActionObject lower="1811" upper="1818" actor="" mode="" name="Smile" >
+        </ActionObject>
+        <SceneWord lower="1819" upper="1824" text="färbe"/>
+        <SceneWord lower="1825" upper="1828" text="ich"/>
+        <SceneWord lower="1829" upper="1832" text="die"/>
+        <SceneWord lower="1833" upper="1839" text="andere"/>
+        <SceneWord lower="1840" upper="1843" text="rot"/>
+        <ActionObject lower="1844" upper="1890" actor="meeting_wall2" mode="" name="SetColor" >
+          <ActionFeature lower="1868" upper="1875" typ="FLOATING" key="r" val="255.0"/>
+          <ActionFeature lower="1876" upper="1882" typ="FLOATING" key="g" val="10.0"/>
+          <ActionFeature lower="1883" upper="1889" typ="FLOATING" key="b" val="10.0"/></ActionObject>
+        <SceneWord lower="1891" upper="1894" text="ein"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1896" upper="1988" speaker="bert">
+      <SceneUttr lower="1902" upper="1988" punct=".">
+        <SceneWord lower="1902" upper="1907" text="Jetzt"/>
+        <SceneWord lower="1908" upper="1911" text="ist"/>
+        <SceneWord lower="1912" upper="1914" text="es"/>
+        <SceneWord lower="1915" upper="1919" text="Zeit"/>
+        <SceneWord lower="1920" upper="1923" text="den"/>
+        <SceneWord lower="1924" upper="1929" text="Abend"/>
+        <ActionObject lower="1930" upper="1970" actor="environment" mode="" name="AmbientLight" >
+          <ActionFeature lower="1956" upper="1969" typ="IDENTIFIER" key="value" val="evening"/></ActionObject>
+        <SceneWord lower="1971" upper="1977" text="kommen"/>
+        <SceneWord lower="1978" upper="1980" text="zu"/>
+        <SceneWord lower="1981" upper="1987" text="lassen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1989" upper="2103" speaker="bert">
+      <SceneUttr lower="1995" upper="1999" punct="!">
+        <SceneWord lower="1995" upper="1998" text="Und"/>
+      </SceneUttr>
+      <SceneUttr lower="2000" upper="2036" punct=".">
+        <SceneWord lower="2000" upper="2005" text="Damit"/>
+        <SceneWord lower="2006" upper="2009" text="wir"/>
+        <SceneWord lower="2010" upper="2015" text="nicht"/>
+        <SceneWord lower="2016" upper="2027" text="einschlafen"/>
+        <ActionObject lower="2028" upper="2035" actor="" mode="" name="Smile" >
+        </ActionObject>
+      </SceneUttr>
+      <SceneUttr lower="2037" upper="2103" punct=".">
+        <SceneWord lower="2037" upper="2041" text="Wird"/>
+        <SceneWord lower="2042" upper="2044" text="es"/>
+        <SceneWord lower="2045" upper="2050" text="jetzt"/>
+        <SceneWord lower="2051" upper="2057" text="wieder"/>
+        <SceneWord lower="2058" upper="2064" text="Mittag"/>
+        <ActionObject lower="2065" upper="2102" actor="environment" mode="" name="AmbientLight" >
+          <ActionFeature lower="2091" upper="2101" typ="IDENTIFIER" key="value" val="noon"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="295" upper="410" language="en" identifier="BertAmbientNervous">
-    <SceneTurn lower="324" upper="410" speaker="bert">
-      <SceneUttr lower="330" upper="340" punct=",">
-        <SceneWord lower="330" upper="333" text="Ich"/>
-        <SceneWord lower="334" upper="339" text="finde"/>
+  <SceneObject lower="2105" upper="2165" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="2130" upper="2165" speaker="susanne">
+      <SceneUttr lower="2139" upper="2145" punct=",">
+        <SceneWord lower="2139" upper="2144" text="Hallo"/>
       </SceneUttr>
-      <SceneUttr lower="341" upper="410" punct="!">
-        <SceneWord lower="341" upper="343" text="es"/>
-        <SceneWord lower="344" upper="350" text="könnte"/>
-        <SceneWord lower="351" upper="356" text="jetzt"/>
-        <SceneWord lower="357" upper="362" text="Abend"/>
-        <SceneWord lower="363" upper="367" text="sein"/>
-        <ActionObject lower="368" upper="409" actor="Empat_Environment" mode="" name="Ambient" >
-          <ActionFeature lower="395" upper="408" typ="IDENTIFIER" key="value" val="nervous"/></ActionObject>
+      <SceneUttr lower="2146" upper="2165" punct="?">
+        <SceneWord lower="2146" upper="2149" text="wie"/>
+        <SceneAbbrev lower="2150" upper="2156" first="geht" second="s"/>
+        <SceneWord lower="2157" upper="2161" text="denn"/>
+        <SceneWord lower="2162" upper="2164" text="so"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="412" upper="519" language="en" identifier="BertAmbientCalm">
-    <SceneTurn lower="438" upper="519" speaker="bert">
-      <SceneUttr lower="444" upper="519" punct=".">
-        <SceneWord lower="444" upper="447" text="Die"/>
-        <SceneWord lower="448" upper="459" text="Morgensonne"/>
-        <SceneWord lower="460" upper="464" text="kann"/>
-        <SceneWord lower="465" upper="469" text="auch"/>
-        <SceneWord lower="470" upper="479" text="entzücken"/>
-        <ActionObject lower="480" upper="518" actor="Empat_Environment" mode="" name="Ambient" >
-          <ActionFeature lower="507" upper="517" typ="IDENTIFIER" key="value" val="calm"/></ActionObject>
+  <SceneObject lower="2167" upper="2281" language="en" identifier="BertAmbientNervous">
+    <SceneTurn lower="2196" upper="2281" speaker="bert">
+      <SceneUttr lower="2202" upper="2212" punct=",">
+        <SceneWord lower="2202" upper="2205" text="Ich"/>
+        <SceneWord lower="2206" upper="2211" text="finde"/>
+      </SceneUttr>
+      <SceneUttr lower="2213" upper="2281" punct="!">
+        <SceneWord lower="2213" upper="2215" text="es"/>
+        <SceneWord lower="2216" upper="2222" text="könnte"/>
+        <SceneWord lower="2223" upper="2228" text="jetzt"/>
+        <SceneWord lower="2229" upper="2234" text="Abend"/>
+        <SceneWord lower="2235" upper="2239" text="sein"/>
+        <ActionObject lower="2240" upper="2280" actor="environment" mode="" name="AmbientLight" >
+          <ActionFeature lower="2266" upper="2279" typ="IDENTIFIER" key="value" val="evening"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="521" upper="618" language="en" identifier="Greeting">
-    <SceneTurn lower="540" upper="618" speaker="bert">
-      <SceneUttr lower="546" upper="552" punct="!">
-        <SceneWord lower="546" upper="551" text="Hallo"/>
+  <SceneObject lower="2283" upper="2389" language="en" identifier="BertAmbientCalm">
+    <SceneTurn lower="2309" upper="2389" speaker="bert">
+      <SceneUttr lower="2315" upper="2389" punct=".">
+        <SceneWord lower="2315" upper="2318" text="Die"/>
+        <SceneWord lower="2319" upper="2330" text="Morgensonne"/>
+        <SceneWord lower="2331" upper="2335" text="kann"/>
+        <SceneWord lower="2336" upper="2340" text="auch"/>
+        <SceneWord lower="2341" upper="2350" text="entzücken"/>
+        <ActionObject lower="2351" upper="2388" actor="environment" mode="" name="AmbientLight" >
+          <ActionFeature lower="2377" upper="2387" typ="IDENTIFIER" key="value" val="noon"/></ActionObject>
       </SceneUttr>
-      <SceneUttr lower="553" upper="618" punct="?">
-        <SceneWord lower="553" upper="559" text="Kannst"/>
-        <SceneWord lower="560" upper="562" text="Du"/>
-        <SceneWord lower="563" upper="566" text="mir"/>
-        <SceneWord lower="567" upper="570" text="ein"/>
-        <SceneWord lower="571" upper="575" text="paar"/>
-        <SceneWord lower="576" upper="589" text="Informationen"/>
-        <SceneWord lower="590" upper="594" text="über"/>
-        <SceneWord lower="595" upper="599" text="Dich"/>
-        <SceneWord lower="600" upper="605" text="sagen"/>
-        <ActionObject lower="606" upper="617" actor="qgui" mode="" name="show" >
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2391" upper="2509" language="en" identifier="Greeting">
+    <SceneTurn lower="2410" upper="2509" speaker="bert">
+      <SceneUttr lower="2416" upper="2443" punct="!">
+        <ActionObject lower="2416" upper="2436" actor="appraise" mode="" name="GoodEvent" >
+        </ActionObject>
+        <SceneWord lower="2437" upper="2442" text="Hallo"/>
+      </SceneUttr>
+      <SceneUttr lower="2444" upper="2509" punct="?">
+        <SceneWord lower="2444" upper="2450" text="Kannst"/>
+        <SceneWord lower="2451" upper="2453" text="Du"/>
+        <SceneWord lower="2454" upper="2457" text="mir"/>
+        <SceneWord lower="2458" upper="2461" text="ein"/>
+        <SceneWord lower="2462" upper="2466" text="paar"/>
+        <SceneWord lower="2467" upper="2480" text="Informationen"/>
+        <SceneWord lower="2481" upper="2485" text="über"/>
+        <SceneWord lower="2486" upper="2490" text="Dich"/>
+        <SceneWord lower="2491" upper="2496" text="sagen"/>
+        <ActionObject lower="2497" upper="2508" actor="qgui" mode="" name="show" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="620" upper="792" language="en" identifier="ShowPlan">
-    <SceneTurn lower="639" upper="739" speaker="bert">
-      <SceneUttr lower="645" upper="710" punct=",">
-        <SceneWord lower="645" upper="648" text="Ich"/>
-        <ActionObject lower="649" upper="656" actor="" mode="" name="Smile" >
+  <SceneObject lower="2511" upper="2683" language="en" identifier="ShowPlan">
+    <SceneTurn lower="2530" upper="2630" speaker="bert">
+      <SceneUttr lower="2536" upper="2601" punct=",">
+        <SceneWord lower="2536" upper="2539" text="Ich"/>
+        <ActionObject lower="2540" upper="2547" actor="" mode="" name="Smile" >
         </ActionObject>
-        <SceneWord lower="657" upper="661" text="zeig"/>
-        <SceneWord lower="662" upper="665" text="Dir"/>
-        <SceneWord lower="666" upper="671" text="jetzt"/>
-        <SceneWord lower="672" upper="675" text="mal"/>
-        <SceneWord lower="676" upper="679" text="den"/>
-        <SceneWord lower="680" upper="684" text="Plan"/>
-        <ActionObject lower="685" upper="709" actor="display" mode="" name="show" >
-          <ActionFeature lower="699" upper="708" typ="IDENTIFIER" key="image" val="dog"/></ActionObject>
+        <SceneWord lower="2548" upper="2552" text="zeig"/>
+        <SceneWord lower="2553" upper="2556" text="Dir"/>
+        <SceneWord lower="2557" upper="2562" text="jetzt"/>
+        <SceneWord lower="2563" upper="2566" text="mal"/>
+        <SceneWord lower="2567" upper="2570" text="den"/>
+        <SceneWord lower="2571" upper="2575" text="Plan"/>
+        <ActionObject lower="2576" upper="2600" actor="display" mode="" name="show" >
+          <ActionFeature lower="2590" upper="2599" typ="IDENTIFIER" key="image" val="dog"/></ActionObject>
       </SceneUttr>
-      <SceneUttr lower="711" upper="739" punct=".">
-        <SceneWord lower="711" upper="714" text="der"/>
-        <SceneWord lower="715" upper="725" text="eigentlich"/>
-        <SceneWord lower="726" upper="729" text="ein"/>
-        <SceneWord lower="730" upper="734" text="Hund"/>
-        <SceneWord lower="735" upper="738" text="ist"/>
+      <SceneUttr lower="2602" upper="2630" punct=".">
+        <SceneWord lower="2602" upper="2605" text="der"/>
+        <SceneWord lower="2606" upper="2616" text="eigentlich"/>
+        <SceneWord lower="2617" upper="2620" text="ein"/>
+        <SceneWord lower="2621" upper="2625" text="Hund"/>
+        <SceneWord lower="2626" upper="2629" text="ist"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="740" upper="792" speaker="bert">
-      <SceneUttr lower="746" upper="750" punct=",">
-        <SceneWord lower="746" upper="749" text="Gut"/>
+    </SceneTurn><SceneTurn lower="2631" upper="2683" speaker="bert">
+      <SceneUttr lower="2637" upper="2641" punct=",">
+        <SceneWord lower="2637" upper="2640" text="Gut"/>
       </SceneUttr>
-      <SceneUttr lower="751" upper="792" punct=".">
-        <ActionObject lower="751" upper="758" actor="" mode="" name="Blink" >
+      <SceneUttr lower="2642" upper="2683" punct=".">
+        <ActionObject lower="2642" upper="2649" actor="" mode="" name="Blink" >
         </ActionObject>
-        <SceneWord lower="759" upper="765" text="machen"/>
-        <SceneWord lower="766" upper="769" text="wir"/>
-        <SceneWord lower="770" upper="776" text="weiter"/>
-        <ActionObject lower="777" upper="791" actor="display" mode="" name="hide" >
+        <SceneWord lower="2650" upper="2656" text="machen"/>
+        <SceneWord lower="2657" upper="2660" text="wir"/>
+        <SceneWord lower="2661" upper="2667" text="weiter"/>
+        <ActionObject lower="2668" upper="2682" actor="display" mode="" name="hide" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="794" upper="886" language="en" identifier="SendNPCtoKitchen">
-    <SceneTurn lower="821" upper="886" speaker="bert">
-      <SceneUttr lower="827" upper="886" punct=".">
-        <SceneWord lower="827" upper="830" text="Nun"/>
-        <SceneWord lower="831" upper="834" text="NPC"/>
-        <SceneWord lower="835" upper="836" text="1"/>
-        <ActionObject lower="837" upper="867" actor="npc1" mode="" name="MoveTo" >
-          <ActionFeature lower="850" upper="866" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
-        <SceneWord lower="868" upper="872" text="geht"/>
-        <SceneWord lower="873" upper="875" text="in"/>
-        <SceneWord lower="876" upper="879" text="die"/>
-        <SceneWord lower="880" upper="885" text="Küche"/>
+  <SceneObject lower="2685" upper="2777" language="en" identifier="SendNPCtoKitchen">
+    <SceneTurn lower="2712" upper="2777" speaker="bert">
+      <SceneUttr lower="2718" upper="2777" punct=".">
+        <SceneWord lower="2718" upper="2721" text="Nun"/>
+        <SceneWord lower="2722" upper="2725" text="NPC"/>
+        <SceneWord lower="2726" upper="2727" text="1"/>
+        <ActionObject lower="2728" upper="2758" actor="npc1" mode="" name="MoveTo" >
+          <ActionFeature lower="2741" upper="2757" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
+        <SceneWord lower="2759" upper="2763" text="geht"/>
+        <SceneWord lower="2764" upper="2766" text="in"/>
+        <SceneWord lower="2767" upper="2770" text="die"/>
+        <SceneWord lower="2771" upper="2776" text="Küche"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="888" upper="919" language="en" identifier="Feedback">
-    <SceneTurn lower="907" upper="919" speaker="Susanne">
-      <SceneUttr lower="916" upper="919" punct="!">
-        <SceneWord lower="916" upper="918" text="Uh"/>
+  <SceneObject lower="2779" upper="2857" language="en" identifier="WarpToEntrance">
+    <SceneTurn lower="2804" upper="2857" speaker="bert">
+      <SceneUttr lower="2810" upper="2857" punct="!">
+        <SceneWord lower="2810" upper="2813" text="Nun"/>
+        <SceneWord lower="2814" upper="2820" text="beamen"/>
+        <SceneWord lower="2821" upper="2824" text="wir"/>
+        <ActionObject lower="2825" upper="2856" actor="player" mode="" name="Warp" >
+          <ActionFeature lower="2838" upper="2855" typ="IDENTIFIER" key="location" val="entrance"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="921" upper="959" language="en" identifier="Bad_Feedback">
-    <SceneTurn lower="944" upper="959" speaker="Susanne">
-      <SceneUttr lower="953" upper="959" punct="!">
-        <SceneWord lower="953" upper="955" text="Oh"/>
-        <SceneWord lower="956" upper="958" text="oh"/>
+  <SceneObject lower="2859" upper="2890" language="en" identifier="Feedback">
+    <SceneTurn lower="2878" upper="2890" speaker="Susanne">
+      <SceneUttr lower="2887" upper="2890" punct="!">
+        <SceneWord lower="2887" upper="2889" text="Uh"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="961" upper="1039" language="en" identifier="Flee">
-    <SceneTurn lower="976" upper="1039" speaker="bert">
-      <SceneUttr lower="982" upper="1039" punct="!">
-        <SceneWord lower="982" upper="989" text="Susanne"/>
-        <SceneWord lower="990" upper="996" text="flieht"/>
-        <SceneWord lower="997" upper="1000" text="von"/>
-        <SceneWord lower="1001" upper="1004" text="Dir"/>
-        <ActionObject lower="1005" upper="1038" actor="Susanne" mode="" name="MoveTo" >
-          <ActionFeature lower="1021" upper="1037" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
+  <SceneObject lower="2892" upper="2930" language="en" identifier="Bad_Feedback">
+    <SceneTurn lower="2915" upper="2930" speaker="Susanne">
+      <SceneUttr lower="2924" upper="2930" punct="!">
+        <SceneWord lower="2924" upper="2926" text="Oh"/>
+        <SceneWord lower="2927" upper="2929" text="oh"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2932" upper="3010" language="en" identifier="Flee">
+    <SceneTurn lower="2947" upper="3010" speaker="bert">
+      <SceneUttr lower="2953" upper="3010" punct="!">
+        <SceneWord lower="2953" upper="2960" text="Susanne"/>
+        <SceneWord lower="2961" upper="2967" text="flieht"/>
+        <SceneWord lower="2968" upper="2971" text="von"/>
+        <SceneWord lower="2972" upper="2975" text="Dir"/>
+        <ActionObject lower="2976" upper="3009" actor="susanne" mode="" name="MoveTo" >
+          <ActionFeature lower="2992" upper="3008" typ="IDENTIFIER" key="location" val="kitchen"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

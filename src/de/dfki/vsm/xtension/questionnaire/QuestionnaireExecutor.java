@@ -9,7 +9,7 @@ import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
 //import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.runtime.activity.ActionActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -21,6 +21,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 
 /**
@@ -49,16 +50,27 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
     }
 
     @Override
-    public void execute(
-            AbstractActivity activity/*, 
-     ActivityScheduler player*/) {
-        if (activity instanceof ActionActivity) {
+    public void execute(AbstractActivity activity) {
+        if (activity instanceof SpeechActivity) {
+            SpeechActivity sa = (SpeechActivity) activity;
+            String text = sa.getTextOnly("$(").trim();
+            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+
+            // If text is empty - assume activity has empty text but has marker activities registered
+            if (text.isEmpty()) {
+                for (String tm : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
+            }
+        } else {
             final String name = activity.getName();
 
             if (name.equalsIgnoreCase("show")) {
                 mQuestionnaireGUI.setVisible(true);
+
                 // wait until we got feedback
-                mLogger.warning("ActivityWorker for Questionnaire waiting ....");
+                mLogger.message("ActivityWorker for Questionnaire waiting ....");
                 mActivityWorker = (ActivityWorker) Thread.currentThread();
                 mActivityWorkers.add(mActivityWorker);
 
@@ -72,14 +84,14 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
                     }
                 }
 
-                mLogger.warning("ActivityWorker for Questionnaire done ....");
+                mLogger.message("ActivityWorker for Questionnaire done ....");
             }
         }
     }
 
     @Override
     public void launch() {
-        mQuestionnaireGUI = new QuestionnaireGUI();
+       mQuestionnaireGUI = new QuestionnaireGUI();
 
         for (ConfigFeature cf : mConfig.getEntryList()) {
             mPersonalValues.put(cf.getKey(), cf.getValue());
@@ -129,10 +141,8 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
         values.put("weakness6", new BooleanValue(uservalues.get("weakness6").equalsIgnoreCase("ja")));
 
         try {
-            //RunTimeInstance runTime = RunTimeInstance.getInstance();
             StructValue struct = new StructValue(values);
-            //runTime.setVariable(mProject, "userdata", struct);
-            mProject.setVariable("userdata", struct);//GM
+            mProject.setVariable("userdata", struct);
         } catch (Exception e) {
             // System.out.println("not running");
         }

@@ -10,13 +10,14 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import javax.swing.SwingUtilities;
 
 /**
@@ -34,21 +35,33 @@ public class MediaDisplayExecutor extends ActivityExecutor {
     private final HashMap<String, String> mDisplayValues = new HashMap<>();
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    
+
     public MediaDisplayExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
     }
-    
+
     @Override
     public String marker(long id) {
         return "$(" + id + ")";
     }
-    
+
     @Override
     public void execute(AbstractActivity activity/*, ActivityScheduler player*/) {
-        if (activity instanceof ActionActivity) {
+        if (activity instanceof SpeechActivity) {
+            SpeechActivity sa = (SpeechActivity) activity;
+            String text = sa.getTextOnly("$(").trim();
+            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+
+            // If text is empty - assume activity has empty text but has marker activities registered
+            if (text.isEmpty()) {
+                for (String tm : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
+            }
+        } else {
             final String name = activity.getName();
-            
+
             if (name.equalsIgnoreCase("show")) {
                 for (ActionFeature af : activity.getFeatureList()) {
                     if (af.getKey().equalsIgnoreCase("image")) {
@@ -57,25 +70,25 @@ public class MediaDisplayExecutor extends ActivityExecutor {
                     mMediaDisplayGUI.setVisible(true);
                 }
             }
-            
+
             if (name.equalsIgnoreCase("hide")) {
                 mMediaDisplayGUI.setVisible(false);
             }
         }
     }
-    
+
     @Override
     public void launch() {
         mMediaDisplayGUI = new MediaDisplayGUI();
-        
+
         for (ConfigFeature cf : mConfig.getEntryList()) {
             mDisplayValues.put(cf.getKey(), cf.getValue());
         }
         mDisplayValues.put("path", mProject.getProjectPath());
-        
+
         SwingUtilities.invokeLater(() -> mMediaDisplayGUI.init(this, mDisplayValues));
     }
-    
+
     @Override
     public void unload() {
         // nothing

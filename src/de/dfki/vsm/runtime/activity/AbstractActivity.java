@@ -16,7 +16,7 @@ public abstract class AbstractActivity {
     }
 
     // The activity type
-    protected final Policy mType;
+    protected Policy mType;
     // The activity actor
     protected final String mActor;
     // The activity mode
@@ -38,7 +38,7 @@ public abstract class AbstractActivity {
         mName = name;
         mFeatureList = null;
     }
-    
+
     // Construct the activity (added PG)
     public AbstractActivity(
             final Policy type,
@@ -58,6 +58,11 @@ public abstract class AbstractActivity {
         return mType;
     }
 
+    // added PG  - 21.4.2016 (play action activities with sceneflow play cmd)
+    public final void setTyp(Policy type) {
+        mType = type;
+    }
+
     // Get the activity actor
     public final String getActor() {
         return mActor;
@@ -67,13 +72,13 @@ public abstract class AbstractActivity {
     public final String getMode() {
         return mMode;
     }
-    
+
     // Get the activity name (added PG)
     public final String getName() {
         return mName;
     }
-    
-        // Get the activity name (added PG)
+
+    // Get the activity name (added PG)
     public final LinkedList<ActionFeature> getFeatureList() {
         return mFeatureList;
     }

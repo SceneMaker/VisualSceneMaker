@@ -5,7 +5,6 @@
  */
 package de.dfki.vsm.xtension.mediadisplay;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -16,13 +15,10 @@ import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javax.swing.BoxLayout;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 /**
  *

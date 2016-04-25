@@ -6,6 +6,7 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
 import de.dfki.vsm.model.sceneflow.command.HistoryDeepClear;
 import de.dfki.vsm.model.sceneflow.command.HistorySetDepth;
+import de.dfki.vsm.model.sceneflow.command.Play;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups;
 import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
@@ -94,7 +95,7 @@ public class Evaluator {
 
             if (value.getType() == AbstractValue.Type.STRING) {
                 mInterpreter.unlock();
-                mInterpreter.getScenePlayer().play(((StringValue) value).getValue(), valueList);
+                mInterpreter.getScenePlayer().playSceneGroup(((StringValue) value).getValue(), valueList);
                 mInterpreter.lock();
             } else {
                 java.lang.String errorMsg = "An error occured while executing thread "
@@ -105,7 +106,27 @@ public class Evaluator {
 
                 throw new InterpreterError(cmd, errorMsg);
             }
-        } ////////////////////////////////////////////////////////////////////
+        } else if (cmd instanceof Play) {
+            AbstractValue value = evaluate(((Play) cmd).getArg(), env);
+            LinkedList<AbstractValue> valueList = evaluateExpList(((Play) cmd).getArgList(), env);
+
+            if (value.getType() == AbstractValue.Type.STRING) {
+                mInterpreter.unlock();
+                mInterpreter.getScenePlayer().playActionActivity(((StringValue) value).getValue(), valueList);
+                mInterpreter.lock();
+            } else {
+                java.lang.String errorMsg = "An error occured while executing thread "
+                        + Process.currentThread().toString() + " : "
+                        + "The argument of the playback command '"
+                        + cmd.getConcreteSyntax() + " was evaluated to '"
+                        + value.getConcreteSyntax() + "' which is not a string constant";
+
+                throw new InterpreterError(cmd, errorMsg);
+            }
+        }
+
+
+////////////////////////////////////////////////////////////////////
         // PLAY DIALOGUE ACT
         ////////////////////////////////////////////////////////////////////
         /*

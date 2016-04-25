@@ -20,15 +20,23 @@ public class Action implements XMLParseable, XMLWriteable {
 
     protected String mName = "";
     protected String mId = "";
-    
+
     public void setId(String id) {
         mId = id;
     }
-    
+
     public String getId() {
         return mId;
     }
-    
+
+    public String getActionCmd() {
+        return mName;
+    }
+
+    public void resetActionCmd(String newcmdname) {
+        mName = newcmdname;
+    }
+
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
     }

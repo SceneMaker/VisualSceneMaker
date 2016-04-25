@@ -22,7 +22,7 @@ public class MoveTo extends Action implements XMLParseable, XMLWriteable {
     String mLocation = "";
 
     public MoveTo(String value) {
-        mName = "MoveToLocation";
+        mName = "movetolocation";
         mLocation = value;
     }
 
