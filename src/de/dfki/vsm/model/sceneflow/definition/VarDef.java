@@ -63,30 +63,35 @@ public class VarDef implements SyntaxObject {
         return mExp;
     }
 
+    @Override
     public String getAbstractSyntax() {
         return "VarDef(" + mType + "," + mName + "," + ((mExp != null)
                 ? mExp.getAbstractSyntax()
                 : "") + ")";
     }
 
+    @Override
     public String getConcreteSyntax() {
         return mType + " " + mName + " = " + ((mExp != null)
                 ? mExp.getConcreteSyntax()
                 : "");
     }
 
+    @Override
     public String getFormattedSyntax() {
         return "#r#" + mType + " " + "" + mName + " = " + ((mExp != null)
                 ? mExp.getFormattedSyntax()
                 : "");
     }
 
+    @Override
     public VarDef getCopy() {
         return new VarDef(mName, mType, ((mExp != null)
                                          ? mExp.getCopy()
                                          : null));
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<Variable type=\"" + mType + "\" name =\"" + mName + "\">").push();
 
@@ -97,16 +102,23 @@ public class VarDef implements SyntaxObject {
         out.pop().println("</Variable>");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mType = element.getAttribute("type");
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
             public void run(Element element) throws XMLParseError {
                 mExp = Expression.parse(element);
             }
         });
     }
 
+    @Override
+    public String toString() {
+        return getConcreteSyntax();
+    }
+    
     private boolean isMatchingType(String value, String dataType){
         if(dataType.equalsIgnoreCase("BOOL") && value.equalsIgnoreCase("BOOLEAN")){
             return true;

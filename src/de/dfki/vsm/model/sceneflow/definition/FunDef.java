@@ -109,6 +109,7 @@ public class FunDef implements SyntaxObject, Comparable<FunDef> {
         return mParamList.get(index);
     }
 
+    @Override
     public String getAbstractSyntax() {
         String desc = "";
 
@@ -123,6 +124,7 @@ public class FunDef implements SyntaxObject, Comparable<FunDef> {
         return "UsrCmdDef(" + mName + "(" + desc + "):" + mClassName + "." + mMethod + ")";
     }
 
+    @Override
     public String getConcreteSyntax() {
         String desc = "";
 
@@ -137,14 +139,17 @@ public class FunDef implements SyntaxObject, Comparable<FunDef> {
         return mName + "( " + desc + " ):" + mClassName + "." + mMethod;
     }
 
+    @Override
     public String getFormattedSyntax() {
         return "";
     }
 
+    @Override
     public FunDef getCopy() {
         return new FunDef(mName, mClassName, mMethod, getCopyOfParamList());
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) {
         out.println("<UserCommand name=\"" + mName + "\" classname =\"" + mClassName + "\" method=\"" + mMethod
                     + "\">").push();
@@ -156,6 +161,7 @@ public class FunDef implements SyntaxObject, Comparable<FunDef> {
         out.pop().println("</UserCommand>");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
         mName      = element.getAttribute("name");
         mMethod    = element.getAttribute("method");
