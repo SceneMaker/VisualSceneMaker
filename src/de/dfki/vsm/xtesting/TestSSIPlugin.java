@@ -15,99 +15,78 @@ public class TestSSIPlugin {
 
     public static void main(String args[]) {
 
-        /*
-         try {
-         //
-         final RunTimeProject project = new RunTimeProject(
-         new File("res/tutorials/5. TestTricatWorldEmpaT"));
-         //
-         final PluginConfig config = project.getPluginConfig("tworld_ssi_plugin");
-         // Get the class object
-         final Class clazz = Class.forName("de.dfki.vsm.xtension.tworld.TWorldSSIPlugin");
-         // Get the constructor
-         final Constructor constructor
-         = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
-         // Call the constructor
-         final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, project);
-         //
-         plugin.launch();
-
-         } catch (final Exception exc) {
-         exc.printStackTrace();
-         }
-         */
         final String xmldata = "\n"
-                //+ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<ssi>\n"
-                + "    <voice>\n"
-                + "        <activity>0</activity>\n"
-                + "        <keyword>goodbye</keyword>\n"
-                + "        <praat>\n"
-                + "            <PitchMean>140.964005</PitchMean>\n"
-                + "            <PitchSD>54.827000</PitchSD>\n"
-                + "            <SpeechRate>1.875000</SpeechRate>\n"
-                + "            <Intensity>65.965355</Intensity>\n"
-                + "        </praat>\n"
-                + "    </voice>\n"
-                + "    <head>\n"
-                + "        <pos>\n"
-                + "            <x>203.931671</x>\n"
-                + "            <y>300.109741</y>\n"
-                + "        </pos>\n"
-                + "        <move>\n"
-                + "            <nod>1</nod>\n"
-                + "            <shake>0</shake>\n"
-                + "        </move>\n"
-                + "    </head>\n"
-                + "    <body>\n"
-                + "        <openness>0.7</openness>\n"
-                + "        <activity>20.4</activity>\n"
-                + "        <energy>10.4</energy>\n"
-                + "        <leans>\n"
-                + "            <lean>\n"
-                + "                <identifier>front</identifier>\n"
-                + "                <detected>1</detected>\n"
-                + "                <duration>1</duration>\n"
-                + "                <intensity>0.2</intensity>\n"
-                + "            </lean>\n"
-                + "            <lean>\n"
-                + "                <identifier>back</identifier>\n"
-                + "                <detected>0</detected>\n"
-                + "                <duration>1</duration>\n"
-                + "                <intensity>0.0</intensity>\n"
-                + "            </lean>\n"
-                + "        </leans>\n"
-                + "        <gests>\n"
-                + "            <gest>\n"
-                + "                <identifier>armsopen</identifier>\n"
-                + "                <detected>1</detected>\n"
-                + "                <duration>1505</duration>\n"
-                + "                <intensity>1.0</intensity>\n"
-                + "            </gest>\n"
-                + "            <gest>\n"
-                + "                <identifier>armscrossed</identifier>\n"
-                + "                <detected>0</detected>\n"
-                + "                <duration>0</duration>\n"
-                + "                <intensity>0.0</intensity>\n"
-                + "            </gest>\n"
-                + "        </gests>\n"
-                + "    </body>\n"
-                + "    <face>\n"
-                + "        <exps>\n"
-                + "            <exp>\n"
-                + "                <identifier>smile</identifier>\n"
-                + "                <detected>1</detected>\n"
-                + "                <duration>1000</duration>\n"
-                + "                <intensity>0.968421</intensity>\n"
-                + "            </exp>\n"
-                + "            <exp>\n"
-                + "                <identifier>frown</identifier>\n"
-                + "                <detected>0</detected>\n"
-                + "                <duration>0</duration>\n"
-                + "                <intensity>0.0</intensity>\n"
-                + "            </exp>\n"
-                + "        </exps>\n"
-                + "    </face>\n"
+                + "	<voice>\n"
+                + "		<activity>$(event=VoiceActivtiy@audio;field=state;span=0)</activity>\n"
+                + "		<keyword>$(event=@speech;span=0)</keyword>\n"
+                + "		<praat>\n"
+                + "			<pitchmean>$(event=@praat;select=2;span=3000)</pitchmean>\n"
+                + "			<pitchsd>$(event=@praat;select=3;span=3000)</pitchsd>\n"
+                + "			<speechrate>$(event=@praat;select=30;span=3000)</speechrate>\n"
+                + "			<intensity>$(event=@praat;select=34;span=3000)</intensity>\n"
+                + "		</praat>\n"
+                + "	</voice>\n"
+                + "	<head>\n"
+                + "		<position>\n"
+                + "			<x>$(stream=1;select=0)</x>\n"
+                + "			<y>$(stream=1;select=1)</y>\n"
+                + "		</position>\n"
+                + "		<orientation>\n"
+                + "			<roll>$(stream=4;select=0)</roll>\n"
+                + "			<pitch>$(stream=4;select=1)</pitch>\n"
+                + "			<yaw>$(stream=4;select=2)</yaw>\n"
+                + "		</orientation>\n"
+                + "		<movement>\n"
+                + "			<nod>$(event=@BodyProperties;select=5;span=-1)</nod>\n"
+                + "			<shake>$(event=@BodyProperties;select=6;span=-1)</shake>\n"
+                + "		</movement>\n"
+                + "	</head>\n"
+                + "	<body>\n"
+                + "		<activity>$(stream=2;select=0)</activity>\n"
+                + "		<energy>$(stream=3;select=0)</energy>\n"
+                + "		<posture>\n"
+                + "			<leanfront>\n"
+                + "				<detected>$(event=LeanFront@Fubi;field=state;span=-1)</detected>\n"
+                + "				<duration>$(event=LeanFront@Fubi;field=duration)</duration>\n"
+                + "				<intensity>$(event=@BodyProperties;select=0;span=-1)</intensity>\n"
+                + "			</leanfront>\n"
+                + "			<leanback>\n"
+                + "				<detected>$(event=LeanBack@Fubi;field=state;span=-1)</detected>\n"
+                + "				<duration>$(event=LeanBack@Fubi;field=duration)</duration>\n"
+                + "				<intensity>$(event=@BodyProperties;select=0;span=-1)</intensity>\n"
+                + "			</leanback>\n"
+                + "		</posture>\n"
+                + "		<gesture>\n"
+                + "			<armsopen>\n"
+                + "				<detected>$(event=ArmsOpen@Fubi;field=state;span=-1)</detected>\n"
+                + "				<duration>$(event=ArmsOpen@Fubi;field=duration)</duration>\n"
+                + "				<intensity>$(event=@BodyProperties;select=1;span=-1)</intensity>\n"
+                + "			</armsopen>\n"
+                + "			<armscrossed>\n"
+                + "				<detected>$(event=ArmsCrossed@Fubi;field=state;span=-1)</detected>\n"
+                + "				<duration>$(event=ArmsCrossed@Fubi;field=duration)</duration>\n"
+                + "				<intensity>$(event=@BodyProperties;select=4;span=-1)</intensity>\n"
+                + "			</armscrossed>\n"
+                + "			<lefthandheadtouch>\n"
+                + "				<detected>$(event=LeftHandHeadTouch@Fubi;field=state;span=-1)</detected>\n"
+                + "				<duration>$(event=LeftHandHeadTouch@Fubi;field=duration)</duration>\n"
+                + "			</lefthandheadtouch>\n"
+                + "			<righthandheadtouch>\n"
+                + "				<detected>$(event=RightHandHeadTouch@Fubi;field=state;span=-1)</detected>\n"
+                + "				<duration>$(event=RightHandHeadTouch@Fubi;field=duration)</duration>\n"
+                + "			</righthandheadtouch>\n"
+                + "		</gesture>\n"
+                + "	</body>\n"
+                + "	<face>\n"
+                + "		<expression>\n"
+                + "			<smile>\n"
+                + "                <detected>$(event=smile@facialexpression;field=state;span=-1)</detected>\n"
+                + "                <duration>$(event=smile@facialexpression;field=duration)</duration>\n"
+                + "                <intensity>$(stream=0;select=0)</intensity>\n"
+                + "			</smile>\n"
+                + "		</expression>\n"
+                + "	</face>\n"
                 + "</ssi>\n";
 
         final String ssievents = ""
@@ -125,7 +104,7 @@ public class TestSSIPlugin {
                 + "<![CDATA["
                 + xmldata
                 + "]]>"
-                + "    </event>\n"
+                + "</event>\n"
                 + "</events>\n";
 
         final SSIEventArray array = new SSIEventArray();
@@ -138,7 +117,7 @@ public class TestSSIPlugin {
             XMLUtilities.parseFromXMLStream(array, in);
             XMLUtilities.writeToXMLStream(array, out);
             //
-            System.out.print(out.toString());
+            //System.out.print(out.toString());
         } catch (final UnsupportedEncodingException exc) {
             exc.printStackTrace();
         }
@@ -146,47 +125,40 @@ public class TestSSIPlugin {
         final TWorldSSIData mSSIData = new TWorldSSIData(
                 ((SSIStringData) array.getEventList().get(0).getData()).toString());
 
-        
-         System.out.println(mSSIData.getVoiceData().getActivity());
-         System.out.println(mSSIData.getVoiceData().getKeyword());
-         System.out.println(mSSIData.getVoiceData().getPraatData().getSpeechRate());
-         System.out.println(mSSIData.getVoiceData().getPraatData().getIntensity());
-         System.out.println(mSSIData.getVoiceData().getPraatData().getPitchMean());
-         System.out.println(mSSIData.getVoiceData().getPraatData().getPitchSD());
-        
-         //  System.out.println(mSSIData.getHeadData().getNodData());
-         //  System.out.println(mSSIData.getHeadData().getShakeData());
-         System.out.println(mSSIData.getHeadData().getPosData().getX());
-         System.out.println(mSSIData.getHeadData().getPosData().getY());
+        System.out.println(mSSIData.get("voice.activity"));
+        System.out.println(mSSIData.get("voice.keyword"));
+        System.out.println(mSSIData.get("voice.praat.pitchmean"));
+        System.out.println(mSSIData.get("voice.praat.pitchsd"));
+        System.out.println(mSSIData.get("voice.praat.speechrate"));
+        System.out.println(mSSIData.get("voice.praat.intensity"));
+        System.out.println(mSSIData.get("head.position.x"));
+        System.out.println(mSSIData.get("head.position.y"));
+        System.out.println(mSSIData.get("head.orientation.roll"));
+        System.out.println(mSSIData.get("head.orientation.pitch"));
+        System.out.println(mSSIData.get("head.orientation.yaw"));
+        System.out.println(mSSIData.get("head.movement.nod"));
+        System.out.println(mSSIData.get("head.movement.shake"));
+        System.out.println(mSSIData.get("body.activity"));
+        System.out.println(mSSIData.get("body.energy"));
+        System.out.println(mSSIData.get("body.posture.leanfront.detected"));
+        System.out.println(mSSIData.get("body.posture.leanfront.duration"));
+        System.out.println(mSSIData.get("body.posture.leanfront.intensity"));
+        System.out.println(mSSIData.get("body.posture.leanback.detected"));
+        System.out.println(mSSIData.get("body.posture.leanback.duration"));
+        System.out.println(mSSIData.get("body.posture.leanback.intensity"));
+        System.out.println(mSSIData.get("body.gesture.armsopen.detected"));
+        System.out.println(mSSIData.get("body.gesture.armsopen.duration"));
+        System.out.println(mSSIData.get("body.gesture.armsopen.intensity"));
+        System.out.println(mSSIData.get("body.gesture.armscrossed.detected"));
+        System.out.println(mSSIData.get("body.gesture.armscrossed.duration"));
+        System.out.println(mSSIData.get("body.gesture.armscrossed.intensity"));
+        System.out.println(mSSIData.get("body.gesture.lefthandheadtouch.detected"));
+        System.out.println(mSSIData.get("body.gesture.lefthandheadtouch.duration"));
+        System.out.println(mSSIData.get("body.gesture.righthandheadtouch.detected"));
+        System.out.println(mSSIData.get("body.gesture.righthandheadtouch.duration"));
+        System.out.println(mSSIData.get("face.expression.smile.detected"));
+        System.out.println(mSSIData.get("face.expression.smile.duration"));
+        System.out.println(mSSIData.get("face.expression.smile.intensity"));
 
-         System.out.println(mSSIData.getBodyData().getActivity());
-         System.out.println(mSSIData.getBodyData().getOpeness());
-         System.out.println(mSSIData.getBodyData().getEnergy());
-         System.out.println(mSSIData.getBodyData().getLeanData("front").getIdentifier());
-         System.out.println(mSSIData.getBodyData().getLeanData("front").getDetected());
-         System.out.println(mSSIData.getBodyData().getLeanData("front").getDuration());
-         System.out.println(mSSIData.getBodyData().getLeanData("front").getIntensity());
-         System.out.println(mSSIData.getBodyData().getLeanData("back").getIdentifier());
-         System.out.println(mSSIData.getBodyData().getLeanData("back").getDetected());
-         System.out.println(mSSIData.getBodyData().getLeanData("back").getDuration());
-         System.out.println(mSSIData.getBodyData().getLeanData("back").getIntensity());
-         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getIdentifier());
-         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getDetected());
-         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getDuration());
-         System.out.println(mSSIData.getBodyData().getGestData("armsopen").getIntensity());
-         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIdentifier());
-         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDetected());
-         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getDuration());
-         System.out.println(mSSIData.getBodyData().getGestData("armscrossed").getIntensity());
-
-         System.out.println(mSSIData.getFaceData().getExpData("smile").getIdentifier());
-         System.out.println(mSSIData.getFaceData().getExpData("smile").getDetected());
-         System.out.println(mSSIData.getFaceData().getExpData("smile").getDuration());
-         System.out.println(mSSIData.getFaceData().getExpData("smile").getIntensity());
-         System.out.println(mSSIData.getFaceData().getExpData("frown").getIdentifier());
-         System.out.println(mSSIData.getFaceData().getExpData("frown").getDetected());
-         System.out.println(mSSIData.getFaceData().getExpData("frown").getDuration());
-         System.out.println(mSSIData.getFaceData().getExpData("frown").getIntensity());
-        
     }
 }

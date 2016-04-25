@@ -3,16 +3,16 @@ package de.dfki.vsm.xtension.tworld;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.IntValue;
-import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventObject;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author Gregor Mehlmann, Patrick Gebhard
@@ -73,28 +73,54 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
     @Override
     public void handle(final SSIEventArray array) {
-        mLogger.message("TWORLD SSI PLUGIN HANDLING ...");
-
-        HashMap<String, AbstractValue> values = new HashMap<>();
 
         for (final SSIEventObject event : array.getEventList()) {
             final SSIEventData obj = event.getData();
-            //
             if (obj instanceof SSIStringData) {
-                // TODO: Basically all events with XML content 
-                // should have type 'XML' and thus be parsed to
-                // an SSIXMLData object before this is called
-                final TWorldSSIData data = new TWorldSSIData(
-                        ((SSIStringData) obj).toString());
+                final TWorldSSIData mSSIData = new TWorldSSIData(
+                        ((SSIStringData) array.getEventList().get(0).getData()).toString());
 
-                values.put("headxpos", new IntValue(new Integer(data.getHeadData().getPosData().getX())));
-                values.put("headypos", new IntValue(new Integer(data.getHeadData().getPosData().getY())));
+                final HashMap<String, AbstractValue> values = new HashMap<>();
+                values.put("voice.activity", new StringValue(mSSIData.get("voice.activity")));
+                values.put("voice.keyword", new StringValue(mSSIData.get("voice.keyword")));
+                values.put("voice.praat.pitchmean", new StringValue(mSSIData.get("voice.praat.pitchmean")));
+                values.put("voice.praat.pitchsd", new StringValue(mSSIData.get("voice.praat.pitchsd")));
+                values.put("voice.praat.speechrate", new StringValue(mSSIData.get("voice.praat.speechrate")));
+                values.put("voice.praat.intensity", new StringValue(mSSIData.get("voice.praat.intensity")));
+                values.put("head.position.x", new StringValue(mSSIData.get("head.position.x")));
+                values.put("head.position.y", new StringValue(mSSIData.get("head.position.y")));
+                values.put("head.orientation.roll", new StringValue(mSSIData.get("head.orientation.roll")));
+                values.put("head.orientation.pitch", new StringValue(mSSIData.get("head.orientation.pitch")));
+                values.put("head.orientation.yaw", new StringValue(mSSIData.get("head.orientation.yaw")));
+                values.put("head.movement.nod", new StringValue(mSSIData.get("head.movement.nod")));
+                values.put("head.movement.shake", new StringValue(mSSIData.get("head.movement.shake")));
+                values.put("body.activity", new StringValue(mSSIData.get("body.activity")));
+                values.put("body.energy", new StringValue(mSSIData.get("body.energy")));
+                values.put("body.posture.leanfront.detected", new StringValue(mSSIData.get("body.posture.leanfront.detected")));
+                values.put("body.posture.leanfront.duration", new StringValue(mSSIData.get("body.posture.leanfront.duration")));
+                values.put("body.posture.leanfront.intensity", new StringValue(mSSIData.get("body.posture.leanfront.intensity")));
+                values.put("body.posture.leanback.detected", new StringValue(mSSIData.get("body.posture.leanback.detected")));
+                values.put("body.posture.leanback.duration", new StringValue(mSSIData.get("body.posture.leanback.duration")));
+                values.put("body.posture.leanback.intensity", new StringValue(mSSIData.get("body.posture.leanback.intensity")));
+                values.put("body.gesture.armsopen.detected", new StringValue(mSSIData.get("body.gesture.armsopen.detected")));
+                values.put("body.gesture.armsopen.duration", new StringValue(mSSIData.get("body.gesture.armsopen.duration")));
+                values.put("body.gesture.armsopen.intensity", new StringValue(mSSIData.get("body.gesture.armsopen.intensity")));
+                values.put("body.gesture.armscrossed.detected", new StringValue(mSSIData.get("body.gesture.armscrossed.detected")));
+                values.put("body.gesture.armscrossed.duration", new StringValue(mSSIData.get("body.gesture.armscrossed.duration")));
+                values.put("body.gesture.armscrossed.intensity", new StringValue(mSSIData.get("body.gesture.armscrossed.intensity")));
+                values.put("body.gesture.lefthandheadtouch.detected", new StringValue(mSSIData.get("body.gesture.lefthandheadtouch.detected")));
+                values.put("body.gesture.lefthandheadtouch.duration", new StringValue(mSSIData.get("body.gesture.lefthandheadtouch.duration")));
+                values.put("body.gesture.righthandheadtouch.detected", new StringValue(mSSIData.get("body.gesture.righthandheadtouch.detected")));
+                values.put("body.gesture.righthandheadtouch.duration", new StringValue(mSSIData.get("body.gesture.righthandheadtouch.duration")));
+                values.put("face.expression.smile.detected", new StringValue(mSSIData.get("face.expression.smile.detected")));
+                values.put("face.expression.smile.duration", new StringValue(mSSIData.get("face.expression.smile.duration")));
+                values.put("face.expression.smile.intensity", new StringValue(mSSIData.get("face.expression.smile.intensity")));
 
-                try {
-                    StructValue struct = new StructValue(values);
-                    mProject.setVariable("usercues", struct);//GM
-                } catch (Exception e) {
-                    // System.out.println("not running");
+                //mProject.setVariable("usercues", new StructValue(values));
+                for (final Entry<String, AbstractValue> value : values.entrySet()) {
+                    if (mProject.hasVariable(value.getKey())) {
+                        mProject.setVariable(value.getKey(), value.getValue());
+                    }
                 }
             }
         }
