@@ -241,7 +241,7 @@ public class RunTimeProject {
             final String type = config.getPluginType();
             final String name = config.getPluginName();
             final String clasn = config.getClassName();
-            
+
             // check if plugin show be loaded - added PG 19.4.2016
             if (config.isMarkedtoLoad()) {
                 // Load the device executor
@@ -804,128 +804,126 @@ public class RunTimeProject {
 
     public final boolean setVariable(final String name, final int value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, new IntValue(value));
+            return mInterpreter.setVariable(name, new IntValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final int index, final int value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, index, new IntValue(value));
+            return mInterpreter.setVariable(name, index, new IntValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final String member, final int value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, member, new IntValue(value));
+            return mInterpreter.setVariable(name, member, new IntValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, float value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, new FloatValue(value));
-
+            return mInterpreter.setVariable(name, new FloatValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final int index, float value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, index, new FloatValue(value));
-
+            return mInterpreter.setVariable(name, index, new FloatValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final String member, float value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, member, new FloatValue(value));
+            return mInterpreter.setVariable(name, member, new FloatValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, boolean value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, new BooleanValue(value));
+            return mInterpreter.setVariable(name, new BooleanValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final int index, boolean value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, index, new BooleanValue(value));
+            return mInterpreter.setVariable(name, index, new BooleanValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final String member, boolean value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, member, new BooleanValue(value));
+            return mInterpreter.setVariable(name, member, new BooleanValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final String value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, new StringValue(value));
+            return mInterpreter.setVariable(name, new StringValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final int index, final String value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, index, new StringValue(value));
+            return mInterpreter.setVariable(name, index, new StringValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final String member, final String value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, member, new StringValue(value));
+            return mInterpreter.setVariable(name, member, new StringValue(value));
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final AbstractValue value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, value);
+            return mInterpreter.setVariable(name, value);
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final int index, final AbstractValue value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, index, value);
+            return mInterpreter.setVariable(name, index, value);
         }
         return false;
     }
 
     public final boolean setVariable(final String name, final String member, final AbstractValue value) {
         if (mInterpreter != null) {
-            mInterpreter.setVariable(name, member, value);
+            return mInterpreter.setVariable(name, member, value);
         }
         return false;
     }
 
     public final boolean hasVariable(final String name) {
         if (mInterpreter != null) {
-            mInterpreter.hasVariable(name);
+            return mInterpreter.hasVariable(name);
         }
         return false;
     }
 
     public final boolean hasVariable(final String name, final int index) {
         if (mInterpreter != null) {
-            mInterpreter.hasVariable(name, index);
+            return mInterpreter.hasVariable(name, index);
         }
         return false;
     }
 
     public final boolean hasVariable(final String name, final String member) {
         if (mInterpreter != null) {
-            mInterpreter.hasVariable(name, member);
+            return mInterpreter.hasVariable(name, member);
 
         }
         return false;
@@ -933,21 +931,21 @@ public class RunTimeProject {
 
     public final AbstractValue getValueOf(final String name) {
         if (mInterpreter != null) {
-            mInterpreter.getValueOf(name);
+            return mInterpreter.getValueOf(name);
         }
         return null;
     }
 
     public final AbstractValue getValueOf(final String name, final int index) {
         if (mInterpreter != null) {
-            mInterpreter.getValueOf(name, index);
+            return mInterpreter.getValueOf(name, index);
         }
         return null;
     }
 
     public final AbstractValue getValueOf(final String name, final String member) {
         if (mInterpreter != null) {
-            mInterpreter.getValueOf(name, member);
+             return mInterpreter.getValueOf(name, member);
         }
         return null;
     }
