@@ -80,7 +80,9 @@ public final class SSIEventReceiver extends Thread {
             mLogger.message("Awaiting SSI events ...");
             // Receive a new message
             final String message = recvString();            
-           // Check message content
+            
+            mLogger.success(message);
+            // Check message content
             if (message != null) {
                 try {
                     final ByteArrayInputStream stream = new ByteArrayInputStream(
