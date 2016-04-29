@@ -3,7 +3,6 @@ package de.dfki.vsm.xtension.tworld;
 import de.dfki.stickman.StickmanStage;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
-//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -18,7 +17,6 @@ import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.tworld.xml.command.TWorldCommand;
 import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
-import de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel.Speak;
 import de.dfki.vsm.xtension.tworld.xml.feedback.TWorldFeedback;
 import de.dfki.vsm.xtension.tworld.xml.util.ActionLoader;
 import java.io.ByteArrayInputStream;
@@ -349,6 +347,27 @@ public final class TWorldExecutor extends ActivityExecutor {
 //                }
                 // handling every /*ambient_setup*/ feedback
                 if (/*actionType.equalsIgnoreCase("ambient_setup") && */actionStatusType.equalsIgnoreCase("action_finished")) {
+                    // check if the acitivy action feedback was speech feedback
+                    if (twf.mFeedbackAction.mActionFeedback.hasCaiEvent()) {
+                        if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.hasTTSStatus()) {
+                            if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
+                                // TODO - get id - for now there is none
+                                // Set character voice activity variable
+                                mProject.setVariable("susanne_voice_activity", new StringValue("1"));
+                                mProject.setVariable("tom_voice_activity", new StringValue("1"));
+                            }
+                            if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
+                                // TODO - get id - for now there is none
+                                // Set character voice activity variable
+                                mProject.setVariable("susanne_voice_activity", new StringValue(""));
+                                mProject.setVariable("tom_voice_activity", new StringValue(""));
+                            }
+
+                            // TODO marker!
+                        }
+                    }
+
+                    // remove the activity in any case
                     if (mActivityWorkerMap.containsKey(id)) {
                         mActivityWorkerMap.remove(id);
                     }

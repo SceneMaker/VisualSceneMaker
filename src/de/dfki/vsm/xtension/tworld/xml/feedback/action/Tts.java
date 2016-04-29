@@ -7,7 +7,6 @@ package de.dfki.vsm.xtension.tworld.xml.feedback.action;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -19,25 +18,19 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Feedback implements XMLParseable, XMLWriteable {
+public class Tts implements XMLParseable, XMLWriteable {
 
-    public String mName = "";
-    public String mValue = "";
-    public CaiEvent mCaiEvent = null;
+    public String mStatus = "";
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public Feedback() {
-    }
-
-    public boolean hasCaiEvent() {
-        return (mCaiEvent != null);
+    public Tts() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<feedback>").push();
+        out.println("<tts status>").push();
 
 //        mObjects.stream().forEach((o) -> {
 //            try {
@@ -46,30 +39,29 @@ public class Feedback implements XMLParseable, XMLWriteable {
 //                mLogger.failure(ex.getMessage());
 //            }
 //        });
-        out.pop().println("</feedback>");
+        out.pop().println("</tts status>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-        mName = element.getAttribute("name");
-        mValue = element.getAttribute("value");
+        mStatus = element.getAttribute("status");
+       
 
-        // Process The Child Nodes
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
-            @Override
-            public void run(final Element element) throws XMLParseError {
-
-                final String name = element.getTagName();
-
-                if (name.equalsIgnoreCase("cai_event")) {
-
-                    CaiEvent ce = new CaiEvent();
-
-                    ce.parseXML(element);
-
-                    mCaiEvent = ce;
-                }
-            }
-        });
+//        // Process The Child Nodes
+//        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+//            @Override
+//            public void run(final Element element) throws XMLParseError {
+//
+//                final String name = element.getTagName();
+//
+//                if (name.equalsIgnoreCase("action")) {
+//                    TWorldFeedbackAction fa = new TWorldFeedbackAction();
+//
+//                    fa.parseXML(element);
+//
+//                    mFeedbackAction = fa;
+//                }
+//            }
+//        });
     }
 }

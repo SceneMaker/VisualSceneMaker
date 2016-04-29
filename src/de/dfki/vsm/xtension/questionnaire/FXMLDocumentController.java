@@ -33,11 +33,11 @@ import javafx.scene.layout.Region;
 public class FXMLDocumentController implements Initializable {
 
     @FXML
-    private Button nextbutton;
+    protected Button nextbutton;
     @FXML
     protected TextField namefield;
     @FXML
-    private Slider ageslider;
+    protected Slider ageslider;
     @FXML
     private Slider jobinterviewslider;
     @FXML
@@ -65,17 +65,17 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     protected CheckBox weakness6;
     @FXML
-    private RadioButton sexfemale;
+    protected RadioButton sexfemale;
     @FXML
-    private RadioButton sexmale;
+    protected RadioButton sexmale;
     @FXML
     private AnchorPane userinfo;
     @FXML
-    private TextField agefield;
+    protected TextField agefield;
     @FXML
-    private ToggleGroup sex;
+    protected ToggleGroup sex;
     @FXML
-    private TextField jobvinterviewfield;
+    protected TextField jobvinterviewfield;
 
     // internal variables
     private CheckBox lastSelectedStrength = null;
