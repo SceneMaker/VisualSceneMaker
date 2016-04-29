@@ -31,6 +31,8 @@ public final class SSIEventReceiver extends Thread {
     private boolean mDone = false;
     // The datagram connection 
     private DatagramSocket mSocket;
+    // time measure
+    private long mTimeCounter = System.nanoTime();
 
     // Construct the proxy server
     public SSIEventReceiver(
@@ -58,6 +60,9 @@ public final class SSIEventReceiver extends Thread {
         } catch (final SocketException exc) {
             mLogger.failure(exc.toString());
         }
+        
+        // initialze time measurement
+        mTimeCounter = System.nanoTime();
     }
 
     // Abort the server thread
@@ -77,13 +82,16 @@ public final class SSIEventReceiver extends Thread {
     public final void run() {
         // Receive while not done ...
         while (!mDone) {
-            mLogger.message("Awaiting SSI events ...");
+            long currentTime = System.nanoTime();
+            mLogger.message("Awaiting SSI events ...processing took ... " + ((currentTime - mTimeCounter) / 1000000) + "ms");
             // Receive a new message
             final String message = recvString();
 
-            mLogger.success(message);
+            // PG - this is a lot of output! mLogger.success(message);
             // Check message content
             if (message != null) {
+                // start time measure
+                mTimeCounter = System.nanoTime();
                 try {
                     final ByteArrayInputStream stream = new ByteArrayInputStream(
                             message.getBytes("UTF-8"));
