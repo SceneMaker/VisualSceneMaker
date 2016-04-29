@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="true" hideGlobalVar="false" modifDate="Fr, 29 Apr 2016 12:04:12" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="true" hideGlobalVar="false" modifDate="Fr, 29 Apr 2016 16:17:09" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
     <StructType name="WorldFeedback">
       <Member type="String" name ="type"/>
@@ -187,7 +187,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="930" yPos="480"/>
+      <Position xPos="840" yPos="120"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -259,7 +259,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="750" yPos="480"/>
+      <Position xPos="660" yPos="120"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -818,7 +818,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="570" yPos="210"/>
+      <Position xPos="300" yPos="120"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -850,13 +850,13 @@
       <EEdge target="N15" start ="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="165" yPos="480" ctrlXPos="165" ctrlYPos="502"/>
-          <ControlPoint xPos="165" yPos="570" ctrlXPos="165" ctrlYPos="547"/>
+          <ControlPoint xPos="885" yPos="210" ctrlXPos="885" ctrlYPos="232"/>
+          <ControlPoint xPos="1155" yPos="120" ctrlXPos="1155" ctrlYPos="97"/>
         </Connection>
       </Graphics>
       </EEdge>
       <Graphics>
-        <Position xPos="120" yPos="390"/>
+        <Position xPos="840" yPos="120"/>
       </Graphics>
     </Node>
     <Node id="N13" name="Start and Wait" history="false">
@@ -869,32 +869,13 @@
       <TEdge target="S3" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="165" yPos="120" ctrlXPos="165" ctrlYPos="142"/>
-          <ControlPoint xPos="165" yPos="210" ctrlXPos="165" ctrlYPos="187"/>
+          <ControlPoint xPos="210" yPos="165" ctrlXPos="277" ctrlYPos="165"/>
+          <ControlPoint xPos="300" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="120" yPos="30"/>
-      </Graphics>
-    </Node>
-    <Node id="N14" name="N3" history="false">
-      <Define>
-      </Define>
-      <Declare>
-      </Declare>
-      <Commands>
-      </Commands>
-      <TEdge target="N14" start="" timeout="1000">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
-          <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
-        </Connection>
-      </Graphics>
-      </TEdge>
-      <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="120" yPos="120"/>
       </Graphics>
     </Node>
     <Node id="N15" name="N8" history="false">
@@ -907,8 +888,16 @@
           <String><![CDATA[Agenda]]></String>
         </PlaySceneGroup>
       </Commands>
+      <EEdge target="N14" start ="">
       <Graphics>
-        <Position xPos="120" yPos="570"/>
+        <Connection>
+          <ControlPoint xPos="1112" yPos="177" ctrlXPos="695" ctrlYPos="293"/>
+          <ControlPoint xPos="208" yPos="333" ctrlXPos="624" ctrlYPos="216"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="1110" yPos="120"/>
       </Graphics>
     </Node>
     <Node id="N16" name="N9" history="false">
@@ -922,32 +911,76 @@
         </PlaySceneGroup>
       </Commands>
       <Graphics>
-        <Position xPos="1110" yPos="30"/>
+        <Position xPos="930" yPos="480"/>
       </Graphics>
     </Node>
-    <SuperNode id="S3" name="Welcome" comment="" hideLocalVar="false" hideGlobalVar="true" start="S4;N2;">
+    <Node id="N68" name="N68" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlaySceneGroup>
+          <String><![CDATA[Ask_User_Finish]]></String>
+        </PlaySceneGroup>
+      </Commands>
+      <EEdge target="N11" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="572" yPos="177" ctrlXPos="500" ctrlYPos="196"/>
+          <ControlPoint xPos="928" yPos="153" ctrlXPos="999" ctrlYPos="133"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="570" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N14" name="OpenSSI" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlaySceneGroup>
+          <String><![CDATA[OpenSSI]]></String>
+        </PlaySceneGroup>
+      </Commands>
+      <EEdge target="N16" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="208" yPos="357" ctrlXPos="539" ctrlYPos="449"/>
+          <ControlPoint xPos="932" yPos="513" ctrlXPos="600" ctrlYPos="420"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="120" yPos="300"/>
+      </Graphics>
+    </Node>
+    <SuperNode id="S3" name="Welcome" comment="" hideLocalVar="false" hideGlobalVar="true" start="N2;">
       <Define>
       </Define>
       <Declare>
       </Declare>
       <Commands>
       </Commands>
-      <EEdge target="N14" start ="">
+      <EEdge target="N68" start ="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="210" yPos="255" ctrlXPos="322" ctrlYPos="255"/>
-          <ControlPoint xPos="480" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="390" yPos="165" ctrlXPos="412" ctrlYPos="165"/>
+          <ControlPoint xPos="627" yPos="122" ctrlXPos="633" ctrlYPos="100"/>
         </Connection>
       </Graphics>
       </EEdge>
       <Graphics>
-        <Position xPos="120" yPos="210"/>
+        <Position xPos="300" yPos="120"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="10" yPos="10"/>
       </LocalVariableBadge>
       <GlobalVariableBadge>
-        <Position xPos="10" yPos="10"/>
+        <Position xPos="9" yPos="10"/>
       </GlobalVariableBadge>
       <Node id="N1" name="History" history="true">
         <Define>
@@ -957,7 +990,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="480" yPos="480"/>
+          <Position xPos="30" yPos="30"/>
         </Graphics>
       </Node>
       <Node id="N2" name="N2" history="false">
@@ -973,101 +1006,21 @@
         <FEdge target="N18" start="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="570" yPos="75" ctrlXPos="637" ctrlYPos="75"/>
-              <ControlPoint xPos="750" yPos="75" ctrlXPos="682" ctrlYPos="75"/>
+              <ControlPoint xPos="300" yPos="345" ctrlXPos="367" ctrlYPos="345"/>
+              <ControlPoint xPos="480" yPos="345" ctrlXPos="412" ctrlYPos="345"/>
             </Connection>
           </Graphics>
         </FEdge>
-        <FEdge target="N19" start="">
+        <FEdge target="S9" start="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="568" yPos="87" ctrlXPos="639" ctrlYPos="106"/>
-              <ControlPoint xPos="752" yPos="153" ctrlXPos="680" ctrlYPos="133"/>
+              <ControlPoint xPos="255" yPos="300" ctrlXPos="255" ctrlYPos="277"/>
+              <ControlPoint xPos="255" yPos="210" ctrlXPos="255" ctrlYPos="232"/>
             </Connection>
           </Graphics>
         </FEdge>
         <Graphics>
-          <Position xPos="480" yPos="30"/>
-        </Graphics>
-      </Node>
-      <Node id="N8" name="N8" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-          <Play>
-            <String><![CDATA[[qgui name value=gebhard]]]></String>
-          </Play>
-        </Commands>
-        <EEdge target="N17" start ="">
-        <Graphics>
-          <Connection>
-            <ControlPoint xPos="840" yPos="435" ctrlXPos="907" ctrlYPos="435"/>
-            <ControlPoint xPos="1020" yPos="435" ctrlXPos="952" ctrlYPos="435"/>
-          </Connection>
-        </Graphics>
-        </EEdge>
-        <Graphics>
-          <Position xPos="750" yPos="390"/>
-        </Graphics>
-      </Node>
-      <Node id="N9" name="N9" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-          <Play>
-            <String><![CDATA[[qgui name value=schneeberger]]]></String>
-          </Play>
-        </Commands>
-        <EEdge target="N17" start ="">
-        <Graphics>
-          <Connection>
-            <ControlPoint xPos="834" yPos="278" ctrlXPos="916" ctrlYPos="326"/>
-            <ControlPoint xPos="1026" yPos="412" ctrlXPos="943" ctrlYPos="363"/>
-          </Connection>
-        </Graphics>
-        </EEdge>
-        <Graphics>
-          <Position xPos="750" yPos="210"/>
-        </Graphics>
-      </Node>
-      <Node id="N12" name="N12" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-          <Play>
-            <String><![CDATA[[qgui name value=apel]]]></String>
-          </Play>
-        </Commands>
-        <EEdge target="N17" start ="">
-        <Graphics>
-          <Connection>
-            <ControlPoint xPos="834" yPos="592" ctrlXPos="916" ctrlYPos="543"/>
-            <ControlPoint xPos="1026" yPos="457" ctrlXPos="943" ctrlYPos="503"/>
-          </Connection>
-        </Graphics>
-        </EEdge>
-        <Graphics>
-          <Position xPos="750" yPos="570"/>
-        </Graphics>
-      </Node>
-      <Node id="N17" name="N17" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-          <PlaySceneGroup>
-            <String><![CDATA[Welcome_Input_Thank]]></String>
-          </PlaySceneGroup>
-        </Commands>
-        <Graphics>
-          <Position xPos="1020" yPos="390"/>
+          <Position xPos="210" yPos="300"/>
         </Graphics>
       </Node>
       <Node id="N18" name="N18" history="false">
@@ -1081,87 +1034,26 @@
           </PlaySceneGroup>
         </Commands>
         <Graphics>
-          <Position xPos="750" yPos="30"/>
+          <Position xPos="480" yPos="300"/>
         </Graphics>
       </Node>
-      <Node id="N19" name="N19" history="false">
+      <SuperNode id="S9" name="User Name" comment="" hideLocalVar="false" hideGlobalVar="true" start="S10;N22;">
         <Define>
         </Define>
         <Declare>
         </Declare>
         <Commands>
         </Commands>
-        <TEdge target="N20" start="" timeout="1000">
+        <EEdge target="S12" start ="">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="840" yPos="165" ctrlXPos="862" ctrlYPos="165"/>
-            <ControlPoint xPos="930" yPos="165" ctrlXPos="907" ctrlYPos="165"/>
+            <ControlPoint xPos="300" yPos="139" ctrlXPos="333" ctrlYPos="119"/>
+            <ControlPoint xPos="390" yPos="101" ctrlXPos="356" ctrlYPos="120"/>
           </Connection>
         </Graphics>
-        </TEdge>
+        </EEdge>
         <Graphics>
-          <Position xPos="750" yPos="120"/>
-        </Graphics>
-      </Node>
-      <Node id="N20" name="N20" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-          <PlaySceneGroup>
-            <String><![CDATA[Ask_User_Name]]></String>
-          </PlaySceneGroup>
-        </Commands>
-        <Graphics>
-          <Position xPos="930" yPos="120"/>
-        </Graphics>
-      </Node>
-      <SuperNode id="S4" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="false" start="N4;">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-        </Commands>
-        <IEdge target="N8" start="">
-          <Graphics>
-            <Connection>
-              <ControlPoint xPos="570" yPos="435" ctrlXPos="637" ctrlYPos="435"/>
-              <ControlPoint xPos="750" yPos="435" ctrlXPos="682" ctrlYPos="435"/>
-            </Connection>
-          </Graphics>
-          <Eq>
-            <Variable name="voice_keyword"/>
-            <String><![CDATA[gebhard]]></String>
-          </Eq>
-        </IEdge>
-        <IEdge target="N9" start="">
-          <Graphics>
-            <Connection>
-              <ControlPoint xPos="570" yPos="409" ctrlXPos="664" ctrlYPos="354"/>
-              <ControlPoint xPos="756" yPos="277" ctrlXPos="673" ctrlYPos="323"/>
-            </Connection>
-          </Graphics>
-          <Eq>
-            <Variable name="voice_keyword"/>
-            <String><![CDATA[schneeberger]]></String>
-          </Eq>
-        </IEdge>
-        <IEdge target="N12" start="">
-          <Graphics>
-            <Connection>
-              <ControlPoint xPos="570" yPos="461" ctrlXPos="664" ctrlYPos="515"/>
-              <ControlPoint xPos="756" yPos="592" ctrlXPos="673" ctrlYPos="543"/>
-            </Connection>
-          </Graphics>
-          <Eq>
-            <Variable name="voice_keyword"/>
-            <String><![CDATA[apel]]></String>
-          </Eq>
-        </IEdge>
-        <Graphics>
-          <Position xPos="480" yPos="390"/>
+          <Position xPos="210" yPos="120"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -1169,7 +1061,7 @@
         <GlobalVariableBadge>
           <Position xPos="10" yPos="10"/>
         </GlobalVariableBadge>
-        <Node id="N3" name="History" history="true">
+        <Node id="N21" name="History" history="true">
           <Define>
           </Define>
           <Declare>
@@ -1180,25 +1072,2093 @@
             <Position xPos="30" yPos="30"/>
           </Graphics>
         </Node>
-        <Node id="N4" name="N4" history="false">
+        <Node id="N22" name="N19" history="false">
           <Define>
           </Define>
           <Declare>
           </Declare>
           <Commands>
           </Commands>
-          <TEdge target="N4" start="" timeout="1000">
+          <TEdge target="N23" start="" timeout="1000">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
-              <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
+              <ControlPoint xPos="390" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
+              <ControlPoint xPos="840" yPos="75" ctrlXPos="817" ctrlYPos="75"/>
             </Connection>
           </Graphics>
           </TEdge>
           <Graphics>
-            <Position xPos="480" yPos="210"/>
+            <Position xPos="300" yPos="30"/>
           </Graphics>
         </Node>
+        <Node id="N23" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_Name]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N45" name="N17" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Welcome_Input_Thank]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N46" name="N8" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui name value=gebhard]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N45" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="660" yPos="345" ctrlXPos="727" ctrlYPos="345"/>
+              <ControlPoint xPos="840" yPos="345" ctrlXPos="772" ctrlYPos="345"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N47" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui name value=apel]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N45" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="654" yPos="502" ctrlXPos="736" ctrlYPos="453"/>
+              <ControlPoint xPos="846" yPos="367" ctrlXPos="763" ctrlYPos="413"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="480"/>
+          </Graphics>
+        </Node>
+        <Node id="N50" name="N9" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui name value=schneeberger]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N45" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="654" yPos="188" ctrlXPos="736" ctrlYPos="236"/>
+              <ControlPoint xPos="846" yPos="322" ctrlXPos="763" ctrlYPos="273"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="120"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S10" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N49;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N46" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="390" yPos="345" ctrlXPos="457" ctrlYPos="345"/>
+                <ControlPoint xPos="570" yPos="345" ctrlXPos="502" ctrlYPos="345"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[gebhard]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N50" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="390" yPos="319" ctrlXPos="484" ctrlYPos="264"/>
+                <ControlPoint xPos="576" yPos="187" ctrlXPos="493" ctrlYPos="233"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[schneeberger]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N47" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="390" yPos="371" ctrlXPos="484" ctrlYPos="425"/>
+                <ControlPoint xPos="576" yPos="502" ctrlXPos="493" ctrlYPos="453"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[apel]]></String>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="300" yPos="300"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N48" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N49" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N49" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
+                <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="480" yPos="210"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S4" name="User Sex" comment="" hideLocalVar="false" hideGlobalVar="true" start="S11;N9;">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="S14" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="660" yPos="101" ctrlXPos="693" ctrlYPos="120"/>
+            <ControlPoint xPos="750" yPos="139" ctrlXPos="716" ctrlYPos="119"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="570" yPos="30"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N8" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N9" name="N19" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <TEdge target="N12" start="" timeout="1000">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="390" yPos="75" ctrlXPos="592" ctrlYPos="75"/>
+              <ControlPoint xPos="840" yPos="75" ctrlXPos="637" ctrlYPos="75"/>
+            </Connection>
+          </Graphics>
+          </TEdge>
+          <Graphics>
+            <Position xPos="300" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N12" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_Sex]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N17" name="N17" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Welcome_Input_Thank]]></String>
+            </PlaySceneGroup>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N20" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui sex value=male]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N17" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="658" yPos="423" ctrlXPos="729" ctrlYPos="403"/>
+              <ControlPoint xPos="842" yPos="357" ctrlXPos="770" ctrlYPos="376"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N51" name="N9" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui sex value=female]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N17" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="658" yPos="267" ctrlXPos="729" ctrlYPos="286"/>
+              <ControlPoint xPos="842" yPos="333" ctrlXPos="770" ctrlYPos="313"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="210"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S11" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N53;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N51" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="390" yPos="333" ctrlXPos="464" ctrlYPos="313"/>
+                <ControlPoint xPos="572" yPos="267" ctrlXPos="500" ctrlYPos="286"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[female]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N20" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="390" yPos="357" ctrlXPos="464" ctrlYPos="376"/>
+                <ControlPoint xPos="572" yPos="423" ctrlXPos="500" ctrlYPos="403"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[male]]></String>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="300" yPos="300"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N52" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N53" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N53" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
+                <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="480" yPos="210"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S12" name="User Age" comment="" hideLocalVar="true" hideGlobalVar="true" start="S13;N55;">
+        <Define>
+        </Define>
+        <Declare>
+          <Variable type="String" name ="age">
+            <String><![CDATA[]]></String>
+          </Variable>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="S4" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="480" yPos="75" ctrlXPos="502" ctrlYPos="75"/>
+            <ControlPoint xPos="570" yPos="75" ctrlXPos="547" ctrlYPos="75"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="390" yPos="30"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N54" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="120"/>
+          </Graphics>
+        </Node>
+        <Node id="N55" name="N19" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <TEdge target="N56" start="" timeout="1000">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="390" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
+              <ControlPoint xPos="840" yPos="75" ctrlXPos="817" ctrlYPos="75"/>
+            </Connection>
+          </Graphics>
+          </TEdge>
+          <Graphics>
+            <Position xPos="300" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N56" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_Age]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N58" name="N8" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="age"/>
+              <Expression>
+                <Variable name="voice_keyword"/>
+              </Expression>
+            </Assign>
+            <Play>
+              <Add>
+                <Add>
+                  <String><![CDATA[[qgui age value=]]></String>
+                  <Variable name="age"/>
+                </Add>
+                <String><![CDATA[]]]></String>
+              </Add>
+            </Play>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="300"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S13" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N62;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N58" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="390" yPos="345" ctrlXPos="457" ctrlYPos="345"/>
+                <ControlPoint xPos="840" yPos="345" ctrlXPos="772" ctrlYPos="345"/>
+              </Connection>
+            </Graphics>
+            <Neq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[]]></String>
+            </Neq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="300" yPos="300"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N61" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N62" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N62" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="267" yPos="122" ctrlXPos="291" ctrlYPos="36"/>
+                <ControlPoint xPos="294" yPos="142" ctrlXPos="372" ctrlYPos="96"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="210" yPos="120"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S14" name="User Interviews" comment="" hideLocalVar="true" hideGlobalVar="true" start="S15;N64;">
+        <Define>
+        </Define>
+        <Declare>
+          <Variable type="String" name ="interviews">
+            <String><![CDATA[]]></String>
+          </Variable>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="S16" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="795" yPos="210" ctrlXPos="795" ctrlYPos="322"/>
+            <ControlPoint xPos="795" yPos="480" ctrlXPos="795" ctrlYPos="367"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="750" yPos="120"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N63" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N64" name="N19" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <TEdge target="N65" start="" timeout="1000">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="390" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
+              <ControlPoint xPos="480" yPos="75" ctrlXPos="457" ctrlYPos="75"/>
+            </Connection>
+          </Graphics>
+          </TEdge>
+          <Graphics>
+            <Position xPos="300" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N65" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_JobInteviews]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="480" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N59" name="N8" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="interviews"/>
+              <Expression>
+                <Variable name="voice_keyword"/>
+              </Expression>
+            </Assign>
+          </Commands>
+          <CEdge target="N66" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="660" yPos="255" ctrlXPos="727" ctrlYPos="255"/>
+                <ControlPoint xPos="840" yPos="255" ctrlXPos="772" ctrlYPos="255"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="interviews"/>
+              <String><![CDATA[affirmation]]></String>
+            </Eq>
+          </CEdge>
+          <EEdge target="N67" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="615" yPos="300" ctrlXPos="615" ctrlYPos="367"/>
+              <ControlPoint xPos="615" yPos="480" ctrlXPos="615" ctrlYPos="412"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="210"/>
+          </Graphics>
+        </Node>
+        <Node id="N66" name="N66" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Welcome_JobInterviews_Unknown]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <EEdge target="S15" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="842" yPos="267" ctrlXPos="605" ctrlYPos="333"/>
+              <ControlPoint xPos="390" yPos="267" ctrlXPos="637" ctrlYPos="333"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="840" yPos="210"/>
+          </Graphics>
+        </Node>
+        <Node id="N67" name="N67" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <Add>
+                <Add>
+                  <String><![CDATA[[qgui interviews value=]]></String>
+                  <Variable name="interviews"/>
+                </Add>
+                <String><![CDATA[]]]></String>
+              </Add>
+            </Play>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="570" yPos="480"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S15" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N57;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N59" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="390" yPos="255" ctrlXPos="457" ctrlYPos="255"/>
+                <ControlPoint xPos="570" yPos="255" ctrlXPos="502" ctrlYPos="255"/>
+              </Connection>
+            </Graphics>
+            <Neq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[]]></String>
+            </Neq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="300" yPos="210"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N19" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N57" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N57" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="267" yPos="122" ctrlXPos="291" ctrlYPos="36"/>
+                <ControlPoint xPos="294" yPos="142" ctrlXPos="372" ctrlYPos="96"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="210" yPos="120"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S16" name="User Main Strength" comment="" hideLocalVar="false" hideGlobalVar="true" start="S17;N73;">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="S18" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="750" yPos="551" ctrlXPos="716" ctrlYPos="570"/>
+            <ControlPoint xPos="660" yPos="589" ctrlXPos="693" ctrlYPos="569"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="750" yPos="480"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N72" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N73" name="N19" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <TEdge target="N74" start="" timeout="1000">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="300" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
+              <ControlPoint xPos="840" yPos="75" ctrlXPos="727" ctrlYPos="75"/>
+            </Connection>
+          </Graphics>
+          </TEdge>
+          <Graphics>
+            <Position xPos="210" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N74" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_Main_Strength]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N76" name="N8" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength2]]]></String>
+            </Play>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="210" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N77" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength3]]]></String>
+            </Play>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="390" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N78" name="N9" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength1]]]></String>
+            </Play>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N92" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength4]]]></String>
+            </Play>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="570" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N93" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength5]]]></String>
+            </Play>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="750" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N94" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength6]]]></String>
+            </Play>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="1020" yPos="390"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S17" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N80;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N76" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="480" yPos="210" ctrlXPos="356" ctrlYPos="333"/>
+                <ControlPoint xPos="287" yPos="403" ctrlXPos="374" ctrlYPos="315"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength2]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N78" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="480" yPos="177" ctrlXPos="305" ctrlYPos="223"/>
+                <ControlPoint xPos="118" yPos="333" ctrlXPos="285" ctrlYPos="286"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength1]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N77" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="499" yPos="210" ctrlXPos="479" ctrlYPos="243"/>
+                <ControlPoint xPos="457" yPos="306" ctrlXPos="473" ctrlYPos="277"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength3]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N92" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="210" ctrlXPos="556" ctrlYPos="284"/>
+                <ControlPoint xPos="603" yPos="392" ctrlXPos="583" ctrlYPos="320"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength4]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N93" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="570" yPos="210" ctrlXPos="664" ctrlYPos="304"/>
+                <ControlPoint xPos="756" yPos="322" ctrlXPos="673" ctrlYPos="273"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength5]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N94" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="570" yPos="191" ctrlXPos="804" ctrlYPos="326"/>
+                <ControlPoint xPos="1026" yPos="412" ctrlXPos="822" ctrlYPos="292"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[none]]></String>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="480" yPos="120"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N79" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N80" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N80" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
+                <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="480" yPos="210"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S18" name="User Strength" comment="" hideLocalVar="false" hideGlobalVar="true" start="S20;N96;">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="S26" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="570" yPos="615" ctrlXPos="547" ctrlYPos="615"/>
+            <ControlPoint xPos="480" yPos="615" ctrlXPos="502" ctrlYPos="615"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="570" yPos="570"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N95" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N96" name="N19" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <TEdge target="N97" start="" timeout="1000">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="300" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
+              <ControlPoint xPos="840" yPos="75" ctrlXPos="727" ctrlYPos="75"/>
+            </Connection>
+          </Graphics>
+          </TEdge>
+          <Graphics>
+            <Position xPos="210" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N97" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_Strength]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="840" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N98" name="N8" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength2]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N3" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="294" yPos="458" ctrlXPos="409" ctrlYPos="526"/>
+              <ControlPoint xPos="572" yPos="603" ctrlXPos="444" ctrlYPos="567"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="210" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N99" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength3]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N3" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="457" yPos="384" ctrlXPos="503" ctrlYPos="466"/>
+              <ControlPoint xPos="593" yPos="576" ctrlXPos="546" ctrlYPos="493"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="390" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N100" name="N9" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength1]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N3" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="114" yPos="368" ctrlXPos="317" ctrlYPos="487"/>
+              <ControlPoint xPos="576" yPos="592" ctrlXPos="372" ctrlYPos="472"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="30" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N101" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength4]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N3" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="615" yPos="480" ctrlXPos="615" ctrlYPos="502"/>
+              <ControlPoint xPos="615" yPos="570" ctrlXPos="615" ctrlYPos="547"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N102" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength5]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N3" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="773" yPos="384" ctrlXPos="726" ctrlYPos="466"/>
+              <ControlPoint xPos="637" yPos="576" ctrlXPos="683" ctrlYPos="493"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="750" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N103" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui strength value=strength6]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N3" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="1022" yPos="447" ctrlXPos="854" ctrlYPos="493"/>
+              <ControlPoint xPos="658" yPos="603" ctrlXPos="825" ctrlYPos="556"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="1020" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N3" name="N3" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="570" yPos="570"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S20" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N105;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N98" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="480" yPos="210" ctrlXPos="356" ctrlYPos="333"/>
+                <ControlPoint xPos="287" yPos="403" ctrlXPos="374" ctrlYPos="315"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength2]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N100" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="480" yPos="177" ctrlXPos="305" ctrlYPos="223"/>
+                <ControlPoint xPos="118" yPos="333" ctrlXPos="285" ctrlYPos="286"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength1]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N99" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="499" yPos="210" ctrlXPos="479" ctrlYPos="243"/>
+                <ControlPoint xPos="457" yPos="306" ctrlXPos="473" ctrlYPos="277"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength3]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N101" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="210" ctrlXPos="556" ctrlYPos="284"/>
+                <ControlPoint xPos="603" yPos="392" ctrlXPos="583" ctrlYPos="320"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength4]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N102" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="570" yPos="210" ctrlXPos="664" ctrlYPos="304"/>
+                <ControlPoint xPos="756" yPos="322" ctrlXPos="673" ctrlYPos="273"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[strength5]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N103" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="570" yPos="191" ctrlXPos="804" ctrlYPos="326"/>
+                <ControlPoint xPos="1026" yPos="412" ctrlXPos="893" ctrlYPos="238"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[none]]></String>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="480" yPos="120"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N104" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N105" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N105" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
+                <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="480" yPos="210"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S22" name="User Weakness" comment="" hideLocalVar="false" hideGlobalVar="true" start="S23;N107;">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="210" yPos="480"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N106" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N107" name="N19" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <TEdge target="N108" start="" timeout="1000">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="300" yPos="75" ctrlXPos="592" ctrlYPos="75"/>
+              <ControlPoint xPos="930" yPos="75" ctrlXPos="637" ctrlYPos="75"/>
+            </Connection>
+          </Graphics>
+          </TEdge>
+          <Graphics>
+            <Position xPos="210" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N108" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_Weakness]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="930" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N109" name="N8" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness2]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N60" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="834" yPos="278" ctrlXPos="949" ctrlYPos="346"/>
+              <ControlPoint xPos="1112" yPos="423" ctrlXPos="984" ctrlYPos="387"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="750" yPos="210"/>
+          </Graphics>
+        </Node>
+        <Node id="N110" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness3]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N60" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="658" yPos="357" ctrlXPos="855" ctrlYPos="411"/>
+              <ControlPoint xPos="1110" yPos="435" ctrlXPos="903" ctrlYPos="435"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N111" name="N9" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness1]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N60" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="654" yPos="188" ctrlXPos="857" ctrlYPos="307"/>
+              <ControlPoint xPos="1116" yPos="412" ctrlXPos="912" ctrlYPos="292"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="120"/>
+          </Graphics>
+        </Node>
+        <Node id="N112" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness4]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N60" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="840" yPos="435" ctrlXPos="952" ctrlYPos="435"/>
+              <ControlPoint xPos="1112" yPos="447" ctrlXPos="1004" ctrlYPos="477"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="750" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N113" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness5]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N60" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="660" yPos="525" ctrlXPos="866" ctrlYPos="525"/>
+              <ControlPoint xPos="1116" yPos="457" ctrlXPos="937" ctrlYPos="557"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="480"/>
+          </Graphics>
+        </Node>
+        <Node id="N114" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness6]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N60" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="834" yPos="592" ctrlXPos="949" ctrlYPos="523"/>
+              <ControlPoint xPos="1123" yPos="467" ctrlXPos="1027" ctrlYPos="562"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="750" yPos="570"/>
+          </Graphics>
+        </Node>
+        <Node id="N60" name="N60" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+            <Play>
+              <String><![CDATA[[qgui next]]]></String>
+            </Play>
+          </Commands>
+          <Graphics>
+            <Position xPos="1110" yPos="390"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S23" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N116;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N109" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="409" ctrlXPos="470" ctrlYPos="258"/>
+                <ControlPoint xPos="752" yPos="267" ctrlXPos="503" ctrlYPos="336"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness2]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N111" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="390" ctrlXPos="404" ctrlYPos="195"/>
+                <ControlPoint xPos="576" yPos="187" ctrlXPos="407" ctrlYPos="282"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness1]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N110" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="423" ctrlXPos="371" ctrlYPos="379"/>
+                <ControlPoint xPos="572" yPos="357" ctrlXPos="417" ctrlYPos="400"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness3]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N112" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="435" ctrlXPos="457" ctrlYPos="435"/>
+                <ControlPoint xPos="750" yPos="435" ctrlXPos="502" ctrlYPos="435"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness4]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N113" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="447" ctrlXPos="371" ctrlYPos="490"/>
+                <ControlPoint xPos="572" yPos="513" ctrlXPos="417" ctrlYPos="469"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness5]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N114" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="461" ctrlXPos="470" ctrlYPos="611"/>
+                <ControlPoint xPos="750" yPos="615" ctrlXPos="486" ctrlYPos="643"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[none]]></String>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="120" yPos="390"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N115" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N116" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N116" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
+                <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="480" yPos="210"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S26" name="User Main Weakness" comment="" hideLocalVar="false" hideGlobalVar="true" start="N130;S27;">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="S22" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="390" yPos="589" ctrlXPos="356" ctrlYPos="569"/>
+            <ControlPoint xPos="300" yPos="551" ctrlXPos="333" ctrlYPos="570"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="390" yPos="570"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N129" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="30" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N130" name="N19" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <TEdge target="N131" start="" timeout="1000">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="300" yPos="75" ctrlXPos="592" ctrlYPos="75"/>
+              <ControlPoint xPos="930" yPos="75" ctrlXPos="637" ctrlYPos="75"/>
+            </Connection>
+          </Graphics>
+          </TEdge>
+          <Graphics>
+            <Position xPos="210" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N131" name="N20" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PlaySceneGroup>
+              <String><![CDATA[Ask_User_Main_Weakness]]></String>
+            </PlaySceneGroup>
+          </Commands>
+          <Graphics>
+            <Position xPos="930" yPos="30"/>
+          </Graphics>
+        </Node>
+        <Node id="N132" name="N8" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness2]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N4" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="834" yPos="278" ctrlXPos="949" ctrlYPos="346"/>
+              <ControlPoint xPos="1112" yPos="423" ctrlXPos="984" ctrlYPos="387"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="750" yPos="210"/>
+          </Graphics>
+        </Node>
+        <Node id="N133" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness3]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N4" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="658" yPos="357" ctrlXPos="855" ctrlYPos="411"/>
+              <ControlPoint xPos="1110" yPos="435" ctrlXPos="903" ctrlYPos="435"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="300"/>
+          </Graphics>
+        </Node>
+        <Node id="N134" name="N9" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness1]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N4" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="654" yPos="188" ctrlXPos="857" ctrlYPos="307"/>
+              <ControlPoint xPos="1116" yPos="412" ctrlXPos="912" ctrlYPos="292"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="120"/>
+          </Graphics>
+        </Node>
+        <Node id="N135" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness4]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N4" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="840" yPos="435" ctrlXPos="952" ctrlYPos="435"/>
+              <ControlPoint xPos="1112" yPos="447" ctrlXPos="1004" ctrlYPos="477"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="750" yPos="390"/>
+          </Graphics>
+        </Node>
+        <Node id="N136" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness5]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N4" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="660" yPos="525" ctrlXPos="866" ctrlYPos="525"/>
+              <ControlPoint xPos="1116" yPos="457" ctrlXPos="937" ctrlYPos="557"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="570" yPos="480"/>
+          </Graphics>
+        </Node>
+        <Node id="N137" name="N12" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Play>
+              <String><![CDATA[[qgui weakness value=weakness6]]]></String>
+            </Play>
+          </Commands>
+          <EEdge target="N4" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="834" yPos="592" ctrlXPos="949" ctrlYPos="523"/>
+              <ControlPoint xPos="1123" yPos="467" ctrlXPos="1027" ctrlYPos="562"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="750" yPos="570"/>
+          </Graphics>
+        </Node>
+        <Node id="N4" name="N4" history="false">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="voice_keyword"/>
+              <Expression>
+                <String><![CDATA[]]></String>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="1110" yPos="390"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S27" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="true" start="N140;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="N132" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="409" ctrlXPos="470" ctrlYPos="258"/>
+                <ControlPoint xPos="752" yPos="267" ctrlXPos="503" ctrlYPos="336"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness2]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N134" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="390" ctrlXPos="404" ctrlYPos="195"/>
+                <ControlPoint xPos="576" yPos="187" ctrlXPos="407" ctrlYPos="282"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness1]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N133" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="423" ctrlXPos="371" ctrlYPos="379"/>
+                <ControlPoint xPos="572" yPos="357" ctrlXPos="417" ctrlYPos="400"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness3]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N135" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="435" ctrlXPos="457" ctrlYPos="435"/>
+                <ControlPoint xPos="750" yPos="435" ctrlXPos="502" ctrlYPos="435"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness4]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N136" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="447" ctrlXPos="371" ctrlYPos="490"/>
+                <ControlPoint xPos="572" yPos="513" ctrlXPos="417" ctrlYPos="469"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[weakness5]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="N137" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="210" yPos="461" ctrlXPos="470" ctrlYPos="611"/>
+                <ControlPoint xPos="750" yPos="615" ctrlXPos="486" ctrlYPos="643"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="voice_keyword"/>
+              <String><![CDATA[none]]></String>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="120" yPos="390"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N139" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="30" yPos="30"/>
+            </Graphics>
+          </Node>
+          <Node id="N140" name="N4" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <TEdge target="N140" start="" timeout="1000">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="537" yPos="212" ctrlXPos="561" ctrlYPos="126"/>
+                <ControlPoint xPos="564" yPos="232" ctrlXPos="642" ctrlYPos="186"/>
+              </Connection>
+            </Graphics>
+            </TEdge>
+            <Graphics>
+              <Position xPos="480" yPos="210"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
       </SuperNode>
     </SuperNode>
   </SuperNode>
