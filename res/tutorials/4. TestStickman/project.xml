@@ -31,6 +31,7 @@
     <Agent name="patrick" device="stickman">
     </Agent>
     <Agent name="qgui" device="questionnaire">
+      <Feature key="log" val="log/qgui_values.txt"/>
     </Agent>
     <Agent name="display" device="mediadisplay">
     </Agent>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="EmpaT">
   <Plugins>
-    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="false">
+    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="true">
       <Feature key="hlhost" val="127.0.0.1"/>
       <Feature key="hlport" val="343"/>
       <Feature key="slhost" val="127.0.0.1"/>
@@ -41,6 +41,8 @@
     <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor" load="true">
       <Feature key="cat" val="img\cat.png"/>
       <Feature key="dog" val="img\dog.png"/>
+      <Feature key="ablauf" val="img\ablauf.JPG"/>
+      <Feature key="stelle" val="img\stellenbeschreibung.JPG"/>
     </Plugin>
     <Plugin type="device" name="alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
       <Feature key="computation" val="affect\AffectComputation.aml"/>

@@ -106,7 +106,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             mALMA.startRealtimeOutput(mALMA.getDocumentManager().getAffectComputationParams());
         }
         
-        mALMA.stepwiseAffectComputation();
+        //mALMA.stepwiseAffectComputation();
     }
 
     @Override

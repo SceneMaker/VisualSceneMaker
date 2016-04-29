@@ -75,4 +75,25 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
+  <SceneObject lower="349" upper="403" language="en" identifier="Blink">
+    <SceneTurn lower="365" upper="382" speaker="patrick">
+      <SceneUttr lower="374" upper="382" punct=".">
+        <ActionObject lower="374" upper="381" actor="" mode="" name="Blink" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="383" upper="403" speaker="patrick">
+      <SceneUttr lower="392" upper="403" punct=".">
+        <ActionObject lower="392" upper="402" actor="" mode="" name="TiltLeft" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="405" upper="446" language="en" identifier="Normal">
+    <SceneTurn lower="422" upper="446" speaker="patrick">
+      <SceneUttr lower="431" upper="446" punct=".">
+        <ActionObject lower="431" upper="445" actor="" mode="" name="TiltLeftBack" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>

@@ -7,6 +7,7 @@ package de.dfki.vsm.xtension.questionnaire;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 //import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
@@ -85,6 +86,14 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
                 }
 
                 mLogger.message("ActivityWorker for Questionnaire done ....");
+            }
+            
+            if (name.equalsIgnoreCase("name")) {
+                for (ActionFeature af : activity.getFeatureList()) {
+                    if (af.getKey().equalsIgnoreCase("value")) {
+                        mQuestionnaireGUI.setName(af.getVal());
+                    }
+                }
             }
         }
     }

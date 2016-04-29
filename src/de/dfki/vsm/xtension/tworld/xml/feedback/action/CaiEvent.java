@@ -19,25 +19,23 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Feedback implements XMLParseable, XMLWriteable {
+public class CaiEvent implements XMLParseable, XMLWriteable {
 
-    public String mName = "";
-    public String mValue = "";
-    public CaiEvent mCaiEvent = null;
+    public Tts mTts = null;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public Feedback() {
+    public CaiEvent() {
     }
 
-    public boolean hasCaiEvent() {
-        return (mCaiEvent != null);
+    public boolean hasTTSStatus() {
+        return (mTts != null);
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<feedback>").push();
+        out.println("<cai_event>").push();
 
 //        mObjects.stream().forEach((o) -> {
 //            try {
@@ -46,14 +44,11 @@ public class Feedback implements XMLParseable, XMLWriteable {
 //                mLogger.failure(ex.getMessage());
 //            }
 //        });
-        out.pop().println("</feedback>");
+        out.pop().println("</cai_event>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-        mName = element.getAttribute("name");
-        mValue = element.getAttribute("value");
-
         // Process The Child Nodes
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
@@ -61,13 +56,13 @@ public class Feedback implements XMLParseable, XMLWriteable {
 
                 final String name = element.getTagName();
 
-                if (name.equalsIgnoreCase("cai_event")) {
+                if (name.equalsIgnoreCase("tts")) {
 
-                    CaiEvent ce = new CaiEvent();
+                    Tts t = new Tts();
 
-                    ce.parseXML(element);
+                    t.parseXML(element);
 
-                    mCaiEvent = ce;
+                    mTts = t;
                 }
             }
         });

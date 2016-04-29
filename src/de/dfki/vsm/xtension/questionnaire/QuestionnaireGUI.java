@@ -60,6 +60,14 @@ public class QuestionnaireGUI {
         mFrame.setVisible(visible);
     }
 
+    // interface for items
+    public void setName(String name) {
+        mController.namefield.setText(Character.toUpperCase(name.charAt(0)) + name.substring(1));
+        mController.ageslider.requestFocus();
+        mController.agefield.setText("20");
+        mController.nextbutton.setDisable(false);
+    }
+
     private void initFX() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtension/questionnaire/FXMLDocument.fxml"));
         mController = new FXMLDocumentController();
