@@ -87,7 +87,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
 
                 mLogger.message("ActivityWorker for Questionnaire done ....");
             }
-            
+
             if (name.equalsIgnoreCase("name")) {
                 for (ActionFeature af : activity.getFeatureList()) {
                     if (af.getKey().equalsIgnoreCase("value")) {
@@ -95,12 +95,56 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
                     }
                 }
             }
+
+            if (name.equalsIgnoreCase("age")) {
+                for (ActionFeature af : activity.getFeatureList()) {
+                    if (af.getKey().equalsIgnoreCase("value")) {
+                        mQuestionnaireGUI.setAge(af.getVal());
+                    }
+                }
+            }
+
+            if (name.equalsIgnoreCase("sex")) {
+                for (ActionFeature af : activity.getFeatureList()) {
+                    if (af.getKey().equalsIgnoreCase("value")) {
+                        mQuestionnaireGUI.setSex(af.getVal());
+                    }
+                }
+            }
+
+            if (name.equalsIgnoreCase("interviews")) {
+                for (ActionFeature af : activity.getFeatureList()) {
+                    if (af.getKey().equalsIgnoreCase("value")) {
+                        mQuestionnaireGUI.setJobinterviews(af.getVal());
+                    }
+                }
+            }
+
+            if (name.equalsIgnoreCase("strength")) {
+                for (ActionFeature af : activity.getFeatureList()) {
+                    if (af.getKey().equalsIgnoreCase("value")) {
+                        mQuestionnaireGUI.setStrength(af.getVal());
+                    }
+                }
+            }
+
+            if (name.equalsIgnoreCase("weakness")) {
+                for (ActionFeature af : activity.getFeatureList()) {
+                    if (af.getKey().equalsIgnoreCase("value")) {
+                        mQuestionnaireGUI.setWeakness(af.getVal());
+                    }
+                }
+            }
+
+            if (name.equalsIgnoreCase("next")) {
+               mQuestionnaireGUI.next();
+            }
         }
     }
 
     @Override
     public void launch() {
-       mQuestionnaireGUI = new QuestionnaireGUI();
+        mQuestionnaireGUI = new QuestionnaireGUI();
 
         for (ConfigFeature cf : mConfig.getEntryList()) {
             mPersonalValues.put(cf.getKey(), cf.getValue());

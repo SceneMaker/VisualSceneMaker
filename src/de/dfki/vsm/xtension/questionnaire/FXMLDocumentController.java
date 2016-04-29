@@ -39,7 +39,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     protected Slider ageslider;
     @FXML
-    private Slider jobinterviewslider;
+    protected Slider jobinterviewslider;
     @FXML
     protected CheckBox strength1;
     @FXML
@@ -90,9 +90,9 @@ public class FXMLDocumentController implements Initializable {
     private HashMap<String, String> mValues = new HashMap();
 
     @FXML
-    private Region strengthregion;
+    protected Region strengthregion;
     @FXML
-    private TextArea weaknessregion;
+    protected TextArea weaknessregion;
 
     public void addListener(QuestionnaireListener listener) {
         if (!mListeners.contains(listener)) {
@@ -131,15 +131,18 @@ public class FXMLDocumentController implements Initializable {
         });
 
     }
+    
+    protected void updateListeners() {
+        for (QuestionnaireListener l : mListeners) {
+            l.updateOnUestionnaire(mValues);
+        }
+    }
 
     @FXML
     private void nextbuttoncheck(MouseEvent event) {
         mValues.put("name", namefield.getText());
         
-        for (QuestionnaireListener l : mListeners) {
-            l.updateOnUestionnaire(mValues);
-        }
-
+        updateListeners();
     }
 
     @FXML
@@ -336,7 +339,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
-    private void checkSelectedStrength(CheckBox strength) {
+    protected void checkSelectedStrength(CheckBox strength) {
         strength6.setSelected(false);
 
         if (strength.isSelected()) {
@@ -362,7 +365,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
-    private void checkSelectedWeakness(CheckBox weakness) {
+    protected void checkSelectedWeakness(CheckBox weakness) {
         weakness6.setSelected(false);
 
         if (weakness.isSelected()) {
