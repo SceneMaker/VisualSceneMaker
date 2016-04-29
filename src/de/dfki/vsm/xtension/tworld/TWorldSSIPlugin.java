@@ -86,6 +86,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 final HashMap<String, AbstractValue> values = new HashMap<>();
                 values.put("voice_activity", new StringValue(mSSIData.get("voice.activity")));
                 values.put("voice_keyword", new StringValue(mSSIData.get("voice.keyword")));
+
+
                 values.put("voice_praat_pitchmean", new StringValue(mSSIData.get("voice.praat.pitchmean")));
                 values.put("voice_praat_pitchsd", new StringValue(mSSIData.get("voice.praat.pitchsd")));
                 values.put("voice_praat_speechrate", new StringValue(mSSIData.get("voice.praat.speechrate")));
@@ -122,6 +124,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 //mProject.setVariable("usercues", new StructValue(values));
                 for (final Entry<String, AbstractValue> value : values.entrySet()) {
                     if (mProject.hasVariable(value.getKey())) {
+                        
                         mProject.setVariable(value.getKey(), value.getValue());
                         //mLogger.success("Setting Variable " + value.getKey() + " to " + value.getValue().getConcreteSyntax());
                     } else {
