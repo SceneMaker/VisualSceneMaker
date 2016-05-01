@@ -277,30 +277,46 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         info.add(messagePane);
         info.pack();
         info.setLocationRelativeTo(null);
+
+        final ProcessBuilder processB = pb;
+        final String command = cmdName;
+
+        Thread tDialog = new Thread() {
+            public void run() {
+                try {
+                    processB.redirectErrorStream(true);
+                    Process p = processB.start();
+                    mProcessMap.put(command, p);
+                    InputStream is = p.getInputStream();
+                    InputStreamReader isr = new InputStreamReader(is);
+                    BufferedReader br = new BufferedReader(isr);
+                    String line;
+                    boolean started = false;
+                    while (!started) {
+                        line = br.readLine();
+                        if (line.contains("started in")) {
+                            started = true;
+                            info.setVisible(false);
+                            info.dispose();
+                        }
+                        System.out.println(line);
+                    }
+                } catch (final Exception exc) {
+                    mLogger.failure(exc.toString());
+                }
+            }
+        };
+
+        tDialog.start();
+        info.setModal(true);
         info.setVisible(true);
 
-        try {
-            pb = pb.redirectErrorStream(true);
-            Process p = pb.start();
-            mProcessMap.put(cmdName, p);
-            InputStream is = p.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-            boolean started = false;
-            while (!started) {
-                line = br.readLine();
-                if (line.contains("started in")) {
-                    started = true;
-                }
-                System.out.println(line);
-            }
-        } catch (final Exception exc) {
-            mLogger.failure(exc.toString());
-        }
 
-        info.setVisible(false);
-        info.dispose();
+
+
+
+        //info.setVisible(false);
+        //info.dispose();
 
         // Get the plugin configuration
         for (ConfigFeature cf : mConfig.getEntryList()) {
