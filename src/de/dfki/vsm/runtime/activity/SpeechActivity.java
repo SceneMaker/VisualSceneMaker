@@ -1,14 +1,19 @@
 package de.dfki.vsm.runtime.activity;
 
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Gregor Mehlmann
  */
 public final class SpeechActivity extends AbstractActivity {
 
-    private final LinkedList mList;
+    private LinkedList mList;
     private final String mMark;
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // Construct the speech activity
     public SpeechActivity(
@@ -46,7 +51,28 @@ public final class SpeechActivity extends AbstractActivity {
         return builder.toString();
     }
 
-     // Get the punctuation information (added by PG 20.4.2016)
+    // Do pronounciation mapping for a better text to speech output. (added by PG - 2.5.2016)
+    public final void doPronounciationMapping(Properties pronounciationMap) {
+        if (pronounciationMap == null) {
+            return;
+        }
+        
+        LinkedList replaced = new LinkedList();
+        for (final Object item : mList) {
+            String text = item.toString();
+            // mLogger.success("text to be checked and maybe replaced " + text);
+            for (Map.Entry<Object, Object> entry : pronounciationMap.entrySet()) {
+                if (text != null && entry.getKey() != null && entry.getValue() != null) {
+                    text = text.replaceAll("(?i)" + entry.getKey(), (String) entry.getValue());
+                }
+            }
+            //mLogger.success(" with " + text);
+            replaced.add(text);
+        }
+        mList = replaced;
+    }
+
+// Get the punctuation information (added by PG 20.4.2016)
     public final LinkedList<String> getTimeMarks(String markerSign) {
         final LinkedList<String> tms = new LinkedList<>();
         for (final Object item : mList) {

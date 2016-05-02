@@ -48,27 +48,29 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     @Override
     public void unload() {
         super.unload();
+        
+        // PG: SSI Plugin has to be manually stopped
 
         // Wait for pawned processes
-        for (final Map.Entry<String, Process> entry : mProcessMap.entrySet()) {
-            // Get the process entry
-            final String name = entry.getKey();
-            final Process process = entry.getValue();
-            try {
-                // Kill the processes
-                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
-                // Wait for the killer
-                killer.waitFor();
-                // Print some information 
-                mLogger.message("Joining killer " + name + "");
-                // Wait for the process
-                process.waitFor();
-                // Print some information 
-                mLogger.message("Joining process " + name + "");
-            } catch (final Exception exc) {
-                mLogger.failure(exc.toString());
-            }
-        }
+//        for (final Map.Entry<String, Process> entry : mProcessMap.entrySet()) {
+//            // Get the process entry
+//            final String name = entry.getKey();
+//            final Process process = entry.getValue();
+//            try {
+//                // Kill the processes
+//                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
+//                // Wait for the killer
+//                killer.waitFor();
+//                // Print some information 
+//                mLogger.message("Joining killer " + name + "");
+//                // Wait for the process
+//                process.waitFor();
+//                // Print some information 
+//                mLogger.message("Joining process " + name + "");
+//            } catch (final Exception exc) {
+//                mLogger.failure(exc.toString());
+//            }
+//        }
     }
 
     @Override
@@ -85,7 +87,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 //mLogger.message("Handling SSI data " + mSSIData);
                 final HashMap<String, AbstractValue> values = new HashMap<>();
                 values.put("voice_activity", new StringValue(mSSIData.get("voice.activity")));
-                values.put("voice_keyword", new StringValue(mSSIData.get("voice.keyword")));
+                values.put("voice_keyword", new StringValue(mSSIData.get("voice.speechact")));
 
 
                 values.put("voice_praat_pitchmean", new StringValue(mSSIData.get("voice.praat.pitchmean")));

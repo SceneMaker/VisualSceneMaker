@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.tworld;
 
-import de.dfki.stickman.StickmanStage;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -22,12 +21,15 @@ import de.dfki.vsm.xtension.tworld.xml.util.ActionLoader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  * @author Gregor Mehlmann, Patrick Gebhard
@@ -45,6 +47,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
+    // The word mapping properties
+    Properties mWordMapping = new Properties();
 
     // Construct the executor
     public TWorldExecutor(
@@ -64,6 +68,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         final String cactordir = mConfig.getProperty("cactordir");
         final String cactorexe = mConfig.getProperty("cactorexe");
         final String cactorcmd = mConfig.getProperty("cactorcmd");
+
         // Create the plugin's processes
         try {
             mProcessMap.put(cactorexe, Runtime.getRuntime().exec(
@@ -170,11 +175,35 @@ public final class TWorldExecutor extends ActivityExecutor {
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
+            String text = sa.getTextOnly("$(").trim();
+            LinkedList<String> timemarks = sa.getTimeMarks("$(");
 
-            // get the charamel avatar id
-            String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-            // build action
-            twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunctuation(), aid);
+            mLogger.success("text is " + text);
+
+            // If text is empty - assume activity has empty text but has marker activities registered
+            if (text.isEmpty()) {
+                for (String tm : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
+            } else {
+                // load wordmapping database
+                try {
+                    String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping");
+                    wmf = wmf.replace("\\", "/");
+                    mWordMapping.load(new FileReader(new File(wmf)));
+                } catch (IOException ex) {
+                    mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping") + ") not found!");
+                }
+
+                // do the pronounciation mapping
+                sa.doPronounciationMapping(mWordMapping);
+
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunctuation(), aid);
+            }
         } else {
             if (cmd.equalsIgnoreCase("AmbientLight")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
