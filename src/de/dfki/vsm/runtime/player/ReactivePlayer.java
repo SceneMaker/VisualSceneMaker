@@ -159,7 +159,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                     // Serially play the utterances
                     for (SceneUttr uttr : turn.getUttrList()) {
 
-                        mLogger.message("Utterance " + uttr.getText());
+                        mLogger.message("Utterance " + uttr.getText().trim());
 
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
