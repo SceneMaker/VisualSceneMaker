@@ -17,30 +17,30 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class FocalLength extends Action implements XMLParseable, XMLWriteable {
+public class Camera extends Action implements XMLParseable, XMLWriteable {
 
-    String mValue = "";
-    String mBlendTime = "";
+    String mX = "";
+    String mY = "";
 
-    public FocalLength(String value, String blendtime) {
-        mName = "setfieldofview";
-        mValue = value;
-        mBlendTime = blendtime;
+    public Camera(String x, String y) {
+        mName = "rotateviewbydegrees";
+        mX = x;
+        mY = y;
     }
 
-    public FocalLength() {
+    public Camera() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" value=\"" + mValue + "\" blendtime=\"" + mBlendTime + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" x=\"" + mX + "\" y=\"" + mY + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mValue = element.getAttribute("value");
-        mBlendTime = element.getAttribute("blendtime");
+        mX = element.getAttribute("x");
+        mY = element.getAttribute("y");
         mId = element.getAttribute("id");
     }
 }
