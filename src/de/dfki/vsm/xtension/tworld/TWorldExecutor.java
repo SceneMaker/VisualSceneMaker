@@ -281,6 +281,30 @@ public final class TWorldExecutor extends ActivityExecutor {
                     twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
                 }
             }
+
+            if (cmd.equalsIgnoreCase("Camera") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("x", features), getActionFeatureValue("y", features));
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
+            }
+
+            if (cmd.equalsIgnoreCase("FocalLength") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features), getActionFeatureValue("time", features));
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
+            }
+
+            if (cmd.equalsIgnoreCase("DefaultFocalLength") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("time", features));
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
+            }
         }
 
         // finalize build command

@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.tworld;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventObject;
@@ -11,7 +12,6 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import java.io.File;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -97,7 +97,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 values.put("head_position_x", new StringValue(mSSIData.get("head.position.x")));
                 values.put("head_position_y", new StringValue(mSSIData.get("head.position.y")));
                 values.put("head_orientation_roll", new StringValue(mSSIData.get("head.orientation.roll")));
-                values.put("head_orientation_pitch", new StringValue(mSSIData.get("head.orientation.pitch")));
+                float a = Float.parseFloat(mSSIData.get("head.orientation.pitch")) * -1.0f;
+                values.put("head_orientation_pitch", new FloatValue(a));
                 values.put("head_orientation_yaw", new StringValue(mSSIData.get("head.orientation.yaw")));
                 values.put("head_movement_nod", new StringValue(mSSIData.get("head.movement.nod")));
                 values.put("head_movement_shake", new StringValue(mSSIData.get("head.movement.shake")));

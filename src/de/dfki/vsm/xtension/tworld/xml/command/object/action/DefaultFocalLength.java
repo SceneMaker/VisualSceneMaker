@@ -39,7 +39,7 @@ public class DefaultFocalLength extends Action implements XMLParseable, XMLWrite
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mBlendTime = element.getAttribute("bledntime");
+        mBlendTime = element.getAttribute("blendtime");
         mId = element.getAttribute("id");
     }
 }
