@@ -72,7 +72,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Create the plugin's processes
         try {
             mProcessMap.put(cactorexe, Runtime.getRuntime().exec(
-                    "cmd /c start " + cactorexe + " " + cactorcmd, null, new File(cactordir)));
+                    "cmd /c start /min " + cactorexe + " " + cactorcmd, null, new File(cactordir)));
             mProcessMap.put(tworldexe, Runtime.getRuntime().exec(
                     "cmd /c start " + tworldexe + " " + tworldcmd, null, new File(tworlddir)));
         } catch (final Exception exc) {
@@ -206,6 +206,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunctuation(), aid);
             }
         } else {
+            if (cmd.equalsIgnoreCase("Smile")) {
+                 // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", "1.0", aid);
+            }
+            
             if (cmd.equalsIgnoreCase("AmbientLight")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
@@ -271,7 +278,6 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
 
             if (cmd.equalsIgnoreCase("Warp")) {
-                mLogger.success("WARP Command!");
                 String target = getActionFeatureValue("viewtarget", features);
                 if (target != null) {
                     twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features), target);
@@ -281,10 +287,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
                 if (activity.getActor().equalsIgnoreCase("player")) {
                     twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
-                }
-                
-                mLogger.success("WARP Build! " + twcoa);
-                
+                }   
             }
 
             if (cmd.equalsIgnoreCase("Camera") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
@@ -312,6 +315,7 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
         }
 
+        mLogger.message("Building command " + cmd + " for Actor " + activity.getActor());
         // finalize build command
         Object twco = new Object(activity.getActor(), twcoa);
         mTWC = new TWorldCommand();
