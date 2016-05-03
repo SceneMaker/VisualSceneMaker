@@ -48,9 +48,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     @Override
     public void unload() {
         super.unload();
-        
-        // PG: SSI Plugin has to be manually stopped
 
+        // PG: SSI Plugin has to be manually stopped
         // Wait for pawned processes
 //        for (final Map.Entry<String, Process> entry : mProcessMap.entrySet()) {
 //            // Get the process entry
@@ -87,8 +86,20 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 //mLogger.message("Handling SSI data " + mSSIData);
                 final HashMap<String, AbstractValue> values = new HashMap<>();
                 values.put("voice_activity", new StringValue(mSSIData.get("voice.activity")));
-                values.put("voice_keyword", new StringValue(mSSIData.get("voice.speechact")));
+                String detectedUtterance = mSSIData.get("voice.speechact");
+                values.put("voice_keyword", new StringValue(detectedUtterance));
 
+                if (!detectedUtterance.isEmpty()) {
+                    // PG - added 3.5.2016, check if uttrance is nummeric
+                    try {
+                        Integer.parseInt(detectedUtterance);
+                        values.put("voice_act_is_nummeric", new StringValue("1"));
+                    } catch (NumberFormatException nfe) {
+                        values.put("voice_act_is_nummeric", new StringValue("0"));
+                    }
+                } else {
+                    values.put("voice_act_is_nummeric", new StringValue(""));
+                }
 
                 values.put("voice_praat_pitchmean", new StringValue(mSSIData.get("voice.praat.pitchmean")));
                 values.put("voice_praat_pitchsd", new StringValue(mSSIData.get("voice.praat.pitchsd")));
@@ -127,7 +138,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 //mProject.setVariable("usercues", new StructValue(values));
                 for (final Entry<String, AbstractValue> value : values.entrySet()) {
                     if (mProject.hasVariable(value.getKey())) {
-                        
+
                         mProject.setVariable(value.getKey(), value.getValue());
                         //mLogger.success("Setting Variable " + value.getKey() + " to " + value.getValue().getConcreteSyntax());
                     } else {
