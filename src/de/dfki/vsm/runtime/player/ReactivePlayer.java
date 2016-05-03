@@ -164,7 +164,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
                         for (final UtteranceElement element : uttr.getWordList()) {
-                            mLogger.message("element " + element);
+                            //mLogger.message("element " + element);
 
                             if (element instanceof ActionObject) {
                                 final ActionObject action = (ActionObject) element;

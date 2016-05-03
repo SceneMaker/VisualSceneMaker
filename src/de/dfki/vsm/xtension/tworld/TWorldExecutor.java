@@ -178,13 +178,14 @@ public final class TWorldExecutor extends ActivityExecutor {
             String text = sa.getTextOnly("$(").trim();
             LinkedList<String> timemarks = sa.getTimeMarks("$(");
 
-            mLogger.success("text is " + text);
+            //mLogger.success("text is " + text);
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
                 for (String tm : timemarks) {
                     mLogger.warning("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                    return;
                 }
             } else {
                 // load wordmapping database
@@ -270,6 +271,7 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
 
             if (cmd.equalsIgnoreCase("Warp")) {
+                mLogger.success("WARP Command!");
                 String target = getActionFeatureValue("viewtarget", features);
                 if (target != null) {
                     twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features), target);
@@ -280,6 +282,9 @@ public final class TWorldExecutor extends ActivityExecutor {
                 if (activity.getActor().equalsIgnoreCase("player")) {
                     twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
                 }
+                
+                mLogger.success("WARP Build! " + twcoa);
+                
             }
 
             if (cmd.equalsIgnoreCase("Camera") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
