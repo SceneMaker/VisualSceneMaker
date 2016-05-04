@@ -205,11 +205,32 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunctuation(), aid);
             }
         } else {
-            if (cmd.equalsIgnoreCase("Smile")) {
+            if (cmd.equalsIgnoreCase("Angry")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", "1.0", aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Angry", "1.0", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("Demanding")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Demanding", "1.0", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("Disgust")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Disgust", "1.0", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("Neutral")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Neutral", "1.0", aid);
             }
 
             if (cmd.equalsIgnoreCase("Sad")) {
@@ -217,6 +238,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
                 // build action
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Sad", "1.0", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("Smile")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", "1.0", aid);
             }
 
             if (cmd.equalsIgnoreCase("ShowPalms")) {
@@ -410,6 +438,22 @@ public final class TWorldExecutor extends ActivityExecutor {
                     twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
                 }
             }
+
+            if (cmd.equalsIgnoreCase("CameraOffset") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("x", features), getActionFeatureValue("y", features), getActionFeatureValue("z", features));
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
+            }
+
+            if (cmd.equalsIgnoreCase("Scale") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
+            }
         }
 
         mLogger.message("Building command " + cmd + " for Actor " + activity.getActor());
@@ -514,6 +558,10 @@ public final class TWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable
                                 mProject.setVariable("susanne_voice_activity", new StringValue("1"));
                                 mProject.setVariable("tom_voice_activity", new StringValue("1"));
+                            }
+                            if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
+                                mLogger.success("Handling Charamel Marker " + twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
+                                mProject.getRunTimePlayer().getActivityScheduler().handle(twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
                             }
                             if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
                                 // TODO - get id - for now there is none

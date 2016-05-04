@@ -50,7 +50,7 @@ public class Sad extends Action implements XMLParseable, XMLWriteable {
         ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
         ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
         AnimationTrack track1 = ca.addTrack();
-        track1.morph(Integer.parseInt(mCharameAvatarId), Float.parseFloat(mIntentsity), 1000, Morph.Sad);
+        track1.morph(Integer.parseInt(mCharameAvatarId), Float.parseFloat(mIntentsity), 3000, Morph.Sad);
         out.push().println(ca.getCaiXML());
         out.pop().pop().println("</Action>");
     }
