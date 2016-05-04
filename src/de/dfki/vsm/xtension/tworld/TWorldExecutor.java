@@ -179,7 +179,6 @@ public final class TWorldExecutor extends ActivityExecutor {
             LinkedList<String> timemarks = sa.getTimeMarks("$(");
 
             //mLogger.success("text is " + text);
-
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
                 for (String tm : timemarks) {
@@ -207,12 +206,103 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
         } else {
             if (cmd.equalsIgnoreCase("Smile")) {
-                 // get the charamel avatar id
+                // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
                 // build action
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", "1.0", aid);
             }
-            
+
+            if (cmd.equalsIgnoreCase("ShowPalms")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("ShowPalms", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("OpenArms")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("OpenArms", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("LookLeft")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("LookLeft", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("LookRight")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("LookRight", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("No")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("No", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("StrongNo")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("StrongNo", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("PointLeft")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PointLeft", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("PointRight")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PointRight", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("PresentLeft")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PresentLeft", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("PresentRight")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PresentRight", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("Welcome")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Welcome", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("Yes")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Yes", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("StrongYes")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("StrongYes", aid);
+            }
+
             if (cmd.equalsIgnoreCase("AmbientLight")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
             }
@@ -287,7 +377,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
                 if (activity.getActor().equalsIgnoreCase("player")) {
                     twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
-                }   
+                }
             }
 
             if (cmd.equalsIgnoreCase("Camera") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
