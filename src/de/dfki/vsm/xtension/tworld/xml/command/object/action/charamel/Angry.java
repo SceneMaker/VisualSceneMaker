@@ -23,7 +23,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Smile extends Action implements XMLParseable, XMLWriteable {
+public class Angry extends Action implements XMLParseable, XMLWriteable {
 
     private String mIntentsity;
     private String mCharameAvatarId = "1";
@@ -31,13 +31,13 @@ public class Smile extends Action implements XMLParseable, XMLWriteable {
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public Smile(String intensity, String aid) {
+    public Angry(String intensity, String aid) {
         mName = "caixml";
         mIntentsity = intensity;
         mCharameAvatarId = aid;
     }
 
-    public Smile() {
+    public Angry() {
         mName = "caixml";
         mIntentsity = "1.0";
     }
@@ -50,7 +50,7 @@ public class Smile extends Action implements XMLParseable, XMLWriteable {
         ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
         ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
         AnimationTrack track1 = ca.addTrack();
-        track1.morph(Integer.parseInt(mCharameAvatarId), Float.parseFloat(mIntentsity), 3000, Morph.Joy);
+        track1.morph(Integer.parseInt(mCharameAvatarId), Float.parseFloat(mIntentsity), 3000, Morph.Angry);
         out.push().println(ca.getCaiXML());
         out.pop().pop().println("</Action>");
     }
