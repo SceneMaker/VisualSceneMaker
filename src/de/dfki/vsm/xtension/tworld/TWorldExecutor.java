@@ -212,6 +212,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", "1.0", aid);
             }
 
+            if (cmd.equalsIgnoreCase("Sad")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Sad", "1.0", aid);
+            }
+
             if (cmd.equalsIgnoreCase("ShowPalms")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
