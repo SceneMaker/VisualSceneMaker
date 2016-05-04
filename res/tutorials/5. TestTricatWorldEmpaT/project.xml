@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="EmpaT">
   <Plugins>
-    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="true">
+    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="false">
       <Feature key="hlhost" val="127.0.0.1"/>
       <Feature key="hlport" val="343"/>
       <Feature key="slhost" val="127.0.0.1"/>
