@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="true" hideGlobalVar="false" modifDate="Fr, 6 Mai 2016 12:15:06" start="N69;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="true" hideGlobalVar="false" modifDate="Fr, 6 Mai 2016 18:41:13" start="N90;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
     <StructType name="WorldFeedback">
       <Member type="String" name ="type"/>
@@ -325,7 +325,7 @@
         <String><![CDATA[[player DefaultFocalLength time=0.05]]]></String>
       </Play>
     </Commands>
-    <TEdge target="N89" start="" timeout="10000">
+    <TEdge target="N89" start="" timeout="5000">
     <Graphics>
       <Connection>
         <ControlPoint xPos="662" yPos="537" ctrlXPos="597" ctrlYPos="555"/>

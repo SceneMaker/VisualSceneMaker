@@ -17,33 +17,33 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class SetColor extends Action implements XMLParseable, XMLWriteable {
+public class WarpPosition extends Action implements XMLParseable, XMLWriteable {
 
-    String mRed = "";
-    String mGreen = "";
-    String mBlue = "";
+    String mX = "";
+    String mY = "";
+    String mZ = "";
 
-    public SetColor(String red, String green, String blue) {
-        mName = "color";
-        mRed = red;
-        mGreen = green;
-        mBlue = blue;
+    public WarpPosition(String x, String y, String z) {
+        mName = "warptoworldposition";
+        mX = x;
+        mY = y;
+        mZ = z;
     }
 
-    public SetColor() {
+    public WarpPosition() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" r=\"" + mRed + "\" g=\"" + mGreen + "\" b=\"" + mBlue + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" r=\"" + mX + "\" g=\"" + mY + "\" b=\"" + mZ + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mRed = element.getAttribute("r");
-        mGreen = element.getAttribute("g");
-        mBlue = element.getAttribute("b");
+        mX = element.getAttribute("x");
+        mY = element.getAttribute("y");
+        mZ = element.getAttribute("z");
         mId = element.getAttribute("id");
     }
 }

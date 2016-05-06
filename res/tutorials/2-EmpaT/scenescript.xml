@@ -4,1460 +4,1459 @@
   <SceneComment lower="37" upper="88" comment="/* picture display [display show image={cat|dog} */"/>
   <SceneComment lower="90" upper="162" comment="/* picture hide [display hide], mandatory since display show is modal */"/>
   <SceneComment lower="164" upper="231" comment="/* ambient light [environment AmbientLight value={noon|evening}] */"/>
-  <SceneComment lower="233" upper="319" comment="/* npc, player control [{npc(nr)|player} {LookAt|MoveTo|SitDown} target=targetName] */"/>
-  <SceneComment lower="321" upper="394" comment="/* npc, player control [{npc(nr)|player} SitDown chairname=targetName] */"/>
-  <SceneComment lower="396" upper="491" comment="/* npc, player control [{npc(nr)|player} Warp location=locationName {viewtarget=targetName}] */"/>
-  <SceneComment lower="493" upper="538" comment="/* player scale [player Scale value=float] */"/>
-  <SceneComment lower="540" upper="605" comment="/* player: cameraoffset [CameraOffset x=float y=float z=float] */"/>
-  <SceneComment lower="607" upper="685" comment="/* npc control [npc(nr)|susanne|norbert CancelMoveTo|Release|ReleaseLookAt] */"/>
-  <SceneComment lower="687" upper="726" comment="/* npc control [npc(nr) Say url=url] */"/>
-  <SceneComment lower="728" upper="828" comment="/* wall color [ceo_wall|meeting_wall1|meeting_wall2 SetColor r=0.0-255.0 g=0.0-255.0 b=0.0-255.0] */"/>
-  <SceneComment lower="830" upper="878" comment="/* video wall player [videowall Load url=url] */"/>
-  <SceneComment lower="880" upper="925" comment="/* video wall player [videowall Play|Stop] */"/>
-  <SceneComment lower="927" upper="965" comment="/* tom: [LookAt viewtarget=player]. */"/>
-  <SceneComment lower="967" upper="1005" comment="/* player: [LookAt viewtarget=tom]. */"/>
-  <SceneComment lower="1007" upper="1085" comment="/* player default view orientation: [player CameraOffset x=0 y=-0.15 z=0.1] */"/>
-  <SceneComment lower="1087" upper="1131" comment="/* player scale: [player Scale value=1.0] */"/>
-  <SceneComment lower="1133" upper="1206" comment="/* player default view zoom: [player FocalLength value=20.0 time=0.05] */"/>
-  <SceneComment lower="1208" upper="1290" comment="/* facial expressions: [{tom|susanne} Smile|Sad|Angry|Disgust|Demanding|Neutral]*/"/>
-  <SceneComment lower="1292" upper="1442" comment="/* gestures: [{tom|susanne} {No|StrongNo|Yes|StrongYes|LookLeft|LookRight|PointLeft|PointRight|PresentLeft|PresentRight|ShowPalms|OpenArms|Welcome}]*/"/>
-  <SceneObject lower="1444" upper="1661" language="en" identifier="Welcome_SensorActivation">
-    <SceneTurn lower="1479" upper="1512" speaker="tom">
-      <SceneUttr lower="1484" upper="1490" punct="!">
-        <SceneWord lower="1484" upper="1489" text="Hallo"/>
+  <SceneComment lower="233" upper="312" comment="/* npc, player control [{npc(nr)|player} {LookAt|SitDown} target=targetName] */"/>
+  <SceneComment lower="314" upper="367" comment="/* player move [player MoveTo location={location}] */"/>
+  <SceneComment lower="369" upper="442" comment="/* npc, player control [{npc(nr)|player} SitDown chairname=targetName] */"/>
+  <SceneComment lower="444" upper="539" comment="/* npc, player control [{npc(nr)|player} Warp location=locationName {viewtarget=targetName}] */"/>
+  <SceneComment lower="541" upper="586" comment="/* player scale [player Scale value=float] */"/>
+  <SceneComment lower="588" upper="653" comment="/* player: cameraoffset [CameraOffset x=float y=float z=float] */"/>
+  <SceneComment lower="655" upper="733" comment="/* npc control [npc(nr)|susanne|norbert CancelMoveTo|Release|ReleaseLookAt] */"/>
+  <SceneComment lower="735" upper="774" comment="/* npc control [npc(nr) Say url=url] */"/>
+  <SceneComment lower="776" upper="876" comment="/* wall color [ceo_wall|meeting_wall1|meeting_wall2 SetColor r=0.0-255.0 g=0.0-255.0 b=0.0-255.0] */"/>
+  <SceneComment lower="878" upper="926" comment="/* video wall player [videowall Load url=url] */"/>
+  <SceneComment lower="928" upper="973" comment="/* video wall player [videowall Play|Stop] */"/>
+  <SceneComment lower="975" upper="1013" comment="/* tom: [LookAt viewtarget=player]. */"/>
+  <SceneComment lower="1015" upper="1053" comment="/* player: [LookAt viewtarget=tom]. */"/>
+  <SceneComment lower="1055" upper="1133" comment="/* player default view orientation: [player CameraOffset x=0 y=-0.15 z=0.1] */"/>
+  <SceneComment lower="1135" upper="1179" comment="/* player scale: [player Scale value=1.0] */"/>
+  <SceneComment lower="1181" upper="1254" comment="/* player default view zoom: [player FocalLength value=20.0 time=0.05] */"/>
+  <SceneComment lower="1256" upper="1344" comment="/* facial expressions: [{tom|susanne} Smile|Happy|Sad|Angry|Disgust|Demanding|Neutral]*/"/>
+  <SceneComment lower="1346" upper="1496" comment="/* gestures: [{tom|susanne} {No|StrongNo|Yes|StrongYes|LookLeft|LookRight|PointLeft|PointRight|PresentLeft|PresentRight|ShowPalms|OpenArms|Welcome}]*/"/>
+  <SceneObject lower="1498" upper="1715" language="en" identifier="Welcome_SensorActivation">
+    <SceneTurn lower="1533" upper="1566" speaker="tom">
+      <SceneUttr lower="1538" upper="1544" punct="!">
+        <SceneWord lower="1538" upper="1543" text="Hallo"/>
       </SceneUttr>
-      <SceneUttr lower="1491" upper="1512" punct=".">
-        <SceneWord lower="1491" upper="1499" text="Herzlich"/>
-        <SceneWord lower="1500" upper="1511" text="Willkommmen"/>
+      <SceneUttr lower="1545" upper="1566" punct=".">
+        <SceneWord lower="1545" upper="1553" text="Herzlich"/>
+        <SceneWord lower="1554" upper="1565" text="Willkommmen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="1513" upper="1598" speaker="tom">
-      <SceneUttr lower="1518" upper="1537" punct=",">
-        <SceneWord lower="1518" upper="1523" text="Bevor"/>
-        <SceneWord lower="1524" upper="1527" text="wir"/>
-        <SceneWord lower="1528" upper="1536" text="loslegen"/>
+    </SceneTurn><SceneTurn lower="1567" upper="1652" speaker="tom">
+      <SceneUttr lower="1572" upper="1591" punct=",">
+        <SceneWord lower="1572" upper="1577" text="Bevor"/>
+        <SceneWord lower="1578" upper="1581" text="wir"/>
+        <SceneWord lower="1582" upper="1590" text="loslegen"/>
       </SceneUttr>
-      <SceneUttr lower="1538" upper="1557" punct=",">
-        <SceneWord lower="1538" upper="1544" text="müssen"/>
-        <SceneWord lower="1545" upper="1548" text="wir"/>
-        <SceneWord lower="1549" upper="1556" text="schauen"/>
+      <SceneUttr lower="1592" upper="1611" punct=",">
+        <SceneWord lower="1592" upper="1598" text="müssen"/>
+        <SceneWord lower="1599" upper="1602" text="wir"/>
+        <SceneWord lower="1603" upper="1610" text="schauen"/>
       </SceneUttr>
-      <SceneUttr lower="1558" upper="1598" punct=".">
-        <SceneWord lower="1558" upper="1560" text="ob"/>
-        <SceneWord lower="1561" upper="1566" text="meine"/>
-        <SceneWord lower="1567" upper="1575" text="Sensoren"/>
-        <SceneWord lower="1576" upper="1583" text="richtig"/>
-        <SceneWord lower="1584" upper="1597" text="funktionieren"/>
+      <SceneUttr lower="1612" upper="1652" punct=".">
+        <SceneWord lower="1612" upper="1614" text="ob"/>
+        <SceneWord lower="1615" upper="1620" text="meine"/>
+        <SceneWord lower="1621" upper="1629" text="Sensoren"/>
+        <SceneWord lower="1630" upper="1637" text="richtig"/>
+        <SceneWord lower="1638" upper="1651" text="funktionieren"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="1599" upper="1661" speaker="tom">
-      <SceneUttr lower="1604" upper="1661" punct=".">
-        <SceneWord lower="1604" upper="1610" text="Bewege"/>
-        <SceneWord lower="1611" upper="1615" text="dazu"/>
-        <SceneWord lower="1616" upper="1622" text="gleich"/>
-        <SceneWord lower="1623" upper="1626" text="den"/>
-        <SceneWord lower="1627" upper="1631" text="Kopf"/>
-        <SceneWord lower="1632" upper="1638" text="leicht"/>
-        <SceneWord lower="1639" upper="1643" text="nach"/>
-        <SceneWord lower="1644" upper="1649" text="links"/>
-        <SceneWord lower="1650" upper="1653" text="und"/>
-        <SceneWord lower="1654" upper="1660" text="rechts"/>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="1663" upper="1758" language="en" identifier="SensorActivation_Done">
-    <SceneTurn lower="1695" upper="1727" speaker="player">
-      <SceneUttr lower="1703" upper="1727" punct=".">
-        <ActionObject lower="1703" upper="1726" actor="" mode="" name="LookAt" >
-          <ActionFeature lower="1711" upper="1725" typ="IDENTIFIER" key="viewtarget" val="tom"/></ActionObject>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="1728" upper="1758" speaker="tom">
-      <SceneUttr lower="1733" upper="1737" punct="!">
-        <SceneWord lower="1733" upper="1736" text="Gut"/>
-      </SceneUttr>
-      <SceneUttr lower="1738" upper="1758" punct=".">
-        <SceneWord lower="1738" upper="1741" text="Wir"/>
-        <SceneWord lower="1742" upper="1748" text="können"/>
-        <SceneWord lower="1749" upper="1757" text="loslegen"/>
+    </SceneTurn><SceneTurn lower="1653" upper="1715" speaker="tom">
+      <SceneUttr lower="1658" upper="1715" punct=".">
+        <SceneWord lower="1658" upper="1664" text="Bewege"/>
+        <SceneWord lower="1665" upper="1669" text="dazu"/>
+        <SceneWord lower="1670" upper="1676" text="gleich"/>
+        <SceneWord lower="1677" upper="1680" text="den"/>
+        <SceneWord lower="1681" upper="1685" text="Kopf"/>
+        <SceneWord lower="1686" upper="1692" text="leicht"/>
+        <SceneWord lower="1693" upper="1697" text="nach"/>
+        <SceneWord lower="1698" upper="1703" text="links"/>
+        <SceneWord lower="1704" upper="1707" text="und"/>
+        <SceneWord lower="1708" upper="1714" text="rechts"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1760" upper="2111" language="en" identifier="Welcome_Coach">
-    <SceneTurn lower="1784" upper="1795" speaker="tom">
-      <SceneUttr lower="1789" upper="1795" punct=".">
-        <SceneWord lower="1789" upper="1794" text="Hallo"/>
+  <SceneObject lower="1717" upper="1812" language="en" identifier="SensorActivation_Done">
+    <SceneTurn lower="1749" upper="1781" speaker="player">
+      <SceneUttr lower="1757" upper="1781" punct=".">
+        <ActionObject lower="1757" upper="1780" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="1765" upper="1779" typ="IDENTIFIER" key="viewtarget" val="tom"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="1796" upper="1823" speaker="environment">
-      <SceneUttr lower="1809" upper="1823" punct=".">
-        <ActionObject lower="1809" upper="1822" actor="tom" mode="" name="Welcome" >
+    </SceneTurn><SceneTurn lower="1782" upper="1812" speaker="tom">
+      <SceneUttr lower="1787" upper="1791" punct="!">
+        <SceneWord lower="1787" upper="1790" text="Gut"/>
+      </SceneUttr>
+      <SceneUttr lower="1792" upper="1812" punct=".">
+        <SceneWord lower="1792" upper="1795" text="Wir"/>
+        <SceneWord lower="1796" upper="1802" text="können"/>
+        <SceneWord lower="1803" upper="1811" text="loslegen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1814" upper="2165" language="en" identifier="Welcome_Coach">
+    <SceneTurn lower="1838" upper="1849" speaker="tom">
+      <SceneUttr lower="1843" upper="1849" punct=".">
+        <SceneWord lower="1843" upper="1848" text="Hallo"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="1850" upper="1877" speaker="environment">
+      <SceneUttr lower="1863" upper="1877" punct=".">
+        <ActionObject lower="1863" upper="1876" actor="tom" mode="" name="Welcome" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="1824" upper="1906" speaker="tom">
-      <SceneUttr lower="1829" upper="1906" punct=".">
-        <SceneWord lower="1829" upper="1837" text="Herzlich"/>
-        <SceneWord lower="1838" upper="1848" text="Willkommen"/>
-        <SceneWord lower="1849" upper="1852" text="bei"/>
-        <SceneWord lower="1853" upper="1860" text="unserem"/>
-        <SceneWord lower="1861" upper="1871" text="virtuellen"/>
-        <SceneWord lower="1872" upper="1887" text="Trainingssystem"/>
-        <SceneWord lower="1888" upper="1891" text="für"/>
-        <SceneWord lower="1892" upper="1905" text="Jobinterviews"/>
+    </SceneTurn><SceneTurn lower="1878" upper="1960" speaker="tom">
+      <SceneUttr lower="1883" upper="1960" punct=".">
+        <SceneWord lower="1883" upper="1891" text="Herzlich"/>
+        <SceneWord lower="1892" upper="1902" text="Willkommen"/>
+        <SceneWord lower="1903" upper="1906" text="bei"/>
+        <SceneWord lower="1907" upper="1914" text="unserem"/>
+        <SceneWord lower="1915" upper="1925" text="virtuellen"/>
+        <SceneWord lower="1926" upper="1941" text="Trainingssystem"/>
+        <SceneWord lower="1942" upper="1945" text="für"/>
+        <SceneWord lower="1946" upper="1959" text="Jobinterviews"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="1907" upper="1993" speaker="tom">
-      <SceneUttr lower="1912" upper="1993" punct=".">
-        <SceneWord lower="1912" upper="1915" text="Ich"/>
-        <SceneWord lower="1916" upper="1921" text="werde"/>
-        <SceneWord lower="1922" upper="1926" text="dich"/>
-        <SceneWord lower="1927" upper="1932" text="durch"/>
-        <SceneWord lower="1933" upper="1936" text="das"/>
-        <SceneWord lower="1937" upper="1945" text="Training"/>
-        <SceneWord lower="1946" upper="1952" text="führen"/>
-        <SceneWord lower="1953" upper="1956" text="und"/>
-        <SceneWord lower="1957" upper="1960" text="bin"/>
-        <SceneWord lower="1961" upper="1965" text="dein"/>
-        <SceneWord lower="1966" upper="1981" text="Ansprechpartner"/>
-        <SceneWord lower="1982" upper="1985" text="für"/>
-        <SceneWord lower="1986" upper="1992" text="Fragen"/>
+    </SceneTurn><SceneTurn lower="1961" upper="2047" speaker="tom">
+      <SceneUttr lower="1966" upper="2047" punct=".">
+        <SceneWord lower="1966" upper="1969" text="Ich"/>
+        <SceneWord lower="1970" upper="1975" text="werde"/>
+        <SceneWord lower="1976" upper="1980" text="dich"/>
+        <SceneWord lower="1981" upper="1986" text="durch"/>
+        <SceneWord lower="1987" upper="1990" text="das"/>
+        <SceneWord lower="1991" upper="1999" text="Training"/>
+        <SceneWord lower="2000" upper="2006" text="führen"/>
+        <SceneWord lower="2007" upper="2010" text="und"/>
+        <SceneWord lower="2011" upper="2014" text="bin"/>
+        <SceneWord lower="2015" upper="2019" text="dein"/>
+        <SceneWord lower="2020" upper="2035" text="Ansprechpartner"/>
+        <SceneWord lower="2036" upper="2039" text="für"/>
+        <SceneWord lower="2040" upper="2046" text="Fragen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="1994" upper="2017" speaker="environment">
-      <SceneUttr lower="2007" upper="2017" punct=".">
-        <ActionObject lower="2007" upper="2016" actor="tom" mode="" name="Yes" >
+    </SceneTurn><SceneTurn lower="2048" upper="2071" speaker="environment">
+      <SceneUttr lower="2061" upper="2071" punct=".">
+        <ActionObject lower="2061" upper="2070" actor="tom" mode="" name="Yes" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="2018" upper="2081" speaker="tom">
-      <SceneUttr lower="2023" upper="2081" punct=".">
-        <SceneWord lower="2023" upper="2031" text="Zunächst"/>
-        <SceneWord lower="2032" upper="2038" text="müsste"/>
-        <SceneWord lower="2039" upper="2042" text="ich"/>
-        <SceneWord lower="2043" upper="2049" text="einige"/>
-        <SceneWord lower="2050" upper="2063" text="Informationen"/>
-        <SceneWord lower="2064" upper="2067" text="von"/>
-        <SceneWord lower="2068" upper="2071" text="dir"/>
-        <SceneWord lower="2072" upper="2080" text="bekommen"/>
+    </SceneTurn><SceneTurn lower="2072" upper="2135" speaker="tom">
+      <SceneUttr lower="2077" upper="2135" punct=".">
+        <SceneWord lower="2077" upper="2085" text="Zunächst"/>
+        <SceneWord lower="2086" upper="2092" text="müsste"/>
+        <SceneWord lower="2093" upper="2096" text="ich"/>
+        <SceneWord lower="2097" upper="2103" text="einige"/>
+        <SceneWord lower="2104" upper="2117" text="Informationen"/>
+        <SceneWord lower="2118" upper="2121" text="von"/>
+        <SceneWord lower="2122" upper="2125" text="dir"/>
+        <SceneWord lower="2126" upper="2134" text="bekommen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="2082" upper="2111" speaker="environment">
-      <SceneUttr lower="2095" upper="2111" punct=".">
-        <ActionObject lower="2095" upper="2110" actor="tom" mode="" name="ShowPalms" >
+    </SceneTurn><SceneTurn lower="2136" upper="2165" speaker="environment">
+      <SceneUttr lower="2149" upper="2165" punct=".">
+        <ActionObject lower="2149" upper="2164" actor="tom" mode="" name="ShowPalms" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2113" upper="2183" language="en" identifier="Ask_User_Name">
-    <SceneTurn lower="2137" upper="2183" speaker="tom">
-      <SceneUttr lower="2142" upper="2149" punct=",">
-        <SceneWord lower="2142" upper="2148" text="Zuerst"/>
+  <SceneObject lower="2167" upper="2237" language="en" identifier="Ask_User_Name">
+    <SceneTurn lower="2191" upper="2237" speaker="tom">
+      <SceneUttr lower="2196" upper="2203" punct=",">
+        <SceneWord lower="2196" upper="2202" text="Zuerst"/>
       </SceneUttr>
-      <SceneUttr lower="2150" upper="2183" punct=".">
-        <SceneWord lower="2150" upper="2155" text="nenne"/>
-        <SceneWord lower="2156" upper="2159" text="mir"/>
-        <SceneWord lower="2160" upper="2165" text="bitte"/>
-        <SceneWord lower="2166" upper="2172" text="Deinen"/>
-        <SceneWord lower="2173" upper="2182" text="Nachnamen"/>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="2185" upper="2229" language="en" identifier="Ask_User_Age">
-    <SceneTurn lower="2208" upper="2229" speaker="tom">
-      <SceneUttr lower="2213" upper="2229" punct="?">
-        <SceneWord lower="2213" upper="2216" text="Wie"/>
-        <SceneWord lower="2217" upper="2220" text="alt"/>
-        <SceneWord lower="2221" upper="2225" text="bist"/>
-        <SceneWord lower="2226" upper="2228" text="Du"/>
+      <SceneUttr lower="2204" upper="2237" punct=".">
+        <SceneWord lower="2204" upper="2209" text="nenne"/>
+        <SceneWord lower="2210" upper="2213" text="mir"/>
+        <SceneWord lower="2214" upper="2219" text="bitte"/>
+        <SceneWord lower="2220" upper="2226" text="Deinen"/>
+        <SceneWord lower="2227" upper="2236" text="Nachnamen"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2231" upper="2282" language="en" identifier="Ask_User_Sex">
-    <SceneTurn lower="2254" upper="2282" speaker="tom">
-      <SceneUttr lower="2259" upper="2282" punct="?">
-        <SceneWord lower="2259" upper="2267" text="Weiblich"/>
-        <SceneWord lower="2268" upper="2272" text="oder"/>
-        <SceneWord lower="2273" upper="2281" text="männlich"/>
+  <SceneObject lower="2239" upper="2283" language="en" identifier="Ask_User_Age">
+    <SceneTurn lower="2262" upper="2283" speaker="tom">
+      <SceneUttr lower="2267" upper="2283" punct="?">
+        <SceneWord lower="2267" upper="2270" text="Wie"/>
+        <SceneWord lower="2271" upper="2274" text="alt"/>
+        <SceneWord lower="2275" upper="2279" text="bist"/>
+        <SceneWord lower="2280" upper="2282" text="Du"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2284" upper="2362" language="en" identifier="Ask_User_JobInteviews">
-    <SceneTurn lower="2316" upper="2362" speaker="tom">
-      <SceneUttr lower="2321" upper="2362" punct="?">
-        <SceneWord lower="2321" upper="2324" text="Wie"/>
-        <SceneWord lower="2325" upper="2330" text="viele"/>
-        <SceneWord lower="2331" upper="2344" text="Jobinterviews"/>
-        <SceneWord lower="2345" upper="2352" text="hattest"/>
-        <SceneWord lower="2353" upper="2355" text="Du"/>
-        <SceneWord lower="2356" upper="2361" text="schon"/>
+  <SceneObject lower="2285" upper="2336" language="en" identifier="Ask_User_Sex">
+    <SceneTurn lower="2308" upper="2336" speaker="tom">
+      <SceneUttr lower="2313" upper="2336" punct="?">
+        <SceneWord lower="2313" upper="2321" text="Weiblich"/>
+        <SceneWord lower="2322" upper="2326" text="oder"/>
+        <SceneWord lower="2327" upper="2335" text="männlich"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2364" upper="2463" language="en" identifier="Welcome_JobInterviews_Unknown">
-    <SceneTurn lower="2404" upper="2463" speaker="tom">
-      <SceneUttr lower="2409" upper="2448" punct=".">
-        <SceneWord lower="2409" upper="2412" text="Das"/>
-        <SceneWord lower="2413" upper="2417" text="habe"/>
-        <SceneWord lower="2418" upper="2421" text="ich"/>
-        <SceneWord lower="2422" upper="2427" text="nicht"/>
-        <SceneWord lower="2428" upper="2435" text="richtig"/>
-        <SceneWord lower="2436" upper="2447" text="mitbekommen"/>
-      </SceneUttr>
-      <SceneUttr lower="2449" upper="2463" punct=".">
-        <SceneWord lower="2449" upper="2454" text="Bitte"/>
-        <SceneWord lower="2455" upper="2462" text="nochmal"/>
+  <SceneObject lower="2338" upper="2416" language="en" identifier="Ask_User_JobInteviews">
+    <SceneTurn lower="2370" upper="2416" speaker="tom">
+      <SceneUttr lower="2375" upper="2416" punct="?">
+        <SceneWord lower="2375" upper="2378" text="Wie"/>
+        <SceneWord lower="2379" upper="2384" text="viele"/>
+        <SceneWord lower="2385" upper="2398" text="Jobinterviews"/>
+        <SceneWord lower="2399" upper="2406" text="hattest"/>
+        <SceneWord lower="2407" upper="2409" text="Du"/>
+        <SceneWord lower="2410" upper="2415" text="schon"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2465" upper="2547" language="en" identifier="Welcome_JobInterviews_Unknown">
-    <SceneTurn lower="2505" upper="2547" speaker="tom">
-      <SceneUttr lower="2510" upper="2520" punct="?">
-        <SceneWord lower="2510" upper="2513" text="Wie"/>
-        <SceneWord lower="2514" upper="2519" text="viele"/>
+  <SceneObject lower="2418" upper="2517" language="en" identifier="Welcome_JobInterviews_Unknown">
+    <SceneTurn lower="2458" upper="2517" speaker="tom">
+      <SceneUttr lower="2463" upper="2502" punct=".">
+        <SceneWord lower="2463" upper="2466" text="Das"/>
+        <SceneWord lower="2467" upper="2471" text="habe"/>
+        <SceneWord lower="2472" upper="2475" text="ich"/>
+        <SceneWord lower="2476" upper="2481" text="nicht"/>
+        <SceneWord lower="2482" upper="2489" text="richtig"/>
+        <SceneWord lower="2490" upper="2501" text="mitbekommen"/>
       </SceneUttr>
-      <SceneUttr lower="2521" upper="2547" punct="?">
-        <SceneWord lower="2521" upper="2527" text="Kannst"/>
-        <SceneWord lower="2528" upper="2530" text="Du"/>
-        <SceneWord lower="2531" upper="2534" text="das"/>
-        <SceneWord lower="2535" upper="2546" text="wiederholen"/>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="2549" upper="2607" language="en" identifier="Ask_User_Main_Strength">
-    <SceneTurn lower="2582" upper="2607" speaker="tom">
-      <SceneUttr lower="2587" upper="2607" punct="?">
-        <SceneWord lower="2587" upper="2592" text="Deine"/>
-        <SceneWord lower="2593" upper="2599" text="größte"/>
-        <SceneWord lower="2600" upper="2606" text="Stärke"/>
+      <SceneUttr lower="2503" upper="2517" punct=".">
+        <SceneWord lower="2503" upper="2508" text="Bitte"/>
+        <SceneWord lower="2509" upper="2516" text="nochmal"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2609" upper="2667" language="en" identifier="Ask_User_Strength">
-    <SceneTurn lower="2637" upper="2667" speaker="tom">
-      <SceneUttr lower="2642" upper="2667" punct="?">
-        <SceneWord lower="2642" upper="2647" text="Deine"/>
-        <SceneWord lower="2648" upper="2659" text="zweitgrößte"/>
-        <SceneWord lower="2660" upper="2666" text="Stärke"/>
+  <SceneObject lower="2519" upper="2601" language="en" identifier="Welcome_JobInterviews_Unknown">
+    <SceneTurn lower="2559" upper="2601" speaker="tom">
+      <SceneUttr lower="2564" upper="2574" punct="?">
+        <SceneWord lower="2564" upper="2567" text="Wie"/>
+        <SceneWord lower="2568" upper="2573" text="viele"/>
+      </SceneUttr>
+      <SceneUttr lower="2575" upper="2601" punct="?">
+        <SceneWord lower="2575" upper="2581" text="Kannst"/>
+        <SceneWord lower="2582" upper="2584" text="Du"/>
+        <SceneWord lower="2585" upper="2588" text="das"/>
+        <SceneWord lower="2589" upper="2600" text="wiederholen"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2669" upper="2729" language="en" identifier="Ask_User_Main_Weakness">
-    <SceneTurn lower="2702" upper="2729" speaker="tom">
-      <SceneUttr lower="2707" upper="2729" punct="?">
-        <SceneWord lower="2707" upper="2712" text="Deine"/>
-        <SceneWord lower="2713" upper="2719" text="größte"/>
-        <SceneWord lower="2720" upper="2728" text="Schwäche"/>
+  <SceneObject lower="2603" upper="2661" language="en" identifier="Ask_User_Main_Strength">
+    <SceneTurn lower="2636" upper="2661" speaker="tom">
+      <SceneUttr lower="2641" upper="2661" punct="?">
+        <SceneWord lower="2641" upper="2646" text="Deine"/>
+        <SceneWord lower="2647" upper="2653" text="größte"/>
+        <SceneWord lower="2654" upper="2660" text="Stärke"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2731" upper="2791" language="en" identifier="Ask_User_Weakness">
-    <SceneTurn lower="2759" upper="2791" speaker="tom">
-      <SceneUttr lower="2764" upper="2791" punct="?">
-        <SceneWord lower="2764" upper="2769" text="Deine"/>
-        <SceneWord lower="2770" upper="2781" text="zweitgrößte"/>
-        <SceneWord lower="2782" upper="2790" text="Schwäche"/>
+  <SceneObject lower="2663" upper="2721" language="en" identifier="Ask_User_Strength">
+    <SceneTurn lower="2691" upper="2721" speaker="tom">
+      <SceneUttr lower="2696" upper="2721" punct="?">
+        <SceneWord lower="2696" upper="2701" text="Deine"/>
+        <SceneWord lower="2702" upper="2713" text="zweitgrößte"/>
+        <SceneWord lower="2714" upper="2720" text="Stärke"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2793" upper="2845" language="en" identifier="Ask_User_Finish">
-    <SceneTurn lower="2819" upper="2845" speaker="tom">
-      <SceneUttr lower="2824" upper="2828" punct=".">
-        <SceneWord lower="2824" upper="2827" text="Gut"/>
-      </SceneUttr>
-      <SceneUttr lower="2829" upper="2845" punct="!">
-        <SceneWord lower="2829" upper="2832" text="Das"/>
-        <SceneAbbrev lower="2833" upper="2838" first="war" second="s"/>
-        <SceneWord lower="2839" upper="2844" text="schon"/>
+  <SceneObject lower="2723" upper="2783" language="en" identifier="Ask_User_Main_Weakness">
+    <SceneTurn lower="2756" upper="2783" speaker="tom">
+      <SceneUttr lower="2761" upper="2783" punct="?">
+        <SceneWord lower="2761" upper="2766" text="Deine"/>
+        <SceneWord lower="2767" upper="2773" text="größte"/>
+        <SceneWord lower="2774" upper="2782" text="Schwäche"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2847" upper="2888" language="en" identifier="Welcome_Input_Thank">
-    <SceneTurn lower="2877" upper="2888" speaker="tom">
-      <SceneUttr lower="2882" upper="2888" punct="!">
-        <SceneWord lower="2882" upper="2887" text="Danke"/>
+  <SceneObject lower="2785" upper="2845" language="en" identifier="Ask_User_Weakness">
+    <SceneTurn lower="2813" upper="2845" speaker="tom">
+      <SceneUttr lower="2818" upper="2845" punct="?">
+        <SceneWord lower="2818" upper="2823" text="Deine"/>
+        <SceneWord lower="2824" upper="2835" text="zweitgrößte"/>
+        <SceneWord lower="2836" upper="2844" text="Schwäche"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2890" upper="2929" language="en" identifier="Welcome_Input_Thank">
-    <SceneTurn lower="2920" upper="2929" speaker="tom">
-      <SceneUttr lower="2925" upper="2929" punct=".">
-        <SceneWord lower="2925" upper="2928" text="Gut"/>
+  <SceneObject lower="2847" upper="2899" language="en" identifier="Ask_User_Finish">
+    <SceneTurn lower="2873" upper="2899" speaker="tom">
+      <SceneUttr lower="2878" upper="2882" punct=".">
+        <SceneWord lower="2878" upper="2881" text="Gut"/>
+      </SceneUttr>
+      <SceneUttr lower="2883" upper="2899" punct="!">
+        <SceneWord lower="2883" upper="2886" text="Das"/>
+        <SceneAbbrev lower="2887" upper="2892" first="war" second="s"/>
+        <SceneWord lower="2893" upper="2898" text="schon"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2931" upper="2971" language="en" identifier="Welcome_Input_Thank">
-    <SceneTurn lower="2961" upper="2971" speaker="tom">
-      <SceneUttr lower="2966" upper="2971" punct="!">
-        <SceneWord lower="2966" upper="2970" text="Okay"/>
+  <SceneObject lower="2901" upper="2942" language="en" identifier="Welcome_Input_Thank">
+    <SceneTurn lower="2931" upper="2942" speaker="tom">
+      <SceneUttr lower="2936" upper="2942" punct="!">
+        <SceneWord lower="2936" upper="2941" text="Danke"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="2973" upper="3480" language="en" identifier="Aim">
-    <SceneTurn lower="2987" upper="3019" speaker="player">
-      <SceneUttr lower="2995" upper="3019" punct=".">
-        <ActionObject lower="2995" upper="3018" actor="" mode="" name="LookAt" >
-          <ActionFeature lower="3003" upper="3017" typ="IDENTIFIER" key="viewtarget" val="tom"/></ActionObject>
+  <SceneObject lower="2944" upper="2983" language="en" identifier="Welcome_Input_Thank">
+    <SceneTurn lower="2974" upper="2983" speaker="tom">
+      <SceneUttr lower="2979" upper="2983" punct=".">
+        <SceneWord lower="2979" upper="2982" text="Gut"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3020" upper="3037" speaker="tom">
-      <SceneUttr lower="3025" upper="3037" punct="!">
-        <SceneWord lower="3025" upper="3031" text="Vielen"/>
-        <SceneWord lower="3032" upper="3036" text="Dank"/>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2985" upper="3025" language="en" identifier="Welcome_Input_Thank">
+    <SceneTurn lower="3015" upper="3025" speaker="tom">
+      <SceneUttr lower="3020" upper="3025" punct="!">
+        <SceneWord lower="3020" upper="3024" text="Okay"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3038" upper="3101" speaker="tom">
-      <SceneUttr lower="3043" upper="3101" punct=".">
-        <SceneWord lower="3043" upper="3046" text="Ich"/>
-        <SceneWord lower="3047" upper="3054" text="erkläre"/>
-        <SceneWord lower="3055" upper="3058" text="dir"/>
-        <SceneWord lower="3059" upper="3062" text="nun"/>
-        <SceneWord lower="3063" upper="3067" text="Ziel"/>
-        <SceneWord lower="3068" upper="3071" text="und"/>
-        <SceneWord lower="3072" upper="3078" text="Ablauf"/>
-        <SceneWord lower="3079" upper="3086" text="unseres"/>
-        <SceneWord lower="3087" upper="3100" text="Übungssystems"/>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3027" upper="3534" language="en" identifier="Aim">
+    <SceneTurn lower="3041" upper="3073" speaker="player">
+      <SceneUttr lower="3049" upper="3073" punct=".">
+        <ActionObject lower="3049" upper="3072" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="3057" upper="3071" typ="IDENTIFIER" key="viewtarget" val="tom"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3102" upper="3125" speaker="environment">
-      <SceneUttr lower="3115" upper="3125" punct=".">
-        <ActionObject lower="3115" upper="3124" actor="tom" mode="" name="Yes" >
+    </SceneTurn><SceneTurn lower="3074" upper="3091" speaker="tom">
+      <SceneUttr lower="3079" upper="3091" punct="!">
+        <SceneWord lower="3079" upper="3085" text="Vielen"/>
+        <SceneWord lower="3086" upper="3090" text="Dank"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="3092" upper="3155" speaker="tom">
+      <SceneUttr lower="3097" upper="3155" punct=".">
+        <SceneWord lower="3097" upper="3100" text="Ich"/>
+        <SceneWord lower="3101" upper="3108" text="erkläre"/>
+        <SceneWord lower="3109" upper="3112" text="dir"/>
+        <SceneWord lower="3113" upper="3116" text="nun"/>
+        <SceneWord lower="3117" upper="3121" text="Ziel"/>
+        <SceneWord lower="3122" upper="3125" text="und"/>
+        <SceneWord lower="3126" upper="3132" text="Ablauf"/>
+        <SceneWord lower="3133" upper="3140" text="unseres"/>
+        <SceneWord lower="3141" upper="3154" text="Übungssystems"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="3156" upper="3179" speaker="environment">
+      <SceneUttr lower="3169" upper="3179" punct=".">
+        <ActionObject lower="3169" upper="3178" actor="tom" mode="" name="Yes" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3126" upper="3209" speaker="tom">
-      <SceneUttr lower="3131" upper="3209" punct=".">
-        <SceneWord lower="3131" upper="3134" text="Ich"/>
-        <SceneWord lower="3135" upper="3141" text="möchte"/>
-        <SceneWord lower="3142" upper="3146" text="Dich"/>
-        <SceneWord lower="3147" upper="3150" text="mit"/>
-        <SceneWord lower="3151" upper="3154" text="der"/>
-        <SceneWord lower="3155" upper="3164" text="Situation"/>
-        <SceneWord lower="3165" upper="3167" text="in"/>
-        <SceneWord lower="3168" upper="3173" text="einem"/>
-        <SceneWord lower="3174" upper="3192" text="Bewerbungsgespräch"/>
-        <SceneWord lower="3193" upper="3201" text="vertraut"/>
-        <SceneWord lower="3202" upper="3208" text="machen"/>
+    </SceneTurn><SceneTurn lower="3180" upper="3263" speaker="tom">
+      <SceneUttr lower="3185" upper="3263" punct=".">
+        <SceneWord lower="3185" upper="3188" text="Ich"/>
+        <SceneWord lower="3189" upper="3195" text="möchte"/>
+        <SceneWord lower="3196" upper="3200" text="Dich"/>
+        <SceneWord lower="3201" upper="3204" text="mit"/>
+        <SceneWord lower="3205" upper="3208" text="der"/>
+        <SceneWord lower="3209" upper="3218" text="Situation"/>
+        <SceneWord lower="3219" upper="3221" text="in"/>
+        <SceneWord lower="3222" upper="3227" text="einem"/>
+        <SceneWord lower="3228" upper="3246" text="Bewerbungsgespräch"/>
+        <SceneWord lower="3247" upper="3255" text="vertraut"/>
+        <SceneWord lower="3256" upper="3262" text="machen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3210" upper="3239" speaker="environment">
-      <SceneUttr lower="3223" upper="3239" punct=".">
-        <ActionObject lower="3223" upper="3238" actor="tom" mode="" name="Demanding" >
+    </SceneTurn><SceneTurn lower="3264" upper="3293" speaker="environment">
+      <SceneUttr lower="3277" upper="3293" punct=".">
+        <ActionObject lower="3277" upper="3292" actor="tom" mode="" name="Demanding" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3240" upper="3335" speaker="tom">
-      <SceneUttr lower="3245" upper="3264" punct=",">
-        <SceneWord lower="3245" upper="3247" text="Du"/>
-        <SceneWord lower="3248" upper="3254" text="sollst"/>
-        <SceneWord lower="3255" upper="3263" text="erfahren"/>
+    </SceneTurn><SceneTurn lower="3294" upper="3389" speaker="tom">
+      <SceneUttr lower="3299" upper="3318" punct=",">
+        <SceneWord lower="3299" upper="3301" text="Du"/>
+        <SceneWord lower="3302" upper="3308" text="sollst"/>
+        <SceneWord lower="3309" upper="3317" text="erfahren"/>
       </SceneUttr>
-      <SceneUttr lower="3265" upper="3335" punct=".">
-        <SceneWord lower="3265" upper="3268" text="was"/>
-        <SceneWord lower="3269" upper="3274" text="dabei"/>
-        <SceneWord lower="3275" upper="3278" text="auf"/>
-        <SceneWord lower="3279" upper="3283" text="dich"/>
-        <SceneWord lower="3284" upper="3292" text="zukommen"/>
-        <SceneWord lower="3293" upper="3299" text="könnte"/>
-        <SceneWord lower="3300" upper="3303" text="und"/>
-        <SceneWord lower="3304" upper="3307" text="wie"/>
-        <SceneWord lower="3308" upper="3310" text="du"/>
-        <SceneWord lower="3311" upper="3317" text="darauf"/>
-        <SceneWord lower="3318" upper="3327" text="reagieren"/>
-        <SceneWord lower="3328" upper="3334" text="kannst"/>
+      <SceneUttr lower="3319" upper="3389" punct=".">
+        <SceneWord lower="3319" upper="3322" text="was"/>
+        <SceneWord lower="3323" upper="3328" text="dabei"/>
+        <SceneWord lower="3329" upper="3332" text="auf"/>
+        <SceneWord lower="3333" upper="3337" text="dich"/>
+        <SceneWord lower="3338" upper="3346" text="zukommen"/>
+        <SceneWord lower="3347" upper="3353" text="könnte"/>
+        <SceneWord lower="3354" upper="3357" text="und"/>
+        <SceneWord lower="3358" upper="3361" text="wie"/>
+        <SceneWord lower="3362" upper="3364" text="du"/>
+        <SceneWord lower="3365" upper="3371" text="darauf"/>
+        <SceneWord lower="3372" upper="3381" text="reagieren"/>
+        <SceneWord lower="3382" upper="3388" text="kannst"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3336" upper="3364" speaker="environment">
-      <SceneUttr lower="3349" upper="3364" punct=".">
-        <ActionObject lower="3349" upper="3363" actor="tom" mode="" name="OpenArms" >
+    </SceneTurn><SceneTurn lower="3390" upper="3418" speaker="environment">
+      <SceneUttr lower="3403" upper="3418" punct=".">
+        <ActionObject lower="3403" upper="3417" actor="tom" mode="" name="OpenArms" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3365" upper="3480" speaker="tom">
-      <SceneUttr lower="3370" upper="3396" punct=",">
-        <SceneWord lower="3370" upper="3373" text="Vor"/>
-        <SceneWord lower="3374" upper="3379" text="allem"/>
-        <SceneWord lower="3380" upper="3383" text="ist"/>
-        <SceneWord lower="3384" upper="3387" text="mir"/>
-        <SceneWord lower="3388" upper="3395" text="wichtig"/>
+    </SceneTurn><SceneTurn lower="3419" upper="3534" speaker="tom">
+      <SceneUttr lower="3424" upper="3450" punct=",">
+        <SceneWord lower="3424" upper="3427" text="Vor"/>
+        <SceneWord lower="3428" upper="3433" text="allem"/>
+        <SceneWord lower="3434" upper="3437" text="ist"/>
+        <SceneWord lower="3438" upper="3441" text="mir"/>
+        <SceneWord lower="3442" upper="3449" text="wichtig"/>
       </SceneUttr>
-      <SceneUttr lower="3397" upper="3439" punct=",">
-        <SceneWord lower="3397" upper="3401" text="dass"/>
-        <SceneWord lower="3402" upper="3404" text="du"/>
-        <SceneWord lower="3405" upper="3419" text="Unsicherheiten"/>
-        <SceneWord lower="3420" upper="3427" text="abbaust"/>
-        <SceneWord lower="3428" upper="3431" text="und"/>
-        <SceneWord lower="3432" upper="3438" text="lernst"/>
+      <SceneUttr lower="3451" upper="3493" punct=",">
+        <SceneWord lower="3451" upper="3455" text="dass"/>
+        <SceneWord lower="3456" upper="3458" text="du"/>
+        <SceneWord lower="3459" upper="3473" text="Unsicherheiten"/>
+        <SceneWord lower="3474" upper="3481" text="abbaust"/>
+        <SceneWord lower="3482" upper="3485" text="und"/>
+        <SceneWord lower="3486" upper="3492" text="lernst"/>
       </SceneUttr>
-      <SceneUttr lower="3440" upper="3480" punct=".">
-        <SceneWord lower="3440" upper="3443" text="wie"/>
-        <SceneWord lower="3444" upper="3446" text="du"/>
-        <SceneWord lower="3447" upper="3450" text="auf"/>
-        <SceneWord lower="3451" upper="3461" text="schwierige"/>
-        <SceneWord lower="3462" upper="3468" text="Fragen"/>
-        <SceneWord lower="3469" upper="3479" text="antwortest"/>
+      <SceneUttr lower="3494" upper="3534" punct=".">
+        <SceneWord lower="3494" upper="3497" text="wie"/>
+        <SceneWord lower="3498" upper="3500" text="du"/>
+        <SceneWord lower="3501" upper="3504" text="auf"/>
+        <SceneWord lower="3505" upper="3515" text="schwierige"/>
+        <SceneWord lower="3516" upper="3522" text="Fragen"/>
+        <SceneWord lower="3523" upper="3533" text="antwortest"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="3482" upper="3578" language="en" identifier="Agenda">
-    <SceneTurn lower="3499" upper="3531" speaker="environment">
-      <SceneUttr lower="3512" upper="3531" punct=".">
-        <ActionObject lower="3512" upper="3530" actor="tom" mode="" name="PresentRight" >
+  <SceneObject lower="3536" upper="3632" language="en" identifier="Agenda">
+    <SceneTurn lower="3553" upper="3585" speaker="environment">
+      <SceneUttr lower="3566" upper="3585" punct=".">
+        <ActionObject lower="3566" upper="3584" actor="tom" mode="" name="PresentRight" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3532" upper="3578" speaker="tom">
-      <SceneUttr lower="3537" upper="3578" punct=".">
-        <SceneWord lower="3537" upper="3540" text="Den"/>
-        <SceneWord lower="3541" upper="3547" text="Ablauf"/>
-        <SceneWord lower="3548" upper="3551" text="des"/>
-        <SceneWord lower="3552" upper="3562" text="Interviews"/>
-        <SceneWord lower="3563" upper="3569" text="siehst"/>
-        <SceneWord lower="3570" upper="3572" text="Du"/>
-        <SceneWord lower="3573" upper="3577" text="hier"/>
+    </SceneTurn><SceneTurn lower="3586" upper="3632" speaker="tom">
+      <SceneUttr lower="3591" upper="3632" punct=".">
+        <SceneWord lower="3591" upper="3594" text="Den"/>
+        <SceneWord lower="3595" upper="3601" text="Ablauf"/>
+        <SceneWord lower="3602" upper="3605" text="des"/>
+        <SceneWord lower="3606" upper="3616" text="Interviews"/>
+        <SceneWord lower="3617" upper="3623" text="siehst"/>
+        <SceneWord lower="3624" upper="3626" text="Du"/>
+        <SceneWord lower="3627" upper="3631" text="hier"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="3580" upper="3816" language="en" identifier="AgendaExplain">
-    <SceneTurn lower="3604" upper="3687" speaker="tom">
-      <SceneUttr lower="3609" upper="3687" punct=".">
-        <SceneWord lower="3609" upper="3615" text="Zuerst"/>
-        <SceneWord lower="3616" upper="3621" text="wirst"/>
-        <SceneWord lower="3622" upper="3624" text="du"/>
-        <SceneWord lower="3625" upper="3627" text="in"/>
-        <SceneWord lower="3628" upper="3631" text="das"/>
-        <SceneWord lower="3632" upper="3643" text="Unternehmen"/>
-        <SceneWord lower="3644" upper="3650" text="kommen"/>
-        <SceneWord lower="3651" upper="3654" text="und"/>
-        <SceneWord lower="3655" upper="3659" text="dich"/>
-        <SceneWord lower="3660" upper="3663" text="bei"/>
-        <SceneWord lower="3664" upper="3667" text="der"/>
-        <SceneWord lower="3668" upper="3677" text="Rezeption"/>
-        <SceneWord lower="3678" upper="3686" text="anmelden"/>
+  <SceneObject lower="3634" upper="3870" language="en" identifier="AgendaExplain">
+    <SceneTurn lower="3658" upper="3741" speaker="tom">
+      <SceneUttr lower="3663" upper="3741" punct=".">
+        <SceneWord lower="3663" upper="3669" text="Zuerst"/>
+        <SceneWord lower="3670" upper="3675" text="wirst"/>
+        <SceneWord lower="3676" upper="3678" text="du"/>
+        <SceneWord lower="3679" upper="3681" text="in"/>
+        <SceneWord lower="3682" upper="3685" text="das"/>
+        <SceneWord lower="3686" upper="3697" text="Unternehmen"/>
+        <SceneWord lower="3698" upper="3704" text="kommen"/>
+        <SceneWord lower="3705" upper="3708" text="und"/>
+        <SceneWord lower="3709" upper="3713" text="dich"/>
+        <SceneWord lower="3714" upper="3717" text="bei"/>
+        <SceneWord lower="3718" upper="3721" text="der"/>
+        <SceneWord lower="3722" upper="3731" text="Rezeption"/>
+        <SceneWord lower="3732" upper="3740" text="anmelden"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3688" upper="3742" speaker="tom">
-      <SceneUttr lower="3693" upper="3742" punct=".">
-        <SceneWord lower="3693" upper="3695" text="Es"/>
-        <SceneWord lower="3696" upper="3701" text="folgt"/>
-        <SceneWord lower="3702" upper="3705" text="das"/>
-        <SceneWord lower="3706" upper="3714" text="Gespräch"/>
-        <SceneWord lower="3715" upper="3718" text="mit"/>
-        <SceneWord lower="3719" upper="3722" text="dem"/>
-        <SceneWord lower="3723" upper="3741" text="Personalreferenten"/>
+    </SceneTurn><SceneTurn lower="3742" upper="3796" speaker="tom">
+      <SceneUttr lower="3747" upper="3796" punct=".">
+        <SceneWord lower="3747" upper="3749" text="Es"/>
+        <SceneWord lower="3750" upper="3755" text="folgt"/>
+        <SceneWord lower="3756" upper="3759" text="das"/>
+        <SceneWord lower="3760" upper="3768" text="Gespräch"/>
+        <SceneWord lower="3769" upper="3772" text="mit"/>
+        <SceneWord lower="3773" upper="3776" text="dem"/>
+        <SceneWord lower="3777" upper="3795" text="Personalreferenten"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3743" upper="3816" speaker="tom">
-      <SceneUttr lower="3748" upper="3816" punct=".">
-        <SceneWord lower="3748" upper="3754" text="Danach"/>
-        <SceneWord lower="3755" upper="3763" text="verlässt"/>
-        <SceneWord lower="3764" upper="3766" text="du"/>
-        <SceneWord lower="3767" upper="3770" text="das"/>
-        <SceneWord lower="3771" upper="3782" text="Unternehmen"/>
-        <SceneWord lower="3783" upper="3789" text="wieder"/>
-        <SceneWord lower="3790" upper="3795" text="durch"/>
-        <SceneWord lower="3796" upper="3799" text="den"/>
-        <SceneWord lower="3800" upper="3815" text="Eingangsbereich"/>
+    </SceneTurn><SceneTurn lower="3797" upper="3870" speaker="tom">
+      <SceneUttr lower="3802" upper="3870" punct=".">
+        <SceneWord lower="3802" upper="3808" text="Danach"/>
+        <SceneWord lower="3809" upper="3817" text="verlässt"/>
+        <SceneWord lower="3818" upper="3820" text="du"/>
+        <SceneWord lower="3821" upper="3824" text="das"/>
+        <SceneWord lower="3825" upper="3836" text="Unternehmen"/>
+        <SceneWord lower="3837" upper="3843" text="wieder"/>
+        <SceneWord lower="3844" upper="3849" text="durch"/>
+        <SceneWord lower="3850" upper="3853" text="den"/>
+        <SceneWord lower="3854" upper="3869" text="Eingangsbereich"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="3818" upper="4176" language="en" identifier="OpenSSI">
-    <SceneTurn lower="3836" upper="3957" speaker="tom">
-      <SceneUttr lower="3841" upper="3932" punct=",">
-        <SceneWord lower="3841" upper="3843" text="Da"/>
-        <SceneWord lower="3844" upper="3847" text="wir"/>
-        <SceneWord lower="3848" upper="3851" text="uns"/>
-        <SceneWord lower="3852" upper="3858" text="später"/>
-        <SceneWord lower="3859" upper="3868" text="gemeinsam"/>
-        <SceneWord lower="3869" upper="3873" text="über"/>
-        <SceneWord lower="3874" upper="3879" text="deine"/>
-        <SceneWord lower="3880" upper="3888" text="Leistung"/>
-        <SceneWord lower="3889" upper="3891" text="im"/>
-        <SceneWord lower="3892" upper="3911" text="Bewerbungsinterview"/>
-        <SceneWord lower="3912" upper="3923" text="unterhalten"/>
-        <SceneWord lower="3924" upper="3931" text="möchten"/>
+  <SceneObject lower="3872" upper="4230" language="en" identifier="OpenSSI">
+    <SceneTurn lower="3890" upper="4011" speaker="tom">
+      <SceneUttr lower="3895" upper="3986" punct=",">
+        <SceneWord lower="3895" upper="3897" text="Da"/>
+        <SceneWord lower="3898" upper="3901" text="wir"/>
+        <SceneWord lower="3902" upper="3905" text="uns"/>
+        <SceneWord lower="3906" upper="3912" text="später"/>
+        <SceneWord lower="3913" upper="3922" text="gemeinsam"/>
+        <SceneWord lower="3923" upper="3927" text="über"/>
+        <SceneWord lower="3928" upper="3933" text="deine"/>
+        <SceneWord lower="3934" upper="3942" text="Leistung"/>
+        <SceneWord lower="3943" upper="3945" text="im"/>
+        <SceneWord lower="3946" upper="3965" text="Bewerbungsinterview"/>
+        <SceneWord lower="3966" upper="3977" text="unterhalten"/>
+        <SceneWord lower="3978" upper="3985" text="möchten"/>
       </SceneUttr>
-      <SceneUttr lower="3933" upper="3957" punct=".">
-        <SceneWord lower="3933" upper="3939" text="schaue"/>
-        <SceneWord lower="3940" upper="3943" text="ich"/>
-        <SceneWord lower="3944" upper="3947" text="Dir"/>
-        <SceneWord lower="3948" upper="3953" text="dabei"/>
-        <SceneWord lower="3954" upper="3956" text="zu"/>
+      <SceneUttr lower="3987" upper="4011" punct=".">
+        <SceneWord lower="3987" upper="3993" text="schaue"/>
+        <SceneWord lower="3994" upper="3997" text="ich"/>
+        <SceneWord lower="3998" upper="4001" text="Dir"/>
+        <SceneWord lower="4002" upper="4007" text="dabei"/>
+        <SceneWord lower="4008" upper="4010" text="zu"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3958" upper="3987" speaker="environment">
-      <SceneUttr lower="3971" upper="3987" punct=".">
-        <ActionObject lower="3971" upper="3986" actor="tom" mode="" name="ShowPalms" >
+    </SceneTurn><SceneTurn lower="4012" upper="4041" speaker="environment">
+      <SceneUttr lower="4025" upper="4041" punct=".">
+        <ActionObject lower="4025" upper="4040" actor="tom" mode="" name="ShowPalms" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="3988" upper="4050" speaker="tom">
-      <SceneUttr lower="3993" upper="4027" punct=",">
-        <SceneWord lower="3993" upper="3996" text="Das"/>
-        <SceneWord lower="3997" upper="4006" text="geschieht"/>
-        <SceneWord lower="4007" upper="4015" text="mithilfe"/>
-        <SceneWord lower="4016" upper="4019" text="der"/>
-        <SceneWord lower="4020" upper="4026" text="Kinect"/>
+    </SceneTurn><SceneTurn lower="4042" upper="4104" speaker="tom">
+      <SceneUttr lower="4047" upper="4081" punct=",">
+        <SceneWord lower="4047" upper="4050" text="Das"/>
+        <SceneWord lower="4051" upper="4060" text="geschieht"/>
+        <SceneWord lower="4061" upper="4069" text="mithilfe"/>
+        <SceneWord lower="4070" upper="4073" text="der"/>
+        <SceneWord lower="4074" upper="4080" text="Kinect"/>
       </SceneUttr>
-      <SceneUttr lower="4028" upper="4050" punct=".">
-        <SceneWord lower="4028" upper="4031" text="die"/>
-        <SceneWord lower="4032" upper="4034" text="du"/>
-        <SceneWord lower="4035" upper="4038" text="vor"/>
-        <SceneWord lower="4039" upper="4042" text="dir"/>
-        <SceneWord lower="4043" upper="4049" text="siehst"/>
+      <SceneUttr lower="4082" upper="4104" punct=".">
+        <SceneWord lower="4082" upper="4085" text="die"/>
+        <SceneWord lower="4086" upper="4088" text="du"/>
+        <SceneWord lower="4089" upper="4092" text="vor"/>
+        <SceneWord lower="4093" upper="4096" text="dir"/>
+        <SceneWord lower="4097" upper="4103" text="siehst"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="4051" upper="4074" speaker="environment">
-      <SceneUttr lower="4064" upper="4074" punct=".">
-        <ActionObject lower="4064" upper="4073" actor="tom" mode="" name="Yes" >
+    </SceneTurn><SceneTurn lower="4105" upper="4128" speaker="environment">
+      <SceneUttr lower="4118" upper="4128" punct=".">
+        <ActionObject lower="4118" upper="4127" actor="tom" mode="" name="Yes" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="4075" upper="4176" speaker="tom">
-      <SceneUttr lower="4080" upper="4124" punct=",">
-        <SceneWord lower="4080" upper="4083" text="Ich"/>
-        <SceneWord lower="4084" upper="4092" text="versuche"/>
-        <SceneWord lower="4093" upper="4098" text="damit"/>
-        <SceneWord lower="4099" upper="4102" text="zum"/>
-        <SceneWord lower="4103" upper="4111" text="Beispiel"/>
-        <SceneWord lower="4112" upper="4114" text="zu"/>
-        <SceneWord lower="4115" upper="4123" text="erkennen"/>
+    </SceneTurn><SceneTurn lower="4129" upper="4230" speaker="tom">
+      <SceneUttr lower="4134" upper="4178" punct=",">
+        <SceneWord lower="4134" upper="4137" text="Ich"/>
+        <SceneWord lower="4138" upper="4146" text="versuche"/>
+        <SceneWord lower="4147" upper="4152" text="damit"/>
+        <SceneWord lower="4153" upper="4156" text="zum"/>
+        <SceneWord lower="4157" upper="4165" text="Beispiel"/>
+        <SceneWord lower="4166" upper="4168" text="zu"/>
+        <SceneWord lower="4169" upper="4177" text="erkennen"/>
       </SceneUttr>
-      <SceneUttr lower="4125" upper="4155" punct=",">
-        <SceneWord lower="4125" upper="4127" text="in"/>
-        <SceneWord lower="4128" upper="4134" text="welche"/>
-        <SceneWord lower="4135" upper="4143" text="Richtung"/>
-        <SceneWord lower="4144" upper="4146" text="du"/>
-        <SceneWord lower="4147" upper="4154" text="schaust"/>
+      <SceneUttr lower="4179" upper="4209" punct=",">
+        <SceneWord lower="4179" upper="4181" text="in"/>
+        <SceneWord lower="4182" upper="4188" text="welche"/>
+        <SceneWord lower="4189" upper="4197" text="Richtung"/>
+        <SceneWord lower="4198" upper="4200" text="du"/>
+        <SceneWord lower="4201" upper="4208" text="schaust"/>
       </SceneUttr>
-      <SceneUttr lower="4156" upper="4176" punct=".">
-        <SceneWord lower="4156" upper="4160" text="oder"/>
-        <SceneWord lower="4161" upper="4163" text="ob"/>
-        <SceneWord lower="4164" upper="4166" text="du"/>
-        <SceneWord lower="4167" upper="4175" text="lächelst"/>
+      <SceneUttr lower="4210" upper="4230" punct=".">
+        <SceneWord lower="4210" upper="4214" text="oder"/>
+        <SceneWord lower="4215" upper="4217" text="ob"/>
+        <SceneWord lower="4218" upper="4220" text="du"/>
+        <SceneWord lower="4221" upper="4229" text="lächelst"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="4178" upper="4321" language="en" identifier="Job_Description">
-    <SceneTurn lower="4204" upper="4234" speaker="environment">
-      <SceneUttr lower="4217" upper="4234" punct=".">
-        <ActionObject lower="4217" upper="4233" actor="tom" mode="" name="PointRight" >
+  <SceneObject lower="4232" upper="4375" language="en" identifier="Job_Description">
+    <SceneTurn lower="4258" upper="4288" speaker="environment">
+      <SceneUttr lower="4271" upper="4288" punct=".">
+        <ActionObject lower="4271" upper="4287" actor="tom" mode="" name="PointRight" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="4235" upper="4321" speaker="tom">
-      <SceneUttr lower="4240" upper="4290" punct=",">
-        <SceneWord lower="4240" upper="4243" text="Ich"/>
-        <SceneWord lower="4244" upper="4249" text="werde"/>
-        <SceneWord lower="4250" upper="4253" text="dir"/>
-        <SceneWord lower="4254" upper="4257" text="nun"/>
-        <SceneWord lower="4258" upper="4261" text="die"/>
-        <SceneWord lower="4262" upper="4282" text="Stellenausschreibung"/>
-        <SceneWord lower="4283" upper="4289" text="zeigen"/>
+    </SceneTurn><SceneTurn lower="4289" upper="4375" speaker="tom">
+      <SceneUttr lower="4294" upper="4344" punct=",">
+        <SceneWord lower="4294" upper="4297" text="Ich"/>
+        <SceneWord lower="4298" upper="4303" text="werde"/>
+        <SceneWord lower="4304" upper="4307" text="dir"/>
+        <SceneWord lower="4308" upper="4311" text="nun"/>
+        <SceneWord lower="4312" upper="4315" text="die"/>
+        <SceneWord lower="4316" upper="4336" text="Stellenausschreibung"/>
+        <SceneWord lower="4337" upper="4343" text="zeigen"/>
       </SceneUttr>
-      <SceneUttr lower="4291" upper="4321" punct=".">
-        <SceneWord lower="4291" upper="4294" text="auf"/>
-        <SceneWord lower="4295" upper="4298" text="die"/>
-        <SceneWord lower="4299" upper="4301" text="du"/>
-        <SceneWord lower="4302" upper="4306" text="dich"/>
-        <SceneWord lower="4307" upper="4315" text="beworben"/>
-        <SceneWord lower="4316" upper="4320" text="hast"/>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="4323" upper="4474" language="en" identifier="Job_DescriptionExplain">
-    <SceneTurn lower="4356" upper="4474" speaker="tom">
-      <SceneUttr lower="4361" upper="4416" punct=".">
-        <SceneWord lower="4361" upper="4363" text="Du"/>
-        <SceneWord lower="4364" upper="4368" text="hast"/>
-        <SceneWord lower="4369" upper="4373" text="dich"/>
-        <SceneWord lower="4374" upper="4377" text="auf"/>
-        <SceneWord lower="4378" upper="4382" text="eine"/>
-        <SceneWord lower="4383" upper="4389" text="Stelle"/>
-        <SceneWord lower="4390" upper="4393" text="als"/>
-        <SceneWord lower="4394" upper="4406" text="Bürokauffrau"/>
-        <SceneWord lower="4407" upper="4415" text="beworben"/>
-      </SceneUttr>
-      <SceneUttr lower="4417" upper="4474" punct=".">
-        <SceneWord lower="4417" upper="4424" text="Wichtig"/>
-        <SceneWord lower="4425" upper="4428" text="ist"/>
-        <SceneWord lower="4429" upper="4436" text="hierbei"/>
-        <SceneWord lower="4437" upper="4440" text="vor"/>
-        <SceneWord lower="4441" upper="4446" text="allem"/>
-        <SceneWord lower="4447" upper="4452" text="deine"/>
-        <SceneWord lower="4453" upper="4473" text="Kommunikationsstärke"/>
+      <SceneUttr lower="4345" upper="4375" punct=".">
+        <SceneWord lower="4345" upper="4348" text="auf"/>
+        <SceneWord lower="4349" upper="4352" text="die"/>
+        <SceneWord lower="4353" upper="4355" text="du"/>
+        <SceneWord lower="4356" upper="4360" text="dich"/>
+        <SceneWord lower="4361" upper="4369" text="beworben"/>
+        <SceneWord lower="4370" upper="4374" text="hast"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="4476" upper="4838" language="en" identifier="What_to_expect">
-    <SceneTurn lower="4501" upper="4608" speaker="tom">
-      <SceneUttr lower="4506" upper="4608" punct=".">
-        <SceneWord lower="4506" upper="4508" text="Du"/>
-        <SceneWord lower="4509" upper="4513" text="hast"/>
-        <SceneWord lower="4514" upper="4521" text="bereits"/>
-        <SceneWord lower="4522" upper="4528" text="deinen"/>
-        <SceneWord lower="4529" upper="4539" text="Lebenslauf"/>
-        <SceneWord lower="4540" upper="4551" text="eingereicht"/>
-        <SceneWord lower="4552" upper="4555" text="und"/>
-        <SceneWord lower="4556" upper="4563" text="wurdest"/>
-        <SceneWord lower="4564" upper="4567" text="nun"/>
-        <SceneWord lower="4568" upper="4570" text="zu"/>
-        <SceneWord lower="4571" upper="4576" text="einem"/>
-        <SceneWord lower="4577" upper="4596" text="Bewerbungsinterview"/>
-        <SceneWord lower="4597" upper="4607" text="eingeladen"/>
+  <SceneObject lower="4377" upper="4518" language="en" identifier="Job_DescriptionExplain">
+    <SceneTurn lower="4410" upper="4518" speaker="tom">
+      <SceneUttr lower="4415" upper="4460" punct=".">
+        <SceneWord lower="4415" upper="4418" text="Die"/>
+        <SceneWord lower="4419" upper="4424" text="Firma"/>
+        <SceneWord lower="4425" upper="4430" text="sucht"/>
+        <SceneWord lower="4431" upper="4435" text="eine"/>
+        <SceneWord lower="4436" upper="4446" text="kompetente"/>
+        <SceneWord lower="4447" upper="4459" text="Bürokauffrau"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="4609" upper="4718" speaker="tom">
-      <SceneUttr lower="4614" upper="4687" punct=",">
-        <SceneWord lower="4614" upper="4616" text="Im"/>
-        <SceneWord lower="4617" upper="4623" text="Moment"/>
-        <SceneWord lower="4624" upper="4630" text="stehst"/>
-        <SceneWord lower="4631" upper="4633" text="du"/>
-        <SceneWord lower="4634" upper="4637" text="vor"/>
-        <SceneWord lower="4638" upper="4644" text="deinem"/>
-        <SceneWord lower="4645" upper="4651" text="ersten"/>
-        <SceneWord lower="4652" upper="4659" text="Treffen"/>
-        <SceneWord lower="4660" upper="4663" text="mit"/>
-        <SceneWord lower="4664" upper="4667" text="dem"/>
-        <SceneWord lower="4668" upper="4686" text="Personalreferentin"/>
+      <SceneUttr lower="4461" upper="4518" punct=".">
+        <SceneWord lower="4461" upper="4468" text="Wichtig"/>
+        <SceneWord lower="4469" upper="4472" text="ist"/>
+        <SceneWord lower="4473" upper="4480" text="hierbei"/>
+        <SceneWord lower="4481" upper="4484" text="vor"/>
+        <SceneWord lower="4485" upper="4490" text="allem"/>
+        <SceneWord lower="4491" upper="4496" text="deine"/>
+        <SceneWord lower="4497" upper="4517" text="Kommunikationsstärke"/>
       </SceneUttr>
-      <SceneUttr lower="4688" upper="4718" punct=".">
-        <SceneWord lower="4688" upper="4691" text="die"/>
-        <SceneWord lower="4692" upper="4696" text="dich"/>
-        <SceneWord lower="4697" upper="4703" text="kennen"/>
-        <SceneWord lower="4704" upper="4710" text="lernen"/>
-        <SceneWord lower="4711" upper="4717" text="möchte"/>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="4520" upper="4905" language="en" identifier="What_to_expect">
+    <SceneTurn lower="4545" upper="4652" speaker="tom">
+      <SceneUttr lower="4550" upper="4652" punct=".">
+        <SceneWord lower="4550" upper="4552" text="Du"/>
+        <SceneWord lower="4553" upper="4557" text="hast"/>
+        <SceneWord lower="4558" upper="4565" text="bereits"/>
+        <SceneWord lower="4566" upper="4572" text="deinen"/>
+        <SceneWord lower="4573" upper="4583" text="Lebenslauf"/>
+        <SceneWord lower="4584" upper="4595" text="eingereicht"/>
+        <SceneWord lower="4596" upper="4599" text="und"/>
+        <SceneWord lower="4600" upper="4607" text="wurdest"/>
+        <SceneWord lower="4608" upper="4611" text="nun"/>
+        <SceneWord lower="4612" upper="4614" text="zu"/>
+        <SceneWord lower="4615" upper="4620" text="einem"/>
+        <SceneWord lower="4621" upper="4640" text="Bewerbungsinterview"/>
+        <SceneWord lower="4641" upper="4651" text="eingeladen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="4719" upper="4748" speaker="environment">
-      <SceneUttr lower="4732" upper="4748" punct=".">
-        <ActionObject lower="4732" upper="4747" actor="tom" mode="" name="ShowPalms" >
+    </SceneTurn><SceneTurn lower="4653" upper="4781" speaker="tom">
+      <SceneUttr lower="4658" upper="4750" punct=",">
+        <SceneWord lower="4658" upper="4660" text="Im"/>
+        <SceneWord lower="4661" upper="4667" text="Moment"/>
+        <SceneWord lower="4668" upper="4674" text="stehst"/>
+        <SceneWord lower="4675" upper="4677" text="du"/>
+        <SceneWord lower="4678" upper="4681" text="vor"/>
+        <SceneWord lower="4682" upper="4688" text="deinem"/>
+        <SceneWord lower="4689" upper="4695" text="ersten"/>
+        <SceneWord lower="4696" upper="4703" text="Treffen"/>
+        <SceneWord lower="4704" upper="4707" text="mit"/>
+        <SceneWord lower="4708" upper="4713" text="einer"/>
+        <SceneWord lower="4714" upper="4727" text="Mitarbeiterin"/>
+        <SceneWord lower="4728" upper="4731" text="der"/>
+        <SceneWord lower="4732" upper="4749" text="Personalabteilung"/>
+      </SceneUttr>
+      <SceneUttr lower="4751" upper="4781" punct=".">
+        <SceneWord lower="4751" upper="4754" text="die"/>
+        <SceneWord lower="4755" upper="4759" text="dich"/>
+        <SceneWord lower="4760" upper="4766" text="kennen"/>
+        <SceneWord lower="4767" upper="4773" text="lernen"/>
+        <SceneWord lower="4774" upper="4780" text="möchte"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="4782" upper="4811" speaker="environment">
+      <SceneUttr lower="4795" upper="4811" punct=".">
+        <ActionObject lower="4795" upper="4810" actor="tom" mode="" name="ShowPalms" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="4749" upper="4804" speaker="tom">
-      <SceneUttr lower="4754" upper="4771" punct="!">
-        <SceneWord lower="4754" upper="4756" text="Es"/>
-        <SceneWord lower="4757" upper="4761" text="geht"/>
-        <SceneWord lower="4762" upper="4766" text="also"/>
-        <SceneWord lower="4767" upper="4770" text="los"/>
+    </SceneTurn><SceneTurn lower="4812" upper="4871" speaker="tom">
+      <SceneUttr lower="4817" upper="4834" punct="!">
+        <SceneWord lower="4817" upper="4819" text="Es"/>
+        <SceneWord lower="4820" upper="4824" text="geht"/>
+        <SceneWord lower="4825" upper="4829" text="also"/>
+        <SceneWord lower="4830" upper="4833" text="los"/>
       </SceneUttr>
-      <SceneUttr lower="4772" upper="4804" punct=".">
-        <SceneWord lower="4772" upper="4776" text="Dazu"/>
-        <SceneWord lower="4777" upper="4782" text="beame"/>
-        <SceneWord lower="4783" upper="4786" text="ich"/>
-        <SceneWord lower="4787" upper="4791" text="Dich"/>
-        <SceneWord lower="4792" upper="4795" text="zum"/>
-        <SceneWord lower="4796" upper="4803" text="Eingang"/>
+      <SceneUttr lower="4835" upper="4871" punct=".">
+        <SceneWord lower="4835" upper="4839" text="Dazu"/>
+        <SceneWord lower="4840" upper="4845" text="beame"/>
+        <SceneWord lower="4846" upper="4849" text="ich"/>
+        <SceneWord lower="4850" upper="4854" text="Dich"/>
+        <SceneWord lower="4855" upper="4858" text="zum"/>
+        <SceneWord lower="4859" upper="4870" text="Unternehmen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="4805" upper="4838" speaker="player">
-      <SceneUttr lower="4813" upper="4838" punct=".">
-        <ActionObject lower="4813" upper="4837" actor="" mode="" name="Warp" >
-          <ActionFeature lower="4819" upper="4836" typ="IDENTIFIER" key="location" val="entrance"/></ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="4840" upper="4952" language="en" identifier="Beam_to_Office">
-    <SceneTurn lower="4865" upper="4897" speaker="tom">
-      <SceneUttr lower="4870" upper="4897" punct=".">
-        <SceneWord lower="4870" upper="4876" text="Weiter"/>
-        <SceneAbbrev lower="4877" upper="4883" first="geht" second="s"/>
-        <SceneWord lower="4884" upper="4887" text="zum"/>
-        <SceneWord lower="4888" upper="4896" text="Chefbüro"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="4898" upper="4952" speaker="player">
-      <SceneUttr lower="4906" upper="4952" punct=".">
-        <ActionObject lower="4906" upper="4951" actor="" mode="" name="Warp" >
-          <ActionFeature lower="4912" upper="4931" typ="IDENTIFIER" key="location" val="ceo_lounge"/>
-          <ActionFeature lower="4932" upper="4950" typ="IDENTIFIER" key="viewtarget" val="susanne"/></ActionObject>
+    </SceneTurn><SceneTurn lower="4872" upper="4905" speaker="player">
+      <SceneUttr lower="4880" upper="4905" punct=".">
+        <ActionObject lower="4880" upper="4904" actor="" mode="" name="Warp" >
+          <ActionFeature lower="4886" upper="4903" typ="IDENTIFIER" key="location" val="entrance"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="4954" upper="5623" language="en" identifier="Rest_of_Beam">
-    <SceneTurn lower="4977" upper="5040" speaker="susanne">
-      <SceneUttr lower="4986" upper="5040" punct=".">
-        <SceneWord lower="4986" upper="4991" text="Jetzt"/>
-        <ActionObject lower="4992" upper="4999" actor="" mode="" name="Blink" >
-        </ActionObject>
-        <SceneWord lower="5000" upper="5005" text="färbe"/>
-        <SceneWord lower="5006" upper="5009" text="ich"/>
-        <SceneWord lower="5010" upper="5013" text="die"/>
-        <SceneWord lower="5014" upper="5018" text="Wand"/>
-        <SceneWord lower="5019" upper="5025" text="hinter"/>
-        <SceneWord lower="5026" upper="5030" text="mein"/>
-        <SceneWord lower="5031" upper="5035" text="grün"/>
-        <SceneWord lower="5036" upper="5039" text="ein"/>
+  <SceneObject lower="4907" upper="5161" language="en" identifier="Receptionist">
+    <SceneTurn lower="4930" upper="4970" speaker="npc_counter">
+      <SceneUttr lower="4943" upper="4970" punct=".">
+        <ActionObject lower="4943" upper="4969" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="4951" upper="4968" typ="IDENTIFIER" key="viewtarget" val="player"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5041" upper="5084" speaker="ceo_wall">
-      <SceneUttr lower="5051" upper="5084" punct=".">
-        <ActionObject lower="5051" upper="5083" actor="" mode="" name="SetColor" >
-          <ActionFeature lower="5061" upper="5067" typ="FLOATING" key="r" val="10.0"/>
-          <ActionFeature lower="5068" upper="5075" typ="FLOATING" key="g" val="255.0"/>
-          <ActionFeature lower="5076" upper="5082" typ="FLOATING" key="b" val="10.0"/></ActionObject>
+    </SceneTurn><SceneTurn lower="4971" upper="5005" speaker="npc_counter">
+      <SceneUttr lower="4984" upper="5005" punct=".">
+        <ActionObject lower="4984" upper="5004" actor="" mode="" name="Say" >
+          <ActionFeature lower="4989" upper="5003" typ="IDENTIFIER" key="value" val="greeting"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5085" upper="5129" speaker="susanne">
-      <SceneUttr lower="5094" upper="5097" punct=",">
-        <SceneWord lower="5094" upper="5096" text="So"/>
+    </SceneTurn><SceneTurn lower="5006" upper="5046" speaker="player">
+      <SceneUttr lower="5014" upper="5046" punct=".">
+        <ActionObject lower="5014" upper="5045" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="5022" upper="5044" typ="IDENTIFIER" key="viewtarget" val="npc_counter"/></ActionObject>
       </SceneUttr>
-      <SceneUttr lower="5098" upper="5129" punct=".">
-        <SceneWord lower="5098" upper="5101" text="ich"/>
-        <SceneWord lower="5102" upper="5107" text="beame"/>
-        <SceneWord lower="5108" upper="5112" text="Dich"/>
-        <SceneWord lower="5113" upper="5116" text="zum"/>
-        <SceneWord lower="5117" upper="5128" text="Meetingraum"/>
+    </SceneTurn><SceneTurn lower="5047" upper="5120" speaker="susanne">
+      <SceneUttr lower="5056" upper="5066" punct=".">
+        <SceneWord lower="5056" upper="5061" text="Guten"/>
+        <SceneWord lower="5062" upper="5065" text="Tag"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5130" upper="5174" speaker="player">
-      <SceneUttr lower="5138" upper="5174" punct=".">
-        <ActionObject lower="5138" upper="5173" actor="" mode="" name="Warp" >
-          <ActionFeature lower="5144" upper="5172" typ="IDENTIFIER" key="location" val="meeting_application"/></ActionObject>
+      <SceneUttr lower="5067" upper="5120" punct=".">
+        <SceneWord lower="5067" upper="5070" text="Sie"/>
+        <SceneWord lower="5071" upper="5075" text="sind"/>
+        <SceneWord lower="5076" upper="5084" text="bestimmt"/>
+        <SceneWord lower="5085" upper="5090" text="wegen"/>
+        <SceneWord lower="5091" upper="5094" text="des"/>
+        <SceneWord lower="5095" upper="5114" text="Bewerbungsgesprächs"/>
+        <SceneWord lower="5115" upper="5119" text="hier"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5175" upper="5250" speaker="susanne">
-      <SceneUttr lower="5184" upper="5250" punct=".">
-        <SceneWord lower="5184" upper="5187" text="Und"/>
-        <SceneWord lower="5188" upper="5193" text="jetzt"/>
-        <ActionObject lower="5194" upper="5201" actor="" mode="" name="Blink" >
-        </ActionObject>
-        <SceneWord lower="5202" upper="5207" text="färbe"/>
-        <SceneWord lower="5208" upper="5211" text="ich"/>
-        <SceneWord lower="5212" upper="5215" text="die"/>
-        <SceneWord lower="5216" upper="5220" text="eine"/>
-        <SceneWord lower="5221" upper="5225" text="Wand"/>
-        <SceneWord lower="5226" upper="5228" text="im"/>
-        <SceneWord lower="5229" upper="5240" text="Meetingraum"/>
-        <SceneWord lower="5241" upper="5245" text="blau"/>
-        <SceneWord lower="5246" upper="5249" text="ein"/>
+    </SceneTurn><SceneTurn lower="5121" upper="5161" speaker="player">
+      <SceneUttr lower="5129" upper="5161" punct=".">
+        <ActionObject lower="5129" upper="5160" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="5137" upper="5159" typ="IDENTIFIER" key="viewtarget" val="npc_counter"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5251" upper="5299" speaker="meeting_wall1">
-      <SceneUttr lower="5266" upper="5299" punct=".">
-        <ActionObject lower="5266" upper="5298" actor="" mode="" name="SetColor" >
-          <ActionFeature lower="5276" upper="5282" typ="FLOATING" key="r" val="10.0"/>
-          <ActionFeature lower="5283" upper="5289" typ="FLOATING" key="g" val="10.0"/>
-          <ActionFeature lower="5290" upper="5297" typ="FLOATING" key="b" val="255.0"/></ActionObject>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5163" upper="5383" language="en" identifier="Reception_End">
+    <SceneTurn lower="5187" upper="5220" speaker="npc_counter">
+      <SceneUttr lower="5200" upper="5220" punct=".">
+        <ActionObject lower="5200" upper="5219" actor="" mode="" name="Say" >
+          <ActionFeature lower="5205" upper="5218" typ="IDENTIFIER" key="value" val="waiting"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5300" upper="5356" speaker="susanne">
-      <SceneUttr lower="5309" upper="5356" punct=".">
-        <SceneWord lower="5309" upper="5312" text="Und"/>
-        <SceneWord lower="5313" upper="5318" text="jetzt"/>
-        <ActionObject lower="5319" upper="5326" actor="" mode="" name="Smile" >
-        </ActionObject>
-        <SceneWord lower="5327" upper="5332" text="färbe"/>
-        <SceneWord lower="5333" upper="5336" text="ich"/>
-        <SceneWord lower="5337" upper="5340" text="die"/>
-        <SceneWord lower="5341" upper="5347" text="andere"/>
-        <SceneWord lower="5348" upper="5351" text="rot"/>
-        <SceneWord lower="5352" upper="5355" text="ein"/>
+    </SceneTurn><SceneTurn lower="5221" upper="5353" speaker="susanne">
+      <SceneUttr lower="5230" upper="5241" punct=".">
+        <SceneWord lower="5230" upper="5234" text="Sehr"/>
+        <SceneWord lower="5235" upper="5240" text="schön"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5357" upper="5405" speaker="meeting_wall2">
-      <SceneUttr lower="5372" upper="5405" punct=".">
-        <ActionObject lower="5372" upper="5404" actor="" mode="" name="SetColor" >
-          <ActionFeature lower="5382" upper="5389" typ="FLOATING" key="r" val="255.0"/>
-          <ActionFeature lower="5390" upper="5396" typ="FLOATING" key="g" val="10.0"/>
-          <ActionFeature lower="5397" upper="5403" typ="FLOATING" key="b" val="10.0"/></ActionObject>
+      <SceneUttr lower="5242" upper="5263" punct=",">
+        <SceneWord lower="5242" upper="5245" text="Ich"/>
+        <SceneWord lower="5246" upper="5251" text="würde"/>
+        <SceneWord lower="5252" upper="5255" text="Sie"/>
+        <SceneWord lower="5256" upper="5262" text="bitten"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5406" upper="5460" speaker="susanne">
-      <SceneUttr lower="5415" upper="5460" punct=".">
-        <SceneWord lower="5415" upper="5420" text="Jetzt"/>
-        <SceneWord lower="5421" upper="5424" text="ist"/>
-        <SceneWord lower="5425" upper="5427" text="es"/>
-        <SceneWord lower="5428" upper="5432" text="Zeit"/>
-        <SceneWord lower="5433" upper="5436" text="den"/>
-        <SceneWord lower="5437" upper="5442" text="Abend"/>
-        <SceneWord lower="5443" upper="5449" text="kommen"/>
-        <SceneWord lower="5450" upper="5452" text="zu"/>
-        <SceneWord lower="5453" upper="5459" text="lassen"/>
+      <SceneUttr lower="5264" upper="5315" punct=".">
+        <SceneWord lower="5264" upper="5268" text="sich"/>
+        <SceneWord lower="5269" upper="5273" text="noch"/>
+        <SceneWord lower="5274" upper="5278" text="kurz"/>
+        <SceneWord lower="5279" upper="5281" text="in"/>
+        <SceneWord lower="5282" upper="5289" text="unserem"/>
+        <SceneWord lower="5290" upper="5302" text="Wartebereich"/>
+        <SceneWord lower="5303" upper="5314" text="hinzusetzen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5461" upper="5503" speaker="environment">
-      <SceneUttr lower="5474" upper="5503" punct=".">
-        <ActionObject lower="5474" upper="5502" actor="" mode="" name="AmbientLight" >
-          <ActionFeature lower="5488" upper="5501" typ="IDENTIFIER" key="value" val="evening"/></ActionObject>
+      <SceneUttr lower="5316" upper="5353" punct=".">
+        <SceneWord lower="5316" upper="5320" text="Frau"/>
+        <SceneWord lower="5321" upper="5330" text="Schneider"/>
+        <SceneWord lower="5331" upper="5336" text="kommt"/>
+        <SceneWord lower="5337" upper="5343" text="gleich"/>
+        <SceneWord lower="5344" upper="5346" text="zu"/>
+        <SceneWord lower="5347" upper="5352" text="ihnen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5504" upper="5583" speaker="susanne">
-      <SceneUttr lower="5513" upper="5517" punct="!">
-        <SceneWord lower="5513" upper="5516" text="Und"/>
-      </SceneUttr>
-      <SceneUttr lower="5518" upper="5554" punct=".">
-        <SceneWord lower="5518" upper="5523" text="Damit"/>
-        <SceneWord lower="5524" upper="5527" text="wir"/>
-        <SceneWord lower="5528" upper="5533" text="nicht"/>
-        <SceneWord lower="5534" upper="5545" text="einschlafen"/>
-        <ActionObject lower="5546" upper="5553" actor="" mode="" name="Smile" >
+    </SceneTurn><SceneTurn lower="5354" upper="5383" speaker="npc_counter">
+      <SceneUttr lower="5367" upper="5383" punct=".">
+        <ActionObject lower="5367" upper="5382" actor="" mode="" name="ReleaseLookAt" >
         </ActionObject>
       </SceneUttr>
-      <SceneUttr lower="5555" upper="5583" punct=".">
-        <SceneWord lower="5555" upper="5559" text="Wird"/>
-        <SceneWord lower="5560" upper="5562" text="es"/>
-        <SceneWord lower="5563" upper="5568" text="jetzt"/>
-        <SceneWord lower="5569" upper="5575" text="wieder"/>
-        <SceneWord lower="5576" upper="5582" text="Mittag"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="5584" upper="5623" speaker="environment">
-      <SceneUttr lower="5597" upper="5623" punct=".">
-        <ActionObject lower="5597" upper="5622" actor="" mode="" name="AmbientLight" >
-          <ActionFeature lower="5611" upper="5621" typ="IDENTIFIER" key="value" val="noon"/></ActionObject>
-      </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="5625" upper="5722" language="en" identifier="Welcome_Reception">
-    <SceneTurn lower="5653" upper="5722" speaker="npc">
-      <SceneUttr lower="5658" upper="5668" punct=".">
-        <SceneWord lower="5658" upper="5663" text="Guten"/>
-        <SceneWord lower="5664" upper="5667" text="Tag"/>
+  <SceneObject lower="5385" upper="5773" language="en" identifier="FollowMe">
+    <SceneTurn lower="5404" upper="5440" speaker="susanne">
+      <SceneUttr lower="5413" upper="5440" punct=".">
+        <ActionObject lower="5413" upper="5439" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="5421" upper="5438" typ="IDENTIFIER" key="viewtarget" val="player"/></ActionObject>
       </SceneUttr>
-      <SceneUttr lower="5669" upper="5722" punct=".">
-        <SceneWord lower="5669" upper="5672" text="Sie"/>
-        <SceneWord lower="5673" upper="5677" text="sind"/>
-        <SceneWord lower="5678" upper="5686" text="bestimmt"/>
-        <SceneWord lower="5687" upper="5692" text="wegen"/>
-        <SceneWord lower="5693" upper="5696" text="des"/>
-        <SceneWord lower="5697" upper="5716" text="Bewerbungsgesprächs"/>
-        <SceneWord lower="5717" upper="5721" text="hier"/>
+    </SceneTurn><SceneTurn lower="5441" upper="5477" speaker="player">
+      <SceneUttr lower="5449" upper="5477" punct=".">
+        <ActionObject lower="5449" upper="5476" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="5457" upper="5475" typ="IDENTIFIER" key="viewtarget" val="susanne"/></ActionObject>
       </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="5724" upper="5855" language="en" identifier="Wait">
-    <SceneTurn lower="5739" upper="5855" speaker="npc">
-      <SceneUttr lower="5744" upper="5765" punct=",">
-        <SceneWord lower="5744" upper="5747" text="Ich"/>
-        <SceneWord lower="5748" upper="5753" text="würde"/>
-        <SceneWord lower="5754" upper="5757" text="Sie"/>
-        <SceneWord lower="5758" upper="5764" text="bitten"/>
-      </SceneUttr>
-      <SceneUttr lower="5766" upper="5817" punct=".">
-        <SceneWord lower="5766" upper="5770" text="sich"/>
-        <SceneWord lower="5771" upper="5775" text="noch"/>
-        <SceneWord lower="5776" upper="5780" text="kurz"/>
-        <SceneWord lower="5781" upper="5783" text="in"/>
-        <SceneWord lower="5784" upper="5791" text="unserem"/>
-        <SceneWord lower="5792" upper="5804" text="Wartebereich"/>
-        <SceneWord lower="5805" upper="5816" text="hinzusetzen"/>
-      </SceneUttr>
-      <SceneUttr lower="5818" upper="5855" punct=".">
-        <SceneWord lower="5818" upper="5822" text="Frau"/>
-        <SceneWord lower="5823" upper="5832" text="Schneider"/>
-        <SceneWord lower="5833" upper="5838" text="kommt"/>
-        <SceneWord lower="5839" upper="5845" text="gleich"/>
-        <SceneWord lower="5846" upper="5848" text="zu"/>
-        <SceneWord lower="5849" upper="5854" text="ihnen"/>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="5857" upper="6250" language="en" identifier="Welcome_Sonja">
-    <SceneTurn lower="5881" upper="5931" speaker="environment">
-      <SceneUttr lower="5894" upper="5931" punct=".">
-        <ActionObject lower="5894" upper="5930" actor="susanne" mode="" name="SitDown" >
-          <ActionFeature lower="5911" upper="5929" typ="IDENTIFIER" key="chairname" val="ceo_seat"/></ActionObject>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="5932" upper="5965" speaker="susanne">
-      <SceneUttr lower="5941" upper="5965" punct=".">
-        <SceneWord lower="5941" upper="5946" text="Hallo"/>
-        <SceneWord lower="5947" upper="5951" text="Frau"/>
-        <SceneWord lower="5952" upper="5964" text="Schneeberger"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="5966" upper="5997" speaker="environment">
-      <SceneUttr lower="5979" upper="5997" punct=".">
-        <ActionObject lower="5979" upper="5996" actor="susanne" mode="" name="Welcome" >
+    </SceneTurn><SceneTurn lower="5478" upper="5509" speaker="environment">
+      <SceneUttr lower="5491" upper="5509" punct=".">
+        <ActionObject lower="5491" upper="5508" actor="susanne" mode="" name="Welcome" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="5998" upper="6106" speaker="susanne">
-      <SceneUttr lower="6007" upper="6106" punct=".">
-        <SceneWord lower="6007" upper="6010" text="Ich"/>
-        <SceneWord lower="6011" upper="6015" text="darf"/>
-        <SceneWord lower="6016" upper="6019" text="Sie"/>
-        <SceneWord lower="6020" upper="6028" text="herzlich"/>
-        <SceneWord lower="6029" upper="6032" text="zum"/>
-        <SceneWord lower="6033" upper="6053" text="Vorstellungsgespräch"/>
-        <SceneWord lower="6054" upper="6057" text="bei"/>
-        <SceneWord lower="6058" upper="6061" text="uns"/>
-        <SceneWord lower="6062" upper="6070" text="begrüßen"/>
-        <SceneWord lower="6071" upper="6074" text="und"/>
-        <SceneWord lower="6075" upper="6080" text="hoffe"/>
-        <SceneWord lower="6081" upper="6084" text="Sie"/>
-        <SceneWord lower="6085" upper="6089" text="sind"/>
-        <SceneWord lower="6090" upper="6093" text="gut"/>
-        <SceneWord lower="6094" upper="6105" text="vorbereitet"/>
+    </SceneTurn><SceneTurn lower="5510" upper="5566" speaker="susanne">
+      <SceneUttr lower="5519" upper="5543" punct=",">
+        <SceneWord lower="5519" upper="5524" text="Hallo"/>
+        <SceneWord lower="5525" upper="5529" text="Frau"/>
+        <SceneWord lower="5530" upper="5542" text="Schneeberger"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6107" upper="6146" speaker="susanne">
-      <SceneUttr lower="6116" upper="6146" punct=".">
-        <SceneWord lower="6116" upper="6120" text="Mein"/>
-        <SceneWord lower="6121" upper="6125" text="Name"/>
-        <SceneWord lower="6126" upper="6129" text="ist"/>
-        <SceneWord lower="6130" upper="6135" text="Sonja"/>
-        <SceneWord lower="6136" upper="6145" text="Schneider"/>
+      <SceneUttr lower="5544" upper="5566" punct=".">
+        <SceneWord lower="5544" upper="5549" text="schön"/>
+        <SceneWord lower="5550" upper="5553" text="das"/>
+        <SceneWord lower="5554" upper="5557" text="sie"/>
+        <SceneWord lower="5558" upper="5560" text="da"/>
+        <SceneWord lower="5561" upper="5565" text="sind"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6147" upper="6214" speaker="susanne">
-      <SceneUttr lower="6156" upper="6214" punct=".">
-        <SceneWord lower="6156" upper="6159" text="Ich"/>
-        <SceneWord lower="6160" upper="6165" text="werde"/>
-        <SceneWord lower="6166" upper="6171" text="heute"/>
-        <SceneWord lower="6172" upper="6175" text="das"/>
-        <SceneWord lower="6176" upper="6196" text="Vorstellungsgespräch"/>
-        <SceneWord lower="6197" upper="6200" text="mit"/>
-        <SceneWord lower="6201" upper="6206" text="ihnen"/>
-        <SceneWord lower="6207" upper="6213" text="führen"/>
+    </SceneTurn><SceneTurn lower="5567" upper="5603" speaker="susanne">
+      <SceneUttr lower="5576" upper="5603" punct=".">
+        <ActionObject lower="5576" upper="5602" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="5584" upper="5601" typ="IDENTIFIER" key="viewtarget" val="player"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6215" upper="6250" speaker="susanne">
-      <SceneUttr lower="6224" upper="6250" punct="?">
-        <SceneWord lower="6224" upper="6229" text="Haben"/>
-        <SceneWord lower="6230" upper="6233" text="Sie"/>
-        <SceneWord lower="6234" upper="6237" text="gut"/>
-        <SceneWord lower="6238" upper="6249" text="hergefunden"/>
+    </SceneTurn><SceneTurn lower="5604" upper="5677" speaker="susanne">
+      <SceneUttr lower="5613" upper="5655" punct=".">
+        <SceneWord lower="5613" upper="5619" text="Lassen"/>
+        <SceneWord lower="5620" upper="5623" text="Sie"/>
+        <SceneWord lower="5624" upper="5627" text="uns"/>
+        <SceneWord lower="5628" upper="5631" text="zum"/>
+        <SceneWord lower="5632" upper="5648" text="Besprechungsraum"/>
+        <SceneWord lower="5649" upper="5654" text="gehen"/>
       </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="6252" upper="6476" language="en" identifier="Lebenslauf">
-    <SceneTurn lower="6273" upper="6301" speaker="susanne">
-      <SceneUttr lower="6282" upper="6301" punct=".">
-        <SceneWord lower="6282" upper="6285" text="Das"/>
-        <SceneWord lower="6286" upper="6289" text="ist"/>
-        <SceneWord lower="6290" upper="6294" text="doch"/>
-        <SceneWord lower="6295" upper="6300" text="schön"/>
+      <SceneUttr lower="5656" upper="5677" punct="!">
+        <SceneWord lower="5656" upper="5662" text="Folgen"/>
+        <SceneWord lower="5663" upper="5666" text="Sie"/>
+        <SceneWord lower="5667" upper="5670" text="mir"/>
+        <SceneWord lower="5671" upper="5676" text="bitte"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6302" upper="6336" speaker="susanne">
-      <SceneUttr lower="6311" upper="6336" punct=".">
-        <SceneWord lower="6311" upper="6315" text="Dann"/>
-        <SceneWord lower="6316" upper="6322" text="wollen"/>
-        <SceneWord lower="6323" upper="6326" text="wir"/>
-        <SceneWord lower="6327" upper="6335" text="anfangen"/>
+    </SceneTurn><SceneTurn lower="5678" upper="5697" speaker="susanne">
+      <SceneUttr lower="5687" upper="5697" punct=".">
+        <ActionObject lower="5687" upper="5696" actor="" mode="" name="Release" >
+        </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6337" upper="6476" speaker="susanne">
-      <SceneUttr lower="6346" upper="6414" punct=".">
-        <SceneWord lower="6346" upper="6349" text="Sie"/>
-        <SceneWord lower="6350" upper="6355" text="haben"/>
-        <SceneWord lower="6356" upper="6360" text="sich"/>
-        <SceneWord lower="6361" upper="6363" text="ja"/>
-        <SceneWord lower="6364" upper="6367" text="auf"/>
-        <SceneWord lower="6368" upper="6372" text="eine"/>
-        <SceneWord lower="6373" upper="6379" text="Stelle"/>
-        <SceneWord lower="6380" upper="6383" text="als"/>
-        <SceneWord lower="6384" upper="6396" text="Bürokauffrau"/>
-        <SceneWord lower="6397" upper="6400" text="bei"/>
-        <SceneWord lower="6401" upper="6404" text="uns"/>
-        <SceneWord lower="6405" upper="6413" text="beworben"/>
+    </SceneTurn><SceneTurn lower="5698" upper="5723" speaker="susanne">
+      <SceneUttr lower="5707" upper="5723" punct=".">
+        <ActionObject lower="5707" upper="5722" actor="" mode="" name="ReleaseLookAt" >
+        </ActionObject>
       </SceneUttr>
-      <SceneUttr lower="6415" upper="6441" punct=",">
-        <SceneWord lower="6415" upper="6418" text="Was"/>
-        <SceneWord lower="6419" upper="6425" text="würden"/>
-        <SceneWord lower="6426" upper="6429" text="sie"/>
-        <SceneWord lower="6430" upper="6434" text="denn"/>
-        <SceneWord lower="6435" upper="6440" text="sagen"/>
-      </SceneUttr>
-      <SceneUttr lower="6442" upper="6476" punct="?">
-        <SceneWord lower="6442" upper="6454" text="qualifiziert"/>
-        <SceneWord lower="6455" upper="6458" text="sie"/>
-        <SceneWord lower="6459" upper="6462" text="für"/>
-        <SceneWord lower="6463" upper="6468" text="diese"/>
-        <SceneWord lower="6469" upper="6475" text="Stelle"/>
+    </SceneTurn><SceneTurn lower="5724" upper="5773" speaker="susanne">
+      <SceneUttr lower="5733" upper="5773" punct=".">
+        <ActionObject lower="5733" upper="5772" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="5741" upper="5771" typ="IDENTIFIER" key="viewtarget" val="meeting_application"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="6478" upper="6786" language="en" identifier="FrageKritik">
-    <SceneTurn lower="6500" upper="6582" speaker="susanne">
-      <SceneUttr lower="6509" upper="6551" punct=".">
-        <SceneWord lower="6509" upper="6512" text="Das"/>
-        <SceneWord lower="6513" upper="6517" text="hört"/>
-        <SceneWord lower="6518" upper="6522" text="sich"/>
-        <SceneWord lower="6523" upper="6527" text="doch"/>
-        <SceneWord lower="6528" upper="6533" text="schon"/>
-        <SceneWord lower="6534" upper="6537" text="mal"/>
-        <SceneWord lower="6538" upper="6543" text="recht"/>
-        <SceneWord lower="6544" upper="6547" text="gut"/>
-        <SceneWord lower="6548" upper="6550" text="an"/>
+  <SceneObject lower="5775" upper="5892" language="en" identifier="PleaseSit">
+    <SceneTurn lower="5795" upper="5831" speaker="susanne">
+      <SceneUttr lower="5804" upper="5831" punct=".">
+        <ActionObject lower="5804" upper="5830" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="5812" upper="5829" typ="IDENTIFIER" key="viewtarget" val="player"/></ActionObject>
       </SceneUttr>
-      <SceneUttr lower="6552" upper="6564" punct=",">
-        <SceneWord lower="6552" upper="6555" text="Mir"/>
-        <SceneWord lower="6556" upper="6563" text="gefällt"/>
+    </SceneTurn><SceneTurn lower="5832" upper="5859" speaker="environment">
+      <SceneUttr lower="5845" upper="5859" punct=".">
+        <ActionObject lower="5845" upper="5858" actor="susanne" mode="" name="Yes" >
+        </ActionObject>
       </SceneUttr>
-      <SceneUttr lower="6565" upper="6582" punct=".">
-        <SceneWord lower="6565" upper="6568" text="was"/>
-        <SceneWord lower="6569" upper="6572" text="sie"/>
-        <SceneWord lower="6573" upper="6581" text="erzählen"/>
+    </SceneTurn><SceneTurn lower="5860" upper="5892" speaker="susanne">
+      <SceneUttr lower="5869" upper="5875" punct="!">
+        <SceneWord lower="5869" upper="5874" text="Bitte"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6583" upper="6675" speaker="susanne">
-      <SceneUttr lower="6592" upper="6659" punct=",">
-        <SceneWord lower="6592" upper="6594" text="In"/>
-        <SceneWord lower="6595" upper="6602" text="unserem"/>
-        <SceneWord lower="6603" upper="6614" text="Unternehmen"/>
-        <SceneWord lower="6615" upper="6619" text="sind"/>
-        <SceneWord lower="6620" upper="6623" text="wir"/>
-        <SceneWord lower="6624" upper="6629" text="recht"/>
-        <SceneWord lower="6630" upper="6635" text="offen"/>
-        <SceneWord lower="6636" upper="6639" text="und"/>
-        <SceneWord lower="6640" upper="6648" text="sprechen"/>
-        <SceneWord lower="6649" upper="6654" text="offen"/>
-        <SceneWord lower="6655" upper="6658" text="aus"/>
-      </SceneUttr>
-      <SceneUttr lower="6660" upper="6675" punct=".">
-        <SceneWord lower="6660" upper="6663" text="was"/>
-        <SceneWord lower="6664" upper="6667" text="wir"/>
-        <SceneWord lower="6668" upper="6674" text="denken"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="6676" upper="6786" speaker="susanne">
-      <SceneUttr lower="6685" upper="6723" punct=".">
-        <SceneWord lower="6685" upper="6693" text="Manchmal"/>
-        <SceneWord lower="6694" upper="6698" text="kann"/>
-        <SceneWord lower="6699" upper="6703" text="dies"/>
-        <SceneWord lower="6704" upper="6708" text="auch"/>
-        <SceneWord lower="6709" upper="6717" text="Krittiek"/>
-        <SceneWord lower="6718" upper="6722" text="sein"/>
-      </SceneUttr>
-      <SceneUttr lower="6724" upper="6750" punct=",">
-        <SceneWord lower="6724" upper="6731" text="Deshalb"/>
-        <SceneWord lower="6732" upper="6738" text="möchte"/>
-        <SceneWord lower="6739" upper="6742" text="ich"/>
-        <SceneWord lower="6743" upper="6749" text="fragen"/>
-      </SceneUttr>
-      <SceneUttr lower="6751" upper="6786" punct="?">
-        <SceneWord lower="6751" upper="6754" text="wie"/>
-        <SceneWord lower="6755" upper="6760" text="gehen"/>
-        <SceneWord lower="6761" upper="6765" text="denn"/>
-        <SceneWord lower="6766" upper="6769" text="sie"/>
-        <SceneWord lower="6770" upper="6773" text="mit"/>
-        <SceneWord lower="6774" upper="6782" text="Krittiek"/>
-        <SceneWord lower="6783" upper="6785" text="um"/>
+      <SceneUttr lower="5876" upper="5892" punct=".">
+        <SceneWord lower="5876" upper="5882" text="Setzen"/>
+        <SceneWord lower="5883" upper="5886" text="Sie"/>
+        <SceneWord lower="5887" upper="5891" text="sich"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="6788" upper="7834" language="en" identifier="Info_Company">
-    <SceneTurn lower="6811" upper="6838" speaker="susanne">
-      <SceneUttr lower="6820" upper="6825" punct=",">
-        <SceneWord lower="6820" upper="6824" text="Okay"/>
+  <SceneObject lower="5894" upper="6165" language="en" identifier="WelcomeSusanne">
+    <SceneTurn lower="5919" upper="6027" speaker="susanne">
+      <SceneUttr lower="5928" upper="6027" punct=".">
+        <SceneWord lower="5928" upper="5931" text="Ich"/>
+        <SceneWord lower="5932" upper="5936" text="darf"/>
+        <SceneWord lower="5937" upper="5940" text="Sie"/>
+        <SceneWord lower="5941" upper="5949" text="herzlich"/>
+        <SceneWord lower="5950" upper="5953" text="zum"/>
+        <SceneWord lower="5954" upper="5974" text="Vorstellungsgespräch"/>
+        <SceneWord lower="5975" upper="5978" text="bei"/>
+        <SceneWord lower="5979" upper="5982" text="uns"/>
+        <SceneWord lower="5983" upper="5991" text="begrüßen"/>
+        <SceneWord lower="5992" upper="5995" text="und"/>
+        <SceneWord lower="5996" upper="6001" text="hoffe"/>
+        <SceneWord lower="6002" upper="6005" text="Sie"/>
+        <SceneWord lower="6006" upper="6010" text="sind"/>
+        <SceneWord lower="6011" upper="6014" text="gut"/>
+        <SceneWord lower="6015" upper="6026" text="vorbereitet"/>
       </SceneUttr>
-      <SceneUttr lower="6826" upper="6838" punct=".">
-        <SceneWord lower="6826" upper="6832" text="vielen"/>
-        <SceneWord lower="6833" upper="6837" text="Dank"/>
+    </SceneTurn><SceneTurn lower="6028" upper="6067" speaker="susanne">
+      <SceneUttr lower="6037" upper="6067" punct=".">
+        <SceneWord lower="6037" upper="6041" text="Mein"/>
+        <SceneWord lower="6042" upper="6046" text="Name"/>
+        <SceneWord lower="6047" upper="6050" text="ist"/>
+        <SceneWord lower="6051" upper="6056" text="Sonja"/>
+        <SceneWord lower="6057" upper="6066" text="Schneider"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6839" upper="6930" speaker="susanne">
-      <SceneUttr lower="6848" upper="6930" punct=".">
-        <SceneWord lower="6848" upper="6851" text="Ich"/>
-        <SceneWord lower="6852" upper="6858" text="möchte"/>
-        <SceneWord lower="6859" upper="6864" text="ihnen"/>
-        <SceneWord lower="6865" upper="6868" text="nun"/>
-        <SceneWord lower="6869" upper="6873" text="auch"/>
-        <SceneWord lower="6874" upper="6877" text="von"/>
-        <SceneWord lower="6878" upper="6884" text="meiner"/>
-        <SceneWord lower="6885" upper="6890" text="Seite"/>
-        <SceneWord lower="6891" upper="6897" text="einige"/>
-        <SceneWord lower="6898" upper="6911" text="Informationen"/>
-        <SceneWord lower="6912" upper="6915" text="zur"/>
-        <SceneWord lower="6916" upper="6922" text="Stelle"/>
-        <SceneWord lower="6923" upper="6929" text="bieten"/>
+    </SceneTurn><SceneTurn lower="6068" upper="6129" speaker="susanne">
+      <SceneUttr lower="6077" upper="6129" punct=".">
+        <SceneWord lower="6077" upper="6080" text="Ich"/>
+        <SceneWord lower="6081" upper="6086" text="werde"/>
+        <SceneWord lower="6087" upper="6090" text="das"/>
+        <SceneWord lower="6091" upper="6111" text="Vorstellungsgespräch"/>
+        <SceneWord lower="6112" upper="6115" text="mit"/>
+        <SceneWord lower="6116" upper="6121" text="ihnen"/>
+        <SceneWord lower="6122" upper="6128" text="führen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="6931" upper="7030" speaker="susanne">
-      <SceneUttr lower="6940" upper="6972" punct=",">
-        <SceneWord lower="6940" upper="6943" text="Die"/>
-        <SceneWord lower="6944" upper="6956" text="Bürokauffrau"/>
-        <SceneWord lower="6957" upper="6960" text="die"/>
-        <SceneWord lower="6961" upper="6964" text="wir"/>
-        <SceneWord lower="6965" upper="6971" text="suchen"/>
-      </SceneUttr>
-      <SceneUttr lower="6973" upper="7030" punct=".">
-        <SceneWord lower="6973" upper="6977" text="soll"/>
-        <SceneWord lower="6978" upper="6981" text="bei"/>
-        <SceneWord lower="6982" upper="6985" text="uns"/>
-        <SceneWord lower="6986" upper="6989" text="die"/>
-        <SceneWord lower="6990" upper="7003" text="Kommunikation"/>
-        <SceneWord lower="7004" upper="7007" text="mit"/>
-        <SceneWord lower="7008" upper="7011" text="den"/>
-        <SceneWord lower="7012" upper="7018" text="Kunden"/>
-        <SceneWord lower="7019" upper="7029" text="übernehmen"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="7031" upper="7103" speaker="susanne">
-      <SceneUttr lower="7040" upper="7103" punct=".">
-        <SceneWord lower="7040" upper="7042" text="Es"/>
-        <SceneWord lower="7043" upper="7047" text="geht"/>
-        <SceneWord lower="7048" upper="7052" text="hier"/>
-        <SceneWord lower="7053" upper="7066" text="hauptsächlich"/>
-        <SceneWord lower="7067" upper="7069" text="um"/>
-        <SceneWord lower="7070" upper="7073" text="den"/>
-        <SceneWord lower="7074" upper="7081" text="Kontakt"/>
-        <SceneWord lower="7082" upper="7085" text="per"/>
-        <SceneWord lower="7086" upper="7090" text="Mail"/>
-        <SceneWord lower="7091" upper="7094" text="udn"/>
-        <SceneWord lower="7095" upper="7102" text="Telefon"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="7104" upper="7255" speaker="susanne">
-      <SceneUttr lower="7113" upper="7176" punct=",">
-        <SceneWord lower="7113" upper="7117" text="Eine"/>
-        <SceneWord lower="7118" upper="7125" text="weitere"/>
-        <SceneWord lower="7126" upper="7133" text="Aufgabe"/>
-        <SceneWord lower="7134" upper="7137" text="ist"/>
-        <SceneWord lower="7138" upper="7141" text="die"/>
-        <SceneWord lower="7142" upper="7151" text="Betreuung"/>
-        <SceneWord lower="7152" upper="7155" text="der"/>
-        <SceneWord lower="7156" upper="7175" text="Kooperationspartner"/>
-      </SceneUttr>
-      <SceneUttr lower="7177" upper="7255" punct=".">
-        <SceneWord lower="7177" upper="7180" text="mit"/>
-        <SceneWord lower="7181" upper="7186" text="denen"/>
-        <SceneWord lower="7187" upper="7190" text="wir"/>
-        <SceneWord lower="7191" upper="7194" text="eng"/>
-        <SceneWord lower="7195" upper="7203" text="zusammen"/>
-        <SceneWord lower="7204" upper="7212" text="arbeiten"/>
-        <SceneWord lower="7213" upper="7216" text="und"/>
-        <SceneWord lower="7217" upper="7220" text="die"/>
-        <SceneWord lower="7221" upper="7228" text="unserer"/>
-        <SceneWord lower="7229" upper="7240" text="Ausrichtung"/>
-        <SceneWord lower="7241" upper="7247" text="folgen"/>
-        <SceneWord lower="7248" upper="7254" text="sollen"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="7256" upper="7400" speaker="susanne">
-      <SceneUttr lower="7265" upper="7285" punct=",">
-        <SceneWord lower="7265" upper="7272" text="Wichtig"/>
-        <SceneWord lower="7273" upper="7276" text="ist"/>
-        <SceneWord lower="7277" upper="7280" text="für"/>
-        <SceneWord lower="7281" upper="7284" text="uns"/>
-      </SceneUttr>
-      <SceneUttr lower="7286" upper="7324" punct=",">
-        <SceneWord lower="7286" upper="7290" text="dass"/>
-        <SceneWord lower="7291" upper="7294" text="die"/>
-        <SceneWord lower="7295" upper="7299" text="neue"/>
-        <SceneWord lower="7300" upper="7312" text="Bürokauffrau"/>
-        <SceneWord lower="7313" upper="7315" text="es"/>
-        <SceneWord lower="7316" upper="7323" text="schafft"/>
-      </SceneUttr>
-      <SceneUttr lower="7325" upper="7363" punct=",">
-        <SceneWord lower="7325" upper="7328" text="die"/>
-        <SceneWord lower="7329" upper="7335" text="Kunden"/>
-        <SceneWord lower="7336" upper="7339" text="und"/>
-        <SceneWord lower="7340" upper="7347" text="Partner"/>
-        <SceneWord lower="7348" upper="7350" text="so"/>
-        <SceneWord lower="7351" upper="7353" text="zu"/>
-        <SceneWord lower="7354" upper="7362" text="betreuen"/>
-      </SceneUttr>
-      <SceneUttr lower="7364" upper="7400" punct=".">
-        <SceneWord lower="7364" upper="7368" text="dass"/>
-        <SceneWord lower="7369" upper="7372" text="sie"/>
-        <SceneWord lower="7373" upper="7377" text="sich"/>
-        <SceneWord lower="7378" upper="7381" text="gut"/>
-        <SceneWord lower="7382" upper="7392" text="aufgehoben"/>
-        <SceneWord lower="7393" upper="7399" text="fühlen"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="7401" upper="7533" speaker="susanne">
-      <SceneUttr lower="7410" upper="7461" punct=",">
-        <SceneWord lower="7410" upper="7413" text="Wir"/>
-        <SceneWord lower="7414" upper="7421" text="möchten"/>
-        <SceneWord lower="7422" upper="7429" text="unseren"/>
-        <SceneWord lower="7430" upper="7435" text="hohen"/>
-        <SceneWord lower="7436" upper="7444" text="Standard"/>
-        <SceneWord lower="7445" upper="7448" text="als"/>
-        <SceneWord lower="7449" upper="7460" text="Unternehmen"/>
-      </SceneUttr>
-      <SceneUttr lower="7462" upper="7533" punct=".">
-        <SceneWord lower="7462" upper="7465" text="das"/>
-        <SceneWord lower="7466" upper="7471" text="immer"/>
-        <SceneWord lower="7472" upper="7477" text="offen"/>
-        <SceneWord lower="7478" upper="7481" text="für"/>
-        <SceneWord lower="7482" upper="7485" text="die"/>
-        <SceneWord lower="7486" upper="7493" text="Wünsche"/>
-        <SceneWord lower="7494" upper="7497" text="der"/>
-        <SceneWord lower="7498" upper="7504" text="Kunden"/>
-        <SceneWord lower="7505" upper="7508" text="und"/>
-        <SceneWord lower="7509" upper="7516" text="Partner"/>
-        <SceneWord lower="7517" upper="7522" text="nicht"/>
-        <SceneWord lower="7523" upper="7532" text="verlieren"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="7534" upper="7642" speaker="susanne">
-      <SceneUttr lower="7543" upper="7570" punct=",">
-        <SceneWord lower="7543" upper="7550" text="Deshalb"/>
-        <SceneWord lower="7551" upper="7554" text="ist"/>
-        <SceneWord lower="7555" upper="7557" text="es"/>
-        <SceneWord lower="7558" upper="7561" text="uns"/>
-        <SceneWord lower="7562" upper="7569" text="wichtig"/>
-      </SceneUttr>
-      <SceneUttr lower="7571" upper="7642" punct=".">
-        <SceneWord lower="7571" upper="7575" text="dass"/>
-        <SceneWord lower="7576" upper="7579" text="die"/>
-        <SceneWord lower="7580" upper="7584" text="neue"/>
-        <SceneWord lower="7585" upper="7597" text="Bürokauffrau"/>
-        <SceneWord lower="7598" upper="7612" text="kontaktfreudig"/>
-        <SceneWord lower="7613" upper="7616" text="und"/>
-        <SceneWord lower="7617" upper="7637" text="kommunikationssstark"/>
-        <SceneWord lower="7638" upper="7641" text="ist"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="7643" upper="7778" speaker="susanne">
-      <SceneUttr lower="7652" upper="7665" punct=",">
-        <SceneWord lower="7652" upper="7657" text="Neben"/>
-        <SceneWord lower="7658" upper="7664" text="diesem"/>
-      </SceneUttr>
-      <SceneUttr lower="7666" upper="7686" punct=",">
-        <SceneWord lower="7666" upper="7670" text="sehr"/>
-        <SceneWord lower="7671" upper="7680" text="wichtigen"/>
-        <SceneWord lower="7681" upper="7685" text="Teil"/>
-      </SceneUttr>
-      <SceneUttr lower="7687" upper="7778" punct=".">
-        <SceneWord lower="7687" upper="7691" text="sind"/>
-        <SceneWord lower="7692" upper="7710" text="Internetkenntnisse"/>
-        <SceneWord lower="7711" upper="7714" text="und"/>
-        <SceneWord lower="7715" upper="7733" text="Computerkenntnisse"/>
-        <SceneWord lower="7734" upper="7743" text="natürlich"/>
-        <SceneWord lower="7744" upper="7748" text="auch"/>
-        <SceneWord lower="7749" upper="7753" text="eine"/>
-        <SceneWord lower="7754" upper="7762" text="wichtige"/>
-        <SceneWord lower="7763" upper="7777" text="Vorraussetzung"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="7779" upper="7834" speaker="susanne">
-      <SceneUttr lower="7788" upper="7834" punct="?">
-        <SceneWord lower="7788" upper="7791" text="Wie"/>
-        <SceneWord lower="7792" upper="7797" text="sieht"/>
-        <SceneWord lower="7798" upper="7800" text="es"/>
-        <SceneWord lower="7801" upper="7805" text="denn"/>
-        <SceneWord lower="7806" upper="7819" text="diesbezüglich"/>
-        <SceneWord lower="7820" upper="7823" text="bei"/>
-        <SceneWord lower="7824" upper="7829" text="ihnen"/>
-        <SceneWord lower="7830" upper="7833" text="aus"/>
+    </SceneTurn><SceneTurn lower="6130" upper="6165" speaker="susanne">
+      <SceneUttr lower="6139" upper="6165" punct="?">
+        <SceneWord lower="6139" upper="6144" text="Haben"/>
+        <SceneWord lower="6145" upper="6148" text="Sie"/>
+        <SceneWord lower="6149" upper="6152" text="gut"/>
+        <SceneWord lower="6153" upper="6164" text="hergefunden"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="7836" upper="8197" language="en" identifier="Schwächen">
-    <SceneTurn lower="7856" upper="7959" speaker="susanne">
-      <SceneUttr lower="7865" upper="7874" punct=",">
-        <SceneWord lower="7865" upper="7869" text="Sehr"/>
-        <SceneWord lower="7870" upper="7873" text="gut"/>
+  <SceneObject lower="6167" upper="6384" language="en" identifier="Lebenslauf">
+    <SceneTurn lower="6188" upper="6216" speaker="susanne">
+      <SceneUttr lower="6197" upper="6216" punct=".">
+        <SceneWord lower="6197" upper="6200" text="Das"/>
+        <SceneWord lower="6201" upper="6204" text="ist"/>
+        <SceneWord lower="6205" upper="6209" text="doch"/>
+        <SceneWord lower="6210" upper="6215" text="schön"/>
       </SceneUttr>
-      <SceneUttr lower="7875" upper="7906" punct=".">
-        <SceneWord lower="7875" upper="7878" text="das"/>
-        <SceneWord lower="7879" upper="7883" text="habe"/>
-        <SceneWord lower="7884" upper="7887" text="ich"/>
-        <SceneWord lower="7888" upper="7891" text="mir"/>
-        <SceneWord lower="7892" upper="7897" text="schon"/>
-        <SceneWord lower="7898" upper="7905" text="gedacht"/>
+    </SceneTurn><SceneTurn lower="6217" upper="6251" speaker="susanne">
+      <SceneUttr lower="6226" upper="6251" punct=".">
+        <SceneWord lower="6226" upper="6230" text="Dann"/>
+        <SceneWord lower="6231" upper="6237" text="wollen"/>
+        <SceneWord lower="6238" upper="6241" text="wir"/>
+        <SceneWord lower="6242" upper="6250" text="anfangen"/>
       </SceneUttr>
-      <SceneUttr lower="7907" upper="7959" punct=".">
-        <SceneWord lower="7907" upper="7917" text="Inzwischen"/>
-        <SceneWord lower="7918" upper="7921" text="ist"/>
-        <SceneWord lower="7922" upper="7925" text="die"/>
-        <SceneWord lower="7926" upper="7932" text="Arbeit"/>
-        <SceneWord lower="7933" upper="7936" text="mit"/>
-        <SceneWord lower="7937" upper="7946" text="Computern"/>
-        <SceneWord lower="7947" upper="7949" text="ja"/>
-        <SceneWord lower="7950" upper="7958" text="Standard"/>
+    </SceneTurn><SceneTurn lower="6252" upper="6384" speaker="susanne">
+      <SceneUttr lower="6261" upper="6329" punct=".">
+        <SceneWord lower="6261" upper="6264" text="Sie"/>
+        <SceneWord lower="6265" upper="6270" text="haben"/>
+        <SceneWord lower="6271" upper="6275" text="sich"/>
+        <SceneWord lower="6276" upper="6278" text="ja"/>
+        <SceneWord lower="6279" upper="6282" text="auf"/>
+        <SceneWord lower="6283" upper="6287" text="eine"/>
+        <SceneWord lower="6288" upper="6294" text="Stelle"/>
+        <SceneWord lower="6295" upper="6298" text="als"/>
+        <SceneWord lower="6299" upper="6311" text="Bürokauffrau"/>
+        <SceneWord lower="6312" upper="6315" text="bei"/>
+        <SceneWord lower="6316" upper="6319" text="uns"/>
+        <SceneWord lower="6320" upper="6328" text="beworben"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="7960" upper="8078" speaker="susanne">
-      <SceneUttr lower="7969" upper="7999" punct=",">
-        <SceneWord lower="7969" upper="7975" text="Kommen"/>
-        <SceneWord lower="7976" upper="7979" text="wir"/>
-        <SceneWord lower="7980" upper="7983" text="nun"/>
-        <SceneWord lower="7984" upper="7986" text="zu"/>
-        <SceneWord lower="7987" upper="7992" text="einem"/>
-        <SceneWord lower="7993" upper="7998" text="Thema"/>
-      </SceneUttr>
-      <SceneUttr lower="8000" upper="8058" punct=",">
-        <SceneWord lower="8000" upper="8004" text="über"/>
-        <SceneWord lower="8005" upper="8008" text="das"/>
-        <SceneWord lower="8009" upper="8012" text="die"/>
-        <SceneWord lower="8013" upper="8020" text="meisten"/>
-        <SceneWord lower="8021" upper="8029" text="Menschen"/>
-        <SceneWord lower="8030" upper="8035" text="nicht"/>
-        <SceneWord lower="8036" upper="8038" text="so"/>
-        <SceneWord lower="8039" upper="8044" text="gerne"/>
-        <SceneWord lower="8045" upper="8050" text="reden"/>
-        <SceneWord lower="8051" upper="8057" text="wollen"/>
-      </SceneUttr>
-      <SceneUttr lower="8059" upper="8078" punct=".">
-        <SceneWord lower="8059" upper="8061" text="zu"/>
-        <SceneWord lower="8062" upper="8067" text="ihren"/>
-        <SceneWord lower="8068" upper="8077" text="Schwächen"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="8079" upper="8197" speaker="susanne">
-      <SceneUttr lower="8088" upper="8108" punct=",">
-        <SceneWord lower="8088" upper="8091" text="Sie"/>
-        <SceneWord lower="8092" upper="8097" text="haben"/>
-        <SceneWord lower="8098" upper="8107" text="angegeben"/>
-      </SceneUttr>
-      <SceneUttr lower="8109" upper="8139" punct=".">
-        <SceneWord lower="8109" upper="8113" text="dass"/>
-        <SceneWord lower="8114" upper="8117" text="sie"/>
-        <SceneWord lower="8118" upper="8122" text="sehr"/>
-        <SceneWord lower="8123" upper="8133" text="ungeduldig"/>
-        <SceneWord lower="8134" upper="8138" text="sind"/>
-      </SceneUttr>
-      <SceneUttr lower="8140" upper="8197" punct="?">
-        <SceneWord lower="8140" upper="8143" text="Wie"/>
-        <SceneWord lower="8144" upper="8150" text="äußert"/>
-        <SceneWord lower="8151" upper="8155" text="sich"/>
-        <SceneWord lower="8156" upper="8159" text="das"/>
-        <SceneWord lower="8160" upper="8163" text="und"/>
-        <SceneWord lower="8164" upper="8167" text="was"/>
-        <SceneWord lower="8168" upper="8177" text="versuchen"/>
-        <SceneWord lower="8178" upper="8181" text="sie"/>
-        <SceneWord lower="8182" upper="8189" text="dagegen"/>
-        <SceneWord lower="8190" upper="8192" text="zu"/>
-        <SceneWord lower="8193" upper="8196" text="tun"/>
+      <SceneUttr lower="6330" upper="6384" punct="?">
+        <SceneWord lower="6330" upper="6333" text="Was"/>
+        <SceneWord lower="6334" upper="6340" text="denken"/>
+        <SceneWord lower="6341" upper="6344" text="Sie"/>
+        <SceneWord lower="6345" upper="6349" text="denn"/>
+        <SceneWord lower="6350" upper="6362" text="qualifiziert"/>
+        <SceneWord lower="6363" upper="6366" text="sie"/>
+        <SceneWord lower="6367" upper="6370" text="für"/>
+        <SceneWord lower="6371" upper="6376" text="diese"/>
+        <SceneWord lower="6377" upper="6383" text="Stelle"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="8199" upper="8518" language="en" identifier="React_Schwäche1">
-    <SceneTurn lower="8225" upper="8288" speaker="susanne">
-      <SceneUttr lower="8234" upper="8237" punct=",">
-        <SceneWord lower="8234" upper="8236" text="Ja"/>
+  <SceneObject lower="6386" upper="6684" language="en" identifier="FrageKritik">
+    <SceneTurn lower="6408" upper="6490" speaker="susanne">
+      <SceneUttr lower="6417" upper="6459" punct=".">
+        <SceneWord lower="6417" upper="6420" text="Das"/>
+        <SceneWord lower="6421" upper="6425" text="hört"/>
+        <SceneWord lower="6426" upper="6430" text="sich"/>
+        <SceneWord lower="6431" upper="6435" text="doch"/>
+        <SceneWord lower="6436" upper="6441" text="schon"/>
+        <SceneWord lower="6442" upper="6445" text="mal"/>
+        <SceneWord lower="6446" upper="6451" text="recht"/>
+        <SceneWord lower="6452" upper="6455" text="gut"/>
+        <SceneWord lower="6456" upper="6458" text="an"/>
       </SceneUttr>
-      <SceneUttr lower="8238" upper="8252" punct=".">
-        <SceneWord lower="8238" upper="8241" text="das"/>
-        <SceneWord lower="8242" upper="8247" text="kenne"/>
-        <SceneWord lower="8248" upper="8251" text="ich"/>
+      <SceneUttr lower="6460" upper="6472" punct=",">
+        <SceneWord lower="6460" upper="6463" text="Mir"/>
+        <SceneWord lower="6464" upper="6471" text="gefällt"/>
       </SceneUttr>
-      <SceneUttr lower="8253" upper="8288" punct=".">
-        <SceneWord lower="8253" upper="8261" text="Manchmal"/>
-        <SceneWord lower="8262" upper="8267" text="fällt"/>
-        <SceneWord lower="8268" upper="8271" text="mir"/>
-        <SceneWord lower="8272" upper="8275" text="das"/>
-        <SceneWord lower="8276" upper="8280" text="auch"/>
-        <SceneWord lower="8281" upper="8287" text="schwer"/>
+      <SceneUttr lower="6473" upper="6490" punct=".">
+        <SceneWord lower="6473" upper="6476" text="was"/>
+        <SceneWord lower="6477" upper="6480" text="sie"/>
+        <SceneWord lower="6481" upper="6489" text="erzählen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="8289" upper="8364" speaker="susanne">
-      <SceneUttr lower="8298" upper="8333" punct=",">
-        <SceneWord lower="8298" upper="8302" text="Aber"/>
-        <SceneWord lower="8303" upper="8306" text="sie"/>
-        <SceneWord lower="8307" upper="8312" text="haben"/>
-        <SceneWord lower="8313" upper="8317" text="eine"/>
-        <SceneWord lower="8318" upper="8322" text="gute"/>
-        <SceneWord lower="8323" upper="8332" text="Strategie"/>
+    </SceneTurn><SceneTurn lower="6491" upper="6577" speaker="susanne">
+      <SceneUttr lower="6500" upper="6561" punct=",">
+        <SceneWord lower="6500" upper="6502" text="In"/>
+        <SceneWord lower="6503" upper="6510" text="unserem"/>
+        <SceneWord lower="6511" upper="6522" text="Unternehmen"/>
+        <SceneWord lower="6523" upper="6527" text="sind"/>
+        <SceneWord lower="6528" upper="6531" text="wir"/>
+        <SceneWord lower="6532" upper="6537" text="recht"/>
+        <SceneWord lower="6538" upper="6543" text="offen"/>
+        <SceneWord lower="6544" upper="6547" text="und"/>
+        <SceneWord lower="6548" upper="6556" text="sprechen"/>
+        <SceneWord lower="6557" upper="6560" text="aus"/>
       </SceneUttr>
-      <SceneUttr lower="8334" upper="8364" punct=".">
-        <SceneWord lower="8334" upper="8336" text="um"/>
-        <SceneWord lower="8337" upper="8341" text="ihre"/>
-        <SceneWord lower="8342" upper="8346" text="Zeit"/>
-        <SceneWord lower="8347" upper="8353" text="besser"/>
-        <SceneWord lower="8354" upper="8356" text="zu"/>
-        <SceneWord lower="8357" upper="8363" text="nutzen"/>
+      <SceneUttr lower="6562" upper="6577" punct=".">
+        <SceneWord lower="6562" upper="6565" text="was"/>
+        <SceneWord lower="6566" upper="6569" text="wir"/>
+        <SceneWord lower="6570" upper="6576" text="denken"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="8365" upper="8448" speaker="susanne">
-      <SceneUttr lower="8374" upper="8396" punct=",">
-        <SceneWord lower="8374" upper="8377" text="Wir"/>
-        <SceneWord lower="8378" upper="8387" text="versuchen"/>
-        <SceneWord lower="8388" upper="8391" text="bei"/>
-        <SceneWord lower="8392" upper="8395" text="uns"/>
+    </SceneTurn><SceneTurn lower="6578" upper="6684" speaker="susanne">
+      <SceneUttr lower="6587" upper="6623" punct=".">
+        <SceneWord lower="6587" upper="6595" text="Manchmal"/>
+        <SceneWord lower="6596" upper="6600" text="kann"/>
+        <SceneWord lower="6601" upper="6605" text="dies"/>
+        <SceneWord lower="6606" upper="6610" text="auch"/>
+        <SceneWord lower="6611" upper="6617" text="Kritik"/>
+        <SceneWord lower="6618" upper="6622" text="sein"/>
       </SceneUttr>
-      <SceneUttr lower="8397" upper="8448" punct=".">
-        <SceneWord lower="8397" upper="8400" text="wie"/>
-        <SceneWord lower="8401" upper="8408" text="bereits"/>
-        <SceneWord lower="8409" upper="8416" text="erwähnt"/>
-        <SceneWord lower="8417" upper="8421" text="sehr"/>
-        <SceneWord lower="8422" upper="8427" text="offen"/>
-        <SceneWord lower="8428" upper="8439" text="miteinander"/>
-        <SceneWord lower="8440" upper="8442" text="zu"/>
-        <SceneWord lower="8443" upper="8447" text="sein"/>
+      <SceneUttr lower="6624" upper="6650" punct=",">
+        <SceneWord lower="6624" upper="6631" text="Deshalb"/>
+        <SceneWord lower="6632" upper="6638" text="möchte"/>
+        <SceneWord lower="6639" upper="6642" text="ich"/>
+        <SceneWord lower="6643" upper="6649" text="fragen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="8449" upper="8518" speaker="susanne">
-      <SceneUttr lower="8458" upper="8485" punct=",">
-        <SceneWord lower="8458" upper="8462" text="Gibt"/>
-        <SceneWord lower="8463" upper="8465" text="es"/>
-        <SceneWord lower="8466" upper="8470" text="noch"/>
-        <SceneWord lower="8471" upper="8476" text="etwas"/>
-        <SceneWord lower="8477" upper="8484" text="anderes"/>
-      </SceneUttr>
-      <SceneUttr lower="8486" upper="8518" punct="?">
-        <SceneWord lower="8486" upper="8491" text="womit"/>
-        <SceneWord lower="8492" upper="8495" text="sie"/>
-        <SceneWord lower="8496" upper="8511" text="Schwierigkeiten"/>
-        <SceneWord lower="8512" upper="8517" text="haben"/>
+      <SceneUttr lower="6651" upper="6684" punct="?">
+        <SceneWord lower="6651" upper="6654" text="wie"/>
+        <SceneWord lower="6655" upper="6660" text="gehen"/>
+        <SceneWord lower="6661" upper="6664" text="sie"/>
+        <SceneWord lower="6665" upper="6669" text="denn"/>
+        <SceneWord lower="6670" upper="6673" text="mit"/>
+        <SceneWord lower="6674" upper="6680" text="Kritik"/>
+        <SceneWord lower="6681" upper="6683" text="um"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="8520" upper="8985" language="en" identifier="React_Schwäche2">
-    <SceneTurn lower="8546" upper="8635" speaker="susanne">
-      <SceneUttr lower="8555" upper="8561" punct=".">
-        <SceneWord lower="8555" upper="8557" text="Ah"/>
-        <SceneWord lower="8558" upper="8560" text="ja"/>
+  <SceneObject lower="6686" upper="7021" language="en" identifier="Info_Company">
+    <SceneTurn lower="6709" upper="6760" speaker="susanne">
+      <SceneUttr lower="6718" upper="6723" punct=",">
+        <SceneWord lower="6718" upper="6722" text="Okay"/>
       </SceneUttr>
-      <SceneUttr lower="8562" upper="8591" punct=",">
-        <SceneWord lower="8562" upper="8565" text="Für"/>
-        <SceneWord lower="8566" upper="8569" text="uns"/>
-        <SceneWord lower="8570" upper="8573" text="ist"/>
-        <SceneWord lower="8574" upper="8577" text="ein"/>
-        <SceneWord lower="8578" upper="8590" text="Arbeitsklima"/>
+      <SceneUttr lower="6724" upper="6736" punct=".">
+        <SceneWord lower="6724" upper="6730" text="vielen"/>
+        <SceneWord lower="6731" upper="6735" text="Dank"/>
       </SceneUttr>
-      <SceneUttr lower="8592" upper="8621" punct=",">
-        <SceneWord lower="8592" upper="8594" text="in"/>
-        <SceneWord lower="8595" upper="8598" text="dem"/>
-        <SceneWord lower="8599" upper="8603" text="sich"/>
-        <SceneWord lower="8604" upper="8609" text="jeder"/>
-        <SceneWord lower="8610" upper="8614" text="wohl"/>
-        <SceneWord lower="8615" upper="8620" text="fühlt"/>
+      <SceneUttr lower="6737" upper="6760" punct=".">
+        <SceneWord lower="6737" upper="6741" text="Kann"/>
+        <SceneWord lower="6742" upper="6745" text="ich"/>
+        <SceneWord lower="6746" upper="6749" text="gut"/>
+        <SceneWord lower="6750" upper="6759" text="verstehen"/>
       </SceneUttr>
-      <SceneUttr lower="8622" upper="8635" punct=".">
-        <SceneWord lower="8622" upper="8626" text="sehr"/>
-        <SceneWord lower="8627" upper="8634" text="wichtig"/>
+    </SceneTurn><SceneTurn lower="6761" upper="6852" speaker="susanne">
+      <SceneUttr lower="6770" upper="6852" punct=".">
+        <SceneWord lower="6770" upper="6773" text="Ich"/>
+        <SceneWord lower="6774" upper="6780" text="möchte"/>
+        <SceneWord lower="6781" upper="6786" text="ihnen"/>
+        <SceneWord lower="6787" upper="6790" text="nun"/>
+        <SceneWord lower="6791" upper="6795" text="auch"/>
+        <SceneWord lower="6796" upper="6799" text="von"/>
+        <SceneWord lower="6800" upper="6806" text="meiner"/>
+        <SceneWord lower="6807" upper="6812" text="Seite"/>
+        <SceneWord lower="6813" upper="6819" text="einige"/>
+        <SceneWord lower="6820" upper="6833" text="Informationen"/>
+        <SceneWord lower="6834" upper="6837" text="zur"/>
+        <SceneWord lower="6838" upper="6844" text="Stelle"/>
+        <SceneWord lower="6845" upper="6851" text="bieten"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="8636" upper="8723" speaker="susanne">
-      <SceneUttr lower="8645" upper="8723" punct=".">
-        <SceneWord lower="8645" upper="8652" text="Deshalb"/>
-        <SceneWord lower="8653" upper="8659" text="achten"/>
-        <SceneWord lower="8660" upper="8663" text="wir"/>
-        <SceneWord lower="8664" upper="8668" text="auch"/>
-        <SceneWord lower="8669" upper="8673" text="sehr"/>
-        <SceneWord lower="8674" upper="8677" text="auf"/>
-        <SceneWord lower="8678" upper="8681" text="die"/>
-        <SceneWord lower="8682" upper="8694" text="individuelle"/>
-        <SceneWord lower="8695" upper="8706" text="Entwicklung"/>
-        <SceneWord lower="8707" upper="8710" text="der"/>
-        <SceneWord lower="8711" upper="8722" text="Mitarbeiter"/>
+    </SceneTurn><SceneTurn lower="6853" upper="6947" speaker="susanne">
+      <SceneUttr lower="6862" upper="6947" punct=".">
+        <SceneWord lower="6862" upper="6865" text="Die"/>
+        <SceneWord lower="6866" upper="6878" text="Bürokauffrau"/>
+        <SceneWord lower="6879" upper="6882" text="die"/>
+        <SceneWord lower="6883" upper="6886" text="wir"/>
+        <SceneWord lower="6887" upper="6893" text="suchen"/>
+        <SceneWord lower="6894" upper="6898" text="soll"/>
+        <SceneWord lower="6899" upper="6902" text="bei"/>
+        <SceneWord lower="6903" upper="6906" text="uns"/>
+        <SceneWord lower="6907" upper="6910" text="die"/>
+        <SceneWord lower="6911" upper="6924" text="Kommunikation"/>
+        <SceneWord lower="6925" upper="6928" text="mit"/>
+        <SceneWord lower="6929" upper="6935" text="Kunden"/>
+        <SceneWord lower="6936" upper="6946" text="übernehmen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="8724" upper="8805" speaker="susanne">
-      <SceneUttr lower="8733" upper="8760" punct=",">
-        <SceneWord lower="8733" upper="8736" text="Wir"/>
-        <SceneWord lower="8737" upper="8743" text="bieten"/>
-        <SceneWord lower="8744" upper="8747" text="oft"/>
-        <SceneWord lower="8748" upper="8756" text="Seminare"/>
-        <SceneWord lower="8757" upper="8759" text="an"/>
-      </SceneUttr>
-      <SceneUttr lower="8761" upper="8780" punct=",">
-        <SceneWord lower="8761" upper="8763" text="in"/>
-        <SceneWord lower="8764" upper="8769" text="denen"/>
-        <SceneWord lower="8770" upper="8773" text="man"/>
-        <SceneWord lower="8774" upper="8779" text="lernt"/>
-      </SceneUttr>
-      <SceneUttr lower="8781" upper="8805" punct=".">
-        <SceneWord lower="8781" upper="8784" text="mit"/>
-        <SceneWord lower="8785" upper="8794" text="Schwächen"/>
-        <SceneWord lower="8795" upper="8804" text="umzugehen"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="8806" upper="8929" speaker="susanne">
-      <SceneUttr lower="8815" upper="8901" punct=",">
-        <SceneWord lower="8815" upper="8820" text="Diese"/>
-        <SceneWord lower="8821" upper="8829" text="Seminare"/>
-        <SceneWord lower="8830" upper="8836" text="werden"/>
-        <SceneWord lower="8837" upper="8843" text="intern"/>
-        <SceneWord lower="8844" upper="8847" text="von"/>
-        <SceneWord lower="8848" upper="8855" text="unseren"/>
-        <SceneWord lower="8856" upper="8867" text="Psychologen"/>
-        <SceneWord lower="8868" upper="8870" text="in"/>
-        <SceneWord lower="8871" upper="8874" text="der"/>
-        <SceneWord lower="8875" upper="8892" text="Personalabteilung"/>
-        <SceneWord lower="8893" upper="8900" text="geplant"/>
-      </SceneUttr>
-      <SceneUttr lower="8902" upper="8929" punct=".">
-        <SceneWord lower="8902" upper="8914" text="durchgeführt"/>
-        <SceneWord lower="8915" upper="8918" text="und"/>
-        <SceneWord lower="8919" upper="8928" text="evaluiert"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="8930" upper="8985" speaker="susanne">
-      <SceneUttr lower="8939" upper="8985" punct=".">
-        <SceneWord lower="8939" upper="8942" text="Wir"/>
-        <SceneWord lower="8943" upper="8948" text="haben"/>
-        <SceneWord lower="8949" upper="8954" text="damit"/>
-        <SceneWord lower="8955" upper="8959" text="sehr"/>
-        <SceneWord lower="8960" upper="8964" text="gute"/>
-        <SceneWord lower="8965" upper="8976" text="Erfahrungen"/>
-        <SceneWord lower="8977" upper="8984" text="gemacht"/>
+    </SceneTurn><SceneTurn lower="6948" upper="7021" speaker="susanne">
+      <SceneUttr lower="6957" upper="7021" punct=".">
+        <SceneWord lower="6957" upper="6959" text="Es"/>
+        <SceneWord lower="6960" upper="6964" text="geht"/>
+        <SceneWord lower="6965" upper="6969" text="hier"/>
+        <SceneWord lower="6970" upper="6983" text="hauptsächlich"/>
+        <SceneWord lower="6984" upper="6986" text="um"/>
+        <SceneWord lower="6987" upper="6990" text="den"/>
+        <SceneWord lower="6991" upper="6998" text="Kontakt"/>
+        <SceneWord lower="6999" upper="7002" text="per"/>
+        <SceneWord lower="7003" upper="7008" text="EMail"/>
+        <SceneWord lower="7009" upper="7012" text="und"/>
+        <SceneWord lower="7013" upper="7020" text="Telefon"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="8987" upper="9239" language="en" identifier="Bye_Sonja">
-    <SceneTurn lower="9007" upper="9098" speaker="susanne">
-      <SceneUttr lower="9016" upper="9098" punct="?">
-        <SceneWord lower="9016" upper="9021" text="Haben"/>
-        <SceneWord lower="9022" upper="9025" text="sie"/>
-        <SceneWord lower="9026" upper="9030" text="noch"/>
-        <SceneWord lower="9031" upper="9043" text="irgendwelche"/>
-        <SceneWord lower="9044" upper="9050" text="Fragen"/>
-        <SceneWord lower="9051" upper="9053" text="an"/>
-        <SceneWord lower="9054" upper="9057" text="uns"/>
-        <SceneWord lower="9058" upper="9067" text="bezüglich"/>
-        <SceneWord lower="9068" upper="9071" text="der"/>
-        <SceneWord lower="9072" upper="9078" text="Stelle"/>
-        <SceneWord lower="9079" upper="9083" text="oder"/>
-        <SceneWord lower="9084" upper="9091" text="unserer"/>
-        <SceneWord lower="9092" upper="9097" text="Firma"/>
+  <SceneObject lower="7023" upper="7580" language="en" identifier="Info_Company2">
+    <SceneTurn lower="7047" upper="7197" speaker="susanne">
+      <SceneUttr lower="7056" upper="7119" punct=",">
+        <SceneWord lower="7056" upper="7060" text="Eine"/>
+        <SceneWord lower="7061" upper="7068" text="weitere"/>
+        <SceneWord lower="7069" upper="7076" text="Aufgabe"/>
+        <SceneWord lower="7077" upper="7080" text="ist"/>
+        <SceneWord lower="7081" upper="7084" text="die"/>
+        <SceneWord lower="7085" upper="7094" text="Betreuung"/>
+        <SceneWord lower="7095" upper="7098" text="der"/>
+        <SceneWord lower="7099" upper="7118" text="Kooperationspartner"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="9099" upper="9213" speaker="susanne">
-      <SceneUttr lower="9108" upper="9119" punct=",">
-        <SceneWord lower="9108" upper="9112" text="Wenn"/>
-        <SceneWord lower="9113" upper="9118" text="nicht"/>
+      <SceneUttr lower="7120" upper="7197" punct=".">
+        <SceneWord lower="7120" upper="7123" text="mit"/>
+        <SceneWord lower="7124" upper="7129" text="denen"/>
+        <SceneWord lower="7130" upper="7133" text="wir"/>
+        <SceneWord lower="7134" upper="7137" text="eng"/>
+        <SceneWord lower="7138" upper="7146" text="zusammen"/>
+        <SceneWord lower="7147" upper="7155" text="arbeiten"/>
+        <SceneWord lower="7156" upper="7159" text="und"/>
+        <SceneWord lower="7160" upper="7163" text="die"/>
+        <SceneWord lower="7164" upper="7170" text="unsere"/>
+        <SceneWord lower="7171" upper="7176" text="Werte"/>
+        <SceneWord lower="7177" upper="7189" text="unterstützen"/>
+        <SceneWord lower="7190" upper="7196" text="sollen"/>
       </SceneUttr>
-      <SceneUttr lower="9120" upper="9213" punct=".">
-        <SceneWord lower="9120" upper="9126" text="möchte"/>
-        <SceneWord lower="9127" upper="9130" text="ich"/>
-        <SceneWord lower="9131" upper="9135" text="mich"/>
-        <SceneWord lower="9136" upper="9143" text="hiermit"/>
-        <SceneWord lower="9144" upper="9148" text="ganz"/>
-        <SceneWord lower="9149" upper="9157" text="herzlich"/>
-        <SceneWord lower="9158" upper="9161" text="bei"/>
-        <SceneWord lower="9162" upper="9167" text="Ihnen"/>
-        <SceneWord lower="9168" upper="9176" text="bedanken"/>
-        <SceneWord lower="9177" upper="9180" text="und"/>
-        <SceneWord lower="9181" upper="9188" text="wünsche"/>
-        <SceneWord lower="9189" upper="9194" text="Ihnen"/>
-        <SceneWord lower="9195" upper="9200" text="einen"/>
-        <SceneWord lower="9201" upper="9208" text="schönen"/>
-        <SceneWord lower="9209" upper="9212" text="Tag"/>
+    </SceneTurn><SceneTurn lower="7198" upper="7318" speaker="susanne">
+      <SceneUttr lower="7207" upper="7227" punct=",">
+        <SceneWord lower="7207" upper="7214" text="Wichtig"/>
+        <SceneWord lower="7215" upper="7218" text="ist"/>
+        <SceneWord lower="7219" upper="7222" text="für"/>
+        <SceneWord lower="7223" upper="7226" text="uns"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="9214" upper="9239" speaker="susanne">
-      <SceneUttr lower="9223" upper="9239" punct=".">
-        <SceneWord lower="9223" upper="9226" text="Auf"/>
-        <SceneWord lower="9227" upper="9238" text="Wiedersehen"/>
+      <SceneUttr lower="7228" upper="7318" punct=".">
+        <SceneWord lower="7228" upper="7232" text="dass"/>
+        <SceneWord lower="7233" upper="7236" text="sie"/>
+        <SceneWord lower="7237" upper="7239" text="es"/>
+        <SceneWord lower="7240" upper="7247" text="schafft"/>
+        <SceneWord lower="7248" upper="7254" text="Kunden"/>
+        <SceneWord lower="7255" upper="7258" text="und"/>
+        <SceneWord lower="7259" upper="7266" text="Partner"/>
+        <SceneWord lower="7267" upper="7269" text="so"/>
+        <SceneWord lower="7270" upper="7272" text="zu"/>
+        <SceneWord lower="7273" upper="7281" text="betreuen"/>
+        <SceneWord lower="7282" upper="7286" text="dass"/>
+        <SceneWord lower="7287" upper="7290" text="sie"/>
+        <SceneWord lower="7291" upper="7295" text="sich"/>
+        <SceneWord lower="7296" upper="7299" text="gut"/>
+        <SceneWord lower="7300" upper="7310" text="aufgehoben"/>
+        <SceneWord lower="7311" upper="7317" text="fühlen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="7319" upper="7432" speaker="susanne">
+      <SceneUttr lower="7328" upper="7360" punct=",">
+        <SceneWord lower="7328" upper="7335" text="Deshalb"/>
+        <SceneWord lower="7336" upper="7339" text="ist"/>
+        <SceneWord lower="7340" upper="7342" text="es"/>
+        <SceneWord lower="7343" upper="7346" text="uns"/>
+        <SceneWord lower="7347" upper="7351" text="sehr"/>
+        <SceneWord lower="7352" upper="7359" text="wichtig"/>
+      </SceneUttr>
+      <SceneUttr lower="7361" upper="7432" punct=".">
+        <SceneWord lower="7361" upper="7365" text="dass"/>
+        <SceneWord lower="7366" upper="7369" text="die"/>
+        <SceneWord lower="7370" upper="7374" text="neue"/>
+        <SceneWord lower="7375" upper="7387" text="Bürokauffrau"/>
+        <SceneWord lower="7388" upper="7402" text="kontaktfreudig"/>
+        <SceneWord lower="7403" upper="7406" text="und"/>
+        <SceneWord lower="7407" upper="7427" text="kommunikationssstark"/>
+        <SceneWord lower="7428" upper="7431" text="ist"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="7433" upper="7524" speaker="susanne">
+      <SceneUttr lower="7442" upper="7524" punct=".">
+        <SceneWord lower="7442" upper="7447" text="Dafür"/>
+        <SceneWord lower="7448" upper="7452" text="sind"/>
+        <SceneWord lower="7453" upper="7462" text="natürlich"/>
+        <SceneWord lower="7463" upper="7471" text="Internet"/>
+        <SceneWord lower="7472" upper="7475" text="und"/>
+        <SceneWord lower="7476" upper="7494" text="Computerkenntnisse"/>
+        <SceneWord lower="7495" upper="7499" text="eine"/>
+        <SceneWord lower="7500" upper="7508" text="wichtige"/>
+        <SceneWord lower="7509" upper="7523" text="Vorraussetzung"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="7525" upper="7580" speaker="susanne">
+      <SceneUttr lower="7534" upper="7580" punct="?">
+        <SceneWord lower="7534" upper="7537" text="Wie"/>
+        <SceneWord lower="7538" upper="7543" text="sieht"/>
+        <SceneWord lower="7544" upper="7546" text="es"/>
+        <SceneWord lower="7547" upper="7551" text="denn"/>
+        <SceneWord lower="7552" upper="7565" text="diesbezüglich"/>
+        <SceneWord lower="7566" upper="7569" text="bei"/>
+        <SceneWord lower="7570" upper="7575" text="ihnen"/>
+        <SceneWord lower="7576" upper="7579" text="aus"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7582" upper="7928" language="en" identifier="Schwächen">
+    <SceneTurn lower="7602" upper="7705" speaker="susanne">
+      <SceneUttr lower="7611" upper="7620" punct=",">
+        <SceneWord lower="7611" upper="7615" text="Sehr"/>
+        <SceneWord lower="7616" upper="7619" text="gut"/>
+      </SceneUttr>
+      <SceneUttr lower="7621" upper="7652" punct=".">
+        <SceneWord lower="7621" upper="7624" text="das"/>
+        <SceneWord lower="7625" upper="7629" text="habe"/>
+        <SceneWord lower="7630" upper="7633" text="ich"/>
+        <SceneWord lower="7634" upper="7637" text="mir"/>
+        <SceneWord lower="7638" upper="7643" text="schon"/>
+        <SceneWord lower="7644" upper="7651" text="gedacht"/>
+      </SceneUttr>
+      <SceneUttr lower="7653" upper="7705" punct=".">
+        <SceneWord lower="7653" upper="7663" text="Inzwischen"/>
+        <SceneWord lower="7664" upper="7667" text="ist"/>
+        <SceneWord lower="7668" upper="7671" text="die"/>
+        <SceneWord lower="7672" upper="7678" text="Arbeit"/>
+        <SceneWord lower="7679" upper="7682" text="mit"/>
+        <SceneWord lower="7683" upper="7692" text="Computern"/>
+        <SceneWord lower="7693" upper="7695" text="ja"/>
+        <SceneWord lower="7696" upper="7704" text="Standard"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="7706" upper="7824" speaker="susanne">
+      <SceneUttr lower="7715" upper="7745" punct=",">
+        <SceneWord lower="7715" upper="7721" text="Kommen"/>
+        <SceneWord lower="7722" upper="7725" text="wir"/>
+        <SceneWord lower="7726" upper="7729" text="nun"/>
+        <SceneWord lower="7730" upper="7732" text="zu"/>
+        <SceneWord lower="7733" upper="7738" text="einem"/>
+        <SceneWord lower="7739" upper="7744" text="Thema"/>
+      </SceneUttr>
+      <SceneUttr lower="7746" upper="7804" punct=".">
+        <SceneWord lower="7746" upper="7750" text="über"/>
+        <SceneWord lower="7751" upper="7754" text="das"/>
+        <SceneWord lower="7755" upper="7758" text="die"/>
+        <SceneWord lower="7759" upper="7766" text="meisten"/>
+        <SceneWord lower="7767" upper="7775" text="Menschen"/>
+        <SceneWord lower="7776" upper="7781" text="nicht"/>
+        <SceneWord lower="7782" upper="7784" text="so"/>
+        <SceneWord lower="7785" upper="7790" text="gerne"/>
+        <SceneWord lower="7791" upper="7796" text="reden"/>
+        <SceneWord lower="7797" upper="7803" text="wollen"/>
+      </SceneUttr>
+      <SceneUttr lower="7805" upper="7824" punct=".">
+        <SceneWord lower="7805" upper="7807" text="Zu"/>
+        <SceneWord lower="7808" upper="7813" text="ihren"/>
+        <SceneWord lower="7814" upper="7823" text="Schwächen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="7825" upper="7928" speaker="susanne">
+      <SceneUttr lower="7834" upper="7854" punct=",">
+        <SceneWord lower="7834" upper="7837" text="Sie"/>
+        <SceneWord lower="7838" upper="7843" text="haben"/>
+        <SceneWord lower="7844" upper="7853" text="angegeben"/>
+      </SceneUttr>
+      <SceneUttr lower="7855" upper="7880" punct=".">
+        <SceneWord lower="7855" upper="7859" text="dass"/>
+        <SceneWord lower="7860" upper="7863" text="sie"/>
+        <SceneWord lower="7864" upper="7874" text="ungeduldig"/>
+        <SceneWord lower="7875" upper="7879" text="sind"/>
+      </SceneUttr>
+      <SceneUttr lower="7881" upper="7928" punct="?">
+        <SceneWord lower="7881" upper="7884" text="Wie"/>
+        <SceneWord lower="7885" upper="7891" text="äußert"/>
+        <SceneWord lower="7892" upper="7896" text="sich"/>
+        <SceneWord lower="7897" upper="7900" text="das"/>
+        <SceneWord lower="7901" upper="7904" text="und"/>
+        <SceneWord lower="7905" upper="7908" text="wie"/>
+        <SceneWord lower="7909" upper="7914" text="gehen"/>
+        <SceneWord lower="7915" upper="7918" text="sie"/>
+        <SceneWord lower="7919" upper="7924" text="damit"/>
+        <SceneWord lower="7925" upper="7927" text="um"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7930" upper="8243" language="en" identifier="React_Schwäche1">
+    <SceneTurn lower="7956" upper="8013" speaker="susanne">
+      <SceneUttr lower="7965" upper="7968" punct=",">
+        <SceneWord lower="7965" upper="7967" text="Ja"/>
+      </SceneUttr>
+      <SceneUttr lower="7969" upper="7983" punct=".">
+        <SceneWord lower="7969" upper="7972" text="das"/>
+        <SceneWord lower="7973" upper="7978" text="kenne"/>
+        <SceneWord lower="7979" upper="7982" text="ich"/>
+      </SceneUttr>
+      <SceneUttr lower="7984" upper="8013" punct=".">
+        <SceneWord lower="7984" upper="7992" text="Manchmal"/>
+        <SceneWord lower="7993" upper="7999" text="erlebe"/>
+        <SceneWord lower="8000" upper="8003" text="ich"/>
+        <SceneWord lower="8004" upper="8007" text="das"/>
+        <SceneWord lower="8008" upper="8012" text="auch"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8014" upper="8089" speaker="susanne">
+      <SceneUttr lower="8023" upper="8058" punct=",">
+        <SceneWord lower="8023" upper="8027" text="Aber"/>
+        <SceneWord lower="8028" upper="8031" text="sie"/>
+        <SceneWord lower="8032" upper="8037" text="haben"/>
+        <SceneWord lower="8038" upper="8042" text="eine"/>
+        <SceneWord lower="8043" upper="8047" text="gute"/>
+        <SceneWord lower="8048" upper="8057" text="Strategie"/>
+      </SceneUttr>
+      <SceneUttr lower="8059" upper="8089" punct=".">
+        <SceneWord lower="8059" upper="8061" text="um"/>
+        <SceneWord lower="8062" upper="8066" text="ihre"/>
+        <SceneWord lower="8067" upper="8071" text="Zeit"/>
+        <SceneWord lower="8072" upper="8078" text="besser"/>
+        <SceneWord lower="8079" upper="8081" text="zu"/>
+        <SceneWord lower="8082" upper="8088" text="nutzen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8090" upper="8173" speaker="susanne">
+      <SceneUttr lower="8099" upper="8121" punct=",">
+        <SceneWord lower="8099" upper="8102" text="Wir"/>
+        <SceneWord lower="8103" upper="8112" text="versuchen"/>
+        <SceneWord lower="8113" upper="8116" text="bei"/>
+        <SceneWord lower="8117" upper="8120" text="uns"/>
+      </SceneUttr>
+      <SceneUttr lower="8122" upper="8173" punct=".">
+        <SceneWord lower="8122" upper="8125" text="wie"/>
+        <SceneWord lower="8126" upper="8133" text="bereits"/>
+        <SceneWord lower="8134" upper="8141" text="erwähnt"/>
+        <SceneWord lower="8142" upper="8146" text="sehr"/>
+        <SceneWord lower="8147" upper="8152" text="offen"/>
+        <SceneWord lower="8153" upper="8164" text="miteinander"/>
+        <SceneWord lower="8165" upper="8167" text="zu"/>
+        <SceneWord lower="8168" upper="8172" text="sein"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8174" upper="8243" speaker="susanne">
+      <SceneUttr lower="8183" upper="8210" punct=",">
+        <SceneWord lower="8183" upper="8187" text="Gibt"/>
+        <SceneWord lower="8188" upper="8190" text="es"/>
+        <SceneWord lower="8191" upper="8195" text="noch"/>
+        <SceneWord lower="8196" upper="8201" text="etwas"/>
+        <SceneWord lower="8202" upper="8209" text="anderes"/>
+      </SceneUttr>
+      <SceneUttr lower="8211" upper="8243" punct="?">
+        <SceneWord lower="8211" upper="8216" text="womit"/>
+        <SceneWord lower="8217" upper="8220" text="sie"/>
+        <SceneWord lower="8221" upper="8236" text="Schwierigkeiten"/>
+        <SceneWord lower="8237" upper="8242" text="haben"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8245" upper="8595" language="en" identifier="React_Schwäche2">
+    <SceneTurn lower="8271" upper="8286" speaker="susanne">
+      <SceneUttr lower="8280" upper="8286" punct=".">
+        <SceneWord lower="8280" upper="8282" text="Ah"/>
+        <SceneWord lower="8283" upper="8285" text="ja"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8287" upper="8369" speaker="susanne">
+      <SceneUttr lower="8296" upper="8325" punct=",">
+        <SceneWord lower="8296" upper="8299" text="Für"/>
+        <SceneWord lower="8300" upper="8303" text="uns"/>
+        <SceneWord lower="8304" upper="8307" text="ist"/>
+        <SceneWord lower="8308" upper="8311" text="ein"/>
+        <SceneWord lower="8312" upper="8324" text="Arbeitsklima"/>
+      </SceneUttr>
+      <SceneUttr lower="8326" upper="8355" punct=",">
+        <SceneWord lower="8326" upper="8328" text="in"/>
+        <SceneWord lower="8329" upper="8332" text="dem"/>
+        <SceneWord lower="8333" upper="8337" text="sich"/>
+        <SceneWord lower="8338" upper="8343" text="jeder"/>
+        <SceneWord lower="8344" upper="8348" text="wohl"/>
+        <SceneWord lower="8349" upper="8354" text="fühlt"/>
+      </SceneUttr>
+      <SceneUttr lower="8356" upper="8369" punct=".">
+        <SceneWord lower="8356" upper="8360" text="sehr"/>
+        <SceneWord lower="8361" upper="8368" text="wichtig"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8370" upper="8457" speaker="susanne">
+      <SceneUttr lower="8379" upper="8457" punct=".">
+        <SceneWord lower="8379" upper="8386" text="Deshalb"/>
+        <SceneWord lower="8387" upper="8393" text="achten"/>
+        <SceneWord lower="8394" upper="8397" text="wir"/>
+        <SceneWord lower="8398" upper="8402" text="auch"/>
+        <SceneWord lower="8403" upper="8407" text="sehr"/>
+        <SceneWord lower="8408" upper="8411" text="auf"/>
+        <SceneWord lower="8412" upper="8415" text="die"/>
+        <SceneWord lower="8416" upper="8428" text="individuelle"/>
+        <SceneWord lower="8429" upper="8440" text="Entwicklung"/>
+        <SceneWord lower="8441" upper="8444" text="der"/>
+        <SceneWord lower="8445" upper="8456" text="Mitarbeiter"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8458" upper="8539" speaker="susanne">
+      <SceneUttr lower="8467" upper="8494" punct=",">
+        <SceneWord lower="8467" upper="8470" text="Wir"/>
+        <SceneWord lower="8471" upper="8477" text="bieten"/>
+        <SceneWord lower="8478" upper="8481" text="oft"/>
+        <SceneWord lower="8482" upper="8490" text="Seminare"/>
+        <SceneWord lower="8491" upper="8493" text="an"/>
+      </SceneUttr>
+      <SceneUttr lower="8495" upper="8514" punct=",">
+        <SceneWord lower="8495" upper="8497" text="in"/>
+        <SceneWord lower="8498" upper="8503" text="denen"/>
+        <SceneWord lower="8504" upper="8507" text="man"/>
+        <SceneWord lower="8508" upper="8513" text="lernt"/>
+      </SceneUttr>
+      <SceneUttr lower="8515" upper="8539" punct=".">
+        <SceneWord lower="8515" upper="8518" text="mit"/>
+        <SceneWord lower="8519" upper="8528" text="Schwächen"/>
+        <SceneWord lower="8529" upper="8538" text="umzugehen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8540" upper="8595" speaker="susanne">
+      <SceneUttr lower="8549" upper="8595" punct=".">
+        <SceneWord lower="8549" upper="8552" text="Wir"/>
+        <SceneWord lower="8553" upper="8558" text="haben"/>
+        <SceneWord lower="8559" upper="8564" text="damit"/>
+        <SceneWord lower="8565" upper="8569" text="sehr"/>
+        <SceneWord lower="8570" upper="8574" text="gute"/>
+        <SceneWord lower="8575" upper="8586" text="Erfahrungen"/>
+        <SceneWord lower="8587" upper="8594" text="gemacht"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8597" upper="8935" language="en" identifier="Bye_Sonja">
+    <SceneTurn lower="8617" upper="8708" speaker="susanne">
+      <SceneUttr lower="8626" upper="8708" punct="?">
+        <SceneWord lower="8626" upper="8631" text="Haben"/>
+        <SceneWord lower="8632" upper="8635" text="sie"/>
+        <SceneWord lower="8636" upper="8640" text="noch"/>
+        <SceneWord lower="8641" upper="8653" text="irgendwelche"/>
+        <SceneWord lower="8654" upper="8660" text="Fragen"/>
+        <SceneWord lower="8661" upper="8663" text="an"/>
+        <SceneWord lower="8664" upper="8667" text="uns"/>
+        <SceneWord lower="8668" upper="8677" text="bezüglich"/>
+        <SceneWord lower="8678" upper="8681" text="der"/>
+        <SceneWord lower="8682" upper="8688" text="Stelle"/>
+        <SceneWord lower="8689" upper="8693" text="oder"/>
+        <SceneWord lower="8694" upper="8701" text="unserer"/>
+        <SceneWord lower="8702" upper="8707" text="Firma"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8709" upper="8823" speaker="susanne">
+      <SceneUttr lower="8718" upper="8729" punct=",">
+        <SceneWord lower="8718" upper="8722" text="Wenn"/>
+        <SceneWord lower="8723" upper="8728" text="nicht"/>
+      </SceneUttr>
+      <SceneUttr lower="8730" upper="8823" punct=".">
+        <SceneWord lower="8730" upper="8736" text="möchte"/>
+        <SceneWord lower="8737" upper="8740" text="ich"/>
+        <SceneWord lower="8741" upper="8745" text="mich"/>
+        <SceneWord lower="8746" upper="8753" text="hiermit"/>
+        <SceneWord lower="8754" upper="8758" text="ganz"/>
+        <SceneWord lower="8759" upper="8767" text="herzlich"/>
+        <SceneWord lower="8768" upper="8771" text="bei"/>
+        <SceneWord lower="8772" upper="8777" text="Ihnen"/>
+        <SceneWord lower="8778" upper="8786" text="bedanken"/>
+        <SceneWord lower="8787" upper="8790" text="und"/>
+        <SceneWord lower="8791" upper="8798" text="wünsche"/>
+        <SceneWord lower="8799" upper="8804" text="Ihnen"/>
+        <SceneWord lower="8805" upper="8810" text="einen"/>
+        <SceneWord lower="8811" upper="8818" text="schönen"/>
+        <SceneWord lower="8819" upper="8822" text="Tag"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8824" upper="8849" speaker="susanne">
+      <SceneUttr lower="8833" upper="8849" punct=".">
+        <SceneWord lower="8833" upper="8836" text="Auf"/>
+        <SceneWord lower="8837" upper="8848" text="Wiedersehen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8850" upper="8875" speaker="susanne">
+      <SceneUttr lower="8859" upper="8875" punct=".">
+        <ActionObject lower="8859" upper="8874" actor="" mode="" name="ReleaseLookAt" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8876" upper="8895" speaker="susanne">
+      <SceneUttr lower="8885" upper="8895" punct=".">
+        <ActionObject lower="8885" upper="8894" actor="" mode="" name="Release" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="8896" upper="8935" speaker="susannn">
+      <SceneUttr lower="8905" upper="8935" punct=".">
+        <ActionObject lower="8905" upper="8934" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="8913" upper="8933" typ="IDENTIFIER" key="viewtwarget" val="meeting1"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8937" upper="8990" language="en" identifier="FeedbackSmile">
+    <SceneTurn lower="8961" upper="8990" speaker="environment">
+      <SceneUttr lower="8974" upper="8990" punct=".">
+        <ActionObject lower="8974" upper="8989" actor="susanne" mode="" name="Happy" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8992" upper="9053" language="en" identifier="FeedbackDemanding">
+    <SceneTurn lower="9020" upper="9053" speaker="environment">
+      <SceneUttr lower="9033" upper="9053" punct=".">
+        <ActionObject lower="9033" upper="9052" actor="susanne" mode="" name="Demanding" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9055" upper="9104" language="en" identifier="FeedbackYes">
+    <SceneTurn lower="9077" upper="9104" speaker="environment">
+      <SceneUttr lower="9090" upper="9104" punct=".">
+        <ActionObject lower="9090" upper="9103" actor="susanne" mode="" name="Yes" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9106" upper="9337" language="en" identifier="Debriefing">
+    <SceneTurn lower="9127" upper="9159" speaker="tom">
+      <SceneUttr lower="9132" upper="9159" punct=".">
+        <ActionObject lower="9132" upper="9158" actor="" mode="" name="LookAt" >
+          <ActionFeature lower="9140" upper="9157" typ="IDENTIFIER" key="viewtarget" val="player"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="9160" upper="9190" speaker="tom">
+      <SceneUttr lower="9165" upper="9168" punct="!">
+        <SceneWord lower="9165" upper="9167" text="Ah"/>
+      </SceneUttr>
+      <SceneUttr lower="9169" upper="9190" punct=".">
+        <SceneWord lower="9169" upper="9171" text="Da"/>
+        <SceneWord lower="9172" upper="9176" text="bist"/>
+        <SceneWord lower="9177" upper="9179" text="Du"/>
+        <SceneWord lower="9180" upper="9182" text="ja"/>
+        <SceneWord lower="9183" upper="9189" text="wieder"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="9191" upper="9220" speaker="environment">
+      <SceneUttr lower="9204" upper="9220" punct=".">
+        <ActionObject lower="9204" upper="9219" actor="tom" mode="" name="OpenPalms" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="9221" upper="9236" speaker="tom">
+      <SceneUttr lower="9226" upper="9236" punct="?">
+        <SceneWord lower="9226" upper="9229" text="Wie"/>
+        <SceneAbbrev lower="9230" upper="9235" first="war" second="s"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="9237" upper="9337" speaker="tom">
+      <SceneUttr lower="9242" upper="9260" punct=",">
+        <SceneWord lower="9242" upper="9246" text="Wenn"/>
+        <SceneWord lower="9247" upper="9249" text="Du"/>
+        <SceneWord lower="9250" upper="9254" text="Lust"/>
+        <SceneWord lower="9255" upper="9259" text="hast"/>
+      </SceneUttr>
+      <SceneUttr lower="9261" upper="9289" punct=",">
+        <SceneWord lower="9261" upper="9265" text="lass"/>
+        <SceneWord lower="9266" upper="9269" text="uns"/>
+        <SceneWord lower="9270" upper="9274" text="doch"/>
+        <SceneWord lower="9275" upper="9278" text="mal"/>
+        <SceneWord lower="9279" upper="9288" text="anschauen"/>
+      </SceneUttr>
+      <SceneUttr lower="9290" upper="9337" punct=".">
+        <SceneWord lower="9290" upper="9293" text="wie"/>
+        <SceneWord lower="9294" upper="9296" text="Du"/>
+        <SceneWord lower="9297" upper="9301" text="Dich"/>
+        <SceneWord lower="9302" upper="9304" text="in"/>
+        <SceneWord lower="9305" upper="9311" text="Deinem"/>
+        <SceneWord lower="9312" upper="9321" text="Interview"/>
+        <SceneWord lower="9322" upper="9331" text="verhalten"/>
+        <SceneWord lower="9332" upper="9336" text="hast"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
