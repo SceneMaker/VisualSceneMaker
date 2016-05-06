@@ -247,6 +247,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", "1.0", aid);
             }
 
+            if (cmd.equalsIgnoreCase("Happy")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Happy", "1.0", aid);
+            }
+
             if (cmd.equalsIgnoreCase("ShowPalms")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
@@ -351,7 +358,9 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
 
             if (cmd.equalsIgnoreCase("Load")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("url", features));
+                String url = "file:///" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty(getActionFeatureValue("value", features));
+                url = url.replace("\\", "/");
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, url);
             }
 
             if (cmd.equalsIgnoreCase("LookAt")) {
@@ -374,6 +383,10 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd);
             }
 
+            if (cmd.equalsIgnoreCase("Stop")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
+            }
+
             if (cmd.equalsIgnoreCase("Relase")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd);
             }
@@ -383,7 +396,15 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
 
             if (cmd.equalsIgnoreCase("Say")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("url", features));
+                String url = "file:///" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty(getActionFeatureValue("value", features));
+                url = url.replace("\\", "/");
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, url);
+            }
+
+            if (cmd.equalsIgnoreCase("PlayAudio")) {
+                String url = "file:///" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty(getActionFeatureValue("value", features));
+                url = url.replace("\\", "/");
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, url);
             }
 
             if (cmd.equalsIgnoreCase("SetColor")) {

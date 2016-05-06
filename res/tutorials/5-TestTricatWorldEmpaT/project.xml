@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="EmpaT">
+<Project name="EmpaT Testsuite">
   <Plugins>
     <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="false">
       <Feature key="hlhost" val="127.0.0.1"/>
@@ -46,6 +46,8 @@
   </Plugins>
   <Agents>
     <Agent name="environment" device="tworld">
+      <Feature key="greeting" val="audio\greeting.wav"/>
+      <Feature key="waiting" val="audio\waiting.wav"/>
     </Agent>
     <Agent name="meeting_wall1" device="tworld">
     </Agent>
@@ -54,10 +56,14 @@
     <Agent name="npc_adjutant" device="tworld">
     </Agent>
     <Agent name="npc_counter" device="tworld">
+      <Feature key="greeting" val="audio\greeting.wav"/>
+      <Feature key="waiting" val="audio\waiting.wav"/>
     </Agent>
     <Agent name="npc_secretary" device="tworld">
     </Agent>
     <Agent name="videowall" device="tworld">
+      <Feature key="cat" val="video\cat.mp4"/>
+      <Feature key="atom" val="video\minivideo.m2v"/>
     </Agent>
     <Agent name="ceo_wall" device="tworld">
     </Agent>
