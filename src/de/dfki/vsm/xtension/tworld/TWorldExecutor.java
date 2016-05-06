@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Gregor Mehlmann, Patrick Gebhard
@@ -203,6 +205,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
                 // build action
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunctuation(), aid);
+
+                // wait a little bit ...
+                try {
+                    Thread.sleep(350);
+                } catch (final InterruptedException exc) {
+
+                }
             }
         } else {
             if (cmd.equalsIgnoreCase("Angry")) {
@@ -387,11 +396,11 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd);
             }
 
-            if (cmd.equalsIgnoreCase("Relase")) {
+            if (cmd.equalsIgnoreCase("Release")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd);
             }
 
-            if (cmd.equalsIgnoreCase("RelaseLookAt")) {
+            if (cmd.equalsIgnoreCase("ReleaseLookAt")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd);
             }
 
@@ -407,7 +416,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, url);
             }
 
-            if (cmd.equalsIgnoreCase("SetColor")) {
+            if (cmd.equalsIgnoreCase("Color")) {
                 twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("r", features), getActionFeatureValue("g", features), getActionFeatureValue("b", features));
             }
 
@@ -430,6 +439,14 @@ public final class TWorldExecutor extends ActivityExecutor {
                 } else {
                     twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
                 }
+                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
+                if (activity.getActor().equalsIgnoreCase("player")) {
+                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                }
+            }
+
+            if (cmd.equalsIgnoreCase("WorldPosition")) {
+                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("x", features), getActionFeatureValue("y", features), getActionFeatureValue("z", features));
                 // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
                 if (activity.getActor().equalsIgnoreCase("player")) {
                     twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
@@ -589,7 +606,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable
                                 mProject.setVariable("susanne_voice_activity", new StringValue(""));
                                 mProject.setVariable("tom_voice_activity", new StringValue(""));
-                                
+
                                 // remove the activity
                                 if (mActivityWorkerMap.containsKey(id)) {
                                     mActivityWorkerMap.remove(id);

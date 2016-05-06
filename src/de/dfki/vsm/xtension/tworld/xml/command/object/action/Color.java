@@ -17,26 +17,33 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class ReleaseLooktAt extends Action implements XMLParseable, XMLWriteable {
+public class Color extends Action implements XMLParseable, XMLWriteable {
 
-    String mLocation = "";
+    String mRed = "";
+    String mGreen = "";
+    String mBlue = "";
 
-    public ReleaseLooktAt(String value) {
-        mName = "releaselookat";
-        mLocation = value;
+    public Color(String red, String green, String blue) {
+        mName = "color";
+        mRed = red;
+        mGreen = green;
+        mBlue = blue;
     }
 
-    public ReleaseLooktAt() {
+    public Color() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" r=\"" + mRed + "\" g=\"" + mGreen + "\" b=\"" + mBlue + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
+        mRed = element.getAttribute("r");
+        mGreen = element.getAttribute("g");
+        mBlue = element.getAttribute("b");
         mId = element.getAttribute("id");
     }
 }
