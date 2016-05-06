@@ -60,10 +60,10 @@ public final class SpeechActivity extends AbstractActivity {
         LinkedList replaced = new LinkedList();
         for (final Object item : mList) {
             String text = item.toString();
-            // mLogger.success("text to be checked and maybe replaced " + text);
+            //mLogger.success("text to be checked and maybe replaced " + text);
             for (Map.Entry<Object, Object> entry : pronounciationMap.entrySet()) {
                 if (text != null && entry.getKey() != null && entry.getValue() != null) {
-                    text = text.replaceAll("(?i)" + entry.getKey(), (String) entry.getValue());
+                    text = text.replaceAll("\\b" + entry.getKey() + "\\b", (String) entry.getValue());
                 }
             }
             //mLogger.success(" with " + text);
