@@ -589,18 +589,25 @@ public final class TWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable
                                 mProject.setVariable("susanne_voice_activity", new StringValue(""));
                                 mProject.setVariable("tom_voice_activity", new StringValue(""));
+                                
+                                // remove the activity
+                                if (mActivityWorkerMap.containsKey(id)) {
+                                    mActivityWorkerMap.remove(id);
+                                }
+                                // wake me up ..
+                                mActivityWorkerMap.notifyAll();
                             }
 
                             // TODO marker!
                         }
+                    } else {
+                        // remove the activity in any case
+                        if (mActivityWorkerMap.containsKey(id)) {
+                            mActivityWorkerMap.remove(id);
+                        }
+                        // wake me up ..
+                        mActivityWorkerMap.notifyAll();
                     }
-
-                    // remove the activity in any case
-                    if (mActivityWorkerMap.containsKey(id)) {
-                        mActivityWorkerMap.remove(id);
-                    }
-                    // wake me up ..
-                    mActivityWorkerMap.notifyAll();
                 }
             }
 
