@@ -27,9 +27,9 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="506" upper="670" language="en" identifier="PatrickWelcome">
-    <SceneTurn lower="531" upper="621" speaker="patrick">
-      <SceneUttr lower="540" upper="621" punct="?">
+  <SceneObject lower="506" upper="596" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="531" upper="596" speaker="patrick">
+      <SceneUttr lower="540" upper="596" punct="?">
         <SceneWord lower="540" upper="545" text="Hello"/>
         <ActionObject lower="546" upper="561" actor="susanne" mode="" name="Smile" >
         </ActionObject>
@@ -37,32 +37,19 @@
         <ActionObject lower="566" upper="581" actor="susanne" mode="" name="Blink" >
         </ActionObject>
         <SceneWord lower="582" upper="585" text="are"/>
-        <ActionObject lower="586" upper="610" actor="display" mode="" name="show" >
-          <ActionFeature lower="600" upper="609" typ="IDENTIFIER" key="image" val="dog"/></ActionObject>
-        <SceneWord lower="611" upper="614" text="you"/>
-        <SceneWord lower="615" upper="620" text="today"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="622" upper="670" speaker="patrick">
-      <SceneUttr lower="631" upper="634" punct=".">
-        <SceneWord lower="631" upper="633" text="So"/>
-      </SceneUttr>
-      <SceneUttr lower="635" upper="670" punct=".">
-        <SceneWord lower="635" upper="640" text="Lange"/>
-        <SceneWord lower="641" upper="645" text="genu"/>
-        <SceneWord lower="646" upper="654" text="geschaut"/>
-        <ActionObject lower="655" upper="669" actor="display" mode="" name="hide" >
-        </ActionObject>
+        <SceneWord lower="586" upper="589" text="you"/>
+        <SceneWord lower="590" upper="595" text="today"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="672" upper="728" language="en" identifier="Test">
-    <SceneTurn lower="687" upper="728" speaker="susanne">
-      <SceneUttr lower="696" upper="728" punct=",">
-        <SceneWord lower="696" upper="699" text="Ich"/>
-        <SceneWord lower="700" upper="705" text="hätte"/>
-        <SceneWord lower="706" upper="711" text="gerne"/>
-        <SceneWord lower="712" upper="718" text="öfters"/>
-        <SceneWord lower="719" upper="727" text="überlegt"/>
+  <SceneObject lower="598" upper="654" language="en" identifier="Test">
+    <SceneTurn lower="613" upper="654" speaker="susanne">
+      <SceneUttr lower="622" upper="654" punct=",">
+        <SceneWord lower="622" upper="625" text="Ich"/>
+        <SceneWord lower="626" upper="631" text="hätte"/>
+        <SceneWord lower="632" upper="637" text="gerne"/>
+        <SceneWord lower="638" upper="644" text="öfters"/>
+        <SceneWord lower="645" upper="653" text="überlegt"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo, 2 Mai 2016 12:51:50" start="N4;N7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Sa, 7 Mai 2016 18:51:03" start="N7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
     <StructType name="UserInfo">
       <Member type="String" name ="name"/>
@@ -34,28 +34,6 @@
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
-  <Node id="N1" name="Wait" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-      <Play>
-        <String><![CDATA[[qgui show]]]></String>
-      </Play>
-    </Commands>
-    <TEdge target="N2" start="" timeout="1000">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="300" yPos="165" ctrlXPos="322" ctrlYPos="165"/>
-        <ControlPoint xPos="390" yPos="165" ctrlXPos="367" ctrlYPos="165"/>
-      </Connection>
-    </Graphics>
-    </TEdge>
-    <Graphics>
-      <Position xPos="210" yPos="120"/>
-    </Graphics>
-  </Node>
   <Node id="N2" name="Play" history="false">
     <Define>
     </Define>
@@ -159,16 +137,27 @@
     </Declare>
     <Commands>
     </Commands>
-    <TEdge target="N1" start="" timeout="1000">
+    <TEdge target="N2" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="120" yPos="165" ctrlXPos="187" ctrlYPos="165"/>
-        <ControlPoint xPos="210" yPos="165" ctrlXPos="142" ctrlYPos="165"/>
+        <ControlPoint xPos="120" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
+        <ControlPoint xPos="390" yPos="165" ctrlXPos="277" ctrlYPos="165"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
       <Position xPos="30" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="480" yPos="300"/>
     </Graphics>
   </Node>
   <UserCommands>
