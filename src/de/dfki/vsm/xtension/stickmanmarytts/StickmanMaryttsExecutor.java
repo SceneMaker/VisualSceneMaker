@@ -260,6 +260,17 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         String cmdName = "";
         ProcessBuilder pb = null;
         cmd = maryttsBaseDir + File.separator + "bin" + File.separator + "marytts-server";
+        //Check for existence
+        File f = new File(cmd);
+        boolean exists  = false;
+        String message = "";
+        if(f.exists() && !f.isDirectory()) {
+            // do something
+            exists = true;
+            message = "Loading MaryTTS ...";
+        }else{
+            message = "The MaryTTS server could not be found. Please edit the project.xml";
+        }
         if (isUnix() || isMac()) {
             cmdName = "marytts.server.Mary";
             pb = new ProcessBuilder("/bin/bash", cmd);
@@ -273,36 +284,45 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         final JDialog info = new JDialog();
         info.setTitle("Info");
         JPanel messagePane = new JPanel();
-        messagePane.add(new JLabel("Loading MaryTTS ..."));
+        messagePane.add(new JLabel(message));
         info.add(messagePane);
         info.pack();
         info.setLocationRelativeTo(null);
 
         final ProcessBuilder processB = pb;
         final String command = cmdName;
-
+        final boolean MaryTTSExists = exists;
         Thread tDialog = new Thread() {
             public void run() {
-                try {
-                    processB.redirectErrorStream(true);
-                    Process p = processB.start();
-                    mProcessMap.put(command, p);
-                    InputStream is = p.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
-                    String line;
-                    boolean started = false;
-                    while (!started) {
-                        line = br.readLine();
-                        if (line.contains("started in")) {
-                            started = true;
-                            info.setVisible(false);
-                            info.dispose();
+                if(MaryTTSExists) {
+                    try {
+                        processB.redirectErrorStream(true);
+                        Process p = processB.start();
+                        mProcessMap.put(command, p);
+                        InputStream is = p.getInputStream();
+                        InputStreamReader isr = new InputStreamReader(is);
+                        BufferedReader br = new BufferedReader(isr);
+                        String line;
+                        boolean started = false;
+                        while (!started) {
+                            line = br.readLine();
+                            if (line.contains("started in")) {
+                                started = true;
+                                info.setVisible(false);
+                                info.dispose();
+                            }
+                            System.out.println(line);
                         }
-                        System.out.println(line);
+                    } catch (final Exception exc) {
+                        mLogger.failure(exc.toString());
                     }
-                } catch (final Exception exc) {
-                    mLogger.failure(exc.toString());
+                }else{
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    info.dispose();
                 }
             }
         };
@@ -312,12 +332,6 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         info.setVisible(true);
 
 
-
-
-
-        //info.setVisible(false);
-        //info.dispose();
-
         // Get the plugin configuration
         for (ConfigFeature cf : mConfig.getEntryList()) {
             mLogger.message("Stickman Plugin Config: " + cf.getKey() + " = " + cf.getValue());
@@ -326,7 +340,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         final String host = mConfig.getProperty("smhost");
         final String port = mConfig.getProperty("smport");
 
-        // Start the StickmanStage client application 
+        // Start the StickmanStage client application
         mLogger.message("Starting StickmanStage Client Application ...");
         mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
 
@@ -334,7 +348,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         StickmanStage.addStickman("susanne");
         StickmanStage.addStickman("patrick");
 
-        // wait for stickman stage 
+        // wait for stickman stage
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for StickmanStage");
             try {
