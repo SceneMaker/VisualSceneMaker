@@ -174,8 +174,11 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
         try {
             broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
+            out.close();
         } catch (UnsupportedEncodingException exc) {
             mLogger.warning(exc.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -310,6 +313,8 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
                                 started = true;
                                 info.setVisible(false);
                                 info.dispose();
+                                is.close();
+                                isr.close();
                             }
                             System.out.println(line);
                         }
