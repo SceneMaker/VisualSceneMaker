@@ -59,6 +59,9 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     private final String OS = System.getProperty("os.name").toLowerCase();
+    private HashMap<String, String> languageAgentMap;
+    private HashMap<String, AbstractActivity> speechActivities = new HashMap<>();
+    private HashMap<String, WordTimeMarkSequence> wtsMap= new HashMap<>();
 
     private I4GMaryClient maryTTs;
     private int maryId;
@@ -69,6 +72,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         super(config, project);
         //maryTTs = I4GMaryClient.instance();
         maryId = 0;
+        languageAgentMap = new HashMap<>();
 
     }
 
@@ -102,6 +106,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
 
+
         if (maryTTs == null) {
             try {
                 maryTTs = I4GMaryClient.instance();
@@ -112,58 +117,118 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
         Animation stickmanAnimation = new Animation();
         AgentConfig agent = mProject.getAgentConfig(actor);
-        String voice = agent.getProperty("voice");
+        String langVoince =  languageAgentMap.get(agent.getAgentName());
+        if(langVoince == null || langVoince.equals("")){
+            langVoince =  agent.getProperty("default-voice");
+        }
+        String voice = agent.getProperty(langVoince);
+        int index = 0;
         VoiceName voiceName = new VoiceName(voice);
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
-
-            // create a new word time mark sequence based on the current utterance blocks
             WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
-            LinkedList blocks = sa.getBlocks();
-            HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<>();
-            int index = 0;
-            MaryStickmanPhonemes mary = new MaryStickmanPhonemes();
-            phonemes = mary.getPhonemesAndMouthPosition(sa, mStickmanStage.getStickman(actor).mType, voiceName);
-            int lastPhoneme = 0;
-            if (phonemes.size() > 0) {
-                lastPhoneme = (int) phonemes.get(phonemes.size() - 1).getLast().getmEnd();
+            LinkedList<String> timemarks = sa.getTimeMarks("$");
+            String text = sa.getTextOnly("$").trim();
+            // If text is empty - assume activity has empty text but has marker activities registered
+            if (text.isEmpty()) {
+                for (String tm : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
             }
+
+            LinkedList blocks = sa.getBlocks();
             for (final Object item : blocks) {
                 if (!item.toString().contains("$")) {
                     Word w = new Word(item.toString());
                     wts.add(w);
                     maryTTs.addWord(item.toString());
-                    LinkedList<Phoneme> wordPhonemes = phonemes.get(index);
-                    for (Phoneme p : wordPhonemes) {
-                        if (p.getLipPosition() == null) {
-                            continue;
-                        }
-                        mScheduler.schedule((int) p.getmStart(), null, new ActionMouthActivity(actor, "face", "Mouth_" + p.getLipPosition(), null, (int) (p.getmEnd() - p.getmStart())), mProject.getAgentDevice(actor));
-                    }
-
                     index++;
                 } else {
                     wts.add(new TimeMark(item.toString()));
                 }
             }
-            //Clossing the mouth
-            mScheduler.schedule(lastPhoneme + 100, null, new ActionMouthActivity(actor, "face", "Mouth_Default", null, 300), mProject.getAgentDevice(actor));
-            stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
-            stickmanAnimation.mParameter = wts;
+
             String executionId = getExecutionId();
-            executeAnimation(stickmanAnimation);
-            executeSpeachAndWait(activity, mStickmanStage.getStickman(actor).mType, executionId, voiceName);
+            speechActivities.put(executionId, activity);
+            wtsMap.put(executionId, wts);
+            executeSpeachAndWait(activity, mStickmanStage.getStickman(actor).mType, executionId, voiceName, langVoince);
 
         } else if (activity instanceof ActionActivity || activity instanceof ActionMouthActivity) {
-            int duration = 500;
-            if (activity instanceof ActionMouthActivity) {
-                duration = ((ActionMouthActivity) activity).getDuration();
-            }
-            stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
-            if (stickmanAnimation != null) {
-                executeAnimation(stickmanAnimation);
+
+            if (name.equalsIgnoreCase("set") && activity instanceof ActionActivity) {
+                for (ActionFeature feat : activity.getFeatureList()) {
+                    if (feat.getKey().equalsIgnoreCase("voice")) {
+                        languageAgentMap.put(agent.getAgentName(), feat.getVal());
+                    }
+                }
+            } else {
+                int duration = 500;
+                if (activity instanceof ActionMouthActivity) {
+                    duration = ((ActionMouthActivity) activity).getDuration();
+                }
+                stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+                if (activity instanceof ActionMouthActivity) {
+                    stickmanAnimation.mParameter = ((ActionMouthActivity) activity).getWortTimeMark();
+                }
+                if (stickmanAnimation != null) {
+                    executeAnimation(stickmanAnimation);
+                }
             }
         }
+    }
+
+    public void scheduleSpeech(String id){
+        System.out.println("Scheduled speech");
+        SpeechActivity activity = (SpeechActivity) speechActivities.remove(id);
+        WordTimeMarkSequence wts = wtsMap.remove(id);
+        final String actor = activity.getActor();
+        AgentConfig agent = mProject.getAgentConfig(actor);
+        String langVoince =  languageAgentMap.get(agent.getAgentName());
+        if(langVoince == null || langVoince.equals("")){
+            langVoince =  agent.getProperty("default-voice");
+        }
+        String voice = agent.getProperty(langVoince);
+        VoiceName voiceName = new VoiceName(voice);
+        MouthSpeech(actor, langVoince, voiceName, activity, wts);
+        System.out.println("End mouth");
+    }
+
+    private void MouthSpeech(String actor, String langVoince, VoiceName voiceName, SpeechActivity sa, WordTimeMarkSequence wts) {
+       // WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
+        System.out.println("Entered mouth");
+        LinkedList blocks = sa.getBlocks();
+        HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<>();
+        int index = 0;
+        MaryStickmanPhonemes mary = new MaryStickmanPhonemes();
+        phonemes = mary.getPhonemesAndMouthPosition(sa, mStickmanStage.getStickman(actor).mType, voiceName, langVoince);
+        int lastPhoneme = 0;
+        if (phonemes.size() > 0) {
+            lastPhoneme = (int) phonemes.get(phonemes.size() - 1).getLast().getmEnd();
+        }
+        for (final Object item : blocks) {
+            if (!item.toString().contains("$")) {
+                Word w = new Word(item.toString());
+                //wts.add(w);
+                //maryTTs.addWord(item.toString());
+                LinkedList<Phoneme> wordPhonemes = phonemes.get(index);
+                for (Phoneme p : wordPhonemes) {
+                    if (p.getLipPosition() == null) {
+                        continue;
+                    }
+                    mScheduler.schedule((int) p.getmStart(), null, new ActionMouthActivity(actor, "face", "Mouth_" + p.getLipPosition(), null, (int) (p.getmEnd() - p.getmStart()), wts), mProject.getAgentDevice(actor));
+                }
+
+                index++;
+            }
+        }
+        //Clossing the mouth
+        System.out.println("Schedula enumagion");
+        mScheduler.schedule(lastPhoneme + 100, null, new ActionMouthActivity(actor, "face", "Mouth_Default", null, 300, wts), mProject.getAgentDevice(actor));
+        Animation stickmanAnimation = new Animation();
+        stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
+        stickmanAnimation.mParameter = wts;
+        executeAnimation(stickmanAnimation);
     }
 
     private void executeAnimation(Animation stickmanAnimation) {
@@ -174,19 +239,22 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
         try {
             broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
+            out.close();
         } catch (UnsupportedEncodingException exc) {
             mLogger.warning(exc.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    private void executeSpeachAndWait(AbstractActivity activity, Stickman.TYPE gender, String executionId, VoiceName voiceName) {
+    private void executeSpeachAndWait(AbstractActivity activity, Stickman.TYPE gender, String executionId, VoiceName voiceName, String language) {
         String text = ((SpeechActivity) activity).getTextOnly("$");
         synchronized (mActivityWorkerMap) {
             String phrase = maryTTs.getText();
             if (phrase.length() > 0) {
 
                 try {
-                    maryTTs.speak(gender, executionId, voiceName);
+                    maryTTs.speak(gender, executionId, voiceName, language);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -260,6 +328,17 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         String cmdName = "";
         ProcessBuilder pb = null;
         cmd = maryttsBaseDir + File.separator + "bin" + File.separator + "marytts-server";
+        //Check for existence
+        File f = new File(cmd);
+        boolean exists  = false;
+        String message = "";
+        if(f.exists() && !f.isDirectory()) {
+            // do something
+            exists = true;
+            message = "Loading MaryTTS ...";
+        }else{
+            message = "The MaryTTS server could not be found. Please edit the project.xml";
+        }
         if (isUnix() || isMac()) {
             cmdName = "marytts.server.Mary";
             pb = new ProcessBuilder("/bin/bash", cmd);
@@ -273,50 +352,57 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         final JDialog info = new JDialog();
         info.setTitle("Info");
         JPanel messagePane = new JPanel();
-        messagePane.add(new JLabel("Loading MaryTTS ..."));
+        messagePane.add(new JLabel(message));
         info.add(messagePane);
         info.pack();
         info.setLocationRelativeTo(null);
 
         final ProcessBuilder processB = pb;
         final String command = cmdName;
-
+        final boolean MaryTTSExists = exists;
         Thread tDialog = new Thread() {
             public void run() {
-                try {
-                    processB.redirectErrorStream(true);
-                    Process p = processB.start();
-                    mProcessMap.put(command, p);
-                    InputStream is = p.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader br = new BufferedReader(isr);
-                    String line;
-                    boolean started = false;
-                    while (!started) {
-                        line = br.readLine();
-                        if (line.contains("started in")) {
-                            started = true;
-                            info.setVisible(false);
-                            info.dispose();
+                if(MaryTTSExists) {
+                    try {
+                        processB.redirectErrorStream(true);
+                        Process p = processB.start();
+                        mProcessMap.put(command, p);
+                        InputStream is = p.getInputStream();
+                        InputStreamReader isr = new InputStreamReader(is);
+                        BufferedReader br = new BufferedReader(isr);
+                        String line;
+                        boolean started = false;
+                        while (!started) {
+                            line = br.readLine();
+                            if (line.contains("started in")) {
+                                started = true;
+                                info.setVisible(false);
+                                info.dispose();
+                                is.close();
+                                isr.close();
+                            }
+                            System.out.println(line);
                         }
-                        System.out.println(line);
+                    } catch (final Exception exc) {
+                        mLogger.failure(exc.toString());
                     }
-                } catch (final Exception exc) {
-                    mLogger.failure(exc.toString());
+                }else{
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    info.dispose();
                 }
             }
         };
+
+
 
         tDialog.start();
         info.setModal(true);
         info.setVisible(true);
 
-
-
-
-
-        //info.setVisible(false);
-        //info.dispose();
 
         // Get the plugin configuration
         for (ConfigFeature cf : mConfig.getEntryList()) {
@@ -363,6 +449,9 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
         // Clear the map of clients 
         mClientMap.clear();
+        languageAgentMap.clear();
+        wtsMap.clear();
+        mActivityWorkerMap.clear();
         // Abort the server thread
         try {
             mListener.abort();

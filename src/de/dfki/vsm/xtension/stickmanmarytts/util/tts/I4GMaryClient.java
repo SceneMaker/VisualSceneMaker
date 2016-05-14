@@ -31,6 +31,7 @@ package de.dfki.vsm.xtension.stickmanmarytts.util.tts;
 
 import de.dfki.stickman.Stickman;
 import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -79,8 +80,7 @@ import org.xml.sax.SAXException;
 public class I4GMaryClient {
 
     private MaryClient maryClient = null;
-    public static final Language Language_DE = new Language("de");
-    public static final Language Language_EN = new Language("en-GB");
+
     public static final VoiceName FEMALE = new VoiceName("dfki-poppy");
     public static final VoiceName MALE = new VoiceName("dfki-obadiah");
     public static final VoiceName DE1 = new VoiceName("dfki-poker");
@@ -105,9 +105,10 @@ public class I4GMaryClient {
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // Singleton
     static private I4GMaryClient instance = null;
-    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private List wordQueue = null;
     private String speak_text = "";
+    private HashMap<String, Language> languageMap = new HashMap<>();
 
 
     private I4GMaryClient() throws IOException{
@@ -121,6 +122,8 @@ public class I4GMaryClient {
     private I4GMaryClient(String host, int port) throws IOException{
         Address address = new Address(host, port);
         this.maryClient = maryClient.getMaryClient(address);
+        languageMap.put("en", new Language("en-GB"));
+        languageMap.put("de", new Language("de"));
     }
     
     
@@ -160,16 +163,16 @@ public class I4GMaryClient {
 
             public void update(LineEvent event) {
                 if (event.getType() == LineEvent.Type.START) {
-                    mEventCaster.convey(new LineStart(this));
+                    //mEventCaster.convey(new LineStart(this,  executionId));
                 } else if (event.getType() == LineEvent.Type.STOP) {
                     mEventCaster.convey(new LineStop(this, executionId));
-                    mLogger.message("Audio stopped playing");
+                    mLogger.message("Audio stopped playing.");
                 } else if (event.getType() == LineEvent.Type.OPEN) {
-                    mEventCaster.convey(new AudioOpened(this));
-                    mLogger.message("Audio line opened.");
+                    mLogger.message("Audio opened Line.");
+                    mEventCaster.convey(new LineStart(this,  executionId));
+                    //mEventCaster.convey(new AudioOpened(this));
                 } else if (event.getType() == LineEvent.Type.CLOSE) {
                     mEventCaster.convey(new AudioClosed(this));
-                    mLogger.message("Audio line closed.");
                 }
             }
         };
@@ -214,9 +217,12 @@ public class I4GMaryClient {
 
     }
 
-    public String getAcoustParams(String speaker, String rawMaryXml, VoiceName voice) throws IOException, UnknownHostException {
+    public String getAcoustParams(String speaker, String rawMaryXml, VoiceName voice, String language) throws IOException, UnknownHostException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         // emotional processing ... set new voices and effects
         String voiceName = voice.toString();
         
@@ -224,37 +230,43 @@ public class I4GMaryClient {
 
         // process (old version)
         //maryClient.process(rawMaryXml, DataType.RAWMARYXML.toString(), DataType.ACOUSTPARAMS.toString(), null, voice.toString(), baos); // ggf. AudioType.WAVE
-        maryClient.process(rawMaryXml, "RAWMARYXML", "ACOUSTPARAMS", Language_EN.toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
+        maryClient.process(rawMaryXml, "RAWMARYXML", "ACOUSTPARAMS", languageMap.get(language).toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
          
         String acoustParams = baos.toString();
         baos.close();
         return acoustParams;
     }
 
-    public String getPhoneticParams(String speaker, String rawMaryXml, VoiceName voice) throws IOException, UnknownHostException {
+    public String getPhoneticParams(String speaker, String rawMaryXml, VoiceName voice, String language) throws IOException, UnknownHostException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         // emotional processing ... set new voices and effects
         String voiceName = voice.toString();
 
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         String effects = "";
-        maryClient.process(rawMaryXml, "RAWMARYXML", "ALLOPHONES", Language_EN.toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
+        maryClient.process(rawMaryXml, "RAWMARYXML", "ALLOPHONES", languageMap.get(language).toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
 
         String acoustParams = baos.toString();
         baos.close();
         return acoustParams;
     }
     
-    public ByteArrayOutputStream getAudio(String speaker, String rawMaryXml, VoiceName voice) throws IOException, UnknownHostException {
+    public ByteArrayOutputStream getAudio(String speaker, String rawMaryXml, VoiceName voice, String language) throws IOException, UnknownHostException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         // emotional processing ... set new voices and effects
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         String voiceName = voice.toString();
         String effects = "";
 
         
         //maryClient.process(rawMaryXml, DataType.RAWMARYXML.toString(), DataType.AUDIO.toString(), AudioType.WAVE.toString(), voice.toString(), baos);
-          maryClient.process(rawMaryXml, "ACOUSTPARAMS", "AUDIO", Language_EN.toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
+          maryClient.process(rawMaryXml, "ACOUSTPARAMS", "AUDIO", languageMap.get(language).toString(),  "WAVE", voiceName,  baos); // ggf. AudioType.WAVE
         
 //System.out.println("length of baos " + baos.size());
           baos.close();
@@ -291,11 +303,14 @@ public class I4GMaryClient {
         return finalWord;
     }
     
-    public long getPhraseTime(VoiceName voiceName) throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public long getPhraseTime(VoiceName voiceName, String language) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception { //TODO: Get language from scene
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         String text = this.getPhrase();
-        String rawMaryXml = getRawMaryXml("", text, Language_EN);
-        String acoustParams = getAcoustParams("", rawMaryXml, voiceName);
+        String rawMaryXml = getRawMaryXml("", text, languageMap.get(language));
+        String acoustParams = getAcoustParams("", rawMaryXml, voiceName,language);
         InputStream stream = new ByteArrayInputStream(acoustParams.getBytes(StandardCharsets.UTF_8));
         String endTime = parseAcoustParams(stream);
         if(!endTime.equals("")){
@@ -365,37 +380,42 @@ public class I4GMaryClient {
         
     }
     
-    public void speak(String text, VoiceName voice)
+    public void speak(String text, VoiceName voice, String language)
             throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
 
-        /*MaryInterface marytts = new LocalMaryInterface();
-        Set<String> voices = marytts.getAvailableVoices(Locale.UK);*/
-        
-        //mLogger.message("Speak: \"" + text + "\"");
-        String rawMaryXml = getRawMaryXml("", text, Language_EN);
-        String acoustParams = getAcoustParams("", rawMaryXml, voice);
-        ByteArrayOutputStream audio = getAudio("", acoustParams, voice);
+        if(language == null || language.equals("")){
+            language = "en";
+        }
+        String rawMaryXml = getRawMaryXml("", text, languageMap.get(language));
+        String acoustParams = getAcoustParams("", rawMaryXml, voice,language);
+        ByteArrayOutputStream audio = getAudio("", acoustParams, voice,language);
         playAudio(audio);
         //this.clearWordList();
     }
 
-    public String getPhonetics(String word) throws IOException { //Get phonetic information from a word
-        String rawMaryXml = getRawMaryXml("", word, Language_EN);
-        String phoneticParams = getPhoneticParams("", rawMaryXml, OBADIAH);
+    public String getPhonetics(String word, String language) throws IOException { //Get phonetic information from a word
+        if(language == null || language.equals("")){
+            language = "en";
+        }
+        String rawMaryXml = getRawMaryXml("", word, languageMap.get(language));
+        String phoneticParams = getPhoneticParams("", rawMaryXml, OBADIAH,language);
         return phoneticParams;
     }
 
-    public String getAllCousticParms(String word, Stickman.TYPE gender, VoiceName voiceName) throws IOException { //Get phonetic information from a word
+    public String getAllCousticParms(String word, Stickman.TYPE gender, VoiceName voiceName, String language) throws IOException { //Get phonetic information from a word
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         VoiceName speakerVoice = null;
         speakerVoice = getSpeakingVoice(gender, voiceName);
-        String rawMaryXml = getRawMaryXml("", word, Language_EN);
-        String phoneticParams = getAcoustParams("", rawMaryXml, speakerVoice);
+        String rawMaryXml = getRawMaryXml("", word, languageMap.get(language));
+        String phoneticParams = getAcoustParams("", rawMaryXml, speakerVoice,language);
         return phoneticParams;
     }
 
-    public long getWordDuration(String word, Stickman.TYPE gender, VoiceName voiceName) throws IOException {
-        String acousticParams = getAllCousticParms(word, gender, voiceName);
+    public long getWordDuration(String word, Stickman.TYPE gender, VoiceName voiceName, String language) throws IOException {
+        String acousticParams = getAllCousticParms(word, gender, voiceName, language);
         InputStream stream = new ByteArrayInputStream(acousticParams.getBytes(StandardCharsets.UTF_8));
         String endTime = null;
         try {
@@ -415,8 +435,8 @@ public class I4GMaryClient {
         return (long)0;
     }
 
-    public LinkedList getWordPhonemeList(String word, Stickman.TYPE gender, VoiceName voiceName) throws IOException {
-        String acousticParams = getAllCousticParms(word, gender, voiceName);
+    public LinkedList getWordPhonemeList(String word, Stickman.TYPE gender, VoiceName voiceName, String language) throws IOException {
+        String acousticParams = getAllCousticParms(word, gender, voiceName, language);
         InputStream stream = new ByteArrayInputStream(acousticParams.getBytes(StandardCharsets.UTF_8));
         String endTime = null;
         LinkedList<Phoneme> phonemes = new LinkedList<>();
@@ -432,32 +452,38 @@ public class I4GMaryClient {
         return phonemes;
     }
     
-    public void speak() throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public void speak(String language) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
         String text = this.getPhrase();
         this.clearWordList();
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         //mLogger.message("Speak: \"" + text + "\"");
         if(text.length()> 0) {
             System.out.println("MEssage: " + text);
-            String rawMaryXml = getRawMaryXml("", text, Language_EN);
-            String acoustParams = getAcoustParams("", rawMaryXml, OBADIAH);
-            ByteArrayOutputStream audio = getAudio("", acoustParams, OBADIAH);
+            String rawMaryXml = getRawMaryXml("", text, languageMap.get(language));
+            String acoustParams = getAcoustParams("", rawMaryXml, OBADIAH, language);
+            ByteArrayOutputStream audio = getAudio("", acoustParams, OBADIAH, language);
             playAudio(audio);
         }
         //this.clearWordList();
     
     }
     
-    public void speak(VoiceName speakerVoice) throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public void speak(VoiceName speakerVoice, String language) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
         String text = this.getPhrase();
         this.clearWordList();
         //mLogger.message("Speak: \"" + text + "\"");
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         if(text.length()> 0) {
             System.out.println("MEssage: " + text);
-            String rawMaryXml = getRawMaryXml("", text, Language_EN);
-            String acoustParams = getAcoustParams("", rawMaryXml, speakerVoice);
-            ByteArrayOutputStream audio = getAudio("", acoustParams, speakerVoice);
+            String rawMaryXml = getRawMaryXml("", text, languageMap.get(language));
+            String acoustParams = getAcoustParams("", rawMaryXml, speakerVoice, language);
+            ByteArrayOutputStream audio = getAudio("", acoustParams, speakerVoice,language);
             playAudio(audio);
         }
         //this.clearWordList();
@@ -490,8 +516,11 @@ public class I4GMaryClient {
         return speakerVoice;
     }
 
-    public void speak(Stickman.TYPE gender) throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public void speak(Stickman.TYPE gender, String language) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
+        if(language == null || language.equals("")){
+            language = "en";
+        }
         String text = this.getPhrase();
         this.clearWordList();
         VoiceName speakerVoice = getSpeakingVoice(gender);
@@ -499,30 +528,32 @@ public class I4GMaryClient {
         //mLogger.message("Speak: \"" + text + "\"");
         if(text.length()> 0) {
             System.out.println("MEssage: " + text);
-            String rawMaryXml = getRawMaryXml("", text, Language_EN);
-            String acoustParams = getAcoustParams("", rawMaryXml, speakerVoice);
-            ByteArrayOutputStream audio = getAudio("", acoustParams, speakerVoice);
+            String rawMaryXml = getRawMaryXml("", text, languageMap.get(language));
+            String acoustParams = getAcoustParams("", rawMaryXml, speakerVoice,language);
+            ByteArrayOutputStream audio = getAudio("", acoustParams, speakerVoice,language);
             playAudio(audio);
         }
         //this.clearWordList();
 
     }
 
-    public void speak(Stickman.TYPE gender, String executionId, VoiceName voiceName) throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public void speak(Stickman.TYPE gender, String executionId, VoiceName voiceName, String language) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
         String text = this.getPhrase();
         this.clearWordList();
         VoiceName speakerVoice;
         speakerVoice = getSpeakingVoice(gender, voiceName);
-
+        if(language == null || language.equals("")){
+            language = "en";
+        }
 
 
         //mLogger.message("Speak: \"" + text + "\"");
         if(text.length()> 0) {
             System.out.println("MEssage: " + text);
-            String rawMaryXml = getRawMaryXml("", text, Language_EN);
-            String acoustParams = getAcoustParams("", rawMaryXml, speakerVoice);
-            ByteArrayOutputStream audio = getAudio("", acoustParams, speakerVoice);
+            String rawMaryXml = getRawMaryXml("", text, languageMap.get(language));
+            String acoustParams = getAcoustParams("", rawMaryXml, speakerVoice,language);
+            ByteArrayOutputStream audio = getAudio("", acoustParams, speakerVoice,language);
             playAudio(audio, executionId);
         }
         //this.clearWordList();

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane blendMode="MULTIPLY" depthTest="ENABLE" pickOnBounds="false" prefHeight="728.0" prefWidth="802.0" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <SplitPane dividerPositions="0.29797979797979796" prefHeight="728.0" prefWidth="802.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="726.0" prefWidth="269.0">
+               <children>
+                  <TreeView id="treeView" fx:id="treeView" layoutY="14.0" onMouseClicked="#selectConfig" />
+               </children>
+            </AnchorPane>
+          <AnchorPane fx:id="contentPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>
