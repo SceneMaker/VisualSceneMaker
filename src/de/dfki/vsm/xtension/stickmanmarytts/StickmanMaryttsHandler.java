@@ -129,6 +129,7 @@ public class StickmanMaryttsHandler extends Thread implements EventListener {
     public void update(EventObject event) {
         if(event instanceof LineStart){
             //mExecutor.handle(message, this);
+            mExecutor.scheduleSpeech(((LineStart) event).getExecutionId());
         }
         if(event instanceof LineStop){
             String message = "#AUDIO#end#" + ((LineStop) event).getExecutionId();

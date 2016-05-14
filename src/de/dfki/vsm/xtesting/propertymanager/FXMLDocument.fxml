@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane id="AnchorPane" blendMode="MULTIPLY" depthTest="ENABLE" pickOnBounds="false" prefHeight="728.0" prefWidth="802.0" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+
+
+            <TableView fx:id="pluginsTable" editable="true" prefHeight="248.0" prefWidth="798.0">
+              <columns>
+                  <TableColumn fx:id="pluginColumn" prefWidth="75.0" text="Plugin" />
+                <TableColumn fx:id="keyColumn" prefWidth="75.0" text="Key" />
+                <TableColumn fx:id="valueColumn" prefWidth="75.0" text="Value" />
+
+
+              </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+      <HBox layoutX="8.0" layoutY="255.0" prefHeight="59.0" prefWidth="784.0">
+         <children>
+            <VBox prefHeight="76.0" prefWidth="164.0">
+               <children>
+                  <Label id="lblPlugin" text="Plugin" />
+                  <ComboBox fx:id="cmbPlugin" prefWidth="150.0" />
+               </children>
+            </VBox>
+            <VBox prefHeight="76.0" prefWidth="164.0">
+               <children>
+                  <Label id="lblKey" text="Key" />
+                  <TextField fx:id="txtKey" prefHeight="29.0" prefWidth="123.0" />
+               </children>
+               <HBox.margin>
+                  <Insets right="12.0" />
+               </HBox.margin>
+            </VBox>
+            <VBox prefHeight="76.0" prefWidth="164.0">
+               <children>
+                  <Label id="lblValue" text="Value" />
+                  <TextField fx:id="txtValue">
+                     <VBox.margin>
+                        <Insets right="12.0" />
+                     </VBox.margin>
+                  </TextField>
+               </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </VBox>
+            <Button id="btnAdd" mnemonicParsing="false" onMouseClicked="#addPluginRow" prefHeight="29.0" prefWidth="52.0" text="Add">
+               <HBox.margin>
+                  <Insets top="17.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+      <TableView fx:id="agentsTable" editable="true" layoutX="1.0" layoutY="341.0" prefHeight="204.0" prefWidth="798.0">
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+         <columns>
+            <TableColumn fx:id="deviceColumn" prefWidth="75.0" text="Device" />
+            <TableColumn fx:id="agentColumn" prefWidth="75.0" text="Agent" />
+            <TableColumn fx:id="keyAgentColumn" prefWidth="75.0" text="Key" />
+            <TableColumn fx:id="valueAgentColumn" prefWidth="75.0" text="Value" />
+         </columns>
+      </TableView>
+      <HBox layoutX="14.0" layoutY="556.0" prefHeight="59.0" prefWidth="784.0">
+         <children>
+            <VBox prefHeight="76.0" prefWidth="164.0">
+               <children>
+                  <Label id="lblPlugin" text="Agent" />
+                  <ComboBox fx:id="cmbAgent" prefWidth="150.0" />
+               </children>
+            </VBox>
+            <VBox prefHeight="76.0" prefWidth="164.0">
+               <children>
+                  <Label id="lblKey" text="Key" />
+                  <TextField fx:id="txtAgentKey" prefHeight="29.0" prefWidth="123.0" />
+               </children>
+               <HBox.margin>
+                  <Insets right="12.0" />
+               </HBox.margin>
+            </VBox>
+            <VBox prefHeight="76.0" prefWidth="164.0">
+               <children>
+                  <Label id="lblValue" text="Value" />
+                  <TextField fx:id="txtAgentValue">
+                     <VBox.margin>
+                        <Insets right="12.0" />
+                     </VBox.margin>
+                  </TextField>
+               </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+            </VBox>
+            <Button id="btnAdd" mnemonicParsing="false" prefHeight="29.0" prefWidth="52.0" text="Add" onMouseClicked="#addAgentRow">
+               <HBox.margin>
+                  <Insets top="17.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+      <Button layoutX="14.0" layoutY="623.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="78.0" text="Save all"  onMouseClicked="#saveAll"/>
+      <Button layoutX="108.0" layoutY="623.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="78.0" text="Close" />
+   </children>
+</AnchorPane>

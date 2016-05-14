@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.stickmanmarytts.action;
 
+import de.dfki.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
 
@@ -10,6 +11,7 @@ public final class ActionMouthActivity extends AbstractActivity {
     private int mDuration;
     private Phoneme mPhoneme;
     private final String mText;
+    private WordTimeMarkSequence mWts;
     public ActionMouthActivity(String actor, String mode, String name, String text) {
         super(Policy.PARALLEL, actor, mode, name);
         mText = text;
@@ -18,6 +20,17 @@ public final class ActionMouthActivity extends AbstractActivity {
         super(Policy.PARALLEL, actor, mode, name);
         mDuration = duration;
         mText = text;
+    }
+
+    public ActionMouthActivity(String actor, String mode, String name, String text, int duration, WordTimeMarkSequence wts) {
+        super(Policy.PARALLEL, actor, mode, name);
+        mDuration = duration;
+        mText = text;
+        mWts = wts;
+    }
+
+    public WordTimeMarkSequence getWortTimeMark(){
+        return mWts;
     }
 
     public ActionMouthActivity(String actor, String mode, String name, String text, int duration, Phoneme p) {
