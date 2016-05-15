@@ -17,10 +17,11 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Release extends Action implements XMLParseable, XMLWriteable {
+public class ReleaseLookAt extends Action implements XMLParseable, XMLWriteable {
 
-    public Release() {
-        mName = "release";
+
+    public ReleaseLookAt() {
+        mName = "releaselookat";
     }
 
     @Override

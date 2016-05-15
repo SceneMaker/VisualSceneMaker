@@ -17,26 +17,30 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class ReleaseLooktAt extends Action implements XMLParseable, XMLWriteable {
+public class Camera extends Action implements XMLParseable, XMLWriteable {
 
-    String mLocation = "";
+    String mX = "";
+    String mY = "";
 
-    public ReleaseLooktAt(String value) {
-        mName = "releaselookat";
-        mLocation = value;
+    public Camera(String x, String y) {
+        mName = "rotateviewbydegrees";
+        mX = x;
+        mY = y;
     }
 
-    public ReleaseLooktAt() {
+    public Camera() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" x=\"" + mX + "\" y=\"" + mY + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
+        mX = element.getAttribute("x");
+        mY = element.getAttribute("y");
         mId = element.getAttribute("id");
     }
 }

@@ -55,7 +55,7 @@ public class ActionLoader {
         return classPath;
     }
 
-        private String getTWorldCharamelCommandClasspath(String cmd) {
+    private String getTWorldCharamelCommandClasspath(String cmd) {
         String classPath = "";
 
         classPath = sTWORLDCHARAMELCMDPATH + "." + cmd;
@@ -69,7 +69,6 @@ public class ActionLoader {
         return classPath;
     }
 
-    
     public Action loadAnimation(String cmd) {
         Action a = null;
 
@@ -153,11 +152,67 @@ public class ActionLoader {
         return a;
     }
 
+    public Action loadCharamelAnimation(String cmd, String value1) {
+        Action a = null;
+
+        String cp = getTWorldCharamelCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 1) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string")) {
+                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1);
+                    }
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Charamel Action " + cmd + " and avatar id " + value1);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
+        return a;
+    }
+    
+    public Action loadCharamelAnimation(String cmd, String value1, String value2) {
+        Action a = null;
+
+        String cp = getTWorldCharamelCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 2) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string")) {
+                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1, value2);
+                    }
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Charamel Action " + cmd + " and value " + value1 + " and avatar id " + value2);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
+        return a;
+    }
+
     public Action loadCharamelAnimation(String cmd, LinkedList value1, String value2, String value3) {
         Action a = null;
 
         String cp = getTWorldCharamelCommandClasspath(cmd);
-       
+
         try {
             Class c = Class.forName(cp);
             Constructor[] constructors = c.getConstructors();
@@ -180,7 +235,7 @@ public class ActionLoader {
 
         return a;
     }
-    
+
     public Action loadAnimation(String cmd, String value1, String value2, String value3) {
         Action a = null;
 

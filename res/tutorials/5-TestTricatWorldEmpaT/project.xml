@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="EmpaT">
+<Project name="EmpaT Testsuite">
   <Plugins>
-    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="true">
+    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="false">
       <Feature key="hlhost" val="127.0.0.1"/>
       <Feature key="hlport" val="343"/>
       <Feature key="slhost" val="127.0.0.1"/>
@@ -18,11 +18,6 @@
       <Feature key="cactordir" val="D:\EmpaT\software\EmpaT\CharActorServer\"/>
       <Feature key="cactorexe" val="EmpatTest.exe"/>
       <Feature key="cactorcmd" val=""/>
-    </Plugin>
-    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
-      <Feature key="smhost" val="127.0.0.1"/>
-      <Feature key="smport" val="9000"/>
-      <Feature key="showstickmanname" val="true"/>
     </Plugin>
     <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor" load="true">
       <Feature key="strength1" val="Zielstrebig"/>
@@ -51,6 +46,8 @@
   </Plugins>
   <Agents>
     <Agent name="environment" device="tworld">
+      <Feature key="greeting" val="audio\greeting.wav"/>
+      <Feature key="waiting" val="audio\waiting.wav"/>
     </Agent>
     <Agent name="meeting_wall1" device="tworld">
     </Agent>
@@ -59,24 +56,28 @@
     <Agent name="npc_adjutant" device="tworld">
     </Agent>
     <Agent name="npc_counter" device="tworld">
+      <Feature key="greeting" val="audio\greeting.wav"/>
+      <Feature key="waiting" val="audio\waiting.wav"/>
     </Agent>
     <Agent name="npc_secretary" device="tworld">
     </Agent>
     <Agent name="videowall" device="tworld">
+      <Feature key="cat" val="video\cat.mp4"/>
+      <Feature key="atom" val="video\minivideo.m2v"/>
     </Agent>
     <Agent name="ceo_wall" device="tworld">
     </Agent>
     <Agent name="susanne" device="tworld">
       <Feature key="aid" val="1"/>
+      <Feature key="wordmapping" val="tts\wordmapping-susanne.ini"/>
     </Agent>
     <Agent name="tom" device="tworld">
       <Feature key="aid" val="2"/>
+      <Feature key="wordmapping" val="tts\wordmapping-tom.ini"/>
     </Agent>
     <Agent name="player" device="tworld">
     </Agent>
     <Agent name="appraise" device="alma">
-    </Agent>
-    <Agent name="bert" device="stickman">
     </Agent>
     <Agent name="qgui" device="questionnaire">
     </Agent>

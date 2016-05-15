@@ -17,10 +17,10 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Release extends Action implements XMLParseable, XMLWriteable {
+public class Stop extends Action implements XMLParseable, XMLWriteable {
 
-    public Release() {
-        mName = "release";
+    public Stop() {
+        mName = "stop";
     }
 
     @Override
