@@ -20,6 +20,7 @@ public class TableConfig {
         value = pValue;
         key = pKey;
         plugin = pPlugin;
+        device = pPlugin;
     }
 
     TableConfig(String pKey, String pValue){
@@ -32,6 +33,7 @@ public class TableConfig {
         key = pKey;
         agent = pAgent;
         device = pDevice;
+        plugin = pDevice;
     }
     public String getValue() {
         return value;
