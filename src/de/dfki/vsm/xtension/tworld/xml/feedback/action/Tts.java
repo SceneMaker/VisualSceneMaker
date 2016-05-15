@@ -12,6 +12,7 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -21,6 +22,7 @@ import org.w3c.dom.Element;
 public class Tts implements XMLParseable, XMLWriteable {
 
     public String mStatus = "";
+    public String mMarker = "";
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -45,7 +47,12 @@ public class Tts implements XMLParseable, XMLWriteable {
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mStatus = element.getAttribute("status");
-       
+
+        // get the marker - if there is one
+        if (mStatus.equalsIgnoreCase("text_maker") || mStatus.equalsIgnoreCase("text_marker")) {
+            mMarker = element.getFirstChild().getTextContent();
+
+        }
 
 //        // Process The Child Nodes
 //        XMLParseAction.processChildNodes(element, new XMLParseAction() {

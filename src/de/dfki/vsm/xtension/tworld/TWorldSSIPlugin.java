@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.tworld;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventObject;
@@ -11,7 +12,6 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import java.io.File;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -49,26 +49,27 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     public void unload() {
         super.unload();
 
+        // PG: SSI Plugin has to be manually stopped
         // Wait for pawned processes
-        for (final Map.Entry<String, Process> entry : mProcessMap.entrySet()) {
-            // Get the process entry
-            final String name = entry.getKey();
-            final Process process = entry.getValue();
-            try {
-                // Kill the processes
-                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
-                // Wait for the killer
-                killer.waitFor();
-                // Print some information 
-                mLogger.message("Joining killer " + name + "");
-                // Wait for the process
-                process.waitFor();
-                // Print some information 
-                mLogger.message("Joining process " + name + "");
-            } catch (final Exception exc) {
-                mLogger.failure(exc.toString());
-            }
-        }
+//        for (final Map.Entry<String, Process> entry : mProcessMap.entrySet()) {
+//            // Get the process entry
+//            final String name = entry.getKey();
+//            final Process process = entry.getValue();
+//            try {
+//                // Kill the processes
+//                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
+//                // Wait for the killer
+//                killer.waitFor();
+//                // Print some information 
+//                mLogger.message("Joining killer " + name + "");
+//                // Wait for the process
+//                process.waitFor();
+//                // Print some information 
+//                mLogger.message("Joining process " + name + "");
+//            } catch (final Exception exc) {
+//                mLogger.failure(exc.toString());
+//            }
+//        }
     }
 
     @Override
@@ -85,8 +86,20 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 //mLogger.message("Handling SSI data " + mSSIData);
                 final HashMap<String, AbstractValue> values = new HashMap<>();
                 values.put("voice_activity", new StringValue(mSSIData.get("voice.activity")));
-                values.put("voice_keyword", new StringValue(mSSIData.get("voice.keyword")));
+                String detectedUtterance = mSSIData.get("voice.speechact");
+                values.put("voice_keyword", new StringValue(detectedUtterance));
 
+                if (!detectedUtterance.isEmpty()) {
+                    // PG - added 3.5.2016, check if uttrance is nummeric
+                    try {
+                        Integer.parseInt(detectedUtterance);
+                        values.put("voice_act_is_nummeric", new StringValue("1"));
+                    } catch (NumberFormatException nfe) {
+                        values.put("voice_act_is_nummeric", new StringValue("0"));
+                    }
+                } else {
+                    values.put("voice_act_is_nummeric", new StringValue(""));
+                }
 
                 values.put("voice_praat_pitchmean", new StringValue(mSSIData.get("voice.praat.pitchmean")));
                 values.put("voice_praat_pitchsd", new StringValue(mSSIData.get("voice.praat.pitchsd")));
@@ -95,7 +108,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 values.put("head_position_x", new StringValue(mSSIData.get("head.position.x")));
                 values.put("head_position_y", new StringValue(mSSIData.get("head.position.y")));
                 values.put("head_orientation_roll", new StringValue(mSSIData.get("head.orientation.roll")));
-                values.put("head_orientation_pitch", new StringValue(mSSIData.get("head.orientation.pitch")));
+                float a = Float.parseFloat(mSSIData.get("head.orientation.pitch")) * -1.0f;
+                values.put("head_orientation_pitch", new FloatValue(a));
                 values.put("head_orientation_yaw", new StringValue(mSSIData.get("head.orientation.yaw")));
                 values.put("head_movement_nod", new StringValue(mSSIData.get("head.movement.nod")));
                 values.put("head_movement_shake", new StringValue(mSSIData.get("head.movement.shake")));
@@ -124,7 +138,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 //mProject.setVariable("usercues", new StructValue(values));
                 for (final Entry<String, AbstractValue> value : values.entrySet()) {
                     if (mProject.hasVariable(value.getKey())) {
-                        
+
                         mProject.setVariable(value.getKey(), value.getValue());
                         //mLogger.success("Setting Variable " + value.getKey() + " to " + value.getValue().getConcreteSyntax());
                     } else {

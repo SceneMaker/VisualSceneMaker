@@ -17,15 +17,25 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Release extends Action implements XMLParseable, XMLWriteable {
+public class CameraOffset extends Action implements XMLParseable, XMLWriteable {
 
-    public Release() {
-        mName = "release";
+    String mX = "";
+    String mY = "";
+    String mZ = "";
+
+    public CameraOffset(String x, String y, String z) {
+        mName = "setcameraoffset";
+        mX = x;
+        mY = y;
+        mZ = z;
+    }
+
+    public CameraOffset() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" x=\"" + mX + "\" y=\"" + mY + "\" z=\"" + mZ + "\"/>");
     }
 
     @Override

@@ -7,6 +7,7 @@ package de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel;
 
 import de.dfki.charactor.v4235.AnimationTrack;
 import de.dfki.charactor.v4235.ComplexAnimationGenerator;
+import de.dfki.charactor.v4235.Motion;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -14,7 +15,6 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
-import java.util.LinkedList;
 import org.w3c.dom.Element;
 
 /**
@@ -22,42 +22,20 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Speak extends Action implements XMLParseable, XMLWriteable {
+public class PresentRight extends Action implements XMLParseable, XMLWriteable {
 
-    private LinkedList mTextBlocks;
-    private String mPunctuation;
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public Speak(LinkedList textblocks, String punct, String aid) {
+    public PresentRight(String aid) {
         mName = "caixml";
-        mTextBlocks = textblocks;
-        mPunctuation = punct;
         mCharameAvatarId = aid;
     }
 
-    public Speak() {
+    public PresentRight() {
         mName = "caixml";
-        mTextBlocks = new LinkedList();
-        mPunctuation = "";
-    }
-
-    private String buildUtterance() {
-        final StringBuilder builder = new StringBuilder();
-        for (final Object item : mTextBlocks) {
-            String word = item.toString();
-
-            
-            builder.append(word);
-            if (!item.equals(mTextBlocks.getLast())) {
-                builder.append(' ');
-            } else {
-                builder.append(mPunctuation);
-            }
-        }
-        return builder.toString();
     }
 
     @Override
@@ -68,7 +46,7 @@ public class Speak extends Action implements XMLParseable, XMLWriteable {
         ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
         ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
         AnimationTrack track1 = ca.addTrack();
-        track1.addSpeakText(Integer.parseInt(mCharameAvatarId), buildUtterance());
+        track1.addMotion(Integer.parseInt(mCharameAvatarId), Motion.PRESENTRIGHT01);
         out.push().println(ca.getCaiXML());
         out.pop().pop().println("</Action>");
     }

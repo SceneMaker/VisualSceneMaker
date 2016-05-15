@@ -17,20 +17,27 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Release extends Action implements XMLParseable, XMLWriteable {
+public class PlayAudio extends Action implements XMLParseable, XMLWriteable {
 
-    public Release() {
-        mName = "release";
+    String mUrl = "";
+
+    public PlayAudio(String url) {
+        mName = "playaudioclip";
+        mUrl = url;
+    }
+
+    public PlayAudio() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" url=\"" + mUrl + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
+        mUrl = element.getAttribute("url");
         mId = element.getAttribute("id");
     }
 }

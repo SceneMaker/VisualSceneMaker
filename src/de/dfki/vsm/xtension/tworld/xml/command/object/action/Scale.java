@@ -17,15 +17,21 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Release extends Action implements XMLParseable, XMLWriteable {
+public class Scale extends Action implements XMLParseable, XMLWriteable {
 
-    public Release() {
-        mName = "release";
+    String mScale = "";
+
+    public Scale(String value) {
+        mName = "scalepawn";
+        mScale = value;
+    }
+
+    public Scale() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" scale=\"" + mScale + "\"/>");
     }
 
     @Override

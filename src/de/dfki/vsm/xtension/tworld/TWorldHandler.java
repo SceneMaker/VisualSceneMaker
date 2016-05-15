@@ -74,7 +74,7 @@ public class TWorldHandler extends Thread {
             // Receive The Next Line
             final String message = mInStream.readLine();
             // Debug Some Information
-            mLogger.warning("Receiving '" + message + "'");
+            //mLogger.warning("Receiving '" + message + "'");
             // Return Received Data
             return message;
         } catch (final IOException exc) {

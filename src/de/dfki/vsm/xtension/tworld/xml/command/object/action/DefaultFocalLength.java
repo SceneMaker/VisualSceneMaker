@@ -17,20 +17,29 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Release extends Action implements XMLParseable, XMLWriteable {
+public class DefaultFocalLength extends Action implements XMLParseable, XMLWriteable {
 
-    public Release() {
-        mName = "release";
+   
+    String mBlendTime = "";
+
+    public DefaultFocalLength(String blendtime) {
+        mName = "setfieldofview_default";
+
+        mBlendTime = blendtime;
+    }
+
+    public DefaultFocalLength() {
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" blendtime=\"" + mBlendTime + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
+        mBlendTime = element.getAttribute("blendtime");
         mId = element.getAttribute("id");
     }
 }

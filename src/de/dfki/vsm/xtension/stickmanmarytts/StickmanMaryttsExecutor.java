@@ -412,7 +412,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         final String host = mConfig.getProperty("smhost");
         final String port = mConfig.getProperty("smport");
 
-        // Start the StickmanStage client application 
+        // Start the StickmanStage client application
         mLogger.message("Starting StickmanStage Client Application ...");
         mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
 
@@ -420,7 +420,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         StickmanStage.addStickman("susanne");
         StickmanStage.addStickman("patrick");
 
-        // wait for stickman stage 
+        // wait for stickman stage
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for StickmanStage");
             try {

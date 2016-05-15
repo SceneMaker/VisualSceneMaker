@@ -203,7 +203,8 @@ public class QuestionnaireGUI {
         rootPane.getChildren().add(group);
 
         // set general background, note alpha value must > 0 to ensure modal feature
-        rootPane.setStyle("-fx-background-color: #FFFFFF01;");
+        rootPane.setStyle("-fx-background-color: #FFFFFF00;");
+        
 
         // build scene 
         Scene scene = new Scene(rootPane);
