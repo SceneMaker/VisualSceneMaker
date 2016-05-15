@@ -4,6 +4,7 @@ import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtesting.propertymanager.util.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,10 +18,29 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.util.Callback;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,7 +53,7 @@ import java.util.stream.Collectors;
 /**
  * Created by alvaro on 4/23/16.
  */
-public class FXMLDocumentNewController implements Initializable {
+public class FXMLDocumentNewController implements Initializable, TreeObserver {
 
     private RunTimeProject mProject = null;
     @FXML
@@ -61,10 +81,12 @@ public class FXMLDocumentNewController implements Initializable {
         devices = new TreeItem<>("Devices");
 
         for (PluginConfig plugin:  mProject.getProjectConfig().getPluginConfigList()) {
-            TreeItem<String> pluginNode = new TreeItem<>(plugin.getPluginName());
+            ContextTreeItem pluginNode = new ContextTreeItem(plugin.getPluginName());
+            pluginNode.registerObserver(this);
             for  (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
                 if(agent.getDeviceName().equals(plugin.getPluginName())){
-                    TreeItem<String> agentNode = new TreeItem<>(agent.getAgentName());
+                    ContextTreeItem agentNode = new ContextTreeItem(agent.getAgentName());
+                    agentNode.registerObserver(this);
                     pluginNode.getChildren().add(agentNode);
                 }
             }
@@ -73,6 +95,16 @@ public class FXMLDocumentNewController implements Initializable {
         }
         root.getChildren().add(devices);
         treeView.setRoot(root);
+        treeView.setEditable(true);
+        final FXMLDocumentNewController controller = this;
+        treeView.setCellFactory(new Callback<TreeView<String>,TreeCell<String>>(){
+            @Override
+            public TreeCell<String> call(TreeView<String> p) {
+                TreeCellImpl treeCell = new TreeCellImpl();
+                treeCell.registerObserver(controller);
+                return treeCell;
+            }
+        });
     }
 
     public FXMLDocumentNewController(RunTimeProject project){
@@ -102,12 +134,14 @@ public class FXMLDocumentNewController implements Initializable {
                 cmbExecutor = (ComboBox) content.lookup("#cmbExecutor");
                 btnAddDevice = (Button) content.lookup("#btnAddDevice");
                 txtDeviceName = (TextField) content.lookup("#txtDeviceName");
+                final FXMLDocumentNewController controller = this;
                 btnAddDevice.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
                         boolean added = addDevice(event);
                         if(added){
-                            TreeItem<String> pluginNode = new TreeItem<>(txtDeviceName.getText());
+                            ContextTreeItem pluginNode = new ContextTreeItem(txtDeviceName.getText());
+                            pluginNode.registerObserver(controller);
                             devices.getChildren().add(pluginNode);
                         }
                     }
@@ -143,8 +177,9 @@ public class FXMLDocumentNewController implements Initializable {
                 @Override
                 public void handle(ActionEvent event) {
                     if(!txtKey.getText().equals("") && !txtValue.getText().equals("")) {
-                        TableConfig dC = new TableConfig(txtKey.getText(), txtValue.getText());
+                        TableConfig dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginName());
                         data.add(dC);
+                        saveDevices(item.getValue());
                     }
                 }
             });
@@ -166,7 +201,15 @@ public class FXMLDocumentNewController implements Initializable {
 
     @FXML
     private void selectConfig(MouseEvent event) {
+
         TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
+        if(event.getButton().toString().equals("SECONDARY")
+                && item instanceof ContextTreeItem
+                && (item.getParent() != null && item.getParent().getValue().equals("Devices"))){ //rightClick
+            ((ContextTreeItem)item).getMenu();
+
+        }
+
         Iterator it = mProject.getProjectConfig().getPluginConfigList().iterator();
         System.out.println(item);
         PluginConfig plugin = getSelectedPlugin(item, it);
@@ -210,7 +253,7 @@ public class FXMLDocumentNewController implements Initializable {
         for  (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
             if(agent.getDeviceName().equals(plugin.getPluginName()) && agentName.equals(agent.getAgentName())){
                 for (ConfigFeature feat :agent.getEntryList() ) {
-                    TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue());
+                    TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), plugin.getPluginName());
                     data.add(tFeat);
                 }
 
@@ -222,8 +265,6 @@ public class FXMLDocumentNewController implements Initializable {
     private void populatePluginTable(PluginConfig plugin){
 
         ObservableList<String> pluginList = FXCollections.observableArrayList();
-
-        //pluginColumn.setCellValueFactory(new PropertyValueFactory("pluginname"));
         keyColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         keyColumn.setOnEditCommit(
                 new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
@@ -232,6 +273,8 @@ public class FXMLDocumentNewController implements Initializable {
                         ((TableConfig) t.getTableView().getItems().get(
                                 t.getTablePosition().getRow())
                         ).setValue(t.getNewValue());
+                        saveDevices(plugin.getPluginName());
+                        saveAgent(plugin.getPluginName());
                     }
                 }
         );
@@ -244,6 +287,8 @@ public class FXMLDocumentNewController implements Initializable {
                         ((TableConfig) t.getTableView().getItems().get(
                                 t.getTablePosition().getRow())
                         ).setValue(t.getNewValue());
+                        saveDevices(plugin.getPluginName());
+                        saveAgent(plugin.getPluginName());
                     }
                 }
         );
@@ -265,7 +310,13 @@ public class FXMLDocumentNewController implements Initializable {
                     + "</Plugins>"
                     + "</Project>";
 
-            return mProject.parseProjectConfigFromString(newPlayer);
+            boolean res = mProject.parseProjectConfigFromString(newPlayer);
+            if(res){
+                ArrayList plugs =  mProject.getProjectConfig().getPluginConfigList();
+                plugins.put(txtDeviceName.getText(), (PluginConfig) plugs.get(plugs.size()-1));
+            }
+            saveConfig();
+            return res;
         }
         return false;
     }
@@ -375,6 +426,190 @@ public class FXMLDocumentNewController implements Initializable {
     }
 
 
+    private void saveDevices(String pluginName){
+        PluginConfig plugin = mProject.getProjectConfig().getPluginConfig(pluginName);
+        if(plugin != null){
+            for (TableConfig tc: data){
+                String oldValue = plugin.getProperty(tc.getKey());
+                if(oldValue!=null && !oldValue.equals(tc.getValue()) && tc.getPlugin().equals(plugin.getPluginName())){ //Case that the key value pair was changed
+                    plugin.setProperty(tc.getKey(), tc.getValue());
+                }else if((oldValue == null || oldValue.equals("")) && tc.getPlugin().equals(plugin.getPluginName())){
+                    plugin.setProperty(tc.getKey(), tc.getValue());
+                }
+            }
+            saveConfig();
+        }else{//It should exists
+            System.out.println("Plugin does not exists");
+        }
 
+
+    }
+
+    private void saveAgent(String pluginName){
+        for (PluginConfig plugin: mProject.getProjectConfig().getPluginConfigList() ) {
+            for (TableConfig tc: data){
+                String oldValue = plugin.getProperty(tc.getKey());
+                if(oldValue!=null && !oldValue.equals(tc.getValue()) && tc.getPlugin().equals(plugin.getPluginName())){ //Case that the key value pair was changed
+                    plugin.setProperty(tc.getKey(), tc.getValue());
+                }else if((oldValue == null || oldValue.equals("")) && tc.getPlugin().equals(plugin.getPluginName())){
+                    plugin.setProperty(tc.getKey(), tc.getValue());
+                }
+            }
+
+
+        }
+    }
+
+    public void saveConfig(){
+        //TODO: Remove later
+        File f = new File("/home/alvaro/Documents/WorkHiwi/VSM_stable/VisualSceneMaker/res/tutorials/6.MaryTTS");
+        mProject.write(f);
+    }
+
+    private String changeXMLAttributeNode(String xml, String tagName, String attr, String oldValue, String newValue){
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = null;
+        Document doc;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        try {
+            doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xml.getBytes("utf-8"))));
+        } catch (SAXException e) {
+            e.printStackTrace();
+            return xml;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return xml;
+        }
+        //Node firstChild = doc.getFirstChild();
+        Node tag = doc.getElementsByTagName(tagName).item(0);
+        // update node attribute
+        NamedNodeMap attrs = tag.getAttributes();
+        Node nodeAttr = attrs.getNamedItem(attr);
+        if(nodeAttr!= null && nodeAttr.getNodeValue().equals(oldValue)) {
+            nodeAttr.setTextContent(newValue);
+        }
+
+        return getStringFromDoc(doc);
+
+    }
+
+    public String getStringFromDoc(org.w3c.dom.Document doc)    {
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            StreamResult result = new StreamResult(new StringWriter());
+            DOMSource source = new DOMSource(doc);
+            transformer.transform(source, result);
+            return result.getWriter().toString();
+        } catch(TransformerException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public void update(NotificationObject object) {
+        if(object instanceof ContextEvent){//This called when a new agent is added via context menu
+            String agent = ((ContextEvent) object).getContextName();
+            String pluginName = ((ContextEvent) object).getPluginName();
+            String newXMLAgent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                    + "<Project name=\"" + mProject.getProjectName() + "\">"
+                    + "<Agents>"
+                    + "    <Agent name=\"" + agent + "\" device=\"" + pluginName + "\">"
+                    + "    </Agent>"
+                    + " </Agents>"
+                    + "</Project>";
+            boolean res = mProject.parseProjectConfigFromString(newXMLAgent);
+            saveConfig();
+        }
+        else if(object instanceof CellEvent){//We change either the name of the agent or device
+            String oldValue = ((CellEvent) object).getOldValue();
+            String newValue = ((CellEvent) object).getNewValue();
+            TreeItem selected = treeView.getSelectionModel().getSelectedItem();
+            if(selected !=null && (selected.getParent() != null && selected.getParent().getValue().equals("Devices"))){//Device updated
+                Iterator<PluginConfig> itPlug = mProject.getProjectConfig().getPluginConfigList().iterator();
+                ArrayList<String> pluginsToAdd = new ArrayList<>();
+                ArrayList<String> agentsToAdd = new ArrayList<>();
+                while (itPlug.hasNext()){
+                    PluginConfig plugin = itPlug.next();
+                    if(plugin.getPluginName().equals(oldValue)){
+                        String pluginXML =   "<Project name=\"" + mProject.getProjectName() + "\">"
+                                + "<Plugins>"
+                                + plugin.toString()
+                                + "</Plugins>"
+                                + "</Project>";
+                        String xml = changeXMLAttributeNode(pluginXML, "Plugin", "name", oldValue, newValue);
+                        if(xml != null && !xml.equals("")){
+                            itPlug.remove();
+                            plugins.remove(oldValue);
+
+                        }
+                        pluginsToAdd.add(xml);
+                    }
+                }
+                for (String xml: pluginsToAdd ) {
+                    boolean res = mProject.parseProjectConfigFromString(xml);
+                    if(res) {
+                        ArrayList plugs =  mProject.getProjectConfig().getPluginConfigList();
+                        plugins.put(newValue, (PluginConfig) plugs.get(plugs.size()-1));
+                    }
+
+                }
+
+                //Change all the agents too
+                Iterator<AgentConfig> itAgent = mProject.getProjectConfig().getAgentConfigList().iterator();
+                while (itAgent.hasNext()){
+                    AgentConfig agent = itAgent.next();
+                    if(agent.getDeviceName().equals(oldValue) ){
+                        String agentXML = "<Project name=\"" + mProject.getProjectName() + "\">"
+                                + "<Agents>"
+                                + agent.toString()
+                                + "</Agents>"
+                                + "</Project>";
+                        String xml = changeXMLAttributeNode(agentXML, "Agent", "device", oldValue, newValue);
+                        if(xml != null && !xml.equals("")){
+                           itAgent.remove();
+
+                        }
+                        agentsToAdd.add(xml);
+                    }
+                }
+
+                for (String xml: agentsToAdd ) {
+                    boolean res = mProject.parseProjectConfigFromString(xml);
+                }
+
+            }
+            else if(selected !=null && (selected.getParent() != null)) {
+                TreeItem selectedPlugin = treeView.getSelectionModel().getSelectedItem().getParent();
+                ArrayList<String> agentsToAdd = new ArrayList<>();
+                Iterator<AgentConfig> itAgent = mProject.getProjectConfig().getAgentConfigList().iterator();
+                while (itAgent.hasNext()){
+                    AgentConfig agent = itAgent.next();
+                    if(agent.getDeviceName().equals(selectedPlugin.getValue()) && agent.getAgentName().equals(oldValue)){
+                        String agentXML = "<Project name=\"" + mProject.getProjectName() + "\">"
+                                + "<Agents>"
+                                + agent.toString()
+                                + "</Agents>"
+                                + "</Project>";
+                        String xml = changeXMLAttributeNode(agentXML, "Agent", "name", oldValue, newValue);
+                        if(xml != null && !xml.equals("")){
+                            itAgent.remove();
+                        }
+                        agentsToAdd.add(xml);
+                    }
+                }
+
+                for (String xml: agentsToAdd ) {
+                    boolean res = mProject.parseProjectConfigFromString(xml);
+                }
+
+            }
+            saveConfig();
+        }
+    }
 }
 
