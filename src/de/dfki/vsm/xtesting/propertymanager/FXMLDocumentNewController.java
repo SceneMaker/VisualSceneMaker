@@ -177,9 +177,15 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
                 @Override
                 public void handle(ActionEvent event) {
                     if(!txtKey.getText().equals("") && !txtValue.getText().equals("")) {
-                        TableConfig dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginName());
+                        TableConfig dC = null;
+                        if(type.equals("Agents")) {
+                            dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginName(), item.getValue());
+                        }else{
+                            dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginName());
+                        }
                         data.add(dC);
                         saveDevices(item.getValue());
+                        saveAgent(item.getParent().getValue());
                     }
                 }
             });
@@ -253,7 +259,7 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
         for  (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
             if(agent.getDeviceName().equals(plugin.getPluginName()) && agentName.equals(agent.getAgentName())){
                 for (ConfigFeature feat :agent.getEntryList() ) {
-                    TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), plugin.getPluginName());
+                    TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), plugin.getPluginName(), agent.getAgentName());
                     data.add(tFeat);
                 }
 
@@ -446,18 +452,19 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
     }
 
     private void saveAgent(String pluginName){
-        for (PluginConfig plugin: mProject.getProjectConfig().getPluginConfigList() ) {
+        for (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
             for (TableConfig tc: data){
-                String oldValue = plugin.getProperty(tc.getKey());
-                if(oldValue!=null && !oldValue.equals(tc.getValue()) && tc.getPlugin().equals(plugin.getPluginName())){ //Case that the key value pair was changed
-                    plugin.setProperty(tc.getKey(), tc.getValue());
-                }else if((oldValue == null || oldValue.equals("")) && tc.getPlugin().equals(plugin.getPluginName())){
-                    plugin.setProperty(tc.getKey(), tc.getValue());
+                String oldValue = agent.getProperty(tc.getKey());
+                if(oldValue!=null && !oldValue.equals(tc.getValue()) && tc.getPlugin().equals(agent.getDeviceName()) && agent.getAgentName().equals(tc.getAgent())){ //Case that the key value pair was changed
+                    agent.setProperty(tc.getKey(), tc.getValue());
+                }else if((oldValue == null || oldValue.equals("")) && tc.getDevice().equals(agent.getDeviceName()) && agent.getAgentName().equals(tc.getAgent())){
+                    agent.setProperty(tc.getKey(), tc.getValue());
                 }
             }
 
 
         }
+        saveConfig();
     }
 
     public void saveConfig(){
