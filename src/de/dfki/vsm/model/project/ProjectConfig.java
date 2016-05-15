@@ -151,6 +151,14 @@ public final class ProjectConfig implements ModelObject {
 //        mDeviceList.clear();
     }
 
+    public boolean deleteDevice(PluginConfig plugin){
+        return mPluginList.remove(plugin);
+    }
+
+    public  boolean deleteAgent(AgentConfig agent){
+        return mAgentList.remove(agent);
+    }
+
     // Parse the project coonfiguration from XML
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
