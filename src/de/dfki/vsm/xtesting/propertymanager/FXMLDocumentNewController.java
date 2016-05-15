@@ -469,7 +469,7 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
 
     public void saveConfig(){
         //TODO: Remove later
-        File f = new File("/home/alvaro/Documents/WorkHiwi/VSM_stable/VisualSceneMaker/res/tutorials/6.MaryTTS");
+        File f = new File("res/tutorials/6.MaryTTS");
         mProject.write(f);
     }
 

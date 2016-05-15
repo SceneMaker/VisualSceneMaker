@@ -57,6 +57,7 @@ public class PropertyManagerGUI {
             mJFXPanel.setVisible(true);
             mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mFrame.setVisible(true);
+            mFrame.setMinimumSize(new Dimension(800,800));
 
         } catch (IOException e) {
             e.printStackTrace();
