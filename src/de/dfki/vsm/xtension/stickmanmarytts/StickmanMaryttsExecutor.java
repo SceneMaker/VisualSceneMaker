@@ -231,7 +231,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         executeAnimation(stickmanAnimation);
     }
 
-    private void executeAnimation(Animation stickmanAnimation) {
+    protected void executeAnimation(Animation stickmanAnimation) {
         // executeAnimation command to platform 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
@@ -247,7 +247,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void executeSpeachAndWait(AbstractActivity activity, Stickman.TYPE gender, String executionId, VoiceName voiceName, String language) {
+    protected void executeSpeachAndWait(AbstractActivity activity, Stickman.TYPE gender, String executionId, VoiceName voiceName, String language) {
         String text = ((SpeechActivity) activity).getTextOnly("$");
         synchronized (mActivityWorkerMap) {
             String phrase = maryTTs.getText();
@@ -415,10 +415,8 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         // Start the StickmanStage client application
         mLogger.message("Starting StickmanStage Client Application ...");
         mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
+        addStickmansToStage();
 
-        // TODO - read config
-        StickmanStage.addStickman("susanne");
-        StickmanStage.addStickman("patrick");
 
         // wait for stickman stage
         while (mClientMap.isEmpty()) {
@@ -427,6 +425,15 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
                 Thread.sleep(1000);
             } catch (final InterruptedException exc) {
                 mLogger.failure("Error while waiting ...");
+            }
+        }
+    }
+
+    private void addStickmansToStage( ){
+        for (AgentConfig agent:mProject.getProjectConfig().getAgentConfigList()) {
+            if(agent.getDeviceName().equalsIgnoreCase("stickmanmarytts") || agent.getDeviceName().equalsIgnoreCase("stickman")){
+                // TODO - read config
+                StickmanStage.addStickman(agent.getAgentName());
             }
         }
     }
