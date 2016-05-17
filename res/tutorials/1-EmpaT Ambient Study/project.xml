@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="EmpaT Ambient Study">
+  <Plugins>
+    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="false">
+      <Feature key="hlhost" val="127.0.0.1"/>
+      <Feature key="hlport" val="343"/>
+      <Feature key="slhost" val="127.0.0.1"/>
+      <Feature key="slport" val="22192"/>
+      <Feature key="srhost" val="127.0.0.1"/>
+      <Feature key="srport" val="19220"/>
+      <Feature key="ssidir" val="C:\Users\patrick\Project\software\EmpaT\"/>
+      <Feature key="ssibat" val="EMPAT_SSI.bat"/>
+    </Plugin>
+    <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tworld.TWorldExecutor" load="true">
+      <Feature key="tworlddir" val="C:\Users\patrick\Project\software\EmpaT\"/>
+      <Feature key="tworldexe" val="EmpaT.exe"/>
+      <Feature key="tworldcmd" val="-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 -CharActorIP 127.0.0.1 -CharActorPort 4000"/>
+      <Feature key="cactordir" val="C:\Users\patrick\Project\software\EmpaT\CharActorServer\"/>
+      <Feature key="cactorexe" val="EmpatTest.exe"/>
+      <Feature key="cactorcmd" val=""/>
+    </Plugin>
+    <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor" load="true">
+      <Feature key="strength1" val="Zielstrebig"/>
+      <Feature key="strength2" val="Kommunikationsstark"/>
+      <Feature key="strength3" val="Teamfähig"/>
+      <Feature key="strength4" val="Organisiert"/>
+      <Feature key="strength5" val="Kritikfähig"/>
+      <Feature key="strength6" val="Keine"/>
+      <Feature key="weakness1" val="Schüchtern"/>
+      <Feature key="weakness2" val="Ungeduldig"/>
+      <Feature key="weakness3" val="Chaotisch"/>
+      <Feature key="weakness4" val="Detailverliebt"/>
+      <Feature key="weakness5" val="Stur"/>
+      <Feature key="weakness6" val="Keine"/>
+    </Plugin>
+    <Plugin type="device" name="mediadisplay" class="de.dfki.vsm.xtension.mediadisplay.MediaDisplayExecutor" load="true">
+      <Feature key="cat" val="img\cat.png"/>
+      <Feature key="dog" val="img\dog.png"/>
+      <Feature key="ablauf" val="img\ablauf.JPG"/>
+      <Feature key="stelle" val="img\stellenbeschreibung.JPG"/>
+    </Plugin>
+    <Plugin type="device" name="alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
+      <Feature key="computation" val="affect\AffectComputation.aml"/>
+      <Feature key="definition" val="affect\CharacterDefinition.aml"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="environment" device="tworld">
+      <Feature key="greeting" val="audio\greeting.wav"/>
+      <Feature key="waiting" val="audio\waiting.wav"/>
+    </Agent>
+    <Agent name="meeting_wall1" device="tworld">
+    </Agent>
+    <Agent name="meeting_wall2" device="tworld">
+    </Agent>
+    <Agent name="npc_adjutant" device="tworld">
+    </Agent>
+    <Agent name="npc_counter" device="tworld">
+      <Feature key="greeting" val="audio\greeting.wav"/>
+      <Feature key="waiting" val="audio\waiting.wav"/>
+    </Agent>
+    <Agent name="npc_secretary" device="tworld">
+    </Agent>
+    <Agent name="videowall" device="tworld">
+      <Feature key="cat" val="video\cat.mp4"/>
+      <Feature key="atom" val="video\minivideo.m2v"/>
+    </Agent>
+    <Agent name="ceo_wall" device="tworld">
+    </Agent>
+    <Agent name="susanne" device="tworld">
+      <Feature key="aid" val="1"/>
+      <Feature key="wordmapping" val="tts\wordmapping-susanne.ini"/>
+    </Agent>
+    <Agent name="tom" device="tworld">
+      <Feature key="aid" val="2"/>
+      <Feature key="wordmapping" val="tts\wordmapping-tom.ini"/>
+    </Agent>
+    <Agent name="player" device="tworld">
+    </Agent>
+    <Agent name="appraise" device="alma">
+    </Agent>
+    <Agent name="qgui" device="questionnaire">
+    </Agent>
+    <Agent name="display" device="mediadisplay">
+    </Agent>
+  </Agents>
+</Project>

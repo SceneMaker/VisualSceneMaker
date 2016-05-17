@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AffectComputation xmlns="xml.affect.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.affect.de ../xsd/Affect.xsd">
+    <AvailableActs>
+        <ActSpecification name="Accuse" use="true" docu=""/>
+        <ActSpecification name="AnnounceConcern" use="true" docu=""/>
+        <ActSpecification name="Calm" use="true" docu=""/>
+        <ActSpecification name="Condemn" use="true" docu=""/>
+    </AvailableActs>
+    <AvailableEmotions>
+        <EmotionSpecification name="Admiration" use="true" docu=""/>
+        <EmotionSpecification name="Anger" use="true" docu=""/>
+        <EmotionSpecification name="Disappointment" use="true" docu=""/>
+        <EmotionSpecification name="Disliking" use="true" docu=""/>
+        <EmotionSpecification name="Distress" use="true" docu=""/>
+        <EmotionSpecification name="Fear" use="true" docu=""/>
+        <EmotionSpecification name="FearsConfirmed" use="true" docu=""/>
+        <EmotionSpecification name="Gloating" use="true" docu=""/>
+        <EmotionSpecification name="Gratification" use="true" docu=""/>
+        <EmotionSpecification name="Gratitude" use="true" docu=""/>
+        <EmotionSpecification name="HappyFor" use="true" docu=""/>
+        <EmotionSpecification name="Hate" use="true" docu=""/>
+        <EmotionSpecification name="Hope" use="true" docu=""/>
+        <EmotionSpecification name="Joy" use="true" docu=""/>
+        <EmotionSpecification name="Liking" use="true" docu=""/>
+        <EmotionSpecification name="Love" use="true" docu=""/>
+        <EmotionSpecification name="Pity" use="true" docu=""/>
+        <EmotionSpecification name="Pride" use="true" docu=""/>
+        <EmotionSpecification name="Relief" use="true" docu=""/>
+        <EmotionSpecification name="Remorse" use="true" docu=""/>
+        <EmotionSpecification name="Reproach" use="true" docu=""/>
+        <EmotionSpecification name="Resentment" use="true" docu=""/>
+        <EmotionSpecification name="Satisfaction" use="true" docu=""/>
+        <EmotionSpecification name="Shame" use="true" docu=""/>
+    </AvailableEmotions>
+    <MoodRelations>
+        <OpennessRelation pleasure="0.16" arousal="0.24" dominance="0.46"/>
+        <ConscientiousnessRelation pleasure="0.25" arousal="0.0" dominance="0.19"/>
+        <ExtraversionRelation pleasure="0.29" arousal="0.0" dominance="0.59"/>
+        <AgreeablenessRelation pleasure="0.74" arousal="0.13" dominance="-0.18"/>
+        <NeurotismRelation pleasure="0.43" arousal="-0.49" dominance="0.0"/>
+        <EmotionRelation name="Admiration" pleasure="0.4" arousal="0.16" dominance="-0.24"/>
+        <EmotionRelation name="Anger" pleasure="-0.51" arousal="0.59" dominance="0.25"/>
+        <EmotionRelation name="Disliking" pleasure="-0.4" arousal="-0.2" dominance="0.1"/>
+        <EmotionRelation name="Disappointment" pleasure="-0.3" arousal="-0.4" dominance="-0.4"/>
+        <EmotionRelation name="Distress" pleasure="-0.5" arousal="0.62" dominance="0.38"/>
+        <EmotionRelation name="Fear" pleasure="-0.64" arousal="0.60" dominance="0.43"/>
+        <EmotionRelation name="FearsConfirmed" pleasure="-0.5" arousal="0.3" dominance="-0.7"/>
+        <EmotionRelation name="Gloating" pleasure="0.3" arousal="-0.3" dominance="0.1"/>
+        <EmotionRelation name="Gratification" pleasure="0.6" arousal="-0.3" dominance="0.4"/>
+        <EmotionRelation name="Gratitude" pleasure="0.2" arousal="0.5" dominance="-0.3"/>
+        <EmotionRelation name="HappyFor" pleasure="0.4" arousal="-0.2" dominance="-0.2"/>
+        <EmotionRelation name="Hate" pleasure="-0.4" arousal="-0.2" dominance="0.4"/>
+        <EmotionRelation name="Hope" pleasure="0.2" arousal="0.2" dominance="-0.1"/>
+        <EmotionRelation name="Joy" pleasure="0.5" arousal="0.42" dominance="0.23"/>
+        <EmotionRelation name="Liking" pleasure="0.40" arousal="-0.16" dominance="-0.24"/>
+        <EmotionRelation name="Love" pleasure="0.3" arousal="0.1" dominance="0.2"/>
+        <EmotionRelation name="Pity" pleasure="-0.4" arousal="-0.2" dominance="-0.5"/>
+        <EmotionRelation name="Pride" pleasure="0.52" arousal="0.22" dominance="0.61"/>
+        <EmotionRelation name="Relief" pleasure="0.2" arousal="-0.3" dominance="-0.4"/>
+        <EmotionRelation name="Remorse" pleasure="-0.3" arousal="0.1" dominance="-0.6"/>
+        <EmotionRelation name="Reproach" pleasure="-0.3" arousal="-0.3" dominance="0.3"/>
+        <EmotionRelation name="Resentment" pleasure="-0.2" arousal="-0.3" dominance="-0.2"/>
+        <EmotionRelation name="Satisfaction" pleasure="0.5" arousal="0.42" dominance="0.47"/>
+        <EmotionRelation name="Shame" pleasure="-0.3" arousal="0.1" dominance="-0.6"/>
+        <EmotionRelation name="Undefined" pleasure="0.0" arousal="0.0" dominance="0.0"/>
+    </MoodRelations>
+    <PersonalityRelations>
+        <PleasureRelation openness="0.0" conscientiousness="0.0" extraversion="0.21" agreeableness="0.59" neurotism="0.19"/>
+        <ArousalRelation openness="0.15" conscientiousness="0.0" extraversion="0.0" agreeableness="0.30" neurotism="-0.57"/>
+        <DominanceRelation openness="0.25" conscientiousness="0.17" extraversion="0.60" agreeableness="-0.32" neurotism="0.0"/>
+    </PersonalityRelations>
+    <RealtimeOutput enable="true" period="500">
+        <FileLog enable="false" file="log/affect.log"/>
+        <ConsoleLog enable="true"/>
+    </RealtimeOutput>
+    <RuntimeInteractionMonitor enabled="false"/>
+</AffectComputation>
