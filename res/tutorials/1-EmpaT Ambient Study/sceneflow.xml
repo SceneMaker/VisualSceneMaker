@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="Ambient Study" comment="" hideLocalVar="true" hideGlobalVar="false" modifDate="Di, 17 Mai 2016 12:43:50" start="S65;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+    <StructType name="WorldFeedback">
+      <Member type="String" name ="type"/>
+      <Member type="String" name ="elicitor"/>
+      <Member type="String" name ="name"/>
+    </StructType>
+    <StructType name="UserInfo">
+      <Member type="String" name ="name"/>
+      <Member type="String" name ="age"/>
+      <Member type="String" name ="sex"/>
+      <Member type="Int" name ="interviews"/>
+      <Member type="Bool" name ="strength1"/>
+      <Member type="Bool" name ="strength2"/>
+      <Member type="Bool" name ="strength3"/>
+      <Member type="Bool" name ="strength4"/>
+      <Member type="Bool" name ="strength5"/>
+      <Member type="Bool" name ="strength6"/>
+      <Member type="Bool" name ="weakness1"/>
+      <Member type="Bool" name ="weakness2"/>
+      <Member type="Bool" name ="weakness3"/>
+      <Member type="Bool" name ="weakness4"/>
+      <Member type="Bool" name ="weakness5"/>
+      <Member type="Bool" name ="weakness6"/>
+    </StructType>
+  </Define>
+  <Declare>
+    <Variable type="WorldFeedback" name ="feedback">
+      <Struct>
+        <Assign>
+          <Variable name="type"/>
+          <Expression>
+            <String><![CDATA[null]]></String>
+          </Expression>
+        </Assign>
+        <Assign>
+          <Variable name="elicitor"/>
+          <Expression>
+            <String><![CDATA[null]]></String>
+          </Expression>
+        </Assign>
+        <Assign>
+          <Variable name="name"/>
+          <Expression>
+            <String><![CDATA[null]]></String>
+          </Expression>
+        </Assign>
+      </Struct>
+    </Variable>
+    <Variable type="UserInfo" name ="userdata">
+      <Struct>
+      </Struct>
+    </Variable>
+    <Variable type="String" name ="voice_activity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="voice_keyword">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="voice_act_is_nummeric">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="voice_praat_pitchmean">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="voice_praat_pitchsd">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="voice_praat_speechrate">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="voice_praat_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="head_position_x">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="head_position_y">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="head_orientation_roll">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="Float" name ="head_orientation_pitch">
+      <Float value="0.0"/>
+    </Variable>
+    <Variable type="String" name ="head_orientation_yaw">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="head_movement_nod">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="head_movement_shake">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_activity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_energy">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_posture_leanfront_detected">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_posture_leanfront_duration">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_posture_leanfront_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_posture_leanback_detected">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_posture_leanback_duration">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_posture_leanback_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_armsopen_detected">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_armsopen_duration">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_armsopen_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_armscrossed_detected">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_armscrossed_duration">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_armscrossed_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_lefthandheadtouch_detected">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_lefthandheadtouch_duration">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_lefthandheadtouch_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_righthandheadtouch_detected">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_righthandheadtouch_duration">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="body_gesture_righthandheadtouch_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="face_expression_smile_detected">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="face_expression_smile_duration">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="face_expression_smile_intensity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="susanne_voice_activity">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="tom_voice_activity">
+      <String><![CDATA[]]></String>
+    </Variable>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="39" yPos="47"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N69" name="N69" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N75" start="" timeout="3000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="300" yPos="525" ctrlXPos="322" ctrlYPos="525"/>
+        <ControlPoint xPos="390" yPos="525" ctrlXPos="367" ctrlYPos="525"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="210" yPos="480"/>
+    </Graphics>
+  </Node>
+  <Node id="N75" name="N75" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Play>
+        <String><![CDATA[[player Scale value=1.0]]]></String>
+      </Play>
+      <Play>
+        <String><![CDATA[[player CameraOffset x=0 y=-0.15 z=0.1]]]></String>
+      </Play>
+      <Play>
+        <String><![CDATA[[player LookAt viewtarget=tom]]]></String>
+      </Play>
+      <Play>
+        <String><![CDATA[[tom LookAt viewtarget=player]]]></String>
+      </Play>
+    </Commands>
+    <TEdge target="N147" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="480" yPos="525" ctrlXPos="547" ctrlYPos="525"/>
+        <ControlPoint xPos="660" yPos="525" ctrlXPos="592" ctrlYPos="525"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="390" yPos="480"/>
+    </Graphics>
+  </Node>
+  <Node id="N59" name="N59" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N59" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="1077" yPos="482" ctrlXPos="1101" ctrlYPos="396"/>
+        <ControlPoint xPos="1104" yPos="502" ctrlXPos="1182" ctrlYPos="456"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="1020" yPos="480"/>
+    </Graphics>
+  </Node>
+  <Node id="N147" name="N75" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Play>
+        <String><![CDATA[[player FocalLength value=20.0 time=0.05]]]></String>
+      </Play>
+    </Commands>
+    <EEdge target="N59" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="748" yPos="513" ctrlXPos="860" ctrlYPos="481"/>
+        <ControlPoint xPos="1022" yPos="537" ctrlXPos="909" ctrlYPos="568"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="660" yPos="480"/>
+    </Graphics>
+  </Node>
+  <Node id="N266" name="Beam" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Hi_And_Beam]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="S66" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="390" yPos="165" ctrlXPos="412" ctrlYPos="165"/>
+        <ControlPoint xPos="480" yPos="165" ctrlXPos="457" ctrlYPos="165"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="300" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N267" name="N267" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N267" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="897" yPos="122" ctrlXPos="921" ctrlYPos="36"/>
+        <ControlPoint xPos="924" yPos="142" ctrlXPos="1002" ctrlYPos="96"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="840" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N152" name="N152" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Interviewer_Welcome]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="N267" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="750" yPos="165" ctrlXPos="772" ctrlYPos="165"/>
+        <ControlPoint xPos="840" yPos="165" ctrlXPos="817" ctrlYPos="165"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="660" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N276" name="N276" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Susanne_Hopp]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <Graphics>
+      <Position xPos="660" yPos="300"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S65" name="Close Camera" comment="" hideLocalVar="false" hideGlobalVar="true" start="N272;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N266" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="210" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
+        <ControlPoint xPos="300" yPos="165" ctrlXPos="277" ctrlYPos="165"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="120" yPos="120"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N269" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="30" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N272" name="Wait and Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N274" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="165" ctrlXPos="187" ctrlYPos="165"/>
+          <ControlPoint xPos="300" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N273" name="N89" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <Play>
+          <String><![CDATA[[player LookAt viewtarget=tom]]]></String>
+        </Play>
+        <Play>
+          <String><![CDATA[[player FocalLength value=25.0 time=0.05]]]></String>
+        </Play>
+      </Commands>
+      <Graphics>
+        <Position xPos="570" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N274" name="N89" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <Play>
+          <String><![CDATA[[player CameraOffset x=0 y=-0.15 z=0.1]]]></String>
+        </Play>
+        <Play>
+          <String><![CDATA[[tom LookAt viewtarget=player]]]></String>
+        </Play>
+      </Commands>
+      <TEdge target="N273" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="390" yPos="165" ctrlXPos="457" ctrlYPos="165"/>
+          <ControlPoint xPos="570" yPos="165" ctrlXPos="502" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="300" yPos="120"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S66" name="Default Camera" comment="" hideLocalVar="false" hideGlobalVar="true" start="N278;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <FEdge target="N152" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="570" yPos="165" ctrlXPos="592" ctrlYPos="165"/>
+          <ControlPoint xPos="660" yPos="165" ctrlXPos="637" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+    </FEdge>
+    <FEdge target="N276" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="570" yPos="210" ctrlXPos="629" ctrlYPos="269"/>
+          <ControlPoint xPos="673" yPos="313" ctrlXPos="630" ctrlYPos="270"/>
+        </Connection>
+      </Graphics>
+    </FEdge>
+    <Graphics>
+      <Position xPos="480" yPos="120"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N275" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="30" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N277" name="N89" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <Play>
+          <String><![CDATA[[player FocalLength value=45.0 time=0.05]]]></String>
+        </Play>
+      </Commands>
+      <Graphics>
+        <Position xPos="570" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N278" name="N89" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <Play>
+          <String><![CDATA[[player CameraOffset x=0 y=-0.15 z=0.1]]]></String>
+        </Play>
+        <Play>
+          <String><![CDATA[[tom ReleaseLookAt]]]></String>
+        </Play>
+      </Commands>
+      <EEdge target="N277" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="165" ctrlXPos="412" ctrlYPos="165"/>
+          <ControlPoint xPos="570" yPos="165" ctrlXPos="457" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="210" yPos="120"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <UserCommands>
+    <UserCommand name="printString" classname ="java.lang.System.out" method="println">
+      <Argument name="Arg0" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
