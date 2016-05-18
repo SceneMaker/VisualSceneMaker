@@ -22,8 +22,6 @@ import javafx.util.Callback;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -32,7 +30,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -311,7 +308,7 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
             String newPlayer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                     + "<Project name=\"" + mProject.getProjectName() + "\">"
                     + "<Plugins>"
-                    + "<Plugin type=\"device\" name=\"" + txtDeviceName.getText() + "\" class=\"" + mScenePlayersLongNames.get( cmbExecutor.getSelectionModel().getSelectedIndex() - 1) + "\">"
+                    + "<Plugin type=\"device\" name=\"" + txtDeviceName.getText() + "\" class=\"" + mScenePlayersLongNames.get( cmbExecutor.getSelectionModel().getSelectedIndex() - 1) + "\" load=\"true\">"
                     + "</Plugin>"
                     + "</Plugins>"
                     + "</Project>";

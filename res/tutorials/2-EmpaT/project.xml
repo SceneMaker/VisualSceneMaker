@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="EmpaT Scenario Prototype">
   <Plugins>
-    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="true">
+    <Plugin type="default" name="tworld_ssi_plugin" class="de.dfki.vsm.xtension.tworld.TWorldSSIPlugin" load="false">
       <Feature key="hlhost" val="127.0.0.1"/>
       <Feature key="hlport" val="343"/>
       <Feature key="slhost" val="127.0.0.1"/>
       <Feature key="slport" val="22192"/>
       <Feature key="srhost" val="127.0.0.1"/>
       <Feature key="srport" val="19220"/>
-      <Feature key="ssidir" val="D:\EmpaT\software\EmpaT\"/>
+      <Feature key="ssidir" val="C:\Users\patrick\Project\software\EmpaT\"/>
       <Feature key="ssibat" val="EMPAT_SSI.bat"/>
     </Plugin>
     <Plugin type="device" name="tworld" class="de.dfki.vsm.xtension.tworld.TWorldExecutor" load="true">
-      <Feature key="tworlddir" val="D:\EmpaT\software\EmpaT\"/>
+      <Feature key="tworlddir" val="C:\Users\patrick\Project\software\EmpaT\"/>
       <Feature key="tworldexe" val="EmpaT.exe"/>
       <Feature key="tworldcmd" val="-SceneMakerIP 127.0.0.1 -SceneMakerPort 8000 -CharActorIP 127.0.0.1 -CharActorPort 4000"/>
-      <Feature key="cactordir" val="D:\EmpaT\software\EmpaT\CharActorServer\"/>
+      <Feature key="cactordir" val="C:\Users\patrick\Project\software\EmpaT\CharActorServer\"/>
       <Feature key="cactorexe" val="EmpatTest.exe"/>
       <Feature key="cactorcmd" val=""/>
     </Plugin>
