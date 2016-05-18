@@ -19,7 +19,7 @@ public class TestFXGui {
         RunTimeProject project = new RunTimeProject();
         //gui.init();
         //gui.setVisible(true);
-        String testPath = "res/tutorials/6.MaryTTS";
+        String testPath = "res/tutorials/2-EmpaT";
         project.parseForInformation(testPath);
         if(project!= null && project.getProjectConfig()!= null) {
             System.out.println("ENTRA MAIN----------------");
