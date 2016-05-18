@@ -466,7 +466,7 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
 
     public void saveConfig(){
         //TODO: Remove later
-        File f = new File("res/tutorials/6.MaryTTS");
+        File f = new File("res/tutorials/2-EmpaT");
         mProject.write(f);
     }
 
