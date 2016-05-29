@@ -44,7 +44,7 @@ public class PropertyManagerGUI {
 
             mJFXPanel.setScene(scene);
             mJFXPanel.setVisible(true);
-            mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            //mFrame.setDefaultCloseOperation(JFrame.);
             mFrame.setVisible(true);
             mFrame.setMinimumSize(new Dimension(800,800));
 

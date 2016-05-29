@@ -5,6 +5,8 @@ import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtesting.propertymanager.util.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -66,6 +68,8 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
     @FXML private ComboBox cmbExecutor;
     @FXML private Button btnAddDevice;
     @FXML private TextField txtDeviceName;
+    @FXML private Label lblClassName;
+    @FXML private CheckBox chkLoadPlugin;
     private TreeItem<String> devices;
     private HashMap<String, PluginConfig> plugins= new HashMap<>();
 
@@ -131,6 +135,7 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
                 cmbExecutor = (ComboBox) content.lookup("#cmbExecutor");
                 btnAddDevice = (Button) content.lookup("#btnAddDevice");
                 txtDeviceName = (TextField) content.lookup("#txtDeviceName");
+
                 final FXMLDocumentNewController controller = this;
                 btnAddDevice.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
@@ -170,6 +175,19 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
             keyColumn = (TableColumn) pluginsTable.getColumns().get(0);
             valueColumn = (TableColumn) pluginsTable.getColumns().get(1);
             btnAddEntry = (Button) content.lookup("#btnAddEntry");
+            lblClassName = (Label) content.lookup("#lblClassName");
+
+            chkLoadPlugin = (CheckBox) content.lookup("#chkLoadPlugin");
+            chkLoadPlugin.setSelected(plugin.isMarkedtoLoad());
+            chkLoadPlugin.selectedProperty().addListener(new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    plugin.setLoad(newValue);
+                    saveConfig();
+                }
+            });
+
+
             btnAddEntry.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
@@ -193,8 +211,6 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
             }else if(type.equals("Agents")) {
                 getAgentData(plugin, item.getValue());
             }
-
-            //populatePluginTable(plugin, type);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -221,10 +237,13 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
         }
         else if(plugin!= null){
             showPluginTable(plugin, item, "Plugins");
+            lblClassName.setText("Class: " + mProject.getPluginConfig(plugin.getPluginName()).getClassName());
+
 
         }
         else if(item!=null && item.getParent() != null && plugins.containsKey(item.getParent().getValue())){//Its a plugin
             showPluginTable(plugins.get(item.getParent().getValue()), item, "Agents");
+            lblClassName.setText("Class: " + plugins.get(item.getParent().getValue()).getClassName());
         }
     }
 
@@ -466,7 +485,7 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
 
     public void saveConfig(){
         //TODO: Remove later
-        File f = new File("res/tutorials/2-EmpaT");
+        File f = new File(mProject.getProjectPath());
         mProject.write(f);
     }
 
