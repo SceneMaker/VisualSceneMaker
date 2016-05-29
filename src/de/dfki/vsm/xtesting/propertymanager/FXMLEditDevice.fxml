@@ -5,15 +5,15 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<Pane fx:id="editDevice" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="472.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<Pane fx:id="editDevice" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <TableView fx:id="pluginsTable" layoutX="-3.0" layoutY="-4.0" prefHeight="331.0" prefWidth="600.0">
+      <TableView fx:id="pluginsTable" layoutY="75.0" prefHeight="364.0" prefWidth="600.0">
         <columns>
           <TableColumn fx:id="keyColumn" prefWidth="308.0" text="Key" />
           <TableColumn fx:id="valueColumn" minWidth="0.0" prefWidth="289.0" text="Value" />
         </columns>
       </TableView>
-      <HBox layoutX="-3.0" layoutY="353.0" prefHeight="40.0" prefWidth="600.0">
+      <HBox layoutY="492.0" prefHeight="40.0" prefWidth="600.0">
          <children>
             <TextField fx:id="txtKey" prefHeight="29.0" prefWidth="213.0" promptText="Key">
                <HBox.margin>
@@ -25,20 +25,37 @@
                   <Insets left="10.0" />
                </HBox.margin>
             </TextField>
-            <Button fx:id="btnAddEntry" mnemonicParsing="false"  text="Add">
+            <Button fx:id="btnAddEntry" mnemonicParsing="false" text="Add">
                <HBox.margin>
                   <Insets left="10.0" />
                </HBox.margin>
             </Button>
          </children>
       </HBox>
-      <HBox layoutY="328.0" prefHeight="22.0" prefWidth="600.0">
+      <HBox layoutX="7.0" layoutY="455.0" prefHeight="22.0" prefWidth="600.0">
          <children>
             <Label text="Add new Entry">
                <HBox.margin>
                   <Insets left="10.0" top="2.0" />
                </HBox.margin>
             </Label>
+         </children>
+      </HBox>
+      <HBox layoutY="25.0" prefHeight="46.0" prefWidth="590.0">
+         <children>
+            <CheckBox fx:id="chkLoadPlugin" mnemonicParsing="false" text="Load Plugin">
+               <padding>
+                  <Insets left="10.0" />
+               </padding>
+            </CheckBox>
+         </children>
+      </HBox>
+      <HBox prefHeight="29.0" prefWidth="600.0">
+         <children>
+            <Label fx:id="lblClassName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="16.0" minWidth="500.0" prefHeight="29.0" prefWidth="574.0" text="Class: ">
+               <padding>
+                  <Insets left="10.0" />
+               </padding></Label>
          </children>
       </HBox>
    </children>

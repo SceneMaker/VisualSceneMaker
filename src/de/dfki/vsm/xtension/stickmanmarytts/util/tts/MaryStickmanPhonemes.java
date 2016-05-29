@@ -35,9 +35,14 @@ public class MaryStickmanPhonemes {
         return phonemes;
     }
 
+    public HashMap<Integer, LinkedList<Phoneme>> getPhonemesAndMouthPosition(SpeechActivity sa, VoiceName voiceName, String language){
+        return getPhonemesAndMouthPosition(sa, null, voiceName, language);
+    }
+
     public HashMap<Integer, LinkedList<Phoneme>> getPhonemesAndMouthPosition(SpeechActivity sa, Stickman.TYPE gender, VoiceName voiceName, String language){
         LinkedList<Phoneme> phonemes = getPhonemesSpeechActivity(sa, gender, voiceName, language);
        //For computing correctly the whole sentnce
+        //Must be index related because with hashmap can happen that two words occurre in the same utterance
         LinkedList blocks = sa.getBlocks();
         int index = 0;
         int word_idx = 0;
@@ -46,7 +51,6 @@ public class MaryStickmanPhonemes {
                 Word w = new Word(item.toString());
                 try {
                     LinkedList<Phoneme> wordPhonems = new LinkedList<>();
-                    //long wordDuration = mary.getWordDuration(w.toString());
                     LinkedList<Phoneme> phonemes2 = mary.getWordPhonemeList(w.toString(), gender, voiceName, language);
                     int i = 0;
                     for (; i < phonemes2.size(); i++) {
@@ -64,4 +68,6 @@ public class MaryStickmanPhonemes {
 
         return mWordPhonemes;
     }
+
+
 }

@@ -91,6 +91,10 @@ public class PluginConfig extends ConfigElement {
         return mLoad;
     }
 
+    public void setLoad(boolean load){
+        mLoad = load;
+    }
+
     // Write A Plugin As XML
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {

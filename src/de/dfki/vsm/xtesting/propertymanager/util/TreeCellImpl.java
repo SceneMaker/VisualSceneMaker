@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtesting.propertymanager.util;
 
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.input.KeyEvent;
@@ -32,8 +33,10 @@ public final class TreeCellImpl extends TreeCell<String> implements TreeObservab
             }else {
                 setText(getItem() == null ? "" : getItem().toString());
                 setGraphic(getTreeItem().getGraphic());
-                if (getTreeItem() instanceof AbstractTreeItem) {
+                if (getTreeItem() instanceof AbstractTreeItem  && (getTreeItem().getParent() != null && getTreeItem().getParent().getValue().equals("Devices"))) {
                     setContextMenu(((AbstractTreeItem) getTreeItem()).getMenu());
+                }else{
+                    setContextMenu(new ContextMenu());
                 }
             }
         }

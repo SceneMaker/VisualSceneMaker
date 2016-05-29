@@ -9,6 +9,7 @@ import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.xtesting.propertymanager.PropertyManagerGUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -430,9 +431,17 @@ public class EditorStarter extends JPanel {
 					projectList[i].addMouseListener(new MouseAdapter() {
 						@Override
 						public void mouseClicked(MouseEvent me) {
-							// mEditorInstance.toggleProjectEditorList(true);
-							mEditorInstance.openProject(projectDir.getPath());
-							mWelcomeStickman.setVisible(false);
+							if(SwingUtilities.isRightMouseButton(me) ){
+                                                            RunTimeProject project = new RunTimeProject();
+                                                            project.parseForInformation(projectDir.getPath());
+                                                            PropertyManagerGUI gui = new PropertyManagerGUI();
+                                                            gui.init(project);
+                                                            gui.setVisible(true);
+                                                        }
+                                                        else{
+                                                            mEditorInstance.openProject(projectDir.getPath());
+                                                            mWelcomeStickman.setVisible(false);
+                                                        }
 						}
 
 						@Override
@@ -534,9 +543,16 @@ public class EditorStarter extends JPanel {
 				newTutorialProj.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent me) {
-						// mEditorInstance.toggleProjectEditorList(true);
-						mEditorInstance.openProject(tutorialProj.getPath());
-						mWelcomeStickman.setVisible(false);
+                                                
+						if(SwingUtilities.isRightMouseButton(me) ){
+                                                    PropertyManagerGUI gui = new PropertyManagerGUI();
+                                                    gui.init(project);
+                                                    gui.setVisible(true);
+                                                }else{
+                                                    mEditorInstance.openProject(tutorialProj.getPath());
+                                                    mWelcomeStickman.setVisible(false);
+                                                }
+						
 					}
 
 					@Override

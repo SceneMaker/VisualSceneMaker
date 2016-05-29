@@ -21,15 +21,18 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
 
     @Override
     public ContextMenu getMenu(){
-        MenuItem addInbox = new MenuItem("Add new agent");
-        addInbox.setOnAction(new EventHandler() {
-            public void handle(Event t) {
-                BoxTreeItem newBox = new BoxTreeItem(contextValue);
-                getChildren().add(newBox);
-                notifyObserver();
-            }
-        });
-        return new ContextMenu(addInbox);
+        if(this.getParent()!=null && this.getParent().getValue().equals("Devices")) {
+            MenuItem addInbox = new MenuItem("Add new agent");
+            addInbox.setOnAction(new EventHandler() {
+                public void handle(Event t) {
+                    BoxTreeItem newBox = new BoxTreeItem(contextValue);
+                    getChildren().add(newBox);
+                    notifyObserver();
+                }
+            });
+            return new ContextMenu(addInbox);
+        }
+        return new ContextMenu();
     }
 
 
@@ -62,7 +65,7 @@ class BoxTreeItem extends AbstractTreeItem{
 
     @Override
     public ContextMenu getMenu() {
-        return new ContextMenu(new MenuItem("test"));
+        return new ContextMenu(new MenuItem("testing"));
     }
 
 
