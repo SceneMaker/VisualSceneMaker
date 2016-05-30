@@ -63,6 +63,7 @@ public class StickmanMaryttsHandler extends Thread implements EventListener {
     // Abort the client thread
     public final void abort() {
         // Set the termination flag
+        mEventDispatcher.remove(this);
         mDone = true;
         // Eventually close the socket
         if (mSocket != null && !mSocket.isClosed()) {
