@@ -111,6 +111,15 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         executeSpeachAndWait(marySpeak, executionId);
     }
 
+    private void actionSetVoice(AbstractActivity activity) {
+        AgentConfig agent = mProject.getAgentConfig(activity.getActor());
+        for (ActionFeature feat : activity.getFeatureList()) {
+            if (feat.getKey().equalsIgnoreCase("voice")) {
+                languageAgentMap.put(agent.getAgentName(), feat.getVal());
+            }
+        }
+    }
+
     private void actionLoadAnimation(AbstractActivity activity) {
         Animation stickmanAnimation;
         int duration = 500;
@@ -124,15 +133,6 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
         if (stickmanAnimation != null) {
             executeAnimation(stickmanAnimation);
-        }
-    }
-
-    private void actionSetVoice(AbstractActivity activity) {
-        AgentConfig agent = mProject.getAgentConfig(activity.getActor());
-        for (ActionFeature feat : activity.getFeatureList()) {
-            if (feat.getKey().equalsIgnoreCase("voice")) {
-                languageAgentMap.put(agent.getAgentName(), feat.getVal());
-            }
         }
     }
 
@@ -201,6 +201,10 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         mListener = new StickmanMaryttsListener(8000, this);
         mListener.start();
         launchStickmanClient();
+        waitForStickman();
+    }
+
+    private void waitForStickman(){
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for StickmanStage to launch");
             try {
@@ -222,6 +226,13 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
     private void launchMaryTTSAndDialog() throws Exception {
         WaitingDialog InfoDialog  = new WaitingDialog("Loading MaryTTS...");
         marySelfServer.registerObserver(InfoDialog);
+        Thread tDialog = getThreadMaryServer();
+        tDialog.start();
+        InfoDialog.setModal(true);
+        InfoDialog.setVisible(true);
+    }
+
+    private Thread getThreadMaryServer(){
         Thread tDialog = new Thread() {
             public void run(){
                 try {
@@ -231,11 +242,8 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
                 }
             }
         };
-        tDialog.start();
-        InfoDialog.setModal(true);
-        InfoDialog.setVisible(true);
+        return tDialog;
     }
-
 
     private void addStickmansToStage( ){
         for (AgentConfig agent:mProject.getProjectConfig().getAgentConfigList()) {
@@ -251,7 +259,6 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         unloadClients();
         languageAgentMap.clear();
         wtsMap.clear();
-        mActivityWorkerMap.clear();
         try {
             marySelfServer.stopMaryServer();
             mListener.abort();
@@ -316,39 +323,42 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
     // Handle some message
     public void handle(final String message, final StickmanMaryttsHandler client) {
         mLogger.message("Handling " + message + "");
-        synchronized (mActivityWorkerMap) {
-            if (message.contains("#ANIM#end#")) {
-                handleAnimationResponse(message);
-            } else if (message.contains("$")) {
-                handleGenericResponse(message);
-            } else if (message.contains("#AUDIO#end#")) {
-                handleMaryTTSResponse(message);
-
-            }
-
+        if (message.contains("#ANIM#end#")) {
+            handleAnimationResponse(message);
+        } else if (message.contains("$")) {
+            handleGenericResponse(message);
+        } else if (message.contains("#AUDIO#end#")) {
+            handleMaryTTSResponse(message);
         }
+
     }
 
     private void handleAnimationResponse(String message){
-        int start = message.lastIndexOf("#") + 1;
-        String animId = message.substring(start);
-        if (mActivityWorkerMap.containsKey(animId)) {
-            mActivityWorkerMap.remove(animId);
+        synchronized (mActivityWorkerMap) {
+            int start = message.lastIndexOf("#") + 1;
+            String animId = message.substring(start);
+            if (mActivityWorkerMap.containsKey(animId)) {
+                mActivityWorkerMap.remove(animId);
+            }
+            // wake me up ..
+            mActivityWorkerMap.notifyAll();
         }
-        // wake me up ..
-        mActivityWorkerMap.notifyAll();
     }
 
     private void handleMaryTTSResponse(String message){
-        int start = message.lastIndexOf("#") + 1;
-        String event_id = message.substring(start);
-        mActivityWorkerMap.remove(event_id);
-        mActivityWorkerMap.notifyAll();
+        synchronized (mActivityWorkerMap) {
+            int start = message.lastIndexOf("#") + 1;
+            String event_id = message.substring(start);
+            mActivityWorkerMap.remove(event_id);
+            mActivityWorkerMap.notifyAll();
+        }
     }
 
     private void handleGenericResponse(String message){
-        mActivityWorkerMap.notifyAll();
-        mProject.getRunTimePlayer().getActivityScheduler().handle(message);
+        synchronized (mActivityWorkerMap) {
+            mActivityWorkerMap.notifyAll();
+            mProject.getRunTimePlayer().getActivityScheduler().handle(message);
+        }
     }
 
     // Broadcast some message
