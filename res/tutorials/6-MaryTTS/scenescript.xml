@@ -132,23 +132,31 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="601" upper="655" language="en" identifier="Blink">
-    <SceneTurn lower="617" upper="634" speaker="patrick">
-      <SceneUttr lower="626" upper="634" punct=".">
-        <ActionObject lower="626" upper="633" actor="" mode="" name="Blink" >
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="635" upper="655" speaker="patrick">
-      <SceneUttr lower="644" upper="655" punct=".">
-        <ActionObject lower="644" upper="654" actor="" mode="" name="TiltLeft" >
+  <SceneObject lower="601" upper="642" language="en" identifier="Susanne_Blink">
+    <SceneTurn lower="625" upper="642" speaker="susanne">
+      <SceneUttr lower="634" upper="642" punct=".">
+        <ActionObject lower="634" upper="641" actor="" mode="" name="Blink" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="657" upper="698" language="en" identifier="Normal">
-    <SceneTurn lower="674" upper="698" speaker="patrick">
-      <SceneUttr lower="683" upper="698" punct=".">
-        <ActionObject lower="683" upper="697" actor="" mode="" name="TiltLeftBack" >
+  <SceneObject lower="644" upper="698" language="en" identifier="Blink">
+    <SceneTurn lower="660" upper="677" speaker="patrick">
+      <SceneUttr lower="669" upper="677" punct=".">
+        <ActionObject lower="669" upper="676" actor="" mode="" name="Blink" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="678" upper="698" speaker="patrick">
+      <SceneUttr lower="687" upper="698" punct=".">
+        <ActionObject lower="687" upper="697" actor="" mode="" name="TiltLeft" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="700" upper="741" language="en" identifier="Normal">
+    <SceneTurn lower="717" upper="741" speaker="patrick">
+      <SceneUttr lower="726" upper="741" punct=".">
+        <ActionObject lower="726" upper="740" actor="" mode="" name="TiltLeftBack" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
