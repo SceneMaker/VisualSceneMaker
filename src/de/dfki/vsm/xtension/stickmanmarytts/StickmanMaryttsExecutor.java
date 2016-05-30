@@ -79,41 +79,46 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
     @Override
     public void execute(AbstractActivity activity) {
-        final String actor = activity.getActor();
         final String name = activity.getName();
-        AgentConfig agent = mProject.getAgentConfig(actor);
-        String langVoice = getLangVoiceFromConfig(actor);
-        String voice = agent.getProperty(langVoice);
-        VoiceName voiceName = new VoiceName(voice);
         if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-            String activityText = sa.getTextOnly("$").trim();
-            if (activityText.isEmpty()) {
-                handleEmptyTextActivity(sa);
-            }
-            MaryTTsSpeaker marySpeak = new MaryTTsSpeaker(sa, langVoice, voiceName);
-            String executionId = getExecutionId();
-            WordTimeMarkSequence wts = marySpeak.getWordTimeSequence();
-            //We will use these two later
-            speechActivities.put(executionId, activity);
-            wtsMap.put(executionId, wts);
-            executeSpeachAndWait(marySpeak, executionId);
+            actionExecuteSpeech(activity);
         } else if (activity instanceof ActionActivity || activity instanceof ActionMouthActivity) {
             if (name.equalsIgnoreCase("set") && activity instanceof ActionActivity) {
-                actionSetVoice(activity, agent);
+                actionSetVoice(activity);
             } else {
-                actionLoadAnimation(activity, actor, name);
+                actionLoadAnimation(activity);
             }
         }
     }
 
-    private void actionLoadAnimation(AbstractActivity activity, String actor, String name) {
+    private void actionExecuteSpeech(AbstractActivity activity){
+        final String actor = activity.getActor();
+        AgentConfig agent = mProject.getAgentConfig(actor);
+        String langVoice = getLangVoiceFromConfig(actor);
+        String voice = agent.getProperty(langVoice);
+        VoiceName voiceName = new VoiceName(voice);
+        SpeechActivity sa = (SpeechActivity) activity;
+        String activityText = sa.getTextOnly("$").trim();
+        if (activityText.isEmpty()) {
+            handleEmptyTextActivity(sa);
+        }
+        MaryTTsSpeaker marySpeak = new MaryTTsSpeaker(sa, langVoice, voiceName);
+        String executionId = getExecutionId();
+        WordTimeMarkSequence wts = marySpeak.getWordTimeSequence();
+        //We will use these two later
+        speechActivities.put(executionId, activity);
+        wtsMap.put(executionId, wts);
+        executeSpeachAndWait(marySpeak, executionId);
+    }
+
+    private void actionLoadAnimation(AbstractActivity activity) {
         Animation stickmanAnimation;
         int duration = 500;
         if (activity instanceof ActionMouthActivity) {
             duration = ((ActionMouthActivity) activity).getDuration();
         }
-        stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+        stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(activity.getActor()),
+                activity.getName(), duration, false);
         if (activity instanceof ActionMouthActivity) {
             stickmanAnimation.mParameter = ((ActionMouthActivity) activity).getWortTimeMark();
         }
@@ -122,7 +127,8 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void actionSetVoice(AbstractActivity activity, AgentConfig agent) {
+    private void actionSetVoice(AbstractActivity activity) {
+        AgentConfig agent = mProject.getAgentConfig(activity.getActor());
         for (ActionFeature feat : activity.getFeatureList()) {
             if (feat.getKey().equalsIgnoreCase("voice")) {
                 languageAgentMap.put(agent.getAgentName(), feat.getVal());
