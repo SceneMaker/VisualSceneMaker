@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.buttongui;
+package de.dfki.vsm.xtension.button;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
@@ -26,7 +26,8 @@ import javafx.application.Platform;
 public class ButtonGuiExecutor extends ActivityExecutor {
 
     // The GUI
-    Gui mButtonGui = new Gui(this);;
+    ButtonGUI mButtonGui = new ButtonGUI(this);
+    ;
     // The current ActivityWorker
     ActivityWorker mActivityWorker = null;
     private final HashSet<ActivityWorker> mActivityWorkers = new HashSet<>();
@@ -91,9 +92,27 @@ public class ButtonGuiExecutor extends ActivityExecutor {
         mLogger.message("Lauching ButtonGUI ...");
         mButtonGui.setVisible(false);
         // format for button config
+        // id, x, y, name, value, scenemaker var
         //<Feature key="button_yes" val="100, 100, 24, "Yes","yes_pressed", "user_input"/>
         for (ConfigFeature cf : mConfig.getEntryList()) {
             String key = cf.getKey();
+
+            if (key.equalsIgnoreCase("hideonpressed")) {
+                if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
+                    mButtonGui.mHideOnPressed = Boolean.parseBoolean(cf.getValue());
+                }
+            }
+            if (key.equalsIgnoreCase("alwaysontop")) {
+                if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
+                    mButtonGui.mAlwaysOnTop = Boolean.parseBoolean(cf.getValue());
+                }
+            }
+            if (key.equalsIgnoreCase("takesallinput")) {
+                if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
+                    mButtonGui.mModal = Boolean.parseBoolean(cf.getValue());
+                }
+            }
+
             if (key.contains("button")) {
                 String[] values = cf.getValue().split(",");
 
