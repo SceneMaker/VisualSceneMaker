@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.buttongui;
+package de.dfki.vsm.xtension.button;
 
+import com.sun.glass.ui.Application;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,12 +24,14 @@ import javafx.scene.text.Font;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 /**
  *
  * @author Patrick Gebhard
+ *
  */
-public class Gui extends JFrame {
+public class ButtonGUI extends JFrame {
 
     final JFXPanel mJFXPanel;
 
@@ -42,11 +45,15 @@ public class Gui extends JFrame {
 
     private ButtonGuiExecutor mExecutor;
 
+    public boolean mAlwaysOnTop = true;
+    public boolean mHideOnPressed = true;
+    public boolean mModal = true;
+
     private HashMap<String, Button> mButtons;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public Gui(ButtonGuiExecutor executor) {
+    public ButtonGUI(ButtonGuiExecutor executor) {
         mJFXPanel = new JFXPanel();
         mRootNode = new Group();
 
@@ -62,22 +69,22 @@ public class Gui extends JFrame {
         p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
         p.setBackground(new Color(0, 0, 0, 0));
         add(p);
+        // configure size of jfx 
         mJFXPanel.setMinimumSize(new Dimension(mWidth, mHeight));
         mJFXPanel.setPreferredSize(new Dimension(mWidth, mHeight));
         p.add(mJFXPanel);
         // Set Not Rezizable
-        //mFrame.setResizable(false);
+        //setResizable(false);
         // Set Always On Top
-        setAlwaysOnTop(true);
+        setAlwaysOnTop(mAlwaysOnTop);
         // Set Undecorated
         setUndecorated(true);
         // Set Transparent
-        setBackground(new Color(0, 0, 0, 1));
-
+        setBackground(new Color(0, 0, 0, (mModal) ? 1 : 0));
+        // tie everything together
         pack();
 
-        //mFrame.setSize(mWidth, mHeight);
-        //setExtendedState(JFrame.MAXIMIZED_BOTH);
+        // place it in the middle of the screen
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -93,8 +100,12 @@ public class Gui extends JFrame {
 
         // add controller stuff
         b.setOnAction((event) -> {
-            System.out.println("user pressed ... " + name);
-            mExecutor.setVSmVar(var, value);
+            // set SceneMaker variable
+            if (mExecutor != null) {
+                mExecutor.setVSmVar(var, value);
+            }
+            // hide gui if wanted
+            setVisible(!mHideOnPressed);
         });
 
         mButtons.put(id, b);
@@ -102,7 +113,6 @@ public class Gui extends JFrame {
 
     public void hideAllButtons() {
         for (Button b : mButtons.values()) {
-            mLogger.message("hide Button " + b.getText());
             b.setVisible(false);
         }
     }
@@ -118,9 +128,10 @@ public class Gui extends JFrame {
         mButtonsSubScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         mButtonsSubScene.setBlendMode(BlendMode.MULTIPLY);
 
-        //buildButton("yes", 200, 200, 48, "Ja", "pressed_yes");
-        for (ButtonValues bv : mExecutor.mButtonsAndValues) {
-            buildButton(bv.mId, bv.mX, bv.mY, bv.mSize, bv.mName, bv.mValue, bv.mVSMVar);
+        if (mExecutor != null) {
+            for (ButtonValues bv : mExecutor.mButtonsAndValues) {
+                buildButton(bv.mId, bv.mX, bv.mY, bv.mSize, bv.mName, bv.mValue, bv.mVSMVar);
+            }
         }
 
         // build layout
@@ -146,8 +157,9 @@ public class Gui extends JFrame {
     }
 
     public static void main(String[] args) {
-        Gui g = new Gui(null);
-
+        ButtonGUI g = new ButtonGUI(null);
+        g.buildButton("b1", 200, 200, 96, "Button", "pressed_button", "var");
+        g.initFX();
         g.setVisible(true);
     }
 }
