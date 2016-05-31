@@ -83,7 +83,7 @@ public class ButtonGUI extends JFrame {
 
         // place it in the middle of the screen
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
     private void buildButton(String id, int x, int y, int size, String name, String value, String var) {
@@ -110,12 +110,14 @@ public class ButtonGUI extends JFrame {
 
     public void hideAllButtons() {
         for (Button b : mButtons.values()) {
+            b.setManaged(false);
             b.setVisible(false);
         }
     }
 
     public void showButton(String id, boolean show) {
        if (mButtons.containsKey(id)) {
+           mButtons.get(id).setManaged(show);
             mButtons.get(id).setVisible(show);
         }
     }
