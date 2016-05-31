@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="89" language="en" identifier="Welcome">
+    <SceneTurn lower="18" upper="74" speaker="susanne">
+      <SceneUttr lower="27" upper="33" punct="!">
+        <SceneWord lower="27" upper="32" text="Hallo"/>
+      </SceneUttr>
+      <SceneUttr lower="34" upper="65" punct=".">
+        <SceneWord lower="34" upper="42" text="Herzlich"/>
+        <ActionObject lower="43" upper="53" actor="" mode="" name="WaveLeft" >
+        </ActionObject>
+        <SceneWord lower="54" upper="64" text="Willkommen"/>
+      </SceneUttr>
+      <SceneUttr lower="66" upper="74" punct=".">
+        <ActionObject lower="66" upper="73" actor="" mode="" name="Smile" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="75" upper="89" speaker="yesno">
+      <SceneUttr lower="82" upper="89" punct=".">
+        <ActionObject lower="82" upper="88" actor="" mode="" name="show" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="91" upper="124" language="en" identifier="Blink">
+    <SceneTurn lower="107" upper="124" speaker="susanne">
+      <SceneUttr lower="116" upper="124" punct=".">
+        <ActionObject lower="116" upper="123" actor="" mode="" name="Blink" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Speaking Stickman and Button GUI">
+  <Plugins>
+    <Plugin type="device" name="stickmanmarytts" class="de.dfki.vsm.xtension.stickmanmarytts.StickmanMaryttsExecutor" load="true">
+      <Feature key="smhost" val="127.0.0.1"/>
+      <Feature key="smport" val="8000"/>
+      <Feature key="showstickmanname" val="true"/>
+      <Feature key="mary.base" val="D:\marytts-5.1.2"/>
+      <Feature key="fullscreen" val="true"/>
+    </Plugin>
+    <Plugin type="device" name="buttongui" class="de.dfki.vsm.xtension.button.ButtonGUIExecutor" load="true">
+      <Feature key="button_yes" val="800,350,96,Ja,yes,user_input"/>
+      <Feature key="button_no" val="800,550,96,Nein,no,user_input"/>
+      <Feature key="button_help" val="800,550,96,Brauche sofort Hilfe!,help,user_input"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="susanne" device="stickmanmarytts">
+      <Feature key="default-voice" val="de"/>
+      <Feature key="de" val="bits1-hsmm"/>
+    </Agent>
+    <Agent name="yesno" device="buttongui">
+      <Feature key="show" val="button_yes,button_no"/>
+    </Agent>
+    <Agent name="help" device="buttongui">
+      <Feature key="show" val="button_help"/>
+    </Agent>
+  </Agents>
+</Project>
