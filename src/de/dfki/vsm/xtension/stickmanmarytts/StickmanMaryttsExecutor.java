@@ -12,7 +12,6 @@ import de.dfki.stickman.animationlogic.AnimationLoader;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.vsm.editor.dialog.WaitingDialog;
-import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -25,7 +24,6 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.tts.MaryTTsProcess;
 import de.dfki.vsm.util.tts.MaryTTsSpeaker;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.I4GMaryClient;
 import de.dfki.vsm.xtension.stickmanmarytts.util.tts.VoiceName;
 import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
 import de.dfki.vsm.xtension.stickmanmarytts.action.ActionMouthActivity;
@@ -48,7 +46,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     private HashMap<String, String> languageAgentMap;
     private HashMap<String, AbstractActivity> speechActivities = new HashMap<>();
-    private HashMap<String, WordTimeMarkSequence> wtsMap= new HashMap<>();
+    private HashMap<String, WordTimeMarkSequence> wtsMap = new HashMap<>();
     private MaryTTsProcess marySelfServer;
     private int maryId;
 
@@ -91,7 +89,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void actionExecuteSpeech(AbstractActivity activity){
+    private void actionExecuteSpeech(AbstractActivity activity) {
         final String actor = activity.getActor();
         AgentConfig agent = mProject.getAgentConfig(actor);
         String langVoice = getLangVoiceFromConfig(actor);
@@ -144,11 +142,11 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private String getLangVoiceFromConfig(String actor){
+    private String getLangVoiceFromConfig(String actor) {
         AgentConfig agent = mProject.getAgentConfig(actor);
-        String langVoince =  languageAgentMap.get(agent.getAgentName());
-        if(langVoince == null || langVoince.equals("")){
-            langVoince =  agent.getProperty("default-voice");
+        String langVoince = languageAgentMap.get(agent.getAgentName());
+        if (langVoince == null || langVoince.equals("")) {
+            langVoince = agent.getProperty("default-voice");
         }
         return langVoince;
     }
@@ -168,7 +166,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void executeSpeachAndWait(MaryTTsSpeaker marySpeak,  String executionId) {
+    private void executeSpeachAndWait(MaryTTsSpeaker marySpeak, String executionId) {
         synchronized (mActivityWorkerMap) {
             String spokenText = "";
             try {
@@ -176,7 +174,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if(spokenText.length() > 0) {
+            if (spokenText.length() > 0) {
                 ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
                 mActivityWorkerMap.put(executionId, cAW);
                 while (mActivityWorkerMap.containsValue(cAW)) {
@@ -204,7 +202,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         waitForStickman();
     }
 
-    private void waitForStickman(){
+    private void waitForStickman() {
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for StickmanStage to launch");
             try {
@@ -215,16 +213,26 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void launchStickmanClient(){
+    private void launchStickmanClient() {
+        mLogger.message("Starting StickmanStage Client Application ...");
         final String host = mConfig.getProperty("smhost");
         final String port = mConfig.getProperty("smport");
-        mLogger.message("Starting StickmanStage Client Application ...");
-        mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
+        if (mConfig.containsKey("fullscreen")) {
+            if (mConfig.getProperty("fullscreen").equalsIgnoreCase(Boolean.TRUE.toString())) {
+                mStickmanStage = StickmanStage.getNetworkInstanceFullScreen(host, Integer.parseInt(port));
+            } else {
+                mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
+            }
+        } else {
+            mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
+        }
+        
+
         addStickmansToStage();
     }
 
     private void launchMaryTTSAndDialog() throws Exception {
-        WaitingDialog InfoDialog  = new WaitingDialog("Loading MaryTTS...");
+        WaitingDialog InfoDialog = new WaitingDialog("Loading MaryTTS...");
         marySelfServer.registerObserver(InfoDialog);
         Thread tDialog = getThreadMaryServer();
         tDialog.start();
@@ -232,9 +240,9 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         InfoDialog.setVisible(true);
     }
 
-    private Thread getThreadMaryServer(){
+    private Thread getThreadMaryServer() {
         Thread tDialog = new Thread() {
-            public void run(){
+            public void run() {
                 try {
                     marySelfServer.startMaryServer();
                 } catch (Exception e) {
@@ -245,9 +253,9 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         return tDialog;
     }
 
-    private void addStickmansToStage( ){
-        for (AgentConfig agent:mProject.getProjectConfig().getAgentConfigList()) {
-            if(agent.getDeviceName().equalsIgnoreCase("stickmanmarytts") || agent.getDeviceName().equalsIgnoreCase("stickman")){
+    private void addStickmansToStage() {
+        for (AgentConfig agent : mProject.getProjectConfig().getAgentConfigList()) {
+            if (agent.getDeviceName().equalsIgnoreCase("stickmanmarytts") || agent.getDeviceName().equalsIgnoreCase("stickman")) {
                 StickmanStage.addStickman(agent.getAgentName());
             }
         }
@@ -269,7 +277,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void unloadClients(){
+    private void unloadClients() {
         for (final StickmanMaryttsHandler client : mClientMap.values()) {
             client.abort();
             try {
@@ -282,7 +290,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         mClientMap.clear();
     }
 
-    public void scheduleSpeech(String id){
+    public void scheduleSpeech(String id) {
         SpeechActivity activity = (SpeechActivity) speechActivities.remove(id);
         final WordTimeMarkSequence wts = wtsMap.remove(id);
         final String actor = activity.getActor();
@@ -307,7 +315,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
                         continue;
                     }
                     mScheduler.schedule((int) p.getmStart(), null, new ActionMouthActivity(actor, "face", "Mouth_" + p.getLipPosition(), null, (int) (p.getmEnd() - p.getmStart()), wts), mProject.getAgentDevice(actor));
-                    totalTime+= (int) (p.getmEnd() - p.getmStart());
+                    totalTime += (int) (p.getmEnd() - p.getmStart());
                 }
                 wordIndex++;
             }
@@ -333,7 +341,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
     }
 
-    private void handleAnimationResponse(String message){
+    private void handleAnimationResponse(String message) {
         synchronized (mActivityWorkerMap) {
             int start = message.lastIndexOf("#") + 1;
             String animId = message.substring(start);
@@ -345,7 +353,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void handleMaryTTSResponse(String message){
+    private void handleMaryTTSResponse(String message) {
         synchronized (mActivityWorkerMap) {
             int start = message.lastIndexOf("#") + 1;
             String event_id = message.substring(start);
@@ -354,7 +362,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         }
     }
 
-    private void handleGenericResponse(String message){
+    private void handleGenericResponse(String message) {
         synchronized (mActivityWorkerMap) {
             mActivityWorkerMap.notifyAll();
             mProject.getRunTimePlayer().getActivityScheduler().handle(message);
