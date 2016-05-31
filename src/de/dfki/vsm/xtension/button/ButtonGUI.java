@@ -5,12 +5,10 @@
  */
 package de.dfki.vsm.xtension.button;
 
-import com.sun.glass.ui.Application;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.HashMap;
-import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -24,7 +22,6 @@ import javafx.scene.text.Font;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -43,7 +40,7 @@ public class ButtonGUI extends JFrame {
 
     SubScene mButtonsSubScene;
 
-    private ButtonGuiExecutor mExecutor;
+    private ButtonGUIExecutor mExecutor;
 
     public boolean mAlwaysOnTop = true;
     public boolean mHideOnPressed = true;
@@ -53,7 +50,7 @@ public class ButtonGUI extends JFrame {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public ButtonGUI(ButtonGuiExecutor executor) {
+    public ButtonGUI(ButtonGUIExecutor executor) {
         mJFXPanel = new JFXPanel();
         mRootNode = new Group();
 
