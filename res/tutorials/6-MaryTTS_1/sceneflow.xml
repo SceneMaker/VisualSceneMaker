@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo, 2 Mai 2016 09:12:53" start="N1;N5;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="Wait" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="118" yPos="63" ctrlXPos="182" ctrlYPos="45"/>
+        <ControlPoint xPos="302" yPos="63" ctrlXPos="237" ctrlYPos="45"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="30" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="Play" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[SusanneWelcome]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <TEdge target="N4" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="313" yPos="107" ctrlXPos="225" ctrlYPos="194"/>
+        <ControlPoint xPos="107" yPos="313" ctrlXPos="194" ctrlYPos="225"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="300" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="End" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[PatrickWelcome]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <TEdge target="N1" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="313" yPos="313" ctrlXPos="225" ctrlYPos="225"/>
+        <ControlPoint xPos="107" yPos="107" ctrlXPos="194" ctrlYPos="194"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="300" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="Start" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N3" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="120" yPos="345" ctrlXPos="187" ctrlYPos="345"/>
+        <ControlPoint xPos="300" yPos="345" ctrlXPos="232" ctrlYPos="345"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="30" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N5" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Normal]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <TEdge target="N6" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="660" yPos="255" ctrlXPos="772" ctrlYPos="255"/>
+        <ControlPoint xPos="930" yPos="255" ctrlXPos="817" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="570" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="N6" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Blink]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <TEdge target="N5" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="932" yPos="267" ctrlXPos="824" ctrlYPos="297"/>
+        <ControlPoint xPos="658" yPos="267" ctrlXPos="765" ctrlYPos="297"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="930" yPos="210"/>
+    </Graphics>
+  </Node>
+  <UserCommands>
+    <UserCommand name="printString" classname ="java.lang.System.out" method="println">
+      <Argument name="Arg0" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
