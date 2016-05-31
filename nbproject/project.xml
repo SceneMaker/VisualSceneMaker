@@ -94,7 +94,7 @@ auxiliary.show.customizer.message=<message>
             </compilation-unit>
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">lib/JCup.jar:lib/JFlex.jar:lib/JPL3.jar:lib/javaGeom-0.11.1.jar:lib/ujmp-complete-0.2.5.jar:lib/core.jar:lib/Stickman.jar:lib/Charamelapi-1.0.jar:lib/marytts-client-5.1.2-jar-with-dependencies.jar:lib/marytts-lang-en-5.1.2.jar:lib/marytts-runtime-5.1.2-jar-with-dependencies.jar:lib/voice-dfki-obadiah-5.1.jar:lib/voice-dfki-poppy-5.1.jar:lib/voice-dfki-prudence-5.1.jar:lib/voice-dfki-spike-5.1.jar</classpath>
+                <classpath mode="compile">lib/JCup.jar;lib/JFlex.jar;lib/JPL3.jar;lib/javaGeom-0.11.1.jar;lib/ujmp-complete-0.2.5.jar;lib/core.jar;lib/Stickman.jar;lib/Charamelapi-1.0.jar;lib/marytts-client-5.1.2-jar-with-dependencies.jar;lib/marytts-lang-en-5.1.2.jar;lib/marytts-runtime-5.1.2-jar-with-dependencies.jar;lib/voice-dfki-obadiah-5.1.jar;lib/voice-dfki-poppy-5.1.jar;lib/voice-dfki-prudence-5.1.jar;lib/voice-dfki-spike-5.1.jar;lib/affect.jar</classpath>
                 <source-level>1.8</source-level>
             </compilation-unit>
         </java-data>
