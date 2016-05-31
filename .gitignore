@@ -1,3 +1,6 @@
-tmp/
+bld/*.jar
+log/stickman.log
+log/vsm3.log
 nbproject/
 src/de/dfki/vsm/sfsl/parser/
+tmp/
