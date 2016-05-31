@@ -9,9 +9,9 @@
       <Feature key="fullscreen" val="true"/>
     </Plugin>
     <Plugin type="device" name="buttongui" class="de.dfki.vsm.xtension.button.ButtonGUIExecutor" load="true">
-      <Feature key="button_yes" val="800,350,96,Ja,yes,user_input"/>
-      <Feature key="button_no" val="800,550,96,Nein,no,user_input"/>
-      <Feature key="button_help" val="800,550,96,Brauche sofort Hilfe!,help,user_input"/>
+      <Feature key="button_yes" val="800,300,96,Ja,yes,user_input"/>
+      <Feature key="button_no" val="800,600,96,Nein,no,user_input"/>
+      <Feature key="button_help" val="800,450,96,Brauche sofort Hilfe!,help,user_input"/>
     </Plugin>
   </Plugins>
   <Agents>

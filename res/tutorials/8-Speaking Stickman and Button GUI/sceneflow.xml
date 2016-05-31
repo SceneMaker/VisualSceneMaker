@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 31 Mai 2016 08:54:28" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="HelloWorld" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 31 Mai 2016 09:21:40" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -22,8 +22,101 @@
         <String><![CDATA[Welcome]]></String>
       </PlaySceneGroup>
     </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="300" yPos="255" ctrlXPos="322" ctrlYPos="255"/>
+        <ControlPoint xPos="390" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
     <Graphics>
       <Position xPos="210" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Play>
+        <String><![CDATA[[yesno hide]]]></String>
+      </Play>
+    </Commands>
+    <EEdge target="N5" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="660" yPos="255" ctrlXPos="682" ctrlYPos="255"/>
+        <ControlPoint xPos="750" yPos="255" ctrlXPos="727" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="570" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="5000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="480" yPos="255" ctrlXPos="547" ctrlYPos="255"/>
+        <ControlPoint xPos="570" yPos="255" ctrlXPos="502" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="390" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N5" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Play>
+        <String><![CDATA[[help show]]]></String>
+      </Play>
+    </Commands>
+    <TEdge target="N6" start="" timeout="5000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="840" yPos="255" ctrlXPos="862" ctrlYPos="255"/>
+        <ControlPoint xPos="930" yPos="255" ctrlXPos="907" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="750" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="N6" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Play>
+        <String><![CDATA[[help hide]]]></String>
+      </Play>
+    </Commands>
+    <TEdge target="N1" start="" timeout="5000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="932" yPos="267" ctrlXPos="652" ctrlYPos="345"/>
+        <ControlPoint xPos="243" yPos="298" ctrlXPos="165" ctrlYPos="577"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="930" yPos="210"/>
     </Graphics>
   </Node>
   <UserCommands>
