@@ -172,6 +172,7 @@
         <java classname="de.dfki.vsm.xtesting.TestFXGui" fork="true">
             <!-- <arg line="runtime res/prj/test"/> -->
             <!-- <arg line="editor res/prj/test"/> -->
+            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" />
             <classpath refid="clspath"/>
         </java>
     </target>

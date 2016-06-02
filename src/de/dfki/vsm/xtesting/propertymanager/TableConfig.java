@@ -16,19 +16,19 @@ public class TableConfig {
 
     }
 
-    TableConfig(String pKey, String pValue, String pPlugin){
+    public TableConfig(String pKey, String pValue, String pPlugin){
         value = pValue;
         key = pKey;
         plugin = pPlugin;
         device = pPlugin;
     }
 
-    TableConfig(String pKey, String pValue){
+    public TableConfig(String pKey, String pValue){
         value = pValue;
         key = pKey;
     }
 
-    TableConfig(String pKey, String pValue, String pDevice, String pAgent){
+    public TableConfig(String pKey, String pValue, String pDevice, String pAgent){
         value = pValue;
         key = pKey;
         agent = pAgent;

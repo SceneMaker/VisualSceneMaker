@@ -1,32 +1,28 @@
-package de.dfki.vsm.xtesting.propertymanager;
+package de.dfki.vsm.xtesting.NewPropertyManager;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtesting.propertymanager.TableConfig;
 import de.dfki.vsm.xtesting.propertymanager.util.*;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,12 +43,11 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 
 /**
- * Created by alvaro on 4/23/16.
+ * Created by alvaro on 6/2/16.
  */
-public class FXMLDocumentNewController implements Initializable, TreeObserver {
+public class PropertyManagerController implements Initializable, TreeObserver {
 
     private RunTimeProject mProject = null;
     @FXML
@@ -77,27 +72,27 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
     private static ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
 
     private ObservableList<TableConfig> data = FXCollections.observableArrayList();
+
+    public PropertyManagerController(RunTimeProject project){
+        super();
+        mProject = project;
+        PluginConfig plugin = null;
+        Iterator it = mProject.getProjectConfig().getPluginConfigList().iterator();
+        while (it.hasNext() && plugin == null) {
+            PluginConfig p = (PluginConfig) it.next();
+            plugins.put(p.getPluginName(), p);
+        }
+    }
+
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         TreeItem<String> root = new TreeItem<>("VSM Config");
         devices = new TreeItem<>("Devices");
-
-        for (PluginConfig plugin:  mProject.getProjectConfig().getPluginConfigList()) {
-            ContextTreeItem pluginNode = new ContextTreeItem(plugin.getPluginName());
-            pluginNode.registerObserver(this);
-            for  (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
-                if(agent.getDeviceName().equals(plugin.getPluginName())){
-                    ContextTreeItem agentNode = new ContextTreeItem(agent.getAgentName());
-                    agentNode.registerObserver(this);
-                    pluginNode.getChildren().add(agentNode);
-                }
-            }
-            devices.getChildren().add(pluginNode);
-
-        }
+        addInitialPluginToTreeList();
         root.getChildren().add(devices);
         treeView.setRoot(root);
         treeView.setEditable(true);
-        final FXMLDocumentNewController controller = this;
+        final PropertyManagerController controller = this;
         treeView.setCellFactory(new Callback<TreeView<String>,TreeCell<String>>(){
             @Override
             public TreeCell<String> call(TreeView<String> p) {
@@ -108,155 +103,93 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
         });
     }
 
-    public FXMLDocumentNewController(RunTimeProject project){
-        super();
-        mProject = project;
-        PluginConfig plugin = null;
-        Iterator it = mProject.getProjectConfig().getPluginConfigList().iterator();
-        while (it.hasNext() && plugin == null) {
-            PluginConfig p = (PluginConfig) it.next();
-            plugins.put(p.getPluginName(), p);
-        }
-
-
-    }
-
-    private void showAddDevice(){
-        AnchorPane p = (AnchorPane)contentPane.lookup("#editDevice");
-        if(p!= null){
-            Pane content = null;
-            if(mScenePlayersShortNames.size()<=0){
-                loadClass();
-            }
-            contentPane.getChildren().remove(p);
-            try {
-                ObservableList<String> devicesNames = FXCollections.observableArrayList();
-                content = (Pane) FXMLLoader.load(getClass().getResource("/res/de/dfki/vsm/xtesting/propertymanager/FXMLAddDevice.fxml"));
-                cmbExecutor = (ComboBox) content.lookup("#cmbExecutor");
-                btnAddDevice = (Button) content.lookup("#btnAddDevice");
-                txtDeviceName = (TextField) content.lookup("#txtDeviceName");
-
-                final FXMLDocumentNewController controller = this;
-                btnAddDevice.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        boolean added = addDevice(event);
-                        if(added){
-                            ContextTreeItem pluginNode = new ContextTreeItem(txtDeviceName.getText());
-                            pluginNode.registerObserver(controller);
-                            devices.getChildren().add(pluginNode);
-                        }
-                    }
-                });
-                devicesNames.addAll(mScenePlayersShortNames.stream().collect(Collectors.toList()));
-                cmbExecutor.getItems().addAll(devicesNames);
-                contentPane.getChildren().addAll(content);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    private void addInitialPluginToTreeList(){
+        for (PluginConfig plugin:  mProject.getProjectConfig().getPluginConfigList()) {
+            ContextTreeItem pluginNode = new ContextTreeItem(plugin.getPluginName());
+            pluginNode.registerObserver(this);
+            addAgentToPluginNode(plugin, pluginNode);
+            devices.getChildren().add(pluginNode);
         }
     }
 
-    private void showPluginTable(PluginConfig plugin, TreeItem<String> item, String type){
-        AnchorPane content = null;
-        try {
-            Pane p = (Pane)contentPane.lookup("#addDevice");
-            AnchorPane pEdit = (AnchorPane)contentPane.lookup("#editDevice");
-            if(p!= null){
-                contentPane.getChildren().remove(p);
-            }
-            if(pEdit!= null){
-                contentPane.getChildren().remove(pEdit);
-            }
-            content = (AnchorPane) FXMLLoader.load(getClass().getResource("/res/de/dfki/vsm/xtesting/propertymanager/FXMLEditDevice.fxml"));
-            pluginsTable = (TableView) content.lookup("#pluginsTable");
-            txtKey = (TextField) content.lookup("#txtKey");
-            txtValue = (TextField) content.lookup("#txtValue");
-            keyColumn = (TableColumn) pluginsTable.getColumns().get(0);
-            valueColumn = (TableColumn) pluginsTable.getColumns().get(1);
-            btnAddEntry = (Button) content.lookup("#btnAddEntry");
-            lblClassName = (Label) content.lookup("#lblClassName");
-
-            chkLoadPlugin = (CheckBox) content.lookup("#chkLoadPlugin");
-            chkLoadPlugin.setSelected(plugin.isMarkedtoLoad());
-            chkLoadPlugin.selectedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                    plugin.setLoad(newValue);
-                    saveConfig();
-                }
-            });
-
-
-            btnAddEntry.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    if(!txtKey.getText().equals("") && !txtValue.getText().equals("")) {
-                        TableConfig dC = null;
-                        if(type.equals("Agents")) {
-                            dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginName(), item.getValue());
-                        }else{
-                            dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginName());
-                        }
-                        data.add(dC);
-                        saveDevices(item.getValue());
-                        saveAgent(item.getParent().getValue());
-                    }
-                }
-            });
-            pluginsTable.setEditable(true);
-
-            if(type.equals("Plugins")) {
-                getPluginData(plugin);
-            }else if(type.equals("Agents")) {
-                getAgentData(plugin, item.getValue());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void addAgentToPluginNode(PluginConfig plugin, ContextTreeItem pluginNode){
+        for(AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
+            addAgentToCorrespondentPlugin(agent, plugin.getPluginName(), pluginNode);
         }
+    }
 
-        contentPane.getChildren().addAll(content);
+    private void addAgentToCorrespondentPlugin(AgentConfig agent, String pluginName, ContextTreeItem pluginNode){
+        if(agent.getDeviceName().equals(pluginName)){
+            ContextTreeItem agentNode = new ContextTreeItem(agent.getAgentName());
+            agentNode.registerObserver(this);
+            pluginNode.getChildren().add(agentNode);
+        }
     }
 
     @FXML
-    private void selectConfig(MouseEvent event) {
-
+    public void selectConfig(MouseEvent event){//TODO: refatorizar
         TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
-        if(event.getButton().toString().equals("SECONDARY")
-                && item instanceof ContextTreeItem
-                && (item.getParent() != null && item.getParent().getValue().equals("Devices"))){ //rightClick
-            ((ContextTreeItem)item).getMenu();
-
-        }
-
+        getContextMenu(event.getButton().toString().equals("SECONDARY"));
         Iterator it = mProject.getProjectConfig().getPluginConfigList().iterator();
-        PluginConfig plugin = getSelectedPlugin(item, it);
-        if(plugin == null && item!=null && item.getValue().equals("Devices")){
-            showAddDevice();
-        }
-        else if(plugin!= null){
-            showPluginTable(plugin, item, "Plugins");
-            lblClassName.setText("Class: " + mProject.getPluginConfig(plugin.getPluginName()).getClassName());
-
-
-        }
-        else if(item!=null && item.getParent() != null && plugins.containsKey(item.getParent().getValue())){//Its a plugin
-            showPluginTable(plugins.get(item.getParent().getValue()), item, "Agents");
-            lblClassName.setText("Class: " + plugins.get(item.getParent().getValue()).getClassName());
+        try {
+            PluginConfig plugin = getSelectedPlugin(item, it);
+            if(item.getValue().equals("Devices")){
+                showAddDevice();
+            }else{
+                showPluginTable(plugin, item, "Plugins");
+                setClassNameLabel(plugin.getPluginName());
+            }
+        } catch (Exception e) {
+            if(item != null && item.getParent() != null && plugins.containsKey(item.getParent().getValue())){
+                showPluginTable(plugins.get(item.getParent().getValue()), item, "Agents");
+                setClassNameLabel(item.getParent().getValue());
+            }
         }
     }
 
-    private PluginConfig getSelectedPlugin(TreeItem<String> item, Iterator it) {
+    private void getContextMenu(boolean isRightClickPressed){
+        TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
+        if(isRightClickPressed && hasContextMenu()){
+            ((ContextTreeItem)item).getMenu();
+        }
+    }
+
+
+    private boolean hasContextMenu(){
+        TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
+        return (item instanceof ContextTreeItem && (item.getParent() != null && item.getParent().getValue().equals("Devices")));
+    }
+
+    private PluginConfig getSelectedPlugin(TreeItem<String> item, Iterator it) throws Exception {
         PluginConfig plugin = null;
-        if(item!=null) {
-            while (it.hasNext() && plugin == null) {
-                PluginConfig p = (PluginConfig) it.next();
-                if (p.getPluginName().equals(item.getValue())) {
-                    plugin = p;
-                }
+        if(item == null) {
+            throw new Exception("No item selected");
+        }
+        while (it.hasNext() && plugin == null) {
+            PluginConfig p = (PluginConfig) it.next();
+            if (p.getPluginName().equals(item.getValue())) {
+                plugin = p;
             }
         }
+
         return plugin;
+    }
+
+    private void showAddDevice(){
+        System.out.println("To implement!!");
+    }
+
+    private void setClassNameLabel(String pluginName){
+        lblClassName.setText("Class: " + mProject.getPluginConfig(pluginName).getClassName());
+    }
+
+    private void showPluginTable(PluginConfig plugin, TreeItem<String> item, String type){
+        pluginsTable.setEditable(true);
+        if(type.equals("Plugins")) {
+            getPluginData(plugin);
+        }else if(type.equals("Agents")) {
+            getAgentData(plugin, item.getValue());
+        }
     }
 
     private void getPluginData(PluginConfig plugin){
@@ -264,7 +197,6 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
         for (ConfigFeature feat : plugin.getEntryList()) {
             TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), plugin.getPluginName());
             data.add(tFeat);
-            System.out.println("Plugin as");
         }
         populatePluginTable(plugin);
     }
@@ -273,19 +205,27 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
         data.clear();
         for  (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
             if(agent.getDeviceName().equals(plugin.getPluginName()) && agentName.equals(agent.getAgentName())){
-                for (ConfigFeature feat :agent.getEntryList() ) {
-                    TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), plugin.getPluginName(), agent.getAgentName());
-                    data.add(tFeat);
-                }
-
+                addFeatureData(agent, plugin.getPluginName());
             }
         }
         populatePluginTable(plugin);
     }
 
-    private void populatePluginTable(PluginConfig plugin){
+    private void addFeatureData(AgentConfig agent, String pluginName){
+        for (ConfigFeature feat :agent.getEntryList() ) {
+            TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), pluginName, agent.getAgentName());
+            data.add(tFeat);
+        }
+    }
 
+    private void populatePluginTable(PluginConfig plugin){
         ObservableList<String> pluginList = FXCollections.observableArrayList();
+        setEditablKeyeCell(plugin);
+        setEditableValueCell(plugin);
+        pluginsTable.setItems(data);
+    }
+
+    private void setEditablKeyeCell(PluginConfig plugin){
         keyColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         keyColumn.setOnEditCommit(
                 new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
@@ -299,7 +239,10 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
                     }
                 }
         );
+        keyColumn.setCellValueFactory(new PropertyValueFactory("key"));
+    }
 
+    private void setEditableValueCell(PluginConfig plugin){
         valueColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         valueColumn.setOnEditCommit(
                 new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
@@ -313,10 +256,9 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
                     }
                 }
         );
-        keyColumn.setCellValueFactory(new PropertyValueFactory("key"));
         valueColumn.setCellValueFactory(new PropertyValueFactory("value"));
-        pluginsTable.setItems(data);
     }
+
 
 
     private boolean addDevice(ActionEvent event){
@@ -593,7 +535,7 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
                                 + "</Project>";
                         String xml = changeXMLAttributeNode(agentXML, "Agent", "device", oldValue, newValue);
                         if(xml != null && !xml.equals("")){
-                           itAgent.remove();
+                            itAgent.remove();
 
                         }
                         agentsToAdd.add(xml);
@@ -633,5 +575,12 @@ public class FXMLDocumentNewController implements Initializable, TreeObserver {
             saveConfig();
         }
     }
-}
 
+
+
+
+
+
+
+
+}

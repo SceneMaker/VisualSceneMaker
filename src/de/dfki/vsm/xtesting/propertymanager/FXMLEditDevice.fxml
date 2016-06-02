@@ -5,15 +5,9 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<Pane fx:id="editDevice" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="editDevice" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <TableView fx:id="pluginsTable" layoutY="75.0" prefHeight="364.0" prefWidth="600.0">
-        <columns>
-          <TableColumn fx:id="keyColumn" prefWidth="308.0" text="Key" />
-          <TableColumn fx:id="valueColumn" minWidth="0.0" prefWidth="289.0" text="Value" />
-        </columns>
-      </TableView>
-      <HBox layoutY="492.0" prefHeight="40.0" prefWidth="600.0">
+      <HBox layoutY="492.0" prefHeight="40.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
             <TextField fx:id="txtKey" prefHeight="29.0" prefWidth="213.0" promptText="Key">
                <HBox.margin>
@@ -58,5 +52,11 @@
                </padding></Label>
          </children>
       </HBox>
+      <TableView fx:id="pluginsTable" editable="true" fixedCellSize="0.0" layoutY="55.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <columns>
+          <TableColumn fx:id="keyColumn" maxWidth="404.0" prefWidth="-1.0" text="Key" />
+          <TableColumn fx:id="valueColumn" maxWidth="423.0" minWidth="0.0" prefWidth="-1.0" text="Value" />
+        </columns>
+      </TableView>
    </children>
-</Pane>
+</AnchorPane>
