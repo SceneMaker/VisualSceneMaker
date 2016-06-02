@@ -37,7 +37,6 @@ public class PropertyManagerGUI {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtesting/NewPropertyManager/PropertyManager.fxml"));
 
            // Parent root =  FXMLLoader.load(getClass().getResource("/res/de/dfki/vsm/xtesting/propertymanager/FXMLDocumentNew.fxml"));
-            //mController = new FXMLDocumentNewController();
             mController = new PropertyManagerController( mProject);
             fxmlLoader.setController(mController);
             Parent root = fxmlLoader.load();
@@ -88,7 +87,6 @@ public class PropertyManagerGUI {
         //FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtesting/propertymanager/FXMLDocument.fxml"));
         //mController = new FXMLDocumentController(mConfig, mProject);
        // FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtesting/propertymanager/FXMLDocumentNew.fxml"));
-       // mController = new FXMLDocumentNewController();
         //fxmlLoader.setController(mController);
 
         /*mFrame = new JFrame("Property editor");
