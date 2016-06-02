@@ -4,6 +4,7 @@ import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.*;
 import de.dfki.vsm.xtesting.propertymanager.TableConfig;
 import de.dfki.vsm.xtesting.propertymanager.util.*;
 import javafx.collections.FXCollections;
@@ -51,7 +52,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     private RunTimeProject mProject = null;
     @FXML
-    TreeView<String> treeView;
+    TreeView<AbstractTreeEntry> treeView;
     @FXML
     AnchorPane contentPane;
     @FXML private TableView pluginsTable ;
@@ -65,8 +66,9 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML private TextField txtDeviceName;
     @FXML private Label lblClassName;
     @FXML private CheckBox chkLoadPlugin;
-    private TreeItem<String> devices;
+    private TreeItem<AbstractTreeEntry> devices;
     private HashMap<String, PluginConfig> plugins= new HashMap<>();
+    private EntryDevice entryDevice;
 
     private static ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
     private static ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
@@ -75,6 +77,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     public PropertyManagerController(RunTimeProject project){
         super();
+        entryDevice = new EntryDevice("Devices");
         mProject = project;
         PluginConfig plugin = null;
         Iterator it = mProject.getProjectConfig().getPluginConfigList().iterator();
@@ -86,16 +89,17 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        TreeItem<String> root = new TreeItem<>("VSM Config");
-        devices = new TreeItem<>("Devices");
-        addInitialPluginToTreeList();
+        TreeItem<AbstractTreeEntry> root = new TreeItem<>(new EntryRoot("VSM Config"));
+        devices = new TreeItem<>(new EntryDevice("Devices"));
+        initializePlugins();
+        addInitialPluginsToTreeList();
         root.getChildren().add(devices);
         treeView.setRoot(root);
         treeView.setEditable(true);
         final PropertyManagerController controller = this;
-        treeView.setCellFactory(new Callback<TreeView<String>,TreeCell<String>>(){
+        treeView.setCellFactory(new Callback<TreeView<AbstractTreeEntry>,TreeCell<AbstractTreeEntry>>(){
             @Override
-            public TreeCell<String> call(TreeView<String> p) {
+            public TreeCell<AbstractTreeEntry> call(TreeView<AbstractTreeEntry> param) {
                 TreeCellImpl treeCell = new TreeCellImpl();
                 treeCell.registerObserver(controller);
                 return treeCell;
@@ -103,93 +107,121 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         });
     }
 
-    private void addInitialPluginToTreeList(){
+    private void initializePlugins(){
         for (PluginConfig plugin:  mProject.getProjectConfig().getPluginConfigList()) {
-            ContextTreeItem pluginNode = new ContextTreeItem(plugin.getPluginName());
+            EntryPlugin entryPlugin = new EntryPlugin(plugin);
+            addAgentsToPlugin(entryPlugin, plugin.getPluginName());
+            entryDevice.addPlugin(entryPlugin);
+        }
+    }
+
+    private void addAgentsToPlugin(EntryPlugin entryPlugin, String pluginName){
+        for(AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
+            if(agent.getDeviceName().equals(pluginName)){
+                EntryAgent entryAgent = new EntryAgent(agent);
+                entryPlugin.addAgent(entryAgent);
+            }
+        }
+    }
+
+    private void addInitialPluginsToTreeList(){
+        for (EntryPlugin entryPlugin: entryDevice.getPlugins() ) {
+            ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin);
+
             pluginNode.registerObserver(this);
-            addAgentToPluginNode(plugin, pluginNode);
+            addAgentNodeToPluginNode(entryPlugin, pluginNode);
             devices.getChildren().add(pluginNode);
         }
+
     }
 
-    private void addAgentToPluginNode(PluginConfig plugin, ContextTreeItem pluginNode){
-        for(AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
-            addAgentToCorrespondentPlugin(agent, plugin.getPluginName(), pluginNode);
-        }
-    }
-
-    private void addAgentToCorrespondentPlugin(AgentConfig agent, String pluginName, ContextTreeItem pluginNode){
-        if(agent.getDeviceName().equals(pluginName)){
-            ContextTreeItem agentNode = new ContextTreeItem(agent.getAgentName());
+    private void addAgentNodeToPluginNode(EntryPlugin entryPlugin, ContextTreeItem pluginNode){
+        for(EntryAgent agent: entryPlugin.getAgents() ) {
+            ContextTreeItem agentNode = new ContextTreeItem(agent.getName()); //It should not be ContextTreeItem
             agentNode.registerObserver(this);
             pluginNode.getChildren().add(agentNode);
         }
     }
 
+
     @FXML
-    public void selectConfig(MouseEvent event){//TODO: refatorizar
-        TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
-        getContextMenu(event.getButton().toString().equals("SECONDARY"));
-        Iterator it = mProject.getProjectConfig().getPluginConfigList().iterator();
+    public void selectConfig(MouseEvent event){
+        AbstractTreeEntry itemEntry = null;
         try {
-            PluginConfig plugin = getSelectedPlugin(item, it);
-            if(item.getValue().equals("Devices")){
+            itemEntry = getSelectedTreeItem(event.getButton().toString().equals("SECONDARY"));
+            if(itemEntry instanceof EntryDevice){
                 showAddDevice();
-            }else{
-                showPluginTable(plugin, item, "Plugins");
-                setClassNameLabel(plugin.getPluginName());
+            }
+            if(itemEntry instanceof EntryPlugin){
+                EntryPlugin entryPlugin = (EntryPlugin) itemEntry;
+                showPluginDatainTable(entryPlugin);
+            }
+            if(itemEntry instanceof EntryAgent){
+                EntryAgent entryAgent= (EntryAgent) itemEntry;
+                showAgentDatainTable(entryAgent);
             }
         } catch (Exception e) {
-            if(item != null && item.getParent() != null && plugins.containsKey(item.getParent().getValue())){
-                showPluginTable(plugins.get(item.getParent().getValue()), item, "Agents");
-                setClassNameLabel(item.getParent().getValue());
-            }
-        }
-    }
-
-    private void getContextMenu(boolean isRightClickPressed){
-        TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
-        if(isRightClickPressed && hasContextMenu()){
-            ((ContextTreeItem)item).getMenu();
-        }
-    }
-
-
-    private boolean hasContextMenu(){
-        TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
-        return (item instanceof ContextTreeItem && (item.getParent() != null && item.getParent().getValue().equals("Devices")));
-    }
-
-    private PluginConfig getSelectedPlugin(TreeItem<String> item, Iterator it) throws Exception {
-        PluginConfig plugin = null;
-        if(item == null) {
-            throw new Exception("No item selected");
-        }
-        while (it.hasNext() && plugin == null) {
-            PluginConfig p = (PluginConfig) it.next();
-            if (p.getPluginName().equals(item.getValue())) {
-                plugin = p;
-            }
+          System.out.println(e);
         }
 
-        return plugin;
     }
+
+    private AbstractTreeEntry getSelectedTreeItem(boolean isRightClicked) throws Exception {
+        Object selectedItem = treeView.getSelectionModel().getSelectedItem();
+        if(selectedItem== null){
+           throw  new Exception("Not selected item");
+        }
+        AbstractTreeEntry itemEntry;
+        if(selectedItem instanceof  ContextTreeItem){
+            itemEntry = getContextItemSelected(isRightClicked);
+        }else if(selectedItem instanceof AbstractTreeItem){
+            itemEntry = (AbstractTreeEntry) selectedItem;
+        }else {
+            System.out.println("NO Datatype matched!");
+            throw  new Exception("Non datatype recognized");
+
+        }
+        return itemEntry;
+    }
+
+    private AbstractTreeEntry getContextItemSelected(boolean isRightClicked){
+        Object selectedItem = treeView.getSelectionModel().getSelectedItem();
+        if(isRightClicked){
+            ((ContextTreeItem)selectedItem).getMenu();
+            new ContextMenu(new MenuItem("HOLA"));
+        }
+        return ((ContextTreeItem) selectedItem).getEntryItem();
+    }
+
+    private void showPluginDatainTable(EntryPlugin entryPlugin){
+        showPluginTable(entryPlugin);
+        setClassNameLabel(entryPlugin.getPluginClassName());
+    }
+
+    private void showAgentDatainTable(EntryAgent entryAgent){
+        showAgentTable(entryAgent);
+        setClassNameLabel("Test");
+    }
+
+
+
 
     private void showAddDevice(){
         System.out.println("To implement!!");
     }
 
-    private void setClassNameLabel(String pluginName){
-        lblClassName.setText("Class: " + mProject.getPluginConfig(pluginName).getClassName());
+    private void setClassNameLabel(String className){
+        lblClassName.setText("Class: " + className);
     }
 
-    private void showPluginTable(PluginConfig plugin, TreeItem<String> item, String type){
+    private void showPluginTable(EntryPlugin plugin){
         pluginsTable.setEditable(true);
-        if(type.equals("Plugins")) {
-            getPluginData(plugin);
-        }else if(type.equals("Agents")) {
-            getAgentData(plugin, item.getValue());
-        }
+        getPluginData(plugin.getPluginConfig());
+    }
+
+    private void showAgentTable(EntryAgent agent){
+        pluginsTable.setEditable(true);
+        getAgentData(agent.getAgentConfig());
     }
 
     private void getPluginData(PluginConfig plugin){
@@ -198,34 +230,28 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), plugin.getPluginName());
             data.add(tFeat);
         }
-        populatePluginTable(plugin);
+        populatePluginTable(plugin.getPluginName());
     }
 
-    private void getAgentData(PluginConfig plugin, String agentName){
+    private void getAgentData(AgentConfig agent){
         data.clear();
-        for  (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
-            if(agent.getDeviceName().equals(plugin.getPluginName()) && agentName.equals(agent.getAgentName())){
-                addFeatureData(agent, plugin.getPluginName());
-            }
-        }
-        populatePluginTable(plugin);
-    }
-
-    private void addFeatureData(AgentConfig agent, String pluginName){
-        for (ConfigFeature feat :agent.getEntryList() ) {
-            TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), pluginName, agent.getAgentName());
+        for (ConfigFeature feat: agent.getEntryList()    ) {
+            TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), agent.getAgentName());
             data.add(tFeat);
         }
+        populatePluginTable(agent.getDeviceName());
     }
 
-    private void populatePluginTable(PluginConfig plugin){
+
+
+    private void populatePluginTable(String pluginName){
         ObservableList<String> pluginList = FXCollections.observableArrayList();
-        setEditablKeyeCell(plugin);
-        setEditableValueCell(plugin);
+        setEditablKeyeCell(pluginName);
+        setEditableValueCell(pluginName);
         pluginsTable.setItems(data);
     }
 
-    private void setEditablKeyeCell(PluginConfig plugin){
+    private void setEditablKeyeCell(String pluginName){
         keyColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         keyColumn.setOnEditCommit(
                 new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
@@ -234,15 +260,15 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                         ((TableConfig) t.getTableView().getItems().get(
                                 t.getTablePosition().getRow())
                         ).setValue(t.getNewValue());
-                        saveDevices(plugin.getPluginName());
-                        saveAgent(plugin.getPluginName());
+                        saveDevices(pluginName);
+                        saveAgent(pluginName);
                     }
                 }
         );
         keyColumn.setCellValueFactory(new PropertyValueFactory("key"));
     }
 
-    private void setEditableValueCell(PluginConfig plugin){
+    private void setEditableValueCell(String pluginName){
         valueColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         valueColumn.setOnEditCommit(
                 new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
@@ -251,8 +277,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                         ((TableConfig) t.getTableView().getItems().get(
                                 t.getTablePosition().getRow())
                         ).setValue(t.getNewValue());
-                        saveDevices(plugin.getPluginName());
-                        saveAgent(plugin.getPluginName());
+                        saveDevices(pluginName);
+                        saveAgent(pluginName);
                     }
                 }
         );

@@ -1,10 +1,10 @@
 package de.dfki.vsm.xtesting.propertymanager.util;
 
+import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TreeCell;
 
 import java.util.LinkedList;
 
@@ -15,24 +15,33 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     private LinkedList<TreeObserver> observers = new LinkedList<>();
     private String contextValue = "Agent";
     private String pluginName;
+    private AbstractTreeEntry entryItem;
     public ContextTreeItem(String name) {
         this.setValue(name);
     }
 
+    public ContextTreeItem(AbstractTreeEntry item) {
+        entryItem = item;
+        this.setValue(entryItem.getName());
+    }
+
+    public AbstractTreeEntry getEntryItem(){
+        return entryItem;
+    }
+
     @Override
     public ContextMenu getMenu(){
-        if(this.getParent()!=null && this.getParent().getValue().equals("Devices")) {
-            MenuItem addInbox = new MenuItem("Add new agent");
-            addInbox.setOnAction(new EventHandler() {
-                public void handle(Event t) {
-                    BoxTreeItem newBox = new BoxTreeItem(contextValue);
-                    getChildren().add(newBox);
-                    notifyObserver();
-                }
-            });
-            return new ContextMenu(addInbox);
-        }
-        return new ContextMenu();
+
+        MenuItem addInbox = new MenuItem("Add new agent");
+        addInbox.setOnAction(new EventHandler() {
+            public void handle(Event t) {
+                BoxTreeItem newBox = new BoxTreeItem(contextValue);
+                getChildren().add(newBox);
+                notifyObserver();
+            }
+        });
+        return new ContextMenu(addInbox);
+
     }
 
 
