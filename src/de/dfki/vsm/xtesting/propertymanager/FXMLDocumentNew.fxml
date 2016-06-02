@@ -6,14 +6,14 @@
 
 <AnchorPane blendMode="MULTIPLY" depthTest="ENABLE" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="728.0" prefWidth="802.0" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <SplitPane dividerPositions="0.29797979797979796" prefHeight="728.0" prefWidth="802.0">
+      <SplitPane dividerPositions="0.29797979797979796" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="726.0" prefWidth="269.0">
                <children>
-                  <TreeView id="treeView" fx:id="treeView" layoutY="7.0" onMouseClicked="#selectConfig" prefHeight="718.0" prefWidth="248.0" />
+                  <TreeView id="treeView" fx:id="treeView" layoutY="7.0" onMouseClicked="#selectConfig" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
-          <AnchorPane fx:id="contentPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
+          <AnchorPane fx:id="contentPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" />
         </items>
       </SplitPane>
    </children>
