@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtesting.propertymanager.util;
+package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
@@ -69,6 +69,8 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
 
 
 
+
+
     @Override
     public void registerObserver(TreeObserver object) {
         observers.add(object);
@@ -82,7 +84,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     @Override
     public void notifyObserver() {
         for (TreeObserver observer:observers) {
-            observer.update(new ContextEvent(contextValue, this.getValue().toString()));
+            observer.update(new ContextEvent(contextValue, this.getValue().toString(), entryItem));
         }
     }
 
