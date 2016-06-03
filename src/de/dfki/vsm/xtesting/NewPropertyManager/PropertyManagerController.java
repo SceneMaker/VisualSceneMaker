@@ -137,38 +137,82 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     private void addAgentNodeToPluginNode(EntryPlugin entryPlugin, ContextTreeItem pluginNode){
         for(EntryAgent agent: entryPlugin.getAgents() ) {
-            ContextTreeItem agentNode = new ContextTreeItem(agent.getName()); //It should not be ContextTreeItem
+            ContextTreeItem agentNode = new ContextTreeItem(agent); //It should not be ContextTreeItem
             agentNode.registerObserver(this);
             pluginNode.getChildren().add(agentNode);
         }
     }
 
+    @FXML
+    public void addNewItemToTable(ActionEvent event){
+        if(!txtKey.getText().equals("") && !txtValue.getText().equals("")) {
+            addNewItemToTable();
+        }
+    }
+
+    private void addNewItemToTable(){
+        try {
+            addTableConfigItem();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private  void addTableConfigItem() throws Exception {
+        AbstractTreeEntry selectedItem = getSelectedTreeItem(false);
+        if(selectedItem instanceof EntryAgent){
+            EntryAgent agent = (EntryAgent) selectedItem;
+            addNewAgentToObservableTableAndSave(agent);
+        }
+        if(selectedItem instanceof EntryPlugin){
+            EntryPlugin plugin = (EntryPlugin) selectedItem;
+            addNewDeviceToObservableTableAndSave(plugin);
+        }
+    }
+
+    private void addNewAgentToObservableTableAndSave(EntryAgent agent){
+        TableConfig dC = new TableConfig(txtKey.getText(), txtValue.getText(), agent.getPluginName(), agent.getName());
+        data.add(dC);
+        saveAgent(agent.getPluginName());
+
+    }
+
+    private void addNewDeviceToObservableTableAndSave(EntryPlugin plugin){
+        TableConfig dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getName());
+        data.add(dC);
+        saveDevices(plugin.getName());
+    }
+
 
     @FXML
     public void selectConfig(MouseEvent event){
-        AbstractTreeEntry itemEntry = null;
         try {
-            itemEntry = getSelectedTreeItem(event.getButton().toString().equals("SECONDARY"));
-            if(itemEntry instanceof EntryDevice){
-                showAddDevice();
-            }
-            if(itemEntry instanceof EntryPlugin){
-                EntryPlugin entryPlugin = (EntryPlugin) itemEntry;
-                showPluginDatainTable(entryPlugin);
-            }
-            if(itemEntry instanceof EntryAgent){
-                EntryAgent entryAgent= (EntryAgent) itemEntry;
-                showAgentDatainTable(entryAgent);
-            }
+           processClickedTreeElement(event.getButton().toString().equals("SECONDARY"));
         } catch (Exception e) {
           System.out.println(e);
         }
 
     }
 
+    private void processClickedTreeElement(boolean isRightClicked) throws Exception {
+        AbstractTreeEntry itemEntry = null;
+        itemEntry = getSelectedTreeItem(isRightClicked);
+        if(itemEntry instanceof EntryDevice){
+            showAddDevice();
+        }
+        if(itemEntry instanceof EntryPlugin){
+            EntryPlugin entryPlugin = (EntryPlugin) itemEntry;
+            showPluginDatainTable(entryPlugin);
+        }
+        if(itemEntry instanceof EntryAgent){
+            EntryAgent entryAgent= (EntryAgent) itemEntry;
+            showAgentDatainTable(entryAgent);
+        }
+    }
+
     private AbstractTreeEntry getSelectedTreeItem(boolean isRightClicked) throws Exception {
         Object selectedItem = treeView.getSelectionModel().getSelectedItem();
-        if(selectedItem== null){
+        if(selectedItem == null){
            throw  new Exception("Not selected item");
         }
         AbstractTreeEntry itemEntry;
@@ -179,7 +223,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         }else {
             System.out.println("NO Datatype matched!");
             throw  new Exception("Non datatype recognized");
-
         }
         return itemEntry;
     }
@@ -202,8 +245,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         showAgentTable(entryAgent);
         setClassNameLabel("Test");
     }
-
-
 
 
     private void showAddDevice(){
