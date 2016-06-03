@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtesting.propertymanager.util;
 
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -32,17 +33,40 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     @Override
     public ContextMenu getMenu(){
 
-        MenuItem addInbox = new MenuItem("Add new agent");
-        addInbox.setOnAction(new EventHandler() {
+        ContextMenu menu = new ContextMenu();
+        if(entryItem instanceof EntryPlugin) {
+            MenuItem addNewAgent = getAddNewAgentItem();
+            menu.getItems().add(addNewAgent);
+        }
+        MenuItem deleteItem = getDeleteItem();
+        menu.getItems().add(deleteItem);
+        return menu;
+
+    }
+
+    private MenuItem getAddNewAgentItem(){
+        MenuItem addNewAgent = new MenuItem("Add new agent");
+        addNewAgent.setOnAction(new EventHandler() {
             public void handle(Event t) {
                 BoxTreeItem newBox = new BoxTreeItem(contextValue);
                 getChildren().add(newBox);
                 notifyObserver();
             }
         });
-        return new ContextMenu(addInbox);
-
+        return  addNewAgent;
     }
+
+    private MenuItem getDeleteItem(){
+        MenuItem deleteItem = new MenuItem("Delete " + entryItem.getName());
+        deleteItem.setOnAction(new EventHandler() {
+            public void handle(Event t) {
+                System.out.println("Not implemented yet!");
+            }
+        });
+        return  deleteItem;
+    }
+
+
 
 
     @Override

@@ -20,6 +20,10 @@ public class EntryAgent extends AbstractTreeEntry {
         return agentConfig;
     }
 
+    public String getPluginName(){
+        return agentConfig.getDeviceName();
+    }
+
 
 
 }
