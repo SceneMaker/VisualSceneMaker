@@ -13,5 +13,9 @@ public abstract class AbstractTreeEntry {
         return name;
     }
 
+    public void setName(String pName){
+        name = pName;
+    }
+
 
 }

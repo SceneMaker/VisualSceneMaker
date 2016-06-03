@@ -1,6 +1,7 @@
-package de.dfki.vsm.xtesting.propertymanager.util;
+package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
-import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryRoot;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TextField;
@@ -73,11 +74,22 @@ public  class TreeCellImpl<AbstractTreeEntry> extends TreeCell<AbstractTreeEntry
         textField = new TextField(getString());
         textField.setOnKeyReleased((KeyEvent t) -> {
             if (t.getCode() == KeyCode.ENTER){
-                commitEdit((AbstractTreeEntry) new EntryRoot(textField.getText()));
+                AbstractTreeEntry entry = (AbstractTreeEntry) ((ContextTreeItem)this.getTreeItem()).getEntryItem();
+                commitEdit(getEditedItemFactory(entry, textField.getText()));
             } else if (t.getCode() == KeyCode.ESCAPE) {
                 cancelEdit();
             }
         });
+    }
+
+    private AbstractTreeEntry getEditedItemFactory(AbstractTreeEntry entry, String text){
+        if(entry instanceof EntryAgent){
+            ((EntryAgent) entry).setName(text);
+        }
+        if(entry instanceof EntryPlugin){
+            ((EntryPlugin) entry).setName(text);
+        }
+        return entry;
     }
 
     @Override
@@ -113,7 +125,7 @@ public  class TreeCellImpl<AbstractTreeEntry> extends TreeCell<AbstractTreeEntry
     @Override
     public void notifyObserver() {
         for (TreeObserver observer:observers    ) {
-            observer.update(new CellEvent(newValue, oldValue));
+            observer.update(new CellEvent(newValue, oldValue, (de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry) getItem()));
         }
     }
 

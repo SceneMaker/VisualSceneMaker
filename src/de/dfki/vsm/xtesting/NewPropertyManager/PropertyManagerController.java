@@ -1,5 +1,4 @@
 package de.dfki.vsm.xtesting.NewPropertyManager;
-
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
@@ -8,7 +7,7 @@ import de.dfki.vsm.xtesting.NewPropertyManager.model.*;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.AgentTableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.PluginTableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.TableConfig;
-import de.dfki.vsm.xtesting.propertymanager.util.*;
+import de.dfki.vsm.xtesting.NewPropertyManager.util.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,14 +18,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,13 +36,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * Created by alvaro on 6/2/16.
@@ -55,8 +47,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private RunTimeProject mProject = null;
     @FXML
     TreeView<AbstractTreeEntry> treeView;
-    @FXML
-    AnchorPane contentPane;
     @FXML private TableView pluginsTable ;
     @FXML private TableColumn keyColumn;
     @FXML private TableColumn valueColumn;
@@ -71,11 +61,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private TreeItem<AbstractTreeEntry> devices;
     private HashMap<String, PluginConfig> plugins= new HashMap<>();
     private EntryDevice entryDevice;
-
-    private static ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
-    private static ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
-
     private ObservableList<TableConfig> data = FXCollections.observableArrayList();
+
 
     public PropertyManagerController(RunTimeProject project){
         super();
@@ -129,7 +116,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private void addInitialPluginsToTreeList(){
         for (EntryPlugin entryPlugin: entryDevice.getPlugins() ) {
             ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin);
-
             pluginNode.registerObserver(this);
             addAgentNodeToPluginNode(entryPlugin, pluginNode);
             devices.getChildren().add(pluginNode);
@@ -185,7 +171,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         dC.saveEntry();
         saveConfig();
     }
-
 
     @FXML
     public void selectConfig(MouseEvent event){
@@ -357,135 +342,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
 
-    private boolean addDevice(ActionEvent event){
-        if (cmbExecutor.getSelectionModel().getSelectedIndex() > 0 && !txtDeviceName.getText().equals("") )
-        { // 0 Is for the default configuration
-
-            String newPlayer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                    + "<Project name=\"" + mProject.getProjectName() + "\">"
-                    + "<Plugins>"
-                    + "<Plugin type=\"device\" name=\"" + txtDeviceName.getText() + "\" class=\"" + mScenePlayersLongNames.get( cmbExecutor.getSelectionModel().getSelectedIndex() - 1) + "\" load=\"true\">"
-                    + "</Plugin>"
-                    + "</Plugins>"
-                    + "</Project>";
-
-            boolean res = mProject.parseProjectConfigFromString(newPlayer);
-            if(res){
-                ArrayList plugs =  mProject.getProjectConfig().getPluginConfigList();
-                plugins.put(txtDeviceName.getText(), (PluginConfig) plugs.get(plugs.size()-1));
-            }
-            saveConfig();
-            return res;
-        }
-        return false;
-    }
-
-    public static void loadClass()
-    {
-        try
-        {
-            getClassNamesFromPackage("de.dfki.vsm.xtension");
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-
-    private static void parseJar(String jarFileName, String packageName){
-        JarFile jf;
-        Enumeration<JarEntry> jarEntries = null;
-        String entryName;
-        try {
-            jf = new JarFile(jarFileName);
-            jarEntries = jf.entries();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        while (jarEntries.hasMoreElements())
-        {
-            entryName = jarEntries.nextElement().getName();
-            if (packageName.length() == 0 || (entryName.startsWith(packageName) && entryName.length() > packageName.length() + 5))
-            {
-                try
-                {
-                    String fullClassName = entryName.replace("/", ".");
-                    entryName = fullClassName.substring(0, entryName.lastIndexOf('.'));
-                    Class classEntry = Class.forName(entryName);
-                    //Class[] interfaces = classEntry.getInterfaces();
-                    Class t =classEntry.getSuperclass();
-                    if(t != null && t.getSimpleName().equals("ActivityExecutor")){
-                        mScenePlayersLongNames.add(entryName);
-                        mScenePlayersShortNames.add(entryName.substring(entryName.lastIndexOf('.') + 1));
-                    }
-
-
-
-                } catch (StringIndexOutOfBoundsException e)
-                {
-                    System.out.println(entryName);
-                    continue;
-                } catch (ClassNotFoundException e)
-                {
-                    System.out.println("Class not found");
-                    continue;
-                }
-
-            }
-        }
-    }
-
-    public static void getClassNamesFromPackage(String packageName) throws IOException
-    {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        URL packageURL;
-        ArrayList<String> names = new ArrayList<String>();;
-
-        packageName = packageName.replace(".", "/");
-        packageURL = classLoader.getResource(packageName);
-        if (mScenePlayersShortNames.size() <= 0)
-        {
-            mScenePlayersShortNames.add("Non selected");
-
-            if (packageURL.getProtocol().equals("jar"))
-            {
-                String jarFileName;
-                // build jar file name, then loop through zipped entries
-                jarFileName = URLDecoder.decode(packageURL.getFile(), "UTF-8");
-                jarFileName = jarFileName.substring(5, jarFileName.indexOf("!"));
-                System.out.println(">" + jarFileName);
-                parseJar(jarFileName, packageName);
-
-                // loop through files in classpath
-            }
-            else
-            {
-                URI uri = null;
-                try
-                {
-                    uri = new URI(packageURL.toString());
-                } catch (URISyntaxException e) {
-                    e.printStackTrace();
-                }
-                File folder = new File(uri.getPath());
-                // won't work with path which contains blank (%20)
-                // File folder = new File(packageURL.getFile());
-                File[] contenuti = folder.listFiles();
-                String entryName;
-                for (File actual : contenuti)
-                {
-                    entryName = actual.getName();
-                    entryName = entryName.substring(0, entryName.lastIndexOf('.'));
-                    names.add(entryName);
-                }
-            }
-        }
-    }
-
-
-
 
 
     public void saveConfig(){
@@ -543,6 +399,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         if(object instanceof ContextEvent){//This called when a new agent is added via context menu
             String agent = ((ContextEvent) object).getContextName();
             String pluginName = ((ContextEvent) object).getPluginName();
+            AbstractTreeEntry entry = ((ContextEvent) object).getTreeEntry();
             String newXMLAgent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                     + "<Project name=\"" + mProject.getProjectName() + "\">"
                     + "<Agents>"
@@ -557,7 +414,10 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             String oldValue = ((CellEvent) object).getOldValue();
             String newValue = ((CellEvent) object).getNewValue();
             TreeItem selected = treeView.getSelectionModel().getSelectedItem();
+            AbstractTreeEntry entry = ((CellEvent) object).getTreeEntry();
             if(selected !=null && (selected.getParent() != null && selected.getParent().getValue().equals("Devices"))){//Device updated
+
+               PluginConfig pluginConfig = mProject.getPluginConfig(oldValue);
                 Iterator<PluginConfig> itPlug = mProject.getProjectConfig().getPluginConfigList().iterator();
                 ArrayList<String> pluginsToAdd = new ArrayList<>();
                 ArrayList<String> agentsToAdd = new ArrayList<>();

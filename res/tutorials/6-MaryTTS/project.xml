@@ -6,6 +6,7 @@
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="true"/>
       <Feature key="mary.base" val="/mnt/data2/WorkHiwi/marytts-5.1.2"/>
+      <Feature key="fullscreen" val="true"/>
     </Plugin>
   </Plugins>
   <Agents>
