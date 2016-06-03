@@ -5,7 +5,9 @@ import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.*;
-import de.dfki.vsm.xtesting.propertymanager.TableConfig;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.AgentTableConfig;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.PluginTableConfig;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.TableConfig;
 import de.dfki.vsm.xtesting.propertymanager.util.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -144,7 +146,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     @FXML
-    public void addNewItemToTable(ActionEvent event){
+    public void addNewItemToTableEvent(ActionEvent event){
         if(!txtKey.getText().equals("") && !txtValue.getText().equals("")) {
             addNewItemToTable();
         }
@@ -171,16 +173,17 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     private void addNewAgentToObservableTableAndSave(EntryAgent agent){
-        TableConfig dC = new TableConfig(txtKey.getText(), txtValue.getText(), agent.getPluginName(), agent.getName());
+        AgentTableConfig dC = new AgentTableConfig(txtKey.getText(), txtValue.getText(), agent.getAgentConfig());
         data.add(dC);
-        saveAgent(agent.getPluginName());
-
+        dC.saveEntry();
+        saveConfig();
     }
 
     private void addNewDeviceToObservableTableAndSave(EntryPlugin plugin){
-        TableConfig dC = new TableConfig(txtKey.getText(), txtValue.getText(), plugin.getName());
+        PluginTableConfig dC = new PluginTableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginConfig());
         data.add(dC);
-        saveDevices(plugin.getName());
+        dC.saveEntry();
+        saveConfig();
     }
 
 
@@ -268,7 +271,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private void getPluginData(PluginConfig plugin){
         data.clear();
         for (ConfigFeature feat : plugin.getEntryList()) {
-            TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), plugin.getPluginName());
+            PluginTableConfig tFeat = new PluginTableConfig(feat.getKey(), feat.getValue(), plugin);
             data.add(tFeat);
         }
         populatePluginTable(plugin.getPluginName());
@@ -277,32 +280,39 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private void getAgentData(AgentConfig agent){
         data.clear();
         for (ConfigFeature feat: agent.getEntryList()    ) {
-            TableConfig tFeat = new TableConfig(feat.getKey(), feat.getValue(), agent.getAgentName());
+            AgentTableConfig tFeat = new AgentTableConfig(feat.getKey(), feat.getValue(), agent);
             data.add(tFeat);
         }
         populatePluginTable(agent.getDeviceName());
     }
 
-
-
     private void populatePluginTable(String pluginName){
         ObservableList<String> pluginList = FXCollections.observableArrayList();
-        setEditablKeyeCell(pluginName);
         setEditableValueCell(pluginName);
+        setEditablKeyeCell(pluginName);
         pluginsTable.setItems(data);
     }
 
     private void setEditablKeyeCell(String pluginName){
         keyColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
         keyColumn.setOnEditCommit(
                 new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
                     @Override
                     public void handle(TableColumn.CellEditEvent<TableConfig, String> t) {
+                        TableConfig dataConfig = t.getRowValue();
+                        if(t.getOldValue() != t.getNewValue()){
+                            removeOldProperty(dataConfig, t.getOldValue());
+                        }
+
                         ((TableConfig) t.getTableView().getItems().get(
                                 t.getTablePosition().getRow())
-                        ).setValue(t.getNewValue());
-                        saveDevices(pluginName);
-                        saveAgent(pluginName);
+                        ).setKey(t.getNewValue());
+
+
+                        saveEditedTableEntry(dataConfig);
+
+
                     }
                 }
         );
@@ -318,14 +328,33 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                         ((TableConfig) t.getTableView().getItems().get(
                                 t.getTablePosition().getRow())
                         ).setValue(t.getNewValue());
-                        saveDevices(pluginName);
-                        saveAgent(pluginName);
+                        TableConfig dataConfig = t.getRowValue();
+                       saveEditedTableEntry(dataConfig);
                     }
                 }
         );
         valueColumn.setCellValueFactory(new PropertyValueFactory("value"));
     }
 
+
+    private void saveEditedTableEntry(TableConfig dataConfig){
+        if(dataConfig instanceof AgentTableConfig){
+            ((AgentTableConfig) dataConfig).saveEntry();
+        }
+        if(dataConfig instanceof PluginTableConfig){
+            ((PluginTableConfig) dataConfig).saveEntry();
+        }
+        saveConfig();
+    }
+
+    private void removeOldProperty(TableConfig dataConfig, String oldValue){
+        if(dataConfig instanceof AgentTableConfig){
+            ((AgentTableConfig) dataConfig).removeProperty(oldValue);
+        }
+        if(dataConfig instanceof PluginTableConfig){
+            ((PluginTableConfig) dataConfig).removeProperty(oldValue);
+        }
+    }
 
 
     private boolean addDevice(ActionEvent event){
@@ -456,40 +485,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
 
-    private void saveDevices(String pluginName){
-        PluginConfig plugin = mProject.getProjectConfig().getPluginConfig(pluginName);
-        if(plugin != null){
-            for (TableConfig tc: data){
-                String oldValue = plugin.getProperty(tc.getKey());
-                if(oldValue!=null && !oldValue.equals(tc.getValue()) && tc.getPlugin().equals(plugin.getPluginName())){ //Case that the key value pair was changed
-                    plugin.setProperty(tc.getKey(), tc.getValue());
-                }else if((oldValue == null || oldValue.equals("")) && tc.getPlugin().equals(plugin.getPluginName())){
-                    plugin.setProperty(tc.getKey(), tc.getValue());
-                }
-            }
-            saveConfig();
-        }else{//It should exists
-            System.out.println("Plugin does not exists");
-        }
 
 
-    }
-
-    private void saveAgent(String pluginName){
-        for (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList() ) {
-            for (TableConfig tc: data){
-                String oldValue = agent.getProperty(tc.getKey());
-                if(oldValue!=null && !oldValue.equals(tc.getValue()) && tc.getPlugin().equals(agent.getDeviceName()) && agent.getAgentName().equals(tc.getAgent())){ //Case that the key value pair was changed
-                    agent.setProperty(tc.getKey(), tc.getValue());
-                }else if((oldValue == null || oldValue.equals("")) && tc.getDevice().equals(agent.getDeviceName()) && agent.getAgentName().equals(tc.getAgent())){
-                    agent.setProperty(tc.getKey(), tc.getValue());
-                }
-            }
-
-
-        }
-        saveConfig();
-    }
 
     public void saveConfig(){
         //TODO: Remove later
