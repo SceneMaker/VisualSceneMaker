@@ -18,9 +18,13 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by alvaro on 6/2/16.
@@ -41,6 +45,10 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML private TextField txtDeviceName;
     @FXML private Label lblClassName;
     @FXML private CheckBox chkLoadPlugin;
+    @FXML private Pane addDevice;
+    @FXML private AnchorPane editDevice;
+    @FXML private VBox InfoVBox;
+    private  ArrayList <String> shortNames;
     private TreeItem<AbstractTreeEntry> devices;
     private HashMap<String, PluginConfig> plugins= new HashMap<>();
     private EntryDevice entryDevice;
@@ -71,6 +79,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         treeView.setRoot(root);
         treeView.setEditable(true);
         final PropertyManagerController controller = this;
+        fillComboWithActivityExecutors();
         treeView.setCellFactory(new Callback<TreeView<AbstractTreeEntry>,TreeCell<AbstractTreeEntry>>(){
             @Override
             public TreeCell<AbstractTreeEntry> call(TreeView<AbstractTreeEntry> param) {
@@ -79,6 +88,15 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 return treeCell;
             }
         });
+    }
+
+    private void fillComboWithActivityExecutors(){
+        ExtensionsFromJar extensions = new ExtensionsFromJar("de.dfki.vsm.xtension", false);
+        extensions.loadClass();
+        ObservableList<String> devicesNames = FXCollections.observableArrayList();
+        shortNames =  extensions.getActivitiesShortNames();
+        devicesNames.addAll(shortNames.stream().collect(Collectors.toList()));
+        cmbExecutor.getItems().addAll(devicesNames);
     }
 
     private void initializePlugins(){
@@ -99,12 +117,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     private void addInitialPluginsToTreeList(){
-        for (EntryPlugin entryPlugin: entryDevice.getPlugins() ) {
-            ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin);
-            pluginNode.registerObserver(this);
-            addAgentNodeToPluginNode(entryPlugin, pluginNode);
-            devices.getChildren().add(pluginNode);
-        }
+        entryDevice.getPlugins().forEach(this::addPluginToList);
 
     }
 
@@ -121,6 +134,27 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         if(!txtKey.getText().equals("") && !txtValue.getText().equals("")) {
             addNewItemToTable();
         }
+    }
+
+    @FXML
+    public void addDevice(){
+        String deviceName = txtDeviceName.getText();
+        String className = shortNames.get( cmbExecutor.getSelectionModel().getSelectedIndex() - 1);
+        boolean added = projectConfigWrapper.addNewPlugin(deviceName, className);
+        if(added){
+            PluginConfig plugin = mProject.getPluginConfig(deviceName);
+            EntryPlugin entryPlugin = new EntryPlugin(plugin);
+            entryDevice.addPlugin(entryPlugin);
+            addPluginToList(entryPlugin);
+
+        }
+    }
+
+    private void addPluginToList(EntryPlugin entryPlugin){
+        ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin);
+        pluginNode.registerObserver(this);
+        addAgentNodeToPluginNode(entryPlugin, pluginNode);
+        devices.getChildren().add(pluginNode);
     }
 
     private void addNewItemToTable(){
@@ -164,31 +198,32 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         } catch (Exception e) {
           System.out.println(e);
         }
-
     }
 
     @FXML
     public void handleLoadPluginCheckbox(){
-        AbstractTreeEntry itemEntry = null;
         boolean loaded = false;
         if(chkLoadPlugin.isSelected()){
             loaded = true;
         }
         try {
-            itemEntry = getSelectedTreeItem(false);
-            if(itemEntry instanceof EntryPlugin){
-                ((EntryPlugin) itemEntry).getPluginConfig().setLoad(loaded);
-            }else if(itemEntry instanceof EntryAgent){
-                String pluginName = ((EntryAgent) itemEntry).getPluginName();
-                mProject.getPluginConfig(pluginName).setLoad(loaded);
-            }
-            saveConfig();
+            changeLoadPluginStatus(loaded);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
 
-
+    private void changeLoadPluginStatus(boolean loaded) throws Exception {
+        AbstractTreeEntry itemEntry;
+        itemEntry = getSelectedTreeItem(false);
+        if(itemEntry instanceof EntryPlugin){
+            ((EntryPlugin) itemEntry).getPluginConfig().setLoad(loaded);
+        }else if(itemEntry instanceof EntryAgent){
+            String pluginName = ((EntryAgent) itemEntry).getPluginName();
+            mProject.getPluginConfig(pluginName).setLoad(loaded);
+        }
+        saveConfig();
     }
 
     private void processClickedTreeElement(boolean isRightClicked) throws Exception {
@@ -201,12 +236,14 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             EntryPlugin entryPlugin = (EntryPlugin) itemEntry;
             showPluginDatainTable(entryPlugin);
             setLoadPluginCheckbox(entryPlugin.getPluginConfig());
+            hideAddDevice();
         }
         if(itemEntry instanceof EntryAgent){
             EntryAgent entryAgent= (EntryAgent) itemEntry;
             showAgentDatainTable(entryAgent);
             String pluginName = entryAgent.getPluginName();
             setLoadPluginCheckbox(mProject.getPluginConfig(pluginName));
+            hideAddDevice();
         }
     }
 
@@ -224,10 +261,12 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             itemEntry = getContextItemSelected(isRightClicked);
         }else if(selectedItem instanceof BoxTreeItem){
             itemEntry = (AbstractTreeEntry) ((BoxTreeItem) selectedItem).getValue();
-        }
-        else if(selectedItem instanceof AbstractTreeItem){
+        }else if(selectedItem instanceof AbstractTreeItem){
             itemEntry = (AbstractTreeEntry) selectedItem;
-        }else {
+        }else if(selectedItem instanceof TreeItem && ((TreeItem)selectedItem).getValue() instanceof EntryDevice){
+            itemEntry = (AbstractTreeEntry) ((TreeItem) selectedItem).getValue();
+        }
+        else {
             System.out.println("NO Datatype matched!");
             throw  new Exception("Non datatype recognized");
         }
@@ -254,9 +293,16 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         setClassNameLabel(mProject.getPluginConfig(pluginName).getClassName());
     }
 
-
     private void showAddDevice(){
-        System.out.println("To implement!!");
+        editDevice.setVisible(false);
+        InfoVBox.setVisible(false);
+        addDevice.setVisible(true);
+    }
+
+    private void hideAddDevice(){
+        editDevice.setVisible(true);
+        InfoVBox.setVisible(true);
+        addDevice.setVisible(false);
     }
 
     private void setClassNameLabel(String className){
@@ -360,7 +406,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             ((PluginTableConfig) dataConfig).removeProperty(oldValue);
         }
     }
-
 
     public void saveConfig(){
         projectConfigWrapper.saveConfig();

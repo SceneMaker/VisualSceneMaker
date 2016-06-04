@@ -140,6 +140,22 @@ public class ProjectConfigWrapper {
         return newXMLAgent;
     }
 
+    public boolean addNewPlugin(String deviceName, String className){
+        String newPlayer = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<Project name=\"" + project.getProjectName() + "\">"
+                + "<Plugins>"
+                + "<Plugin type=\"device\" name=\"" + deviceName + "\" class=\"" + className + "\" load=\"true\">"
+                + "</Plugin>"
+                + "</Plugins>"
+                + "</Project>";
+
+        boolean res = project.parseProjectConfigFromString(newPlayer);
+        if(res) {
+            saveConfig();
+        }
+        return res;
+    }
+
     private String changeAgentDeviceXML(AgentConfig agentConfig, String oldPluginName, String newPluginName) {
         String newXMLAgent;
         String agentXML = "<Project name=\"" + project.getProjectName() + "\">"
