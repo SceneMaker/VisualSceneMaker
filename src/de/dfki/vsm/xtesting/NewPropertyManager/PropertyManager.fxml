@@ -61,7 +61,7 @@
                         </TableView>
                      </children>
                   </AnchorPane>
-                  <CheckBox fx:id="chkLoadPlugin" layoutX="-2.0" layoutY="26.0" mnemonicParsing="false" text="Load Plugin">
+                  <CheckBox fx:id="chkLoadPlugin" layoutX="-2.0" layoutY="26.0" mnemonicParsing="false" onAction="#handleLoadPluginCheckbox" text="Load Plugin">
                      <padding>
                         <Insets left="10.0" />
                      </padding>
