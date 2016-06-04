@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
+import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -48,9 +49,10 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         MenuItem addNewAgent = new MenuItem("Add new agent");
         addNewAgent.setOnAction(new EventHandler() {
             public void handle(Event t) {
-                BoxTreeItem newBox = new BoxTreeItem(contextValue);
+                EntryAgent agent = new EntryAgent(contextValue);
+                BoxTreeItem newBox = new BoxTreeItem(agent);
                 getChildren().add(newBox);
-                notifyObserver();
+                notifyObserver(agent);
             }
         });
         return  addNewAgent;
@@ -88,21 +90,16 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         }
     }
 
+    public void notifyObserver(AbstractTreeEntry entry) {
+        for (TreeObserver observer:observers) {
+            observer.update(new ContextEvent(contextValue, this.getValue().toString(), entry));
+        }
+    }
+
     public String getPluginName() {
         return pluginName;
     }
 }
 
-class BoxTreeItem extends AbstractTreeItem{
-    public BoxTreeItem(String name) {
-        this.setValue(name);
-    }
 
-    @Override
-    public ContextMenu getMenu() {
-        return new ContextMenu(new MenuItem("testing"));
-    }
-
-
-}
 

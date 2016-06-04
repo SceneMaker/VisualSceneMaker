@@ -19,23 +19,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.*;
 
@@ -62,10 +45,12 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private HashMap<String, PluginConfig> plugins= new HashMap<>();
     private EntryDevice entryDevice;
     private ObservableList<TableConfig> data = FXCollections.observableArrayList();
+    private ProjectConfigWrapper projectConfigWrapper;
 
 
     public PropertyManagerController(RunTimeProject project){
         super();
+        projectConfigWrapper = new ProjectConfigWrapper(project);
         entryDevice = new EntryDevice("Devices");
         mProject = project;
         PluginConfig plugin = null;
@@ -206,7 +191,10 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         AbstractTreeEntry itemEntry;
         if(selectedItem instanceof  ContextTreeItem){
             itemEntry = getContextItemSelected(isRightClicked);
-        }else if(selectedItem instanceof AbstractTreeItem){
+        }else if(selectedItem instanceof BoxTreeItem){
+            itemEntry = (AbstractTreeEntry) ((BoxTreeItem) selectedItem).getValue();
+        }
+        else if(selectedItem instanceof AbstractTreeItem){
             itemEntry = (AbstractTreeEntry) selectedItem;
         }else {
             System.out.println("NO Datatype matched!");
@@ -342,169 +330,52 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
 
-
-
     public void saveConfig(){
-        //TODO: Remove later
-        File f = new File(mProject.getProjectPath());
-        mProject.write(f);
+        projectConfigWrapper.saveConfig();
     }
 
-    private String changeXMLAttributeNode(String xml, String tagName, String attr, String oldValue, String newValue){
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = null;
-        Document doc;
-        try {
-            docBuilder = docFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        try {
-            doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xml.getBytes("utf-8"))));
-        } catch (SAXException e) {
-            e.printStackTrace();
-            return xml;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return xml;
-        }
-        //Node firstChild = doc.getFirstChild();
-        Node tag = doc.getElementsByTagName(tagName).item(0);
-        // update node attribute
-        NamedNodeMap attrs = tag.getAttributes();
-        Node nodeAttr = attrs.getNamedItem(attr);
-        if(nodeAttr!= null && nodeAttr.getNodeValue().equals(oldValue)) {
-            nodeAttr.setTextContent(newValue);
-        }
-
-        return getStringFromDoc(doc);
-
-    }
-
-    public String getStringFromDoc(org.w3c.dom.Document doc)    {
-        try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            StreamResult result = new StreamResult(new StringWriter());
-            DOMSource source = new DOMSource(doc);
-            transformer.transform(source, result);
-            return result.getWriter().toString();
-        } catch(TransformerException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
 
     @Override
     public void update(NotificationObject object) {
         if(object instanceof ContextEvent){//This called when a new agent is added via context menu
             String agent = ((ContextEvent) object).getContextName();
             String pluginName = ((ContextEvent) object).getPluginName();
-            AbstractTreeEntry entry = ((ContextEvent) object).getTreeEntry();
-            String newXMLAgent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                    + "<Project name=\"" + mProject.getProjectName() + "\">"
-                    + "<Agents>"
-                    + "    <Agent name=\"" + agent + "\" device=\"" + pluginName + "\">"
-                    + "    </Agent>"
-                    + " </Agents>"
-                    + "</Project>";
-            boolean res = mProject.parseProjectConfigFromString(newXMLAgent);
-            saveConfig();
-        }
-        else if(object instanceof CellEvent){//We change either the name of the agent or device
-            String oldValue = ((CellEvent) object).getOldValue();
-            String newValue = ((CellEvent) object).getNewValue();
-            TreeItem selected = treeView.getSelectionModel().getSelectedItem();
-            AbstractTreeEntry entry = ((CellEvent) object).getTreeEntry();
-            if(selected !=null && (selected.getParent() != null && selected.getParent().getValue().equals("Devices"))){//Device updated
-
-               PluginConfig pluginConfig = mProject.getPluginConfig(oldValue);
-                Iterator<PluginConfig> itPlug = mProject.getProjectConfig().getPluginConfigList().iterator();
-                ArrayList<String> pluginsToAdd = new ArrayList<>();
-                ArrayList<String> agentsToAdd = new ArrayList<>();
-                while (itPlug.hasNext()){
-                    PluginConfig plugin = itPlug.next();
-                    if(plugin.getPluginName().equals(oldValue)){
-                        String pluginXML =   "<Project name=\"" + mProject.getProjectName() + "\">"
-                                + "<Plugins>"
-                                + plugin.toString()
-                                + "</Plugins>"
-                                + "</Project>";
-                        String xml = changeXMLAttributeNode(pluginXML, "Plugin", "name", oldValue, newValue);
-                        if(xml != null && !xml.equals("")){
-                            itPlug.remove();
-                            plugins.remove(oldValue);
-
-                        }
-                        pluginsToAdd.add(xml);
-                    }
-                }
-                for (String xml: pluginsToAdd ) {
-                    boolean res = mProject.parseProjectConfigFromString(xml);
-                    if(res) {
-                        ArrayList plugs =  mProject.getProjectConfig().getPluginConfigList();
-                        plugins.put(newValue, (PluginConfig) plugs.get(plugs.size()-1));
-                    }
-
-                }
-
-                //Change all the agents too
-                Iterator<AgentConfig> itAgent = mProject.getProjectConfig().getAgentConfigList().iterator();
-                while (itAgent.hasNext()){
-                    AgentConfig agent = itAgent.next();
-                    if(agent.getDeviceName().equals(oldValue) ){
-                        String agentXML = "<Project name=\"" + mProject.getProjectName() + "\">"
-                                + "<Agents>"
-                                + agent.toString()
-                                + "</Agents>"
-                                + "</Project>";
-                        String xml = changeXMLAttributeNode(agentXML, "Agent", "device", oldValue, newValue);
-                        if(xml != null && !xml.equals("")){
-                            itAgent.remove();
-
-                        }
-                        agentsToAdd.add(xml);
-                    }
-                }
-
-                for (String xml: agentsToAdd ) {
-                    boolean res = mProject.parseProjectConfigFromString(xml);
-                }
-
-            }
-            else if(selected !=null && (selected.getParent() != null)) {
-                TreeItem selectedPlugin = treeView.getSelectionModel().getSelectedItem().getParent();
-                ArrayList<String> agentsToAdd = new ArrayList<>();
-                Iterator<AgentConfig> itAgent = mProject.getProjectConfig().getAgentConfigList().iterator();
-                while (itAgent.hasNext()){
-                    AgentConfig agent = itAgent.next();
-                    if(agent.getDeviceName().equals(selectedPlugin.getValue()) && agent.getAgentName().equals(oldValue)){
-                        String agentXML = "<Project name=\"" + mProject.getProjectName() + "\">"
-                                + "<Agents>"
-                                + agent.toString()
-                                + "</Agents>"
-                                + "</Project>";
-                        String xml = changeXMLAttributeNode(agentXML, "Agent", "name", oldValue, newValue);
-                        if(xml != null && !xml.equals("")){
-                            itAgent.remove();
-                        }
-                        agentsToAdd.add(xml);
-                    }
-                }
-
-                for (String xml: agentsToAdd ) {
-                    boolean res = mProject.parseProjectConfigFromString(xml);
-                }
-
-            }
-            saveConfig();
+            EntryAgent agentEntry = (EntryAgent) ((ContextEvent) object).getTreeEntry();
+            projectConfigWrapper.addNewAgent(agent, pluginName);
+            agentEntry.setAgentConfig(mProject.getAgentConfig(agent));
+        } else if(object instanceof CellEvent){//We change either the name of the agent or device
+            changeItemName((CellEvent) object);
         }
     }
 
+    private void changeItemName(CellEvent event){
+        String oldValue = ((CellEvent) event).getOldValue();
+        String newValue = ((CellEvent) event).getNewValue();
+        AbstractTreeEntry entry = ((CellEvent) event).getTreeEntry();
+        if(entry instanceof EntryPlugin){
+            changePluginName((EntryPlugin) entry, oldValue, newValue);
 
+        }
+        if(entry instanceof EntryAgent){
+            changeAgentName((EntryAgent) entry, oldValue, newValue);
+        }
+    }
 
+    private void changePluginName(EntryPlugin plugin, String oldValue, String newValue){
+        try {
+            projectConfigWrapper.changePluginName(plugin.getPluginConfig(), oldValue, newValue);
+            plugin.setPluginConfig(mProject.getPluginConfig(newValue));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-
-
-
-
+    private void changeAgentName(EntryAgent agent, String oldValue, String newValue){
+        try {
+            projectConfigWrapper.changeAgentName(oldValue, newValue);
+            agent.setAgentConfig(mProject.getAgentConfig(newValue));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
