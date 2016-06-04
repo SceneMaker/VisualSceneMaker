@@ -16,12 +16,32 @@
             </AnchorPane>
           <AnchorPane fx:id="contentPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="722.0" prefWidth="715.0">
                <children>
-                  <Label fx:id="lblClassName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="16.0" minWidth="500.0" prefHeight="29.0" prefWidth="574.0" text="Class: ">
-                     <padding>
-                        <Insets left="10.0" />
-                     </padding>
-                  </Label>
-                  <HBox layoutX="5.0" layoutY="53.0" prefHeight="46.0" prefWidth="590.0" />
+                  <Pane fx:id="addDevice" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="472.0" prefWidth="558.0" visible="false">
+                     <children>
+                        <HBox prefHeight="190.0" prefWidth="558.0" spacing="10.0">
+                           <children>
+                              <TextField fx:id="txtDeviceName" promptText="Device name">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </TextField>
+                              <ComboBox fx:id="cmbExecutor" prefWidth="150.0">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </ComboBox>
+                              <Button fx:id="btnAddDevice" mnemonicParsing="false" onAction="#addDevice" text="Add Device">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                           <padding>
+                              <Insets top="10.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                  </Pane>
                   <AnchorPane fx:id="editDevice" layoutY="108.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="618.0" prefWidth="558.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="108.0">
                      <children>
                         <HBox layoutY="565.0" prefHeight="40.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
@@ -61,11 +81,20 @@
                         </TableView>
                      </children>
                   </AnchorPane>
-                  <CheckBox fx:id="chkLoadPlugin" layoutX="-2.0" layoutY="26.0" mnemonicParsing="false" onAction="#handleLoadPluginCheckbox" text="Load Plugin">
-                     <padding>
-                        <Insets left="10.0" />
-                     </padding>
-                  </CheckBox>
+                  <VBox fx:id="InfoVBox" prefHeight="62.0" prefWidth="558.0">
+                     <children>
+                        <Label fx:id="lblClassName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="16.0" minWidth="500.0" prefHeight="29.0" prefWidth="574.0" text="Class: ">
+                           <padding>
+                              <Insets left="10.0" />
+                           </padding>
+                        </Label>
+                        <CheckBox fx:id="chkLoadPlugin" mnemonicParsing="false" onAction="#handleLoadPluginCheckbox" text="Load Plugin">
+                           <padding>
+                              <Insets left="10.0" />
+                           </padding>
+                        </CheckBox>
+                     </children>
+                  </VBox>
                </children></AnchorPane>
         </items>
       </SplitPane>

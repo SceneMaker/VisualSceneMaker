@@ -103,23 +103,31 @@ public class ExtensionsFromJar {
                 addActivityExecutor(entryName);
             }
         } catch (ClassNotFoundException e) {
-            return ;
+            return;
 
         }
+
     }
 
     private boolean isActivityExecutor(String entryName) throws ClassNotFoundException {
+        entryName = entryName.replace("/", ".");
         boolean belongsToPackage = (packageName.length() == 0 || (entryName.startsWith(packageName) && entryName.length() > packageName.length() + 5));
-        String fullClassName = entryName.replace("/", ".");
-        String className = fullClassName.substring(0, entryName.lastIndexOf('.'));
-        Class classEntry = Class.forName(className);
-        Class superClass =classEntry.getSuperclass();
-        return (belongsToPackage && (superClass != null && superClass.getSimpleName().equals("ActivityExecutor")));
+        if(belongsToPackage) {
+            String fullClassName = entryName.replace("/", ".");
+            String className = fullClassName.substring(0, entryName.lastIndexOf('.'));
+            Class classEntry = Class.forName(className);
+            Class superClass = classEntry.getSuperclass();
+            return  (superClass != null && superClass.getSimpleName().equals("ActivityExecutor"));
+        }
+        return false;
+
     }
 
     private void addActivityExecutor(String entryName) throws ClassNotFoundException {
-        mScenePlayersLongNames.add(entryName);
-        mScenePlayersShortNames.add(entryName.substring(entryName.lastIndexOf('.') + 1));
+        entryName = entryName.replace("/", ".");
+        String className = entryName.substring(0, entryName.lastIndexOf('.'));
+        mScenePlayersLongNames.add(className);
+        mScenePlayersShortNames.add(className.substring(className.lastIndexOf('.') + 1));
 
     }
 
