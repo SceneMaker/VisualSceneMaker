@@ -24,6 +24,10 @@ public class EntryAgent extends AbstractTreeEntry {
         return agentConfig.getDeviceName();
     }
 
+    public void setAgentConfig(AgentConfig agent){
+        agentConfig = agent;
+    }
+
 
 
 }

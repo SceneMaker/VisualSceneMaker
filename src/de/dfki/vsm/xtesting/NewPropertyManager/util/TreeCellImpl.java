@@ -74,12 +74,22 @@ public  class TreeCellImpl<AbstractTreeEntry> extends TreeCell<AbstractTreeEntry
         textField = new TextField(getString());
         textField.setOnKeyReleased((KeyEvent t) -> {
             if (t.getCode() == KeyCode.ENTER){
-                AbstractTreeEntry entry = (AbstractTreeEntry) ((ContextTreeItem)this.getTreeItem()).getEntryItem();
+                AbstractTreeEntry entry = getEntry();
                 commitEdit(getEditedItemFactory(entry, textField.getText()));
             } else if (t.getCode() == KeyCode.ESCAPE) {
                 cancelEdit();
             }
         });
+    }
+
+    private AbstractTreeEntry getEntry(){
+        AbstractTreeEntry entry = null;
+        if(this.getTreeItem() instanceof  BoxTreeItem){
+            entry  = this.getTreeItem().getValue();
+        }else{
+            entry = (AbstractTreeEntry) ((ContextTreeItem)this.getTreeItem()).getEntryItem();
+        }
+        return entry;
     }
 
     private AbstractTreeEntry getEditedItemFactory(AbstractTreeEntry entry, String text){

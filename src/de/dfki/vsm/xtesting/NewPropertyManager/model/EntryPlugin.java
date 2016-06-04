@@ -34,4 +34,8 @@ public class EntryPlugin extends AbstractTreeEntry {
     public String getPluginClassName(){
         return pluginConfig.getClassName();
     }
+
+    public void setPluginConfig(PluginConfig plugin){
+        pluginConfig = plugin;
+    }
 }
