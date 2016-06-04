@@ -39,8 +39,8 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
             MenuItem addNewAgent = getAddNewAgentItem();
             menu.getItems().add(addNewAgent);
         }
-        MenuItem deleteItem = getDeleteItem();
-        menu.getItems().add(deleteItem);
+        /*MenuItem deleteItem = getDeleteItem();
+        menu.getItems().add(deleteItem);*/
         return menu;
 
     }

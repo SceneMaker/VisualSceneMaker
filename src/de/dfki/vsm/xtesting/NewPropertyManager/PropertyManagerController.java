@@ -48,7 +48,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML private Pane addDevice;
     @FXML private AnchorPane editDevice;
     @FXML private VBox InfoVBox;
-    private  ArrayList <String> shortNames;
+    private  ArrayList <String> activityClassesShortNames;
+    private  ArrayList <String> activityClassesLongNames;
     private TreeItem<AbstractTreeEntry> devices;
     private HashMap<String, PluginConfig> plugins= new HashMap<>();
     private EntryDevice entryDevice;
@@ -94,8 +95,9 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         ExtensionsFromJar extensions = new ExtensionsFromJar("de.dfki.vsm.xtension", false);
         extensions.loadClass();
         ObservableList<String> devicesNames = FXCollections.observableArrayList();
-        shortNames =  extensions.getActivitiesShortNames();
-        devicesNames.addAll(shortNames.stream().collect(Collectors.toList()));
+        activityClassesShortNames =  extensions.getActivitiesShortNames();
+        activityClassesLongNames = extensions.getActivitiesLongName();
+        devicesNames.addAll(activityClassesShortNames.stream().collect(Collectors.toList()));
         cmbExecutor.getItems().addAll(devicesNames);
     }
 
@@ -139,7 +141,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML
     public void addDevice(){
         String deviceName = txtDeviceName.getText();
-        String className = shortNames.get( cmbExecutor.getSelectionModel().getSelectedIndex() - 1);
+        String className = activityClassesLongNames.get( cmbExecutor.getSelectionModel().getSelectedIndex());
         boolean added = projectConfigWrapper.addNewPlugin(deviceName, className);
         if(added){
             PluginConfig plugin = mProject.getPluginConfig(deviceName);
