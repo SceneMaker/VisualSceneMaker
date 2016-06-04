@@ -167,6 +167,30 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     }
 
+    @FXML
+    public void handleLoadPluginCheckbox(){
+        AbstractTreeEntry itemEntry = null;
+        boolean loaded = false;
+        if(chkLoadPlugin.isSelected()){
+            loaded = true;
+        }
+        try {
+            itemEntry = getSelectedTreeItem(false);
+            if(itemEntry instanceof EntryPlugin){
+                ((EntryPlugin) itemEntry).getPluginConfig().setLoad(loaded);
+            }else if(itemEntry instanceof EntryAgent){
+                String pluginName = ((EntryAgent) itemEntry).getPluginName();
+                mProject.getPluginConfig(pluginName).setLoad(loaded);
+            }
+            saveConfig();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
+    }
+
     private void processClickedTreeElement(boolean isRightClicked) throws Exception {
         AbstractTreeEntry itemEntry = null;
         itemEntry = getSelectedTreeItem(isRightClicked);
@@ -176,11 +200,18 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         if(itemEntry instanceof EntryPlugin){
             EntryPlugin entryPlugin = (EntryPlugin) itemEntry;
             showPluginDatainTable(entryPlugin);
+            setLoadPluginCheckbox(entryPlugin.getPluginConfig());
         }
         if(itemEntry instanceof EntryAgent){
             EntryAgent entryAgent= (EntryAgent) itemEntry;
             showAgentDatainTable(entryAgent);
+            String pluginName = entryAgent.getPluginName();
+            setLoadPluginCheckbox(mProject.getPluginConfig(pluginName));
         }
+    }
+
+    private void setLoadPluginCheckbox(PluginConfig plugin){
+        chkLoadPlugin.setSelected(plugin.isMarkedtoLoad());
     }
 
     private AbstractTreeEntry getSelectedTreeItem(boolean isRightClicked) throws Exception {
@@ -219,7 +250,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     private void showAgentDatainTable(EntryAgent entryAgent){
         showAgentTable(entryAgent);
-        setClassNameLabel("Test");
+        String pluginName = entryAgent.getPluginName();
+        setClassNameLabel(mProject.getPluginConfig(pluginName).getClassName());
     }
 
 
