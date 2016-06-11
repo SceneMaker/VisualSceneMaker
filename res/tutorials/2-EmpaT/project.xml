@@ -83,5 +83,11 @@
     </Agent>
     <Agent name="display" device="mediadisplay">
     </Agent>
+    <Agent name="Agent2" device="alma">
+      <Feature key="test1" val="test2"/>
+    </Agent>
+    <Agent name="Agent3" device="alma">
+      <Feature key="test2" val="test2"/>
+    </Agent>
   </Agents>
 </Project>

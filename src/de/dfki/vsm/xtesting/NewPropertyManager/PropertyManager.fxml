@@ -5,9 +5,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane blendMode="MULTIPLY" depthTest="ENABLE" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="728.0" prefWidth="802.0" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane blendMode="MULTIPLY" depthTest="ENABLE" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="748.0" prefWidth="1112.0" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <SplitPane dividerPositions="0.29797979797979796" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <SplitPane dividerPositions="0.23423423423423423" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="726.0" prefWidth="269.0">
                <children>
@@ -65,15 +65,11 @@
                         </HBox>
                         <HBox layoutX="14.0" layoutY="532.0" prefHeight="22.0" prefWidth="542.0">
                            <children>
-                              <Label text="Add new Entry">
-                                 <HBox.margin>
-                                    <Insets left="10.0" top="2.0" />
-                                 </HBox.margin>
-                              </Label>
+                              <Label text="Add new Entry" />
                            </children>
                         </HBox>
                         <HBox layoutY="25.0" prefHeight="46.0" prefWidth="590.0" />
-                        <TableView fx:id="pluginsTable" editable="true" fixedCellSize="0.0" layoutX="6.0" layoutY="-45.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="557.0" prefWidth="558.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                        <TableView fx:id="pluginsTable" editable="true" fixedCellSize="0.0" layoutX="6.0" layoutY="-45.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="555.0" prefWidth="846.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                            <columns>
                               <TableColumn fx:id="keyColumn" maxWidth="1.7976931348623157E308" prefWidth="265.0" text="Key" />
                               <TableColumn fx:id="valueColumn" maxWidth="1.7976931348623157E308" minWidth="0.0" prefWidth="292.0" text="Value" />
