@@ -21,6 +21,12 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     public ContextTreeItem(String name) {
         this.setValue(name);
     }
+    public static int agentCounter = 1;
+
+    private String getContextValueName(){
+        String name = contextValue + agentCounter;
+        return name;
+    }
 
     public ContextTreeItem(AbstractTreeEntry item) {
         entryItem = item;
@@ -39,6 +45,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
             MenuItem addNewAgent = getAddNewAgentItem();
             menu.getItems().add(addNewAgent);
         }
+        //TODO: Delete Option
         /*MenuItem deleteItem = getDeleteItem();
         menu.getItems().add(deleteItem);*/
         return menu;
@@ -49,9 +56,10 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         MenuItem addNewAgent = new MenuItem("Add new agent");
         addNewAgent.setOnAction(new EventHandler() {
             public void handle(Event t) {
-                EntryAgent agent = new EntryAgent(contextValue);
+                EntryAgent agent = new EntryAgent(getContextValueName());
                 BoxTreeItem newBox = new BoxTreeItem(agent);
                 getChildren().add(newBox);
+                agentCounter++;
                 notifyObserver(agent);
             }
         });
@@ -69,10 +77,6 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     }
 
 
-
-
-
-
     @Override
     public void registerObserver(TreeObserver object) {
         observers.add(object);
@@ -86,13 +90,13 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     @Override
     public void notifyObserver() {
         for (TreeObserver observer:observers) {
-            observer.update(new ContextEvent(contextValue, this.getValue().toString(), entryItem));
+            observer.update(new ContextEvent(getContextValueName(), this.getValue().toString(), entryItem));
         }
     }
 
     public void notifyObserver(AbstractTreeEntry entry) {
         for (TreeObserver observer:observers) {
-            observer.update(new ContextEvent(contextValue, this.getValue().toString(), entry));
+            observer.update(new ContextEvent(getContextValueName(), this.getValue().toString(), entry));
         }
     }
 

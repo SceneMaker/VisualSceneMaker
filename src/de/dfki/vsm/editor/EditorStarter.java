@@ -9,7 +9,8 @@ import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.xtesting.propertymanager.PropertyManagerGUI;
+import de.dfki.vsm.xtesting.NewPropertyManager.PropertyManagerGUI;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
