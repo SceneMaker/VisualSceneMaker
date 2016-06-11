@@ -94,8 +94,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     private void setColumnsSameWidth(){
-        keyColumn.prefWidthProperty().bind(pluginsTable.widthProperty().divide(2)); // w * 1/4
-        valueColumn.prefWidthProperty().bind(pluginsTable.widthProperty().divide(2)); // w * 2/4
+        keyColumn.prefWidthProperty().bind(pluginsTable.widthProperty().divide(2));
+        valueColumn.prefWidthProperty().bind(pluginsTable.widthProperty().divide(2));
     }
 
     private String getRootName(){
