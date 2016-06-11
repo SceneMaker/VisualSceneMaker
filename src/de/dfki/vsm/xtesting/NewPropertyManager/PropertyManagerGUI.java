@@ -51,7 +51,7 @@ public class PropertyManagerGUI {
         int width = (int) (dim.getWidth() * 0.60);
         int height = (int) (dim.getHeight() * 0.70);
         mFrame.setSize(width, height);
-        mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+       // mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mFrame.setVisible(true);
 
 
