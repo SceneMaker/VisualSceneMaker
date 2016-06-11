@@ -1,16 +1,12 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.model;
-
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.xtesting.NewPropertyManager.util.ContextEvent;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -95,10 +91,6 @@ public class ProjectConfigWrapper {
         }
         saveConfig();
     }
-
-
-
-
 
     private void removeOldPlugin(String oldName){
         Iterator it = project.getProjectConfig().getPluginConfigList().iterator();

@@ -38,7 +38,6 @@ public class ExtensionsFromJar {
 
     public  void loadClass() {
         try{
-           // getClassNamesFromPackage("de.dfki.vsm.xtension");
             if (mScenePlayersShortNames.size() <= 0) {
                 addNoSelectedAtFirst();
                 getClassNamesFromPackage(packageName);
@@ -78,7 +77,6 @@ public class ExtensionsFromJar {
     private  void parseJar(String jarFileName){
         JarFile jf;
         Enumeration<JarEntry> jarEntries = null;
-        String entryName;
         try {
             jf = new JarFile(jarFileName);
             jarEntries = jf.entries();
