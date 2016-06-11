@@ -23,7 +23,7 @@ public class PropertyManagerGUI {
 
     private JFrame mFrame;
     private RunTimeProject mProject = null;
-
+    private final Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     public void init(RunTimeProject project){
         mProject = project;
 
@@ -48,9 +48,14 @@ public class PropertyManagerGUI {
         mFrame.setUndecorated(false);
 
         mFrame.setLocationRelativeTo(null);
-        mFrame.setSize(600, 400);
+        int width = (int) (dim.getWidth() * 0.60);
+        int height = (int) (dim.getHeight() * 0.70);
+        mFrame.setSize(width, height);
         mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mFrame.setVisible(true);
+
+
+        mFrame.setLocation(dim.width/2-mFrame.getSize().width/2, dim.height/2-mFrame.getSize().height/2);
         Platform.runLater(() -> initFX(mJFXPanel));
 
     }
@@ -73,7 +78,6 @@ public class PropertyManagerGUI {
             return;
         }
         Scene scene = new Scene(root);
-        jfxPanel.setSize(600,400);
         jfxPanel.setScene(scene);
         //jfxPanel.setVisible(true);
         //mFrame.setVisible(true);

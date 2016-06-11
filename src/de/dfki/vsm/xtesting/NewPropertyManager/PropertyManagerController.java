@@ -72,13 +72,15 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        TreeItem<AbstractTreeEntry> root = new TreeItem<>(new EntryRoot("VSM Config"));
+        String rootName = getRootName();
+        TreeItem<AbstractTreeEntry> root = new TreeItem<>(new EntryRoot(rootName));
         devices = new TreeItem<>(new EntryDevice("Devices"));
         initializePlugins();
         addInitialPluginsToTreeList();
         root.getChildren().add(devices);
         treeView.setRoot(root);
         treeView.setEditable(true);
+        setColumnsSameWidth();
         final PropertyManagerController controller = this;
         fillComboWithActivityExecutors();
         treeView.setCellFactory(new Callback<TreeView<AbstractTreeEntry>,TreeCell<AbstractTreeEntry>>(){
@@ -89,6 +91,19 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 return treeCell;
             }
         });
+    }
+
+    private void setColumnsSameWidth(){
+        keyColumn.prefWidthProperty().bind(pluginsTable.widthProperty().divide(2)); // w * 1/4
+        valueColumn.prefWidthProperty().bind(pluginsTable.widthProperty().divide(2)); // w * 2/4
+    }
+
+    private String getRootName(){
+        String name = mProject.getProjectName();
+        if(name.isEmpty()){
+            name = "VSM Config";
+        }
+        return name;
     }
 
     private void fillComboWithActivityExecutors(){
