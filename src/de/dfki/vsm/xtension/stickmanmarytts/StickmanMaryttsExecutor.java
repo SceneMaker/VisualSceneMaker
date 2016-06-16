@@ -127,6 +127,9 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(activity.getActor()),
                 activity.getName(), duration, false);
         if (activity instanceof ActionMouthActivity) {
+            
+            
+            
             stickmanAnimation.mParameter = ((ActionMouthActivity) activity).getWortTimeMark();
         }
         if (stickmanAnimation != null) {
@@ -156,8 +159,13 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
+        
+        String message = "";
+        // Fuck German Umlaute and Encoding
+        message = out.toString().replace("ö", "oe").replace("ä", "ae").replace("ü", "ue").replace("Ö", "Oe").replace("Ä", "Ae").replace("Ü", "Ue").replace("ß", "ss").replace("\n", " ").replace("   ", " ").replace("  ", " ");
         try {
-            broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
+            //broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
+            broadcast(message);
             out.close();
         } catch (UnsupportedEncodingException exc) {
             mLogger.warning(exc.getMessage());
