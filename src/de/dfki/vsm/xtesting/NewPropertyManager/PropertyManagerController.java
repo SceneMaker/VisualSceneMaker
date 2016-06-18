@@ -74,7 +74,9 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     public void initialize(URL location, ResourceBundle resources) {
         String rootName = getRootName();
         TreeItem<AbstractTreeEntry> root = new TreeItem<>(new EntryRoot(rootName));
+        root.setExpanded(true);
         devices = new TreeItem<>(new EntryDevice("Devices"));
+        devices.setExpanded(true);
         initializePlugins();
         addInitialPluginsToTreeList();
         root.getChildren().add(devices);

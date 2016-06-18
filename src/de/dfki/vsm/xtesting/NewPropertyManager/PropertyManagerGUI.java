@@ -66,8 +66,6 @@ public class PropertyManagerGUI {
 
     private void initFX(JFXPanel jfxPanel) {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtesting/NewPropertyManager/PropertyManager.fxml"));
-
-        // Parent root =  FXMLLoader.load(getClass().getResource("/res/de/dfki/vsm/xtesting/propertymanager/FXMLDocumentNew.fxml"));
         mController = new PropertyManagerController( mProject);
         fxmlLoader.setController(mController);
         Parent root = null;
@@ -79,8 +77,6 @@ public class PropertyManagerGUI {
         }
         Scene scene = new Scene(root);
         jfxPanel.setScene(scene);
-        //jfxPanel.setVisible(true);
-        //mFrame.setVisible(true);
 
 
     }
