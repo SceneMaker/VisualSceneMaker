@@ -90,12 +90,12 @@ public class ChangeNodeTypeAction extends NodeAction {
         // create new gui node with new data node
         mGUINode = new de.dfki.vsm.editor.Node(mWorkSpace, mDataNode);
         mCmdBadge = new CmdBadge(mGUINode);
-        
+        mGUINodeType    = mGUINode.getType();
         create();
 
         // overview old values with new
         mCoordinate     = mGUINode.getLocation();
-        mGUINodeType    = mGUINode.getType();
+
         mParentDataNode = mDataNode.getParentNode();
         mDataNodeId     = mDataNode.getId();
 
