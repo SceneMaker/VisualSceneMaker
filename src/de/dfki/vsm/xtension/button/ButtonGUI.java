@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.HashMap;
 import javafx.embed.swing.JFXPanel;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -47,6 +48,7 @@ public class ButtonGUI extends JFrame {
     public boolean mModal = true;
 
     private HashMap<String, Button> mButtons;
+    private HashMap<String, Point2D> mButtonsPositions;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -55,7 +57,9 @@ public class ButtonGUI extends JFrame {
         mRootNode = new Group();
 
         mExecutor = executor;
+        //init stuff
         mButtons = new HashMap<>();
+        mButtonsPositions = new HashMap<>();
 
         Dimension size = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         mWidth = size.width;
@@ -106,19 +110,26 @@ public class ButtonGUI extends JFrame {
         });
 
         mButtons.put(id, b);
+        mButtonsPositions.put(id, new Point2D(x, y));
     }
 
     public void hideAllButtons() {
         for (Button b : mButtons.values()) {
-            b.setManaged(false);
+            //b.setManaged(false);
+            b.setTranslateY(-1000.0); // move the button away
             b.setVisible(false);
+            
+            mLogger.message("Hidden Button " + b.getText() + " has coordinates " + b.getTranslateX() + ", " + b.getTranslateY());
         }
     }
 
     public void showButton(String id, boolean show) {
-       if (mButtons.containsKey(id)) {
-           mButtons.get(id).setManaged(show);
+        if (mButtons.containsKey(id)) {
+            mButtons.get(id).setTranslateY(mButtonsPositions.get(id).getY());
+            //mButtons.get(id).setManaged(show);
             mButtons.get(id).setVisible(show);
+            
+             mLogger.message("Shown Button " + mButtons.get(id).getText() + " has coordinates " + mButtons.get(id).getTranslateX() + ", " + mButtons.get(id).getTranslateY());
         }
     }
 
