@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.tworld;
 
+import de.dfki.vsm.editor.dialog.WaitingDialog;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -72,6 +73,17 @@ public final class TWorldExecutor extends ActivityExecutor {
         final String cactorcmd = mConfig.getProperty("cactorcmd");
 
         // Create the plugin's processes
+        boolean isCactODirPresent = isPathExisting(cactordir);
+        boolean isTWorldPresent = isPathExisting(tworlddir);
+
+        if(!isCactODirPresent || !isTWorldPresent){
+            String missing = (!isCactODirPresent) ? cactordir: tworlddir;
+            String message = "Missing installation folder " + missing;
+            WaitingDialog InfoDialog = new WaitingDialog(message);
+            InfoDialog.setModal(true);
+            InfoDialog.setVisible(true);
+            return;
+        }
         try {
             mProcessMap.put(cactorexe, Runtime.getRuntime().exec(
                     "cmd /c start /min " + cactorexe + " " + cactorcmd, null, new File(cactordir)));
@@ -94,6 +106,15 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
         }
         broadcast("Start");
+    }
+
+    private boolean isPathExisting(String path){
+
+        File f = new File(path);
+        if(f.exists() && f.isDirectory()) {
+            return  true;
+        }
+        return false;
     }
 
     // Unload the executor 
