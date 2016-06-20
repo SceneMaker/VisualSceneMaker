@@ -254,7 +254,7 @@ public class ActionLoader {
 
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for TWorld Action " + cmd + " and value " + value1);
+            mLogger.failure("No Class for TWorld Action " + cmd + " and values " + value1 + ", " + value2 + ", " + value3);
         }
 
         if (a != null) {

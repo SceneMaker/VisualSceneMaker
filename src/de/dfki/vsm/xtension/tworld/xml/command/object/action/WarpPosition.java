@@ -35,7 +35,7 @@ public class WarpPosition extends Action implements XMLParseable, XMLWriteable {
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" r=\"" + mX + "\" g=\"" + mY + "\" b=\"" + mZ + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" x=\"" + mX + "\" y=\"" + mY + "\" z=\"" + mZ + "\"/>");
     }
 
     @Override
