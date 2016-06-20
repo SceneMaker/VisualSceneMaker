@@ -73,6 +73,10 @@ public class MaryTTsSpeaker {
         speech = pSpeech;
     }
 
+    public SpeechActivity getSpeechActivity() {
+        return speech;
+    }
+    
     public LinkedList getSpeechActivityTextBlocs(){
         return speech.getBlocks();
     }
@@ -92,7 +96,8 @@ public class MaryTTsSpeaker {
         String textToSepak = "";
         try {
             addWordsToMaryClient();
-            textToSepak = maryTTs.getText();
+            textToSepak = maryTTs.getText().trim();
+            
             if(textToSepak.length()>0) {
                 maryTTs.speak(getGenderTypeFromString(), executionId, voiceName, langVoice);
             }
@@ -121,7 +126,7 @@ public class MaryTTsSpeaker {
         LinkedList blocks = speech.getBlocks();
         for (final Object item : blocks) {
             if (!item.toString().contains("$")) {
-                Word w = new Word(item.toString());
+                //Word w = new Word(item.toString());
                 maryTTs.addWord(item.toString());
             }
         }

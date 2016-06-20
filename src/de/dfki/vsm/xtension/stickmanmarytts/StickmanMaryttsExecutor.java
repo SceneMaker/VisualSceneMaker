@@ -32,6 +32,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Properties;
 
 /**
  *
@@ -49,6 +50,8 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
     private HashMap<String, WordTimeMarkSequence> wtsMap = new HashMap<>();
     private MaryTTsProcess marySelfServer;
     private int maryId;
+    // The word mapping properties
+    Properties mWordMapping = new Properties();
 
     public StickmanMaryttsExecutor(final PluginConfig config, final RunTimeProject project) {
         super(config, project);
@@ -100,6 +103,17 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         if (activityText.isEmpty()) {
             handleEmptyTextActivity(sa);
         }
+
+        // load wordmapping database
+        try {
+            String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping");
+            wmf = wmf.replace("\\", "/");
+            mWordMapping.load(new FileReader(new File(wmf)));
+        } catch (IOException ex) {
+            mLogger.failure("Wordmapping file (" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping") + ") not found!");
+        }
+
+
         MaryTTsSpeaker marySpeak = new MaryTTsSpeaker(sa, langVoice, voiceName);
         String executionId = getExecutionId();
         WordTimeMarkSequence wts = marySpeak.getWordTimeSequence();
@@ -127,9 +141,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(activity.getActor()),
                 activity.getName(), duration, false);
         if (activity instanceof ActionMouthActivity) {
-            
-            
-            
+
             stickmanAnimation.mParameter = ((ActionMouthActivity) activity).getWortTimeMark();
         }
         if (stickmanAnimation != null) {
@@ -159,7 +171,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
-        
+
         String message = "";
         // Fuck German Umlaute and Encoding
         message = out.toString().replace("ö", "oe").replace("ä", "ae").replace("ü", "ue").replace("Ö", "Oe").replace("Ä", "Ae").replace("Ü", "Ue").replace("ß", "ss").replace("\n", " ").replace("   ", " ").replace("  ", " ");
@@ -176,6 +188,10 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
     private void executeSpeachAndWait(MaryTTsSpeaker marySpeak, String executionId) {
         synchronized (mActivityWorkerMap) {
+            
+            // do the pronounciation mapping
+            marySpeak.getSpeechActivity().doPronounciationMapping(mWordMapping);
+            
             String spokenText = "";
             try {
                 spokenText = marySpeak.speak(executionId);
@@ -234,7 +250,6 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
         } else {
             mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
         }
-        
 
         addStickmansToStage();
     }
