@@ -7,7 +7,6 @@ package de.dfki.vsm.xtension.button;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -15,11 +14,9 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import javafx.application.Platform;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -66,21 +63,15 @@ public class ButtonGUIExecutor extends ActivityExecutor {
 
             if (name.equalsIgnoreCase("show")) {
                 mLogger.warning("Show button gui");
-
-                //mButtonGui.hideAllButtons();
-
                 String[] buttons = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
                 for (String b : buttons) {
-                    mButtonGui.showButton(b.trim(), true);
+                    Platform.runLater(() -> mButtonGui.showButton(b.trim(), true));
                 }
-
-                //mButtonGui.setVisible(true);
             }
 
             if (name.equalsIgnoreCase("hide")) {
                 mLogger.warning("Hide button gui");
-                mButtonGui.hideAllButtons();
-                //mButtonGui.setVisible(false);
+                Platform.runLater(() -> mButtonGui.hideAllButtons());
             }
         }
     }
@@ -163,6 +154,6 @@ public class ButtonGUIExecutor extends ActivityExecutor {
 
     @Override
     public void unload() {
-        mButtonGui.hideAllButtons();
+        Platform.runLater(() -> mButtonGui.hideAllButtons());
     }
 }

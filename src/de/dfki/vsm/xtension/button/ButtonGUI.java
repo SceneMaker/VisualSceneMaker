@@ -93,6 +93,10 @@ public class ButtonGUI extends JFrame {
         Button b = new Button();
         b.setText(name);
         b.setFont(Font.font(Font.getDefault().getName(), size));
+        for (String s : b.getStyleClass()) {
+            mLogger.message("button style class " + s);
+        }
+        b.getStyleClass().remove("button:focused");
         b.setTranslateX(x);
         b.setTranslateY(y);
 
@@ -107,7 +111,6 @@ public class ButtonGUI extends JFrame {
             // hide gui if wanted
             if (mHideOnPressed) {
                 hideAllButtons();
-                //setVisible(!mHideOnPressed);
             }
         });
 
@@ -115,48 +118,37 @@ public class ButtonGUI extends JFrame {
     }
 
     public void hideAllButtons() {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                for (Button b : mButtons.values()) {
-                    double origY = b.getTranslateY();
-                    if (origY > 0.0) { // only hide button if it is not hidden!
-                        mLogger.message("Hide Button " + b.getText() + " @ " + b.getTranslateY());
-                        b.setTranslateY(origY - 2000);
-                    }
+        for (Button b : mButtons.values()) {
+            double origY = b.getTranslateY();
+            if (origY > 0.0) { // only hide button if it is not hidden!
+                mLogger.message("Hide Button " + b.getText() + " @ " + b.getTranslateY());
+                b.setTranslateY(origY - 2000);
+            }
 //                    b.setVisible(false);
 //                    b.setManaged(false);
 //                    mRootNode.getChildren().remove(b);
-                }
+        }
 
-                mButtonsHidden = true;
+        mButtonsHidden = true;
 
-                setVisible(false);
-            }
-        });
+        setVisible(false);
     }
 
     public void showButton(String id, boolean show) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
+        while (!mButtonsHidden) {
+            mLogger.message("Waiting until all Buttons are hidden ...");
+        }
+        if (mButtons.containsKey(id)) {
 
-                while (!mButtonsHidden) {
-                    mLogger.message("Waiting until buttons are hidden ...");
-                }
-                if (mButtons.containsKey(id)) {
+            double origY = mButtons.get(id).getTranslateY();
+            mButtons.get(id).setTranslateY(origY + 2000);
 
-                    double origY = mButtons.get(id).getTranslateY();
-                    mButtons.get(id).setTranslateY(origY + 2000);
-
-                    mLogger.message("Show Button " + mButtons.get(id).getText() + " @ " + mButtons.get(id).getTranslateY());
+            mLogger.message("Show Button " + mButtons.get(id).getText() + " @ " + mButtons.get(id).getTranslateY());
 //                    mRootNode.getChildren().add(mButtons.get(id));
 //                    mButtons.get(id).setManaged(show);
 //                    mButtons.get(id).setVisible(show);
-                }
-                setVisible(true);
-            }
-        });
+        }
+        setVisible(true);
     }
 
     public boolean isInitialized() {
