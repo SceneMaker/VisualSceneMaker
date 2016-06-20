@@ -49,7 +49,6 @@ public class ButtonGUI extends JFrame {
     public boolean mModal = true;
 
     private HashMap<String, Button> mButtons;
-    private HashMap<String, Point2D> mButtonsPositions;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -59,8 +58,6 @@ public class ButtonGUI extends JFrame {
         mExecutor = executor;
         //init stuff
         mButtons = new HashMap<>();
-        mButtonsPositions = new HashMap<>();
-
         Dimension size = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         mWidth = size.width;
         mHeight = size.height;
@@ -106,11 +103,13 @@ public class ButtonGUI extends JFrame {
                 mExecutor.setVSmVar(var, value);
             }
             // hide gui if wanted
-            setVisible(!mHideOnPressed);
+            if (mHideOnPressed) {
+                hideAllButtons();
+                setVisible(!mHideOnPressed);
+            }
         });
 
         mButtons.put(id, b);
-        mButtonsPositions.put(id, new Point2D(x, y));
     }
 
     public void hideAllButtons() {
@@ -118,10 +117,9 @@ public class ButtonGUI extends JFrame {
             @Override
             public void run() {
                 for (Button b : mButtons.values()) {
-                    //b.setManaged(false);
-                    b.setTranslateY(-1000.0); // move the button away
                     b.setVisible(false);
-                    //mLogger.message("Hidden Button " + b.getText() + " has coordinates " + b.getTranslateX() + ", " + b.getTranslateY());
+                    b.setManaged(false);
+                    mRootNode.getChildren().remove(b);
                 }
             }
         });
@@ -132,11 +130,9 @@ public class ButtonGUI extends JFrame {
             @Override
             public void run() {
                 if (mButtons.containsKey(id)) {
-                    mButtons.get(id).setTranslateY(mButtonsPositions.get(id).getY());
-                    //mButtons.get(id).setManaged(show);
+                    mRootNode.getChildren().add(mButtons.get(id));
+                    mButtons.get(id).setManaged(show);
                     mButtons.get(id).setVisible(show);
-
-                    // mLogger.message("Shown Button " + mButtons.get(id).getText() + " has coordinates " + mButtons.get(id).getTranslateX() + ", " + mButtons.get(id).getTranslateY());
                 }
             }
         });
