@@ -67,7 +67,7 @@ public class ButtonGUIExecutor extends ActivityExecutor {
             if (name.equalsIgnoreCase("show")) {
                 mLogger.warning("Show button gui");
 
-                mButtonGui.hideAllButtons();
+                //mButtonGui.hideAllButtons();
 
                 String[] buttons = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
                 for (String b : buttons) {
