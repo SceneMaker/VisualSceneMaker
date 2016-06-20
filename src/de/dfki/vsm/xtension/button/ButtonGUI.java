@@ -32,18 +32,20 @@ import javax.swing.JPanel;
  */
 public class ButtonGUI extends JFrame {
 
-    final JFXPanel mJFXPanel;
+    private JFXPanel mJFXPanel;
 
     int mHeight = 700;
     int mWidth = 700;
     float mScale = 1.0f;
 
     Group mRootNode;
-
     SubScene mButtonsSubScene;
 
     private ButtonGUIExecutor mExecutor;
 
+    private boolean mInitialized = false;
+    private boolean mButtonsHidden = false;
+    
     public boolean mAlwaysOnTop = true;
     public boolean mHideOnPressed = true;
     public boolean mModal = true;
@@ -105,7 +107,7 @@ public class ButtonGUI extends JFrame {
             // hide gui if wanted
             if (mHideOnPressed) {
                 hideAllButtons();
-                setVisible(!mHideOnPressed);
+                //setVisible(!mHideOnPressed);
             }
         });
 
@@ -121,6 +123,10 @@ public class ButtonGUI extends JFrame {
                     b.setManaged(false);
                     mRootNode.getChildren().remove(b);
                 }
+                
+                mButtonsHidden = true;
+                
+                setVisible(false);
             }
         });
     }
@@ -129,16 +135,26 @@ public class ButtonGUI extends JFrame {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
+                
+                while (!mButtonsHidden) {
+                    mLogger.message("Waiting until buttons are hidden ...");
+                }
                 if (mButtons.containsKey(id)) {
                     mRootNode.getChildren().add(mButtons.get(id));
                     mButtons.get(id).setManaged(show);
                     mButtons.get(id).setVisible(show);
                 }
+                setVisible(true);
             }
         });
     }
+    
+    public boolean isInitialized() {
+        return mInitialized;
+    }
 
     public void initFX() {
+        mLogger.message("Init Button GUI ...");
         mRootNode = new Group();
         mButtonsSubScene = new SubScene(mRootNode, mWidth, mHeight, true, SceneAntialiasing.BALANCED);
         mButtonsSubScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
@@ -149,6 +165,9 @@ public class ButtonGUI extends JFrame {
                 buildButton(bv.mId, bv.mX, bv.mY, bv.mSize, bv.mName, bv.mValue, bv.mVSMVar);
             }
         }
+        
+        // default hide all
+        hideAllButtons();
 
         // build layout
         StackPane sp = new StackPane();
@@ -162,14 +181,15 @@ public class ButtonGUI extends JFrame {
         group.setScaleY(group.getScaleY() * 1);
 
         // place centered
-        StackPane rootPane = new StackPane();
-        rootPane.getChildren().add(group);
-        rootPane.setStyle("-fx-background-color: #FFFFFF00;");
+        StackPane rp = new StackPane();
+        rp.getChildren().add(group);
+        rp.setStyle("-fx-background-color: #FFFFFF00;");
 
         // build scene
-        Scene scene = new Scene(rootPane, mWidth, mHeight);
+        Scene scene = new Scene(rp, mWidth, mHeight);
         scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         mJFXPanel.setScene(scene);
+        mInitialized = true;
     }
 
     public static void main(String[] args) {
