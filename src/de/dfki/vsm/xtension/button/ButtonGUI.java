@@ -38,7 +38,7 @@ public class ButtonGUI extends JFrame {
     int mWidth = 700;
     float mScale = 1.0f;
 
-    final Group mRootNode;
+    Group mRootNode;
 
     SubScene mButtonsSubScene;
 
@@ -55,7 +55,6 @@ public class ButtonGUI extends JFrame {
 
     public ButtonGUI(ButtonGUIExecutor executor) {
         mJFXPanel = new JFXPanel();
-        mRootNode = new Group();
 
         mExecutor = executor;
         //init stuff
@@ -144,6 +143,7 @@ public class ButtonGUI extends JFrame {
     }
 
     public void initFX() {
+        mRootNode = new Group();
         mButtonsSubScene = new SubScene(mRootNode, mWidth, mHeight, true, SceneAntialiasing.BALANCED);
         mButtonsSubScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         mButtonsSubScene.setBlendMode(BlendMode.MULTIPLY);
