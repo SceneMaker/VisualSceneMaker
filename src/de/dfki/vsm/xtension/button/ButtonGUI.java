@@ -45,7 +45,7 @@ public class ButtonGUI extends JFrame {
 
     private boolean mInitialized = false;
     private boolean mButtonsHidden = false;
-    
+
     public boolean mAlwaysOnTop = true;
     public boolean mHideOnPressed = true;
     public boolean mModal = true;
@@ -119,13 +119,18 @@ public class ButtonGUI extends JFrame {
             @Override
             public void run() {
                 for (Button b : mButtons.values()) {
-                    b.setVisible(false);
-                    b.setManaged(false);
-                    mRootNode.getChildren().remove(b);
+                    double origY = b.getTranslateY();
+                    if (origY > 0.0) { // only hide button if it is not hidden!
+                        mLogger.message("Hide Button " + b.getText() + " @ " + b.getTranslateY());
+                        b.setTranslateY(origY - 2000);
+                    }
+//                    b.setVisible(false);
+//                    b.setManaged(false);
+//                    mRootNode.getChildren().remove(b);
                 }
-                
+
                 mButtonsHidden = true;
-                
+
                 setVisible(false);
             }
         });
@@ -135,20 +140,25 @@ public class ButtonGUI extends JFrame {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                
+
                 while (!mButtonsHidden) {
                     mLogger.message("Waiting until buttons are hidden ...");
                 }
                 if (mButtons.containsKey(id)) {
-                    mRootNode.getChildren().add(mButtons.get(id));
-                    mButtons.get(id).setManaged(show);
-                    mButtons.get(id).setVisible(show);
+
+                    double origY = mButtons.get(id).getTranslateY();
+                    mButtons.get(id).setTranslateY(origY + 2000);
+
+                    mLogger.message("Show Button " + mButtons.get(id).getText() + " @ " + mButtons.get(id).getTranslateY());
+//                    mRootNode.getChildren().add(mButtons.get(id));
+//                    mButtons.get(id).setManaged(show);
+//                    mButtons.get(id).setVisible(show);
                 }
                 setVisible(true);
             }
         });
     }
-    
+
     public boolean isInitialized() {
         return mInitialized;
     }
@@ -165,7 +175,7 @@ public class ButtonGUI extends JFrame {
                 buildButton(bv.mId, bv.mX, bv.mY, bv.mSize, bv.mName, bv.mValue, bv.mVSMVar);
             }
         }
-        
+
         // default hide all
         hideAllButtons();
 
