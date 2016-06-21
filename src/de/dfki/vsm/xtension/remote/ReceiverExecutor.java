@@ -5,35 +5,27 @@
  */
 package de.dfki.vsm.xtension.remote;
 
-import de.affect.manage.AffectManager;
-import de.affect.manage.event.AffectUpdateEvent;
-import de.affect.manage.event.AffectUpdateListener;
-import de.affect.util.AppraisalTag;
-import de.affect.xml.AffectInputDocument;
-import de.affect.xml.AffectOutputDocument;
-import de.affect.xml.EmotionType;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.ListValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
-import org.apache.xmlbeans.XmlException;
 
 /**
  *
  * @author Patrick Gebhard
+ *
  */
 public class ReceiverExecutor extends ActivityExecutor {
-
+    
+    ReceiverThread mMessagereceiver;
+    
+    private String mSceneflowVar;
+    
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -65,32 +57,40 @@ public class ReceiverExecutor extends ActivityExecutor {
             final String name = activity.getName();
             final LinkedList<ActionFeature> features = activity.getFeatureList();
 
-            if (name.equalsIgnoreCase("reset")) {
-                mLogger.message("Reset affect processing for  " + activity.getActor());
+            if (name.equalsIgnoreCase("stop")) {
+                 mMessagereceiver.stopServer();
             }
         }
     }
 
     @Override
     public void launch() {
-        mLogger.message("Loading Remote Call Receiver");
-        final String port = mConfig.getProperty("port");
+        mLogger.message("Loading Message Receiver");
+        final int port = Integer.parseInt(mConfig.getProperty("port"));
+        
+        mSceneflowVar = mConfig.getProperty("sceneflow_variable");
 
+        mMessagereceiver = new ReceiverThread(this, port);
+        mMessagereceiver.start();
     }
 
     @Override
     public void unload() {
-
+       mMessagereceiver.stopServer();
+    }
+    
+    public void setSceneFlowVariable(String message) {
+        mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
+        mProject.setVariable(mSceneflowVar, new StringValue(message));
     }
 
-    // get the value of a feature (added PG) - quick and dirty
-    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
-        for (ActionFeature af : features) {
-            if (af.getKey().equalsIgnoreCase(name)) {
-                return af.getVal();
-            }
-        }
-        return "";
-    }
-
+//    // get the value of a feature (added PG) - quick and dirty
+//    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+//        for (ActionFeature af : features) {
+//            if (af.getKey().equalsIgnoreCase(name)) {
+//                return af.getVal();
+//            }
+//        }
+//        return "";
+//    }
 }
