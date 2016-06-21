@@ -17,20 +17,20 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class WarpPosition extends Action implements XMLParseable, XMLWriteable {
+public class WorldPosition extends Action implements XMLParseable, XMLWriteable {
 
     String mX = "";
     String mY = "";
     String mZ = "";
 
-    public WarpPosition(String x, String y, String z) {
+    public WorldPosition(String x, String y, String z) {
         mName = "warptoworldposition";
         mX = x;
         mY = y;
         mZ = z;
     }
 
-    public WarpPosition() {
+    public WorldPosition() {
     }
 
     @Override
