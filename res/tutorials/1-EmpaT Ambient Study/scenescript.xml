@@ -62,60 +62,60 @@
     </SceneTurn>
   </SceneObject>
   <SceneComment lower="1718" upper="1771" comment="/* Die Susanne soll sich mal auf den Weg schaffen! */"/>
-  <SceneObject lower="1772" upper="1885" language="en" identifier="Susanne_Hopp">
-    <SceneTurn lower="1795" upper="1837" speaker="susanne">
-      <SceneUttr lower="1804" upper="1810" punct=".">
-        <SceneWord lower="1804" upper="1809" text="Hallo"/>
+  <SceneObject lower="1773" upper="1886" language="en" identifier="Susanne_Hopp">
+    <SceneTurn lower="1796" upper="1838" speaker="susanne">
+      <SceneUttr lower="1805" upper="1811" punct=".">
+        <SceneWord lower="1805" upper="1810" text="Hallo"/>
       </SceneUttr>
-      <SceneUttr lower="1811" upper="1837" punct=".">
-        <SceneWord lower="1811" upper="1814" text="Ich"/>
-        <SceneWord lower="1815" upper="1820" text="komme"/>
-        <SceneWord lower="1821" upper="1827" text="gleich"/>
-        <SceneWord lower="1828" upper="1830" text="zu"/>
-        <SceneWord lower="1831" upper="1836" text="Ihnen"/>
+      <SceneUttr lower="1812" upper="1838" punct=".">
+        <SceneWord lower="1812" upper="1815" text="Ich"/>
+        <SceneWord lower="1816" upper="1821" text="komme"/>
+        <SceneWord lower="1822" upper="1828" text="gleich"/>
+        <SceneWord lower="1829" upper="1831" text="zu"/>
+        <SceneWord lower="1832" upper="1837" text="Ihnen"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="1838" upper="1885" speaker="susanne">
-      <SceneUttr lower="1847" upper="1885" punct=".">
-        <ActionObject lower="1847" upper="1884" actor="" mode="" name="SitDown" >
-          <ActionFeature lower="1856" upper="1883" typ="IDENTIFIER" key="chairname" val="meeting_seat_left"/></ActionObject>
+    </SceneTurn><SceneTurn lower="1839" upper="1886" speaker="susanne">
+      <SceneUttr lower="1848" upper="1886" punct=".">
+        <ActionObject lower="1848" upper="1885" actor="" mode="" name="SitDown" >
+          <ActionFeature lower="1857" upper="1884" typ="IDENTIFIER" key="chairname" val="meeting_seat_left"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneComment lower="1887" upper="1934" comment="/* Begrüßung und Abholung durch Interviewer. */"/>
-  <SceneObject lower="1935" upper="2230" language="en" identifier="Interviewer_Welcome">
-    <SceneTurn lower="1965" upper="2007" speaker="environment">
-      <SceneUttr lower="1978" upper="2007" punct=".">
-        <ActionObject lower="1978" upper="2006" actor="" mode="" name="AmbientLight" >
-          <ActionFeature lower="1992" upper="2005" typ="IDENTIFIER" key="value" val="evening"/></ActionObject>
+  <SceneComment lower="1888" upper="1935" comment="/* Begrüßung und Abholung durch Interviewer. */"/>
+  <SceneObject lower="1937" upper="2232" language="en" identifier="Interviewer_Welcome">
+    <SceneTurn lower="1967" upper="2009" speaker="environment">
+      <SceneUttr lower="1980" upper="2009" punct=".">
+        <ActionObject lower="1980" upper="2008" actor="" mode="" name="AmbientLight" >
+          <ActionFeature lower="1994" upper="2007" typ="IDENTIFIER" key="value" val="evening"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="2008" upper="2051" speaker="meeting_wall1">
-      <SceneUttr lower="2023" upper="2051" punct=".">
-        <ActionObject lower="2023" upper="2050" actor="" mode="" name="Color" >
-          <ActionFeature lower="2030" upper="2037" typ="FLOATING" key="r" val="255.0"/>
-          <ActionFeature lower="2038" upper="2043" typ="FLOATING" key="g" val="0.0"/>
-          <ActionFeature lower="2044" upper="2049" typ="FLOATING" key="b" val="0.0"/></ActionObject>
+    </SceneTurn><SceneTurn lower="2010" upper="2053" speaker="meeting_wall1">
+      <SceneUttr lower="2025" upper="2053" punct=".">
+        <ActionObject lower="2025" upper="2052" actor="" mode="" name="Color" >
+          <ActionFeature lower="2032" upper="2039" typ="FLOATING" key="r" val="255.0"/>
+          <ActionFeature lower="2040" upper="2045" typ="FLOATING" key="g" val="0.0"/>
+          <ActionFeature lower="2046" upper="2051" typ="FLOATING" key="b" val="0.0"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="2052" upper="2095" speaker="meeting_wall2">
-      <SceneUttr lower="2067" upper="2095" punct=".">
-        <ActionObject lower="2067" upper="2094" actor="" mode="" name="Color" >
-          <ActionFeature lower="2074" upper="2079" typ="FLOATING" key="r" val="0.0"/>
-          <ActionFeature lower="2080" upper="2087" typ="FLOATING" key="g" val="255.0"/>
-          <ActionFeature lower="2088" upper="2093" typ="FLOATING" key="b" val="0.0"/></ActionObject>
+    </SceneTurn><SceneTurn lower="2054" upper="2097" speaker="meeting_wall2">
+      <SceneUttr lower="2069" upper="2097" punct=".">
+        <ActionObject lower="2069" upper="2096" actor="" mode="" name="Color" >
+          <ActionFeature lower="2076" upper="2081" typ="FLOATING" key="r" val="0.0"/>
+          <ActionFeature lower="2082" upper="2089" typ="FLOATING" key="g" val="255.0"/>
+          <ActionFeature lower="2090" upper="2095" typ="FLOATING" key="b" val="0.0"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="2096" upper="2142" speaker="player">
-      <SceneUttr lower="2104" upper="2142" punct=".">
-        <ActionObject lower="2104" upper="2141" actor="" mode="" name="MoveTo" >
-          <ActionFeature lower="2112" upper="2140" typ="IDENTIFIER" key="location" val="meeting_application"/></ActionObject>
+    </SceneTurn><SceneTurn lower="2098" upper="2144" speaker="player">
+      <SceneUttr lower="2106" upper="2144" punct=".">
+        <ActionObject lower="2106" upper="2143" actor="" mode="" name="MoveTo" >
+          <ActionFeature lower="2114" upper="2142" typ="IDENTIFIER" key="location" val="meeting_application"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="2143" upper="2190" speaker="player">
-      <SceneUttr lower="2151" upper="2190" punct=".">
-        <ActionObject lower="2151" upper="2189" actor="" mode="" name="SitDown" >
-          <ActionFeature lower="2160" upper="2188" typ="IDENTIFIER" key="chairname" val="meeting_seat_right"/></ActionObject>
+    </SceneTurn><SceneTurn lower="2145" upper="2192" speaker="player">
+      <SceneUttr lower="2153" upper="2192" punct=".">
+        <ActionObject lower="2153" upper="2191" actor="" mode="" name="SitDown" >
+          <ActionFeature lower="2162" upper="2190" typ="IDENTIFIER" key="chairname" val="meeting_seat_right"/></ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="2191" upper="2230" speaker="environment">
-      <SceneUttr lower="2204" upper="2230" punct=".">
-        <ActionObject lower="2204" upper="2229" actor="" mode="" name="AmbientLight" >
-          <ActionFeature lower="2218" upper="2228" typ="IDENTIFIER" key="value" val="noon"/></ActionObject>
+    </SceneTurn><SceneTurn lower="2193" upper="2232" speaker="environment">
+      <SceneUttr lower="2206" upper="2232" punct=".">
+        <ActionObject lower="2206" upper="2231" actor="" mode="" name="AmbientLight" >
+          <ActionFeature lower="2220" upper="2230" typ="IDENTIFIER" key="value" val="noon"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
