@@ -68,6 +68,8 @@ public class ButtonGUI extends Application {
 		primaryStage.initStyle(StageStyle.TRANSPARENT);
 		primaryStage.setScene(scene);
 		primaryStage.show();
+                // hide it since we dont need it ...
+                primaryStage.hide();
 
 		mIsRunning = true;
 	}
