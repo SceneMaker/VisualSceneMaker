@@ -14,6 +14,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import javafx.application.Platform;
@@ -21,105 +22,117 @@ import javafx.application.Platform;
 /**
  *
  * @author Patrick Gebhard
+ *
  */
 public class ButtonGUIExecutor extends ActivityExecutor {
 
-    // The GUI
-    final ButtonGUI mButtonGui = new ButtonGUI(this);
+	// The GUI
+	private ButtonGUI mButtonGUI;
+	// The current ActivityWorker
+	ActivityWorker mActivityWorker = null;
+	private final HashSet<ActivityWorker> mActivityWorkers = new HashSet<>();
+	// Configuration values
+	public final HashMap<String, ButtonValues> mButtonsAndValues = new HashMap<>();
+	// The singelton logger instance
+	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    // The current ActivityWorker
-    ActivityWorker mActivityWorker = null;
-    private final HashSet<ActivityWorker> mActivityWorkers = new HashSet<>();
-    // Configuration values
-    public final HashSet<ButtonValues> mButtonsAndValues = new HashSet<>();
-    // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+	private static ButtonGUIExecutor sInstance;
 
-    public ButtonGUIExecutor(PluginConfig config, RunTimeProject project) {
-        super(config, project);
-    }
+	public ButtonGUIExecutor(PluginConfig config, RunTimeProject project) {
+		super(config, project);
+		sInstance = this;
+	}
 
-    @Override
-    public String marker(long id) {
-        return "$(" + id + ")";
-    }
+	@Override
+	public String marker(long id) {
+		return "$(" + id + ")";
+	}
 
-    @Override
-    public void execute(AbstractActivity activity/*, ActivityScheduler player*/) {
-        if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-            String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+	@Override
+	public void execute(AbstractActivity activity) {
+		if (activity instanceof SpeechActivity) {
+			SpeechActivity sa = (SpeechActivity) activity;
+			String text = sa.getTextOnly("$(").trim();
+			LinkedList<String> timemarks = sa.getTimeMarks("$(");
 
-            // If text is empty - assume activity has empty text but has marker activities registered
-            if (text.isEmpty()) {
-                for (String tm : timemarks) {
-                    mLogger.warning("Directly executing activity at timemark " + tm);
-                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
-                }
-            }
-        } else {
-            final String name = activity.getName();
+			// If text is empty - assume activity has empty text but has marker activities registered
+			if (text.isEmpty()) {
+				for (String tm : timemarks) {
+					mLogger.warning("Directly executing activity at timemark " + tm);
+					mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+				}
+			}
+		} else {
+			final String name = activity.getName();
 
-            if (name.equalsIgnoreCase("show")) {
-                mLogger.warning("Show button gui");
-                String[] buttons = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
-                for (String b : buttons) {
-                    Platform.runLater(() -> mButtonGui.showButton(b.trim(), true));
-                }
-            }
+			if (name.equalsIgnoreCase("show")) {
+				String[] buttons = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
+				Platform.runLater(() -> mButtonGUI.showButton(buttons));
+			}
 
-            if (name.equalsIgnoreCase("hide")) {
-                mLogger.warning("Hide button gui");
-                Platform.runLater(() -> mButtonGui.hideAllButtons());
-            }
-        }
-    }
+			if (name.equalsIgnoreCase("hide")) {
+				Platform.runLater(() -> mButtonGUI.hideButton());
+			}
+		}
+	}
 
-    public void setVSmVar(String var, String value) {
-        mProject.setVariable(var, new StringValue(value));
-    }
+	public void setVSmVar(String var, String value) {
+		mProject.setVariable(var, new StringValue(value));
+	}
 
-    @Override
-    public void launch() {
-        mLogger.message("Lauching ButtonGUI ...");
-        // format for button config
-        // id, x, y, name, value, scenemaker var
-        //<Feature key="button_yes" val="100, 100, 24, "Yes","yes_pressed", "user_input"/>
-        if (!mButtonGui.isInitialized()) {
+	public static ButtonGUIExecutor getInstance() {
+		return sInstance;
+	}
+
+	@Override
+	public void launch() {
+		mLogger.message("Lauching ButtonGUI ...");
+		mButtonGUI = (!ButtonGUI.isRunning()) ? new ButtonGUI() : mButtonGUI;
+		// give ButtonGUI the vsm executor instance
+		mButtonGUI.setButtonExecutor(this);
+		new Thread() {
+			@Override
+			public void run() {
+				mButtonGUI.create();
+			}
+		}.start();
+
+		// format for button config
+		// id, x, y, name, value, scenemaker var
+		//<Feature key="button_yes" val="100, 100, 24, "Yes","yes_pressed", "user_input"/>
+		//if (!mButtonGui.isInitialized()) {
 //            String missingVariables = "";
 //            int missingVarCnt = 0;
 //            ArrayList<VarDef> globalVars = mProject.getSceneFlow().getParentNode().getVarDefList();
+		for (ConfigFeature cf : mConfig.getEntryList()) {
+			String key = cf.getKey();
 
-            for (ConfigFeature cf : mConfig.getEntryList()) {
-                String key = cf.getKey();
+			if (key.equalsIgnoreCase("hideonpressed")) {
+				if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
+					mButtonGUI.mHideOnPressed = Boolean.parseBoolean(cf.getValue());
+				}
+			}
+			if (key.equalsIgnoreCase("alwaysontop")) {
+				if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
+					mButtonGUI.mAlwaysOnTop = Boolean.parseBoolean(cf.getValue());
+				}
+			}
+			if (key.equalsIgnoreCase("takesallinput")) {
+				if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
+					mButtonGUI.mModal = Boolean.parseBoolean(cf.getValue());
+				}
+			}
 
-                if (key.equalsIgnoreCase("hideonpressed")) {
-                    if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
-                        mButtonGui.mHideOnPressed = Boolean.parseBoolean(cf.getValue());
-                    }
-                }
-                if (key.equalsIgnoreCase("alwaysontop")) {
-                    if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
-                        mButtonGui.mAlwaysOnTop = Boolean.parseBoolean(cf.getValue());
-                    }
-                }
-                if (key.equalsIgnoreCase("takesallinput")) {
-                    if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
-                        mButtonGui.mModal = Boolean.parseBoolean(cf.getValue());
-                    }
-                }
+			if (key.contains("button")) {
+				String[] values = cf.getValue().split(",");
 
-                if (key.contains("button")) {
-                    String[] values = cf.getValue().split(",");
-
-                    ButtonValues bv = new ButtonValues(key,
-                            Integer.parseInt(values[0].trim()),
-                            Integer.parseInt(values[1].trim()),
-                            Integer.parseInt(values[2].trim()),
-                            values[3].trim(),
-                            values[4].trim(),
-                            values[5].trim());
+				ButtonValues bv = new ButtonValues(key,
+				  Integer.parseInt(values[0].trim()),
+				  Integer.parseInt(values[1].trim()),
+				  Integer.parseInt(values[2].trim()),
+				  values[3].trim(),
+				  values[4].trim(),
+				  values[5].trim());
 
 //                    // Check if scene_flow has the global variable values[5].trim();
 //                    mLogger.message("Checking var " + values[5].trim());
@@ -134,12 +147,11 @@ public class ButtonGUIExecutor extends ActivityExecutor {
 //                        missingVarCnt++;
 //                        missingVariables += values[5].trim() + ",";
 //                    }
+				mButtonsAndValues.put(key, bv);
+			}
+			// }
 
-                    mButtonsAndValues.add(bv);
-                }
-            }
-
-//            // show dialog if global var is missing.
+//            // create dialog if global var is missing.
 //            if (missingVarCnt > 0) {
 //                missingVariables = missingVariables.substring(0, missingVariables.length() - 1);
 //                JOptionPane.showMessageDialog(mButtonGui,
@@ -147,13 +159,11 @@ public class ButtonGUIExecutor extends ActivityExecutor {
 //                        "Variable not defined!",
 //                        JOptionPane.WARNING_MESSAGE);
 //            }
+			//Platform.runLater(() -> mButtonGui.initFX());
+		}
+	}
 
-            Platform.runLater(() -> mButtonGui.initFX());
-        }
-    }
-
-    @Override
-    public void unload() {
-        Platform.runLater(() -> mButtonGui.hideAllButtons());
-    }
+	@Override
+	public void unload() {
+	}
 }
