@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo, 20 Jun 2016 17:12:36" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 23 Jun 2016 08:23:37" start="N1;N7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -27,6 +27,9 @@
           <String><![CDATA[]]></String>
         </Expression>
       </Assign>
+      <Play>
+        <String><![CDATA[[yesno hide]]]></String>
+      </Play>
     </Commands>
     <TEdge target="N6" start="" timeout="2000">
     <Graphics>
@@ -109,6 +112,25 @@
     </PEdge>
     <Graphics>
       <Position xPos="570" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N7" name="N7" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N7" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="267" yPos="122" ctrlXPos="291" ctrlYPos="36"/>
+        <ControlPoint xPos="294" yPos="142" ctrlXPos="372" ctrlYPos="96"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="210" yPos="120"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="S1" comment="" hideLocalVar="false" hideGlobalVar="false" start="N4;">

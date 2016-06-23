@@ -2,10 +2,10 @@
 <Project name="ButtonGUI">
   <Plugins>
     <Plugin type="device" name="buttongui" class="de.dfki.vsm.xtension.button.ButtonGUIExecutor" load="true">
-      <Feature key="button_yes" val="800, 400, 96, Ja, yes_pressed, user_input"/>
-      <Feature key="button_no" val="800, 600, 96, Nein, no_pressed, user_input"/>
-      <Feature key="button_help" val="800, 500, 24, Ich brauche sofort Hilfe!, help_pressed, user_input"/>
-      <Feature key="hideonpressed" val="true"/>
+      <Feature key="button_yes" val="800, 400, 64, Ja, yes_pressed, user_input"/>
+      <Feature key="button_no" val="800, 600, 64, Nein, no_pressed, user_input"/>
+      <Feature key="button_help" val="800, 460, 64, Ich brauche sofort Hilfe!, help_pressed, user_input"/>
+      <Feature key="hideonpressed" val="false"/>
       <Feature key="takesallinput" val="false"/>
     </Plugin>
   </Plugins>
