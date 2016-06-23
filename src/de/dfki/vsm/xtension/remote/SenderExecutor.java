@@ -87,6 +87,8 @@ public class SenderExecutor extends ActivityExecutor {
 //            } catch (Exception e) {
 //            }
             // Broadcast the message over all the network interfaces
+            String hosts = "";
+            
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = interfaces.nextElement();
@@ -105,6 +107,7 @@ public class SenderExecutor extends ActivityExecutor {
                     try {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, mPort);
                         c.send(sendPacket);
+                        hosts = hosts + broadcast.getHostAddress() + ", ";
                         mLogger.message(mMessage + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
                     } catch (Exception e) {
                     }
@@ -113,7 +116,7 @@ public class SenderExecutor extends ActivityExecutor {
 
             mLogger.message("Waiting for a reply ...");
 
-            //Wait for a response
+            //Wait for a response(s) - This should be in a thread since it could be that there are more than one receiver.
             byte[] recvBuf = new byte[15000];
             DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
             c.receive(receivePacket);
@@ -121,8 +124,7 @@ public class SenderExecutor extends ActivityExecutor {
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
             if (message.equals("VSMMessage#Received")) {
-                //DO SOMETHING WITH THE SERVER'S IP (for example, store it in your controller)
-                mProject.setVariable(mSceneflowVar, new StringValue("Message successfully delivered to " + receivePacket.getAddress().getHostName()));
+                mProject.setVariable(mSceneflowVar, new StringValue("Message successfully delivered"));
             }
 
             //Close the port!
