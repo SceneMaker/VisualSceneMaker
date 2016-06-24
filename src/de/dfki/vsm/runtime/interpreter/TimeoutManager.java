@@ -65,7 +65,7 @@ public class TimeoutManager {
         }
 
         mTimeoutCondList.clear();
-        mLogger.message("Clearing timeout manager");
+        //mLogger.message("Clearing timeout manager");
     }
 
     public boolean expired(final TimeoutCond cond) {
@@ -77,12 +77,12 @@ public class TimeoutManager {
         // mTimeoutCondList.get(cond).
         mTimeoutCondList.get(cond).getSecond().cancel();
         mTimeoutCondList.remove(cond);
-        mLogger.message("removing " + cond.getConcreteSyntax() + " ");
+        //mLogger.message("removing " + cond.getConcreteSyntax() + " ");
     }
 
     public void start(final TimeoutCond cond, int timeout) {
         if (contains(cond)) {
-            mLogger.message("Already contained " + cond.getConcreteSyntax() + " -> restart");
+            //mLogger.message("Already contained " + cond.getConcreteSyntax() + " -> restart");
             remove(cond);
         }
 
@@ -92,7 +92,7 @@ public class TimeoutManager {
 
                 if (contains(cond)) {
                     mTimeoutCondList.get(cond).setFirst(true);
-                    mLogger.message("Setting true " + cond.getConcreteSyntax());
+                    //mLogger.message("Setting true " + cond.getConcreteSyntax());
                 }
 
                 // if (mEventObserver != null) {

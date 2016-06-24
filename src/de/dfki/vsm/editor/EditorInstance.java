@@ -385,7 +385,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return openProject(file.getPath());
         } else {
             // Print an error message
-            mLogger.warning("Warning: Canceled opening of a project file");
+            //mLogger.warning("Warning: Canceled opening of a project file");
             // And return failure here
             return false;
         }
@@ -424,7 +424,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     public final boolean openProject(String path) {
         if (path == null) {
-            mLogger.failure("Error: Cannot open editor project from a bad Stream");
+            //mLogger.failure("Error: Cannot open editor project from a bad Stream");
             // And return failure here
             return false;
         }
@@ -460,7 +460,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             return true;
         } else {
             // Print an error message
-            mLogger.failure("Error: Cannot load editor project from Stream");
+            //mLogger.failure("Error: Cannot load editor project from Stream");
             // Return false at failure
             return false;
         }
@@ -496,7 +496,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         return true;
                     } else {
                         // Print an error message
-                        mLogger.failure("Error: Cannot write the editor project '" + project + "'");
+                        //mLogger.failure("Error: Cannot write the editor project '" + project + "'");
                         // And return failure here
                         return false;
                     }
@@ -506,13 +506,13 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 }
             } else {
                 // Print an error message
-                mLogger.failure("Error: Cannot save a bad editor project");
+                //mLogger.failure("Error: Cannot save a bad editor project");
                 // And return failure here
                 return false;
             }
         } else {
             // Print an error message
-            mLogger.failure("Error: Cannot save a bad project editor");
+            //mLogger.failure("Error: Cannot save a bad project editor");
             // And return failure here
             return false;
         }
@@ -619,25 +619,25 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         return true;
                     } else {
                         // Print an error message
-                        mLogger.failure("Error: Cannot write the editor project '" + project + "'");
+                        //mLogger.failure("Error: Cannot write the editor project '" + project + "'");
                         // And return failure here
                         return false;
                     }
                 } else {
                     // Print an error message
-                    mLogger.warning("Warning: Canceled saving of a project file");
+                    //mLogger.warning("Warning: Canceled saving of a project file");
                     // And return failure here
                     return false;
                 }
             } else {
                 // Print an error message
-                mLogger.failure("Error: Cannot save a bad editor project");
+                //mLogger.failure("Error: Cannot save a bad editor project");
                 // And return failure here
                 return false;
             }
         } else {
             // Print an error message
-            mLogger.failure("Error: Cannot save a bad project editor");
+            //mLogger.failure("Error: Cannot save a bad project editor");
             // And return failure here
             return false;
         }
@@ -771,7 +771,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         final String projectPath = project.getProjectPath();
         final String projectName = project.getProjectName();
         // Print some info message
-        mLogger.message("Updating recent projects with '" + projectPath + "' '" + projectName + "'");
+        //mLogger.message("Updating recent projects with '" + projectPath + "' '" + projectName + "'");
         //
         ArrayList<String> recentProjectPaths = new ArrayList<>();
         ArrayList<String> recentProjectNames = new ArrayList<>();
@@ -883,28 +883,28 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
             if (mRunTime.isPaused(project)) {
                 if (mRunTime.proceed(project)) {
                     // Print some information
-                    mLogger.message("Proceeding project '" + project + "'");
+                    //mLogger.message("Proceeding project '" + project + "'");
                     // Refresh the appearance
                     refresh();
                     // Return true at success
                     return true;
                 } else {
                     // Print an error message
-                    mLogger.failure("Error: Cannot proceed project '" + project + "'");
+                    //mLogger.failure("Error: Cannot proceed project '" + project + "'");
                     // Return false at failure
                     return false;
                 }
             } else {
                 if (mRunTime.pause(project)) {
                     // Print some information
-                    mLogger.message("Pausing project '" + project + "'");
+                    //mLogger.message("Pausing project '" + project + "'");
                     // Refresh the appearance
-                    refresh();
+                    //refresh();
                     // Return true at success
                     return true;
                 } else {
                     // Print an error message
-                    mLogger.failure("Error: Cannot pause project '" + project + "'");
+                    //mLogger.failure("Error: Cannot pause project '" + project + "'");
                     // Return false at failure
                     return false;
                 }
@@ -926,19 +926,19 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                         return true;
                     } else {
                         // Print an error message
-                        mLogger.failure("Error: Cannot start project '" + project + "'");
+                        //mLogger.failure("Error: Cannot start project '" + project + "'");
                         // Return false at failure
                         return false;
                     }
                 } else {
                     // Print an error message
-                    mLogger.failure("Error: Cannot launch project '" + project + "'");
+                    //mLogger.failure("Error: Cannot launch project '" + project + "'");
                     // Return false at failure
                     return false;
                 }
             } else {
                 // Print an error message
-                mLogger.failure("Error: Cannot load project '" + project + "'");
+                //mLogger.failure("Error: Cannot load project '" + project + "'");
                 // Return false at failure
                 return false;
             }
@@ -972,13 +972,13 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 return true;
             } else {
                 // Print an error message
-                mLogger.failure("Error: Cannot unload project '" + project + "'");
+                //mLogger.failure("Error: Cannot unload project '" + project + "'");
                 // Return false at failure
                 return false;
             }
         } else {
             // Print an error message
-            mLogger.failure("Error: Cannot abort project '" + project + "'");
+            //mLogger.failure("Error: Cannot abort project '" + project + "'");
             // Return false at failure
             return false;
         }
