@@ -295,8 +295,10 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private AbstractTreeEntry getContextItemSelected(boolean isRightClicked){
         Object selectedItem = treeView.getSelectionModel().getSelectedItem();
         if(isRightClicked){
+
             ((ContextTreeItem)selectedItem).getMenu();
             new ContextMenu(new MenuItem("HOLA"));
+            ((ContextTreeItem) selectedItem).setExpanded(true);
         }
         return ((ContextTreeItem) selectedItem).getEntryItem();
     }

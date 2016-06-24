@@ -75,7 +75,12 @@ public  class TreeCellImpl<AbstractTreeEntry> extends TreeCell<AbstractTreeEntry
         textField.setOnKeyReleased((KeyEvent t) -> {
             if (t.getCode() == KeyCode.ENTER){
                 AbstractTreeEntry entry = getEntry();
-                commitEdit(getEditedItemFactory(entry, textField.getText()));
+                String newTextValue = textField.getText();
+                if(newTextValue.equals("")){
+                    cancelEdit();
+                }else{
+                    commitEdit(getEditedItemFactory(entry, newTextValue));
+                }
             } else if (t.getCode() == KeyCode.ESCAPE) {
                 cancelEdit();
             }
