@@ -1,3 +1,6 @@
 nbproject/
 src/de/dfki/vsm/sfsl/parser/
 tmp/
+/prj/version.ini
+/log/vsm3.log
+/log/stickman.log
