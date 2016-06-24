@@ -76,8 +76,8 @@ public final class TWorldExecutor extends ActivityExecutor {
         boolean isCactODirPresent = isPathExisting(cactordir);
         boolean isTWorldPresent = isPathExisting(tworlddir);
 
-        if(!isCactODirPresent || !isTWorldPresent){
-            String missing = (!isCactODirPresent) ? cactordir: tworlddir;
+        if (!isCactODirPresent || !isTWorldPresent) {
+            String missing = (!isCactODirPresent) ? cactordir : tworlddir;
             String message = "Missing installation folder " + missing;
             WaitingDialog InfoDialog = new WaitingDialog(message);
             InfoDialog.setModal(true);
@@ -108,11 +108,11 @@ public final class TWorldExecutor extends ActivityExecutor {
         broadcast("Start");
     }
 
-    private boolean isPathExisting(String path){
+    private boolean isPathExisting(String path) {
 
         File f = new File(path);
-        if(f.exists() && f.isDirectory()) {
-            return  true;
+        if (f.exists() && f.isDirectory()) {
+            return true;
         }
         return false;
     }
@@ -282,6 +282,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
                 // build action
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Happy", "1.0", aid);
+            }
+
+            if (cmd.equalsIgnoreCase("Challenge")) {
+                // get the charamel avatar id
+                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                // build action
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Challenge", aid);
             }
 
             if (cmd.equalsIgnoreCase("ShowPalms")) {
