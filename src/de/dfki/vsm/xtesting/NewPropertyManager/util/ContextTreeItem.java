@@ -61,6 +61,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
                 getChildren().add(newBox);
                 agentCounter++;
                 notifyObserver(agent);
+                newBox.getParent().setExpanded(true);
             }
         });
         return  addNewAgent;
