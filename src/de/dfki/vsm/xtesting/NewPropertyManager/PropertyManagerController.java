@@ -298,7 +298,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
             ((ContextTreeItem)selectedItem).getMenu();
             new ContextMenu(new MenuItem("HOLA"));
-            ((ContextTreeItem) selectedItem).setExpanded(true);
+
         }
         return ((ContextTreeItem) selectedItem).getEntryItem();
     }
