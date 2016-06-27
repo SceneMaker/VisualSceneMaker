@@ -238,22 +238,28 @@ public final class TWorldExecutor extends ActivityExecutor {
             if (cmd.equalsIgnoreCase("Angry")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                String intensity = getActionFeatureValue("intensity", features);
+                intensity = (intensity == "") ? "1.0" : intensity;
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Angry", "1.0", aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Angry", intensity, aid);
             }
 
             if (cmd.equalsIgnoreCase("Demanding")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                String intensity = getActionFeatureValue("intensity", features);
+                intensity = (intensity == "") ? "1.0" : intensity;
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Demanding", "1.0", aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Demanding", intensity, aid);
             }
 
             if (cmd.equalsIgnoreCase("Disgust")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                String intensity = getActionFeatureValue("intensity", features);
+                intensity = (intensity == "") ? "1.0" : intensity;
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Disgust", "1.0", aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Disgust", intensity, aid);
             }
 
             if (cmd.equalsIgnoreCase("Neutral")) {
@@ -266,22 +272,28 @@ public final class TWorldExecutor extends ActivityExecutor {
             if (cmd.equalsIgnoreCase("Sad")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                String intensity = getActionFeatureValue("intensity", features);
+                intensity = (intensity == "") ? "1.0" : intensity;
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Sad", "1.0", aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Sad", intensity, aid);
             }
 
             if (cmd.equalsIgnoreCase("Smile")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                String intensity = getActionFeatureValue("intensity", features);
+                intensity = (intensity == "") ? "1.0" : intensity;
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", "1.0", aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", intensity, aid);
             }
 
             if (cmd.equalsIgnoreCase("Happy")) {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                String intensity = getActionFeatureValue("intensity", features);
+                intensity = (intensity == "") ? "1.0" : intensity;
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Happy", "1.0", aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Happy", intensity, aid);
             }
 
             if (cmd.equalsIgnoreCase("Reject")) {
