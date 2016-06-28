@@ -277,12 +277,17 @@ public class VarDefDialog extends Dialog
     private void fillComponents()
     {
 
+        VarDef varDefCopy = mVarDef.getCopy();
         // Show the basic built-in types
         mTypeDefComboBoxModel.addElement("Int");
         mTypeDefComboBoxModel.addElement("Bool");
         mTypeDefComboBoxModel.addElement("Float");
         mTypeDefComboBoxModel.addElement("String");
         mTypeDefComboBoxModel.addElement("Object");
+        if(varDefCopy == null){
+            varDefCopy = mVarDef.getCopy();
+        }
+
 
         // Show the type definitions of the current node modification status.
         for (TypeDef def : mNode.getTypeDefList())
@@ -304,13 +309,14 @@ public class VarDefDialog extends Dialog
         }
 
         // Select the type of the variable definition
-        mTypeDefComboBox.setSelectedItem(mVarDef.getType());
+        mTypeDefComboBox.setSelectedItem(varDefCopy.getType());
 
         // Select the expression of the variable definition
-        if (mVarDef.getExp() != null)
+        if (varDefCopy.getExp() != null)
         {
-            mExpTextField.setText(mVarDef.getExp().getAbstractSyntax());
+            mExpTextField.setText(varDefCopy.getExp().getAbstractSyntax());
         }
+        mVarDef = varDefCopy;
     }
 
     private void selectExp()
