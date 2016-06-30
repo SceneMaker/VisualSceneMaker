@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.graphics.comment.CommentGraphics;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -52,8 +51,9 @@ public class Comment implements ModelObject {
     }
 
     private void formatHTML() {
-        mFontSize
-                = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
+        // PG 30.7.2016 Da fuck? This is not allowed in the model!      
+        //mFontSize = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
+        mFontSize = 16;
 
         if (mTextEditor == null) {
             mTextEditor = new JEditorPane();
