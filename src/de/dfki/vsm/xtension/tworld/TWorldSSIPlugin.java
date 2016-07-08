@@ -76,6 +76,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     public void handle(final SSIEventArray array) {
         // Print some information 
         //mLogger.message("Handling SSI events " + array);
+
         for (final SSIEventObject event : array.getEventList()) {
             final SSIEventData obj = event.getData();
             //mLogger.message("Handling SSI event " + obj);
@@ -113,7 +114,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 values.put("head_orientation_yaw", new StringValue(mSSIData.get("head.orientation.yaw")));
                 values.put("head_movement_nod", new StringValue(mSSIData.get("head.movement.nod")));
                 values.put("head_movement_shake", new StringValue(mSSIData.get("head.movement.shake")));
-                values.put("body_activity", new StringValue(mSSIData.get("body.activity")));
+                float ba = Float.parseFloat(mSSIData.get("body.activity"));
+                values.put("body_activity", new FloatValue(ba));
                 values.put("body_energy", new StringValue(mSSIData.get("body.energy")));
                 values.put("body_posture_leanfront_detected", new StringValue(mSSIData.get("body.posture.leanfront.detected")));
                 values.put("body_posture_leanfront_duration", new StringValue(mSSIData.get("body.posture.leanfront.duration")));
@@ -145,6 +147,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                         //mLogger.warning("Variable " + value.getKey() + " not defined!");
                     }
                 }
+
+                long end = System.nanoTime();
             }
         }
     }

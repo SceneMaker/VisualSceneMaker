@@ -83,11 +83,12 @@ public final class SSIEventReceiver extends Thread {
         // Receive while not done ...
         while (!mDone) {
             long currentTime = System.nanoTime();
-            mLogger.message("Awaiting SSI events ...processing took ... " + ((currentTime - mTimeCounter) / 1000000) + "ms");
+            mLogger.success("Awaiting SSI events ...processing took ... " + ((currentTime - mTimeCounter) / 1000000) + "ms");
             // Receive a new message
             final String message = recvString();
 
-            // PG - this is a lot of output! mLogger.success(message);
+            // PG - this is a lot of output!
+            //mLogger.success(">>>>>>" +message);
             // Check message content
             if (message != null) {
                 // start time measure
