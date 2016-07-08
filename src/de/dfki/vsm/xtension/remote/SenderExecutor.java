@@ -79,13 +79,6 @@ public class SenderExecutor extends ActivityExecutor {
 
             byte[] sendData = (mMessageOffset + mMessage).getBytes();
 
-//            //Try the 255.255.255.255 first
-//            try {
-//                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 8989);
-//                c.send(sendPacket);
-//                mLogger.message(">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
-//            } catch (Exception e) {
-//            }
             // Broadcast the message over all the network interfaces
             String hosts = "";
             
@@ -141,7 +134,7 @@ public class SenderExecutor extends ActivityExecutor {
         mPort = Integer.parseInt(mConfig.getProperty("port"));
         mSceneflowVar = mConfig.getProperty("sceneflow_variable");
 
-        mMessage = "VSMMessage#SenderStarted";
+        mMessage = "VSM UPD Sender Started";
         send();
     }
 
