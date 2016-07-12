@@ -69,7 +69,7 @@ public class ReceiverThread extends Thread {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(ReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
+           mLogger.message("Exception while receiving data ...");
         }
     }
 
