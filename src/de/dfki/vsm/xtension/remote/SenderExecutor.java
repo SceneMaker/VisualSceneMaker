@@ -79,6 +79,13 @@ public class SenderExecutor extends ActivityExecutor {
 
             byte[] sendData = (mMessageOffset + mMessage).getBytes();
 
+//            //Try the 255.255.255.255 first
+//            try {
+//                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), mPort);
+//                c.send(sendPacket);
+//               // mLogger.message(">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
+//            } catch (Exception e) {
+//            }
             // Broadcast the message over all the network interfaces
             String hosts = "";
             
@@ -107,18 +114,18 @@ public class SenderExecutor extends ActivityExecutor {
                 }
             }
 
-            mLogger.message("Waiting for a reply ...");
-
-            //Wait for a response(s) - This should be in a thread since it could be that there are more than one receiver.
-            byte[] recvBuf = new byte[15000];
-            DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
-            c.receive(receivePacket);
-
-            //Check if the message is correct
-            String message = new String(receivePacket.getData()).trim();
-            if (message.equals("VSMMessage#Received")) {
-                mProject.setVariable(mSceneflowVar, new StringValue("Message successfully delivered"));
-            }
+//            mLogger.message("Waiting for a reply ...");
+//
+//            //Wait for a response(s) - This should be in a thread since it could be that there are more than one receiver.
+//            byte[] recvBuf = new byte[15000];
+//            DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
+//            c.receive(receivePacket);
+//
+//            //Check if the message is correct
+//            String message = new String(receivePacket.getData()).trim();
+//            if (message.equals("VSMMessage#Received")) {
+//                mProject.setVariable(mSceneflowVar, new StringValue("Message successfully delivered"));
+//            }
 
             //Close the port!
             c.close();
