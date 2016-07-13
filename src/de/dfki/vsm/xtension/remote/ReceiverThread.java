@@ -20,6 +20,7 @@ import java.util.logging.Logger;
  *
  */
 public class ReceiverThread extends Thread {
+
     private int mPort;
 
     private ReceiverExecutor mExecutor;
@@ -56,24 +57,42 @@ public class ReceiverThread extends Thread {
 
                 String message = new String(packet.getData()).trim();
                 mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
-                if (message.startsWith("VSMMessage#")) {
-                    byte[] sendData = "VSMMessage#Received".getBytes();
+                if (message.startsWith(SenderExecutor.sMSG_HEADER)) {
 
-                    mExecutor.setSceneFlowVariable(message.substring(message.indexOf("#") + 1));
+                    // parse message
+                    String[] msgParts = message.split(SenderExecutor.sMSG_SEPARATOR);
+
+                    if (msgParts.length > 1) {
+                        String msgHeader = msgParts[0];
+                        String msg = msgParts[1];
+                        String timestamp = "";
+                        String timeinfo = "";
+
+                        if (msgParts.length > 2) {
+                            timestamp = msgParts[2];
+                        }
+
+                        if (msgParts.length == 4) {
+                            timeinfo = msgParts[3];
+                        }
+
+                        mExecutor.setSceneFlowVariable(msg);
+                    }
 
                     //Send a response
-                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
-                    mSocket.send(sendPacket);
-
-                    mLogger.message("Sent confirmation to " + sendPacket.getAddress().getHostAddress());
+//                    byte[] sendData = "VSMMessage#Received".getBytes();
+//                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
+//                    mSocket.send(sendPacket);
+//
+//                    mLogger.message("Sent confirmation to " + sendPacket.getAddress().getHostAddress());
                 }
             }
         } catch (IOException ex) {
-           mLogger.message("Exception while receiving data ...");
+            mLogger.message("Exception while receiving data ...");
         }
     }
 
-    public  void stopServer() {
+    public void stopServer() {
         mSocket.close();
         mRunning = false;
     }
