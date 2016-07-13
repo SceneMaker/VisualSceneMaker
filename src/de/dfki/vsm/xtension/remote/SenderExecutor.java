@@ -32,9 +32,11 @@ public class SenderExecutor extends ActivityExecutor {
     private int mPort;
     private String mSceneflowVar;
 
-    // The message, format "VSMMessage#<Any String>"
-    private final String mMessageOffset = "VSMMessage#";
-    private String mMessage;
+    // The message, format "VSMMessage#<string without space>#<timestamp>"
+    public static  final String sMSG_SEPARATOR = "#";
+    public static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
+    private String mMessage = "";
+    private String mMessageTimeInfo = "";
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -64,7 +66,12 @@ public class SenderExecutor extends ActivityExecutor {
                 }
             }
         } else {
+            final LinkedList<ActionFeature> features = activity.getFeatureList();
+            
             mMessage = activity.getName();
+            
+            mMessageTimeInfo = getActionFeatureValue("time", features);
+            
             send();
         }
     }
@@ -76,8 +83,10 @@ public class SenderExecutor extends ActivityExecutor {
             //Open a random port to send the package
             c = new DatagramSocket();
             c.setBroadcast(true);
+            
+            long timestamp = System.currentTimeMillis();
 
-            byte[] sendData = (mMessageOffset + mMessage).getBytes();
+            byte[] sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")) .getBytes();
 
 //            //Try the 255.255.255.255 first
 //            try {
@@ -103,13 +112,20 @@ public class SenderExecutor extends ActivityExecutor {
                         continue;
                     }
 
-                    // Send the broadcast package!
+                    // Send the broadcast package
+                    boolean packetSend = false;
                     try {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, mPort);
                         c.send(sendPacket);
                         hosts = hosts + broadcast.getHostAddress() + ", ";
                         mLogger.message(mMessage + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
+                        packetSend = true;
                     } catch (Exception e) {
+                        packetSend = false;
+                    }
+                    
+                    if (packetSend) {
+                        mProject.setVariable(mSceneflowVar, new StringValue("Message successfully send"));
                     }
                 }
             }
