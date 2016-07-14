@@ -86,6 +86,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
                 //mLogger.message("Handling SSI data " + mSSIData);
                 final HashMap<String, AbstractValue> values = new HashMap<>();
+                mLogger.message("VOICE-ACTIVITY : " + mSSIData.get("voice.activity"));
                 values.put("voice_activity", new StringValue(mSSIData.get("voice.activity")));
                 String detectedUtterance = mSSIData.get("voice.speechact");
                 values.put("voice_keyword", new StringValue(detectedUtterance));
