@@ -2,6 +2,7 @@ package de.dfki.vsm.editor;
 
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.dialog.*;
+import de.dfki.vsm.editor.project.sceneflow.workspace.ClipBoard;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
@@ -81,7 +82,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    WorkSpacePanel.ClipBoard previousCB = null;
+    ClipBoard previousCB = null;
 
     @Override
     public void stateChanged(ChangeEvent e) {
@@ -95,7 +96,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         if (projectEditor != null) {
             if (previousCB != null) {
-                WorkSpacePanel.ClipBoard currentCB = projectEditor.getSceneFlowEditor().getWorkSpace().getClipBoard();
+                ClipBoard currentCB = projectEditor.getSceneFlowEditor().getWorkSpace().getClipBoard();
 
                 currentCB.clear();
 
