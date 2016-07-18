@@ -5,6 +5,7 @@ import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneParam;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
@@ -17,6 +18,7 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -190,7 +192,15 @@ public final class ReactivePlayer extends RunTimePlayer {
                                                         action.getText(map),
                                                         action.getFeatureList()),
                                                 actionActorExecutor));
-                            } else {
+                            } else if (element instanceof SceneParam) {
+								// append value of variables
+								String var = ((SceneParam)element).getName();
+								String val = "";
+								if (mProject.hasVariable(var)) {
+									val = ((StringValue)mProject.getValueOf(var)).getValue();
+									textBuilder.add(val);
+								}
+							} else {
                                 // Append the text to the activity
                                 textBuilder.add(element.getText(map));
                             }
