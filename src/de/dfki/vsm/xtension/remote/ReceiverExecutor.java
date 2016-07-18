@@ -21,11 +21,11 @@ import java.util.LinkedList;
  *
  */
 public class ReceiverExecutor extends ActivityExecutor {
-    
+
     ReceiverThread mMessagereceiver;
-    
+
     private String mSceneflowVar;
-    
+
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -58,7 +58,7 @@ public class ReceiverExecutor extends ActivityExecutor {
             final LinkedList<ActionFeature> features = activity.getFeatureList();
 
             if (name.equalsIgnoreCase("stop")) {
-                 mMessagereceiver.stopServer();
+                mMessagereceiver.stopServer();
             }
         }
     }
@@ -67,7 +67,7 @@ public class ReceiverExecutor extends ActivityExecutor {
     public void launch() {
         mLogger.message("Loading Message Receiver");
         final int port = Integer.parseInt(mConfig.getProperty("port"));
-        
+
         mSceneflowVar = mConfig.getProperty("sceneflow_variable");
 
         mMessagereceiver = new ReceiverThread(this, port);
@@ -76,12 +76,21 @@ public class ReceiverExecutor extends ActivityExecutor {
 
     @Override
     public void unload() {
-       mMessagereceiver.stopServer();
+        mMessagereceiver.stopServer();
+    }
+
+    public boolean hasProjectVar(String var) {
+        return mProject.hasVariable(var);
     }
     
     public void setSceneFlowVariable(String message) {
         mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
         mProject.setVariable(mSceneflowVar, new StringValue(message));
+    }
+
+    public void setSceneFlowVariable(String var, String value) {
+        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
+        mProject.setVariable(var, new StringValue(value));
     }
 
 //    // get the value of a feature (added PG) - quick and dirty

@@ -68,15 +68,24 @@ public class ReceiverThread extends Thread {
                         String timestamp = "";
                         String timeinfo = "";
 
-                        if (msgParts.length > 2) {
-                            timestamp = msgParts[2];
-                        }
+                        if (msg.equalsIgnoreCase("VAR")) {
+                            String var = msgParts[2];
+                            String value = msgParts[3];
+                            
+                            if (mExecutor.hasProjectVar(var)) {
+                                mExecutor.setSceneFlowVariable(var, value);
+                            }
+                        } else {
+                            if (msgParts.length > 2) {
+                                timestamp = msgParts[2];
+                            }
 
-                        if (msgParts.length == 4) {
-                            timeinfo = msgParts[3];
-                        }
+                            if (msgParts.length == 4) {
+                                timeinfo = msgParts[3];
+                            }
 
-                        mExecutor.setSceneFlowVariable(msg);
+                            mExecutor.setSceneFlowVariable(msg);
+                        }
                     }
 
                     //Send a response
