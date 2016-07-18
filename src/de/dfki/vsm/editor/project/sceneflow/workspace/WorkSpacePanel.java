@@ -110,7 +110,7 @@ import javax.swing.KeyStroke;
 public final class WorkSpacePanel extends JPanel implements EventListener, MouseListener, MouseMotionListener {
 
     // The clipboard
-    private final ClipBoard mClipboard = new ClipBoard();
+    private final ClipBoard mClipboard = ClipBoard.getsInstance();
 
     // Elements to draw
     private final Set<Node> mNodeSet = new HashSet<>();
@@ -2741,12 +2741,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         return mLocalVarDisplay.isVisible();
     }
 
-    /**
-     *
-     *
-     */
-    public class ClipBoard extends HashSet<de.dfki.vsm.model.sceneflow.BasicNode> {
-    }
+
 
     /**
      *
