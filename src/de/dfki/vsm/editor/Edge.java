@@ -1133,7 +1133,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      * Implements EventListener
      */
     @Override
-    public void update(EventObject event)
+    public synchronized void update(EventObject event)
     {
         if (event instanceof SceneStoppedEvent)
         {
