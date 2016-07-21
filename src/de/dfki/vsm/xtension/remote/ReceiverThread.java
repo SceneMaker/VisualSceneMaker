@@ -55,7 +55,7 @@ public class ReceiverThread extends Thread {
                 // Read Packet
                 byte[] realData = Arrays.copyOf(packet.getData(), packet.getLength());;
 
-                String message = new String(packet.getData()).trim();
+                String message = new String(packet.getData(), "UTF-8").trim();
                 mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
                 if (message.startsWith(SenderExecutor.sMSG_HEADER)) {
 
