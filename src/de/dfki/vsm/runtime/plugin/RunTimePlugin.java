@@ -14,7 +14,7 @@ public abstract class RunTimePlugin {
             = LOGDefaultLogger.getInstance();
 
     // The runtime project
-    protected final RunTimeProject mProject;
+    public final RunTimeProject mProject; // PG changed from protected to public for accessabilty in plugins
     // The plugin's name
     protected final PluginConfig mConfig;
 
