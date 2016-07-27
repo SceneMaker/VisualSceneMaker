@@ -2,7 +2,6 @@ package de.dfki.vsm.xtension.ssi;
 
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 

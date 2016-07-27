@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.ssi;
 
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -60,7 +61,7 @@ public final class SSIEventReceiver extends Thread {
         } catch (final SocketException exc) {
             mLogger.failure(exc.toString());
         }
-        
+
         // initialze time measurement
         mTimeCounter = System.nanoTime();
     }
@@ -83,7 +84,13 @@ public final class SSIEventReceiver extends Thread {
         // Receive while not done ...
         while (!mDone) {
             long currentTime = System.nanoTime();
-            mLogger.success("Awaiting SSI events ...processing took ... " + ((currentTime - mTimeCounter) / 1000000) + "ms");
+            int processingTime = new Long(((currentTime - mTimeCounter) / 1000000)).intValue();
+
+            if (mPlugin.mProject.hasVariable("event_processing_time")) {
+                mPlugin.mProject.setVariable("event_processing_time", new IntValue(processingTime));
+            }
+
+            mLogger.success("Awaiting SSI events ...processing took ... " + processingTime + "ms");
             // Receive a new message
             final String message = recvString();
 
