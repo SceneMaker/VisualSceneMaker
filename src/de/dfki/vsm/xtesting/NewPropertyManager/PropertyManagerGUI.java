@@ -43,7 +43,7 @@ public class PropertyManagerGUI {
 
         // Set Always On Top
         mFrame.add(mJFXPanel,BorderLayout.CENTER);
-        mFrame.setAlwaysOnTop(true);
+        //mFrame.setAlwaysOnTop(true);
         // Set Undecorated
         mFrame.setUndecorated(false);
 
