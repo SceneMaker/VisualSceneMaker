@@ -5,6 +5,7 @@ package de.dfki.vsm.xtesting.NewPropertyManager.model;
  */
 public abstract class AbstractTreeEntry {
     protected String name;
+
     public String getName(){
         return name;
     };
@@ -16,6 +17,7 @@ public abstract class AbstractTreeEntry {
     public void setName(String pName){
         name = pName;
     }
+
 
 
 }

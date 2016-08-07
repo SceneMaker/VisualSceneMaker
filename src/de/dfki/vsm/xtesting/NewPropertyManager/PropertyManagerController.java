@@ -8,6 +8,7 @@ import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.AgentTableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.PluginTableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.TableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.*;
+import de.dfki.vsm.xtesting.NewPropertyManager.util.events.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -443,7 +444,30 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             agentEntry.setAgentConfig(mProject.getAgentConfig(agent));
         } else if(object instanceof CellEvent){//We change either the name of the agent or device
             changeItemName((CellEvent) object);
+        } else if(object instanceof DeleteContextEventAgent){
+            removeSelectedItem();
+            deleteAgent(((DeleteContextEventAgent) object).getTreeEntry());
+            saveConfig();
+        } else if(object instanceof DeleteContextEventPlugin){
+            removeSelectedItem();
+            deletePlugin(((DeleteContextEventPlugin) object).getTreeEntry());
+            saveConfig();
         }
+    }
+
+    private void removeSelectedItem() {
+        TreeItem selectedItem = treeView.getSelectionModel().getSelectedItem();
+        treeView.getSelectionModel().getSelectedItem().getParent().getChildren().remove(selectedItem);
+    }
+
+    private void deletePlugin(AbstractTreeEntry treeEntry) {
+        EntryPlugin entry = (EntryPlugin) treeEntry;
+        mProject.deletePlugin(entry.getPluginConfig());
+    }
+
+    private void deleteAgent(AbstractTreeEntry treeEntry) {
+        EntryAgent entry = (EntryAgent) treeEntry;
+        mProject.deleteAgent(entry.getAgentConfig());
     }
 
     private void changeItemName(CellEvent event){

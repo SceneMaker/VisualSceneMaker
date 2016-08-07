@@ -2,7 +2,7 @@ package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
-import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryRoot;
+import de.dfki.vsm.xtesting.NewPropertyManager.util.events.CellEvent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
