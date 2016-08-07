@@ -3,6 +3,9 @@ package de.dfki.vsm.xtesting.NewPropertyManager.util;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
+import de.dfki.vsm.xtesting.NewPropertyManager.util.events.ContextEvent;
+import de.dfki.vsm.xtesting.NewPropertyManager.util.events.DeleteContextEventAgent;
+import de.dfki.vsm.xtesting.NewPropertyManager.util.events.DeleteContextEventPlugin;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -46,8 +49,8 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
             menu.getItems().add(addNewAgent);
         }
         //TODO: Delete Option
-        /*MenuItem deleteItem = getDeleteItem();
-        menu.getItems().add(deleteItem);*/
+        MenuItem deleteItem = getDeleteItem();
+        menu.getItems().add(deleteItem);
         return menu;
 
     }
@@ -71,7 +74,12 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         MenuItem deleteItem = new MenuItem("Delete " + entryItem.getName());
         deleteItem.setOnAction(new EventHandler() {
             public void handle(Event t) {
-                System.out.println("Not implemented yet!");
+                AbstractTreeEntry item = getEntryItem();
+                if(item instanceof EntryAgent){
+                    notifyObserverOnDeleteAgent(item);
+                }else if(item instanceof EntryPlugin){
+                    notifyObserverOnDeletePlugin(item);
+                }
             }
         });
         return  deleteItem;
@@ -98,6 +106,18 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     public void notifyObserver(AbstractTreeEntry entry) {
         for (TreeObserver observer:observers) {
             observer.update(new ContextEvent(getContextValueName(), this.getValue().toString(), entry));
+        }
+    }
+
+    private void notifyObserverOnDeleteAgent(AbstractTreeEntry entry) {
+        for (TreeObserver observer:observers) {
+            observer.update(new DeleteContextEventAgent(entry));
+        }
+    }
+
+    private void notifyObserverOnDeletePlugin(AbstractTreeEntry entry) {
+        for (TreeObserver observer:observers) {
+            observer.update(new DeleteContextEventPlugin(entry));
         }
     }
 
