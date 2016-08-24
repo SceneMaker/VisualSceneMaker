@@ -440,7 +440,12 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             String agent = ((ContextEvent) object).getContextName();
             String pluginName = ((ContextEvent) object).getPluginName();
             EntryAgent agentEntry = (EntryAgent) ((ContextEvent) object).getTreeEntry();
+
             projectConfigWrapper.addNewAgent(agent, pluginName);
+            ContextTreeItem contextItem = (ContextTreeItem) agentEntry.getContextTreeItem();
+            if(contextItem!= null){
+                contextItem.registerObserver(this);
+            }
             agentEntry.setAgentConfig(mProject.getAgentConfig(agent));
         } else if(object instanceof CellEvent){//We change either the name of the agent or device
             changeItemName((CellEvent) object);

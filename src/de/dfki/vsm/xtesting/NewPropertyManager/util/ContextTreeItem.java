@@ -25,9 +25,10 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         this.setValue(name);
     }
     public static int agentCounter = 1;
-
+    public String contextName;
     private String getContextValueName(){
         String name = contextValue + agentCounter;
+        contextName = name;
         return name;
     }
 
@@ -48,7 +49,6 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
             MenuItem addNewAgent = getAddNewAgentItem();
             menu.getItems().add(addNewAgent);
         }
-        //TODO: Delete Option
         MenuItem deleteItem = getDeleteItem();
         menu.getItems().add(deleteItem);
         return menu;
@@ -60,7 +60,8 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         addNewAgent.setOnAction(new EventHandler() {
             public void handle(Event t) {
                 EntryAgent agent = new EntryAgent(getContextValueName());
-                BoxTreeItem newBox = new BoxTreeItem(agent);
+                AbstractTreeItem newBox = new ContextTreeItem(agent);
+                agent.setContextTreeItem(newBox);
                 getChildren().add(newBox);
                 agentCounter++;
                 notifyObserver(agent);
@@ -99,13 +100,13 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     @Override
     public void notifyObserver() {
         for (TreeObserver observer:observers) {
-            observer.update(new ContextEvent(getContextValueName(), this.getValue().toString(), entryItem));
+            observer.update(new ContextEvent(contextName, this.getValue().toString(), entryItem));
         }
     }
 
     public void notifyObserver(AbstractTreeEntry entry) {
         for (TreeObserver observer:observers) {
-            observer.update(new ContextEvent(getContextValueName(), this.getValue().toString(), entry));
+            observer.update(new ContextEvent(contextName, this.getValue().toString(), entry));
         }
     }
 
