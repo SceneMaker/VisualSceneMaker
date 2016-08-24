@@ -1,11 +1,14 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
+import de.dfki.stickmanfx.StickmanStageFX;
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.ContextEvent;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.DeleteContextEventAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.DeleteContextEventPlugin;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -43,16 +46,52 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
 
     @Override
     public ContextMenu getMenu(){
-
         ContextMenu menu = new ContextMenu();
         if(entryItem instanceof EntryPlugin) {
             MenuItem addNewAgent = getAddNewAgentItem();
             menu.getItems().add(addNewAgent);
+            if(((EntryPlugin)entryItem).getPluginConfig().getClassName().contains("Stickman")){
+                MenuItem editStickman = getEditStickmanItem((EntryPlugin) entryItem);
+                menu.getItems().add(editStickman);
+            }
         }
+
         MenuItem deleteItem = getDeleteItem();
         menu.getItems().add(deleteItem);
         return menu;
+    }
 
+    private MenuItem getEditStickmanItem(EntryPlugin plugin) {
+        MenuItem editStickman = new MenuItem("Edit Stickman");
+        editStickman.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Thread stickmanLaunchThread = new Thread() {
+                    public void run() {
+                        try {
+                            launchStickmanConfiguration(plugin);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+
+                stickmanLaunchThread.start();
+            }
+        });
+        return  editStickman;
+    }
+
+    private void launchStickmanConfiguration(EntryPlugin plugin) {
+        StickmanStageFX.clearStage();
+        for (EntryAgent agent: plugin.getAgents()) {
+            AgentConfig ac = agent.getAgentConfig();
+            if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
+                StickmanStageFX.addStickmanFX(ac.getAgentName());
+            }
+        }
+        StickmanStageFX.lauchStickmanConfig();
     }
 
     private MenuItem getAddNewAgentItem(){
