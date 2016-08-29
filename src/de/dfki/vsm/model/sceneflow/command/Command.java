@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.sceneflow.command;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.SyntaxObject;
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -12,7 +11,9 @@ import org.w3c.dom.Element;
  * @author Not me
  */
 public abstract class Command implements SyntaxObject {
+
     public enum CmdType {
+
         PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD, PLAY
     }
 
@@ -23,12 +24,12 @@ public abstract class Command implements SyntaxObject {
 
     public static Command parse(Element element) throws XMLParseError {
         Command cmd = null;
-        String  tag = element.getTagName();
+        String tag = element.getTagName();
 
         if (tag.equals("PlaySceneGroup")) {
             cmd = new PlaySceneGroup();
             cmd.parseXML(element);
-        } else  if (tag.equals("Play")) {
+        } else if (tag.equals("Play")) {
             cmd = new Play();
             cmd.parseXML(element);
         } else if (tag.equals("PlayDialogueAct")) {
@@ -57,5 +58,10 @@ public abstract class Command implements SyntaxObject {
         }
 
         return cmd;
+    }
+
+    @Override
+    public String toString() {
+        return getConcreteSyntax();
     }
 }

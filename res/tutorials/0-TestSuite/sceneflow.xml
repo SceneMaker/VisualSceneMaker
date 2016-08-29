@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 27 Jul 2016 14:12:03" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="8" yPos="16"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <SuperNode id="S1" name="S1" comment="" hideLocalVar="false" hideGlobalVar="false" start="N3;">
+    <Define>
+    </Define>
+    <Declare>
+      <Variable type="String" name ="Time">
+        <String><![CDATA[]]></String>
+      </Variable>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="303" yPos="93"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N1" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="23" yPos="163"/>
+      </Graphics>
+    </Node>
+    <Node id="N2" name="Statistics" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PrologQuery>
+        <String><![CDATA[statistics.]]></String>
+        </PrologQuery>
+      </Commands>
+      <TEdge target="N2" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="277" yPos="164" ctrlXPos="295" ctrlYPos="96"/>
+          <ControlPoint xPos="298" yPos="180" ctrlXPos="358" ctrlYPos="144"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="233" yPos="163"/>
+      </Graphics>
+    </Node>
+    <Node id="N3" name="Timer" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PrologQuery>
+        <String><![CDATA[now(Time).]]></String>
+        </PrologQuery>
+      </Commands>
+      <TEdge target="N3" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="417" yPos="164" ctrlXPos="435" ctrlYPos="96"/>
+          <ControlPoint xPos="438" yPos="180" ctrlXPos="498" ctrlYPos="144"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="373" yPos="163"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S2" name="S2" comment="" hideLocalVar="false" hideGlobalVar="false" start="N6;N7;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="S3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="373" yPos="268" ctrlXPos="390" ctrlYPos="268"/>
+        <ControlPoint xPos="443" yPos="268" ctrlXPos="425" ctrlYPos="268"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="303" yPos="233"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N4" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="23" yPos="23"/>
+      </Graphics>
+    </Node>
+    <Node id="N6" name="N6" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N8" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="303" yPos="198" ctrlXPos="355" ctrlYPos="198"/>
+          <ControlPoint xPos="443" yPos="198" ctrlXPos="390" ctrlYPos="198"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="233" yPos="163"/>
+      </Graphics>
+    </Node>
+    <Node id="N7" name="N7" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N9" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="303" yPos="338" ctrlXPos="355" ctrlYPos="338"/>
+          <ControlPoint xPos="443" yPos="338" ctrlXPos="390" ctrlYPos="338"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="233" yPos="303"/>
+      </Graphics>
+    </Node>
+    <Node id="N8" name="N8" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="443" yPos="163"/>
+      </Graphics>
+    </Node>
+    <Node id="N9" name="N9" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="443" yPos="303"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S3" name="S3" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="443" yPos="233"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N5" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="0" yPos="0"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <UserCommands>
+    <UserCommand name="printString" classname ="java.lang.System.out" method="println">
+      <Argument name="Arg0" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
