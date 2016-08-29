@@ -1,14 +1,11 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
-import de.dfki.stickmanfx.StickmanStageFX;
-import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.ContextEvent;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.DeleteContextEventAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.DeleteContextEventPlugin;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
@@ -28,10 +25,9 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         this.setValue(name);
     }
     public static int agentCounter = 1;
-    public String contextName;
+
     private String getContextValueName(){
         String name = contextValue + agentCounter;
-        contextName = name;
         return name;
     }
 
@@ -46,52 +42,17 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
 
     @Override
     public ContextMenu getMenu(){
+
         ContextMenu menu = new ContextMenu();
         if(entryItem instanceof EntryPlugin) {
             MenuItem addNewAgent = getAddNewAgentItem();
             menu.getItems().add(addNewAgent);
-            if(((EntryPlugin)entryItem).getPluginConfig().getClassName().contains("Stickman")){
-                MenuItem editStickman = getEditStickmanItem((EntryPlugin) entryItem);
-                menu.getItems().add(editStickman);
-            }
         }
-
+        //TODO: Delete Option
         MenuItem deleteItem = getDeleteItem();
         menu.getItems().add(deleteItem);
         return menu;
-    }
 
-    private MenuItem getEditStickmanItem(EntryPlugin plugin) {
-        MenuItem editStickman = new MenuItem("Edit Stickman");
-        editStickman.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                Thread stickmanLaunchThread = new Thread() {
-                    public void run() {
-                        try {
-                            launchStickmanConfiguration(plugin);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
-
-
-                stickmanLaunchThread.start();
-            }
-        });
-        return  editStickman;
-    }
-
-    private void launchStickmanConfiguration(EntryPlugin plugin) {
-        StickmanStageFX.clearStage();
-        for (EntryAgent agent: plugin.getAgents()) {
-            AgentConfig ac = agent.getAgentConfig();
-            if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
-                StickmanStageFX.addStickmanFX(ac.getAgentName());
-            }
-        }
-        StickmanStageFX.lauchStickmanConfig();
     }
 
     private MenuItem getAddNewAgentItem(){
@@ -99,8 +60,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         addNewAgent.setOnAction(new EventHandler() {
             public void handle(Event t) {
                 EntryAgent agent = new EntryAgent(getContextValueName());
-                AbstractTreeItem newBox = new ContextTreeItem(agent);
-                agent.setContextTreeItem(newBox);
+                BoxTreeItem newBox = new BoxTreeItem(agent);
                 getChildren().add(newBox);
                 agentCounter++;
                 notifyObserver(agent);
@@ -139,13 +99,13 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     @Override
     public void notifyObserver() {
         for (TreeObserver observer:observers) {
-            observer.update(new ContextEvent(contextName, this.getValue().toString(), entryItem));
+            observer.update(new ContextEvent(getContextValueName(), this.getValue().toString(), entryItem));
         }
     }
 
     public void notifyObserver(AbstractTreeEntry entry) {
         for (TreeObserver observer:observers) {
-            observer.update(new ContextEvent(contextName, this.getValue().toString(), entry));
+            observer.update(new ContextEvent(getContextValueName(), this.getValue().toString(), entry));
         }
     }
 
