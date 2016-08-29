@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="ReetiTestSuite">
+  <Plugins>
+	<Plugin name="reeti" type="robot" class="de.dfki.vsm.xtension.reeti.ReetiExecutor" load="true">
+		<Feature key="host" value="127.0.0.1"/>
+		<Feature key="port" value="1241"/>
+	</Plugin>
+  </Plugins>
+  <Agents>
+   <Agent name="reeti" device="reeti">
+   </Agent>
+  </Agents>
+</Project>

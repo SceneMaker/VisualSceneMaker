@@ -103,6 +103,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "new"   { return new Symbol(ChartFields.NEW); }
 "query" { return new Symbol(ChartFields.QUERY); }
 "?-" { return new Symbol(ChartFields.QUERY); }
+"!-" { return new Symbol(ChartFields.PLAY); }
 
 [0-9]+\.[0-9]+ { return new Symbol(ChartFields.FLOAT, new java.lang.Float(yytext())); }
 [0-9]+ { return new Symbol(ChartFields.INTEGER, new java.lang.Integer(yytext())); }
