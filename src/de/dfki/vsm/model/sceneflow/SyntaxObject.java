@@ -13,4 +13,5 @@ public interface SyntaxObject extends ModelObject {
 
     public abstract String getFormattedSyntax();
 
+   
 }
