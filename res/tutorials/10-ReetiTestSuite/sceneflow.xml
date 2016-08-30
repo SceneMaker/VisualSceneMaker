@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="ReetiTestSuite" name="ReetiTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 27 Jul 2016 14:12:03" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="ReetiTestSuite" name="ReetiTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 30 Aug 2016 16:51:56" start="N11;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -12,12 +12,59 @@
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
-  <SuperNode id="S1" name="S1" comment="" hideLocalVar="false" hideGlobalVar="false" start="N3;">
+  <Node id="N11" name="N11" history="false">
     <Define>
     </Define>
     <Declare>
-      <Variable type="String" name ="Time">
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Welcome]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="N12" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="373" yPos="408" ctrlXPos="425" ctrlYPos="408"/>
+        <ControlPoint xPos="513" yPos="408" ctrlXPos="460" ctrlYPos="408"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="303" yPos="373"/>
+    </Graphics>
+  </Node>
+  <Node id="N12" name="N12" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlaySceneGroup>
+        <String><![CDATA[Testing]]></String>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="N11" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="514" yPos="417" ctrlXPos="463" ctrlYPos="430"/>
+        <ControlPoint xPos="372" yPos="417" ctrlXPos="423" ctrlYPos="430"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="513" yPos="373"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="Prolog" comment="" hideLocalVar="false" hideGlobalVar="false" start="N2;N3;N10;">
+    <Define>
+    </Define>
+    <Declare>
+      <Variable type="String" name ="Now">
         <String><![CDATA[]]></String>
+      </Variable>
+      <Variable type="Int" name ="Time">
+        <Int value="0"/>
       </Variable>
     </Declare>
     <Commands>
@@ -64,14 +111,14 @@
         <Position xPos="233" yPos="163"/>
       </Graphics>
     </Node>
-    <Node id="N3" name="Timer" history="false">
+    <Node id="N3" name="Time" history="false">
       <Define>
       </Define>
       <Declare>
       </Declare>
       <Commands>
         <PrologQuery>
-        <String><![CDATA[now(Time).]]></String>
+        <String><![CDATA[now(Now).]]></String>
         </PrologQuery>
       </Commands>
       <TEdge target="N3" start="" timeout="1000">
@@ -84,6 +131,43 @@
       </TEdge>
       <Graphics>
         <Position xPos="373" yPos="163"/>
+      </Graphics>
+    </Node>
+    <Node id="N10" name="Timer" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PrologQuery>
+        <Add>
+          <Add>
+            <String><![CDATA[retractall(now(_)),assertz(now(]]></String>
+            <Variable name="Time"/>
+          </Add>
+          <String><![CDATA[)).]]></String>
+        </Add>
+        </PrologQuery>
+        <Assign>
+          <Variable name="Time"/>
+          <Expression>
+            <Add>
+              <Variable name="Time"/>
+              <Int value="100"/>
+            </Add>
+          </Expression>
+        </Assign>
+      </Commands>
+      <TEdge target="N10" start="" timeout="100">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="697" yPos="164" ctrlXPos="715" ctrlYPos="96"/>
+          <ControlPoint xPos="718" yPos="180" ctrlXPos="778" ctrlYPos="144"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="653" yPos="163"/>
       </Graphics>
     </Node>
   </SuperNode>

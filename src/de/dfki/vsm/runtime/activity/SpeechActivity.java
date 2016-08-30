@@ -90,13 +90,12 @@ public final class SpeechActivity extends AbstractActivity {
     }
 
     // Get representation
-    @Override
-    public final String toString() {
+   
+    public final String getText() {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mList) {
             builder.append(item.toString());
             if (!item.equals(mList.getLast())) {
-                builder.append(' ');
             } else {
                 builder.append(mMark);
             }

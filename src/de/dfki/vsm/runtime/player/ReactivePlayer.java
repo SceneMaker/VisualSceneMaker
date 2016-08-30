@@ -97,7 +97,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                 // Schedule the activity without delay but blocking
                 ActionActivity aa = new ActionActivity(actor, "cmd", action, null, features);
                 aa.setTyp(AbstractActivity.Policy.BLOCKING);
-                mScheduler.schedule(0, null, aa,  mProject.getAgentDevice(actor));
+                mScheduler.schedule(0, null, aa, mProject.getAgentDevice(actor));
                 // Check for interruption
                 if (isDone()) {
                     return;
@@ -148,7 +148,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         }
         // Get the scene object
         final SceneScript script = mProject.getSceneScript();
-        final SceneGroup group = script.getSceneGroup("en", name);
+        final SceneGroup group = script.getSceneGroup("de", name);
         final SceneObject scene = group.select();
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
@@ -193,14 +193,14 @@ public final class ReactivePlayer extends RunTimePlayer {
                                                         action.getFeatureList()),
                                                 actionActorExecutor));
                             } else if (element instanceof SceneParam) {
-								// append value of variables
-								String var = ((SceneParam)element).getName();
-								String val = "";
-								if (mProject.hasVariable(var)) {
-									val = ((StringValue)mProject.getValueOf(var)).getValue();
-									textBuilder.add(val);
-								}
-							} else {
+                                // append value of variables
+                                String var = ((SceneParam) element).getName();
+                                String val = "";
+                                if (mProject.hasVariable(var)) {
+                                    val = ((StringValue) mProject.getValueOf(var)).getValue();
+                                    textBuilder.add(val);
+                                }
+                            } else {
                                 // Append the text to the activity
                                 textBuilder.add(element.getText(map));
                             }

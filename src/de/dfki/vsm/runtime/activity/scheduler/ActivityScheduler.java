@@ -42,7 +42,7 @@ public final class ActivityScheduler {
         synchronized (mWorkerMap) {
             mWorkerMap.remove(marker).start();
         }
-    //}
+        //}
     }
 
     // Schedule an activity on an executor with a timeout
