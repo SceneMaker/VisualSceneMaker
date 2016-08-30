@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="ReetiTestSuite">
   <Plugins>
-	<Plugin name="reeti" type="robot" class="de.dfki.vsm.xtension.reeti.ReetiExecutor" load="true">
-		<Feature key="host" value="127.0.0.1"/>
-		<Feature key="port" value="1241"/>
-	</Plugin>
+    <Plugin type="robot" name="reeti" class="de.dfki.vsm.xtension.reeti.ReetiExecutor" load="true">
+      <Feature key="lhost" val="127.0.0.1"/>
+      <Feature key="lport" val="1421"/>
+      <Feature key="rhost" val="127.0.0.1"/>
+      <Feature key="rport" val="1241"/>
+    </Plugin>
   </Plugins>
   <Agents>
-   <Agent name="reeti" device="reeti">
-   </Agent>
+    <Agent name="reeti" device="reeti">
+    </Agent>
   </Agents>
 </Project>

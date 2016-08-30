@@ -1,3 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="97" language="de" identifier="Welcome">
+    <SceneTurn lower="18" upper="97" speaker="reeti">
+      <SceneUttr lower="25" upper="60" punct="!">
+        <ActionObject lower="25" upper="53" actor="" mode="" name="anim" >
+          <ActionFeature lower="31" upper="52" typ="STRING" key="name" val="'Emotions/happy'"/></ActionObject>
+        <SceneWord lower="54" upper="59" text="Schön"/>
+      </SceneUttr>
+      <SceneUttr lower="61" upper="97" punct=".">
+        <ActionObject lower="61" upper="91" actor="" mode="" name="anim" >
+          <ActionFeature lower="67" upper="90" typ="STRING" key="name" val="'Emotions/neutral'"/></ActionObject>
+        <SceneWord lower="92" upper="96" text="Jaja"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="99" upper="277" language="de" identifier="Testing">
+    <SceneTurn lower="117" upper="277" speaker="reeti">
+      <SceneUttr lower="124" upper="277" punct=".">
+        <ActionObject lower="124" upper="143" actor="" mode="" name="led" >
+          <ActionFeature lower="129" upper="142" typ="STRING" key="color" val="'green'"/></ActionObject>
+        <SceneWord lower="144" upper="149" text="Hallo"/>
+        <ActionObject lower="150" upper="168" actor="" mode="" name="led" >
+          <ActionFeature lower="155" upper="167" typ="STRING" key="color" val="'blue'"/></ActionObject>
+        <ActionObject lower="169" upper="195" actor="" mode="" name="anim" >
+          <ActionFeature lower="175" upper="194" typ="STRING" key="name" val="'Emotions/sad'"/></ActionObject>
+        <SceneWord lower="196" upper="200" text="Welt"/>
+        <SceneWord lower="201" upper="206" text="heute"/>
+        <SceneWord lower="207" upper="210" text="ist"/>
+        <SceneWord lower="211" upper="214" text="ein"/>
+        <SceneWord lower="215" upper="222" text="schöner"/>
+        <SceneWord lower="223" upper="226" text="Tag"/>
+        <SceneWord lower="227" upper="233" text="denkst"/>
+        <ActionObject lower="234" upper="262" actor="" mode="" name="anim" >
+          <ActionFeature lower="240" upper="261" typ="STRING" key="name" val="'Emotions/happy'"/></ActionObject>
+        <SceneWord lower="263" upper="265" text="du"/>
+        <SceneWord lower="266" upper="271" text="nicht"/>
+        <SceneWord lower="272" upper="276" text="auch"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>

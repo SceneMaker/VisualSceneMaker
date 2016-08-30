@@ -19,10 +19,10 @@ public abstract class AbstractActivity {
     protected Policy mType;
     // The activity actor
     protected final String mActor;
+        // The activity name
+    protected final String mName;
     // The activity mode
     protected final String mMode;
-    // The activity name
-    protected final String mName;
     // The related action features
     protected final LinkedList<ActionFeature> mFeatureList;
 

@@ -9,6 +9,8 @@ import java.util.LinkedList;
 public final class ActionActivity extends AbstractActivity {
 
     private final String mText;
+    // TODO: The context of the activity is either nested or standalone
+    // If nested, then the actor is optional and otherwise mandatory
 
     public ActionActivity(
             final String actor,
