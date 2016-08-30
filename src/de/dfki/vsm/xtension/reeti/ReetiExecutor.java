@@ -4,7 +4,6 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
-import de.dfki.vsm.runtime.activity.PauseActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
@@ -119,7 +118,7 @@ public final class ReetiExecutor extends ActivityExecutor {
 
             // Append the action features
             for (final ActionFeature feature : action.getFeatureList()) {
-                command.addParameter(feature.getKey(), feature.getVal().replace("'", ""));
+                command.addParameter(feature.getKey(), feature.getVal().replaceAll("'", ""));
             }
 
 // 
@@ -161,21 +160,27 @@ public final class ReetiExecutor extends ActivityExecutor {
                 // Remove the worker thread
                 final Thread worker = mWorkerMap.remove(uid);
                 // Debug information
-                mLogger.message("Task " + uid + " finished execution");
+                mLogger.message("Worker '" + worker + "' finished execution of command with id '" + uid + "'");
                 // Notify waiting workers
                 mWorkerMap.notifyAll();
             } else if (status.equals("rejected")) {
                 // Remove the worker thread
                 final Thread worker = mWorkerMap.remove(uid);
+                // Debug information
+                mLogger.message("Worker '" + worker + "' rejected execution of command with id '" + uid + "'");
                 // Notify waiting workers
                 mWorkerMap.notifyAll();
             } else if (typ.equals("bookmark")) {
                 // Get the marker    
-                final String marker = status.getStatusDetails().get("id");
+                final String id = status.getStatusDetails().get("id");
+                // Get the worker thread
+                final Thread worker = mWorkerMap.get(uid);
                 // Debug information
-                mLogger.message("Task " + uid + " arrived at bookmark " + marker);
+                mLogger.message("Worker '" + worker + "' arrived bookmark with id " + id + " during execution of command with id '" + uid + "'");
+                //
+                final String marker = marker(Long.parseLong(id.replaceAll("[.!?,;:]", "")));
                 // Handle the marker
-                mScheduler.handle(marker(Long.parseLong(marker)));
+                mScheduler.handle(marker);
             } else {
                 //
             }
