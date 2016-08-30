@@ -56,7 +56,7 @@ public final class SpeechActivity extends AbstractActivity {
         if (pronounciationMap == null) {
             return;
         }
-        
+
         LinkedList replaced = new LinkedList();
         for (final Object item : mList) {
             String text = item.toString();
@@ -90,12 +90,12 @@ public final class SpeechActivity extends AbstractActivity {
     }
 
     // Get representation
-   
     public final String getText() {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mList) {
             builder.append(item.toString());
             if (!item.equals(mList.getLast())) {
+                builder.append(' ');
             } else {
                 builder.append(mMark);
             }
