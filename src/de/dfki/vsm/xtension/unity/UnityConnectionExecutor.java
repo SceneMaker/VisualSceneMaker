@@ -169,7 +169,7 @@ public final class UnityConnectionExecutor extends ActivityExecutor {
                 _logger.message("We have Options! actor=" + actor + ", cmd=" + cmd);
                 
                 // There have to be two features: display and values
-                final LinkedList<ActionFeature> features = activity.getFeatureList();
+                final LinkedList<ActionFeature> features = activity.getFeatures();
                 
                 String displayStr = getActionFeatureValue("display", features);
                 String valueStr = getActionFeatureValue("value", features);

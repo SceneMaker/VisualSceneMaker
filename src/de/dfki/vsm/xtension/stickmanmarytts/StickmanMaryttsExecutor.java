@@ -125,7 +125,7 @@ public class StickmanMaryttsExecutor extends ActivityExecutor {
 
     private void actionSetVoice(AbstractActivity activity) {
         AgentConfig agent = mProject.getAgentConfig(activity.getActor());
-        for (ActionFeature feat : activity.getFeatureList()) {
+        for (ActionFeature feat : activity.getFeatures()) {
             if (feat.getKey().equalsIgnoreCase("voice")) {
                 languageAgentMap.put(agent.getAgentName(), feat.getVal());
             }

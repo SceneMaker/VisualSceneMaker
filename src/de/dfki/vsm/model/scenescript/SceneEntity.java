@@ -1,14 +1,12 @@
 package de.dfki.vsm.model.scenescript;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLWriteError;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.io.ByteArrayOutputStream;
 
 import java.util.HashMap;
@@ -30,7 +28,8 @@ public abstract class SceneEntity implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneEntity() {}
+    public SceneEntity() {
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -61,15 +60,12 @@ public abstract class SceneEntity implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String toString() {
-
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
         // Initialize The Indent Writer
         final IOSIndentWriter stream = new IOSIndentWriter(buffer);
 
         try {
-
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {

@@ -85,64 +85,56 @@ public final class ReetiExecutor extends ActivityExecutor {
         final String mode = activity.getMode();
         final String actor = activity.getActor();
         final String type = activity.getType().name();
-        final LinkedList<ActionFeature> features = activity.getFeatureList();
-
-        // 
-        mLogger.warning("Worker " + worker + " executing activity " + activity + "\n"
-                + "name: " + name + "\n" + "mode: " + mode + "\n" + "actor: " + actor + "\n" + "type: " + type);
-
-        // Get the command id
-        String uid = null;
+        final String text = activity.getText();
+        final LinkedList<ActionFeature> features = activity.getFeatures();
+        // Create new command id
+        final String cmid = activity + ":" + String.valueOf(newCmdId());
+        // Create the new command 
         CommandMessage command = null;
-
         if (activity instanceof SpeechActivity) {
-            final SpeechActivity speech = (SpeechActivity) activity;
-            final String text = speech.getText();
-            mLogger.warning("Executing speech activity '" + text + "'");
-
-            uid = "speech" + String.valueOf(newCmdId());
-            command = new CommandMessage(uid, "speech");
-            command.addParameter("text", "\\voice=" + "Stefan" + " "
-                    + "\\language=" + "de" + " "
-                    + text);
-
-            // 
-            mLogger.warning("" + worker + " executing speech command " + uid + " with content " + command.toString());
+            // Create the speech command
+            command = new CommandMessage(cmid, "speech");
+            // Append the tts text param
+            command.addParameter("text", "\\voice=" + "Stefan" + " " + "\\language=" + "de" + " " + text);
         } else if (activity instanceof ActionActivity) {
-            final ActionActivity action = (ActionActivity) activity;
-            final String text = action.getText();
-            mLogger.warning("Executing action activity '" + text + "'");
-
-            uid = "action" + String.valueOf(newCmdId());
-            command = new CommandMessage(uid, name);
-
+            // Create the action command
+            command = new CommandMessage(cmid, name);
             // Append the action features
-            for (final ActionFeature feature : action.getFeatureList()) {
+            for (final ActionFeature feature : features) {
                 command.addParameter(feature.getKey(), feature.getVal().replaceAll("'", ""));
             }
-
-// 
-            mLogger.warning("" + worker + " executing action command " + uid + " with content " + command.toString());
         } else {
+            // Print some error message
         }
 
-        // Send command to platform 
-        synchronized (mWorkerMap) {
-            // Try to send the command
-            if (mHandler.sendString(command.toString())) {
-                // Then let the worker sleep ...
-                mWorkerMap.put(uid, worker);
-                // ... until the command is done
-                while (mWorkerMap.containsValue(worker)) {
-                    try {
-                        mWorkerMap.wait();
-                    } catch (final InterruptedException exc) {
-                        mLogger.failure(exc.toString());
+        if (command != null) {
+            // Print some information
+            mLogger.warning("Activity worker " + worker + " executing behavior activity " + activity + ":\n"
+                    + "Activity features:\n"
+                    + "    actor: " + actor + "\n"
+                    + "    mode: " + mode + "\n"
+                    + "    name: " + name + "\n"
+                    + "    type: " + type + "\n"
+                    + "    text: " + text + "\n"
+                    + "Constructing command with id " + cmid + " and content \n" + command.toString() + "\n");
+
+            // Send command to platform 
+            synchronized (mWorkerMap) {
+                // Try to send the command
+                if (mHandler.sendString(command.toString())) {
+                    // Then let the worker sleep ...
+                    mWorkerMap.put(cmid, worker);
+                    // ... until the command is done
+                    while (mWorkerMap.containsValue(worker)) {
+                        try {
+                            mWorkerMap.wait();
+                        } catch (final InterruptedException exc) {
+                            mLogger.failure(exc.toString());
+                        }
                     }
                 }
             }
         }
-        // And return when finished
     }
 
     // Handle a notification message
