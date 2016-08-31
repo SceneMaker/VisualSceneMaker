@@ -190,7 +190,7 @@ public final class TWorldExecutor extends ActivityExecutor {
     public final void execute(final AbstractActivity activity) {
         // Get action information
         final String cmd = activity.getName();
-        final LinkedList<ActionFeature> features = activity.getFeatureList();
+        final LinkedList<ActionFeature> features = activity.getFeatures();
 
         // initialize build command
         TWorldCommand mTWC;
@@ -225,7 +225,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunctuation(), aid);
+                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunct(), aid);
 
                 // wait a little bit ...
                 try {

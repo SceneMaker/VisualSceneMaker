@@ -10,7 +10,7 @@ public final class SpeechCommand extends Command {
         super((byte)0x01, id);
                 
         _actor = activity.getActor();
-        _text = activity.toString() + activity.getPunctuation();
+        _text = activity.toString() + activity.getPunct();
     }
     
     public SpeechCommand(int id, String actor, String text) {

@@ -65,7 +65,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             }
         } else {
             final String name = activity.getName();
-            final LinkedList<ActionFeature> features = activity.getFeatureList();
+            final LinkedList<ActionFeature> features = activity.getFeatures();
 
             if (name.equalsIgnoreCase("reset")) {
                 mLogger.message("Reset affect processing for  " + activity.getActor());

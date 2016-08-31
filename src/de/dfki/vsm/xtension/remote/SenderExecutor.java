@@ -68,7 +68,7 @@ public class SenderExecutor extends ActivityExecutor {
 				}
 			}
 		} else {
-			final LinkedList<ActionFeature> features = activity.getFeatureList();
+			final LinkedList<ActionFeature> features = activity.getFeatures();
 
 			mMessage = activity.getName();
 

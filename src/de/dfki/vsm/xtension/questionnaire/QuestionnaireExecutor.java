@@ -89,7 +89,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
             }
 
             if (name.equalsIgnoreCase("name")) {
-                for (ActionFeature af : activity.getFeatureList()) {
+                for (ActionFeature af : activity.getFeatures()) {
                     if (af.getKey().equalsIgnoreCase("value")) {
                         mQuestionnaireGUI.setName(af.getVal());
                     }
@@ -97,7 +97,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
             }
 
             if (name.equalsIgnoreCase("age")) {
-                for (ActionFeature af : activity.getFeatureList()) {
+                for (ActionFeature af : activity.getFeatures()) {
                     if (af.getKey().equalsIgnoreCase("value")) {
                         mQuestionnaireGUI.setAge(af.getVal());
                     }
@@ -105,7 +105,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
             }
 
             if (name.equalsIgnoreCase("sex")) {
-                for (ActionFeature af : activity.getFeatureList()) {
+                for (ActionFeature af : activity.getFeatures()) {
                     if (af.getKey().equalsIgnoreCase("value")) {
                         mQuestionnaireGUI.setSex(af.getVal());
                     }
@@ -113,7 +113,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
             }
 
             if (name.equalsIgnoreCase("interviews")) {
-                for (ActionFeature af : activity.getFeatureList()) {
+                for (ActionFeature af : activity.getFeatures()) {
                     if (af.getKey().equalsIgnoreCase("value")) {
                         mQuestionnaireGUI.setJobinterviews(af.getVal());
                     }
@@ -121,7 +121,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
             }
 
             if (name.equalsIgnoreCase("strength")) {
-                for (ActionFeature af : activity.getFeatureList()) {
+                for (ActionFeature af : activity.getFeatures()) {
                     if (af.getKey().equalsIgnoreCase("value")) {
                         mQuestionnaireGUI.setStrength(af.getVal());
                     }
@@ -129,7 +129,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
             }
 
             if (name.equalsIgnoreCase("weakness")) {
-                for (ActionFeature af : activity.getFeatureList()) {
+                for (ActionFeature af : activity.getFeatures()) {
                     if (af.getKey().equalsIgnoreCase("value")) {
                         mQuestionnaireGUI.setWeakness(af.getVal());
                     }

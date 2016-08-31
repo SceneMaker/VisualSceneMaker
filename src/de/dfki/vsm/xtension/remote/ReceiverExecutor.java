@@ -55,7 +55,7 @@ public class ReceiverExecutor extends ActivityExecutor {
             }
         } else {
             final String name = activity.getName();
-            final LinkedList<ActionFeature> features = activity.getFeatureList();
+            final LinkedList<ActionFeature> features = activity.getFeatures();
 
             if (name.equalsIgnoreCase("stop")) {
                 mMessagereceiver.stopServer();

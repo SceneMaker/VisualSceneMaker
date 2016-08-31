@@ -95,8 +95,8 @@ public final class ReactivePlayer extends RunTimePlayer {
                 }
 
                 // Schedule the activity without delay but blocking
-                ActionActivity aa = new ActionActivity(actor, "cmd", action, null, features);
-                aa.setTyp(AbstractActivity.Policy.BLOCKING);
+                ActionActivity aa = new ActionActivity(actor, "cmd", action, name, features);
+                aa.setType(AbstractActivity.Type.blocking);
                 mScheduler.schedule(0, null, aa, mProject.getAgentDevice(actor));
                 // Check for interruption
                 if (isDone()) {

@@ -1,6 +1,8 @@
 package de.dfki.vsm.xtension.reeti;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -13,7 +15,7 @@ import java.util.Arrays;
  */
 public final class ReetiHandler extends Thread {
 
-    // The singelton logger 
+    // The logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
     // The termiation flag
@@ -36,8 +38,9 @@ public final class ReetiHandler extends Thread {
             final ReetiExecutor executor,
             final String lhost, final int lport,
             final String rhost, final int rport) {
-        // Initialize the UDP client
+        // Initialize the executor
         mExecutor = executor;
+        // Initialize the connection
         mLocalHost = lhost;
         mLocalPort = lport;
         mRemoteHost = rhost;
@@ -48,7 +51,7 @@ public final class ReetiHandler extends Thread {
                 + " " + "On '" + mLocalHost + ":" + mLocalPort + "'");
     }
 
-    // Start the UDP client thread
+    // Start the handler thread
     @Override
     public final void start() {
         try {
@@ -69,15 +72,15 @@ public final class ReetiHandler extends Thread {
             // Print some information
             mLogger.failure(exc.toString());
         }
-        // Start the client thread 
+        // Start the handler thread 
         super.start();
     }
 
     // Abort the client connection
     public final void abort() {
-        // Set Termination Flag
+        // Set termination flag
         mDone = true;
-        // Close The Socket Now
+        // Close the socket now
         if ((mSocket != null) && !mSocket.isClosed()) {
             mSocket.close();
         }
@@ -124,7 +127,7 @@ public final class ReetiHandler extends Thread {
             mLogger.message("Reeti Handler Sending '" + string + "'");
             // Return true at success
             return true;
-        } catch (final Exception exc) {
+        } catch (final IOException exc) {
             // Print some information
             mLogger.failure(exc.toString());
             // Return false at failure 
@@ -145,7 +148,7 @@ public final class ReetiHandler extends Thread {
             mSocket.receive(packet);
             // Return the buffer now
             return Arrays.copyOf(buffer, packet.getLength());
-        } catch (final Exception exc) {
+        } catch (final IOException exc) {
             // Print some information
             mLogger.warning(exc.toString());
             // Return null at failure 
@@ -168,7 +171,7 @@ public final class ReetiHandler extends Thread {
                 // And return message
                 return message;
             }
-        } catch (final Exception exc) {
+        } catch (final UnsupportedEncodingException exc) {
             // Print some information
             mLogger.failure(exc.toString());
         }
