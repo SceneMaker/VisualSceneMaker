@@ -95,7 +95,7 @@ public final class ReetiExecutor extends ActivityExecutor {
             // Create the speech command
             command = new CommandMessage(cmid, "speech");
             // Append the tts text param
-            command.addParameter("text", "\\voice=" + "Stefan" + " " + "\\language=" + "de" + " " + text);
+            command.addParameter("text", "\\voice=" + "Kate" + " " + "\\language=" + "en" + " " + text);
         } else if (activity instanceof ActionActivity) {
             // Create the action command
             command = new CommandMessage(cmid, name);
