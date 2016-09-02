@@ -148,7 +148,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         }
         // Get the scene object
         final SceneScript script = mProject.getSceneScript();
-        final SceneGroup group = script.getSceneGroup("de", name);
+        final SceneGroup group = script.getSceneGroup("en", name);
         final SceneObject scene = group.select();
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
