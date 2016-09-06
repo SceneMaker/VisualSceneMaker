@@ -166,7 +166,7 @@ public final class UnityExecutor extends ActivityExecutor {
     @Override
     public final void execute(final AbstractActivity activity) {
         // Get action information
-        final LinkedList<ActionFeature> features = activity.getFeatureList();
+        final LinkedList<ActionFeature> features = activity.getFeatures();
 
         // initialize build command
         String unityCommand = "";
@@ -185,7 +185,7 @@ public final class UnityExecutor extends ActivityExecutor {
                     return;
                 }
             } else {
-                unityCommand = cmdId + ", " + activity.getActor() + ", " + sa.toString() + sa.getPunctuation();
+                unityCommand = cmdId + ", " + activity.getActor() + ", " + sa.toString() + sa.getPunct();
 
             }
         } else {

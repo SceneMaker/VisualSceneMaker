@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="131" language="en" identifier="Welcome">
+    <SceneTurn lower="18" upper="131" speaker="reeti">
+      <SceneUttr lower="25" upper="131" punct="?">
+        <ActionObject lower="25" upper="55" actor="" mode="" name="anim" >
+          <ActionFeature lower="31" upper="54" typ="STRING" key="name" val="'Emotions/neutral'"/></ActionObject>
+        <SceneWord lower="56" upper="61" text="Hello"/>
+        <ActionObject lower="62" upper="92" actor="" mode="" name="anim" >
+          <ActionFeature lower="68" upper="91" typ="STRING" key="name" val="'Emotions/curious'"/></ActionObject>
+        <SceneWord lower="93" upper="97" text="Have"/>
+        <SceneWord lower="98" upper="101" text="you"/>
+        <SceneWord lower="102" upper="109" text="already"/>
+        <SceneWord lower="110" upper="118" text="finished"/>
+        <SceneWord lower="119" upper="123" text="your"/>
+        <SceneWord lower="124" upper="130" text="thesis"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="133" upper="218" language="en" identifier="Good">
+    <SceneTurn lower="148" upper="218" speaker="reeti">
+      <SceneUttr lower="155" upper="196" punct="!">
+        <ActionObject lower="155" upper="183" actor="" mode="" name="anim" >
+          <ActionFeature lower="161" upper="182" typ="STRING" key="name" val="'Emotions/happy'"/></ActionObject>
+        <SceneWord lower="184" upper="188" text="Good"/>
+        <SceneWord lower="189" upper="195" text="Robbie"/>
+      </SceneUttr>
+      <SceneUttr lower="197" upper="218" punct="!">
+        <SceneWord lower="197" upper="198" text="I"/>
+        <SceneWord lower="199" upper="201" text="am"/>
+        <SceneWord lower="202" upper="204" text="so"/>
+        <SceneWord lower="205" upper="210" text="proud"/>
+        <SceneWord lower="211" upper="213" text="on"/>
+        <SceneWord lower="214" upper="217" text="you"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="220" upper="302" language="en" identifier="Bad">
+    <SceneTurn lower="234" upper="302" speaker="reeti">
+      <SceneUttr lower="241" upper="281" punct="!">
+        <ActionObject lower="241" upper="267" actor="" mode="" name="anim" >
+          <ActionFeature lower="247" upper="266" typ="STRING" key="name" val="'Emotions/sad'"/></ActionObject>
+        <SceneWord lower="268" upper="270" text="Oh"/>
+        <SceneWord lower="271" upper="273" text="no"/>
+        <SceneWord lower="274" upper="280" text="Robbie"/>
+      </SceneUttr>
+      <SceneUttr lower="282" upper="302" punct="?">
+        <SceneWord lower="282" upper="286" text="What"/>
+        <SceneWord lower="287" upper="289" text="is"/>
+        <SceneWord lower="290" upper="293" text="the"/>
+        <SceneWord lower="294" upper="301" text="problem"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="304" upper="394" language="en" identifier="Repeat">
+    <SceneTurn lower="321" upper="394" speaker="reeti">
+      <SceneUttr lower="328" upper="394" punct="?">
+        <ActionObject lower="328" upper="358" actor="" mode="" name="anim" >
+          <ActionFeature lower="334" upper="357" typ="STRING" key="name" val="'Emotions/neutral'"/></ActionObject>
+        <SceneAbbrev lower="359" upper="365" first="Didn" second="t"/>
+        <SceneWord lower="366" upper="369" text="you"/>
+        <SceneWord lower="370" upper="380" text="understand"/>
+        <SceneWord lower="381" upper="384" text="the"/>
+        <SceneWord lower="385" upper="393" text="question"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

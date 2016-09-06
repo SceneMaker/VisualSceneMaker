@@ -81,7 +81,7 @@ public class StickmanExecutor extends ActivityExecutor {
         // get action information
         final String actor = activity.getActor();
         final String name = activity.getName();
-        final LinkedList<ActionFeature> features = activity.getFeatureList();
+        final LinkedList<ActionFeature> features = activity.getFeatures();
 
         AnimationFX stickmanAnimation = new AnimationFX();
 

@@ -8,29 +8,37 @@ import java.util.LinkedList;
  */
 public final class ActionActivity extends AbstractActivity {
 
-    private final String mText;
+    // The context type
+    public enum Context {
 
-    public ActionActivity(
-            final String actor,
-            final String mode,
-            final String name,
-            final String text) {
-        super(Policy.PARALLEL, actor, mode, name);
-        // Initialize the text
-        mText = text;
+        // The calling task has to wait for temrination
+        nested,
+        // The calling task doesn't need to join this
+        single
     }
 
+    // TODO: The context of the activity is either nested or standalone
+    // If nested, then the actor is optional and otherwise mandatory, so
+    // maybe we need another enumeration with the type of the context
+    private final Context mContext = Context.nested;
+
+    // The textual representation
+    protected final String mText;
+
+    // Construct the activity
     public ActionActivity( // (added PG)
             final String actor,
             final String mode,
             final String name,
             final String text,
             final LinkedList<ActionFeature> featureList) {
-        super(Policy.PARALLEL, actor, mode, name, featureList);
+        super(Type.parallel, actor, mode, name, featureList);
         // Initialize the text
         mText = text;
     }
 
+    // Get the textual representation
+    @Override
     public final String getText() {
         return mText;
     }

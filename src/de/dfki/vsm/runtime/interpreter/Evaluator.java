@@ -83,6 +83,8 @@ public class Evaluator {
     // Construct the evaluator with the interpreter
     public Evaluator(final Interpreter interpreter) {
         mInterpreter = interpreter;
+        //
+        JPLEngine.load("res/swi/*.pl");
     }
 
     // Execute a command
@@ -92,7 +94,7 @@ public class Evaluator {
         if (cmd instanceof PlaySceneGroup) {
             AbstractValue value = evaluate(((PlaySceneGroup) cmd).getArg(), env);
             LinkedList<AbstractValue> valueList = evaluateExpList(((PlaySceneGroup) cmd).getArgList(), env);
-
+            
             if (value.getType() == AbstractValue.Type.STRING) {
                 mInterpreter.unlock();
                 mInterpreter.getScenePlayer().playSceneGroup(((StringValue) value).getValue(), valueList);
@@ -103,13 +105,13 @@ public class Evaluator {
                         + "The scene group argument of the playback command '"
                         + cmd.getConcreteSyntax() + " was evaluated to '"
                         + value.getConcreteSyntax() + "' which is not a string constant";
-
+                
                 throw new InterpreterError(cmd, errorMsg);
             }
         } else if (cmd instanceof Play) {
             AbstractValue value = evaluate(((Play) cmd).getArg(), env);
             LinkedList<AbstractValue> valueList = evaluateExpList(((Play) cmd).getArgList(), env);
-
+            
             if (value.getType() == AbstractValue.Type.STRING) {
                 mInterpreter.unlock();
                 mInterpreter.getScenePlayer().playActionActivity(((StringValue) value).getValue(), valueList);
@@ -120,13 +122,10 @@ public class Evaluator {
                         + "The argument of the playback command '"
                         + cmd.getConcreteSyntax() + " was evaluated to '"
                         + value.getConcreteSyntax() + "' which is not a string constant";
-
+                
                 throw new InterpreterError(cmd, errorMsg);
             }
-        }
-
-
-////////////////////////////////////////////////////////////////////
+        } ////////////////////////////////////////////////////////////////////
         // PLAY DIALOGUE ACT
         ////////////////////////////////////////////////////////////////////
         /*
@@ -189,7 +188,7 @@ public class Evaluator {
             ////////////////////////////////////////////////////////////////////
             else if (lexp instanceof ArrVarExp) {
                 AbstractValue fieldValue = evaluate(((ArrVarExp) lexp).getExp(), env);
-
+                
                 if (fieldValue.getType() == AbstractValue.Type.INT) {
                     env.write(((ArrVarExp) lexp).getName(), ((IntValue) fieldValue).getValue().intValue(),
                             evaluate(rexp, env));
@@ -393,7 +392,7 @@ public class Evaluator {
             else if (operator == BinaryExp.Operator.AddLast) {
                 if (left instanceof ListValue) {
                     ((ListValue) left).getValueList().addLast(right);
-
+                    
                     return left;
                 } else {
                     throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -445,7 +444,7 @@ public class Evaluator {
             } else if (operator == UnaryExp.Operator.Clear) {
                 if (value instanceof ListValue) {
                     ((ListValue) value).getValueList().clear();
-
+                    
                     return value;
                 } else {
                     throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -502,7 +501,7 @@ public class Evaluator {
             AbstractValue condition = evaluate(((ConditionalExp) exp).getCondition(), env);
             AbstractValue thenValue = evaluate(((ConditionalExp) exp).getThenExp(), env);
             AbstractValue elseValue = evaluate(((ConditionalExp) exp).getElseExp(), env);
-
+            
             if (condition instanceof BooleanValue) {
                 if (((BooleanValue) condition).getValue()) {
                     return thenValue;
@@ -524,7 +523,7 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         else if (exp instanceof ArrVarExp) {
             AbstractValue index = evaluate(((ArrVarExp) exp).getExp(), env);
-
+            
             if (index.getType() == AbstractValue.Type.INT) {
                 return env.read(((ArrVarExp) exp).getName(), ((IntValue) index).getValue());
             } else {
@@ -546,7 +545,7 @@ public class Evaluator {
             AbstractValue left = evaluate(((BinaryCond) exp).getLeftCond(), env);
             AbstractValue right = evaluate(((BinaryCond) exp).getRightCond(), env);
             BinaryCond.Operator operator = ((BinaryCond) exp).getOperator();
-
+            
             if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
                 if (operator == BinaryCond.Operator.And) {
                     return new BooleanValue(((BooleanValue) left).getValue() && ((BooleanValue) right).getValue());
@@ -567,7 +566,7 @@ public class Evaluator {
              */
             AbstractValue value = evaluate(((UnaryCond) exp).getCondition(), env);
             UnaryCond.Operator operator = ((UnaryCond) exp).getOperator();
-
+            
             if (value instanceof BooleanValue) {
                 if (operator == UnaryCond.Operator.Not) {
                     return new BooleanValue(!((BooleanValue) value).getValue());
@@ -587,7 +586,7 @@ public class Evaluator {
             AbstractValue left = evaluate(((ComparisionCond) exp).getLeftExp(), env);
             AbstractValue right = evaluate(((ComparisionCond) exp).getRightExp(), env);
             ComparisionCond.Operator operator = ((ComparisionCond) exp).getOperator();
-
+            
             if (operator == ComparisionCond.Operator.Eq) {
                 if (left.getType() == right.getType()) {
                     return new BooleanValue(left.equalsValue(right));
@@ -595,7 +594,7 @@ public class Evaluator {
                     throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
                 }
             }
-
+            
             if (operator == ComparisionCond.Operator.Neq) {
                 if (left.getType() == right.getType()) {
                     return new BooleanValue(!(left.equalsValue(right)));
@@ -676,7 +675,7 @@ public class Evaluator {
         else if (exp instanceof ContainsCond) {
             AbstractValue listValue = evaluate(((ContainsCond) exp).getListExp(), env);
             AbstractValue elemValue = evaluate(((ContainsCond) exp).getElementExp(), env);
-
+            
             if (listValue.getType() == AbstractValue.Type.LIST) {
                 for (AbstractValue value : ((ListValue) listValue).getValueList()) {
                     if (value.getType() == elemValue.getType()) {
@@ -685,7 +684,7 @@ public class Evaluator {
                         }
                     }
                 }
-
+                
                 return new BooleanValue(false);
             } else {
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -696,7 +695,7 @@ public class Evaluator {
         ////////////////////////////////////////////////////////////////////
         else if (exp instanceof EmptyCond) {
             AbstractValue value = evaluate(((EmptyCond) exp).getExp(), env);
-
+            
             if (value.getType() == AbstractValue.Type.LIST) {
                 return new BooleanValue(((ListValue) value).isEmpty());
             } else {
@@ -710,7 +709,7 @@ public class Evaluator {
             if (mInterpreter.getTimeoutManager().contains((TimeoutCond) exp)) {
                 if (mInterpreter.getTimeoutManager().expired((TimeoutCond) exp)) {
                     mInterpreter.getTimeoutManager().remove((TimeoutCond) exp);
-
+                    
                     return new BooleanValue(true);
                 } else {
                     return new BooleanValue(false);
@@ -742,14 +741,14 @@ public class Evaluator {
             } else {
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
-
+            
         } //
         ////////////////////////////////////////////////////////////////////
         // VALUE-OF EXPRESSION
         ////////////////////////////////////////////////////////////////////
         else if (exp instanceof ValueOf) {
             Configuration.State state = mInterpreter.getConfiguration().getState(((ValueOf) exp).getNode());
-
+            
             if (state != null) {
                 return state.getThread().getEnvironment().read(((ValueOf) exp).getVar());
             } else {
@@ -763,7 +762,7 @@ public class Evaluator {
         else if (exp instanceof HistoryContainsState) {
             SystemHistory.Entry entry = mInterpreter.getSystemHistory().get(((HistoryContainsState) exp).getState(),
                     ((HistoryContainsState) exp).getDepth());
-
+            
             if (entry == null) {
                 return new BooleanValue(false);
             } else {
@@ -792,9 +791,9 @@ public class Evaluator {
             try {
                 result = executeUsrCmd((UsrCmd) exp, env);
             } catch (Exception e) {
-
+                
                 e.printStackTrace();
-
+                
                 throw new InterpreterError(exp, "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
             }
             if (result instanceof Boolean) {
@@ -838,13 +837,13 @@ public class Evaluator {
      * , InterruptException, TerminatedException
      */ {
         LinkedList<AbstractValue> valueList = new LinkedList<AbstractValue>();
-
+        
         for (Expression exp : expList) {
             AbstractValue value = evaluate(exp, env);
-
+            
             valueList.add(value);
         }
-
+        
         return valueList;
     }
 
@@ -858,11 +857,11 @@ public class Evaluator {
      * , InterruptException, TerminatedException
      */ {
         HashMap<java.lang.String, AbstractValue> valueMap = new HashMap<java.lang.String, AbstractValue>();
-
+        
         for (Assignment exp : expList) {
             valueMap.put(((VarExp) exp.getLExp()).getName(), evaluate(exp.getExp(), env));
         }
-
+        
         return valueMap;
     }
 
@@ -881,28 +880,28 @@ public class Evaluator {
 
         // Get the user command definition of this command
         FunDef cmdDef = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(cmdName);
-
+        
         if (cmdDef == null) {
             java.lang.String errorMsg = "An error occured while executing thread " + Process.currentThread().toString()
                     + " : " + "The user command call '" + cmd.getConcreteSyntax()
                     + "' referes to the user command '" + cmdName + "' which is not defined.";
-
+            
             throw new InterpreterError(this, errorMsg);
         }
-
+        
         java.lang.String cmdClassName = cmdDef.getClassName();
         java.lang.String cmdMethodName = cmdDef.getMethod();
 
         // Construct the parameter list of the command
         Class[] paramClassList = new Class[cmdDef.getParamList().size()];
-
+        
         for (int i = 0; i < cmdDef.getParamList().size(); i++) {
             ParamDef paramDef = cmdDef.getParamList().get(i);
 
             // mLogger.message(paramDef.getConcreteSyntax());
             java.lang.String paramType = paramDef.getType();
             Class paramClass = null;
-
+            
             if (paramType.equals("boolean")) {
                 paramClass = boolean.class;
             } else if (paramType.equals("char")) {
@@ -928,7 +927,7 @@ public class Evaluator {
                     // System.err.println(e.toString());
                 }
             }
-
+            
             paramClassList[i] = paramClass;
 
             // System.err.println("Parameter is " + paramClassList[i]);
@@ -937,7 +936,7 @@ public class Evaluator {
         //
         java.lang.String[] argDscrList = new java.lang.String[valueList.size()];
         java.lang.Object[] argInstList = new java.lang.Object[valueList.size()];
-
+        
         for (int i = 0; i < valueList.size(); i++) {
 
             // System.err.println("Interpreter Value [" + i + "] Is " + valueList.get(i).getClass());
@@ -976,7 +975,7 @@ public class Evaluator {
                 for (int j = 0; j < objArr.length; j++) {
                     Array.set(myNewArray, j, compType.cast(objArr[j]));
                 }
-
+                
                 argInstList[i] = myNewArray;
                 argDscrList[i] = myNewArray.toString();
 
@@ -986,15 +985,15 @@ public class Evaluator {
 
         // DEBUG
         java.lang.String argListStr = "( ";
-
+        
         for (int k = 0; k < argDscrList.length; k++) {
             argListStr += argDscrList[k] + " ";
         }
-
+        
         argListStr += ")";
-
+        
         boolean isObject = false;
-
+        
         try {
             Class myClass = Class.forName(cmdClassName);
 
@@ -1078,11 +1077,11 @@ public class Evaluator {
         }
         //return null;
     }
-
+    
     public final boolean executeQuery(final String querystr, final Environment env) {
-
-        mLogger.warning("Executing Prolog Query '" + querystr + "'");
         
+        mLogger.warning("Executing Prolog Query '" + querystr + "'");
+
         // Make The Query To The KB
         final JPLResult result = JPLEngine.query(querystr);
 
@@ -1098,12 +1097,12 @@ public class Evaluator {
             // Set The Variables In The Environment
             for (Map.Entry<String, String> entry : subst.entrySet()) {
                 try {
-
+                    
                     mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue() + " Via Prolog Query");
 
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));
-
+                    
                 } catch (Exception exc) {
 
                     // Print Debug Information

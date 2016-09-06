@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.activity.scheduler;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.runtime.activity.AbstractActivity.Policy;
+import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -42,7 +42,7 @@ public final class ActivityScheduler {
         synchronized (mWorkerMap) {
             mWorkerMap.remove(marker).start();
         }
-    //}
+        //}
     }
 
     // Schedule an activity on an executor with a timeout
@@ -61,7 +61,7 @@ public final class ActivityScheduler {
         // Start the activity task
         task.start();
         // Check if we need to wait
-        if (activity.getType() == Policy.BLOCKING) {
+        if (activity.getType() == Type.blocking) {
             // Print some information
             mLogger.message("Blocking calling thread'" + Thread.currentThread() + "'");
             // Wait for termination

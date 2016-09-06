@@ -9,26 +9,28 @@ import java.util.LinkedList;
 public abstract class AbstractActivity {
 
     // The activity type
-    public enum Policy {
+    public enum Type {
 
-        BLOCKING, // The calling task has to wait for temination
-        PARALLEL // The calling task doesn't need to join this
+        // The calling task has to wait for temrination
+        blocking,
+        // The calling task doesn't need to join this
+        parallel
     }
 
     // The activity type
-    protected Policy mType;
+    protected Type mType;
     // The activity actor
     protected final String mActor;
-    // The activity mode
-    protected final String mMode;
     // The activity name
     protected final String mName;
+    // The activity mode
+    protected final String mMode;
     // The related action features
-    protected final LinkedList<ActionFeature> mFeatureList;
+    protected final LinkedList<ActionFeature> mFeatures;
 
     // Construct the activity
     public AbstractActivity(
-            final Policy type,
+            final Type type,
             final String actor,
             final String mode,
             final String name) {
@@ -36,12 +38,12 @@ public abstract class AbstractActivity {
         mActor = actor;
         mMode = mode;
         mName = name;
-        mFeatureList = null;
+        mFeatures = null;
     }
 
     // Construct the activity (added PG)
     public AbstractActivity(
-            final Policy type,
+            final Type type,
             final String actor,
             final String mode,
             final String name,
@@ -50,16 +52,16 @@ public abstract class AbstractActivity {
         mActor = actor;
         mMode = mode;
         mName = name;
-        mFeatureList = featureList;
+        mFeatures = featureList;
     }
 
     // Get the scheduling type
-    public final Policy getType() {
+    public final Type getType() {
         return mType;
     }
 
     // added PG  - 21.4.2016 (play action activities with sceneflow play cmd)
-    public final void setTyp(Policy type) {
+    public final void setType(final Type type) {
         mType = type;
     }
 
@@ -79,7 +81,11 @@ public abstract class AbstractActivity {
     }
 
     // Get the activity name (added PG)
-    public final LinkedList<ActionFeature> getFeatureList() {
-        return mFeatureList;
+    public final LinkedList<ActionFeature> getFeatures() {
+        return mFeatures;
     }
+
+    // Get the textual representation
+    public abstract String getText();
+
 }
