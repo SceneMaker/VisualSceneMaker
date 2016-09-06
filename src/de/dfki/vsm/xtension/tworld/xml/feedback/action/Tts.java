@@ -32,7 +32,7 @@ public class Tts implements XMLParseable, XMLWriteable {
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<tts status>").push();
+        out.println("<marytts status>").push();
 
 //        mObjects.stream().forEach((o) -> {
 //            try {
@@ -41,7 +41,7 @@ public class Tts implements XMLParseable, XMLWriteable {
 //                mLogger.failure(ex.getMessage());
 //            }
 //        });
-        out.pop().println("</tts status>");
+        out.pop().println("</marytts status>");
     }
 
     @Override
