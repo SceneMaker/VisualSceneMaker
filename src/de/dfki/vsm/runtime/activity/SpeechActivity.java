@@ -10,41 +10,46 @@ import java.util.Properties;
  */
 public final class SpeechActivity extends AbstractActivity {
 
-    private LinkedList mList;
-    private final String mMark;
-    // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    // The logger instance
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
 
-    // Construct the speech activity
+    // The list of blocks
+    private LinkedList mBlocks;
+    // The punctuation mark
+    private final String mPunct;
+
+    // Construct the activity
     public SpeechActivity(
             final String actor,
             final LinkedList list,
-            final String mark) {
-        super(Policy.BLOCKING, actor, "SPEECH", "SPEAK");
+            final String punct) {
+        super(Type.blocking, actor, "speech", "speak");
         // Initialize the content
-        mList = list;
-        mMark = mark;
+        mBlocks = list;
+        mPunct = punct;
     }
 
-    // Get the policy
-    //public Policy getPolicy() {
-    //    return mPolicy;
-    //}
     // Get the text and time mark blocks (added by PG)
     public final LinkedList getBlocks() {
-        return mList;
+        return mBlocks;
+    }
+
+    // Get the punctuation information (added by PG)
+    public final String getPunct() {
+        return mPunct;
     }
 
     // Get the text only - without time mark blocks (added by PG)
     public final String getTextOnly(String markerSign) {
         final StringBuilder builder = new StringBuilder();
-        for (final Object item : mList) {
+        for (final Object item : mBlocks) {
             if (!item.toString().contains(markerSign)) {
                 builder.append(item.toString());
-                if (!item.equals(mList.getLast())) {
+                if (!item.equals(mBlocks.getLast())) {
                     builder.append(' ');
                 } else {
-                    builder.append(mMark);
+                    builder.append(mPunct);
                 }
             }
         }
@@ -56,9 +61,9 @@ public final class SpeechActivity extends AbstractActivity {
         if (pronounciationMap == null) {
             return;
         }
-        
+
         LinkedList replaced = new LinkedList();
-        for (final Object item : mList) {
+        for (final Object item : mBlocks) {
             String text = item.toString();
             //mLogger.success("text to be checked and maybe replaced " + text);
             for (Map.Entry<Object, Object> entry : pronounciationMap.entrySet()) {
@@ -69,13 +74,13 @@ public final class SpeechActivity extends AbstractActivity {
             //mLogger.success(" with " + text);
             replaced.add(text);
         }
-        mList = replaced;
+        mBlocks = replaced;
     }
 
 // Get the punctuation information (added by PG 20.4.2016)
     public final LinkedList<String> getTimeMarks(String markerSign) {
         final LinkedList<String> tms = new LinkedList<>();
-        for (final Object item : mList) {
+        for (final Object item : mBlocks) {
             if (item.toString().contains(markerSign)) {
                 tms.add(item.toString());
             }
@@ -84,21 +89,16 @@ public final class SpeechActivity extends AbstractActivity {
         return tms;
     }
 
-    // Get the punctuation information (added by PG)
-    public final String getPunctuation() {
-        return mMark;
-    }
-
-    // Get representation
+    // Get textual representation
     @Override
-    public final String toString() {
+    public final String getText() {
         final StringBuilder builder = new StringBuilder();
-        for (final Object item : mList) {
+        for (final Object item : mBlocks) {
             builder.append(item.toString());
-            if (!item.equals(mList.getLast())) {
+            if (!item.equals(mBlocks.getLast())) {
                 builder.append(' ');
             } else {
-                builder.append(mMark);
+                builder.append(mPunct);
             }
         }
         return builder.toString();

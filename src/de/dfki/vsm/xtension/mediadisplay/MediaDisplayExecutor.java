@@ -63,7 +63,7 @@ public class MediaDisplayExecutor extends ActivityExecutor {
             final String name = activity.getName();
 
             if (name.equalsIgnoreCase("show")) {
-                for (ActionFeature af : activity.getFeatureList()) {
+                for (ActionFeature af : activity.getFeatures()) {
                     if (af.getKey().equalsIgnoreCase("image")) {
                         mMediaDisplayGUI.setImage(af.getVal());
                     }

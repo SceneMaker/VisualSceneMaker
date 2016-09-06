@@ -12,7 +12,7 @@ public final class PauseActivity extends AbstractActivity {
     public PauseActivity(
             final String actor,
             final long timeout) {
-        super(Policy.BLOCKING, actor, "SPEECH", "PAUSE");
+        super(Type.blocking, actor, "speech", "pause");
         // Initialize the timeout
         mTimeout = timeout;
     }
@@ -21,4 +21,10 @@ public final class PauseActivity extends AbstractActivity {
     public final long getTimeout() {
         return mTimeout;
     }
+
+    @Override
+    public String getText() {
+        return null;
+    }
+
 }
