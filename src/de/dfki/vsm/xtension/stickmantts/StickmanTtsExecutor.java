@@ -141,7 +141,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
     }
 
     private void actionSetVoice(AbstractActivity activity, AgentConfig agent) {
-        for (ActionFeature feat : activity.getFeatureList()) {
+        for (ActionFeature feat : activity.getFeatures()) {
             if (feat.getKey().equalsIgnoreCase("voice")) {
                 languageAgentMap.put(agent.getAgentName(), feat.getVal());
             }
