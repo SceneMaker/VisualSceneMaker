@@ -11,6 +11,9 @@ import de.dfki.action.sequence.WordTimeMarkSequence;
 import de.dfki.stickman.StickmanStage;
 import de.dfki.stickman.animationlogic.Animation;
 import de.dfki.stickman.animationlogic.AnimationLoader;
+import de.dfki.stickmanfx.StickmanStageFX;
+import de.dfki.stickmanfx.animationlogic.AnimationFX;
+import de.dfki.stickmanfx.animationlogic.AnimationLoaderFX;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.vsm.model.project.AgentConfig;
@@ -35,7 +38,8 @@ import java.util.LinkedList;
 public class StickmanExecutor extends ActivityExecutor {
 
     // The stickman stage window
-    private static StickmanStage mStickmanStage;
+    private static StickmanStageFX mStickmanStage;
+    private  Thread stickmanLaunchThread;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The tworld listener
@@ -79,7 +83,7 @@ public class StickmanExecutor extends ActivityExecutor {
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatureList();
 
-        Animation stickmanAnimation = new Animation();
+        AnimationFX stickmanAnimation = new AnimationFX();
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
@@ -100,19 +104,19 @@ public class StickmanExecutor extends ActivityExecutor {
             mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
             mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
 
-            stickmanAnimation = AnimationLoader.getInstance().loadEventAnimation(mStickmanStage.getStickman(actor), "Speaking", 3000, false);
-            stickmanAnimation.mParameter = wts;
+            stickmanAnimation = AnimationLoaderFX.getInstance().loadEventAnimation(mStickmanStage.getStickmanFX(actor), "Speaking", 3000, false);
+            stickmanAnimation.setParameter( wts);
 
             executeAnimationAndWait(activity, stickmanAnimation);
         } else if (activity instanceof ActionActivity) {
-            stickmanAnimation = AnimationLoader.getInstance().loadAnimation(mStickmanStage.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
+            stickmanAnimation = AnimationLoaderFX.getInstance().loadAnimation(mStickmanStage.getStickmanFX(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
                 executeAnimation(stickmanAnimation);
             }
         }
     }
 
-    private void executeAnimation(Animation stickmanAnimation) {
+    private void executeAnimation(AnimationFX stickmanAnimation) {
         // executeAnimation command to platform 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
@@ -120,7 +124,7 @@ public class StickmanExecutor extends ActivityExecutor {
         broadcast(out.toString().replace("\n", " "));
     }
 
-    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation) {
+    private void executeAnimationAndWait(AbstractActivity activity, AnimationFX stickmanAnimation) {
         // executeAnimation command to platform 
         synchronized (mActivityWorkerMap) {
             // executeAnimation command to platform 
@@ -161,17 +165,41 @@ public class StickmanExecutor extends ActivityExecutor {
 
         // Start the StickmanStage client application 
         mLogger.message("Starting StickmanStage Client Application ...");
-        mStickmanStage = StickmanStage.getNetworkInstance(host, Integer.parseInt(port));
-        mStickmanStage.showStickmanName(showStickmanNames);
+        if (mConfig.containsKey("fullscreen")) {
+            if (mConfig.getProperty("fullscreen").equalsIgnoreCase(Boolean.TRUE.toString())) {
+                mStickmanStage = StickmanStageFX.getNetworkInstanceFullScreen(host, Integer.parseInt(port));
+            } else {
+                mStickmanStage = StickmanStageFX.getNetworkInstance(host, Integer.parseInt(port));
+            }
+        } else {
+            mStickmanStage = StickmanStageFX.getNetworkInstance(host, Integer.parseInt(port));
+        }
+
+        mStickmanStage.showStickmanNameFX(showStickmanNames);
 
         // Get Stickman agents configuration
         for (String name : mProject.getAgentNames()) {
             AgentConfig ac = mProject.getAgentConfig(name);
 
             if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
-                StickmanStage.addStickman(name);
+                StickmanStageFX.addStickmanFX(name);
             }
         }
+
+        stickmanLaunchThread = new Thread() {
+            public void run() {
+                try {
+                    
+                 
+                    StickmanStageFX.lauchStickman(mProject.getProjectPath());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+
+        stickmanLaunchThread.start();
 
         // Wait for stickman stage to be initialized 
         while (mClientMap.isEmpty()) {
@@ -187,7 +215,8 @@ public class StickmanExecutor extends ActivityExecutor {
     @Override
     public void unload() {
         // clear the stage
-        StickmanStage.clearStage();
+        StickmanStageFX.clearStage();
+        //stickmanLaunchThread.interrupt();
         // Abort the client threads
         for (final StickmanHandler client : mClientMap.values()) {
             client.abort();

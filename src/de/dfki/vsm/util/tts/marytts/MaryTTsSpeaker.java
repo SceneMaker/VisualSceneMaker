@@ -1,37 +1,31 @@
-package de.dfki.vsm.util.tts;
+package de.dfki.vsm.util.tts.marytts;
 
-import de.dfki.action.sequence.TimeMark;
-import de.dfki.action.sequence.Word;
-import de.dfki.action.sequence.WordTimeMarkSequence;
 import de.dfki.stickman.Stickman;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.xtension.stickmanmarytts.action.ActionMouthActivity;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.I4GMaryClient;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.MaryStickmanPhonemes;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.VoiceName;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
+import de.dfki.vsm.util.tts.SpeakerTts;
+import de.dfki.vsm.util.tts.VoiceName;
+import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
  * Created by alvaro on 5/24/16.
  */
-public class MaryTTsSpeaker {
-    private SpeechActivity speech;
+public class MaryTTsSpeaker extends SpeakerTts {
+
     private String langVoice;
     private VoiceName voiceName;
     private String gender;
     private LinkedList blockText = new LinkedList(); //Comes from speechActivity
     MaryStickmanPhonemes maryPhonemes = new MaryStickmanPhonemes();
-    HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<>();
-    private I4GMaryClient maryTTs;
+
     public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName){
         speech = pSpeech;
         langVoice = pLanguage;
         voiceName = pVoiceName;
         maryPhonemes =  new MaryStickmanPhonemes();
         initMaryClientInstance();
+
     }
 
     public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName, MaryStickmanPhonemes phonemesList){
@@ -59,9 +53,10 @@ public class MaryTTsSpeaker {
     }
 
     private void initMaryClientInstance(){
-        if (maryTTs == null) {
+        if (speechClient == null) {
             try {
-                maryTTs = I4GMaryClient.instance();
+
+                speechClient = I4GMaryClient.instance();
             } catch (Exception e) {
                 System.out.println("MaryTT not initiated yet");
             }
@@ -71,14 +66,6 @@ public class MaryTTsSpeaker {
 
     public void setSpeechActivity(SpeechActivity pSpeech){
         speech = pSpeech;
-    }
-
-    public SpeechActivity getSpeechActivity() {
-        return speech;
-    }
-    
-    public LinkedList getSpeechActivityTextBlocs(){
-        return speech.getBlocks();
     }
 
     public LinkedList<Phoneme> getWordPhonemeList(int index){
@@ -95,11 +82,10 @@ public class MaryTTsSpeaker {
     public String speak(String executionId) throws Exception {
         String textToSepak = "";
         try {
-            addWordsToMaryClient();
-            textToSepak = maryTTs.getText().trim();
-            
+            addWords();
+            textToSepak = getAsMaryClient().getText();
             if(textToSepak.length()>0) {
-                maryTTs.speak(getGenderTypeFromString(), executionId, voiceName, langVoice);
+                getAsMaryClient().speak(getGenderTypeFromString(), executionId, voiceName, langVoice);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -108,29 +94,12 @@ public class MaryTTsSpeaker {
         return  textToSepak;
     }
 
-    public WordTimeMarkSequence getWordTimeSequence(){
-        WordTimeMarkSequence wts = new WordTimeMarkSequence(speech.getTextOnly("$"));
-        LinkedList blocks = speech.getBlocks();
-        for (final Object item : blocks) {
-            if (!item.toString().contains("$")) {
-                Word w = new Word(item.toString());
-                wts.add(w);
-            } else {
-                wts.add(new TimeMark(item.toString()));
-            }
-        }
-        return wts;
+
+
+    private I4GMaryClient getAsMaryClient(){
+        return (I4GMaryClient) speechClient;
     }
 
-    private void addWordsToMaryClient(){
-        LinkedList blocks = speech.getBlocks();
-        for (final Object item : blocks) {
-            if (!item.toString().contains("$")) {
-                //Word w = new Word(item.toString());
-                maryTTs.addWord(item.toString());
-            }
-        }
-    }
 
     private Stickman.TYPE getGenderTypeFromString(){
         if(gender == Stickman.TYPE.MALE.toString()){

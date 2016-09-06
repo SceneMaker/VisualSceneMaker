@@ -2,6 +2,8 @@ package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
 import de.dfki.stickmanfx.StickmanStageFX;
 import de.dfki.vsm.model.project.AgentConfig;
+import de.dfki.vsm.model.project.ProjectConfig;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
@@ -29,6 +31,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     }
     public static int agentCounter = 1;
     public String contextName;
+    private RunTimeProject mProject;
     private String getContextValueName(){
         String name = contextValue + agentCounter;
         contextName = name;
@@ -37,6 +40,12 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
 
     public ContextTreeItem(AbstractTreeEntry item) {
         entryItem = item;
+        this.setValue(entryItem.getName());
+    }
+
+    public ContextTreeItem(AbstractTreeEntry item, RunTimeProject projectConfig) {
+        entryItem = item;
+        mProject = projectConfig;
         this.setValue(entryItem.getName());
     }
 
@@ -85,13 +94,30 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
 
     private void launchStickmanConfiguration(EntryPlugin plugin) {
         StickmanStageFX.clearStage();
+        if(mProject == null){
+            addStickmanFromPlugin(plugin);
+        }else{
+            addStickmanFromProject();
+            mProject.getProjectConfig().getAgentConfigList();
+        }
+        StickmanStageFX.lauchStickmanConfig(mProject.getProjectPath());
+    }
+
+    private void addStickmanFromProject() {
+        for (AgentConfig agent: mProject.getProjectConfig().getAgentConfigList()) {
+            if (agent.getDeviceName().equalsIgnoreCase("stickman")) {
+                StickmanStageFX.addStickmanFX(agent.getAgentName());
+            }
+        }
+    }
+
+    private void addStickmanFromPlugin(EntryPlugin plugin) {
         for (EntryAgent agent: plugin.getAgents()) {
             AgentConfig ac = agent.getAgentConfig();
             if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
                 StickmanStageFX.addStickmanFX(ac.getAgentName());
             }
         }
-        StickmanStageFX.lauchStickmanConfig();
     }
 
     private MenuItem getAddNewAgentItem(){
@@ -99,7 +125,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         addNewAgent.setOnAction(new EventHandler() {
             public void handle(Event t) {
                 EntryAgent agent = new EntryAgent(getContextValueName());
-                AbstractTreeItem newBox = new ContextTreeItem(agent);
+                AbstractTreeItem newBox = new ContextTreeItem(agent, mProject);
                 agent.setContextTreeItem(newBox);
                 getChildren().add(newBox);
                 agentCounter++;

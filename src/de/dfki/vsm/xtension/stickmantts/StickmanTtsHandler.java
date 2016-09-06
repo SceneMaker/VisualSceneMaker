@@ -1,6 +1,13 @@
-package de.dfki.vsm.xtension.stickman;
+package de.dfki.vsm.xtension.stickmantts;
 
+import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.evt.EventListener;
+import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStart;
+import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStop;
+import de.dfki.vsm.xtension.stickmantts.StickmanTtsExecutor;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -9,15 +16,15 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 /**
- * @author Patrick Gebhard
+ * @author Alvaro Cepero
  */
-public class StickmanHandler extends Thread {
+public class StickmanTtsHandler extends Thread implements EventListener {
 
     // The logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
     // The executor instance
-    private final StickmanExecutor mExecutor;
+    private final StickmanTtsExecutor mExecutor;
     // The client socket
     private final Socket mSocket;
     // The socket streams
@@ -25,13 +32,15 @@ public class StickmanHandler extends Thread {
     private BufferedWriter mOutStream;
     // The termination flag
     private boolean mDone = false;
+    private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
 
     // Create the client thread
-    public StickmanHandler(final Socket socket, final StickmanExecutor executor) {
+    public StickmanTtsHandler(final Socket socket, final StickmanTtsExecutor executor) {
         // Initialize the socket
         mSocket = socket;
         // Initialize the executor
         mExecutor = executor;
+        mEventDispatcher.register(this);
     }
 
     // Start the client thread
@@ -54,6 +63,7 @@ public class StickmanHandler extends Thread {
 
     // Abort the client thread
     public final void abort() {
+        mEventDispatcher.remove(this);
         // Set the termination flag
         mDone = true;
         // Eventually close the socket
@@ -112,9 +122,28 @@ public class StickmanHandler extends Thread {
             final String message = recv();
             if (message != null) {
                 // Handle the message
-                System.out.println("Receiving new message: " + message);
                 mExecutor.handle(message, this);
             }
+        }
+    }
+
+    @Override
+    public void update(EventObject event) {
+        if(event instanceof LineStart){
+            //mExecutor.handle(message, this);
+            String executionId = ((LineStart) event).getExecutionId();
+            if(executionId.startsWith(StickmanTtsExecutor.sExecutionId)){
+                mExecutor.scheduleSpeech(executionId);
+            }
+
+        }
+        if(event instanceof LineStop){
+            String message = "#AUDIO#end#" + ((LineStop) event).getExecutionId();
+            String executionId = ((LineStop) event).getExecutionId();
+            if(executionId.startsWith(StickmanTtsExecutor.sExecutionId)){
+                mExecutor.handle(message, this);
+            }
+
         }
     }
 }

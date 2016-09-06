@@ -1,22 +1,17 @@
-package de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence;
+package de.dfki.vsm.util.tts.marytts.phonemes;
 
-
-import java.util.HashMap;
+import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
 
 /**
- * Created by alvaro on 3/28/16.
+ * Created by alvaro on 7/31/16.
  */
-public class Phoneme {
-    private String mValue;
-    private long mStart;
-    private long mEnd;
-    protected HashMap<String, String> lipMap = new HashMap<>();
+public class EnglishPhoneme extends Phoneme {
+    public EnglishPhoneme(String value, long start, long end) {
+        super(value, start, end);
 
+    }
 
-    public Phoneme(String value, long start, long end){
-        mValue = value;
-        mStart = start;
-        mEnd = end;
+    protected void initLipMap() {
         lipMap.put("A", "TWO");
         lipMap.put("O", "THREE");
         lipMap.put("u", "SEVEN");
@@ -67,59 +62,5 @@ public class Phoneme {
         lipMap.put("r", "FIVE"); //THIRTEEN
         lipMap.put("w", "SEVEN");
         lipMap.put("j", "FIVE"); //FOURTEEN
-        //lipMap.put("h", "THREE"); //SIXTEEN?
-
-
-
-
-
-
-
-
-
-
-
-
-       // lipMap.put("s", Mouth.SHAPE.SIX);//TODO: Make this face
-
-    }
-    public String getmValue() {
-        return mValue;
-    }
-
-    public void setmValue(String mValue) {
-        this.mValue = mValue;
-    }
-
-    public long getmStart() {
-        return mStart;
-    }
-
-    public void setmStart(long mStart) {
-        this.mStart = mStart;
-    }
-
-    public long getmEnd() {
-        return mEnd;
-    }
-
-    public void setmEnd(long mEnd) {
-        this.mEnd = mEnd;
-    }
-
-    public String getLipPosition(String phoneme){
-        if(lipMap.containsKey(phoneme)){
-            return lipMap.get(phoneme);
-        }
-        else{
-            return "Default";
-        }
-    }
-
-    public String getLipPosition(){
-        if(lipMap.containsKey(mValue)){
-            return lipMap.get(mValue);
-        }
-        return null;
     }
 }

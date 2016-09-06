@@ -143,7 +143,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     private void addAgentNodeToPluginNode(EntryPlugin entryPlugin, ContextTreeItem pluginNode){
         for(EntryAgent agent: entryPlugin.getAgents() ) {
-            ContextTreeItem agentNode = new ContextTreeItem(agent); //It should not be ContextTreeItem
+            ContextTreeItem agentNode = new ContextTreeItem(agent, mProject); //It should not be ContextTreeItem
             agentNode.registerObserver(this);
             pluginNode.getChildren().add(agentNode);
         }
@@ -171,7 +171,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     private void addPluginToList(EntryPlugin entryPlugin){
-        ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin);
+        ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin, mProject);
         pluginNode.registerObserver(this);
         addAgentNodeToPluginNode(entryPlugin, pluginNode);
         devices.getChildren().add(pluginNode);
@@ -449,6 +449,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             agentEntry.setAgentConfig(mProject.getAgentConfig(agent));
         } else if(object instanceof CellEvent){//We change either the name of the agent or device
             changeItemName((CellEvent) object);
+            saveConfig();
         } else if(object instanceof DeleteContextEventAgent){
             removeSelectedItem();
             deleteAgent(((DeleteContextEventAgent) object).getTreeEntry());
