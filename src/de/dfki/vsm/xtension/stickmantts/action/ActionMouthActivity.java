@@ -14,17 +14,17 @@ public final class ActionMouthActivity extends AbstractActivity {
     private WordTimeMarkSequence mWts;
     private String word;
     public ActionMouthActivity(String actor, String mode, String name, String text) {
-        super(Policy.PARALLEL, actor, mode, name);
+        super(Type.parallel, actor, mode, name);
         mText = text;
     }
     public ActionMouthActivity(String actor, String mode, String name, String text, int duration) {
-        super(Policy.PARALLEL, actor, mode, name);
+        super(Type.parallel, actor, mode, name);
         mDuration = duration;
         mText = text;
     }
 
     public ActionMouthActivity(String actor, String mode, String name, String text, int duration, WordTimeMarkSequence wts) {
-        super(Policy.PARALLEL, actor, mode, name);
+        super(Type.parallel, actor, mode, name);
         mDuration = duration;
         mText = text;
         mWts = wts;
@@ -35,7 +35,7 @@ public final class ActionMouthActivity extends AbstractActivity {
     }
 
     public ActionMouthActivity(String actor, String mode, String name, String text, int duration, Phoneme p) {
-        super(Policy.PARALLEL, actor, mode, name);
+        super(Type.parallel, actor, mode, name);
         mDuration = duration;
         mPhoneme = p;
         mText = text;
