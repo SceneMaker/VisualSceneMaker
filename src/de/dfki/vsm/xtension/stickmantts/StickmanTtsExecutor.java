@@ -115,6 +115,10 @@ public class StickmanTtsExecutor extends ActivityExecutor {
             //We will use these two later
             speechActivities.put(executionId, speakerActivity);
             wtsMap.put(executionId, wts);
+            AnimationFX stickmanAnimation = new AnimationFX();
+            stickmanAnimation = AnimationLoaderFX.getInstance().loadEventAnimation(mStickmanStage.getStickmanFX(actor), "Speaking", 3000, false);
+            stickmanAnimation.mParameter = wts;
+            executeAnimation(stickmanAnimation);
             executeSpeachAndWait(executionId);
         } else if (activity instanceof ActionActivity || activity instanceof ActionMouthActivity) {
             if (name.equalsIgnoreCase("set") && activity instanceof ActionActivity) {
@@ -185,8 +189,6 @@ public class StickmanTtsExecutor extends ActivityExecutor {
 
     }
 
-
-
     private void waitForSpeechToFinish(String executionId) {
         synchronized (mActivityWorkerMap) {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
@@ -214,16 +216,15 @@ public class StickmanTtsExecutor extends ActivityExecutor {
     }
 
     public String intentToSpeak(String  executionId ){
-        synchronized (mActivityWorkerMap) {
-            String spokenText = "";
-            SpeakerActivity speaker = speechActivities.get(executionId);
-            try {
-                spokenText = speaker.speak(executionId);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return spokenText;
+        String spokenText = "";
+        SpeakerActivity speaker = speechActivities.get(executionId);
+        try {
+            spokenText = speaker.speak(executionId);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return spokenText;
+
     }
 
     @Override
@@ -387,11 +388,11 @@ public class StickmanTtsExecutor extends ActivityExecutor {
             }
         }
         //Clossing the mouth
-        mScheduler.schedule(totalTime + 100, null, new ActionMouthActivity(actor, "face", "Mouth_Default", null, 300, wts), mProject.getAgentDevice(actor));
+        /*mScheduler.schedule(totalTime + 100, null, new ActionMouthActivity(actor, "face", "Mouth_Default", null, 300, wts), mProject.getAgentDevice(actor));
         AnimationFX stickmanAnimation = new AnimationFX();
         stickmanAnimation = AnimationLoaderFX.getInstance().loadEventAnimation(mStickmanStage.getStickmanFX(actor), "Speaking", 3000, false);
         stickmanAnimation.mParameter = wts;
-        executeAnimation(stickmanAnimation);
+        executeAnimation(stickmanAnimation);*/
     }
 
     // Handle some message
