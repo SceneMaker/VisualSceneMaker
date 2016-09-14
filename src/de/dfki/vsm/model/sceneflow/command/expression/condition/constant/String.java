@@ -52,10 +52,18 @@ public class String extends Constant {
     }
 
     public void writeXML(IOSIndentWriter out) {
-        out.println("<String value=\"" + mValue + "\"/>");
+        out.println("<String><![CDATA[" + mValue + "]]></String>");
+        
+        //out.println("<String value=\"" + mValue + "\"/>");
     }
 
     public void parseXML(Element element) {
-        mValue = element.getAttribute("value");
+       if (element.hasAttribute("value")) {
+            mValue = element.getAttribute("value");
+        } else {
+            mValue = element.getTextContent();
+        }
+        
+        //mValue = element.getAttribute("value");
     }
 }
