@@ -243,7 +243,13 @@ public class Evaluator {
         } else if (exp instanceof Float) {
             return new FloatValue(((Float) exp).getValue());
         } else if (exp instanceof String) {
-            return new StringValue(((String) exp).getValue());
+            System.err.println("Evaluating String Literal With Syntax " + exp.getConcreteSyntax() + " Encapsulating Value " + ((String) exp).getValue());
+
+            StringValue value = new StringValue(((String) exp).getValue());
+            
+            System.err.println("Result Is String Value Encapsulating Value " + value.getValue());
+                    
+            return value ;
         } else if (exp instanceof Object) {
             return new ObjectValue(((Object) exp).getValue());
         } else if (exp instanceof List) {
@@ -758,9 +764,9 @@ public class Evaluator {
             try {
                 result = executeUsrCmd((UsrCmd) exp, env);
             } catch (Exception e) {
-                
+
                 e.printStackTrace();
-                
+
                 throw new InterpretException(exp, "Runtime Error: '" + exp.getAbstractSyntax() + "' cannot be evaluated.");
             }
             if (result instanceof Boolean) {
@@ -911,7 +917,7 @@ public class Evaluator {
             argInstList[i] = valueList.get(i).getValue();
 
             //
-            // System.err.println("Java Argument Object [" + i + "] Is " + argInstList[i].getClass());
+            System.err.println("Java Argument Object [" + i + "] Is " + argInstList[i].toString());
             //
             if (argInstList[i] != null) {
                 argDscrList[i] = argInstList[i].toString();

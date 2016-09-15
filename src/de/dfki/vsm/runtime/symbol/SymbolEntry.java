@@ -1,7 +1,6 @@
 package de.dfki.vsm.runtime.symbol;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.runtime.exceptions.InterpretException;
 import de.dfki.vsm.runtime.values.AbstractValue;
@@ -24,7 +23,7 @@ public class SymbolEntry implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     public SymbolEntry(final String symbol, final AbstractValue value) {
         mSymbol = symbol;
-        mValue  = value;
+        mValue = value;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -44,7 +43,8 @@ public class SymbolEntry implements Copyable {
             mValue = value;
 
             //
-            // System.err.println("Writing variable " + mSymbol/*.getName()*/);
+            //System.err.println("Writing variable " + mSymbol + " with value " + (String)value.getValue()/*.getName()*/);
+            //System.err.println("Updating variable " + mSymbol + " with value " + mValue.getFormattedSyntax()/*.getName()*/);
             EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
                     new TPLTuple<String, String>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
@@ -108,7 +108,7 @@ public class SymbolEntry implements Copyable {
                     }
                 } else {
                     throw new InterpretException(this,
-                                               member + " does not exist in struct " + mValue.getAbstractSyntax());
+                            member + " does not exist in struct " + mValue.getAbstractSyntax());
                 }
             } else {
                 throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a struct");
@@ -154,7 +154,7 @@ public class SymbolEntry implements Copyable {
                     return result;
                 } else {
                     throw new InterpretException(this,
-                                               member + " does not exist in struct " + mValue.getAbstractSyntax());
+                            member + " does not exist in struct " + mValue.getAbstractSyntax());
                 }
             } else {
                 throw new InterpretException(this, mValue.getAbstractSyntax() + " is not a struct");

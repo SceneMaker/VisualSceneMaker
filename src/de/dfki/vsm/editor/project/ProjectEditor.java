@@ -68,6 +68,11 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
     public final SceneFlowEditor getSceneFlowEditor() {
         return mSceneFlowEditor;
     }
+    
+       // Get the sceneflow editor 
+    public final OLDSceneScriptEditor getAuxiliaryEditor() {
+        return mAuxiliaryEditor;
+    }
 
     // Get the editor project 
     public final EditorProject getEditorProject() {

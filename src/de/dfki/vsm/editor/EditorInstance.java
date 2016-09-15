@@ -70,8 +70,9 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The editor's GUI components
     private final EditorMenuBar mEditorMenuBar;
     private final JTabbedPane mProjectEditors;
-    private final JScrollPane mWelcomeScreen;
-    public final EditorStarter mWelcomePanel;
+    //private final JScrollPane mWelcomeScreen;
+    private final JPanel mWelcomeScreen = new JPanel();
+    //public final EditorStarter mWelcomePanel;
 
     // Get the singelton editor instance
     public synchronized static EditorInstance getInstance() {
@@ -168,12 +169,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         //mObservable.addObserver(mProjectEditors);
 
         // Init welcome screen
-        mWelcomePanel = new EditorStarter(this);
-        mWelcomeScreen = new JScrollPane(mWelcomePanel);
-        mWelcomeScreen.setMaximumSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
-        mWelcomeScreen.setOpaque(false);
-        mWelcomeScreen.getViewport().setOpaque(false);
-        add(mWelcomeScreen);
+        //mWelcomePanel = new EditorStarter(this);
+        //mWelcomeScreen = new JScrollPane(mWelcomePanel);
+        //mWelcomeScreen.setMaximumSize(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
+        //mWelcomeScreen.setOpaque(false);
+        //mWelcomeScreen.getViewport().setOpaque(false);
+        //add(mWelcomeScreen);
         setIconImage(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png").getImage());
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         // Init the windows closing support
@@ -1010,6 +1011,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // Refresh the editor's menu bar
         mEditorMenuBar.refresh();
         // Refresh editor welcome panel
-        mWelcomePanel.refresh();
+        //mWelcomePanel.refresh();
     }
 }

@@ -179,7 +179,7 @@ public final class EditorMenuBar extends JMenuBar {
                     }
                 }
                 //mEditorInstance.clearRecentProjects();
-				mEditorInstance.mWelcomePanel.createProjectLists();
+		//		mEditorInstance.mWelcomePanel.createProjectLists();
                 Preferences.save();
                 refreshRecentFileMenu();
             }

@@ -337,17 +337,14 @@ public class Interpreter {
         }
     }
 
-    public boolean setVariable(String varName, AbstractValue value) {
+    public boolean setVariable(final String varName, final AbstractValue value) {
         try {
-
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
             mEventObserver.update();
-
             return true;
-        } catch (InterpretException e) {
-            e.printStackTrace();
-
+        } catch (final InterpretException exc) {
+            mLogger.failure(exc.toString());
             return false;
         } finally {
             unlock();
@@ -401,7 +398,8 @@ public class Interpreter {
             mConfiguration.getState(nodeId).getThread().getEnvironment().write(varName, value);
 
             return true;
-        } catch (InterpretException e) {
+        } catch (final InterpretException exc) {
+             mLogger.failure(exc.toString());
             return false;
         } finally {
             unlock();

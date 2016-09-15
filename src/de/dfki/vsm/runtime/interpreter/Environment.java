@@ -99,8 +99,8 @@ public class Environment implements Copyable {
         throw new InterpretException(symbol, "Runtime Error: Variable '" + symbol + "' is not defined.");
     }
 
-    public AbstractValue write(String symbol, AbstractValue value) throws InterpretException {
-        for (SymbolTable table : mSymbolTableList) {
+    public AbstractValue write(final String symbol, final AbstractValue value) throws InterpretException {
+        for (final SymbolTable table : mSymbolTableList) {
             if (table.contains(symbol)) {
                 return table.write(symbol, value);
             }
