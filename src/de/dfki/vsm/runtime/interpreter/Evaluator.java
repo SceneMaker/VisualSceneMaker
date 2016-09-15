@@ -1080,7 +1080,7 @@ public class Evaluator {
     
     public final boolean executeQuery(final String querystr, final Environment env) {
         
-        mLogger.warning("Executing Prolog Query '" + querystr + "'");
+        //mLogger.warning("Executing Prolog Query '" + querystr + "'");
 
         // Make The Query To The KB
         final JPLResult result = JPLEngine.query(querystr);
@@ -1098,7 +1098,7 @@ public class Evaluator {
             for (Map.Entry<String, String> entry : subst.entrySet()) {
                 try {
                     
-                    mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue() + " Via Prolog Query");
+                    //mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue() + " Via Prolog Query");
 
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(entry.getKey(), new StringValue(JPLUtility.convert(entry.getValue())));

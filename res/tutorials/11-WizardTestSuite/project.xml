@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="WizardTestSuite">
+  <Plugins>
+    <Plugin type="wizard" name="wizard" class="de.dfki.vsm.xtension.wizard.WizardExecutor" load="true">
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="wizard" device="wizard">
+    </Agent>
+  </Agents>
+</Project>

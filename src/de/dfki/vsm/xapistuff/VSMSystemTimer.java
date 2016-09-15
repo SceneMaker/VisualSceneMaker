@@ -1,6 +1,4 @@
-package de.dfki.vsm.xapistuff;
-
-//package de.dfki.vsm.api;
+//package de.dfki.vsm.xapistuff;
 //
 //import de.dfki.vsm.util.log.LOGDefaultLogger;
 //
