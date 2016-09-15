@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.sceneflow.command;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -12,27 +11,26 @@ import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
-
-
 /**
  * @author Not me
  */
 public class Play extends Command {
-    private Expression         mArg;
+
+    private Expression mArg;
     private ArrayList<Expression> mArgList;
 
     public Play() {
-        mArg     = null;
+        mArg = null;
         mArgList = new ArrayList<Expression>();
     }
 
     public Play(Expression arg) {
-        mArg     = arg;
+        mArg = arg;
         mArgList = new ArrayList<Expression>();
     }
 
     public Play(Expression arg, ArrayList<Expression> argList) {
-        mArg     = arg;
+        mArg = arg;
         mArgList = argList;
     }
 
@@ -78,16 +76,18 @@ public class Play extends Command {
         return copy;
     }
 
+    @Override
     public CmdType getCmdType() {
         return CmdType.PLAY;
     }
 
+    @Override
     public String getAbstractSyntax() {
-        String desc = "Play" + " ( ";
+        String desc = "Play ( ";
 
         desc += ((mArg != null)
-                 ? mArg.getAbstractSyntax()
-                 : "");
+                ? mArg.getAbstractSyntax()
+                : "");
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getAbstractSyntax();
@@ -96,12 +96,13 @@ public class Play extends Command {
         return desc + " ) ";
     }
 
+    @Override
     public String getConcreteSyntax() {
-        String desc = "Play" + " ( ";
+        String desc = "!- ( ";
 
         desc += ((mArg != null)
-                 ? mArg.getConcreteSyntax()
-                 : "");
+                ? mArg.getConcreteSyntax()
+                : "");
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getConcreteSyntax();
@@ -110,12 +111,13 @@ public class Play extends Command {
         return desc + " ) ";
     }
 
+    @Override
     public String getFormattedSyntax() {
-        String desc = "#p#Play" + " ( ";
+        String desc = "#p#!- ( ";
 
         desc += ((mArg != null)
-                 ? mArg.getFormattedSyntax()
-                 : "");
+                ? mArg.getFormattedSyntax()
+                : "");
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getFormattedSyntax();
@@ -124,10 +126,12 @@ public class Play extends Command {
         return desc + " ) ";
     }
 
+    @Override
     public Play getCopy() {
         return new Play(mArg.getCopy(), getCopyOfArgList());
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.println("<Play>").push();
 
@@ -142,15 +146,17 @@ public class Play extends Command {
         out.pop().println("</Play>");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
-        final ArrayList<Expression> expList = new ArrayList<Expression>();
+        final ArrayList<Expression> expList = new ArrayList<>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
             public void run(Element element) throws XMLParseError {
                 expList.add(Expression.parse(element));
             }
         });
-        mArg     = expList.remove(0);
+        mArg = expList.remove(0);
         mArgList = expList;
     }
 }

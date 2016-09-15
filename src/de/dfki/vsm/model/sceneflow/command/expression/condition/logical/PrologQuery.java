@@ -34,17 +34,17 @@ public final class PrologQuery extends LogicalCond {
 
     @Override
     public final String getAbstractSyntax() {
-        return "PrologQuery (" + mExpression.getAbstractSyntax() + ")";
+        return "PrologQuery ( " + mExpression.getAbstractSyntax() + " )";
     }
 
     @Override
     public final String getConcreteSyntax() {
-        return "?- (" + mExpression.getConcreteSyntax() + ")";
+        return "?- ( " + mExpression.getConcreteSyntax() + " )";
     }
 
     @Override
     public String getFormattedSyntax() {
-        return "#p#?- (" + mExpression.getFormattedSyntax() + ")";
+        return "#p#?- ( " + mExpression.getFormattedSyntax() + " )";
     }
 
     @Override
