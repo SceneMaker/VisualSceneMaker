@@ -180,7 +180,7 @@ public class MonitorDialog extends JDialog implements  EventListener{
                     }
                 }
             } catch (Exception e) {
-                System.err.println(e.toString());
+                //System.err.println(e.toString());
                 for (StackTraceElement st : e.getStackTrace()) {
                     System.out.println(st);
                 }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Do, 15 Sep 2016 17:34:17" start="N8;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="HelloWorld" name="HelloWorld" comment="HelloWorld" hideLocalVar="false" hideGlobalVar="false" exhaustive="false" preserving="false" modifDate="Fr, 16 Sep 2016 09:30:10" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
     <Variable type="String" name ="X">
-      <String>\&quot;hello\&quot;</String>
+      <String>undefined</String>
     </Variable>
   </Declare>
   <Commands>
@@ -33,6 +33,48 @@
     </Commands>
     <Graphics>
       <Position x-pos="120" y-pos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N1" name="N1" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N2" start="">
+      <Graphics>
+        <Arrow>
+          <Point x-pos="210" y-pos="165" control-x-pos="322" control-y-pos="165"/>
+          <Point x-pos="480" y-pos="165" control-x-pos="367" control-y-pos="165"/>
+        </Arrow>
+      </Graphics>
+      <Neq>
+        <Variable name="X"/>
+        <String>undefined</String>
+      </Neq>
+    </CEdge>
+    <TEdge target="N1" start="" timeout="1000">
+    <Graphics>
+      <Arrow>
+        <Point x-pos="177" y-pos="122" control-x-pos="201" control-y-pos="36"/>
+        <Point x-pos="204" y-pos="142" control-x-pos="282" control-y-pos="96"/>
+      </Arrow>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position x-pos="120" y-pos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" exhaustive="false" preserving="false" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position x-pos="480" y-pos="120"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="B" comment="" exhaustive="false" preserving="false" hideLocalVar="false" hideGlobalVar="false" start="">

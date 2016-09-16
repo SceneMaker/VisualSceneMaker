@@ -243,14 +243,8 @@ public class Evaluator {
         } else if (exp instanceof Float) {
             return new FloatValue(((Float) exp).getValue());
         } else if (exp instanceof String) {
-            System.err.println("Evaluating String Literal With Syntax " + exp.getConcreteSyntax() + " Encapsulating Value " + ((String) exp).getValue());
-
-            StringValue value = new StringValue(((String) exp).getValue());
-            
-            System.err.println("Result Is String Value Encapsulating Value " + value.getValue());
-                    
-            return value ;
-        } else if (exp instanceof Object) {
+           return new StringValue(((String) exp).getValue());
+         } else if (exp instanceof Object) {
             return new ObjectValue(((Object) exp).getValue());
         } else if (exp instanceof List) {
             return new ListValue(evaluateExpList(((List) exp).getExpList(), env));
@@ -917,7 +911,7 @@ public class Evaluator {
             argInstList[i] = valueList.get(i).getValue();
 
             //
-            System.err.println("Java Argument Object [" + i + "] Is " + argInstList[i].toString());
+            //System.err.println("Java Argument Object [" + i + "] Is " + argInstList[i].toString());
             //
             if (argInstList[i] != null) {
                 argDscrList[i] = argInstList[i].toString();
