@@ -42,6 +42,7 @@ public class OKButton extends JLabel {
 //          public void mouseClicked(java.awt.event.MouseEvent evt) {
 //              //savePreferences(true);
 //          }
+            @Override
             public void mouseEntered(MouseEvent me) {
                 if (isEnabled())
                 {
@@ -49,6 +50,7 @@ public class OKButton extends JLabel {
                     setBackground(new Color(82, 127, 255));
                 }
             }
+            @Override
             public void mouseExited(MouseEvent me) {
                 setIcon(Preferences.ICON_OK_STANDARD);
                 setBackground(new Color(255, 255, 255));

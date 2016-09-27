@@ -7,5 +7,9 @@
   <Agents>
     <Agent name="wizard" device="wizard">
     </Agent>
+    <Agent name="sam" device="wizard">
+    </Agent>
+    <Agent name="max" device="wizard">
+    </Agent>
   </Agents>
 </Project>
