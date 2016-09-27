@@ -1,67 +1,148 @@
-﻿:- module(facts,
-   [val/3,
-    set/4,
-    add/4,
+﻿/*  This code is part of the Behavior Flow Query Language based on SWI-Prolog.
+
+    Author:        Gregor Mehlmann
+    E-mail:        mehlmann@hcm-lab.de
+    WWW:           http://www.hcm-lab.de
+
+    Copyright (C): 2008-2018,
+                   University of Augsburg
+                   Applied Computer Sciences
+                   Human Centered Multimedia
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the 'GNU General Public License' as published by the
+    Free Software Foundation, version 2 or any later version of the License.
+
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY and without even the implied warranty
+        of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    You should have received a copy of the GNU General Public License along
+    with this library; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+    As an exception, if you link this library with other files, compiled with
+    a Free Software compiler, to produce an executable, this library does not
+    by itself cause the resulting executable to be covered by the GNU General
+    Public License. This exception does not invalidate any other reasons why
+    the executable file might be covered by the 'GNU General Public License'.
+*/
+:- module(facts,
+  [
     fsr/1,
+    
+    now/1,
+       
+    set/2,
+    
+    val/3,
+    add/5,
+    
     del/1,
     jel/1,
     add/1,
     jdd/1,
-    out/1,
-    err/1,
-    jog/1,
-    now/1,
-    set/2,
     rll/2,
-    jll/2]).
+    jll/2
+  ]).
+  
+:- reexport('terms').
 
 /*----------------------------------------------------------------------------*
- * Define A Feature Structure Record
+ * A feature structure record
  *----------------------------------------------------------------------------*/
 :- dynamic fsr/1.
 
 /*----------------------------------------------------------------------------*
- * Current System Time
+ * The current system time
  *----------------------------------------------------------------------------*/
 :- dynamic now/1.
-
-now(0).
+:- assertz(now(0)).
 
 /*----------------------------------------------------------------------------*
- * Check if a feature structure has a certain value on the specified path of the
- * feature structure. The feature structure must not be instantiated before the
- * predicate is called. The feature term as well as the value term can be free
- * variables. In this case the variables are bound to all the possible solutions
- * for the feature or the value, respectively.
+ * Variable Assignment Predicates
  *----------------------------------------------------------------------------*/
+set(V, N) :-
+  var(V), nonvar(N), V = N.
+  
+/*----------------------------------------------------------------------------*
+
+  val(?F:path, ?V:value, ?R:record) is nondet
+
+  This predicate checks if a feature structure has a certain value on the
+  specified path of the feature structure. The feature structure may be a
+  partially instantiated term containing free variables when the predicate
+  is called. The predicate takes care not to produce an infinite number of
+  solutions for the feature structure record and the interpreter cannot run
+  into any stack errors. The feature term as well as the value term can be
+  unbound variables. In this case the variables are bound to the possible
+  solutions for the feature and/or the value, respectively, that means the
+  predicate call unifies the value and/or the path with substitutions so
+  that the given feature structure has the value at the given feature path.
+
+ *----------------------------------------------------------------------------*/
+val(F, V, [F:V|_]) :-
+    fkeyterm(F).
 val(F:P, V, [F:M|_]) :-
-  val(P, V, M).
-val(F, V, [F:V|_]).
+    \+allvarls([F, P, M]),
+    val(P, V, M).
 val(F, V, [_|T]) :-
-  val(F, V, T).
+    nonvar(T),
+    val(F, V, T).
 
 /*----------------------------------------------------------------------------*
- * Set The Values Of All Paths That Match The Given Path In The Feature Record
- *----------------------------------------------------------------------------*/
-set(F:P, V, [F:[E|M]|T], [F:R|L]) :-
-  !, set(P, V, [E|M], R),
-     set(F:P, V, T, L).
-set(F, V, [F:_|T], [F:V|R]) :-
-  !, set(F, V, T, R).
-set(_, _, [], []) :-
-  !.
-set(F, V, [H|T], [H|R]) :-
-  !, set(F, V, T, R).
 
-/*----------------------------------------------------------------------------*
- * Add The Given Value At A Certain Feature Path To The Given Feature Structure
+  add(?P:path, ?V:value, ?I:record, ?O:record, ?C:integer) is nondet
+
+  This predicate adds a certain feature value =|V|= to a specific feature
+  path =|P|= in the specified feature structure =|I|= and returns the new
+  feature structure =|O|= as result. The feature value, path and also the
+  structures may be partially instantiated terms containing free variables
+  when the predicate is called. The predicate takes care not to produce an
+  infinite number of solutions for the value, path or the feature structure
+  record and the interpreter cannot run into any stack errors. The feature
+  value term as well as the feature path term can be unbound variables. In
+  this case the variables are bound to the possible solutions for the value
+  and/or the path, respectively, that means the predicate call unifies the
+  value and/or the path with substitutions so that the new feature structure
+  has the value at the given feature path. This predicate only works if the
+  feature value pair is added to the end of the enclosing feature record in
+  the input record.
+
  *----------------------------------------------------------------------------*/
-add(F:P, V, [], [F:M]) :-
-  !, add(P, V, [], M).
-add(F, V, [], [F:V]) :-
-  !.
-add(F, V, [H|T], [H|R]) :-
-  !, add(F, V, T, R).
+add(P, V, I, O) :- add_(P, V, I, O, _, '').
+
+add(P, V, I, O, C) :- add_(P, V, I, O, C).
+
+addl(P, I, O) :-
+    O = [P|I], !.
+addl(P, [H|I], [H|O]) :-
+    addl(P, I, O), !.
+addl(P, [], [P]).
+
+add_(F, V, I, O, C) :-
+    fkeyterm(F), !,
+    fvalterm(V),
+    fvlsterm(I),
+    addl(F:V, I, O), C is 1.
+add_(P, V, I, O, C) :-
+    fklsterm(P), P = F:Q,
+    I = [F:R|M], O = [F:S|N], !,
+    add_(Q, V, R, S, K),
+    (\+allvarls([M, N])
+     -> add_(P, V, M, N, L)
+      ; M = [], N = [], L is 0
+    ), C is K + L.
+add_(P, V, I, O, C) :-
+    fklsterm(P),
+    I = [H|M], O = [H|N], !,
+    (\+allvarls([M, N])
+     -> add_(P, V, M, N, K)
+      ; M = [], N = [], K is 0
+    ), C is K.
+add_(P, _, I, O, C) :-
+    fklsterm(P),
+    I = [], O = [], C is 0.
 
 /*----------------------------------------------------------------------------*
  * Retract A Feature Structure Record
@@ -104,11 +185,6 @@ jdd(R) :-
   jog(R). % Print Information
 
 /*----------------------------------------------------------------------------*
- * Variable Assignment
- *----------------------------------------------------------------------------*/
-set(V, V).
-
-/*----------------------------------------------------------------------------*
  * Retract All With Features
  *----------------------------------------------------------------------------*/
 rll(P, V) :-
@@ -120,103 +196,6 @@ rll(P, V) :-
 jll(P, V) :-
   forall((fsr(R), val(P, V, R)), jel(R)).
 
-/*----------------------------------------------------------------------------*
- * Print Feature Structure To Prolog Console
- *----------------------------------------------------------------------------*/
-out(R) :- % Print To Stdout
-  vwrite(R, '', user_output).
-
-err(R) :- % Print To Stderr
-  vwrite(R, '', user_error).
-
-/*----------------------------------------------------------------------------*
- * Print Feature Structure To Java Logger
- *----------------------------------------------------------------------------*/
-
-vwrite(V, _, S) :- % Print A Variable Value
-  var(V), !, write(S, V).
-
-vwrite([H|T], I, S) :- % Print A Matrix Value
-  !,
-  write(S, '['), nl(S),
-  string_concat(I, '    ', J),
-  lwrite([H|T], J, S),
-  nl(S), write(S, I), write(S, ']').
-
-vwrite(V, _, S) :- % Print A Simple Value
-  !, write(S, V).
-
-lwrite([H], I, S) :- % Print A Whole List
-  !, ewrite(H, I, S).
-
-lwrite([H|T], I, S) :- % Print A List Member
-  !,
-  ewrite(H, I, S),
-  write(S, ','), nl(S),
-  lwrite(T, I, S).
-
-ewrite(F:V, I, S) :- % Print A Pair Member
-  !,
-  write(S, I),
-  write(S, F),
-  write(S, ':'),
-  vwrite(V, I, S).
-
-ewrite(E, I, S) :- % Print Simple Member
-  !,
-  write(S, I),
-  vwrite(E, I, S).
-
-/*----------------------------------------------------------------------------*
- * Print Feature Structure To Java Logger
- *----------------------------------------------------------------------------*/
-jog(R) :-
-   jvwrite(R, '', '', M),
-   jpl_call('de.dfki.vsm.util.log.LOGDefaultLogger', getInstance, [], L),
-   jpl_call(L, message, [M], _).
-
-/*----------------------------------------------------------------------------*
- * Print Feature Structure To Java Logger
- *----------------------------------------------------------------------------*/
-
-jvwrite(V, _, O, N) :- % Print A Variable Value
-  var(V), !, concat(O, V, N).
-
-jvwrite([H|T], I, O, N) :- % Print A Matrix Value
-  !,
-  concat(I, '    ', J),
-  concat(O, '[\n', Z1),
-  %concat(Z1, 'X', Z2),
-  jlwrite([H|T], J, Z1, Z2),
-  concat(Z2, '\n', Z3),
-  concat(Z3, I, Z4),
-  concat(Z4, ']', N).
-
-jvwrite(V, _, O, N) :- % Print A Simple Value
-  !, concat(O, V, N).
-
-jlwrite([H], I, O, N) :- % Print A Whole List
-  !, jewrite(H, I, O, N).
-
-jlwrite([H|T], I, O, N) :- % Print A List Member
-  !,
-  jewrite(H, I, O, Z1),
-  concat(Z1, ',', Z2),
-  concat(Z2, '\n', Z3),
-  jlwrite(T, I, Z3, N).
-
-jewrite(F:V, I, O, N) :- % Print A Pair Member
-  !,
-  concat(O, I, Z1),
-  concat(Z1, F, Z2),
-  concat(Z2, ':', Z3),
-  jvwrite(V, I, Z3, N).
-
-jewrite(E, I, O, N) :- % Print Simple Member
-  !,
-  concat(O, I, Z1),
-  jvwrite(E, I, Z1, N).
-  
 /*----------------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------------*/

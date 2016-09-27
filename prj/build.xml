@@ -160,10 +160,17 @@
     </target>
     
      <!-- Execute to Welcome Screen -->
-    <target name="test">
+    <target name="test-ssi-plugin">
         <java classname="de.dfki.vsm.xtesting.TestSSIPlugin" fork="true">
             <!-- <arg line="runtime res/prj/test"/> -->
             <!-- <arg line="editor res/prj/test"/> -->
+            <classpath refid="clspath"/>
+        </java>
+    </target>
+     <target name="test-swi-bfql">
+        <java classname="de.dfki.vsm.xtesting.jpl.JPLTestSuite" fork="true">
+            <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.test.pl"/>
+            <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.logs.pl"/>
             <classpath refid="clspath"/>
         </java>
     </target>
