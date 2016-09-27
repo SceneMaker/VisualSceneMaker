@@ -19,6 +19,7 @@ import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
 import de.dfki.vsm.xtension.tworld.xml.feedback.TWorldFeedback;
 import de.dfki.vsm.xtension.tworld.xml.util.ActionLoader;
+import de.dfki.vsm.xtension.wizard.WizardTimer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,8 +32,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Gregor Mehlmann, Patrick Gebhard
@@ -52,6 +51,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     // The word mapping properties
     Properties mWordMapping = new Properties();
+     //
+    private TWorldTimer mTimer;
 
     // Construct the executor
     public TWorldExecutor(
@@ -63,7 +64,7 @@ public final class TWorldExecutor extends ActivityExecutor {
 
     // Launch the executor 
     @Override
-    public void launch() {
+    public final void launch() {
         // Get the plugin configuration
         final String tworlddir = mConfig.getProperty("tworlddir");
         final String tworldexe = mConfig.getProperty("tworldexe");
@@ -72,13 +73,11 @@ public final class TWorldExecutor extends ActivityExecutor {
         final String cactorexe = mConfig.getProperty("cactorexe");
         final String cactorcmd = mConfig.getProperty("cactorcmd");
 
+        final String workindir = new File(".").getAbsolutePath();
         // Create the plugin's processes
-        boolean isCactODirPresent = isPathExisting(cactordir);
-        boolean isTWorldPresent = isPathExisting(tworlddir);
-
-        if (!isCactODirPresent || !isTWorldPresent) {
-            String missing = (!isCactODirPresent) ? cactordir : tworlddir;
-            String message = "Missing installation folder " + missing;
+        if (!exists(cactordir) || !exists(tworlddir)) {
+            String missing = (!exists(cactordir)) ? cactordir : tworlddir;
+            String message = "Missing installation folder '" + missing + "' in working directory '" + workindir + "'";
             WaitingDialog InfoDialog = new WaitingDialog(message);
             InfoDialog.setModal(true);
             InfoDialog.setVisible(true);
@@ -106,12 +105,14 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
         }
         broadcast("Start");
+        //
+        mTimer = new TWorldTimer(10);
+        mTimer.start();
     }
 
-    private boolean isPathExisting(String path) {
-
-        File f = new File(path);
-        if (f.exists() && f.isDirectory()) {
+    private final boolean exists(final String path) {
+        final File file = new File(path);
+        if (file.exists() && file.isDirectory()) {
             return true;
         }
         return false;
@@ -168,6 +169,13 @@ public final class TWorldExecutor extends ActivityExecutor {
 
         // Clear the map of processes 
         mProcessMap.clear();
+        //
+        mTimer.abort();
+        try {
+            mTimer.join();
+        } catch (final InterruptedException exc) {
+            mLogger.failure(exc.toString());
+        }
     }
 
     @Override

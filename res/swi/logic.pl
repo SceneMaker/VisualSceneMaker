@@ -44,7 +44,6 @@
    part/2,
    agent/2,
    % Updating Feature Records
-   set/3
    ]).
 
 :- use_module(facts).
@@ -192,4 +191,4 @@ latest(R, [H|T]) :-
     ;
       after(H, L), !, R = H
     ).
-    
+

@@ -111,7 +111,6 @@ public final class JPLEngine {
             // Process All Solutions
             while (jplquery.hasMoreElements()) {
 
-               
                 // Get Next Possible Solution
                 HashMap solution = (HashMap) jplquery.nextElement();
 
@@ -150,11 +149,12 @@ public final class JPLEngine {
                     result.add(new HashMap<String, String>());
                 }
             }
-        } catch (Exception exc) {
+        } catch (final Exception exc) {
 
             // Print Debug Information
-            // sLogger.failure(exc.toString());
-            exc.printStackTrace();
+            sLogger.failure(exc.toString());
+            //exc.printStackTrace();
+
         } finally {
 
             // Close The New Query
@@ -165,7 +165,8 @@ public final class JPLEngine {
             }
             //System.err.println(result);
             // Always Return Result
-            return result;
+            //return result;
         }
+        return result;
     }
 }

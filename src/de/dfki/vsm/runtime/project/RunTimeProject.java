@@ -145,16 +145,19 @@ public class RunTimeProject {
     public final ActivityExecutor getAgentDevice(final String agent) {
         // Get the agent config 
         final AgentConfig config = mProjectConfig.getAgentConfig(agent);
-        // Get the plugin now
-        final RunTimePlugin plugin = mPluginMap.get(config.getDeviceName());
-        // Check the plugin 
-        if (plugin instanceof ActivityExecutor) {
-            // Return the executor now
-            return (ActivityExecutor) plugin;
-        } else {
-            // Return NULL at failure
-            return null;
+        // Check the config
+        if (config != null) {
+            // Get the plugin now
+            final RunTimePlugin plugin = mPluginMap.get(config.getDeviceName());
+            // Check the plugin 
+            if (plugin instanceof ActivityExecutor) {
+                // Return the executor now
+                return (ActivityExecutor) plugin;
+            }
         }
+        // Return NULL at failure
+        return null;
+
     }
 
     public boolean parse(final String file) {
@@ -946,7 +949,7 @@ public class RunTimeProject {
 
     public final AbstractValue getValueOf(final String name, final String member) {
         if (mInterpreter != null) {
-             return mInterpreter.getValueOf(name, member);
+            return mInterpreter.getValueOf(name, member);
         }
         return null;
     }
@@ -958,9 +961,9 @@ public class RunTimeProject {
 
     private void deleteRelatedAgents(PluginConfig plugin) {
         Iterator<AgentConfig> iterator = getProjectConfig().getAgentConfigList().iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             AgentConfig agent = iterator.next();
-            if(agent.getDeviceName().equals(plugin.getPluginName())){
+            if (agent.getDeviceName().equals(plugin.getPluginName())) {
                 iterator.remove();
             }
         }

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="ReetiTestSuite" name="WizardTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo, 12 Sep 2016 14:04:11" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="ReetiTestSuite" name="WizardTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 27 Sep 2016 12:18:09" start="S4;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
     <Variable type="String" name ="Time">
       <String><![CDATA[undefined]]></String>
+    </Variable>
+    <Variable type="String" name ="Monkey">
+      <String><![CDATA[]]></String>
     </Variable>
   </Declare>
   <Commands>
@@ -31,13 +34,13 @@
     <EEdge target="S3" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="233" yPos="268" ctrlXPos="285" ctrlYPos="268"/>
-        <ControlPoint xPos="373" yPos="268" ctrlXPos="320" ctrlYPos="268"/>
+        <ControlPoint xPos="390" yPos="75" ctrlXPos="457" ctrlYPos="75"/>
+        <ControlPoint xPos="480" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="163" yPos="233"/>
+      <Position xPos="300" yPos="30"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -53,7 +56,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="0" yPos="0"/>
+        <Position xPos="300" yPos="30"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -68,7 +71,7 @@
       </Play>
     </Commands>
     <Graphics>
-      <Position xPos="373" yPos="233"/>
+      <Position xPos="480" yPos="30"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -84,7 +87,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="23" yPos="303"/>
+        <Position xPos="300" yPos="30"/>
       </Graphics>
     </Node>
     <SuperNode id="S1" name="Statistics" comment="" hideLocalVar="false" hideGlobalVar="false" start="N7;N8;">
@@ -95,7 +98,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="163" yPos="303"/>
+        <Position xPos="480" yPos="30"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="10" yPos="10"/>
@@ -111,7 +114,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="23" yPos="163"/>
+          <Position xPos="300" yPos="120"/>
         </Graphics>
       </Node>
       <Node id="N7" name="Statistics" history="false">
@@ -127,16 +130,16 @@
         <TEdge target="N7" start="" timeout="5000">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="207" yPos="164" ctrlXPos="225" ctrlYPos="96"/>
-            <ControlPoint xPos="228" yPos="180" ctrlXPos="288" ctrlYPos="144"/>
+            <ControlPoint xPos="537" yPos="122" ctrlXPos="561" ctrlYPos="36"/>
+            <ControlPoint xPos="564" yPos="142" ctrlXPos="642" ctrlYPos="96"/>
           </Connection>
         </Graphics>
         </TEdge>
         <Graphics>
-          <Position xPos="160" yPos="166"/>
+          <Position xPos="480" yPos="120"/>
         </Graphics>
       </Node>
-      <Node id="N8" name="Time" history="false">
+      <Node id="N8" name="Timer" history="false">
         <Define>
         </Define>
         <Declare>
@@ -149,13 +152,246 @@
         <EEdge target="N8" start ="">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="347" yPos="164" ctrlXPos="365" ctrlYPos="96"/>
-            <ControlPoint xPos="368" yPos="180" ctrlXPos="428" ctrlYPos="144"/>
+            <ControlPoint xPos="717" yPos="122" ctrlXPos="741" ctrlYPos="36"/>
+            <ControlPoint xPos="744" yPos="142" ctrlXPos="822" ctrlYPos="96"/>
           </Connection>
         </Graphics>
         </EEdge>
         <Graphics>
-          <Position xPos="300" yPos="166"/>
+          <Position xPos="660" yPos="120"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+  </SuperNode>
+  <SuperNode id="S4" name="Monkeys" comment="" hideLocalVar="false" hideGlobalVar="false" start="S5;S6;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="300" yPos="300"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N1" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="30" yPos="30"/>
+      </Graphics>
+    </Node>
+    <SuperNode id="S5" name="Simple" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="120"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N2" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="30" yPos="30"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+    <SuperNode id="S6" name="Parallel" comment="" hideLocalVar="false" hideGlobalVar="false" start="N13;">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="480" yPos="120"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N3" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="30" yPos="30"/>
+        </Graphics>
+      </Node>
+      <Node id="N9" name="Jump" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <Play>
+            <Add>
+              <Add>
+                <String><![CDATA[[]]></String>
+                <Variable name="Monkey"/>
+              </Add>
+              <String><![CDATA[ jump]]]></String>
+            </Add>
+          </Play>
+        </Commands>
+        <TEdge target="N9" start="" timeout="3000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="717" yPos="212" ctrlXPos="741" ctrlYPos="126"/>
+            <ControlPoint xPos="744" yPos="232" ctrlXPos="822" ctrlYPos="186"/>
+          </Connection>
+        </Graphics>
+        </TEdge>
+        <IEdge target="N10" start="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="750" yPos="255" ctrlXPos="817" ctrlYPos="255"/>
+              <ControlPoint xPos="930" yPos="255" ctrlXPos="862" ctrlYPos="255"/>
+            </Connection>
+          </Graphics>
+          <PrologQuery>
+          <String><![CDATA[hungry(Monkey).]]></String>
+          </PrologQuery>
+        </IEdge>
+        <IEdge target="N11" start="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="660" yPos="255" ctrlXPos="592" ctrlYPos="255"/>
+              <ControlPoint xPos="480" yPos="255" ctrlXPos="547" ctrlYPos="255"/>
+            </Connection>
+          </Graphics>
+          <PrologQuery>
+          <String><![CDATA[tired(Monkey).]]></String>
+          </PrologQuery>
+        </IEdge>
+        <Graphics>
+          <Position xPos="660" yPos="210"/>
+        </Graphics>
+      </Node>
+      <Node id="N10" name="Grasp" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <Play>
+            <Add>
+              <Add>
+                <String><![CDATA[[]]></String>
+                <Variable name="Monkey"/>
+              </Add>
+              <String><![CDATA[ grasp]]]></String>
+            </Add>
+          </Play>
+          <PrologQuery>
+          <Add>
+            <Add>
+              <String><![CDATA[retract(hungry(]]></String>
+              <Variable name="Monkey"/>
+            </Add>
+            <String><![CDATA[))]]></String>
+          </Add>
+          </PrologQuery>
+        </Commands>
+        <EEdge target="N9" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="932" yPos="267" ctrlXPos="867" ctrlYPos="285"/>
+            <ControlPoint xPos="748" yPos="267" ctrlXPos="812" ctrlYPos="285"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="930" yPos="210"/>
+        </Graphics>
+      </Node>
+      <Node id="N11" name="Sleep" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <Play>
+            <Add>
+              <Add>
+                <String><![CDATA[[]]></String>
+                <Variable name="Monkey"/>
+              </Add>
+              <String><![CDATA[ sleep]]]></String>
+            </Add>
+          </Play>
+          <PrologQuery>
+          <Add>
+            <Add>
+              <String><![CDATA[retract(tired(]]></String>
+              <Variable name="Monkey"/>
+            </Add>
+            <String><![CDATA[))]]></String>
+          </Add>
+          </PrologQuery>
+        </Commands>
+        <EEdge target="N9" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="478" yPos="267" ctrlXPos="542" ctrlYPos="285"/>
+            <ControlPoint xPos="662" yPos="267" ctrlXPos="597" ctrlYPos="285"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="390" yPos="210"/>
+        </Graphics>
+      </Node>
+      <Node id="N13" name="Init" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PrologQuery>
+          <String><![CDATA[retractall(hungry(_)).]]></String>
+          </PrologQuery>
+          <PrologQuery>
+          <String><![CDATA[retractall(tired(_)).]]></String>
+          </PrologQuery>
+        </Commands>
+        <EEdge target="N9" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="705" yPos="120" ctrlXPos="705" ctrlYPos="142"/>
+            <ControlPoint xPos="705" yPos="210" ctrlXPos="705" ctrlYPos="187"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="660" yPos="30"/>
         </Graphics>
       </Node>
     </SuperNode>
