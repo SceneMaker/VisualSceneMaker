@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="ReetiTestSuite" name="WizardTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 27 Sep 2016 12:18:09" start="S4;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="ReetiTestSuite" name="WizardTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 27 Sep 2016 16:55:37" start="N16;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -7,6 +7,12 @@
       <String><![CDATA[undefined]]></String>
     </Variable>
     <Variable type="String" name ="Monkey">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="O">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="C">
       <String><![CDATA[]]></String>
     </Variable>
   </Declare>
@@ -18,6 +24,34 @@
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
+  <Node id="N15" name="Test" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PrologQuery>
+      <String><![CDATA[set(Monkey, [a:b, c:[d:e]])]]></String>
+      </PrologQuery>
+    </Commands>
+    <Graphics>
+      <Position xPos="300" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N16" name="N16" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PrologQuery>
+      <String><![CDATA[add(F, [1, 2, 3], [], O, C).]]></String>
+      </PrologQuery>
+    </Commands>
+    <Graphics>
+      <Position xPos="300" yPos="480"/>
+    </Graphics>
+  </Node>
   <SuperNode id="S2" name="Cleanup" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
     <Define>
     </Define>
@@ -60,7 +94,7 @@
       </Graphics>
     </Node>
   </SuperNode>
-  <SuperNode id="S3" name="Execute" comment="" hideLocalVar="false" hideGlobalVar="false" start="S1;">
+  <SuperNode id="S3" name="Execute" comment="" hideLocalVar="false" hideGlobalVar="false" start="S7;S1;">
     <Define>
     </Define>
     <Declare>
@@ -90,7 +124,7 @@
         <Position xPos="300" yPos="30"/>
       </Graphics>
     </Node>
-    <SuperNode id="S1" name="Statistics" comment="" hideLocalVar="false" hideGlobalVar="false" start="N7;N8;">
+    <SuperNode id="S1" name="Statistics" comment="" hideLocalVar="false" hideGlobalVar="false" start="N14;">
       <Define>
       </Define>
       <Declare>
@@ -161,6 +195,56 @@
           <Position xPos="660" yPos="120"/>
         </Graphics>
       </Node>
+      <Node id="N14" name="Clear" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PrologQuery>
+          <String><![CDATA[clear(speech, 30000).]]></String>
+          </PrologQuery>
+        </Commands>
+        <EEdge target="N14" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="897" yPos="122" ctrlXPos="921" ctrlYPos="36"/>
+            <ControlPoint xPos="924" yPos="142" ctrlXPos="1002" ctrlYPos="96"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="840" yPos="120"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+    <SuperNode id="S7" name="Detect" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="480" yPos="120"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N12" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="0" yPos="0"/>
+        </Graphics>
+      </Node>
     </SuperNode>
   </SuperNode>
   <SuperNode id="S4" name="Monkeys" comment="" hideLocalVar="false" hideGlobalVar="false" start="S5;S6;">
@@ -171,7 +255,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="300" yPos="300"/>
+      <Position xPos="660" yPos="30"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
