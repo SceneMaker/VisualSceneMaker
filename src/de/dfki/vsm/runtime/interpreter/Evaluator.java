@@ -1083,7 +1083,7 @@ public class Evaluator {
 
     public final boolean executeQuery(final String querystr, final Environment env) {
 
-        mLogger.warning("Executing Prolog Query '" + querystr + "'");
+        //mLogger.warning("Executing Prolog Query '" + querystr + "'");
 
         // Make The Query To The KB
         final JPLResult result = JPLEngine.query(querystr);
@@ -1104,14 +1104,15 @@ public class Evaluator {
                     // Convert list and pair appearances
                     final String binding = JPLUtility.convert(term.toString());
 
-                    mLogger.warning("Variable '" + variable + "'");
-                   mLogger.warning("Term '" + binding + "'");
+                   // mLogger.warning("Variable '" + variable + "'");
+                   // mLogger.warning("Term '" + binding + "'");
                   
 
-                    //mLogger.failure("Setting Variable " + entry.getKey() + " To " + entry.getValue() + " Via Prolog Query");
+                    mLogger.warning("Setting Variable " + variable + " To " + binding + " Via Prolog Query");
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(variable, new StringValue(binding));
 
+                    
                 } catch (Exception exc) {
 
                     // Print Debug Information

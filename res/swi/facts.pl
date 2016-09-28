@@ -30,14 +30,10 @@
 :- module(facts,
   [
     fsr/1,
-    
     now/1,
-       
     set/2,
-    
     val/3,
     add/5,
-    
     del/1,
     jel/1,
     add/1,

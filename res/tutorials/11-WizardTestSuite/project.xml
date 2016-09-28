@@ -5,7 +5,7 @@
     </Plugin>
   </Plugins>
   <Agents>
-    <Agent name="wizard" device="wizard">
+    <Agent name="gui" device="wizard">
     </Agent>
     <Agent name="sam" device="wizard">
     </Agent>

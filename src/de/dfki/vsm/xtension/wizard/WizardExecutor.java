@@ -690,6 +690,8 @@ public final class WizardExecutor extends ActivityExecutor {
                 }
             }
         } catch (final NullPointerException exc) {
+            mLogger.failure(exc.toString());
+                  
         }
     }
 
