@@ -28,126 +28,95 @@
     the executable file might be covered by the 'GNU General Public License'.
 */
 :- module(logic,
-  [ % Term Manipulation
-   val/3,
-   fsr/1,
-   del/1,
-   jel/1,
-   add/1,
-   jdd/1,
-   out/1,
-   err/1,
-   jog/1,
-   % Helper Predicates
-   now/1,
-   set/2,
-   rll/2,
-   jll/2,
-   % General Predicates
-   type/2,
-   name/2,
-   sent/2,
-   mode/2,
-   dist/2,
-   life/2,
-   time/2,
-   conf/2,
-   data/2,
-   % Attribute Lists
+  [
+    % Facts
+    fsr/1,
+    now/1,
+    set/2,
+    val/3,
+    add/5,
+    del/1,
+    jel/1,
+    add/1,
+    jdd/1,
+    rll/2,
+    jll/2,
+    % Print
+    out/1,
+    err/1,
+    jog/1,
+    % Timeout
+    timeout/2,
+    % Signals
+    signal/3,
+    consume/3,
+
    attr/3,
    % Temporal Interval Predicates
    after/2,
    % Event Detection Predicates
+   gaze/3,
+   move/3,
+   voice/3,
    speech/1,
    function/2,
    content/2,
    % Event Counting Predicates
    count/2,
-   %
-   uaid/2,
-   lang/2,
-   prio/2,
-   talk/2,
-   gaze/2,
-   role/2,
-   part/2,
-   agent/2
+   % Garbage Collection
+   clear/2
+   
+   
   ]).
 
 :- reexport('facts').
 :- reexport('print').
 
 /*----------------------------------------------------------------------------*
- * General Helper Predicates
+ * Timeout Predicates
  *----------------------------------------------------------------------------*/
-type(R, V) :-
-  val(type, V, R).
-   
-name(R, V) :-
-  val(name, V, R).
+timeout(S, T) :- now(N), N > S + T.
 
-sent(R, V) :-
-  val(sent, V, R).
+/*----------------------------------------------------------------------------*
+ * Signalling Predicates
+ *----------------------------------------------------------------------------*/
+signal(T, N, D) :-
+  forall(
+    (fsr(R),
+     val(type, event, R),
+     val(mode, signal, R),
+     val(recv, T, R),
+     val(name, N, R)),
+  del(R)), now(Q),
+  add(
+  [type:event,
+   mode:signal,
+   recv:T,
+   name:N,
+   time:Q,
+   data:D]).
+
+consume(T, N, D) :-
+  fsr(R),
+  val(type, event, R),
+  val(mode, signal, R),
+  val(recv, T, R),
+  val(name, N, R),
+  val(data, D, R),
+  del(R).
+
   
-recv(R, V) :-
-  val(recv, V, R).
-
-mode(R, V) :-
-  val(mode, V, R).
-
-dist(R, V) :-
-  val(dist, V, R).
-
-life(R, V) :-
-  val(life, V, R).
-
-time(R, V) :-
-  val(time, V, R).
-
-conf(R, V) :-
-  val(conf, V, R).
-   
-data(R, V) :-
-  val(data, V, R).
-
-uttr(R, V) :-
-  val(uttr, V, R).
-
-corr(R, V) :-
-  val(corr, V, R).
-
-uaid(R, V) :-
-  val(uaid, V, R).
-  
-lang(R, V) :-
-  val(lang, V, R).
-
-prio(R, V) :-
-  val(prio, V, R).
-  
-role(R, V) :-
-  val(role, V, R).
-  
-part(R, V) :-
-  val(part, V, R).
-  
-gaze(R, V) :-
-  val(gaze, V, R).
-  
-talk(R, V) :-
-  val(talk, V, R).
-
 /*----------------------------------------------------------------------------*
  * Record Attribute Predicates
  *----------------------------------------------------------------------------*/
-agent(V, R) :-
-  fsr(R), type(R, agent), name(R, V).
+%agent(V, R) :-
+%  fsr(R), type(R, agent), name(R, V).
   
-event(V, R) :-
-  fsr(R), type(R, event), name(R, V).
+%event(V, R) :-
+%  fsr(R), type(R, event), name(R, V).
 
-set(P, R, V) :-
-  fsr(R), set(P, V, R, S), add(S), del(R).
+%set(P, R, V) :-
+%  fsr(R), set(P, V, R, S), add(S), del(R).
 
 /*----------------------------------------------------------------------------*
  * Attribute List Predicates
@@ -157,8 +126,57 @@ attr(N, D, [H|_]) :-
 attr(N, D, [_|T]) :-
   attr(N, D, T).
 
+
+  
 /*----------------------------------------------------------------------------*
- * Speech Event Predicates
+ * Voice Event Extraction
+ *----------------------------------------------------------------------------*/
+voice(N, D, E) :-
+  findall(R,
+    (fsr(R),
+     val(type, event, R),
+     val(mode, voice, R),
+     val(name, N, R)), L),
+  latest(E, L),
+  val(data, D, E),
+  forall(
+    (fsr(R),
+     member(R, L)),
+     jel(R)).
+/*----------------------------------------------------------------------------*
+ * Move Event Extraction
+ *----------------------------------------------------------------------------*/
+move(N, D, E) :-
+  findall(R,
+    (fsr(R),
+     val(type, event, R),
+     val(mode, move, R),
+     val(name, N, R)), L),
+  latest(E, L),
+  val(data, D, E),
+  forall(
+    (fsr(R),
+     member(R, L)),
+     jel(R)).
+/*----------------------------------------------------------------------------*
+ * Gaze Event Extraction
+ *----------------------------------------------------------------------------*/
+gaze(N, D, E) :-
+  findall(R,
+    (fsr(R),
+     val(type, event, R),
+     val(mode, gaze, R),
+     val(name, N, R)),
+    L),
+  latest(E, L),
+  val(data, D, E),
+  forall(
+    (fsr(R),
+     member(R, L)),
+     jel(R)).
+     
+/*----------------------------------------------------------------------------*
+ * Speech Event Extraction
  *----------------------------------------------------------------------------*/
 speech(Event) :-
   findall(R,
@@ -185,26 +203,27 @@ count(Mode, Count) :-
   length(List, Count).
   
 /*----------------------------------------------------------------------------*
- * Garbage Collecting Predicates
+ * Garbage Collection
  *----------------------------------------------------------------------------*/
-clear(Mode, Period) :-
-  jog('CLEARING'),  
-  forall((fsr(Event),
-     mode(Event, Mode), time(Event, Time),
-     dist(Event, Dist), life(Event, Life),
-     End is Time - Dist + Life, now(Now),
-     Bound is Now - Period, Bound > End),
-  jel(Event)).
+clear(M, P) :-
+  forall((fsr(R),
+     val(mode, M, R),
+     val(time, T, R),
+     val(dist, D, R),
+     val(life, L, R),
+     E is T - D + L, now(Q),
+     B is Q - P, B > E),
+  jel(R)).
 
 /*----------------------------------------------------------------------------*
  * Qualitative Time Predicates
  *----------------------------------------------------------------------------*/
 after(A, B) :-
-  time(A, TA),
-  time(B, TB),
-  dist(A, DA),
-  dist(B, DB),
-  life(B, LB),
+  val(time, TA, A),
+  val(time, TB, B),
+  val(dist, DA, A),
+  val(dist, DB, B),
+  val(life, LB, B),
   SA = TA - DA,
   SB = TB - DB,
   EB = SB + LB,
