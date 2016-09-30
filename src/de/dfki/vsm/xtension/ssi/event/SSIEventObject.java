@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtension.ssi.event;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -11,7 +12,9 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Locale;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 
 /**
@@ -19,6 +22,9 @@ import org.w3c.dom.Element;
  */
 public final class SSIEventObject implements XMLParseable, XMLWriteable {
 
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     // The event data
     private String mSender;
     private String mEvent;
@@ -31,13 +37,33 @@ public final class SSIEventObject implements XMLParseable, XMLWriteable {
     // The event content
     private SSIEventData mData;
 
+    // Get the event type
+    public final String getType() {
+        return mType;
+    }
+
+    // Get the event type
+    public final String getSender() {
+        return mSender;
+    }
+
+    // Get the event type
+    public final String getEvent() {
+        return mEvent;
+    }
+
+    // Get the event type
+    public final String getState() {
+        return mState;
+    }
+
     // Get the event data
-    public SSIEventData getData() {
+    public final SSIEventData getData() {
         return mData;
     }
 
     @Override
-    public void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
+    public final void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
         writer.println("<event "
                 + "sender=\"" + mSender + "\" "
                 + "event=\"" + mEvent + "\" "
@@ -55,7 +81,7 @@ public final class SSIEventObject implements XMLParseable, XMLWriteable {
     }
 
     @Override
-    public void parseXML(final Element element) throws XMLParseError {
+    public final void parseXML(final Element element) throws XMLParseError {
         // Check the element name
         if (element.getTagName().equals("event")) {
             // Get The Event Attributes
@@ -82,8 +108,8 @@ public final class SSIEventObject implements XMLParseable, XMLWriteable {
                     final ByteArrayInputStream stream = new ByteArrayInputStream(xml);
                     // Parse the data
                     XMLUtilities.parseFromXMLStream(content, stream);
-                } catch (final Exception exc) {
-                    exc.printStackTrace();
+                } catch (final DOMException | UnsupportedEncodingException exc) {
+                    mLogger.failure(exc.toString());
                 }
                 // Set the new data
                 mData = content;
@@ -102,13 +128,14 @@ public final class SSIEventObject implements XMLParseable, XMLWriteable {
         try {
             writeXML(writer);
         } catch (final XMLWriteError exc) {
-            exc.printStackTrace();
+            mLogger.failure(exc.toString());
         }
         writer.flush();
         writer.close();
         try {
             return stream.toString("UTF-8");
-        } catch (final Exception exc) {
+        } catch (final UnsupportedEncodingException exc) {
+            mLogger.failure(exc.toString());
             return stream.toString();
         }
     }

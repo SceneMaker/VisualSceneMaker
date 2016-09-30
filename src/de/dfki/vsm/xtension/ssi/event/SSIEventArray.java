@@ -1,12 +1,14 @@
 package de.dfki.vsm.xtension.ssi.event;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 
@@ -15,12 +17,20 @@ import org.w3c.dom.Element;
  */
 public final class SSIEventArray implements XMLWriteable, XMLParseable {
 
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     // The event sequence version
     private String mVersion;
-    // The event sequence object
-    private ArrayList<SSIEventObject> mList = new ArrayList();
+    // The event object sequence
+    private final ArrayList<SSIEventObject> mList = new ArrayList();
 
-    // Get event list
+    // Create a new event array
+    public SSIEventArray() {
+        // Do nothing here
+    }
+
+    // Get event object sequence
     public final ArrayList<SSIEventObject> getEventList() {
         return mList;
     }
@@ -68,13 +78,14 @@ public final class SSIEventArray implements XMLWriteable, XMLParseable {
         try {
             writeXML(writer);
         } catch (final XMLWriteError exc) {
-            exc.printStackTrace();
+            mLogger.failure(exc.toString());
         }
         writer.flush();
         writer.close();
         try {
             return stream.toString("UTF-8");
-        } catch (final Exception exc) {
+        } catch (final UnsupportedEncodingException exc) {
+            mLogger.failure(exc.toString());
             return stream.toString();
         }
     }

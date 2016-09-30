@@ -12,14 +12,12 @@ import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.tworld.xml.command.TWorldCommand;
 import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
 import de.dfki.vsm.xtension.tworld.xml.command.object.action.Action;
 import de.dfki.vsm.xtension.tworld.xml.feedback.TWorldFeedback;
 import de.dfki.vsm.xtension.tworld.xml.util.ActionLoader;
-import de.dfki.vsm.xtension.wizard.WizardTimer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,9 +36,7 @@ import java.util.Properties;
  */
 public final class TWorldExecutor extends ActivityExecutor {
 
-    // The singelton logger instance
-    private final LOGConsoleLogger mLogger
-            = LOGConsoleLogger.getInstance();
+ 
     // The tworld listener
     private TWorldListener mListener;
     // The map of processes
@@ -65,6 +61,7 @@ public final class TWorldExecutor extends ActivityExecutor {
     // Launch the executor 
     @Override
     public final void launch() {
+        /*
         // Get the plugin configuration
         final String tworlddir = mConfig.getProperty("tworlddir");
         final String tworldexe = mConfig.getProperty("tworldexe");
@@ -106,6 +103,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         }
         broadcast("Start");
         //
+        */
         mTimer = new TWorldTimer(10);
         mTimer.start();
     }

@@ -27,20 +27,20 @@ public final class SSIEventReceiver extends Thread {
     private final String mLHost;
     private final SocketAddress mLAddr;
     // The reference to the player
-    private final SSIRunTimePlugin mPlugin;
+    private final SSIEventHandler mHandler;
     // The thread termination flag
     private boolean mDone = false;
     // The datagram connection 
     private DatagramSocket mSocket;
     // time measure
-    private long mTimeCounter = System.nanoTime();
+    //private long mTimeCounter = System.nanoTime();
 
     // Construct the proxy server
     public SSIEventReceiver(
-            final SSIRunTimePlugin plugin,
+            final SSIEventHandler handler,
             final String lHost, final int lPort) {
-        // Initialize the plugin
-        mPlugin = plugin;
+        // Initialize the handler
+        mHandler = handler;
         // Initialize the local data
         mLHost = lHost;
         mLPort = lPort;
@@ -63,7 +63,7 @@ public final class SSIEventReceiver extends Thread {
         }
 
         // initialze time measurement
-        mTimeCounter = System.nanoTime();
+        //mTimeCounter = System.nanoTime();
     }
 
     // Abort the server thread
@@ -83,23 +83,22 @@ public final class SSIEventReceiver extends Thread {
     public final void run() {
         // Receive while not done ...
         while (!mDone) {
-            long currentTime = System.nanoTime();
-            int processingTime = new Long(((currentTime - mTimeCounter) / 1000000)).intValue();
+            //long currentTime = System.nanoTime();
+            //int processingTime = new Long(((currentTime - mTimeCounter) / 1000000)).intValue();
 
-            if (mPlugin.mProject.hasVariable("event_processing_time")) {
-                mPlugin.mProject.setVariable("event_processing_time", new IntValue(processingTime));
-            }
+            //if (mHandler.mProject.hasVariable("event_processing_time")) {
+            //    mHandler.mProject.setVariable("event_processing_time", new IntValue(processingTime));
+            //}
 
-            mLogger.success("Awaiting SSI events ...processing took ... " + processingTime + "ms");
+            //mLogger.success("Awaiting SSI events ...processing took ... " + processingTime + "ms");
             // Receive a new message
             final String message = recvString();
-
+            mLogger.message("Receiving " + message);
             // PG - this is a lot of output!
-            //mLogger.success(">>>>>>" +message);
             // Check message content
             if (message != null) {
                 // start time measure
-                mTimeCounter = System.nanoTime();
+                //mTimeCounter = System.nanoTime();
                 try {
                     final ByteArrayInputStream stream = new ByteArrayInputStream(
                             message.getBytes("UTF-8"));
@@ -107,11 +106,11 @@ public final class SSIEventReceiver extends Thread {
                     final SSIEventArray sequence = new SSIEventArray();
                     if (XMLUtilities.parseFromXMLStream(sequence, stream)) {
                         // Delegate sequence handling            
-                        mPlugin.handle(sequence);
+                        mHandler.handle(sequence);
                     } else {
                         mLogger.message("ERROR: Cannot parse the SSI events ...");
                     }
-                } catch (final Exception exc) {
+                } catch (final UnsupportedEncodingException exc) {
                     mLogger.failure(exc.toString());
                 }
             }

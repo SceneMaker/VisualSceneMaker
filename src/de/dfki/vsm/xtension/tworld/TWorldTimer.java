@@ -1,12 +1,11 @@
 package de.dfki.vsm.xtension.tworld;
 
-import de.dfki.vsm.xtension.wizard.*;
 import de.dfki.vsm.util.jpl.JPLEngine;
-import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
- * @author Gregor Mehlmann
+ * @author Gregor Mehlmann TODO: This should basically be a singelton thread
+ * factory in the JPL package
  */
 public final class TWorldTimer extends Thread {
 
@@ -28,13 +27,13 @@ public final class TWorldTimer extends Thread {
         // Initialize the interval
         mTimerInterval = interval;
         // Print some Information
-        mLogger.message("Creating Wizard Timer");
+        mLogger.message("Creating TWorld Timer");
     }
 
     // Abort the system timer
     public final void abort() {
         // Print some Information
-        mLogger.message("Aborting Wizard Timer");
+        mLogger.message("Aborting TWorld Timer");
         // Set termination flag
         mDone = true;
         // Interrupt thread state
@@ -45,7 +44,7 @@ public final class TWorldTimer extends Thread {
     @Override
     public final void run() {
         // Print some Information
-        mLogger.message("Starting Wizard Timer");
+        mLogger.message("Starting TWorld Timer");
         // Set the player start time
         mStartupTime = System.currentTimeMillis();
         // Then update the player time
@@ -54,11 +53,9 @@ public final class TWorldTimer extends Thread {
             try {
                 // Eventually change interval 
                 Thread.sleep(mTimerInterval);
-            } catch (final Exception exc) {
+            } catch (final InterruptedException exc) {
                 // Print some Information
                 mLogger.warning(exc.toString());
-                // Print some Information
-                //mLogger.warning("Interrupting VSM System Timer");
                 // Exit on an interrupt
                 mDone = true;
             }
@@ -66,10 +63,10 @@ public final class TWorldTimer extends Thread {
             mCurrentTime
                     = System.currentTimeMillis() - mStartupTime;
             // Assert the new time now
-            final JPLResult result = JPLEngine.query("retractall(now(_)),assertz(now(" + mCurrentTime + ")).");
-
+            JPLEngine.query("retractall(now(_)),"
+                    + "assertz(now(" + mCurrentTime + ")).");
         }
         // Print some information
-        mLogger.message("Stopping Wizard Timer");
+        mLogger.message("Stopping TWorld Timer");
     }
 }
