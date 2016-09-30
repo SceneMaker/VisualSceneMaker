@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.ssi;
 
-import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
@@ -8,7 +7,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 /**
  * @author Gregor Mehlmann
  */
-public abstract class SSIRunTimePlugin extends RunTimePlugin {
+public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEventHandler {
 
     // The SSI event handler
     private SSIEventReceiver mReceiver;
@@ -32,6 +31,7 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
         final String slport = mConfig.getProperty("slport");
         final String srhost = mConfig.getProperty("srhost");
         final String srport = mConfig.getProperty("srport");
+
         // Initialize the event handler
         mReceiver = new SSIEventReceiver(this,//mPlugin,
                 hlhost, Integer.parseInt(hlport));
@@ -58,10 +58,8 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin {
             mReceiver.join();
             // Join the SSI event sender
             mSender.join();
-        } catch (final Exception exc) {
+        } catch (final InterruptedException exc) {
             mLogger.failure(exc.toString());
         }
     }
-
-    public abstract void handle(final SSIEventArray array);
 }

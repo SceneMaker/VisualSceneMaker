@@ -15,7 +15,7 @@ public final class SSIStringData implements SSIEventData {
 
     // Get string representation
     @Override
-    public String toString() {
+    public final String toString() {
         return mData;
     }
 }
