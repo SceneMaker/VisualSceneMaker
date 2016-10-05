@@ -41,7 +41,7 @@ public final class SpeechActivity extends AbstractActivity {
     }
 
     // Get the text only - without time mark blocks (added by PG)
-    public final String getTextOnly(String markerSign) {
+    public final String getTextOnly(final String markerSign) {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mBlocks) {
             if (!item.toString().contains(markerSign)) {
@@ -78,7 +78,7 @@ public final class SpeechActivity extends AbstractActivity {
     }
 
 // Get the punctuation information (added by PG 20.4.2016)
-    public final LinkedList<String> getTimeMarks(String markerSign) {
+    public final LinkedList<String> getTimeMarks(final String markerSign) {
         final LinkedList<String> tms = new LinkedList<>();
         for (final Object item : mBlocks) {
             if (item.toString().contains(markerSign)) {

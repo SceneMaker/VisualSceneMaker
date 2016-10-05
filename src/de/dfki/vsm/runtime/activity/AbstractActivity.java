@@ -85,6 +85,16 @@ public abstract class AbstractActivity {
         return mFeatures;
     }
 
+    // Get the value of a feature
+    public final String getValueOf(final String key) {
+        for (final ActionFeature feature : mFeatures) {
+            if (feature.getKey().equals(key)) {
+                return feature.getVal();
+            }
+        }
+        return null;
+    }
+
     // Get the textual representation
     public abstract String getText();
 

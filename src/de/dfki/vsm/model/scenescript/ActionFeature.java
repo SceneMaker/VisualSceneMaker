@@ -1,17 +1,13 @@
 package de.dfki.vsm.model.scenescript;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-
 import org.w3c.dom.Element;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.util.HashMap;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ActionFeature extends SceneEntity {
 
@@ -37,7 +33,12 @@ public class ActionFeature extends SceneEntity {
     public ActionFeature() {
     }
 
-    public ActionFeature(final Type typ, final int lower, final int upper, final String key, final String val) {
+    public ActionFeature(
+            final Type typ,
+            final int lower,
+            final int upper,
+            final String key,
+            final String val) {
         super(lower, upper);
 
         // Initialize The Members
@@ -92,15 +93,9 @@ public class ActionFeature extends SceneEntity {
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-
-        // Parse The Boundary
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
-
-        // Parse The Members
         mTyp = Type.valueOf(element.getAttribute("typ"));
-
-        //
         mKey = element.getAttribute("key");
         mVal = element.getAttribute("val");
     }
@@ -109,7 +104,4 @@ public class ActionFeature extends SceneEntity {
     public ActionFeature getCopy() {
         return new ActionFeature(mTyp, mLower, mUpper, mKey, mVal);
     }
-    
-    
-    
 }
