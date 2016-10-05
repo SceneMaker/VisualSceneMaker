@@ -8,245 +8,218 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 
 import org.w3c.dom.Element;
 
-//~--- JDK imports ------------------------------------------------------------
 import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class ActionObject extends UtteranceElement {
 
-	// The Action Arguments
-	private LinkedList<ActionFeature> mFeatureList = new LinkedList<>();
-	// The Name Of The Agent
-	private String mActor;
-	// The Mode Of The Action
-	private String mMode;
-	// The Name Of The Action
-	private String mName;
+    // The Action Arguments
+    private LinkedList<ActionFeature> mFeatureList = new LinkedList<>();
+    // The Name Of The Agent
+    private String mActor;
+    // The Mode Of The Action
+    private String mMode;
+    // The Name Of The Action
+    private String mName;
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	public ActionObject() {
-		mActor = null;
-		mMode = null;
-		mName = null;
-	}
+    public ActionObject() {
+        mActor = null;
+        mMode = null;
+        mName = null;
+    }
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	public ActionObject(
-	  final int lower, final int upper,
-	  final String actor,
-	  final String mode,
-	  final String name,
-	  final LinkedList<ActionFeature> list) {
-		// Initialize The Boundary
-		super(lower, upper);
-		// Initialize The Members
-		mActor = actor;
-		mMode = mode;
-		mName = name;
-		// Initialize Fature List
-		mFeatureList = list;
-	}
+    public ActionObject(
+            final int lower,
+            final int upper,
+            final String actor,
+            final String mode,
+            final String name,
+            final LinkedList<ActionFeature> list) {
+        // Initialize The Boundary
+        super(lower, upper);
+        // Initialize The Members
+        mActor = actor;
+        mMode = mode;
+        mName = name;
+        // Initialize Fature List
+        mFeatureList = list;
+    }
 
-	public final String getActor() {
-		return mActor;
-	}
+    public final String getActor() {
+        return mActor;
+    }
 
-	public final String getMode() {
-		return mMode;
-	}
+    public final String getMode() {
+        return mMode;
+    }
 
-	public final String getName() {
-		return mName;
-	}
+    public final String getName() {
+        return mName;
+    }
 
-	public final LinkedList<ActionFeature> getFeatureList() {
-		return mFeatureList;
-	}
+    public final LinkedList<ActionFeature> getFeatureList() {
+        return mFeatureList;
+    }
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	public final void setFeatureList(final LinkedList<ActionFeature> list) {
-		mFeatureList = list;
-	}
+    public final void setFeatureList(final LinkedList<ActionFeature> list) {
+        mFeatureList = list;
+    }
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	public final LinkedList<ActionFeature> copyFeatureList() {
+    public final LinkedList<ActionFeature> copyFeatureList() {
+        // Construct A List Copy
+        final LinkedList<ActionFeature> copy = new LinkedList<>();
+        // Copy Each Single Member
+        for (final ActionFeature feature : mFeatureList) {
+            copy.add(feature.getCopy());
+        }
+        // Return The Final Clone
+        return copy;
+    }
 
-		// Construct A List Copy
-		final LinkedList<ActionFeature> copy = new LinkedList<>();
+     
+    public final ActionFeature getValueOf(final String key) {
+        for (final ActionFeature feature : mFeatureList) {
+            if (feature.getKey().equals(key)) {
+                return feature;
+            }
+        }
+        return null;
+    }
 
-		// Copy Each Single Member
-		for (final ActionFeature feature : mFeatureList) {
-			copy.add(feature.getCopy());
-		}
+   
+    @Override
+    public final String getText() {
 
-		// Return The Final Clone
-		return copy;
-	}
+        // Append The Identifiers
+        String actor = (mActor == null || mActor.equalsIgnoreCase("")) ? "" : mActor + " ";
+        String mode = (mMode == null || mMode.equalsIgnoreCase("")) ? "" : mMode;
+        String name = (mName == null) ? "" : (mode.equalsIgnoreCase("")) ? mName : " " + mName;
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	public final ActionFeature getValueOf(final String key) {
-		for (final ActionFeature feature : mFeatureList) {
-			if (feature.getKey().equals(key)) {
-				return feature;
-			}
-		}
+        String result = "[" + actor + mode + name;
+        if (!mFeatureList.isEmpty()) {
+            result += " ";
 
-		return null;
-	}
+            for (int i = 0; i < mFeatureList.size(); i++) {
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	@Override
-	public final String getText() {
+                // Append The Member String
+                result += mFeatureList.get(i).getText();
 
-		// Append The Identifiers
-		String actor = (mActor == null || mActor.equalsIgnoreCase("")) ? "" : mActor + " ";
-		String mode = (mMode == null || mMode.equalsIgnoreCase("")) ? "" : mMode;
-		String name = (mName == null) ? "" : (mode.equalsIgnoreCase("")) ? mName : " " + mName;
-		
-		String result = "[" + actor + mode + name;
-		if (!mFeatureList.isEmpty()) {
-			result += " ";
+                // Append A Whitespace Now
+                if (i < mFeatureList.size() - 1) {
+                    result += " ";
+                }
+            }
+        }
 
-			for (int i = 0; i < mFeatureList.size(); i++) {
+        return result + "]";
+    }
 
-				// Append The Member String
-				result += mFeatureList.get(i).getText();
+   
+    @Override
+    public final String getText(final HashMap<String, String> args) {
 
-				// Append A Whitespace Now
-				if (i < mFeatureList.size() - 1) {
-					result += " ";
-				}
-			}
-		}
+        // Append The Identifiers
+        String actor = (mActor == null || mActor.equalsIgnoreCase("")) ? "" : mActor + " ";
+        String mode = (mMode == null || mMode.equalsIgnoreCase("")) ? "" : mMode;
+        String name = (mName == null) ? "" : (mode.equalsIgnoreCase("")) ? mName : " " + mName;
 
-		return result + "]";
-	}
+        String result = "[" + actor + mode + name;
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	@Override
-	public final String getText(final HashMap<String, String> args) {
+        if (!mFeatureList.isEmpty()) {
+            result += " ";
 
-		// Append The Identifiers
-				
-		String actor = (mActor == null || mActor.equalsIgnoreCase("")) ? "" : mActor + " ";
-		String mode = (mMode == null || mMode.equalsIgnoreCase("")) ? "" : mMode;
-		String name = (mName == null) ? "" : (mode.equalsIgnoreCase("")) ? mName : " " + mName;
-		
-		String result = "[" + actor + mode + name;
+            for (int i = 0; i < mFeatureList.size(); i++) {
 
-		if (!mFeatureList.isEmpty()) {
-			result += " ";
+                // Append The Member String
+                result += mFeatureList.get(i).getText(args);
 
-			for (int i = 0; i < mFeatureList.size(); i++) {
+                // Append A Whitespace Now
+                if (i < mFeatureList.size() - 1) {
+                    result += " ";
+                }
+            }
+        }
 
-				// Append The Member String
-				result += mFeatureList.get(i).getText(args);
+        return result + "]";
+    }
 
-				// Append A Whitespace Now
-				if (i < mFeatureList.size() - 1) {
-					result += " ";
-				}
-			}
-		}
+   
+    @Override
+    public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
 
-		return result + "]";
-	}
+        stream.println("<ActionObject "
+                + "lower=\"" + mLower + "\" "
+                + "upper=\"" + mUpper + "\" "
+                + "actor=\"" + ((mActor == null) ? "" : mActor) + "\" "
+                + "mode=\"" + ((mMode == null) ? "" : mMode) + "\" "
+                + "name=\"" + mName + "\" "
+                + ">");
+        stream.push();
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	@Override
-	public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
+        for (final ActionFeature feature : mFeatureList) {
+            feature.writeXML(stream);
 
-		stream.println("<ActionObject "
-		  + "lower=\"" + mLower + "\" "
-		  + "upper=\"" + mUpper + "\" "
-		  + "actor=\"" + ((mActor == null) ? "" : mActor) + "\" "
-		  + "mode=\"" + ((mMode == null) ? "" : mMode) + "\" "
-		  + "name=\"" + mName + "\" "
-		  + ">");
-		stream.push();
+            if (!feature.equals(mFeatureList.getLast())) {
+                stream.endl();
+            }
+        }
 
-		for (final ActionFeature feature : mFeatureList) {
-			feature.writeXML(stream);
+        stream.pop();
+        stream.print("</ActionObject>");
+    }
 
-			if (!feature.equals(mFeatureList.getLast())) {
-				stream.endl();
-			}
-		}
+   
+    @Override
+    public final void parseXML(final Element element) throws XMLParseError {
 
-		stream.pop();
-		stream.print("</ActionObject>");
-	}
+        // Parse The Boundary
+        mLower = Integer.parseInt(element.getAttribute("lower"));
+        mUpper = Integer.parseInt(element.getAttribute("upper"));
 
-    ////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////
-	@Override
-	public final void parseXML(final Element element) throws XMLParseError {
+        // Parse The Members
+        mActor = element.getAttribute("actor");
+        mMode = element.getAttribute("mode");
+        mName = element.getAttribute("name");
 
-		// Parse The Boundary
-		mLower = Integer.parseInt(element.getAttribute("lower"));
-		mUpper = Integer.parseInt(element.getAttribute("upper"));
+        // Process The Child Nodes
+        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
+            public void run(Element element) throws XMLParseError {
 
-		// Parse The Members
-		mActor = element.getAttribute("actor");
-		mMode = element.getAttribute("mode");
-		mName = element.getAttribute("name");
+                // Get The Child Tag Name
+                final String name = element.getTagName();
 
-		// Process The Child Nodes
-		XMLParseAction.processChildNodes(element, new XMLParseAction() {
-			@Override
-			public void run(Element element) throws XMLParseError {
+                // Check The Child Tag Name
+                if (name.equals("ActionFeature")) {
 
-				// Get The Child Tag Name
-				final String name = element.getTagName();
+                    // Create A New Token Style
+                    final ActionFeature feature = new ActionFeature();
 
-				// Check The Child Tag Name
-				if (name.equals("ActionFeature")) {
+                    // Parse The New Token Style
+                    feature.parseXML(element);
 
-					// Create A New Token Style
-					final ActionFeature feature = new ActionFeature();
+                    // Put The New Style To The Map
+                    mFeatureList.add(feature);
+                } else if (name.equals("ActionParam")) {
 
-					// Parse The New Token Style
-					feature.parseXML(element);
+                    // Create A New Token Style
+                    final ActionParam feature = new ActionParam();
 
-					// Put The New Style To The Map
-					mFeatureList.add(feature);
-				} else if (name.equals("ActionParam")) {
+                    // Parse The New Token Style
+                    feature.parseXML(element);
 
-					// Create A New Token Style
-					final ActionParam feature = new ActionParam();
+                    // Put The New Style To The Map
+                    mFeatureList.add(feature);
+                }
+            }
+        });
+    }
 
-					// Parse The New Token Style
-					feature.parseXML(element);
-
-					// Put The New Style To The Map
-					mFeatureList.add(feature);
-				}
-			}
-		});
-	}
-
-	@Override
-	public final ActionObject getCopy() {
-		return new ActionObject(mLower, mUpper, mActor, mMode, mName, copyFeatureList());
-	}
+    @Override
+    public final ActionObject getCopy() {
+        return new ActionObject(mLower, mUpper, mActor, mMode, mName, copyFeatureList());
+    }
 }

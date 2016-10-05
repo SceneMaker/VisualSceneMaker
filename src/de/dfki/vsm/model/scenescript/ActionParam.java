@@ -8,7 +8,6 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 
 import org.w3c.dom.Element;
 
-//~--- JDK imports ------------------------------------------------------------
 
 import java.util.HashMap;
 

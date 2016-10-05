@@ -8,7 +8,9 @@ import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 /**
  * @author Gregor Mehlmann
@@ -19,7 +21,6 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     // The map of processes
     private final HashMap<String, Process> mProcessMap
             = new HashMap();
-
     // The flag if we user the JPL
     private final boolean mUseJPL;
 
@@ -29,7 +30,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
             final RunTimeProject project) {
         super(config, project);
         // Get the JPL flag value
-        mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
+        mUseJPL = Boolean.parseBoolean(
+                mConfig.getProperty("usejpl"));
     }
 
     // Launch SSI plugin
@@ -55,29 +57,26 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     @Override
     public void unload() {
         super.unload();
-
-        // PG: SSI Plugin has to be manually stopped
-        // GM: Why?
         // Wait for pawned processes
-//        for (final Map.Entry<String, Process> entry : mProcessMap.entrySet()) {
-//            // Get the process entry
-//            final String name = entry.getKey();
-//            final Process process = entry.getValue();
-//            try {
-//                // Kill the processes
-//                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
-//                // Wait for the killer
-//                killer.waitFor();
-//                // Print some information 
-//                mLogger.message("Joining killer " + name + "");
-//                // Wait for the process
-//                process.waitFor();
-//                // Print some information 
-//                mLogger.message("Joining process " + name + "");
-//            } catch (final Exception exc) {
-//                mLogger.failure(exc.toString());
-//            }
-//        }
+        for (final Entry<String, Process> entry : mProcessMap.entrySet()) {
+            // Get the process entry
+            final String name = entry.getKey();
+            final Process process = entry.getValue();
+            try {
+                // Kill the processes
+                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
+                // Wait for the killer
+                killer.waitFor();
+                // Print some information 
+                mLogger.message("Joining killer " + name + "");
+                // Wait for the process
+                process.waitFor();
+                // Print some information 
+                mLogger.message("Joining process " + name + "");
+            } catch (final IOException | InterruptedException exc) {
+                mLogger.failure(exc.toString());
+            }
+        }
     }
 
     // Handle SSI event array

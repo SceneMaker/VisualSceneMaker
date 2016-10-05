@@ -1,8 +1,8 @@
 package de.dfki.vsm.xtension.tworld;
 
+import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.editor.dialog.WaitingDialog;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -29,11 +29,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
 /**
- * @author Gregor Mehlmann, Patrick Gebhard
+ * @author Gregor Mehlmann
+ * @author Patrick Gebhard
  */
 public final class TWorldExecutor extends ActivityExecutor {
 
@@ -45,8 +47,10 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, TWorldHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
+    // The Charamel Action loader 
+    private final ActionLoader mActionLoader = ActionLoader.getInstance();
     // The word mapping properties
-    Properties mWordMapping = new Properties();
+    private final Properties mWordMapping = new Properties();
     // The flag if we user the JPL
     private final boolean mUseJPL;
 
@@ -57,13 +61,13 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Initialize the plugin
         super(config, project);
         // Get the JPL flag value
-        mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
+        mUseJPL = Boolean.parseBoolean(
+                mConfig.getProperty("usejpl"));
     }
 
     // Launch the executor 
     @Override
     public final void launch() {
-
         // Get the plugin configuration
         final String tworlddir = mConfig.getProperty("tworlddir");
         final String tworldexe = mConfig.getProperty("tworldexe");
@@ -71,60 +75,51 @@ public final class TWorldExecutor extends ActivityExecutor {
         final String cactordir = mConfig.getProperty("cactordir");
         final String cactorexe = mConfig.getProperty("cactorexe");
         final String cactorcmd = mConfig.getProperty("cactorcmd");
-
+        // Get the working directory
         final String workindir = new File(".").getAbsolutePath();
-        // Create the plugin's processes
-        if (!exists(cactordir) || !exists(tworlddir)) {
-            String missing = (!exists(cactordir)) ? cactordir : tworlddir;
-            String message = "Missing installation folder '" + missing + "' in working directory '" + workindir + "'";
-            WaitingDialog InfoDialog = new WaitingDialog(message);
-            InfoDialog.setModal(true);
-            InfoDialog.setVisible(true);
-            return;
+        // Check the executable files
+        if (!exists(cactordir)) {
+            dialog("Missing '" + cactordir + "' in '" + workindir + "'");
         }
+        if (!exists(tworlddir)) {
+            dialog("Missing '" + tworlddir + "' in '" + workindir + "'");
+        }
+        // Create the plugin's processes
         try {
             mProcessMap.put(cactorexe, Runtime.getRuntime().exec(
                     "cmd /c start /min " + cactorexe + " " + cactorcmd, null, new File(cactordir)));
             mProcessMap.put(tworldexe, Runtime.getRuntime().exec(
                     "cmd /c start " + tworldexe + " " + tworldcmd, null, new File(tworlddir)));
-        } catch (final Exception exc) {
+        } catch (final IOException exc) {
             mLogger.failure(exc.toString());
         }
         // Create the connection
         mListener = new TWorldListener(8000, this);
         // Start the connection
         mListener.start();
-        //
+        // Wait for the TWorld
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for TWorld");
             try {
                 Thread.sleep(1000);
             } catch (final InterruptedException exc) {
-
+                mLogger.failure(exc.toString());
             }
         }
+        // Broadcast start signal
         broadcast("Start");
-    }
-
-    private final boolean exists(final String path) {
-        final File file = new File(path);
-        if (file.exists() && file.isDirectory()) {
-            return true;
-        }
-        return false;
     }
 
     // Unload the executor 
     @Override
-    public void unload() {
-
+    public final void unload() {
         // Abort the client threads
         for (final TWorldHandler client : mClientMap.values()) {
             client.abort();
             // Join the client thread
             try {
                 client.join();
-            } catch (final Exception exc) {
+            } catch (final InterruptedException exc) {
                 mLogger.failure(exc.toString());
                 // Print some information 
                 mLogger.message("Joining client thread");
@@ -139,7 +134,7 @@ public final class TWorldExecutor extends ActivityExecutor {
             mListener.join();
             // Print some information 
             mLogger.message("Joining server thread");
-        } catch (final Exception exc) {
+        } catch (final InterruptedException exc) {
             mLogger.failure(exc.toString());
         }
 
@@ -159,7 +154,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 process.waitFor();
                 // Print some information 
                 mLogger.message("Joining process " + name + "");
-            } catch (final Exception exc) {
+            } catch (final IOException | InterruptedException exc) {
                 mLogger.failure(exc.toString());
             }
         }
@@ -167,42 +162,35 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Clear the map of processes 
         mProcessMap.clear();
     }
-
+    
     @Override
-    public synchronized final String marker(final long id) {
+    public final synchronized String marker(final long id) {
         // TWorld style bookmarks
         return "$(" + id + ")";
     }
-
-    // get the value of a feature (added PG) - quick and dirty
-    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
-        for (ActionFeature af : features) {
-            if (af.getKey().equalsIgnoreCase(name)) {
-                return af.getVal();
-            }
-        }
-        return "";
-    }
-
+    
     @Override
     public final void execute(final AbstractActivity activity) {
         // Get action information
-        final String cmd = activity.getName();
-        final LinkedList<ActionFeature> features = activity.getFeatures();
-
-        // initialize build command
-        TWorldCommand mTWC;
-        Action twcoa = null;
-
+        final Type activity_type = activity.getType();
+        final String activity_text = activity.getText();
+        final String activity_name = activity.getName();
+        final String activity_mode = activity.getMode();
+        final String activity_actor = activity.getActor();
+        final List activity_features = activity.getFeatures();
+        // Initialize the command
+        TWorldCommand tworld_final_cmd = null;
+        Action tworld_cmd_action = null;
+        // Check the activity type
         if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-            String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
-
-            //mLogger.success("text is " + text);
-            // If text is empty - assume activity has empty text but has marker activities registered
-            if (text.isEmpty()) {
-                for (String tm : timemarks) {
+            final SpeechActivity speech_activity = (SpeechActivity) activity;
+            final String speech_text = speech_activity.getTextOnly("$(").trim();
+            final List<String> time_marks = speech_activity.getTimeMarks("$(");
+            
+            if (speech_text.isEmpty()) {
+                // If speech_text is empty we assume that the activity has 
+                // empty speech text but has marker activities registered
+                for (final String tm : time_marks) {
                     mLogger.warning("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                     return;
@@ -210,378 +198,224 @@ public final class TWorldExecutor extends ActivityExecutor {
             } else {
                 // load wordmapping database
                 try {
-                    String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping");
+                    String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity_actor).getProperty("wordmapping");
                     wmf = wmf.replace("\\", "/");
                     mWordMapping.load(new FileReader(new File(wmf)));
                 } catch (IOException ex) {
-                    mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping") + ") not found!");
+                    mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity_actor).getProperty("wordmapping") + ") not found!");
                 }
-
                 // do the pronounciation mapping
-                sa.doPronounciationMapping(mWordMapping);
-
+                speech_activity.doPronounciationMapping(mWordMapping);
                 // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
+                String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
                 // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunct(), aid);
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
 
                 //GM@PG:WHY???
                 // wait a little bit ...
                 try {
                     Thread.sleep(350);
                 } catch (final InterruptedException exc) {
-
+                    mLogger.failure(exc.toString());
                 }
-
             }
         } else {
-            if (cmd.equalsIgnoreCase("StopSpeaking")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("StopSpeaking", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Angry")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                String intensity = getActionFeatureValue("intensity", features);
-                intensity = (intensity == "") ? "1.0" : intensity;
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Angry", intensity, aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Demanding")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                String intensity = getActionFeatureValue("intensity", features);
-                intensity = (intensity == "") ? "1.0" : intensity;
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Demanding", intensity, aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Disgust")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                String intensity = getActionFeatureValue("intensity", features);
-                intensity = (intensity == "") ? "1.0" : intensity;
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Disgust", intensity, aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Neutral")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Neutral", "1.0", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Sad")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                String intensity = getActionFeatureValue("intensity", features);
-                intensity = (intensity == "") ? "1.0" : intensity;
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Sad", intensity, aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Smile")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                String intensity = getActionFeatureValue("intensity", features);
-                intensity = (intensity == "") ? "1.0" : intensity;
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Smile", intensity, aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Happy")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                String intensity = getActionFeatureValue("intensity", features);
-                intensity = (intensity == "") ? "1.0" : intensity;
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Happy", intensity, aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Reject")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Reject", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Challenge")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Challenge", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("ShowPalms")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("ShowPalms", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("OpenArms")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("OpenArms", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("LookLeft")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("LookLeft", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("LookRight")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("LookRight", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("No")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("No", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("StrongNo")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("StrongNo", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("PointLeft")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PointLeft", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("PointRight")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PointRight", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("PresentLeft")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PresentLeft", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("PresentRight")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("PresentRight", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Welcome")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Welcome", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("Yes")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("Yes", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("StrongYes")) {
-                // get the charamel avatar id
-                String aid = mProject.getAgentConfig(activity.getActor()).getProperty("aid");
-                // build action
-                twcoa = ActionLoader.getInstance().loadCharamelAnimation("StrongYes", aid);
-            }
-
-            if (cmd.equalsIgnoreCase("AmbientLight")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
-            }
-
-            if (cmd.equalsIgnoreCase("AmbientSound")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
-            }
-
-            if (cmd.equalsIgnoreCase("CancelMoveTo")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
-            }
-
-            if (cmd.equalsIgnoreCase("Load")) {
-                String url = "file:///" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty(getActionFeatureValue("value", features));
+            // Get the unique actor id
+            final String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
+            // Check the activity name
+            if (activity_name.equalsIgnoreCase("StopSpeaking")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("Reject")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("Challenge")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("ShowPalms")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("OpenArms")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("LookLeft")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("LookRight")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("No")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("StrongNo")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("PointLeft")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("PointRight")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("PresentLeft")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("PresentRight")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("Welcome")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("Yes")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("StrongYes")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("Angry")) {
+                String intensity = activity.getValueOf("intensity");
+                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+            } else if (activity_name.equalsIgnoreCase("Demanding")) {
+                String intensity = activity.getValueOf("intensity");
+                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+            } else if (activity_name.equalsIgnoreCase("Disgust")) {
+                String intensity = activity.getValueOf("intensity");
+                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+            } else if (activity_name.equalsIgnoreCase("Neutral")) {
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
+            } else if (activity_name.equalsIgnoreCase("Sad")) {
+                String intensity = activity.getValueOf("intensity");
+                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+            } else if (activity_name.equalsIgnoreCase("Smile")) {
+                String intensity = activity.getValueOf("intensity");
+                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+            } else if (activity_name.equalsIgnoreCase("Happy")) {
+                String intensity = activity.getValueOf("intensity");
+                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+            } else if (activity_name.equalsIgnoreCase("CancelMoveTo")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("Play")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("Stop")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("Release")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("ReleaseLookAt")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("AmbientLight")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("value"));
+            } else if (activity_name.equalsIgnoreCase("AmbientSound")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("value"));
+            } else if (activity_name.equalsIgnoreCase("Load")) {
+                String url = "file:///" + mProject.getProjectPath()
+                        + File.separator + mProject.getAgentConfig(
+                                activity_actor).getProperty(activity.getValueOf("value"));
                 url = url.replace("\\", "/");
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, url);
-            }
-
-            if (cmd.equalsIgnoreCase("LookAt")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("viewtarget", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
+            } else if (activity_name.equalsIgnoreCase("LookAt")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("viewtarget"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("MoveTo")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            } else if (activity_name.equalsIgnoreCase("MoveTo")) {
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("Play")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
-            }
-
-            if (cmd.equalsIgnoreCase("Stop")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
-            }
-
-            if (cmd.equalsIgnoreCase("Release")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
-            }
-
-            if (cmd.equalsIgnoreCase("ReleaseLookAt")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
-            }
-
-            if (cmd.equalsIgnoreCase("Say")) {
-                String url = "file:///" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty(getActionFeatureValue("value", features));
+            } else if (activity_name.equalsIgnoreCase("Say")) {
+                String url = "file:///" + mProject.getProjectPath()
+                        + File.separator + mProject.getAgentConfig(
+                                activity_actor).getProperty(activity.getValueOf("value"));
                 url = url.replace("\\", "/");
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, url);
-            }
-
-            if (cmd.equalsIgnoreCase("PlayAudio")) {
-                String url = "file:///" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty(getActionFeatureValue("value", features));
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
+            } else if (activity_name.equalsIgnoreCase("PlayAudio")) {
+                String url = "file:///" + mProject.getProjectPath()
+                        + File.separator + mProject.getAgentConfig(
+                                activity_actor).getProperty(activity.getValueOf("value"));
                 url = url.replace("\\", "/");
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, url);
-            }
-
-            if (cmd.equalsIgnoreCase("Color")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("r", features), getActionFeatureValue("g", features), getActionFeatureValue("b", features));
-            }
-
-            if (cmd.equalsIgnoreCase("SitDown")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("chairname", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
+            } else if (activity_name.equalsIgnoreCase("Color")) {
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.getValueOf("r"), activity.getValueOf("g"), activity.getValueOf("b"));
+            } else if (activity_name.equalsIgnoreCase("SitDown")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("chairname"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("Stop")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd);
-            }
-
-            if (cmd.equalsIgnoreCase("Warp")) {
-                String target = getActionFeatureValue("viewtarget", features);
+            } else if (activity_name.equalsIgnoreCase("Stop")) {
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("Warp")) {
+                String target = activity.getValueOf("viewtarget");
                 if (target != null) {
-                    twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features), target);
+                    tworld_cmd_action = mActionLoader.loadAnimation(activity_name, activity.getValueOf("location"), target);
                 } else {
-                    twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("location", features));
+                    tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("location"));
                 }
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("WorldPosition")) {
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("x", features), getActionFeatureValue("y", features), getActionFeatureValue("z", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            } else if (activity_name.equalsIgnoreCase("WorldPosition")) {
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.getValueOf("x"), activity.getValueOf("y"), activity.getValueOf("z"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("Camera") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("x", features), getActionFeatureValue("y", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            } else if (activity_name.equalsIgnoreCase("Camera") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.getValueOf("x"), activity.getValueOf("y"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("FocalLength") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features), getActionFeatureValue("time", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            } else if (activity_name.equalsIgnoreCase("FocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.getValueOf("value"), activity.getValueOf("time"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("DefaultFocalLength") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("time", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            } else if (activity_name.equalsIgnoreCase("DefaultFocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("viewtarget"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("CameraOffset") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("x", features), getActionFeatureValue("y", features), getActionFeatureValue("z", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            } else if (activity_name.equalsIgnoreCase("CameraOffset") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.getValueOf("x"), activity.getValueOf("y"), activity.getValueOf("z"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            }
-
-            if (cmd.equalsIgnoreCase("Scale") && activity.getActor().equalsIgnoreCase("player")) { // this is a player only command
-                twcoa = ActionLoader.getInstance().loadAnimation(cmd, getActionFeatureValue("value", features));
-                // reset the command name to include the actor which is required on tworld side - TODO get rid of this in Tworld side
-                if (activity.getActor().equalsIgnoreCase("player")) {
-                    twcoa.resetActionCmd(activity.getActor() + "_" + twcoa.getActionCmd());
+            } else if (activity_name.equalsIgnoreCase("Scale") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("value"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
+            } else {
+                // Unknown activity_name
             }
         }
-
-        mLogger.message("Building command " + cmd + " for Actor " + activity.getActor());
-        // finalize build command
-        Object twco = new Object(activity.getActor(), twcoa);
-        mTWC = new TWorldCommand();
-        mTWC.addObject(twco);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        IOSIndentWriter iosw = new IOSIndentWriter(out);
-        boolean r = XMLUtilities.writeToXMLWriter(mTWC, iosw);
-
-        mLogger.message("Execute Actor " + activity.getActor() + ", command " + cmd);
-
-        String message = "";
-        // log TWorld command
-        //try {
+        mLogger.message("Building command " + activity_name + " for actor " + activity_actor);
+        // Finalize build activity_name
+        final Object tworld_cmd_object = new Object(activity_actor, tworld_cmd_action);
+        tworld_final_cmd = new TWorldCommand();
+        tworld_final_cmd.addObject(tworld_cmd_object);
+        // Write the commmand to XML
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final IOSIndentWriter iosw = new IOSIndentWriter(out);
+        XMLUtilities.writeToXMLWriter(tworld_final_cmd, iosw);
+        mLogger.message("Executing command " + activity_name + " on actor " + activity_actor);
+        // GM_: Why is this necessary
         // Fuck German Umlaute and Encoding
-        message = out.toString().replace("ö", "oe").replace("ä", "ae").replace("ü", "ue").replace("Ö", "Oe").replace("Ä", "Ae").replace("Ü", "Ue").replace("ß", "ss").replace("\n", " ").replace("   ", " ").replace("  ", " ");
-        //message = new String(out.toString().getBytes("ISO-8859-1"), "UTF-8");
+        String message = out.toString().
+                replace("ö", "oe").
+                replace("ä", "ae").
+                replace("ü", "ue").
+                replace("Ö", "Oe").
+                replace("Ä", "Ae").
+                replace("Ü", "Ue").
+                replace("ß", "ss").
+                replace("\n", " ").
+                replace("   ", " ").
+                replace("  ", " ");
         mLogger.message(message);
-        //} catch (UnsupportedEncodingException ex) {
-        //    mLogger.failure(ex.getMessage());
-        //}
 
-        // send command to platform 
+        // Send activity_name to tworld 
         synchronized (mActivityWorkerMap) {
             broadcast(message);
 
             // organize wait for feedback if (activity instanceof SpeechActivity) {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(twcoa.getId(), cAW);
+            mActivityWorkerMap.put(tworld_cmd_action.getId(), cAW);
 
             // wait until we got feedback
-            mLogger.warning("ActivityWorker " + twcoa.getId() + " waiting ....");
-
+            mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " waiting ....");
+            
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
                     mActivityWorkerMap.wait();
@@ -589,55 +423,56 @@ public final class TWorldExecutor extends ActivityExecutor {
                     mLogger.failure(exc.toString());
                 }
             }
-
-            mLogger.warning("ActivityWorker " + twcoa.getId() + " done ....");
+            
+            mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " done ....");
         }
         // Return when terminated
     }
 
-    // Accept some socket
-    public void accept(final Socket socket) {
+    // Accept some connection
+    public final void accept(final Socket socket) {
         // Make new client thread 
         final TWorldHandler client = new TWorldHandler(socket, this);
         // Add the client to list
-        // TODO: Get some reasonable name for references here!
         mClientMap.put(client.getName(), client);
         // Start the client thread
         client.start();
-        //
+        // Print some information
         mLogger.warning("Accepting " + client.getName() + "");
     }
 
     // Handle some message
-    public void handle(final String message, final TWorldHandler client) {
-        // sanitize message
-        String clean = message.replaceAll("..xml\\s+version........", "");
-        mLogger.warning("Handling new message:\n" + clean + "");
-
+    public final void handle(
+            final String input, 
+            final TWorldHandler client) {
+        // Sanitize the message
+        final String message = input.replaceAll("..xml\\s+version........", "");
+        // Print some information
+        mLogger.warning("Handling new message:\n" + message + "");
+        // Notify the relevant threads
         synchronized (mActivityWorkerMap) {
-            TWorldFeedback twf = new TWorldFeedback();
-            InputStream stream;
+            final TWorldFeedback tworld_final_feedback = new TWorldFeedback();
             try {
-                stream = new ByteArrayInputStream(clean.getBytes("UTF-8"));
-                XMLUtilities.parseFromXMLStream(twf, stream);
-            } catch (UnsupportedEncodingException ex) {
-                mLogger.failure("Feedback is not in TWorldFeedback format, will not be handled!");
+                final InputStream stream = new ByteArrayInputStream(message.getBytes("UTF-8"));
+                XMLUtilities.parseFromXMLStream(tworld_final_feedback, stream);
+            } catch (final UnsupportedEncodingException exc) {
+                mLogger.failure(exc.toString());
                 return;
             }
-
-            if (twf.hasActionFeedback()) {
-                String actionType = twf.mFeedbackAction.mName;
-                String id = twf.mFeedbackAction.mId;
-                String actionStatusType = twf.mFeedbackAction.mActionFeedback.mName;
-                String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
+            //
+            if (tworld_final_feedback.hasActionFeedback()) {
+                final String actionType = tworld_final_feedback.mFeedbackAction.mName;
+                String id = tworld_final_feedback.mFeedbackAction.mId;
+                String actionStatusType = tworld_final_feedback.mFeedbackAction.mActionFeedback.mName;
+                String actionStatusValue = tworld_final_feedback.mFeedbackAction.mActionFeedback.mValue;
 
                 // handling every /*ambient_setup*/ feedback
                 if (actionStatusType.equalsIgnoreCase("action_finished")) {
                     // check if the acitivy action feedback was speech feedback
-                    if (twf.mFeedbackAction.mActionFeedback.hasCaiEvent()) {
-                        if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.hasTTSStatus()) {
+                    if (tworld_final_feedback.mFeedbackAction.mActionFeedback.hasCaiEvent()) {
+                        if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.hasTTSStatus()) {
                             mLogger.warning("We have a cai event tts status");
-                            if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
+                            if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
                                 // TODO - get id - for now there is none
                                 // Set character voice activity variable                               
                                 mLogger.warning("Agent starts speaking");
@@ -658,11 +493,11 @@ public final class TWorldExecutor extends ActivityExecutor {
                                     mProject.setVariable("AgentIsSpeaking", true);
                                 }
                             }
-                            if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
-                                mLogger.success("Handling Charamel Marker " + twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
-                                mProject.getRunTimePlayer().getActivityScheduler().handle(twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
+                            if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
+                                mLogger.success("Handling Charamel Marker " + tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
+                                mProject.getRunTimePlayer().getActivityScheduler().handle(tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
                             }
-                            if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
+                            if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
                                 // TODO - get id - for now there is none
                                 // Set character voice activity variable
                                 //mProject.setVariable("susanne_voice_activity", new StringValue(""));
@@ -704,13 +539,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                     }
                 }
             }
-
-            if (twf.hasObjectFeedback()) {
+            
+            if (tworld_final_feedback.hasObjectFeedback()) {
                 HashMap<String, AbstractValue> values = new HashMap<>();
-                values.put("type", new StringValue(twf.mFeedbackObject.mObjectFeedback.mName));
-                values.put("elicitor", new StringValue(twf.mFeedbackObject.mObjectFeedback.mTriggerObject));
-                values.put("name", new StringValue(twf.mFeedbackObject.mName));
-
+                values.put("type", new StringValue(tworld_final_feedback.mFeedbackObject.mObjectFeedback.mName));
+                values.put("elicitor", new StringValue(tworld_final_feedback.mFeedbackObject.mObjectFeedback.mTriggerObject));
+                values.put("name", new StringValue(tworld_final_feedback.mFeedbackObject.mName));
+                
                 try {
                     //RunTimeInstance runTime = RunTimeInstance.getInstance();
                     StructValue struct = new StructValue(values);
@@ -728,5 +563,21 @@ public final class TWorldExecutor extends ActivityExecutor {
         for (final TWorldHandler client : mClientMap.values()) {
             client.send(message);
         }
+    }
+
+    // Show a waiting dialog
+    private void dialog(final String message) {
+        WaitingDialog InfoDialog = new WaitingDialog(message);
+        InfoDialog.setModal(true);
+        InfoDialog.setVisible(true);
+    }
+
+    // Check if a file exists
+    private boolean exists(final String path) {
+        final File file = new File(path);
+        if (file.exists() && file.isDirectory()) {
+            return true;
+        }
+        return false;
     }
 }

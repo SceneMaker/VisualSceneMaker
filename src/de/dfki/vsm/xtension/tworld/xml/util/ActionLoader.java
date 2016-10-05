@@ -69,7 +69,7 @@ public class ActionLoader {
         return classPath;
     }
 
-    public Action loadAnimation(String cmd) {
+    public Action loadTWorldAnimation(String cmd) {
         Action a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
@@ -96,7 +96,7 @@ public class ActionLoader {
         return a;
     }
 
-    public Action loadAnimation(String cmd, String value) {
+    public Action loadTWorldAnimation(String cmd, String value) {
         Action a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
