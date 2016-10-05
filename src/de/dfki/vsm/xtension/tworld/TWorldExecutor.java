@@ -12,6 +12,7 @@ import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.tworld.xml.command.TWorldCommand;
 import de.dfki.vsm.xtension.tworld.xml.command.object.Object;
@@ -36,7 +37,6 @@ import java.util.Properties;
  */
 public final class TWorldExecutor extends ActivityExecutor {
 
- 
     // The tworld listener
     private TWorldListener mListener;
     // The map of processes
@@ -47,8 +47,8 @@ public final class TWorldExecutor extends ActivityExecutor {
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     // The word mapping properties
     Properties mWordMapping = new Properties();
-     //
-    private TWorldTimer mTimer;
+    // The flag if we user the JPL
+    private final boolean mUseJPL;
 
     // Construct the executor
     public TWorldExecutor(
@@ -56,12 +56,14 @@ public final class TWorldExecutor extends ActivityExecutor {
             final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
+        // Get the JPL flag value
+        mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
     }
 
     // Launch the executor 
     @Override
     public final void launch() {
-        /*
+
         // Get the plugin configuration
         final String tworlddir = mConfig.getProperty("tworlddir");
         final String tworldexe = mConfig.getProperty("tworldexe");
@@ -102,10 +104,6 @@ public final class TWorldExecutor extends ActivityExecutor {
             }
         }
         broadcast("Start");
-        //
-        */
-        mTimer = new TWorldTimer(10);
-        mTimer.start();
     }
 
     private final boolean exists(final String path) {
@@ -119,6 +117,7 @@ public final class TWorldExecutor extends ActivityExecutor {
     // Unload the executor 
     @Override
     public void unload() {
+
         // Abort the client threads
         for (final TWorldHandler client : mClientMap.values()) {
             client.abort();
@@ -167,13 +166,6 @@ public final class TWorldExecutor extends ActivityExecutor {
 
         // Clear the map of processes 
         mProcessMap.clear();
-        //
-        mTimer.abort();
-        try {
-            mTimer.join();
-        } catch (final InterruptedException exc) {
-            mLogger.failure(exc.toString());
-        }
     }
 
     @Override
@@ -233,12 +225,14 @@ public final class TWorldExecutor extends ActivityExecutor {
                 // build action
                 twcoa = ActionLoader.getInstance().loadCharamelAnimation("Speak", sa.getBlocks(), sa.getPunct(), aid);
 
+                //GM@PG:WHY???
                 // wait a little bit ...
                 try {
                     Thread.sleep(350);
                 } catch (final InterruptedException exc) {
 
                 }
+
             }
         } else {
             if (cmd.equalsIgnoreCase("StopSpeaking")) {
@@ -618,7 +612,7 @@ public final class TWorldExecutor extends ActivityExecutor {
     public void handle(final String message, final TWorldHandler client) {
         // sanitize message
         String clean = message.replaceAll("..xml\\s+version........", "");
-        mLogger.warning("Handling " + clean + "");
+        mLogger.warning("Handling new message:\n" + clean + "");
 
         synchronized (mActivityWorkerMap) {
             TWorldFeedback twf = new TWorldFeedback();
@@ -637,25 +631,32 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String actionStatusType = twf.mFeedbackAction.mActionFeedback.mName;
                 String actionStatusValue = twf.mFeedbackAction.mActionFeedback.mValue;
 
-                //mLogger.message("Action type " + actionType + ", id " + id + ", status " + actionStatusType + ", value " + actionStatusValue);
-                // handling caixml feedback
-//                if (actionType.equalsIgnoreCase("caixml") && actionStatusType.equalsIgnoreCase("action_finished")) {
-//                    if (mActivityWorkerMap.containsKey(id)) {
-//                        mActivityWorkerMap.remove(id);
-//                    }
-//                    // wake me up ..
-//                    mActivityWorkerMap.notifyAll();
-//                }
                 // handling every /*ambient_setup*/ feedback
-                if (/*actionType.equalsIgnoreCase("ambient_setup") && */actionStatusType.equalsIgnoreCase("action_finished")) {
+                if (actionStatusType.equalsIgnoreCase("action_finished")) {
                     // check if the acitivy action feedback was speech feedback
                     if (twf.mFeedbackAction.mActionFeedback.hasCaiEvent()) {
                         if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.hasTTSStatus()) {
+                            mLogger.warning("We have a cai event tts status");
                             if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
                                 // TODO - get id - for now there is none
-                                // Set character voice activity variable
-                                mProject.setVariable("susanne_voice_activity", new StringValue("1"));
-                                mProject.setVariable("tom_voice_activity", new StringValue("1"));
+                                // Set character voice activity variable                               
+                                mLogger.warning("Agent starts speaking");
+                                if (mUseJPL) {
+                                    JPLEngine.query("now(Time), "
+                                            + "jdd(["
+                                            + "type:" + "event" + ","
+                                            + "mode:" + "voice" + ","
+                                            + "name:" + "agent" + ","
+                                            + "time:" + "Time" + ","
+                                            + "from:" + "0" + ","
+                                            + "life:" + "0" + ","
+                                            + "conf:" + "1.0" + ","
+                                            + "data:" + "start"
+                                            + "]).");
+                                } else {
+                                    // Set speaking variable
+                                    mProject.setVariable("AgentIsSpeaking", true);
+                                }
                             }
                             if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
                                 mLogger.success("Handling Charamel Marker " + twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
@@ -664,9 +665,25 @@ public final class TWorldExecutor extends ActivityExecutor {
                             if (twf.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
                                 // TODO - get id - for now there is none
                                 // Set character voice activity variable
-                                mProject.setVariable("susanne_voice_activity", new StringValue(""));
-                                mProject.setVariable("tom_voice_activity", new StringValue(""));
-
+                                //mProject.setVariable("susanne_voice_activity", new StringValue(""));
+                                //mProject.setVariable("tom_voice_activity", new StringValue(""));
+                                mLogger.warning("Agent finishes speaking");
+                                if (mUseJPL) {
+                                    JPLEngine.query("now(Time), "
+                                            + "jdd(["
+                                            + "type:" + "event" + ","
+                                            + "mode:" + "voice" + ","
+                                            + "name:" + "agent" + ","
+                                            + "time:" + "Time" + ","
+                                            + "from:" + "0" + ","
+                                            + "life:" + "0" + ","
+                                            + "conf:" + "1.0" + ","
+                                            + "data:" + "stop"
+                                            + "]).");
+                                } else {
+                                    // Set speaking variable
+                                    mProject.setVariable("AgentIsSpeaking", false);
+                                }
                                 // remove the activity
                                 if (mActivityWorkerMap.containsKey(id)) {
                                     mActivityWorkerMap.remove(id);

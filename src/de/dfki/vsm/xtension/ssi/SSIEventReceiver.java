@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.ssi;
 
-import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -17,7 +16,7 @@ import java.util.Arrays;
 /**
  * @author Gregor Mehlmann
  */
-public final class SSIEventReceiver extends Thread {
+final class SSIEventReceiver extends Thread {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
@@ -91,13 +90,12 @@ public final class SSIEventReceiver extends Thread {
             //}
 
             //mLogger.success("Awaiting SSI events ...processing took ... " + processingTime + "ms");
+            
             // Receive a new message
             final String message = recvString();
-            mLogger.message("Receiving " + message);
-            // PG - this is a lot of output!
             // Check message content
             if (message != null) {
-                // start time measure
+                // Start time measure
                 //mTimeCounter = System.nanoTime();
                 try {
                     final ByteArrayInputStream stream = new ByteArrayInputStream(

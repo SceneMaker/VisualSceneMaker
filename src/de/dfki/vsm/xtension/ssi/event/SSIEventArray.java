@@ -4,18 +4,14 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import de.dfki.vsm.util.xml.XMLWriteable;
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class SSIEventArray implements XMLWriteable, XMLParseable {
+public final class SSIEventArray extends SSIEventObject {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
@@ -23,7 +19,7 @@ public final class SSIEventArray implements XMLWriteable, XMLParseable {
     // The event sequence version
     private String mVersion;
     // The event object sequence
-    private final ArrayList<SSIEventObject> mList = new ArrayList();
+    private final ArrayList<SSIEventEntry> mList = new ArrayList();
 
     // Create a new event array
     public SSIEventArray() {
@@ -31,7 +27,7 @@ public final class SSIEventArray implements XMLWriteable, XMLParseable {
     }
 
     // Get event object sequence
-    public final ArrayList<SSIEventObject> getEventList() {
+    public final ArrayList<SSIEventEntry> getEventList() {
         return mList;
     }
 
@@ -39,7 +35,7 @@ public final class SSIEventArray implements XMLWriteable, XMLParseable {
     @Override
     public final void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
         writer.println("<events ssi-v=\"" + mVersion + "\">").push();
-        for (SSIEventObject event : mList) {
+        for (SSIEventEntry event : mList) {
             event.writeXML(writer);
         }
         writer.pop().println("</events>");
@@ -59,7 +55,7 @@ public final class SSIEventArray implements XMLWriteable, XMLParseable {
                     // Check the element name
                     if (element.getTagName().equals("event")) {
                         // Construct an event
-                        final SSIEventObject event = new SSIEventObject();
+                        final SSIEventEntry event = new SSIEventEntry();
                         // Parse the new event
                         event.parseXML(element);
                         // Append the new event
@@ -67,26 +63,6 @@ public final class SSIEventArray implements XMLWriteable, XMLParseable {
                     }
                 }
             });
-        }
-    }
-
-    // Get string representation
-    @Override
-    public final String toString() {
-        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        final IOSIndentWriter writer = new IOSIndentWriter(stream);
-        try {
-            writeXML(writer);
-        } catch (final XMLWriteError exc) {
-            mLogger.failure(exc.toString());
-        }
-        writer.flush();
-        writer.close();
-        try {
-            return stream.toString("UTF-8");
-        } catch (final UnsupportedEncodingException exc) {
-            mLogger.failure(exc.toString());
-            return stream.toString();
         }
     }
 }
