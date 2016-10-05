@@ -6,7 +6,7 @@
 ///**
 // * @author Gregor Mehlmann
 // */
-//public class SSIXMLData implements SSIEventData {
+//public class SSIXMLData implements XMLParseable, XMLWriteable {
 //
 //    // The XML string data
 //    final String mData;

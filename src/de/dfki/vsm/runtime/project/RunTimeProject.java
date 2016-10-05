@@ -15,8 +15,8 @@ import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
-import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.player.ReactivePlayer;
+import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -55,25 +55,21 @@ public class RunTimeProject {
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The default scene player of the project
-    private final RunTimePlayer mRunTimePlayer;
-    //
+    private RunTimePlayer mRunTimePlayer;
+    // The default interpreter of the project
     private Interpreter mInterpreter;
-
     // The runtime plugin map of the project
     private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
 
     // Construct an empty runtime project
     public RunTimeProject() {
-        // Initialize the scene player
-        mRunTimePlayer = new ReactivePlayer(null, this);
+        // Do nothing
     }
 
     // Construct a project from a directory
     public RunTimeProject(final File file) {
         // Remember Path
         mProjectPath = file.getPath();
-        // Initialize the scene players
-        mRunTimePlayer = new ReactivePlayer(null, this);
         // Call the local parsing method
         parse(mProjectPath);
     }
@@ -173,13 +169,21 @@ public class RunTimeProject {
         mProjectPath = file;
 
         // Parse the project from file
-        return (parseProjectConfig(file)
-                && parseSceneFlow(file)
-                && parseSceneScript(file)
-                && parseActiconConfig(file)
-                && parseVisiconConfig(file)
-                && parseGesticonConfig(file)
-                && loadRunTimePlugins());
+        if (parseProjectConfig(file)) {
+            // Initialize the scene player
+            mRunTimePlayer = new ReactivePlayer(
+                    mProjectConfig.getPlayerConfig(), this);
+            //
+            return parseSceneFlow(file)
+                    && parseSceneScript(file)
+                    && parseActiconConfig(file)
+                    && parseVisiconConfig(file)
+                    && parseGesticonConfig(file)
+                    && loadRunTimePlugins();
+        } else {
+            return false;
+        }
+
     }
 
     // First attempt to parse Visual SceneMaker project files for information only

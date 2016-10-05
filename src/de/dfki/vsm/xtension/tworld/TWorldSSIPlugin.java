@@ -3,12 +3,11 @@ package de.dfki.vsm.xtension.tworld;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
-import de.dfki.vsm.xtension.ssi.event.SSIEventObject;
+import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 
 /**
@@ -18,28 +17,38 @@ import java.util.HashMap;
 public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
     // The map of processes
-    private final HashMap<String, Process> mProcessMap = new HashMap();
+    private final HashMap<String, Process> mProcessMap
+            = new HashMap();
 
+    // The flag if we user the JPL
+    private final boolean mUseJPL;
+
+    // Construct SSI plugin
     public TWorldSSIPlugin(
             final PluginConfig config,
             final RunTimeProject project) {
         super(config, project);
+        // Get the JPL flag value
+        mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
     }
 
     // Launch SSI plugin
     @Override
     public void launch() {
-        // Load the plugin configuration
-        final String ssidir = mConfig.getProperty("ssidir");
-        final String ssibat = mConfig.getProperty("ssibat");
-        // Create the plugin's processes
-        try {
-            mProcessMap.put(ssibat, Runtime.getRuntime().exec(
-                    "cmd /c start " + ssibat + "" + "", null, new File(ssidir)));
-        } catch (final IOException exc) {
-            mLogger.failure(exc.toString());
-        }
         super.launch();
+        /*
+         // Load the plugin configuration
+         final String ssidir = mConfig.getProperty("ssidir");
+         final String ssibat = mConfig.getProperty("ssibat");
+         // Create the plugin's processes
+         try {
+         mProcessMap.put(ssibat, Runtime.getRuntime().exec(
+         "cmd /c start " + ssibat + "" + "", null, new File(ssidir)));
+         } catch (final IOException exc) {
+         mLogger.failure(exc.toString());
+         }
+         */
+
     }
 
     // Unload SSI plugin
@@ -71,35 +80,79 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 //        }
     }
 
+    // Handle SSI event array
     @Override
     public void handle(final SSIEventArray array) {
         // Print some information 
-        mLogger.message("Handling SSI events " + array);
-
-        for (final SSIEventObject event : array.getEventList()) {
+        mLogger.message("Handling SSI event array:\n " + array.toString());
+        for (final SSIEventEntry event : array.getEventList()) {
             final SSIEventData obj = event.getData();
-
-            if (event.getSender().equals("audio") && event.getEvent().equals("vad")) {
-                final String activity = event.getState();
-                if (activity.equalsIgnoreCase("completed")) {
+            if (event.getSender().equals("audio")
+                    && event.getEvent().equals("vad")) {
+                if (event.getState().equalsIgnoreCase("completed")) {
                     // User stopped speaking
                     mLogger.success("User stopped speaking");
-                    //
-                    mProject.setVariable("speaking", false);
-                } else if (activity.equalsIgnoreCase("continued")) {
+                    if (mUseJPL) {
+                        JPLEngine.query("now(Time), "
+                                + "jdd(["
+                                + "type:" + "event" + ","
+                                + "mode:" + "voice" + ","
+                                + "name:" + "user" + ","
+                                + "time:" + "Time" + ","
+                                + "from:" + event.getFrom() + ","
+                                + "life:" + event.getDur() + ","
+                                + "conf:" + event.getProb() + ","
+                                + "data:" + "stop"
+                                + "]).");
+                    } else {
+                        // Set speaking variable
+                        mProject.setVariable("UserIsSpeaking", false);
+                    }
+                } else if (event.getState().equalsIgnoreCase("continued")) {
                     // User started speaking
                     mLogger.success("User started speaking");
-                    //
-                    mProject.setVariable("speaking", false);
+                    if (mUseJPL) {
+                        JPLEngine.query("now(Time), "
+                                + "jdd(["
+                                + "type:" + "event" + ","
+                                + "mode:" + "voice" + ","
+                                + "name:" + "user" + ","
+                                + "time:" + "Time" + ","
+                                + "from:" + event.getFrom() + ","
+                                + "life:" + event.getDur() + ","
+                                + "conf:" + event.getProb() + ","
+                                + "data:" + "start"
+                                + "]).");
+                    } else {
+                        // Set speaking variable
+                        mProject.setVariable("UserIsSpeaking", true);
+                    }
                 } else {
+                    // Should not happen
                 }
-
-            } else if (event.getSender().equals("speech") && event.getEvent().equals("act")) {
-                final String keyword = ((SSIStringData) obj).toString();
+            } else if (event.getSender().equals("speech")
+                    && event.getEvent().equals("act")) {
+                final String keyword = ((SSIStringData) obj).toString().trim();
                 // User started speaking
                 mLogger.success("User said '" + keyword + "'");
-                //
-                mProject.setVariable("keyword", keyword);
+                if (mUseJPL) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + ","
+                            + "mode:" + "speech" + ","
+                            + "name:" + "user" + ","
+                            + "time:" + "Time" + ","
+                            + "from:" + event.getFrom() + ","
+                            + "life:" + event.getDur() + ","
+                            + "conf:" + event.getProb() + ","
+                            + "data:" + "'" + keyword + "'"
+                            + "]).");
+                } else {
+                    // Set keyword variable
+                    mProject.setVariable("UserSaidKeyword", keyword);
+                }
+            } else {
+                // Should not happen
             }
             /*
              if (obj instanceof SSIStringData) {

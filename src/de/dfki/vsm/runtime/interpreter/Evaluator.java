@@ -85,8 +85,6 @@ public class Evaluator {
     // Construct the evaluator with the interpreter
     public Evaluator(final Interpreter interpreter) {
         mInterpreter = interpreter;
-        // Load the fact base
-        JPLEngine.load("res/swi/*.pl");
     }
 
     // Execute a command

@@ -1,11 +1,13 @@
 package de.dfki.vsm.xtension.ssi.event.data;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Locale;
 import org.w3c.dom.Element;
@@ -14,15 +16,26 @@ import org.w3c.dom.NodeList;
 /**
  * @author Gregor Mehlmann
  */
-public final class SSITupleData implements SSIEventData, XMLParseable, XMLWriteable {
+public final class SSITupleData extends SSIEventData implements XMLParseable, XMLWriteable {
 
-    final HashMap<String, String> mTupleMap = new HashMap();
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
+    // The tuple data
+    final HashMap<String, String> mTupleMap
+            = new HashMap();
 
+    // Construct the tuple data
+    public SSITupleData() {
+    }
+
+    // Write the tuple data
     @Override
     public void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
         // TODO ...
     }
 
+    // Parse the tuple data
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         // Get The List Of Tuples
@@ -39,22 +52,22 @@ public final class SSITupleData implements SSIEventData, XMLParseable, XMLWritea
         }
     }
 
-   //
+    // Get string representation
     @Override
     public final String toString() {
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         final IOSIndentWriter writer = new IOSIndentWriter(stream);
         try {
             writeXML(writer);
-            writer.flush();
         } catch (final XMLWriteError exc) {
-            exc.printStackTrace();
+            mLogger.failure(exc.toString());
         }
         writer.flush();
         writer.close();
         try {
             return stream.toString("UTF-8");
-        } catch (final Exception exc) {
+        } catch (final UnsupportedEncodingException exc) {
+            mLogger.failure(exc.toString());
             return stream.toString();
         }
     }

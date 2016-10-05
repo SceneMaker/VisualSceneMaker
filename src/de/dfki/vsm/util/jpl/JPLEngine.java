@@ -23,13 +23,11 @@ public final class JPLEngine {
         final JPLLoader loader = new JPLLoader(source);
         // Start The JPL Loader
         loader.start();
-
         // Await The JPL Loader
         try {
             // Join The JPL Loader
             loader.join();
-        } catch (Exception exc) {
-
+        } catch (final InterruptedException exc) {
             // Print Debug Information
             sLogger.failure(exc.toString());
         }

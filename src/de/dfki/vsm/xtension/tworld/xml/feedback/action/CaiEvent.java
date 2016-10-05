@@ -56,7 +56,7 @@ public class CaiEvent implements XMLParseable, XMLWriteable {
 
                 final String name = element.getTagName();
 
-                if (name.equalsIgnoreCase("marytts")) {
+                if (name.equalsIgnoreCase("tts")) {
 
                     Tts t = new Tts();
 

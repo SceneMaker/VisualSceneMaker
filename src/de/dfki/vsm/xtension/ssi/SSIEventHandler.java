@@ -5,7 +5,7 @@ import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 /**
  * @author Gregor Mehlmann
  */
-public interface SSIEventHandler {
+interface SSIEventHandler {
 
     public abstract void handle(final SSIEventArray array);
 }

@@ -22,10 +22,10 @@ public final class ProjectConfig implements ModelObject {
             = LOGDefaultLogger.getInstance();
     // The name of the project  
     private String mProjectName;
+    //
+    private final PlayerConfig mPlayerConfig;
     // The list of plugin configurations
     private final ArrayList<PluginConfig> mPluginList;
-    // The list of device configurations
-//    private final ArrayList<DeviceConfig> mDeviceList;
     // The list of agent configurations
     private final ArrayList<AgentConfig> mAgentList;
 
@@ -35,25 +35,25 @@ public final class ProjectConfig implements ModelObject {
         mProjectName = new String();
         // Initialize The Plugin List
         mPluginList = new ArrayList<>();
-        // Initialize The Player List
-//        mDeviceList = new ArrayList<>();
         // Initialize The Agent List
         mAgentList = new ArrayList<>();
+        // Initialize the player config
+        mPlayerConfig = new PlayerConfig();
     }
 
     // Construct an empty project
     public ProjectConfig(final String name,
             final ArrayList<PluginConfig> plugins,
-            //            final ArrayList<DeviceConfig> devices,
-            final ArrayList<AgentConfig> agents) {
+            final ArrayList<AgentConfig> agents,
+            final PlayerConfig player) {
         // Initialize The Project Name
         mProjectName = name;
         // Initialize The Plugin List
         mPluginList = plugins;
-        // Initialize The Player List
-//        mDeviceList = devices;
         // Initialize The Agent List
         mAgentList = agents;
+        // Initialize the player config
+        mPlayerConfig = player;
     }
 
     // Get the name of the project
@@ -64,6 +64,10 @@ public final class ProjectConfig implements ModelObject {
     // Set the name of the project
     public final void setProjectName(final String name) {
         mProjectName = name;
+    }
+
+    public final PlayerConfig getPlayerConfig() {
+        return mPlayerConfig;
     }
 
     public final AgentConfig getAgentConfig(final String name) {
@@ -84,14 +88,6 @@ public final class ProjectConfig implements ModelObject {
         return null;
     }
 
-//    public final DeviceConfig getDeviceConfig(final String name) {
-//        for (final DeviceConfig config : mDeviceList) {
-//            if (config.getDeviceName().equals(name)) {
-//                return config;
-//            }
-//        }
-//        return null;
-//    }
     // Get the list of agent configurations
     public final ArrayList<AgentConfig> getAgentConfigList() {
         return mAgentList;
@@ -106,60 +102,43 @@ public final class ProjectConfig implements ModelObject {
         return agentNames;
     }
 
-//    // Get the list of device configurations
-//    public ArrayList<DeviceConfig> getDeviceConfigList() {
-//        return mDeviceList;
-//    }
     // Get the list of plugin configurations
     public ArrayList<PluginConfig> getPluginConfigList() {
         return mPluginList;
     }
 
-    // Write the project configuration as XML
+    // Write the project configuration
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
         stream.println("<Project name=\"" + mProjectName + "\">");
         stream.push();
-
-        // Write The Plugins As XML
+        // Write the plugin configurations
         stream.println("<Plugins>").push();
         for (final PluginConfig plugin : mPluginList) {
             plugin.writeXML(stream);
-            //stream.endl();
         }
         stream.pop().println("</Plugins>");
-
-//        // Write The Players As XML
-//        stream.println("<Devices>").push();
-//        for (final DeviceConfig player : mDeviceList) {
-//            player.writeXML(stream);
-//            //stream.endl();
-//        }
-//        stream.pop().println("</Devices>");
-        // Write The Agents As XML
+        // Write the agent configurations
         stream.println("<Agents>").push();
         for (final AgentConfig agent : mAgentList) {
             agent.writeXML(stream);
             //stream.endl();
         }
         stream.pop().println("</Agents>");
-        //
+        // Write the player configurations
+        mPlayerConfig.writeXML(stream);
         stream.pop().print("</Project>").flush();
     }
 
-    public void cleanPlayerList() {
-//        mDeviceList.clear();
-    }
-
-    public boolean deleteDevice(PluginConfig plugin){
+    public boolean deleteDevice(PluginConfig plugin) {
         return mPluginList.remove(plugin);
     }
 
-    public  boolean deleteAgent(AgentConfig agent){
+    public boolean deleteAgent(AgentConfig agent) {
         return mAgentList.remove(agent);
     }
 
-    // Parse the project coonfiguration from XML
+    // Parse the project configuration
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
         // Get The Type Of The Config
@@ -187,20 +166,7 @@ public final class ProjectConfig implements ModelObject {
                                 mPluginList.add(plugin);
                             }
                         });
-                    } //                    else if (tag.equals("Devices")) {
-                    //                        XMLParseAction.processChildNodes(element, "Device", new XMLParseAction() {
-                    //                            @Override
-                    //                            public void run(Element element) throws XMLParseError {
-                    //                                // Create A New Project Player
-                    //                                final DeviceConfig device = new DeviceConfig();
-                    //                                // And Parse The Project Player 
-                    //                                device.parseXML(element);
-                    //                                // And Add It To The Player List
-                    //                                mDeviceList.add(device);
-                    //                            }
-                    //                        });
-                    //                    } 
-                    else if (tag.equals("Agents")) {
+                    } else if (tag.equals("Agents")) {
                         XMLParseAction.processChildNodes(element, "Agent", new XMLParseAction() {
                             @Override
                             public void run(Element element) throws XMLParseError {
@@ -212,24 +178,32 @@ public final class ProjectConfig implements ModelObject {
                                 mAgentList.add(agent);
                             }
                         });
+                    } else if (tag.equals("Player")) {
+                        // Parse the player configuration
+                        mPlayerConfig.parseXML(element);
                     }
                 }
             });
         }
     }
 
-    // Get the string representation 
+     // Get string representation
     @Override
     public final String toString() {
-        // Create a new byte array stream buffer
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        // Try to write the project to the stream
-        XMLUtilities.writeToXMLStream(this, buffer);
-        // Return the stream string representation
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        final IOSIndentWriter writer = new IOSIndentWriter(stream);
         try {
-            return buffer.toString("UTF-8");
+            writeXML(writer);
+        } catch (final XMLWriteError exc) {
+            mLogger.failure(exc.toString());
+        }
+        writer.flush();
+        writer.close();
+        try {
+            return stream.toString("UTF-8");
         } catch (final UnsupportedEncodingException exc) {
-            return exc.getMessage();
+            mLogger.failure(exc.toString());
+            return stream.toString();
         }
     }
 
@@ -237,6 +211,6 @@ public final class ProjectConfig implements ModelObject {
     @Override
     public ProjectConfig getCopy() {
         // TODO: Use copies of the lists
-        return new ProjectConfig(mProjectName, null, null);
+        return new ProjectConfig(mProjectName, null, null, null);
     }
 }

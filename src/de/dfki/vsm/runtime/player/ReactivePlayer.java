@@ -1,6 +1,6 @@
 package de.dfki.vsm.runtime.player;
 
-import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -19,6 +19,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
+import de.dfki.vsm.util.jpl.JPLEngine;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -35,12 +36,26 @@ public final class ReactivePlayer extends RunTimePlayer {
         return sId++;
     }
 
+    // Flag if we use the JPL
+    private boolean mUseJPL = false;
+    // The runtime timer
+    private RunTimeTimer mTimer = null;
+
     // Create the scene player
-    public ReactivePlayer(final PluginConfig config, final RunTimeProject project) {
+    public ReactivePlayer(
+            final PlayerConfig config,
+            final RunTimeProject project) {
         // Initialize the player
         super(config, project);
         // Print some information
         mLogger.message("Creating reactive player '" + this + "' for project '" + project + "'");
+        // Get the JPL flag value
+        mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
+    }
+
+    @Override
+    public final long getTime() {
+        return mTimer.getTime();
     }
 
     // Launch the player
@@ -48,6 +63,13 @@ public final class ReactivePlayer extends RunTimePlayer {
     public final void launch() {
         // Print some information
         mLogger.message("Launching reactive player '" + this + "'");
+        // Load the fact base
+        if (mUseJPL) {
+            JPLEngine.load("swi/*.pl");
+        }
+        // Start the system timer
+        mTimer = new RunTimeTimer(10, mUseJPL);
+        mTimer.start();
     }
 
     // Unload the player
@@ -55,6 +77,13 @@ public final class ReactivePlayer extends RunTimePlayer {
     public final void unload() {
         // Print some information
         mLogger.message("Unloading reactive player '" + this + "'");
+        // Abort the system timer
+        mTimer.abort();
+        try {
+            mTimer.join();
+        } catch (final InterruptedException exc) {
+            mLogger.failure(exc.toString());
+        }
     }
 
     // Call the play action activity method

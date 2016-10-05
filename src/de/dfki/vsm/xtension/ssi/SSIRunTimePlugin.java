@@ -9,7 +9,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
  */
 public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEventHandler {
 
-    // The SSI event handler
+    // The SSI event receiver
     private SSIEventReceiver mReceiver;
     // The SSI event handler
     private SSIEventSender mSender;
@@ -20,7 +20,7 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEvent
         // Initialize the runtime plugin
         super(config, project);
     }
-
+    
     // Launch SSI plugin
     @Override
     public void launch() {
@@ -31,15 +31,14 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEvent
         final String slport = mConfig.getProperty("slport");
         final String srhost = mConfig.getProperty("srhost");
         final String srport = mConfig.getProperty("srport");
-
-        // Initialize the event handler
-        mReceiver = new SSIEventReceiver(this,//mPlugin,
+        // Initialize the event receiver
+        mReceiver = new SSIEventReceiver(this,
                 hlhost, Integer.parseInt(hlport));
         // Initialize the event sender
-        mSender = new SSIEventSender(this,//mPlugin,
+        mSender = new SSIEventSender(
                 slhost, Integer.parseInt(slport),
                 srhost, Integer.parseInt(srport));
-        // Start the SSI event handler
+        // Start the SSI event receiver
         mReceiver.start();
         // Start the SSI event sender
         mSender.start();
@@ -48,13 +47,13 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEvent
     // Unload SSI plugin
     @Override
     public void unload() {
-        // Abort the SSI event handler
+        // Abort the SSI event receiver
         mReceiver.abort();
         // Abort the SSI event sender
         mSender.abort();
         // Join the SSI event threads
         try {
-            // Join the SSI event handler
+            // Join the SSI event receiver
             mReceiver.join();
             // Join the SSI event sender
             mSender.join();

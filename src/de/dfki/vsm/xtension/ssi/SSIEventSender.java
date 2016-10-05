@@ -1,16 +1,19 @@
 package de.dfki.vsm.xtension.ssi;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.util.Arrays;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class SSIEventSender extends Thread {
+final class SSIEventSender extends Thread {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
@@ -27,16 +30,11 @@ public final class SSIEventSender extends Thread {
     private final int mRPort;
     private final String mRHost;
     private final SocketAddress mRAddr;
-    // The reference to the player
-    private final SSIRunTimePlugin mPlugin;
 
     // Construct the proxy server
     public SSIEventSender(
-            final SSIRunTimePlugin player,
             final String lHost, final int lPort,
             final String rHost, final int rPort) {
-        // Initialize proxy reference
-        mPlugin = player;
         // Initialize the local data
         mLHost = lHost;
         mLPort = lPort;
@@ -65,7 +63,7 @@ public final class SSIEventSender extends Thread {
                     + " Remote Address " + mRHost + ":" + mRPort);
             // Start the server thread
             super.start();
-        } catch (final Exception exc) {
+        } catch (final SocketException exc) {
             mLogger.failure(exc.toString());
         }
     }
@@ -85,61 +83,49 @@ public final class SSIEventSender extends Thread {
     // Execute the server thread
     @Override
     public final void run() {
-        // Receive while not done ...
+        // Receive while not done
         while (!mDone) {
             // Receive a new message
             final String message = recvString();
+            // Chek the new message
             if (message != null) {
-                //
-                //final long time = mPlugin.getCurrentTime();
-                // Parse the new message
-                //final SSIEventObject event = new SSIEventObject(time, message);
-                // Print some information
-                // mLogger.message("SSI event handler receiving '" + event.toString() + "'");
-                // Delegate the handling            
-                //mPlayer.handle(event);
+                // Do nothing here
             }
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
+    // Receive a message
     public final String recv() {
         if (mSocket != null) {
-            // Create The Datagram Packet
+            // Create the datagram packet
             final byte[] buffer = new byte[4096];
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);
-            // Try To Receive New Data
+            // Try to receive new data
             try {
-                // Receive The Datagram Packet
+                // Receive the datagram packet
                 mSocket.receive(packet);
-                // Get The Datagram's String 
+                // Get the datagram's string 
                 final String message = new String(
                         packet.getData(), 0,
                         packet.getLength(), "UTF-8");
-                // Debug Some Information
-                mLogger.warning("SSI Event Sender Receiving '" + message + "'");
-                // Return Received Data
+                // Debug some information
+                mLogger.warning("SSI event sender receiving '" + message + "'");
+                // Return received data
                 return message;
-            } catch (final Exception exc) {
-                // Debug Some Information
+            } catch (final IOException exc) {
+                // Debug some information
                 mLogger.warning(exc.toString());
-                // Debug Some Information
-                mLogger.warning("SSI Event Sender Has Bad State");
-                // Otherwise Return Null
+                // Otherwise return null
                 return null;
             }
         } else {
-            // Debug Some Information
-            mLogger.warning("SSI Event Sender Is Null");
-            // Otherwise Return Null
+            // Otherwise return null
             return null;
         }
     }
 
-    // Send a message via the server
+    // Send a message 
     public final boolean sendString(final String string) {
         try {
             // Create the byte buffer
@@ -153,7 +139,7 @@ public final class SSIEventSender extends Thread {
             //mLogger.message("SSI event handler sending '" + string + "'");
             // Return true at success
             return true;
-        } catch (final Exception exc) {
+        } catch (final IOException exc) {
             // Print some information
             mLogger.failure(exc.toString());
             // Return false at failure 
@@ -161,7 +147,7 @@ public final class SSIEventSender extends Thread {
         }
     }
 
-    // Receive a sized byte array
+    // Receive a byte array
     private byte[] recvBytes() {
         try {
             // Construct a byte array
@@ -173,7 +159,7 @@ public final class SSIEventSender extends Thread {
             mSocket.receive(packet);
             // Return the buffer now
             return Arrays.copyOf(buffer, packet.getLength());
-        } catch (final Exception exc) {
+        } catch (final IOException exc) {
             // Print some information
             mLogger.failure(exc.toString());
             // Return null at failure 
@@ -181,7 +167,7 @@ public final class SSIEventSender extends Thread {
         }
     }
 
-    // Receive a string from socket
+    // Receive a string 
     private String recvString() {
         try {
             // Receive a byte buffer
@@ -194,7 +180,7 @@ public final class SSIEventSender extends Thread {
                 // And return message
                 return message;
             }
-        } catch (final Exception exc) {
+        } catch (final UnsupportedEncodingException exc) {
             // Print some information
             mLogger.failure(exc.toString());
         }
