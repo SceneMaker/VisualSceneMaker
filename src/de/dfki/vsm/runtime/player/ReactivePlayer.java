@@ -94,7 +94,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Make unique worker name
         final String task = process.getName() + ":" + name + "@";
         // Print some information
-        mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
+         mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
 
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
@@ -140,22 +140,22 @@ public final class ReactivePlayer extends RunTimePlayer {
         while (!finished) {
             try {
                 // Print some information
-                mLogger.message("Awaiting player worker '" + worker + "'");
+                //mLogger.message("Awaiting player worker '" + worker + "'");
                 // Join the playback task
                 worker.join();
                 // Continue after joining
                 finished = true;
                 // Print some information
-                mLogger.message("Joining player worker '" + worker + "'");
+                //mLogger.message("Joining player worker '" + worker + "'");
             } catch (final InterruptedException exc) {
                 // Print some information
-                mLogger.warning("Aborting player worker '" + worker + "'");
+                //mLogger.warning("Aborting player worker '" + worker + "'");
                 // Terminate playback task
                 worker.abort();
             }
         }
         // Print some information
-        mLogger.message("Continuing '" + process + "'");
+        //mLogger.message("Continuing '" + process + "'");
     }
 
     // Call the play scene group method
@@ -190,7 +190,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                     // Serially play the utterances
                     for (SceneUttr uttr : turn.getUttrList()) {
 
-                        mLogger.message("Utterance " + uttr.getText().trim());
+                        //mLogger.message("Utterance " + uttr.getText().trim());
 
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
@@ -260,21 +260,21 @@ public final class ReactivePlayer extends RunTimePlayer {
         while (!finished) {
             try {
                 // Print some information
-                mLogger.message("Awaiting player worker '" + worker + "'");
+                //mLogger.message("Awaiting player worker '" + worker + "'");
                 // Join the playback task
                 worker.join();
                 // Continue after joining
                 finished = true;
                 // Print some information
-                mLogger.message("Joining player worker '" + worker + "'");
+                //mLogger.message("Joining player worker '" + worker + "'");
             } catch (final InterruptedException exc) {
                 // Print some information
-                mLogger.warning("Aborting player worker '" + worker + "'");
+                //mLogger.warning("Aborting player worker '" + worker + "'");
                 // Terminate playback task
                 worker.abort();
             }
         }
         // Print some information
-        mLogger.message("Continuing '" + process + "'");
+        //mLogger.message("Continuing '" + process + "'");
     }
 }

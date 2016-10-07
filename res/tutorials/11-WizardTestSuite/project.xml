@@ -12,4 +12,6 @@
     <Agent name="max" device="wizard">
     </Agent>
   </Agents>
+  <Player>
+  </Player>
 </Project>

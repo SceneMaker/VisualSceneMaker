@@ -95,13 +95,13 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                         JPLEngine.query("now(Time), "
                                 + "jdd(["
                                 + "type:" + "event" + ","
-                                + "mode:" + "voice" + ","
                                 + "name:" + "user" + ","
+                                + "mode:" + "voice" + ","
+                                + "data:" + "stop" + ","
                                 + "time:" + "Time" + ","
                                 + "from:" + event.getFrom() + ","
                                 + "life:" + event.getDur() + ","
-                                + "conf:" + event.getProb() + ","
-                                + "data:" + "stop"
+                                + "conf:" + event.getProb()
                                 + "]).");
                     } else {
                         // Set speaking variable
@@ -114,13 +114,13 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                         JPLEngine.query("now(Time), "
                                 + "jdd(["
                                 + "type:" + "event" + ","
-                                + "mode:" + "voice" + ","
                                 + "name:" + "user" + ","
+                                + "mode:" + "voice" + ","
+                                + "data:" + "start" + ","
                                 + "time:" + "Time" + ","
                                 + "from:" + event.getFrom() + ","
                                 + "life:" + event.getDur() + ","
-                                + "conf:" + event.getProb() + ","
-                                + "data:" + "start"
+                                + "conf:" + event.getProb()
                                 + "]).");
                     } else {
                         // Set speaking variable
@@ -138,13 +138,13 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                     JPLEngine.query("now(Time), "
                             + "jdd(["
                             + "type:" + "event" + ","
-                            + "mode:" + "speech" + ","
                             + "name:" + "user" + ","
+                            + "mode:" + "speech" + ","
+                            + "data:" + "'" + keyword + "'" + ","
                             + "time:" + "Time" + ","
                             + "from:" + event.getFrom() + ","
                             + "life:" + event.getDur() + ","
-                            + "conf:" + event.getProb() + ","
-                            + "data:" + "'" + keyword + "'"
+                            + "conf:" + event.getProb()
                             + "]).");
                 } else {
                     // Set keyword variable

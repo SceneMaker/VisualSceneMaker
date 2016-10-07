@@ -110,7 +110,7 @@ final class SSIEventSender extends Thread {
                         packet.getData(), 0,
                         packet.getLength(), "UTF-8");
                 // Debug some information
-                mLogger.warning("SSI event sender receiving '" + message + "'");
+                //mLogger.warning("SSI event sender receiving '" + message + "'");
                 // Return received data
                 return message;
             } catch (final IOException exc) {

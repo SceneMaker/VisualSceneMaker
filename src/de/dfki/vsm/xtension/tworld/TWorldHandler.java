@@ -93,7 +93,7 @@ public class TWorldHandler extends Thread {
             mOutStream.newLine();
             mOutStream.flush();
             // Print some information
-            mLogger.message("Sending '" + string + "'");
+            //mLogger.message("Sending '" + string + "'");
             // Return true at success
             return true;
         } catch (final IOException exc) {
