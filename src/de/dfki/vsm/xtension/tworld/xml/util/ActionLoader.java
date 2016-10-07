@@ -21,7 +21,7 @@ public class ActionLoader {
     private final static String sTWORLDCMDPATH = "de.dfki.vsm.xtension.tworld.xml.command.object.action";
     private final static String sTWORLDCHARAMELCMDPATH = "de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel";
     private static ActionLoader sInstance = null;
-    private static long sID = 0;
+    private volatile static long sID = 0;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -36,7 +36,7 @@ public class ActionLoader {
         return sInstance;
     }
 
-    public String getNextID() {
+    public synchronized String getNextID() {
         sID++;
         return "tw" + sID;
     }
