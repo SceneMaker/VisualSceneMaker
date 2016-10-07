@@ -37,7 +37,7 @@ public final class ActivityScheduler {
         //final MarkerFeedback feedback = (MarkerFeedback) object;
         //final String marker = feedback.getMarker();
         // Print some information
-        mLogger.message("Marker '" + marker + "' detected");
+        //mLogger.message("Marker '" + marker + "' detected");
         // Start the assigned task
         synchronized (mWorkerMap) {
             mWorkerMap.remove(marker).start();
@@ -52,9 +52,9 @@ public final class ActivityScheduler {
             final AbstractActivity activity,
             final ActivityExecutor executor) {
         // Print some information
-        mLogger.message("Scheduling '" + activity + "'"
-                + " with timeout '" + timeout + "'"
-                + " on executor '" + executor + "'");
+        //mLogger.message("Scheduling '" + activity + "'"
+        //        + " with timeout '" + timeout + "'"
+        //        + " on executor '" + executor + "'");
         // Create a new activity task
         final ActivityWorker task = new ActivityWorker(
                 timeout, list, activity, executor);
@@ -63,29 +63,29 @@ public final class ActivityScheduler {
         // Check if we need to wait
         if (activity.getType() == Type.blocking) {
             // Print some information
-            mLogger.message("Blocking calling thread'" + Thread.currentThread() + "'");
+            //mLogger.message("Blocking calling thread'" + Thread.currentThread() + "'");
             // Wait for termination
             boolean finished = false;
             while (!finished) {
                 try {
                     // Print some information
-                    mLogger.message("Awaiting activity worker '" + task + "'");
+                    //mLogger.message("Awaiting activity worker '" + task + "'");
                     // Join the job worker
                     task.join();
                     // Finish this execution
                     // after an interruption
                     finished = true;
                     // Print some information
-                    mLogger.message("Joining activity worker '" + task + "'");
+                     // mLogger.message("Joining activity worker '" + task + "'");
                 } catch (final InterruptedException exc) {
                     // Print some information
-                    mLogger.warning("Aborting activity worker '" + task + "'");
+                     // mLogger.warning("Aborting activity worker '" + task + "'");
                     // Terminate job worker
                     task.abort();
                 }
             }
             // Print some information
-            mLogger.message("Continuing calling thread'" + Thread.currentThread() + "'");
+            //mLogger.message("Continuing calling thread'" + Thread.currentThread() + "'");
         }
     }
 
@@ -95,9 +95,9 @@ public final class ActivityScheduler {
             final ActionActivity activity,
             final ActivityExecutor executor) {
         // Print some information
-        mLogger.message("Registering '" + activity + "'"
-                + " with marker '" + marker + "'"
-                + " on executor '" + executor + "'");
+         //mLogger.message("Registering '" + activity + "'"
+         //        + " with marker '" + marker + "'"
+         //        + " on executor '" + executor + "'");
         // Create a new activity task
         final ActivityWorker task = new ActivityWorker(
                 -1, null, activity, executor);

@@ -25,13 +25,24 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * @author Gregor Mehlmann
@@ -162,13 +173,13 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Clear the map of processes 
         mProcessMap.clear();
     }
-    
+
     @Override
     public final synchronized String marker(final long id) {
         // TWorld style bookmarks
         return "$(" + id + ")";
     }
-    
+
     @Override
     public final void execute(final AbstractActivity activity) {
         // Get action information
@@ -186,7 +197,7 @@ public final class TWorldExecutor extends ActivityExecutor {
             final SpeechActivity speech_activity = (SpeechActivity) activity;
             final String speech_text = speech_activity.getTextOnly("$(").trim();
             final List<String> time_marks = speech_activity.getTimeMarks("$(");
-            
+
             if (speech_text.isEmpty()) {
                 // If speech_text is empty we assume that the activity has 
                 // empty speech text but has marker activities registered
@@ -380,7 +391,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                 // Unknown activity_name
             }
         }
-        mLogger.message("Building command " + activity_name + " for actor " + activity_actor);
+        //mLogger.message("Building command " + activity_name + " for actor " + activity_actor);
         // Finalize build activity_name
         final Object tworld_cmd_object = new Object(activity_actor, tworld_cmd_action);
         tworld_final_cmd = new TWorldCommand();
@@ -389,7 +400,6 @@ public final class TWorldExecutor extends ActivityExecutor {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final IOSIndentWriter iosw = new IOSIndentWriter(out);
         XMLUtilities.writeToXMLWriter(tworld_final_cmd, iosw);
-        mLogger.message("Executing command " + activity_name + " on actor " + activity_actor);
         // GM_: Why is this necessary
         // Fuck German Umlaute and Encoding
         String message = out.toString().
@@ -399,11 +409,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 replace("Ö", "Oe").
                 replace("Ä", "Ae").
                 replace("Ü", "Ue").
-                replace("ß", "ss").
-                replace("\n", " ").
-                replace("   ", " ").
-                replace("  ", " ");
-        mLogger.message(message);
+                replace("ß", "ss");
+        //.
+        //replace("\n", " ").
+        //replace("   ", " ").
+        //replace("  ", " ");
+        message = prettyPrint(message);
+        mLogger.warning("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + message);
 
         // Send activity_name to tworld 
         synchronized (mActivityWorkerMap) {
@@ -415,7 +427,7 @@ public final class TWorldExecutor extends ActivityExecutor {
 
             // wait until we got feedback
             mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " waiting ....");
-            
+
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
                     mActivityWorkerMap.wait();
@@ -423,7 +435,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                     mLogger.failure(exc.toString());
                 }
             }
-            
+
             mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " done ....");
         }
         // Return when terminated
@@ -443,12 +455,12 @@ public final class TWorldExecutor extends ActivityExecutor {
 
     // Handle some message
     public final void handle(
-            final String input, 
+            final String input,
             final TWorldHandler client) {
         // Sanitize the message
         final String message = input.replaceAll("..xml\\s+version........", "");
         // Print some information
-        mLogger.warning("Handling new message:\n" + message + "");
+        mLogger.warning("Handling new message:\n" + prettyPrint(message) + "");
         // Notify the relevant threads
         synchronized (mActivityWorkerMap) {
             final TWorldFeedback tworld_final_feedback = new TWorldFeedback();
@@ -471,22 +483,21 @@ public final class TWorldExecutor extends ActivityExecutor {
                     // check if the acitivy action feedback was speech feedback
                     if (tworld_final_feedback.mFeedbackAction.mActionFeedback.hasCaiEvent()) {
                         if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.hasTTSStatus()) {
-                            mLogger.warning("We have a cai event tts status");
                             if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
                                 // TODO - get id - for now there is none
                                 // Set character voice activity variable                               
-                                mLogger.warning("Agent starts speaking");
+                                //mLogger.warning("Agent starts speaking");
                                 if (mUseJPL) {
-                                    JPLEngine.query("now(Time), "
+                                     JPLEngine.query("now(Time), "
                                             + "jdd(["
                                             + "type:" + "event" + ","
-                                            + "mode:" + "voice" + ","
                                             + "name:" + "agent" + ","
+                                            + "mode:" + "voice" + ","
+                                            + "data:" + "start" + ","
                                             + "time:" + "Time" + ","
                                             + "from:" + "0" + ","
                                             + "life:" + "0" + ","
-                                            + "conf:" + "1.0" + ","
-                                            + "data:" + "start"
+                                            + "conf:" + "1.0"
                                             + "]).");
                                 } else {
                                     // Set speaking variable
@@ -502,18 +513,18 @@ public final class TWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable
                                 //mProject.setVariable("susanne_voice_activity", new StringValue(""));
                                 //mProject.setVariable("tom_voice_activity", new StringValue(""));
-                                mLogger.warning("Agent finishes speaking");
+                                //mLogger.warning("Agent finishes speaking");
                                 if (mUseJPL) {
                                     JPLEngine.query("now(Time), "
                                             + "jdd(["
                                             + "type:" + "event" + ","
-                                            + "mode:" + "voice" + ","
                                             + "name:" + "agent" + ","
+                                            + "mode:" + "voice" + ","
+                                            + "data:" + "stop" + ","
                                             + "time:" + "Time" + ","
                                             + "from:" + "0" + ","
                                             + "life:" + "0" + ","
-                                            + "conf:" + "1.0" + ","
-                                            + "data:" + "stop"
+                                            + "conf:" + "1.0"
                                             + "]).");
                                 } else {
                                     // Set speaking variable
@@ -539,13 +550,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                     }
                 }
             }
-            
+
             if (tworld_final_feedback.hasObjectFeedback()) {
                 HashMap<String, AbstractValue> values = new HashMap<>();
                 values.put("type", new StringValue(tworld_final_feedback.mFeedbackObject.mObjectFeedback.mName));
                 values.put("elicitor", new StringValue(tworld_final_feedback.mFeedbackObject.mObjectFeedback.mTriggerObject));
                 values.put("name", new StringValue(tworld_final_feedback.mFeedbackObject.mName));
-                
+
                 try {
                     //RunTimeInstance runTime = RunTimeInstance.getInstance();
                     StructValue struct = new StructValue(values);
@@ -579,5 +590,34 @@ public final class TWorldExecutor extends ActivityExecutor {
             return true;
         }
         return false;
+    }
+
+    // Pretty print XM event
+    public final String prettyPrint(final String string) {
+        try {
+            // Get the string input stream
+            final ByteArrayInputStream stream = new ByteArrayInputStream(
+                    string.getBytes("UTF-8"));
+            // Construct the XML pipeline
+            final DocumentBuilder parser
+                    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            final Transformer transformer
+                    = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            // Parse the XML document
+            final StreamResult result
+                    = new StreamResult(new StringWriter());
+            final Document document = parser.parse(stream);
+            final DOMSource source = new DOMSource(document);
+            // Transform the document
+            transformer.transform(source, result);
+            // Return the representation
+            return result.getWriter().toString();
+        } catch (final ParserConfigurationException | IllegalArgumentException | SAXException | IOException | TransformerException exc) {
+            mLogger.failure(exc.toString());
+            // Return failure if the parsing failed
+            return null;
+        }
     }
 }

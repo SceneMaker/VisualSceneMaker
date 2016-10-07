@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="ReetiTestSuite" name="WizardTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 28 Sep 2016 15:58:12" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="ReetiTestSuite" name="WizardTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fr, 7 Okt 2016 13:47:12" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -138,7 +138,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="480" yPos="30"/>
+        <Position xPos="570" yPos="30"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="521" yPos="259"/>
@@ -584,13 +584,13 @@
           <EEdge target="S10" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="403" yPos="197" ctrlXPos="360" ctrlYPos="239"/>
+              <ControlPoint xPos="493" yPos="197" ctrlXPos="450" ctrlYPos="239"/>
               <ControlPoint xPos="281" yPos="300" ctrlXPos="315" ctrlYPos="240"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="390" yPos="120"/>
+            <Position xPos="480" yPos="120"/>
           </Graphics>
         </Node>
         <Node id="N37" name="Signal" history="false">
@@ -643,7 +643,7 @@
             <Graphics>
               <Connection>
                 <ControlPoint xPos="660" yPos="319" ctrlXPos="565" ctrlYPos="264"/>
-                <ControlPoint xPos="474" yPos="188" ctrlXPos="556" ctrlYPos="236"/>
+                <ControlPoint xPos="564" yPos="188" ctrlXPos="646" ctrlYPos="236"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -1856,7 +1856,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="480" yPos="120"/>
+        <Position xPos="390" yPos="120"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="10" yPos="10"/>

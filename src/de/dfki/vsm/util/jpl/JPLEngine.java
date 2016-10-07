@@ -82,6 +82,8 @@ public final class JPLEngine {
         // Get all query solutions 
         try {
             final Map<String, Term>[] solutions = query.allSolutions();
+            // Print Debug Information
+            //sLogger.message("Query '" + querystr+ "' has '" + solutions.length + "' solutions");
             for (int i = 0; i < solutions.length; i++) {
                 final Map<String, Term> solution = solutions[i];
                 // Print the solution bindings
