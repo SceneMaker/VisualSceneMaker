@@ -1,67 +1,209 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="131" language="en" identifier="Welcome">
-    <SceneTurn lower="18" upper="131" speaker="reeti">
-      <SceneUttr lower="25" upper="131" punct="?">
-        <ActionObject lower="25" upper="55" actor="" mode="" name="anim" >
-          <ActionFeature lower="31" upper="54" typ="STRING" key="name" val="'Emotions/neutral'"/></ActionObject>
-        <SceneWord lower="56" upper="61" text="Hello"/>
-        <ActionObject lower="62" upper="92" actor="" mode="" name="anim" >
-          <ActionFeature lower="68" upper="91" typ="STRING" key="name" val="'Emotions/curious'"/></ActionObject>
-        <SceneWord lower="93" upper="97" text="Have"/>
-        <SceneWord lower="98" upper="101" text="you"/>
-        <SceneWord lower="102" upper="109" text="already"/>
-        <SceneWord lower="110" upper="118" text="finished"/>
-        <SceneWord lower="119" upper="123" text="your"/>
-        <SceneWord lower="124" upper="130" text="thesis"/>
+  <SceneComment lower="0" upper="173" comment="/* reeti: [anim name='Emotions/neutral'] Hello [led color='red' side='both'] [anim name='Lids/lidsClosed'] Have you already finished your thesis [anim name='Eyes/blink']? */"/>
+  <SceneObject lower="175" upper="265" language="en" identifier="Talking_About_Sun">
+    <SceneTurn lower="203" upper="265" speaker="reeti">
+      <SceneUttr lower="210" upper="215" punct=",">
+        <SceneWord lower="210" upper="214" text="Well"/>
+      </SceneUttr>
+      <SceneUttr lower="216" upper="230" punct="?">
+        <SceneWord lower="216" upper="219" text="you"/>
+        <SceneWord lower="220" upper="224" text="know"/>
+        <SceneWord lower="225" upper="229" text="what"/>
+      </SceneUttr>
+      <SceneUttr lower="231" upper="265" punct="!">
+        <SceneWord lower="231" upper="232" text="I"/>
+        <SceneWord lower="233" upper="239" text="always"/>
+        <SceneWord lower="240" upper="244" text="want"/>
+        <SceneWord lower="245" upper="247" text="to"/>
+        <SceneWord lower="248" upper="251" text="fly"/>
+        <SceneWord lower="252" upper="256" text="into"/>
+        <SceneWord lower="257" upper="260" text="the"/>
+        <SceneWord lower="261" upper="264" text="sun"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="133" upper="218" language="en" identifier="Good">
-    <SceneTurn lower="148" upper="218" speaker="reeti">
-      <SceneUttr lower="155" upper="196" punct="!">
-        <ActionObject lower="155" upper="183" actor="" mode="" name="anim" >
-          <ActionFeature lower="161" upper="182" typ="STRING" key="name" val="'Emotions/happy'"/></ActionObject>
-        <SceneWord lower="184" upper="188" text="Good"/>
-        <SceneWord lower="189" upper="195" text="Robbie"/>
-      </SceneUttr>
-      <SceneUttr lower="197" upper="218" punct="!">
-        <SceneWord lower="197" upper="198" text="I"/>
-        <SceneWord lower="199" upper="201" text="am"/>
-        <SceneWord lower="202" upper="204" text="so"/>
-        <SceneWord lower="205" upper="210" text="proud"/>
-        <SceneWord lower="211" upper="213" text="on"/>
-        <SceneWord lower="214" upper="217" text="you"/>
+  <SceneObject lower="267" upper="334" language="en" identifier="SetMotorHeadMiddle">
+    <SceneTurn lower="296" upper="334" speaker="reeti">
+      <SceneUttr lower="303" upper="334" punct=".">
+        <ActionObject lower="303" upper="333" actor="" mode="" name="motor" >
+          <ActionFeature lower="310" upper="322" typ="STRING" key="neckPan" val="'50'"/>
+          <ActionFeature lower="323" upper="332" typ="STRING" key="speed" val="'7'"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="220" upper="302" language="en" identifier="Bad">
-    <SceneTurn lower="234" upper="302" speaker="reeti">
-      <SceneUttr lower="241" upper="281" punct="!">
-        <ActionObject lower="241" upper="267" actor="" mode="" name="anim" >
-          <ActionFeature lower="247" upper="266" typ="STRING" key="name" val="'Emotions/sad'"/></ActionObject>
-        <SceneWord lower="268" upper="270" text="Oh"/>
-        <SceneWord lower="271" upper="273" text="no"/>
-        <SceneWord lower="274" upper="280" text="Robbie"/>
-      </SceneUttr>
-      <SceneUttr lower="282" upper="302" punct="?">
-        <SceneWord lower="282" upper="286" text="What"/>
-        <SceneWord lower="287" upper="289" text="is"/>
-        <SceneWord lower="290" upper="293" text="the"/>
-        <SceneWord lower="294" upper="301" text="problem"/>
+  <SceneObject lower="336" upper="402" language="en" identifier="SetMotorHeadLeft1">
+    <SceneTurn lower="364" upper="402" speaker="reeti">
+      <SceneUttr lower="371" upper="402" punct=".">
+        <ActionObject lower="371" upper="401" actor="" mode="" name="motor" >
+          <ActionFeature lower="378" upper="390" typ="STRING" key="neckPan" val="'70'"/>
+          <ActionFeature lower="391" upper="400" typ="STRING" key="speed" val="'5'"/></ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="304" upper="394" language="en" identifier="Repeat">
-    <SceneTurn lower="321" upper="394" speaker="reeti">
-      <SceneUttr lower="328" upper="394" punct="?">
-        <ActionObject lower="328" upper="358" actor="" mode="" name="anim" >
-          <ActionFeature lower="334" upper="357" typ="STRING" key="name" val="'Emotions/neutral'"/></ActionObject>
-        <SceneAbbrev lower="359" upper="365" first="Didn" second="t"/>
-        <SceneWord lower="366" upper="369" text="you"/>
-        <SceneWord lower="370" upper="380" text="understand"/>
-        <SceneWord lower="381" upper="384" text="the"/>
-        <SceneWord lower="385" upper="393" text="question"/>
+  <SceneObject lower="404" upper="470" language="en" identifier="SetMotorHeadLeft2">
+    <SceneTurn lower="432" upper="470" speaker="reeti">
+      <SceneUttr lower="439" upper="470" punct=".">
+        <ActionObject lower="439" upper="469" actor="" mode="" name="motor" >
+          <ActionFeature lower="446" upper="458" typ="STRING" key="neckPan" val="'80'"/>
+          <ActionFeature lower="459" upper="468" typ="STRING" key="speed" val="'3'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="472" upper="539" language="en" identifier="SetMotorHeadRight1">
+    <SceneTurn lower="501" upper="539" speaker="reeti">
+      <SceneUttr lower="508" upper="539" punct=".">
+        <ActionObject lower="508" upper="538" actor="" mode="" name="motor" >
+          <ActionFeature lower="515" upper="527" typ="STRING" key="neckPan" val="'30'"/>
+          <ActionFeature lower="528" upper="537" typ="STRING" key="speed" val="'5'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="541" upper="608" language="en" identifier="SetMotorHeadRight2">
+    <SceneTurn lower="570" upper="608" speaker="reeti">
+      <SceneUttr lower="577" upper="608" punct=".">
+        <ActionObject lower="577" upper="607" actor="" mode="" name="motor" >
+          <ActionFeature lower="584" upper="596" typ="STRING" key="neckPan" val="'20'"/>
+          <ActionFeature lower="597" upper="606" typ="STRING" key="speed" val="'3'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="610" upper="672" language="en" identifier="SetHeadMiddle">
+    <SceneTurn lower="634" upper="672" speaker="reeti">
+      <SceneUttr lower="641" upper="672" punct=".">
+        <ActionObject lower="641" upper="671" actor="" mode="" name="pose" >
+          <ActionFeature lower="647" upper="659" typ="STRING" key="neckPan" val="'50'"/>
+          <ActionFeature lower="660" upper="670" typ="STRING" key="speed" val="'60'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="674" upper="735" language="en" identifier="SetHeadLeft1">
+    <SceneTurn lower="697" upper="735" speaker="reeti">
+      <SceneUttr lower="704" upper="735" punct=".">
+        <ActionObject lower="704" upper="734" actor="" mode="" name="pose" >
+          <ActionFeature lower="710" upper="722" typ="STRING" key="neckPan" val="'70'"/>
+          <ActionFeature lower="723" upper="733" typ="STRING" key="speed" val="'50'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="737" upper="798" language="en" identifier="SetHeadLeft2">
+    <SceneTurn lower="760" upper="798" speaker="reeti">
+      <SceneUttr lower="767" upper="798" punct=".">
+        <ActionObject lower="767" upper="797" actor="" mode="" name="pose" >
+          <ActionFeature lower="773" upper="785" typ="STRING" key="neckPan" val="'80'"/>
+          <ActionFeature lower="786" upper="796" typ="STRING" key="speed" val="'40'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="800" upper="862" language="en" identifier="SetHeadRight1">
+    <SceneTurn lower="824" upper="862" speaker="reeti">
+      <SceneUttr lower="831" upper="862" punct=".">
+        <ActionObject lower="831" upper="861" actor="" mode="" name="pose" >
+          <ActionFeature lower="837" upper="849" typ="STRING" key="neckPan" val="'30'"/>
+          <ActionFeature lower="850" upper="860" typ="STRING" key="speed" val="'50'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="864" upper="926" language="en" identifier="SetHeadRight2">
+    <SceneTurn lower="888" upper="926" speaker="reeti">
+      <SceneUttr lower="895" upper="926" punct=".">
+        <ActionObject lower="895" upper="925" actor="" mode="" name="pose" >
+          <ActionFeature lower="901" upper="913" typ="STRING" key="neckPan" val="'20'"/>
+          <ActionFeature lower="914" upper="924" typ="STRING" key="speed" val="'40'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="928" upper="989" language="en" identifier="sleepAction">
+    <SceneTurn lower="950" upper="989" speaker="reeti">
+      <SceneUttr lower="957" upper="989" punct=".">
+        <ActionObject lower="957" upper="988" actor="" mode="" name="anim" >
+          <ActionFeature lower="963" upper="987" typ="STRING" key="name" val="'Emotions/sleeping'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="991" upper="1063" language="en" identifier="posetest">
+    <SceneTurn lower="1010" upper="1063" speaker="reeti">
+      <SceneUttr lower="1017" upper="1063" punct=".">
+        <ActionObject lower="1017" upper="1062" actor="" mode="" name="pose" >
+          <ActionFeature lower="1023" upper="1037" typ="STRING" key="neckRotat" val="'90'"/>
+          <ActionFeature lower="1038" upper="1050" typ="STRING" key="neckPan" val="'90'"/>
+          <ActionFeature lower="1051" upper="1061" typ="STRING" key="speed" val="'50'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1065" upper="1112" language="en" identifier="neutral">
+    <SceneTurn lower="1083" upper="1112" speaker="reeti">
+      <SceneUttr lower="1090" upper="1112" punct=".">
+        <ActionObject lower="1090" upper="1111" actor="" mode="" name="anim" >
+          <ActionFeature lower="1096" upper="1110" typ="STRING" key="name" val="'Neutral'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1114" upper="1143" language="en" identifier="hello">
+    <SceneTurn lower="1130" upper="1143" speaker="reeti">
+      <SceneUttr lower="1137" upper="1143" punct="!">
+        <SceneWord lower="1137" upper="1142" text="Hello"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1145" upper="1196" language="en" identifier="Welcome2">
+    <SceneTurn lower="1164" upper="1196" speaker="reeti">
+      <SceneUttr lower="1171" upper="1196" punct=".">
+        <ActionObject lower="1171" upper="1195" actor="" mode="" name="anim" >
+          <ActionFeature lower="1177" upper="1194" typ="STRING" key="name" val="'Eyes/blink'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1198" upper="1249" language="en" identifier="Welcome2">
+    <SceneTurn lower="1217" upper="1249" speaker="reeti">
+      <SceneUttr lower="1224" upper="1249" punct=".">
+        <ActionObject lower="1224" upper="1248" actor="" mode="" name="anim" >
+          <ActionFeature lower="1230" upper="1247" typ="STRING" key="name" val="'Eyes/blink'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1251" upper="1305" language="en" identifier="Welcome3">
+    <SceneTurn lower="1270" upper="1305" speaker="reeti">
+      <SceneUttr lower="1277" upper="1305" punct=".">
+        <ActionObject lower="1277" upper="1304" actor="" mode="" name="anim" >
+          <ActionFeature lower="1283" upper="1303" typ="STRING" key="name" val="'Eyes/winkLeft'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1307" upper="1362" language="en" identifier="Welcome4">
+    <SceneTurn lower="1326" upper="1362" speaker="reeti">
+      <SceneUttr lower="1333" upper="1362" punct=".">
+        <ActionObject lower="1333" upper="1361" actor="" mode="" name="anim" >
+          <ActionFeature lower="1339" upper="1360" typ="STRING" key="name" val="'Eyes/winkRight'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1364" upper="1415" language="en" identifier="Good">
+    <SceneTurn lower="1379" upper="1415" speaker="reeti">
+      <SceneUttr lower="1386" upper="1415" punct=".">
+        <ActionObject lower="1386" upper="1414" actor="" mode="" name="anim" >
+          <ActionFeature lower="1392" upper="1413" typ="STRING" key="name" val="'Emotions/happy'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1417" upper="1465" language="en" identifier="Bad">
+    <SceneTurn lower="1431" upper="1465" speaker="reeti">
+      <SceneUttr lower="1438" upper="1465" punct=".">
+        <ActionObject lower="1438" upper="1464" actor="" mode="" name="anim" >
+          <ActionFeature lower="1444" upper="1463" typ="STRING" key="name" val="'Emotions/sad'"/></ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1467" upper="1557" language="en" identifier="Repeat">
+    <SceneTurn lower="1484" upper="1557" speaker="reeti">
+      <SceneUttr lower="1491" upper="1557" punct="?">
+        <ActionObject lower="1491" upper="1521" actor="" mode="" name="anim" >
+          <ActionFeature lower="1497" upper="1520" typ="STRING" key="name" val="'Emotions/neutral'"/></ActionObject>
+        <SceneAbbrev lower="1522" upper="1528" first="Didn" second="t"/>
+        <SceneWord lower="1529" upper="1532" text="you"/>
+        <SceneWord lower="1533" upper="1543" text="understand"/>
+        <SceneWord lower="1544" upper="1547" text="the"/>
+        <SceneWord lower="1548" upper="1556" text="question"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
