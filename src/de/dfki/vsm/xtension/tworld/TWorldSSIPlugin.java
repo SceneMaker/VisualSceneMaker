@@ -8,6 +8,7 @@ import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -38,7 +39,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
     @Override
     public void launch() {
         super.launch();
-        /*
+     
          // Load the plugin configuration
          final String ssidir = mConfig.getProperty("ssidir");
          final String ssibat = mConfig.getProperty("ssibat");
@@ -49,8 +50,6 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
          } catch (final IOException exc) {
          mLogger.failure(exc.toString());
          }
-         */
-
     }
 
     // Unload SSI plugin
