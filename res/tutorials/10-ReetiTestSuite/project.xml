@@ -2,9 +2,9 @@
 <Project name="ReetiTestSuite">
   <Plugins>
     <Plugin type="robot" name="reeti" class="de.dfki.vsm.xtension.reeti.ReetiExecutor" load="true">
-      <Feature key="lhost" val="134.96.240.31"/>
+      <Feature key="lhost" val="127.0.0.1"/>
       <Feature key="lport" val="1421"/>
-      <Feature key="rhost" val="134.96.240.31"/>
+      <Feature key="rhost" val="127.0.0.1"/>
       <Feature key="rport" val="1241"/>
     </Plugin>
   </Plugins>
