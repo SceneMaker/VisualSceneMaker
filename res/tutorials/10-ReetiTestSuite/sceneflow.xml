@@ -15,7 +15,7 @@
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
-  <SuperNode id="S1" name="Prolog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+  <SuperNode id="S1" name="Prolog Reetitest" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
     <Define>
     </Define>
     <Declare>
