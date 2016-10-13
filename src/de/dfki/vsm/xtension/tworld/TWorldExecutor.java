@@ -222,13 +222,13 @@ public final class TWorldExecutor extends ActivityExecutor {
                 // build action
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
 
-                //GM@PG:WHY???
-                // wait a little bit ...
-                try {
-                    Thread.sleep(350);
-                } catch (final InterruptedException exc) {
-                    mLogger.failure(exc.toString());
-                }
+//                //GM@PG:WHY???
+//                // wait a little bit ...
+//                try {
+//                    Thread.sleep(350);
+//                } catch (final InterruptedException exc) {
+//                    mLogger.failure(exc.toString());
+//                }
             }
         } else {
             // Get the unique actor id
@@ -413,8 +413,8 @@ public final class TWorldExecutor extends ActivityExecutor {
                 replace("\n", " ").
                 replace("   ", " ").
                 replace("  ", " ");
-        
-        mLogger.warning("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message));
+
+        mLogger.message("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message));
 
         // Send activity_name to tworld 
         synchronized (mActivityWorkerMap) {
@@ -425,7 +425,7 @@ public final class TWorldExecutor extends ActivityExecutor {
             mActivityWorkerMap.put(tworld_cmd_action.getId(), cAW);
 
             // wait until we got feedback
-            mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " waiting ....");
+            mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " waiting ...");
 
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
@@ -435,7 +435,18 @@ public final class TWorldExecutor extends ActivityExecutor {
                 }
             }
 
-            mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " done ....");
+            StringBuilder sb = new StringBuilder();
+
+            if (mActivityWorkerMap.size() > 1) {
+                for (String aw : mActivityWorkerMap.keySet()) {
+                    sb.append(aw).append(", ");
+                }
+                
+                sb.delete(sb.length() - 2, sb.length());
+                mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " done, ActivityWorker (" + sb.toString() + ") stil active ...");
+            } else {
+                mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " done ...");
+            }
         }
         // Return when terminated
     }
@@ -449,7 +460,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Start the client thread
         client.start();
         // Print some information
-        mLogger.warning("Accepting " + client.getName() + "");
+        mLogger.success("Accepting " + client.getName() + "");
     }
 
     // Handle some message
@@ -459,7 +470,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Sanitize the message
         final String message = input.replaceAll("..xml\\s+version........", "");
         // Print some information
-        mLogger.warning("Handling new message:\n" + prettyPrint(message) + "");
+        mLogger.message("Handling new message:\n" + prettyPrint(message) + "");
         // Notify the relevant threads
         synchronized (mActivityWorkerMap) {
             final TWorldFeedback tworld_final_feedback = new TWorldFeedback();
@@ -487,7 +498,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable                               
                                 //mLogger.warning("Agent starts speaking");
                                 if (mUseJPL) {
-                                     JPLEngine.query("now(Time), "
+                                    JPLEngine.query("now(Time), "
                                             + "jdd(["
                                             + "type:" + "event" + ","
                                             + "name:" + "agent" + ","
@@ -529,20 +540,24 @@ public final class TWorldExecutor extends ActivityExecutor {
                                     // Set speaking variable
                                     mProject.setVariable("AgentIsSpeaking", false);
                                 }
-                                // remove the activity
-                                if (mActivityWorkerMap.containsKey(id)) {
-                                    mActivityWorkerMap.remove(id);
-                                }
+//                                // remove the activity
+//                                if (mActivityWorkerMap.containsKey(id)) {
+//                                    mActivityWorkerMap.remove(id);
+//                                } else {
+//                                    mLogger.warning("Activityworker for " + id + " has been stopped before (TTS end speak notification is received after cmd end notification)");
+//                                }
                                 // wake me up ..
                                 mActivityWorkerMap.notifyAll();
                             }
 
                             // TODO marker!
                         }
-                    } else {
+                    } else { // there is no cai_event - hence no tts notification.
                         // remove the activity in any case
                         if (mActivityWorkerMap.containsKey(id)) {
                             mActivityWorkerMap.remove(id);
+                        } else {
+                            mLogger.warning("Activityworker for " + id + " has been stopped before (cmd end notification is received after TTS end speak notification)");
                         }
                         // wake me up ..
                         mActivityWorkerMap.notifyAll();
