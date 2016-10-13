@@ -96,6 +96,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
             final SSIEventData obj = event.getData();
 
             if (!mUseSuperEvent) { // WE DO NOT USE SUPEREVENTS
+                mLogger.success("######################");
+                
                 if (event.getSender().equals("audio")
                         && event.getEvent().equals("vad")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
