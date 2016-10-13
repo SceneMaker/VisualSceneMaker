@@ -91,11 +91,24 @@ public final class ReetiExecutor extends ActivityExecutor {
         final String cmid = activity + ":" + String.valueOf(newCmdId());
         // Create the new command 
         CommandMessage command = null;
+        
         if (activity instanceof SpeechActivity) {
-            // Create the speech command
-            command = new CommandMessage(cmid, "speech");
-            // Append the tts text param
-            command.addParameter("text", "\\voice=" + "Kate" + " " + "\\language=" + "en" + " " + text);
+            String activityText = ((SpeechActivity)activity).getTextOnly("\\book=").trim();
+            if (activityText.isEmpty()) {
+                    LinkedList<String> timemarks = ((SpeechActivity)activity).getTimeMarks("\\book=");
+                    for (String tm : timemarks) {
+                        mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                    }
+            }else{
+                     // Create the speech command
+                command = new CommandMessage(cmid, "speech");
+                // Append the tts text param
+                command.addParameter("text", "\\voice=" + "Kate" + " " + "\\language=" + "en" + " " + text);
+            
+            }
+            
+           
+            
         } else if (activity instanceof ActionActivity) {
             // Create the action command
             command = new CommandMessage(cmid, name);
