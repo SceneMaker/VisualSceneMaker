@@ -409,13 +409,12 @@ public final class TWorldExecutor extends ActivityExecutor {
                 replace("Ö", "Oe").
                 replace("Ä", "Ae").
                 replace("Ü", "Ue").
-                replace("ß", "ss");
-        //.
-        //replace("\n", " ").
-        //replace("   ", " ").
-        //replace("  ", " ");
-        message = prettyPrint(message);
-        mLogger.warning("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + message);
+                replace("ß", "ss").
+                replace("\n", " ").
+                replace("   ", " ").
+                replace("  ", " ");
+        
+        mLogger.warning("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message));
 
         // Send activity_name to tworld 
         synchronized (mActivityWorkerMap) {
