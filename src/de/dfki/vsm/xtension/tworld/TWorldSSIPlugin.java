@@ -52,12 +52,12 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
         final String ssidir = mConfig.getProperty("ssidir");
         final String ssibat = mConfig.getProperty("ssibat");
         // Create the plugin's processes
-        try {
-            mProcessMap.put(ssibat, Runtime.getRuntime().exec(
-                    "cmd /c start " + ssibat + "" + "", null, new File(ssidir)));
-        } catch (final IOException exc) {
-            mLogger.failure(exc.toString());
-        }
+//        try {
+//            mProcessMap.put(ssibat, Runtime.getRuntime().exec(
+//                    "cmd /c start " + ssibat + "" + "", null, new File(ssidir)));
+//        } catch (final IOException exc) {
+//            mLogger.failure(exc.toString());
+//        }
     }
 
     // Unload SSI plugin
