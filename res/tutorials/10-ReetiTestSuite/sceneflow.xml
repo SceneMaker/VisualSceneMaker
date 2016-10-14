@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="ReetiTestSuite" name="ReetiTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 11 Okt 2016 15:22:40" start="S7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="ReetiTestSuite" name="ReetiTestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fr, 14 Okt 2016 11:19:31" start="" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -361,7 +361,7 @@
       </Graphics>
     </Node>
   </SuperNode>
-  <SuperNode id="S7" name="HeadMove" comment="" hideLocalVar="false" hideGlobalVar="false" start="N24;N19;N20;N22;">
+  <SuperNode id="S7" name="HeadMove" comment="" hideLocalVar="false" hideGlobalVar="false" start="N19;">
     <Define>
     </Define>
     <Declare>
@@ -538,13 +538,13 @@
       <TEdge target="N21" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="723" yPos="198" ctrlXPos="775" ctrlYPos="198"/>
-          <ControlPoint xPos="933" yPos="198" ctrlXPos="880" ctrlYPos="198"/>
+          <ControlPoint xPos="723" yPos="268" ctrlXPos="775" ctrlYPos="268"/>
+          <ControlPoint xPos="933" yPos="268" ctrlXPos="880" ctrlYPos="268"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="653" yPos="163"/>
+        <Position xPos="653" yPos="233"/>
       </Graphics>
     </Node>
     <Node id="N21" name="N21" history="false">
@@ -560,13 +560,13 @@
       <TEdge target="N20" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="934" yPos="207" ctrlXPos="883" ctrlYPos="220"/>
-          <ControlPoint xPos="722" yPos="207" ctrlXPos="773" ctrlYPos="220"/>
+          <ControlPoint xPos="934" yPos="277" ctrlXPos="883" ctrlYPos="290"/>
+          <ControlPoint xPos="722" yPos="277" ctrlXPos="773" ctrlYPos="290"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="933" yPos="163"/>
+        <Position xPos="933" yPos="233"/>
       </Graphics>
     </Node>
     <Node id="N22" name="N22" history="false">
