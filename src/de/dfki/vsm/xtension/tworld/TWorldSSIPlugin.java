@@ -11,7 +11,6 @@ import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -58,6 +57,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 //        } catch (final IOException exc) {
 //            mLogger.failure(exc.toString());
 //        }
+        // Print some information 
+        mLogger.message("Launching TWorld SSI Plugin");
     }
 
     // Unload SSI plugin
@@ -84,6 +85,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                 mLogger.failure(exc.toString());
             }
         }
+        // Print some information 
+        mLogger.message("Unloading TWorld SSI Plugin");
     }
 
     // Handle SSI event array
@@ -95,9 +98,9 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
         for (final SSIEventEntry event : array.getEventList()) {
             final SSIEventData obj = event.getData();
 
-            if (!mUseSuperEvent) { // WE DO NOT USE SUPEREVENTS
+            if (!mUseSuperEvent) {
                 mLogger.success("######################");
-                
+
                 if (event.getSender().equals("audio")
                         && event.getEvent().equals("vad")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
@@ -166,8 +169,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                     // Should not happen
                 }
 
-            } else // WE DO USE SUPEREVENTS
-            if (obj instanceof SSIStringData) {
+            } else if (obj instanceof SSIStringData) {
                 final TWorldSSIData mSSIData = new TWorldSSIData(
                         ((SSIStringData) array.getEventList().get(0).getData()).toString());
 
