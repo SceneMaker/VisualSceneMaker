@@ -268,29 +268,29 @@ public final class TWorldExecutor extends ActivityExecutor {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("Angry")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
             } else if (activity_name.equalsIgnoreCase("Demanding")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
             } else if (activity_name.equalsIgnoreCase("Disgust")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
             } else if (activity_name.equalsIgnoreCase("Neutral")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
             } else if (activity_name.equalsIgnoreCase("Sad")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
             } else if (activity_name.equalsIgnoreCase("Smile")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
             } else if (activity_name.equalsIgnoreCase("Happy")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
             } else if (activity_name.equalsIgnoreCase("CancelMoveTo")) {
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
