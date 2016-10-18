@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class EEdge extends AbstractEdge {
     public EEdge() {}

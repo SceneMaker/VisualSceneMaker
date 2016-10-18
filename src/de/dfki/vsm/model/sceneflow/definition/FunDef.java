@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * A user command definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class FunDef implements SyntaxObject, Comparable<FunDef> {
     private String           mName;

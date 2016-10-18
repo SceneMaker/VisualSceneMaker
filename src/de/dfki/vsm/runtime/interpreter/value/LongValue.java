@@ -2,7 +2,7 @@ package de.dfki.vsm.runtime.interpreter.value;
 
 /**
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class LongValue extends AbstractValue {
     private final long mValue;

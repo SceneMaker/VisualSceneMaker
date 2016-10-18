@@ -11,7 +11,7 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class LOGLogFileFormat extends Formatter {
 

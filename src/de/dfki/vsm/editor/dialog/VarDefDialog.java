@@ -38,7 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class VarDefDialog extends Dialog
 {

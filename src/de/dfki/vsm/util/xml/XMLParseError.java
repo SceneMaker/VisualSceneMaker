@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.xml;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class XMLParseError extends Exception {
 

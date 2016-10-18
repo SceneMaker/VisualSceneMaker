@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 /**
  * An empty condition
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ContainsCond extends Condition {
     private Expression mLeftExp;

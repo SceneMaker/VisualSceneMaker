@@ -14,7 +14,7 @@ import org.w3c.dom.Element;
 /**
  * A comparision logical condition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ComparisionCond extends LogicalCond {
 

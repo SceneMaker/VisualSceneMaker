@@ -24,7 +24,7 @@ import javax.swing.JLabel;
 /**
  * A dialog to create or edit a member definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class MemberDefDialog extends Dialog {
 

@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class SystemHistory {
     private final HashMap<String, Stack> mHistoryStackMap = new HashMap<String, Stack>();

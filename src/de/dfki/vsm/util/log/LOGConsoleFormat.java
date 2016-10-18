@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class LOGConsoleFormat extends Formatter {
 

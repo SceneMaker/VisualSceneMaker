@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class EditorAction {
     protected abstract void run();

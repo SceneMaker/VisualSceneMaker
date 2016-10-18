@@ -104,7 +104,7 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public final class WorkSpacePanel extends JPanel implements EventListener, MouseListener, MouseMotionListener {

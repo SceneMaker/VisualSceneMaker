@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 /**
  * An integer constant.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Int extends LiteralExpression {
     private int mValue;

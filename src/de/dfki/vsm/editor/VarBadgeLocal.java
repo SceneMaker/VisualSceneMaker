@@ -33,7 +33,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class VarBadgeLocal extends JComponent implements EventListener, ActionListener, Observer {

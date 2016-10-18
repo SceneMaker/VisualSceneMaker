@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 /**
  * A default logical condition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class DefaultCond extends LogicalCond {
     private Condition mCondition;

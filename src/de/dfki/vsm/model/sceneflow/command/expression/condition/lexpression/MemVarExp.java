@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 /**
  * A member of a struct.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class MemVarExp extends LExpression {
     private String mName;

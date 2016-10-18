@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 /**
  * An abstract type definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class TypeDef implements SyntaxObject {
     protected String mName;

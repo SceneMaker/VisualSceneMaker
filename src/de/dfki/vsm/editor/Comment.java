@@ -39,7 +39,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * @author Patrick Gebhard
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Comment extends JComponent implements EventListener, Observer, MouseListener, MouseMotionListener {
     private JEditorPane mTextEditor = null;

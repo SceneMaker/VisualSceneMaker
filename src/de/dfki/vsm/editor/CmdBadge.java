@@ -39,7 +39,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class CmdBadge extends JComponent implements EventListener, Observer {

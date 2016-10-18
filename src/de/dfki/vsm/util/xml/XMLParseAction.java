@@ -5,7 +5,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class XMLParseAction {
 

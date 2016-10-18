@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 import java.io.ByteArrayOutputStream;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class SyntaxDocToken implements ModelObject {
 

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class SymbolTable implements Copyable {
 

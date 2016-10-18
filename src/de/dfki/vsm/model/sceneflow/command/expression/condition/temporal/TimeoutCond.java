@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 /**
  * A timeout condition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TimeoutCond extends TemporalCond {
 

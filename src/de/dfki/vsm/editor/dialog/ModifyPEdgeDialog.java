@@ -47,7 +47,7 @@ import javax.swing.text.PlainDocument;
 
 /**
  * @author Patrick Gebhard
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ModifyPEdgeDialog extends Dialog {
 
@@ -660,7 +660,7 @@ public class ModifyPEdgeDialog extends Dialog {
 
 /**
  * @author Patrick Gebhard
- * @author Not me
+ * @author Gregor Mehlmann
  */
 class IntegerDocument extends PlainDocument {
 

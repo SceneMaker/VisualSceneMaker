@@ -8,7 +8,7 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import org.w3c.dom.Element;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class HistorySetDepth extends Command {
     private String mState;
