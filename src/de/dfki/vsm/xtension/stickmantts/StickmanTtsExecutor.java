@@ -6,12 +6,11 @@
 package de.dfki.vsm.xtension.stickmantts;
 
 import de.dfki.action.sequence.WordTimeMarkSequence;
-
+import de.dfki.common.CommonAnimation;
+import de.dfki.common.StageStickmanController;
 import de.dfki.stickmanfx.StickmanStageFX;
-import de.dfki.stickmanfx.animationlogic.AnimationFX;
-import de.dfki.stickmanfx.animationlogic.AnimationLoaderFX;
-import de.dfki.util.xml.XMLUtilities;
 import de.dfki.util.ios.IOSIndentWriter;
+import de.dfki.util.xml.XMLUtilities;
 import de.dfki.vsm.editor.dialog.WaitingDialog;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
@@ -24,14 +23,12 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.stickman.StickmanRepository;
 import de.dfki.vsm.util.tts.SpeakerTts;
 import de.dfki.vsm.util.tts.TTSFactory;
-import de.dfki.vsm.util.tts.marytts.MaryTTsProcess;
-
 import de.dfki.vsm.util.tts.VoiceName;
-
-
-import de.dfki.vsm.xtension.stickmanmarytts.action.ActionMouthActivity;
+import de.dfki.vsm.util.tts.marytts.MaryTTsProcess;
+import de.dfki.vsm.xtension.stickmantts.action.ActionMouthActivity;
 import de.dfki.vsm.xtension.stickmantts.util.tts.SpeakerActivity;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
@@ -39,6 +36,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Properties;
 
 /**
  *
@@ -59,6 +57,10 @@ public class StickmanTtsExecutor extends ActivityExecutor {
     private MaryTTsProcess marySelfServer;
     public static String sExecutionId = "stickmanmary_";
     private String mDeviceName;
+    private StageStickmanController stickmanStageC;
+    private StickmanRepository stickmanFactory;
+    // The word mapping properties
+    Properties mWordMapping = new Properties();
 
     private int maryId;
 
@@ -68,7 +70,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
         super(config, project);
         maryId = 0;
         languageAgentMap = new HashMap<>();
-        //marySelfServer = MaryTTsProcess.getsInstance(mConfig.getProperty("mary.base"));
+        stickmanFactory = new StickmanRepository(config);
 
     }
 
@@ -93,58 +95,84 @@ public class StickmanTtsExecutor extends ActivityExecutor {
 
     @Override
     public void execute(AbstractActivity activity) {
-        final String actor = activity.getActor();
         final String name = activity.getName();
-        AgentConfig agent = mProject.getAgentConfig(actor);
-        String langVoice = getLangVoiceFromConfig(actor);
-        String voice = agent.getProperty(langVoice);
-        VoiceName voiceName = new VoiceName(voice);
         if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-            String text = sa.getTextOnly("$").trim();
-            if (text.isEmpty()) {
-                handleEmptyTextActivity(sa);
-            }
-            //MaryTTsSpeaker marySpeak = new MaryTTsSpeaker(sa, langVoice, voiceName);
-            TTSFactory factoryTTs = new TTSFactory(mConfig, sa, mProject);
-            SpeakerTts speakerTts = factoryTTs.getTTs();
-            SpeakerActivity speakerActivity = new SpeakerActivity(speakerTts);
-
-            String executionId = getExecutionId();
-            WordTimeMarkSequence wts = speakerActivity.getWordTimeSequence();
-            //We will use these two later
-            speechActivities.put(executionId, speakerActivity);
-            wtsMap.put(executionId, wts);
-            AnimationFX stickmanAnimation = new AnimationFX();
-            stickmanAnimation = AnimationLoaderFX.getInstance().loadEventAnimation(mStickmanStage.getStickmanFX(actor), "Speaking", 3000, false);
-            stickmanAnimation.mParameter = wts;
-            executeAnimation(stickmanAnimation);
-            executeSpeachAndWait(executionId);
+            actionExecuteSpeech(activity);
         } else if (activity instanceof ActionActivity || activity instanceof ActionMouthActivity) {
             if (name.equalsIgnoreCase("set") && activity instanceof ActionActivity) {
-                actionSetVoice(activity, agent);
+                actionSetVoice(activity);
             } else {
-                actionLoadAnimation(activity, actor, name);
+                actionLoadAnimation(activity);
             }
         }
     }
 
-    private void actionLoadAnimation(AbstractActivity activity, String actor, String name) {
-        AnimationFX stickmanAnimation = new AnimationFX();
+    private void actionExecuteSpeech(AbstractActivity activity) {
+        final String actor = activity.getActor();
+        AgentConfig agent = mProject.getAgentConfig(actor);
+        String langVoice = getLangVoiceFromConfig(actor);
+        String voice = agent.getProperty(langVoice);
+        VoiceName voiceName = new VoiceName(voice);
+        SpeechActivity sa = (SpeechActivity) activity;
+        String activityText = sa.getTextOnly("$").trim();
+        if (activityText.isEmpty()) {
+            handleEmptyTextActivity(sa);
+        }else{
+            executeSpeech(activity, actor, sa);
+        }
+
+
+    }
+
+    private void executeSpeech(AbstractActivity activity, String actor, SpeechActivity sa) {
+        // load wordmapping database
+        loadWordMapping(activity);
+        TTSFactory factoryTTs = new TTSFactory(mConfig, sa, mProject);
+        SpeakerTts speakerTts = factoryTTs.getTTs();
+        SpeakerActivity speakerActivity = new SpeakerActivity(speakerTts);
+        String executionId = getExecutionId();
+        WordTimeMarkSequence wts = speakerActivity.getWordTimeSequence();
+        //We will use these two later
+        speechActivities.put(executionId, speakerActivity);
+        wtsMap.put(executionId, wts);
+        CommonAnimation stickmanAnimation ;
+        stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
+        stickmanAnimation.setParameter( wts);
+        executeAnimation(stickmanAnimation);
+        executeSpeachAndWait(executionId);
+    }
+
+    private void loadWordMapping(AbstractActivity activity) {
+        try {
+            String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping");
+            wmf = wmf.replace("\\", "/");
+            mWordMapping.load(new FileReader(new File(wmf)));
+        } catch (IOException ex) {
+            mLogger.failure("Wordmapping file (" + mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity.getActor()).getProperty("wordmapping") + ") not found!");
+        }
+    }
+
+
+    private void actionLoadAnimation(AbstractActivity activity) {
+        final String actor = activity.getActor();
+        final String name = activity.getName();
+        CommonAnimation stickmanAnimation ;
         int duration = 500;
         if (activity instanceof ActionMouthActivity) {
             duration = ((ActionMouthActivity) activity).getDuration();
         }
-        stickmanAnimation = AnimationLoaderFX.getInstance().loadAnimation(mStickmanStage.getStickmanFX(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
+        stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
         if (activity instanceof ActionMouthActivity) {
-            stickmanAnimation.mParameter = ((ActionMouthActivity) activity).getWortTimeMark();
+            stickmanAnimation.setParameter( ((ActionMouthActivity) activity).getWortTimeMark());
         }
         if (stickmanAnimation != null) {
             executeAnimation(stickmanAnimation);
         }
     }
 
-    private void actionSetVoice(AbstractActivity activity, AgentConfig agent) {
+    private void actionSetVoice(AbstractActivity activity) {
+        final String actor = activity.getActor();
+        AgentConfig agent = mProject.getAgentConfig(actor);
         for (ActionFeature feat : activity.getFeatures()) {
             if (feat.getKey().equalsIgnoreCase("voice")) {
                 languageAgentMap.put(agent.getAgentName(), feat.getVal());
@@ -169,7 +197,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
         return langVoince;
     }
 
-    protected void executeAnimation(AnimationFX stickmanAnimation) {
+    protected void executeAnimation(CommonAnimation stickmanAnimation) {
         // executeAnimation command to platform
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
@@ -185,6 +213,8 @@ public class StickmanTtsExecutor extends ActivityExecutor {
     }
 
     private void executeSpeachAndWait(  String executionId) {
+        // do the pronounciation mapping
+        //marySpeak.getSpeechActivity().doPronounciationMapping(mWordMapping);
         waitForSpeechToFinish(executionId);
 
     }
@@ -230,42 +260,43 @@ public class StickmanTtsExecutor extends ActivityExecutor {
     @Override
     public void launch() {
         try {
-            launchMaryTTSAndDialog();
+            String ttsType = mConfig.getProperty("tts");
+            if(ttsType == null || ttsType.equalsIgnoreCase("marytts") ) {
+                launchMaryTTSAndDialog();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         mListener = new StickmanTtsListener(8000, this);
         mListener.start();
         launchStickmanClient();
-        addStickmansToStage();
+
         waitForClients();
     }
 
     private void launchStickmanClient() {
+        stickmanStageC = stickmanFactory.createStickman();
         for (ConfigFeature cf : mConfig.getEntryList()) {
             mLogger.message("Stickman Plugin Config: " + cf.getKey() + " = " + cf.getValue());
         }
         final boolean showStickmanNames = mConfig.containsKey("showstickmanname") ? mConfig.getProperty("showstickmanname").equalsIgnoreCase("true") : true;
         mDeviceName = mConfig.getPluginName();
-        final String host = mConfig.getProperty("smhost");
-        final String port = mConfig.getProperty("smport");
-        // Start the StickmanStage client application
-        mLogger.message("Starting StickmanStage Client Application ...");
-        mLogger.message("Starting StickmanStage Client Application ...");
-        getStickmanStage(showStickmanNames, host, port);
+        addStickmansToStage();
+        launchStage();
     }
 
-    private void getStickmanStage(boolean showStickmanNames, String host, String port) {
-        if (mConfig.containsKey("fullscreen")) {
-            if (mConfig.getProperty("fullscreen").equalsIgnoreCase(Boolean.TRUE.toString())) {
-                mStickmanStage = StickmanStageFX.getNetworkInstanceFullScreen(host, Integer.parseInt(port));
-            } else {
-                mStickmanStage = StickmanStageFX.getNetworkInstance(host, Integer.parseInt(port));
+    private void launchStage() {
+        stickmanLaunchThread = new Thread() {
+            public void run() {
+                try {
+                    stickmanStageC.launchStickmanStage(true, mProject.getProjectPath());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        } else {
-            mStickmanStage = StickmanStageFX.getNetworkInstance(host, Integer.parseInt(port));
-        }
-        mStickmanStage.showStickmanNameFX(showStickmanNames);
+        };
+
+        stickmanLaunchThread.start();
     }
 
     private void waitForClients() {
@@ -281,6 +312,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
 
     private void launchMaryTTSAndDialog() throws Exception {
         WaitingDialog InfoDialog  = new WaitingDialog("Loading MaryTTS...");
+        marySelfServer = MaryTTsProcess.getsInstance(mConfig.getProperty("mary.base"));
         marySelfServer.registerObserver(InfoDialog);
         Thread tDialog = new Thread() {
             public void run(){
@@ -298,25 +330,13 @@ public class StickmanTtsExecutor extends ActivityExecutor {
 
 
     private void addStickmansToStage( ){
-        for (AgentConfig agent:mProject.getProjectConfig().getAgentConfigList()) {
-            if(agent.getDeviceName().equalsIgnoreCase(mDeviceName) ){
-                mStickmanStage.addStickmanFX(agent.getAgentName());
+
+        for (String name : mProject.getAgentNames()) {
+            AgentConfig ac = mProject.getAgentConfig(name);
+            if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
+                stickmanStageC.addStickman(name);
             }
         }
-        stickmanLaunchThread = new Thread() {
-            public void run() {
-                try {
-
-
-                    StickmanStageFX.lauchStickman(mProject.getProjectPath());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-
-        stickmanLaunchThread.start();
     }
 
     @Override
@@ -328,13 +348,15 @@ public class StickmanTtsExecutor extends ActivityExecutor {
             mLogger.failure(exc.toString());
         } finally {
             clearMaps();
-            mStickmanStage.clearStage();
+            stickmanStageC.clearStage();
         }
     }
 
     private void stopClientsAndServers() throws InterruptedException, IOException {
         stopClients();
-        marySelfServer.stopMaryServer();
+        if(marySelfServer !=null){
+            marySelfServer.stopMaryServer();
+        }
         mListener.abort();
         mListener.join();
         mLogger.message("Joining server thread");

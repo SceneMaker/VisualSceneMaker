@@ -24,11 +24,12 @@ public class TTSFactory {
         String ttsType = pluginConfig.getProperty("tts");
         String voice = getVoiceFromAgentConfig(voiceLang);
         String licensePath = pluginConfig.getProperty("license");
-        if(ttsType.equalsIgnoreCase("cereproc")){
-            return new CereProgTTsSpeaker(pSpeech, voiceLang, voice, licensePath);
-        }else if(ttsType.equalsIgnoreCase("marytts")){
+        String deviceName = pluginConfig.getProperty("audio_device");
+        if(ttsType == null || ttsType.equalsIgnoreCase("marytts")){
             VoiceName voiceName = new VoiceName(voice);
             return new MaryTTsSpeaker(pSpeech, voiceLang, voiceName);
+        }else if(ttsType.equalsIgnoreCase("cereproc")){
+            return new CereProgTTsSpeaker(pSpeech, voiceLang, voice, licensePath, deviceName);
         }
         return new DummyTTsSpeaker();
     }
