@@ -1,7 +1,7 @@
 package de.dfki.vsm.model.scenescript;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class UtteranceElement extends SceneEntity {
 

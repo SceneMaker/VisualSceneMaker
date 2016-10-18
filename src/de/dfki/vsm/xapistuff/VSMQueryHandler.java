@@ -21,7 +21,7 @@ package de.dfki.vsm.xapistuff;
 //import java.util.regex.Pattern;
 //
 ///**
-// * @author Not me
+// * @author Gregor Mehlmann
 // */
 //public class VSMQueryHandler extends Thread {
 //

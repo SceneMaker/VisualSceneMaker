@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * An abstract left side expression.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class LExpression extends Condition {
     public enum LExpType { MEMBER, VARIABLE, ARRAY }

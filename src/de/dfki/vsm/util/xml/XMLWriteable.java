@@ -3,7 +3,7 @@ package de.dfki.vsm.util.xml;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public interface XMLWriteable {
 

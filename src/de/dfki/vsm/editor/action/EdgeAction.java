@@ -40,7 +40,7 @@ import java.util.Set;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class EdgeAction extends EditorAction {
     protected UndoManager             mUndoManager                = null;

@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class IOSIndentWriter {
     private String            mIndent  = "  ";

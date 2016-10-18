@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 /**
  * A boolean constant.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Object extends LiteralExpression {
     private java.lang.Object mValue;

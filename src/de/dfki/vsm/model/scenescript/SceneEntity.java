@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class SceneEntity implements ModelObject {
 

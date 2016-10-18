@@ -11,7 +11,7 @@ import de.dfki.vsm.model.scenescript.UtteranceElement;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class WordExecutedEvent extends EventObject {
     private UtteranceElement mTurn;

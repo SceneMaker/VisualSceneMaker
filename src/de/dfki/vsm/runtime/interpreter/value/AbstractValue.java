@@ -5,7 +5,7 @@ package de.dfki.vsm.runtime.interpreter.value;
 import de.dfki.vsm.util.cpy.Copyable;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class AbstractValue implements Copyable {
     public enum Type {

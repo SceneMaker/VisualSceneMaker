@@ -16,7 +16,7 @@ import org.w3c.dom.Element;
 import java.lang.reflect.Field;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ScriptSymbol extends SyntaxDocSymbol implements ScriptFields {
 

@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class StructValue extends AbstractValue {
     private final HashMap<java.lang.String, AbstractValue> mValueMap;

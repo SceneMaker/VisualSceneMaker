@@ -20,7 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class XMLUtilities {
 

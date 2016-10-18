@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ConfigElement implements ModelObject {
 

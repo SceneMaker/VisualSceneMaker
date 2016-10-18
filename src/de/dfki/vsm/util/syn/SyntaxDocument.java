@@ -22,7 +22,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class SyntaxDocument extends PlainDocument implements UndoableEditListener {
 

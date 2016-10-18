@@ -6,7 +6,7 @@ import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class SceneSelectedEvent extends EventObject {
     private SceneGroup mGroup;

@@ -39,7 +39,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class MonitorDialog extends JDialog implements EventListener {
 

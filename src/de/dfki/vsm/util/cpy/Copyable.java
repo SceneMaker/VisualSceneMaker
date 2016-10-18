@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * An interface for all copyable objects.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public interface Copyable extends Serializable {
 

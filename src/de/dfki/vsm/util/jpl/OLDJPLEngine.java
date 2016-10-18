@@ -12,7 +12,7 @@
 //
 ////~--- JDK imports ------------------------------------------------------------
 ///**
-// * @author Not me
+// * @author Gregor Mehlmann
 // */
 //public final class OLDJPLEngine {
 //

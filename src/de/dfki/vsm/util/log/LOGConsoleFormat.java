@@ -3,6 +3,7 @@ package de.dfki.vsm.util.log;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.Preferences;
+import java.text.SimpleDateFormat;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -12,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class LOGConsoleFormat extends Formatter {
 
@@ -49,8 +50,13 @@ public class LOGConsoleFormat extends Formatter {
         } else {
             message += "\033[1;37m";
         }
+        
+        // PG added milliseconds
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        
+        
         // Create The String For Logging
-        message += record.getLevel() + " to " + "STDERR" + " on " + date + " by " + name + " in " + thread
+        message += record.getLevel() + " to " + "STDERR" + " on " + df.format(date) + " by " + name + " in " + thread
                          + " at " + method;
 
         // Append The User Message

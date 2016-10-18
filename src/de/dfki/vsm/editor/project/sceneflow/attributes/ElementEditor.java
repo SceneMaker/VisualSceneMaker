@@ -270,7 +270,7 @@ import java.util.ArrayList;
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */
@@ -449,7 +449,7 @@ class ConditionEditor extends JPanel implements EventListener {
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */
@@ -519,7 +519,7 @@ class EdgeEditor extends JPanel implements EventListener {
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */
@@ -583,7 +583,7 @@ public class ElementEditor extends JScrollPane implements EventListener {
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */
@@ -752,7 +752,7 @@ class InterruptEditor extends JPanel implements EventListener {
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */
@@ -821,7 +821,7 @@ class NameEditor extends JPanel implements EventListener {
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */
@@ -982,7 +982,7 @@ class ProbabilityEditor extends JPanel implements EventListener {
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */
@@ -1122,7 +1122,7 @@ class TimeOutEditor extends JPanel implements EventListener {
 }
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 class TypeDefEditor extends AttributeEditor {
 
@@ -1214,7 +1214,7 @@ class TypeDefEditor extends AttributeEditor {
 /**
  *
  *
- * @author Not me
+ * @author Gregor Mehlmann
  *
  *
  */

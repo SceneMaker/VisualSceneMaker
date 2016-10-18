@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * @author Patrick Gebhard
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class AltStartNodeManager {
     public AbstractEdge                                                    mEdge;

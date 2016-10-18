@@ -39,7 +39,7 @@ import javax.swing.JSeparator;
 /**
  * A dialog to create or edit a type definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TypeDefDialog extends Dialog {
 

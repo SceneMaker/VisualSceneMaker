@@ -77,7 +77,7 @@ import javax.swing.undo.UndoManager;
 
 /**
  * @author Patrick Gebhard
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Edge extends JComponent implements EventListener, Observer, MouseListener
 {

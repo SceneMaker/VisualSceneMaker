@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.TreeSet;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class SceneScript extends SceneEntity {
 

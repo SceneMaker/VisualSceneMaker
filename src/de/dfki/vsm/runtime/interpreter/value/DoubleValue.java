@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.interpreter.value;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class DoubleValue extends AbstractValue {
     private final double mValue;

@@ -21,7 +21,7 @@ import javax.swing.undo.UndoManager;
 
 /**
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class UndoAction extends AbstractAction {
     // The singelton logger instance   

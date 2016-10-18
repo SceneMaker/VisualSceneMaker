@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 /**
  * A list type definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ListTypeDef extends TypeDef {
     private String mType;
