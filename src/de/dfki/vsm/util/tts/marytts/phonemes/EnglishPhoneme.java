@@ -1,6 +1,7 @@
 package de.dfki.vsm.util.tts.marytts.phonemes;
 
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
+
+import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
 /**
  * Created by alvaro on 7/31/16.

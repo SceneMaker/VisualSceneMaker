@@ -2,8 +2,11 @@ package de.dfki.vsm.util.tts.cereproc;
 
 import com.cereproc.cerevoice_eng.*;
 import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.tts.cereproc.audioplayer.Audioplayer;
+import de.dfki.vsm.util.tts.cereproc.audioplayer.ClipPlayer;
+import de.dfki.vsm.util.tts.cereproc.audioplayer.LinePlayer;
 import de.dfki.vsm.util.tts.cereproc.phonemes.ScottishPhoneme;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStart;
+import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStart;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
 import javax.sound.sampled.SourceDataLine;
@@ -25,21 +28,28 @@ public class GenericCallback extends TtsEngineCallback {
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     private PhrasePhonemeCache phraseCache;
     private String toSpeakPhrase;
+    private String  audioDevice;
+
     public GenericCallback(SourceDataLine line) {
         this.line = line;
         phonemes = new HashMap<Integer, LinkedList<Phoneme>>();
     }
 
-    public GenericCallback(SourceDataLine line, String pExecutionId, PhrasePhonemeCache cache, String phrase) {
+    public GenericCallback(SourceDataLine line, String pExecutionId, PhrasePhonemeCache cache, String phrase, String audioDevice) {
         this.line = line;
         phonemes = new HashMap<Integer, LinkedList<Phoneme>>();
         executionId = pExecutionId;
         phraseCache = cache;
         toSpeakPhrase = phrase;
+        this.audioDevice = audioDevice;
+
     }
+
+
 
     public void Callback(SWIGTYPE_p_CPRC_abuf abuf) {
         System.out.println("INFO: firing engine callback");
+
         int word_counter = -1;
         if(phonemes.isEmpty()){
             word_counter = phonemes.size();
@@ -55,25 +65,28 @@ public class GenericCallback extends TtsEngineCallback {
         speak(abuf);
     }
 
-    private void speak(SWIGTYPE_p_CPRC_abuf abuf){
-        System.out.println("INFO: firing engine callback");
-        int i, sz;
-        // sz is the number of 16-bits samples
-        System.out.println("INFO: checking audio size");
-        sz =  cerevoice_eng.CPRC_abuf_wav_sz(abuf);
-        byte[] b = new byte[sz * 2];
-        short s;
-        for(i = 0; i < sz; i++) {
-            // Sample at position i, a short
-            s = cerevoice_eng.CPRC_abuf_wav(abuf, i);
-            // The sample is written in Big Endian to the buffer
-            b[i * 2] = (byte) ((s & 0xff00) >> 8);
-            b[i * 2 + 1] = (byte) (s & 0x00ff);
+    protected Audioplayer createAudioPlayer(SWIGTYPE_p_CPRC_abuf abuf){
+        if( audioDevice == null || audioDevice.equals("") || audioDevice.equals("default")){
+            return new LinePlayer(line, abuf);
+        }else{
+            return new ClipPlayer(line.getFormat(), abuf, audioDevice);
         }
-        // Send the audio data to the Java audio player
-        mEventCaster.convey(new LineStart(this, executionId)); //Notify we start speaking
-        line.write(b, 0, sz * 2);
     }
+
+
+    private void speak(SWIGTYPE_p_CPRC_abuf abuf){
+
+        Audioplayer audioplayer = createAudioPlayer(abuf);
+        mEventCaster.convey(new LineStart(this, executionId)); //Notify we start speaking
+        try {
+            audioplayer.play();
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+
+    }
+
+
 
     public HashMap<Integer, LinkedList<Phoneme>> getPhonemes(){
         return phonemes;

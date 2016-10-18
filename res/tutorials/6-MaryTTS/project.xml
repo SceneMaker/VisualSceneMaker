@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="MaryTTS">
   <Plugins>
-    <Plugin type="device" name="stickmanmarytts" class="de.dfki.vsm.xtension.stickmanmarytts.StickmanMaryttsExecutor" load="true">
+    <Plugin type="device" name="stickmanmarytts" class="de.dfki.vsm.xtension.stickmantts.StickmanTtsExecutor" load="true">
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="true"/>
       <Feature key="mary.base" val="/mnt/data2/WorkHiwi/marytts-5.1.2"/>
-      <Feature key="fullscreen" val="true"/>
+      <Feature key="fullscreen" val="false"/>
+      <Feature key="xStage" val="500"/>
+      <Feature key="yStage" val="100"/>
+    </Plugin>
+    <Plugin type="device" name="voiceover" class="de.dfki.vsm.xtension.voiceover.VoiceOverExecutor" load="true">
+      <Feature key="mary.base" val="/mnt/data2/WorkHiwi/marytts-5.1.2"/>
+      <Feature key="tts" val="cereproc"/>
+      <Feature key="license" val="/home/alvaro/Documents/Universitat/TesisProject/license.lic"/>
     </Plugin>
   </Plugins>
   <Agents>
@@ -15,11 +22,17 @@
       <Feature key="en" val="dfki-poppy"/>
     </Agent>
     <Agent name="patrick" device="stickmanmarytts">
-      <Feature key="default-voice" val="en"/>
+      <Feature key="default-voice" val="de"/>
       <Feature key="en" val="dfki-spike"/>
       <Feature key="de" val="bits3"/>
     </Agent>
     <Agent name="qgui" device="questionnaire">
     </Agent>
+    <Agent name="voiceoff" device="voiceover">
+      <Feature key="default-voice" val="en"/>
+      <Feature key="en" val="/home/alvaro/Documents/Universitat/TesisProject/cerevoice_heather_3.2.0_48k.voice"/>
+    </Agent>
   </Agents>
+  <Player>
+  </Player>
 </Project>
