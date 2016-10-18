@@ -142,6 +142,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
     private JButton mPreferences;
     private JButton mUndo;
     private JButton mRedo;
+    private JButton mManager;
 
     //Dimension for buttons
     private Dimension tinyButtonDim = new Dimension(40, 40);
@@ -271,9 +272,21 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         return js;
     }
 
-    /**
-     *
-     */
+    public void setViewMode() {
+        mUndo.setVisible(false);
+        mRedo.setVisible(false);
+        mNormalize.setVisible(false);
+        mStraighten.setVisible(false);
+        mShowVarButton.setVisible(false);
+        mPlayButton.setVisible(false);
+        mStopButton.setVisible(false);
+        mSaveProject.setVisible(false);
+        mTogglePallete.setVisible(false);
+        mToggleElementEditor.setVisible(false);
+        mPreferences.setEnabled(true);
+    }
+
+    //
     private void initComponents() {
 
         //menu separator
@@ -287,8 +300,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
          */
         mTogglePallete = add(new AbstractAction("ACTION_SHOW_ELEMENTS",
                 Boolean.valueOf(Preferences.getProperty("showelements"))
-                        ? ICON_MORE_STANDARD
-                        : ICON_LESS_STANDARD) {
+                ? ICON_MORE_STANDARD
+                : ICON_LESS_STANDARD) {
                     public void actionPerformed(ActionEvent evt) {
                         mSceneFlowEditor.showElementDisplay();
                         refreshButtons();
@@ -354,7 +367,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         sanitizeButton(mRedo, tinyButtonDim);
         mRedo.setEnabled(false);
         add(Box.createHorizontalStrut(10));
-        add(createSeparator());
+        //add(createSeparator());
         //******************************************************************************************************
         //PROJECT EDITION SECTION 
         // Button to straighten all edeges
@@ -392,7 +405,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         // Format The Button As Tiny
         sanitizeButton(mShowVarButton, tinyButtonDim);
         add(Box.createHorizontalStrut(10));
-        add(createSeparator());
+        //add(createSeparator());
         add(Box.createHorizontalStrut(10));
         // The Play SceneFlow Button
         mPlayButton = add(new AbstractAction() {
@@ -422,17 +435,17 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         sanitizeButton(mStopButton, tinyButtonDim);
         mStopButton.setEnabled(false);
 
-        JButton b = add(new AbstractAction("ACTION_WINDOW", ICON_STACK_STANDARD) {
+        mManager = add(new AbstractAction("ACTION_WINDOW", ICON_STACK_STANDARD) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 EditorInstance.getInstance().showMonitor();
             }
         });
-        b.setRolloverIcon(ICON_STACK_ROLLOVER);
-        b.setToolTipText("Variable Manager");
-        sanitizeButton(b, tinyButtonDim);
+        mManager.setRolloverIcon(ICON_STACK_ROLLOVER);
+        mManager.setToolTipText("Variable Manager");
+        sanitizeButton(mManager, tinyButtonDim);
         add(Box.createHorizontalStrut(10));
-        add(createSeparator());
+        //add(createSeparator());
 
         //******************************************************************************************************
         // CONTROL OF NODES
@@ -441,17 +454,17 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         add(mPathScrollPane);
 
         //UP TO PARENT NODE 
-        b = add(new AbstractAction("ACTION_LEVEL_UP", ICON_UP_STANDARD) {
+        mManager = add(new AbstractAction("ACTION_LEVEL_UP", ICON_UP_STANDARD) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mSceneFlowEditor.getWorkSpace().decreaseWorkSpaceLevel();
             }
         });
-        b.setToolTipText("Up to parent node");
-        b.setRolloverIcon(ICON_UP_ROLLOVER);
-        sanitizeButton(b, tinyButtonDim);
+        mManager.setToolTipText("Up to parent node");
+        mManager.setRolloverIcon(ICON_UP_ROLLOVER);
+        sanitizeButton(mManager, tinyButtonDim);
         add(Box.createHorizontalStrut(10));
-        add(createSeparator());
+        //add(createSeparator());
         //******************************************************************************************************
         // SCREEN CONTROL
         //SCREENSHOT BUTTON
@@ -470,13 +483,13 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             }
         };
         action.putValue(Action.SHORT_DESCRIPTION, "Add/Remove window");
-        b = add(action);
-        b.setToolTipText("Take a screenshot");
-        b.setRolloverIcon(ICON_SCREENSHOT_ROLLOVER);
+        mManager = add(action);
+        mManager.setToolTipText("Take a screenshot");
+        mManager.setRolloverIcon(ICON_SCREENSHOT_ROLLOVER);
 
         //ZOOM IN BUTTON
-        sanitizeButton(b, smallButtonDim);
-        b = add(new AbstractAction("ACTION_ZOOM_IN", ICON_ZOOMIN_STANDARD) {
+        sanitizeButton(mManager, smallButtonDim);
+        mManager = add(new AbstractAction("ACTION_ZOOM_IN", ICON_ZOOMIN_STANDARD) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 mNodeSize = (mNodeSize < 190)
@@ -485,12 +498,12 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
                 saveEditorConfig();
             }
         });
-        b.setToolTipText("Zoom In");
-        b.setRolloverIcon(ICON_ZOOMIN_ROLLOVER);
+        mManager.setToolTipText("Zoom In");
+        mManager.setRolloverIcon(ICON_ZOOMIN_ROLLOVER);
 
         //ZOOM OUT BUTTON
-        sanitizeButton(b, smallButtonDim);
-        b = add(new AbstractAction("ACTION_ZOOM_OUT", ICON_ZOOMOUT_STANDARD) {
+        sanitizeButton(mManager, smallButtonDim);
+        mManager = add(new AbstractAction("ACTION_ZOOM_OUT", ICON_ZOOMOUT_STANDARD) {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 mNodeSize = (mNodeSize > 30)
@@ -499,9 +512,9 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
                 saveEditorConfig();
             }
         });
-        b.setToolTipText("Zoom Out");
-        b.setRolloverIcon(ICON_ZOOMOUT_ROLLOVER);
-        sanitizeButton(b, smallButtonDim);
+        mManager.setToolTipText("Zoom Out");
+        mManager.setRolloverIcon(ICON_ZOOMOUT_ROLLOVER);
+        sanitizeButton(mManager, smallButtonDim);
 
         //
         // Property Space
@@ -509,8 +522,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         add(Box.createHorizontalGlue());
         mToggleElementEditor = add(new AbstractAction("ACTION_SHOW_ELEMENTPROP",
                 Boolean.valueOf(Preferences.getProperty("showelementproperties"))
-                        ? ICON_LESS_STANDARD
-                        : ICON_MORE_STANDARD) {
+                ? ICON_LESS_STANDARD
+                : ICON_MORE_STANDARD) {
                     public void actionPerformed(ActionEvent evt) {
                         mSceneFlowEditor.toggleElementEditor();
                         updateElementEditorButton();
@@ -535,7 +548,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         //mLogger.message("Refreshing Buttons Of '" + this + "'");
         //*************************************
         //Refresh the buttons SAVE, UNDO and REDO when project have been changed
-        
+
         mSaveProject.setEnabled(mEditorProject.hasChanged());
 
         mUndo.setEnabled(undoAction.isEnabled());
@@ -565,12 +578,12 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             //mLogger.message("Not Running");
             mPlayButton.setIcon(ICON_PLAY_STANDARD);
             mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
-            
+
             mPlayButton.setToolTipText("Initialize project/Start the execution of the sceneflow");
             // if an execution has been ended disable the play button
             if (mRunTime.wasExecuted(mEditorProject) && mStopButton.isEnabled()) {
                 mPlayButton.setEnabled(false);
-            } else if (!mRunTime.isRunning(mEditorProject)){
+            } else if (!mRunTime.isRunning(mEditorProject)) {
                 mPlayButton.setEnabled(true);
                 mStopButton.setEnabled(false);
             }

@@ -70,6 +70,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // The editor's GUI components
     private final EditorMenuBar mEditorMenuBar;
     private final JTabbedPane mProjectEditors;
+
     //private final JScrollPane mWelcomeScreen;
     private final JPanel mWelcomeScreen = new JPanel();
     //public final EditorStarter mWelcomePanel;
@@ -78,6 +79,15 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     public synchronized static EditorInstance getInstance() {
         if (sInstance == null) {
             sInstance = new EditorInstance();
+        }
+
+        return sInstance;
+    }
+    
+    // Get the singelton editor instance
+    public synchronized static EditorInstance getVisualizer() {
+        if (sInstance == null) {
+            sInstance = new EditorInstance(true);
         }
 
         return sInstance;
@@ -114,7 +124,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     //
-    private ComponentListener mComponentListener = new ComponentListener() {
+    private final ComponentListener mComponentListener = new ComponentListener() {
         @Override
         public void componentResized(ComponentEvent e) {
             Preferences.setProperty("frame_height", Integer.toString(getHeight()));
@@ -137,6 +147,44 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         public void componentHidden(ComponentEvent e) {
         }
     };
+    
+     // Private construction of an editor
+    private EditorInstance(final boolean flag) {
+        // Configure preferences
+        Preferences.configure();
+        // Load the preferences
+        Preferences.load();        
+        // Set all fonts
+        setUIFonts();
+        setUIBackgrounds();
+        setUndecorated(true);
+        getContentPane().setBackground(Color.WHITE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        // Init the menu bar
+        mEditorMenuBar = new EditorMenuBar(this);
+        // Hide the menu bar 
+        mEditorMenuBar.setVisible(false);        
+        // Init the editor list        
+        mProjectEditors = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
+        // Init the editor application frame
+        final Dimension editorSize = new Dimension(
+                Integer.valueOf(Preferences.getProperty("frame_width")),
+                Integer.valueOf(Preferences.getProperty("frame_height")));
+        setPreferredSize(editorSize);
+        setSize(editorSize);
+        checkAndSetLocation();
+        //setTitle(Preferences.getProperty("frame_title"));
+        //setName(Preferences.getProperty("frame_name"));
+        //setJMenuBar(mEditorMenuBar);
+        // setContentPane(jsWelcome);
+        // add(mProjectEditorList); // COMMENTED BY M.FALLAS
+        pack();
+        // Handle resize and positioning
+        //addComponentListener(mComponentListener);
+
+        // Register the editor as event listener
+        mEventCaster.register(this);
+    }
 
     // Private construction of an editor
     private EditorInstance() {
@@ -397,9 +445,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         setContentPane(mProjectEditors);
         // Create a new project editor from project
         final ProjectEditor editor = new ProjectEditor(project);
+        // Set view mode here
+        editor.setViewMode();
         // Add the project editor to list of project
         // editors and select it in the tabbed pane
         addProjectTab(project.getProjectName(), editor);
+        mProjectEditors.getTabComponentAt(0).setVisible(false);
         // Set editor visible
         setVisible(true);
         // Refresh the appearance

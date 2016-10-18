@@ -37,6 +37,12 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
     private final OLDSceneScriptEditor mAuxiliaryEditor;
     //private final AuxiliaryEditor mAuxiliaryEditor;
 
+    public void setViewMode() {
+        // Hide some editor elements
+        getSceneFlowEditor().setViewMode();
+        getAuxiliaryEditor().setViewMode();
+    }
+
     // Create an empty project editor
     public ProjectEditor() {
         this(new EditorProject());
@@ -58,18 +64,18 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
         // Initialize the GUI components
         initComponents();
     }
-    
-    public void expandTree(){
+
+    public void expandTree() {
         mSceneFlowEditor.expandTree();
-        
+
     }
 
     // Get the sceneflow editor 
     public final SceneFlowEditor getSceneFlowEditor() {
         return mSceneFlowEditor;
     }
-    
-       // Get the sceneflow editor 
+
+    // Get the sceneflow editor 
     public final OLDSceneScriptEditor getAuxiliaryEditor() {
         return mAuxiliaryEditor;
     }
@@ -82,13 +88,13 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
     // Clean up the editor component
     public final void close() {
         mEditorProject = null;
-        
+
         // Remove from event dispatcher
         mEventDispatcher.remove(this);
         // Close / Cleanup Members
         mSceneFlowEditor.close();
         mAuxiliaryEditor.close();
-        
+
     }
 
     // Initialize the GUI components
@@ -229,7 +235,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
     // Refresh the editor's visual appearance
     public final void refresh() {
         // Print some information
-       //mLogger.message("Refreshing '" + this + "'");
+        //mLogger.message("Refreshing '" + this + "'");
         // Refresh the components
         mAuxiliaryEditor.refresh();
         mSceneFlowEditor.refresh();

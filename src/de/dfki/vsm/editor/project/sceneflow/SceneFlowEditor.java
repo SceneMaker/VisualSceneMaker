@@ -96,6 +96,18 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
     private final JSplitPane            mSplitPane;
     private final JScrollPane           mWorkSpaceScrollPane;
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
+    
+    
+     public void setViewMode() {
+        mStaticElementsPanel.setVisible(false);
+        mDynamicElementsPanel.setVisible(false);
+        //
+        mElementEditor.setVisible(false);
+        //
+        getToolBar().setViewMode();
+    }
+     
+     
     // Create a sceneflow editor
     public SceneFlowEditor(final EditorProject project) {
 
@@ -338,6 +350,8 @@ public final class SceneFlowEditor extends JPanel implements EventListener {
     public void setMessageLabelText(String value) {
         setMessageLabelText(value, false);
     }
+    
+     
 
     public void setMessageLabelText(String value, boolean forever) {
         if (forever) {

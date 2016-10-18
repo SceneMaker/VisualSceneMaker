@@ -61,7 +61,6 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     // The event dispatcher instance
     private final EventDispatcher mEventDispatcher = EventDispatcher.getInstance();
 
-    
     // The Script Editor Pane
     private final JScrollPane mScrollPane;
     private final JTabbedPane mTabPane;
@@ -74,7 +73,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final FunctionsEditor mFunctionEditor;
     private final DialogActEditor mDialogActEditor;
     private final JPanel mScriptTabPanel = new JPanel();
-          
+
     private final EditorConfig mPreferences;
     //private final String              mPreferencesFileName;
     private ArrayList<Integer> searchOffsets;
@@ -93,12 +92,17 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final ImageIcon ICON_PIN_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/pin_blue.png");
     //PIN status
     private boolean pinPricked = false;
-    
+
     //Editor configuration
     private final EditorConfig mEditorConfig;
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+
+    public void setViewMode() {
+        setVisible(false);
+    }
+
     public OLDSceneScriptEditor(final EditorProject project) {
         // Initialize the editor project
         mProject = project;
@@ -126,8 +130,8 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         //
         mEditorConfig = mProject.getEditorConfig();
         // Initialize Tabbed Pane
-     //   mTabPane = new JTabbedPane();
-        
+        //   mTabPane = new JTabbedPane();
+
         mTabPane = new JTabbedPane();
         mTabPane.setUI(new BasicTabbedPaneUI());
         mTabPane.setOpaque(false);
@@ -182,7 +186,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         setLayout(new OverlayLayout(this));
         setBorder(BorderFactory.createEmptyBorder());
         //add(mTabPane, BorderLayout.CENTER);
-        
+
         mPinButton = new JButton();
         pinPricked = mEditorConfig.sAUTOHIDE_BOTTOMPANEL;
         setPin(pinPricked);
@@ -206,7 +210,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         add(VpinBox, BorderLayout.AFTER_LINE_ENDS);
         add(mTabPane, BorderLayout.CENTER);
         add(mStatusLabel, BorderLayout.SOUTH);
-        
+
         // Register As Event Listener
         mEventDispatcher.register(this);
 
@@ -227,14 +231,15 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
 
     }
+
     // Set the pin pricked flag
     public final void setPin(boolean state) {
         pinPricked = state;
-        mPinButton.setIcon(pinPricked? ICON_PIN_ROLLOVER: ICON_PIN_STANDARD);
-        mPinButton.setRolloverIcon(pinPricked? ICON_PIN_STANDARD : ICON_PIN_ROLLOVER);
+        mPinButton.setIcon(pinPricked ? ICON_PIN_ROLLOVER : ICON_PIN_STANDARD);
+        mPinButton.setRolloverIcon(pinPricked ? ICON_PIN_STANDARD : ICON_PIN_ROLLOVER);
         mEditorConfig.setProperty("autohidebottombar", String.valueOf(pinPricked));
     }
-    
+
     private void sanitizeTinyButton(JButton b) {
         Dimension bDim = new Dimension(30, 30);
 
@@ -247,17 +252,17 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 //      b.setFocusable(false);
         b.setBorder(BorderFactory.createEmptyBorder());
     }
-    
+
     //Adds a tab to the tabbedpane with a plus icon
     void addTab(String tabName, final JComponent content) {
-        
+
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
-   
+
         mTabPane.addTab(null, new JScrollPane(ep));
-        
+
         JLabel tabLabel = new JLabel(tabName);
-       
+
         // Create an AddButton
         final AddButton mAddButton = new AddButton();
         mAddButton.setTabPos(tabCounter - 1);
@@ -280,11 +285,9 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
                     if (content instanceof FunctionsEditor) {
                         ((FunctionsEditor) content).addNewFunction();
-                    }
-                    else if (content instanceof DialogActEditor) {
+                    } else if (content instanceof DialogActEditor) {
                         //PLUS ACTION FOR DIALGOACTEDITOR
-                    }
-                    else {
+                    } else {
                         mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n");
                         mEditorPane.requestFocusInWindow();
                     }
@@ -311,6 +314,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     }
 //
 //    // Set the pin pricked flag
+
     public void setPinPricked() {
         setPin(true); // true pricks the pin
     }

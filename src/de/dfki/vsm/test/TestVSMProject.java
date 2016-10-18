@@ -25,11 +25,11 @@ public class TestVSMProject {
          rproject.setProjectName("lala");
          rproject.write(new File("_rt2"));
          */
-        final EditorInstance instance = EditorInstance.getInstance();
+        final EditorInstance instance = EditorInstance.getVisualizer();
         instance.setVisible(true);
 
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (Exception exc) {
         }
 
@@ -39,7 +39,7 @@ public class TestVSMProject {
         final ProjectEditor editor = instance.showProject(project);
 
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
         } catch (Exception exc) {
         }
 
