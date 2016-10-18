@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 /**
  * A floating point constant.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Float extends LiteralExpression {
     private float mValue;

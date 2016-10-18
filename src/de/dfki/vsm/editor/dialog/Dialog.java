@@ -23,7 +23,7 @@ import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class Dialog extends JDialog {
     protected final JPanel    mMainPanel = new JPanel(null);

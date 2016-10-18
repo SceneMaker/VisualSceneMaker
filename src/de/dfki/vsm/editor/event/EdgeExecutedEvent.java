@@ -6,7 +6,7 @@ import de.dfki.vsm.model.sceneflow.AbstractEdge;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class EdgeExecutedEvent extends EventObject {
     private AbstractEdge mEdge;

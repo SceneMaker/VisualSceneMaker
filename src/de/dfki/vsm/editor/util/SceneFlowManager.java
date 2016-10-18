@@ -17,7 +17,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class SceneFlowManager {

@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 /**
  * A struct constant.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class StructRecord extends LiteralExpression {
 

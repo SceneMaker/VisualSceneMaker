@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.interpreter.value;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ObjectValue extends AbstractValue {
     private java.lang.Object mValue;

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import javax.swing.JComponent;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class NodeVariableBadge extends JComponent {

@@ -53,7 +53,7 @@ import java.util.Timer;
 import javax.swing.JComponent;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public final class Node extends JComponent implements EventListener, Observer {

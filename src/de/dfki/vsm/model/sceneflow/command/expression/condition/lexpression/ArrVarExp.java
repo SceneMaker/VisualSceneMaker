@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 
 /**
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ArrVarExp extends LExpression {
     private String     mName;

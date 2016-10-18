@@ -73,7 +73,7 @@ import java.util.Random;
 import org.jpl7.Term;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Evaluator {
 

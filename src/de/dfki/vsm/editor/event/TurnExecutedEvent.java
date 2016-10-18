@@ -7,7 +7,7 @@ import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TurnExecutedEvent extends EventObject {
     private SceneTurn mTurn;

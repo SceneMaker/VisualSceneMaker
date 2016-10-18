@@ -10,7 +10,7 @@ import javax.swing.text.ViewFactory;
 
 /**
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class SyntaxEditorKit extends DefaultEditorKit implements ViewFactory {
 

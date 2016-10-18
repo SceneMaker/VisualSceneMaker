@@ -8,7 +8,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class LOGNovaFileHandler extends FileHandler {
 

@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  *
  */

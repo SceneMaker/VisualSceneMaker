@@ -17,7 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 /**
- * * @author Not me
+ * * @author Gregor Mehlmann
  */
 public class GesticonConfig implements ModelObject {
 

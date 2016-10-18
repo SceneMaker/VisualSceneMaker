@@ -6,7 +6,7 @@
 //import java.util.regex.Pattern;
 //
 ///**
-// * @author Not me
+// * @author Gregor Mehlmann
 // */
 //public class OLDJPLUtility {
 //    final static Pattern sEmptyIsoListPattern = Pattern.compile("\\[\\]");

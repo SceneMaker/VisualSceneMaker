@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 /**
  * A constant expression.
  *
- * @author Not men
+ * @author Gregor Mehlmannn
  */
 public abstract class LiteralExpression extends Condition {
 

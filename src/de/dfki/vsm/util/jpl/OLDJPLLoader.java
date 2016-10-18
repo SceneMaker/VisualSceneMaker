@@ -5,7 +5,7 @@
 //import de.dfki.vsm.util.log.LOGDefaultLogger;
 //
 ///**
-// * @author Not me
+// * @author Gregor Mehlmann
 // */
 //public class OLDJPLLoader extends Thread {
 //

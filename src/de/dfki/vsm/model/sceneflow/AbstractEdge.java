@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.ArrayList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class AbstractEdge implements ModelObject {
 

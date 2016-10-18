@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 /**
  * A paramater definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ParamDef implements SyntaxObject {
     private String mName;

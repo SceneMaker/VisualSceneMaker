@@ -19,7 +19,7 @@ package de.dfki.vsm.xapistuff;
 //import java.net.Socket;
 //
 ///**
-// * @author Not me
+// * @author Gregor Mehlmann
 // */
 //public final class VSMTCPSockClient extends VSMAgentClient {
 //

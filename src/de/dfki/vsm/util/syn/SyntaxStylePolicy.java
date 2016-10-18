@@ -29,7 +29,7 @@ import javax.swing.text.TabExpander;
 import javax.swing.text.Utilities;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class SyntaxStylePolicy implements ModelObject {
 

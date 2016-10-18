@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 /**
  * A unary logical condition
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class UnaryCond extends LogicalCond {
     private Condition mCondition;

@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class LOGSSISockLogger {
 

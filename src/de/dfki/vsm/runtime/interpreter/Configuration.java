@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Configuration {
     private final HashMap<BasicNode, LinkedList<State>> mConfiguration = new HashMap<BasicNode, LinkedList<State>>();

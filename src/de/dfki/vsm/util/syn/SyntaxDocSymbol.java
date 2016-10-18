@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 import java.io.ByteArrayOutputStream;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class SyntaxDocSymbol extends Symbol implements ModelObject {
 

@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Edge.TYPE;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ModifyEdgeAction extends EdgeAction {
     public ModifyEdgeAction(de.dfki.vsm.editor.Edge edge, WorkSpacePanel workSpace) {

@@ -17,7 +17,7 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class SyntaxTokenStyle implements Comparable, ModelObject {
 
