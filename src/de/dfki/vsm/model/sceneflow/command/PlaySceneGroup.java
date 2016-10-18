@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class PlaySceneGroup extends Command {
     private Expression         mArg;

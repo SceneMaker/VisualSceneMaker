@@ -12,4 +12,6 @@
     <Agent name="reeti" device="reeti">
     </Agent>
   </Agents>
+  <Player>
+  </Player>
 </Project>

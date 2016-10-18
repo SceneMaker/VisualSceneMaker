@@ -7,7 +7,7 @@
 //
 ///**
 // *
-// * @author Not me
+// * @author Gregor Mehlmann
 // */
 //public class OLDJPLResult extends LinkedList<HashMap<String, String>> {
 //    public OLDJPLResult(final String query) {}

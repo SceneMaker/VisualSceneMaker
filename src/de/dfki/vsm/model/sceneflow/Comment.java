@@ -15,7 +15,7 @@ import java.awt.Font;
 import javax.swing.JEditorPane;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class Comment implements ModelObject {

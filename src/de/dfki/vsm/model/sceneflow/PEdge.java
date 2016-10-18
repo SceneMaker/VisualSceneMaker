@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class PEdge extends AbstractEdge {
     protected int mProbability = Integer.MIN_VALUE;

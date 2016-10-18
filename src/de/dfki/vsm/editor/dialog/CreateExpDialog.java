@@ -25,7 +25,7 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class CreateExpDialog extends Dialog {
 

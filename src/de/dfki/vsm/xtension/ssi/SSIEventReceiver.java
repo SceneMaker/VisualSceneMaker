@@ -93,6 +93,7 @@ final class SSIEventReceiver extends Thread {
             
             // Receive a new message
             final String message = recvString();
+             mLogger.warning(message);
             // Check message content
             if (message != null) {
                 // Start time measure

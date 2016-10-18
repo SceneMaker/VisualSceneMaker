@@ -6,7 +6,7 @@ import de.dfki.vsm.util.bin.BINUtilities;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TestBINTools {
 

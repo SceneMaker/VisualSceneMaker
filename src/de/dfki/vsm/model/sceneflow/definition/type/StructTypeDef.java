@@ -16,7 +16,7 @@ import org.w3c.dom.Element;
 /**
  * A struct type definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class StructTypeDef extends TypeDef {
     private ArrayList<MemberDef> mMemberDefList;

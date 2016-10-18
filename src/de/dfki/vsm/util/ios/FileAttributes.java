@@ -7,7 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class FileAttributes {
     public static String relPath(String relPath) {

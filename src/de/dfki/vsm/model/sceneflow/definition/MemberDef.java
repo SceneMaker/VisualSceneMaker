@@ -11,7 +11,7 @@ import org.w3c.dom.Element;
 /**
  * A member definition.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class MemberDef implements SyntaxObject {
     private String mType;

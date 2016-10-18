@@ -17,7 +17,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TestSM3Query {
 

@@ -23,9 +23,9 @@
 <entry key="scriptfonsize">16</entry>
 <entry key="frame_width">800</entry>
 <entry key="defaultsupernodename">default</entry>
-<entry key="visualizationtrace">false</entry>
+<entry key="visualizationtrace">true</entry>
 <entry key="grid_y">1</entry>
-<entry key="propertiesdividerlocation">1096</entry>
+<entry key="propertiesdividerlocation">1082</entry>
 <entry key="grid_x">1</entry>
 <entry key="icon_file">res/img/icon.png</entry>
 <entry key="showsmartpathcalculations">false</entry>

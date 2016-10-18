@@ -192,6 +192,9 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Initialize the command
         TWorldCommand tworld_final_cmd = null;
         Action tworld_cmd_action = null;
+        // set all activities blocking
+        activity.setType(activity_type.blocking);
+
         // Check the activity type
         if (activity instanceof SpeechActivity) {
             final SpeechActivity speech_activity = (SpeechActivity) activity;
@@ -221,14 +224,6 @@ public final class TWorldExecutor extends ActivityExecutor {
                 String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
                 // build action
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
-
-                //GM@PG:WHY???
-                // wait a little bit ...
-                try {
-                    Thread.sleep(350);
-                } catch (final InterruptedException exc) {
-                    mLogger.failure(exc.toString());
-                }
             }
         } else {
             // Get the unique actor id
@@ -238,60 +233,81 @@ public final class TWorldExecutor extends ActivityExecutor {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("Reject")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Challenge")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("ShowPalms")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("OpenArms")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("LookLeft")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("LookRight")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("No")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("StrongNo")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PointLeft")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PointRight")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PresentLeft")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PresentRight")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Welcome")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Yes")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("StrongYes")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Angry")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Demanding")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Disgust")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Neutral")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
             } else if (activity_name.equalsIgnoreCase("Sad")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Smile")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Happy")) {
                 String intensity = activity.getValueOf("intensity");
-                intensity = (intensity.isEmpty()) ? "1.0" : intensity;
+                intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("CancelMoveTo")) {
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Play")) {
@@ -409,13 +425,12 @@ public final class TWorldExecutor extends ActivityExecutor {
                 replace("Ö", "Oe").
                 replace("Ä", "Ae").
                 replace("Ü", "Ue").
-                replace("ß", "ss");
-        //.
-        //replace("\n", " ").
-        //replace("   ", " ").
-        //replace("  ", " ");
-        message = prettyPrint(message);
-        mLogger.warning("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + message);
+                replace("ß", "ss").
+                replace("\n", " ").
+                replace("   ", " ").
+                replace("  ", " ");
+
+        mLogger.message("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message));
 
         // Send activity_name to tworld 
         synchronized (mActivityWorkerMap) {
@@ -425,18 +440,31 @@ public final class TWorldExecutor extends ActivityExecutor {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
             mActivityWorkerMap.put(tworld_cmd_action.getId(), cAW);
 
-            // wait until we got feedback
-            mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " waiting ....");
+            if (activity.getType() == activity_type.blocking) { // Wait only if activity is blocking
+                // wait until we got feedback
+                mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " waiting ...");
 
-            while (mActivityWorkerMap.containsValue(cAW)) {
-                try {
-                    mActivityWorkerMap.wait();
-                } catch (InterruptedException exc) {
-                    mLogger.failure(exc.toString());
+                while (mActivityWorkerMap.containsValue(cAW)) {
+                    try {
+                        mActivityWorkerMap.wait();
+                    } catch (InterruptedException exc) {
+                        mLogger.failure(exc.toString());
+                    }
+                }
+
+                StringBuilder sb = new StringBuilder();
+
+                if (mActivityWorkerMap.size() > 1) {
+                    for (String aw : mActivityWorkerMap.keySet()) {
+                        sb.append(aw).append(", ");
+                    }
+
+                    sb.delete(sb.length() - 2, sb.length());
+                    mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " done, ActivityWorker (" + sb.toString() + ") stil active ...");
+                } else {
+                    mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " done ...");
                 }
             }
-
-            mLogger.warning("ActivityWorker " + tworld_cmd_action.getId() + " done ....");
         }
         // Return when terminated
     }
@@ -450,7 +478,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Start the client thread
         client.start();
         // Print some information
-        mLogger.warning("Accepting " + client.getName() + "");
+        mLogger.success("Accepting " + client.getName() + "");
     }
 
     // Handle some message
@@ -460,7 +488,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         // Sanitize the message
         final String message = input.replaceAll("..xml\\s+version........", "");
         // Print some information
-        mLogger.warning("Handling new message:\n" + prettyPrint(message) + "");
+        mLogger.message("Handling new message:\n" + prettyPrint(message) + "");
         // Notify the relevant threads
         synchronized (mActivityWorkerMap) {
             final TWorldFeedback tworld_final_feedback = new TWorldFeedback();
@@ -488,7 +516,7 @@ public final class TWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable                               
                                 //mLogger.warning("Agent starts speaking");
                                 if (mUseJPL) {
-                                     JPLEngine.query("now(Time), "
+                                    JPLEngine.query("now(Time), "
                                             + "jdd(["
                                             + "type:" + "event" + ","
                                             + "name:" + "agent" + ","
@@ -530,20 +558,24 @@ public final class TWorldExecutor extends ActivityExecutor {
                                     // Set speaking variable
                                     mProject.setVariable("AgentIsSpeaking", false);
                                 }
-                                // remove the activity
-                                if (mActivityWorkerMap.containsKey(id)) {
-                                    mActivityWorkerMap.remove(id);
-                                }
+//                                // remove the activity
+//                                if (mActivityWorkerMap.containsKey(id)) {
+//                                    mActivityWorkerMap.remove(id);
+//                                } else {
+//                                    mLogger.warning("Activityworker for " + id + " has been stopped before (TTS end speak notification is received after cmd end notification)");
+//                                }
                                 // wake me up ..
                                 mActivityWorkerMap.notifyAll();
                             }
 
                             // TODO marker!
                         }
-                    } else {
+                    } else { // there is no cai_event - hence no tts notification.
                         // remove the activity in any case
                         if (mActivityWorkerMap.containsKey(id)) {
                             mActivityWorkerMap.remove(id);
+                        } else {
+                            mLogger.warning("Activityworker for " + id + " has been stopped before (cmd end notification is received after TTS end speak notification)");
                         }
                         // wake me up ..
                         mActivityWorkerMap.notifyAll();

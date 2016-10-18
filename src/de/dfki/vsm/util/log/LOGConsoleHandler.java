@@ -6,7 +6,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class LOGConsoleHandler extends ConsoleHandler {
 

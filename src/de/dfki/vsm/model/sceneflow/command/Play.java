@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Play extends Command {
 

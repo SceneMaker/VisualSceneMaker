@@ -8,7 +8,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import org.w3c.dom.Element;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class HistoryValueOf extends Expression {
     private String mNode;

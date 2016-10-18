@@ -12,7 +12,7 @@ import org.w3c.dom.Element;
 import java.util.HashMap;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class ActionParam extends ActionFeature {
 

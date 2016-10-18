@@ -36,7 +36,7 @@ import javax.swing.JScrollPane;
 
 /**
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class ModifyIEdgeDialog extends Dialog {
 

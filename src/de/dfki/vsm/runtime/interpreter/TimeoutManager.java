@@ -32,7 +32,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TimeoutManager {
 

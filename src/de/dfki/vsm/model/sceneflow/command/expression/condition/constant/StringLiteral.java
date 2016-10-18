@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 /**
  * A string constant.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class StringLiteral extends LiteralExpression {
 

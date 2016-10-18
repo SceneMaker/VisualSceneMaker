@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.Random;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class Process extends java.lang.Thread {
 

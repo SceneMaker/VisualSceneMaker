@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public final class SceneTurn extends SceneEntity {
 

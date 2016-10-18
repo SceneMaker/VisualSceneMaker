@@ -8,7 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public abstract class CopyTool {
 

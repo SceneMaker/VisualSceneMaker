@@ -18,7 +18,7 @@ import java.util.Map;
 import javafx.util.Pair;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TextFormat {
 

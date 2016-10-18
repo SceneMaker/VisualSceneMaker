@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.tpl;
 
 /**
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class TPLTuple<F, S> {
 

@@ -9,7 +9,7 @@ import org.w3c.dom.Element;
 /**
  * A variable expression.
  *
- * @author Not me
+ * @author Gregor Mehlmann
  */
 public class VarExp extends LExpression {
     private String mName;
