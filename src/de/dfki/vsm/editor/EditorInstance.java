@@ -355,7 +355,11 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     ////////////////////////////////////////////////////////////////////////////
     // Get the current project editor
     public final ProjectEditor getSelectedProjectEditor() {
-        return (ProjectEditor) mProjectEditors.getSelectedComponent();
+        if(mProjectEditors != null) {
+            return (ProjectEditor) mProjectEditors.getSelectedComponent();
+        } else {
+            return null;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
