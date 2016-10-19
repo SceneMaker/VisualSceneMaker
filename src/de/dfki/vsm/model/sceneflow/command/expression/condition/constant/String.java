@@ -70,7 +70,7 @@ public class String extends Constant {
             mValue = element.getAttribute("value");
         } else {
             mValue = StringEscapeUtils.unescapeXml(element.getTextContent());
-            System.err.println(mValue);
+            //System.err.println(mValue);
         }
 
         //mValue = element.getAttribute("value");
