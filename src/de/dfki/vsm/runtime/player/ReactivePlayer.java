@@ -255,6 +255,9 @@ public final class ReactivePlayer extends RunTimePlayer {
         };
         // Start the playback task
         worker.start();
+        // Inform Sceneflow that Agent has turn
+        mProject.setVariable("AgentHasTurn", true);
+        
         // Wait for playback task
         boolean finished = false;
         while (!finished) {
@@ -274,6 +277,9 @@ public final class ReactivePlayer extends RunTimePlayer {
                 worker.abort();
             }
         }
+        // Inform Sceneflow that Agent has ended turn
+        mProject.setVariable("AgentHasTurn", false);
+        
         // Print some information
         //mLogger.message("Continuing '" + process + "'");
     }
