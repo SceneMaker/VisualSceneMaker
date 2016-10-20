@@ -3,3 +3,4 @@ log/
 bld/
 nbproject/
 src/de/dfki/vsm/sfsl/parser/
+/prj/version.ini
