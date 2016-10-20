@@ -364,6 +364,17 @@ public class IDManager {
                         }
                     }
 
+                    if(node.hasDEdge()){
+                        String eeIDIN = relationOldNewIDRef.get(node.getDedge().getTarget());
+
+                        if (eeIDIN != null) {
+                            node.getDedge().setTarget(eeIDIN);
+                        } else {
+                            node.removeDEdge();
+                        }
+
+                    }
+
                     break;
 
                 case TNODE :
