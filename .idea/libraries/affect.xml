@@ -1,0 +1,23 @@
+<component name="libraryTable">
+  <library name="affect">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/affect.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/cerevoice_eng.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/Charamelapi-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javaGeom-0.11.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/JCup.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/JFlex.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jna-4.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jna-platform-4.2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/JPL3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/marytts-client-5.1.2-jar-with-dependencies.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/RobotEngineApplication.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/Stickman.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ujmp-complete-0.2.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/affect.jar!/" />
+    </SOURCES>
+  </library>
+</component>
