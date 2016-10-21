@@ -245,28 +245,14 @@ public class IDManager {
                 }
             }
             else {
-
-                // System.out.println("Checking start node IDs of super node " + node.getId());
                 HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
                 SuperNode             sn     = (SuperNode) node.getParentNode();
                 if(sn != null) {
                     HashMap<String, BasicNode> snm = sn.getStartNodeMap();
-
                     for (String key : snm.keySet()) {
-
-                        // DEBUG
-                        // System.out.println("\treassign old start node id " + key + " to " + relationOldNewIDRef.get(key));
                         newSNM.put(relationOldNewIDRef.get(key), snm.get(key));
                     }
-
                     sn.setStartNodeMap(newSNM);
-
-                    // now go for the sub super nodes
-                    /*for (SuperNode sNode : sn.getSuperNodeList()) {
-
-                        // reassign start node ids of sub super nodes.
-                        reassignSubSuperNodeStartNodeIDs(sNode, relationOldNewIDRef);
-                    }*/
                 }
             }
         }
