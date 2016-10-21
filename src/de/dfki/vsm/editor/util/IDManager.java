@@ -367,26 +367,20 @@ public class IDManager {
 
                     if(node.hasDEdge()){
                         reasignDedge(relationOldNewIDRef, node);
-
                     }
 
                     break;
 
                 case TNODE :
-
                     // DEBUG System.out.println("tedge");
                     reasignDedge(relationOldNewIDRef, node);
-
                     break;
 
                 case ENODE :
                     reasignDedge(relationOldNewIDRef, node);
-
                     break;
-
                 case NONE :
                     reasignDedge(relationOldNewIDRef, node);
-
                     break;
                 }
             }
