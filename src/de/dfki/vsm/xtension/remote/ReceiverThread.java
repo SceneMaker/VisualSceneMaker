@@ -27,7 +27,7 @@ public class ReceiverThread extends Thread {
 
     private boolean mRunning = true;
 
-    private MulticastSocket mSocket;
+    private DatagramSocket mSocket;
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -41,16 +41,17 @@ public class ReceiverThread extends Thread {
     public void run() {
         try {
 
-            mSocket = new MulticastSocket(mPort);
-            mSocket.setReuseAddress(true);
-            mSocket.setBroadcast(true);
-            mSocket.joinGroup(InetAddress.getByName("230.0.0.1"));
-
-            //Keep a mSocket open to listen to all the UDP trafic that is destined for this port
-//            mSocket = new DatagramSocket(null);
+//            mSocket = new MulticastSocket(mPort);
 //            mSocket.setReuseAddress(true);
 //            mSocket.setBroadcast(true);
-//            mSocket.bind(new InetSocketAddress(mPort));
+//            mSocket.joinGroup(InetAddress.getByName("230.0.0.1"));
+
+            //Keep a mSocket open to listen to all the UDP trafic that is destined for this port
+            mSocket = new DatagramSocket(null);
+            mSocket.setReuseAddress(true);
+            mSocket.setBroadcast(true);
+            mSocket.bind(new InetSocketAddress(mPort));
+
             while (mRunning) {
                 mLogger.message("Ready to receive messages ...");
 
