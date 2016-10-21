@@ -5,20 +5,11 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.FEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.TEdge;
-import java.util.ArrayList;
+import de.dfki.vsm.model.sceneflow.*;
+
+import java.util.*;
 
 //~--- JDK imports ------------------------------------------------------------
-
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Set;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -58,6 +49,15 @@ public class PasteNodesAction extends EditorAction {
 
         // be sure to give all copied nodes (and edges) new ids
         im.reassignAllIDs(nodes);
+        if(nodes.size() > 0){//reasing the start node
+            BasicNode node = nodes.iterator().next();
+            BasicNode parent = node.getParentNode();
+            if(parent != null && parent instanceof SuperNode){
+                SuperNode superNode =  mWorkSpace.getSceneFlowManager().getCurrentActiveSuperNode();
+                HashMap<String, BasicNode> startMap = ((SuperNode)parent).getCopyOfStartNodeMap();
+                superNode.setStartNodeMap(startMap);
+            }
+        }
 
         // Remove edges
         for (BasicNode node : nodes) {
