@@ -90,11 +90,8 @@ auxiliary.show.customizer.message=<message>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/4">
             <compilation-unit>
                 <package-root>res</package-root>
-                <source-level>1.8</source-level>
-            </compilation-unit>
-            <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">lib/JCup.jar;lib/JFlex.jar;lib/JPL3.jar;lib/javaGeom-0.11.1.jar;lib/ujmp-complete-0.2.5.jar;lib/core.jar;lib/Stickman.jar;lib/Charamelapi-1.0.jar;lib/marytts-client-5.1.2-jar-with-dependencies.jar;lib/marytts-lang-en-5.1.2.jar;lib/marytts-runtime-5.1.2-jar-with-dependencies.jar;lib/voice-dfki-obadiah-5.1.jar;lib/voice-dfki-poppy-5.1.jar;lib/voice-dfki-prudence-5.1.jar;lib/voice-dfki-spike-5.1.jar;lib/affect.jar;lib/RobotEngineApplication.jar;lib/cerevoice_eng.jar</classpath>
+                <classpath mode="compile">lib/JCup.jar;lib/JFlex.jar;lib/JPL3.jar;lib/javaGeom-0.11.1.jar;lib/ujmp-complete-0.2.5.jar;lib/core.jar;lib/Stickman.jar;lib/Charamelapi-1.0.jar;lib/marytts-client-5.1.2-jar-with-dependencies.jar;lib/marytts-lang-en-5.1.2.jar;lib/marytts-runtime-5.1.2-jar-with-dependencies.jar;lib/voice-dfki-obadiah-5.1.jar;lib/voice-dfki-poppy-5.1.jar;lib/voice-dfki-prudence-5.1.jar;lib/voice-dfki-spike-5.1.jar;lib/affect.jar;lib/RobotEngineApplication.jar;lib/cerevoice_eng.jar;lib/vg/freehep-export-2.1.1.jar;lib/vg/freehep-graphics2d-2.1.1.jar;lib/vg/freehep-graphicsio-2.1.1.jar;lib/vg/freehep-graphicsio-emf-2.1.1.jar;lib/vg/freehep-graphicsio-java-2.1.1.jar;lib/vg/freehep-graphicsio-pdf-2.1.1.jar;lib/vg/freehep-graphicsio-ps-2.1.1.jar;lib/vg/freehep-graphicsio-svg-2.1.1.jar;lib/vg/freehep-graphicsio-swf-2.1.1.jar;lib/vg/freehep-graphicsio-tests-2.1.1.jar;lib/vg/freehep-io-2.0.2.jar;lib/vg/freehep-swing-2.0.3.jar;lib/vg/freehep-util-2.0.2.jar;lib/vg/freehep-xml-2.1.1.jar;lib/vg/jas-plotter-2.2.jar;lib/vg/jdom-1.0.jar;lib/vg/junit-3.8.2.jar;lib/vg/openide-lookup-1.9-patched-1.0.jar</classpath>
                 <source-level>1.8</source-level>
             </compilation-unit>
         </java-data>

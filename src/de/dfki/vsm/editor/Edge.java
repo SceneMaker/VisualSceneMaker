@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.action.ModifyEdgeAction;
 import de.dfki.vsm.editor.event.EdgeEditEvent;
@@ -22,7 +21,6 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
 import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sEEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
@@ -31,16 +29,13 @@ import static de.dfki.vsm.Preferences.sPEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -50,13 +45,11 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
-
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Timer;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -74,13 +67,13 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Patrick Gebhard
  * @author Gregor Mehlmann
  */
-public class Edge extends JComponent implements EventListener, Observer, MouseListener
-{
+public class Edge extends JComponent implements EventListener, Observer, MouseListener {
 
     // The actual type
     private TYPE mType = null;
@@ -136,17 +129,15 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     private UndoManager mUndoManager;
     private boolean firstDrag = false;
 
-    public enum TYPE
-    {
+    public enum TYPE {
+
         EEDGE, TEDGE, CEDGE, PEDGE, IEDGE, FEDGE
     }
 
-    public Edge(TYPE type)
-    {
+    public Edge(TYPE type) {
 
         // TODO: remove constructor
-        switch (type)
-        {
+        switch (type) {
             case EEDGE:
                 mType = TYPE.EEDGE;
                 mName = "Epsilon";
@@ -199,8 +190,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         initEditBox();
     }
 
-    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode)
-    {
+    public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode) {
         mDataEdge = edge;
         mWorkSpace = ws;
         mEditorConfig = mWorkSpace.getEditorConfig();
@@ -222,8 +212,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
     // TODO: Neuer Konstruktor, der Source und Target dockpoint "mitbekommt"
     public Edge(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.AbstractEdge edge, TYPE type, Node sourceNode, Node targetNode,
-            Point sourceDockPoint, Point targetDockpoint)
-    {
+            Point sourceDockPoint, Point targetDockpoint) {
         mDataEdge = edge;
         mWorkSpace = ws;
         mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
@@ -244,52 +233,42 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     @Override
-    public void update(Observable o, Object obj)
-    {
+    public void update(Observable o, Object obj) {
 
         // mLogger.message("AbstractEdge.update(" + obj + ")");
         update();
     }
 
-    public de.dfki.vsm.model.sceneflow.AbstractEdge getDataEdge()
-    {
+    public de.dfki.vsm.model.sceneflow.AbstractEdge getDataEdge() {
         return mDataEdge;
     }
 
-    public Node getSourceNode()
-    {
+    public Node getSourceNode() {
         return mSourceNode;
     }
 
-    public Node getTargetNode()
-    {
+    public Node getTargetNode() {
         return mTargetNode;
     }
 
-    public TYPE getType()
-    {
+    public TYPE getType() {
         return mType;
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return mName + "(" + mSourceNode.getDataNode().getId() + "->" + mTargetNode.getDataNode().getId() + ")";
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return mDescription;
     }
 
-    public void update()
-    {
+    public void update() {
 
         // configure type
-        if (mDataEdge != null)
-        {
-            switch (mType)
-            {
+        if (mDataEdge != null) {
+            switch (mType) {
                 case EEDGE:
                     mName = "Epsilon";
                     mColor = sEEDGE_COLOR;
@@ -315,12 +294,9 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                     mName = "Conditional";
                     mColor = sCEDGE_COLOR;
 
-                    if (((CEdge) mDataEdge).getCondition() != null)
-                    {
+                    if (((CEdge) mDataEdge).getCondition() != null) {
                         mDescription = ((CEdge) mDataEdge).getCondition().getConcreteSyntax();
-                    }
-                    else
-                    {
+                    } else {
                         mDescription = "";
                     }
 
@@ -337,12 +313,9 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                     mName = "Interruptive";
                     mColor = sIEDGE_COLOR;
 
-                    if (((IEdge) mDataEdge).getCondition() != null)
-                    {
+                    if (((IEdge) mDataEdge).getCondition() != null) {
                         mDescription = ((IEdge) mDataEdge).getCondition().getConcreteSyntax();
-                    }
-                    else
-                    {
+                    } else {
                         mDescription = "";
                     }
 
@@ -376,22 +349,16 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mFontHeightCorrection = (mFM.getAscent() - mFM.getDescent()) / 2;
     }
 
-    class MyDocumentListener implements DocumentListener
-    {
+    class MyDocumentListener implements DocumentListener {
 
         @Override
         // character added
-        public void insertUpdate(DocumentEvent e)
-        {
-            if (mType == TYPE.CEDGE)
-            {
+        public void insertUpdate(DocumentEvent e) {
+            if (mType == TYPE.CEDGE) {
 
-                if (!validate(mValueEditor.getText()))
-                {
+                if (!validate(mValueEditor.getText())) {
                     // wrong condition                   
-                }
-                else
-                {
+                } else {
                     // correct condition
                 }
             }
@@ -399,54 +366,44 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         @Override
         // character removed
-        public void removeUpdate(DocumentEvent e)
-        {
-            if (mType == TYPE.CEDGE)
-            {
+        public void removeUpdate(DocumentEvent e) {
+            if (mType == TYPE.CEDGE) {
 
-                if (!validate(mValueEditor.getText()))
-                {
+                if (!validate(mValueEditor.getText())) {
                     // wrong condition
-                }
-                else
-                {
+                } else {
                     // correct condition
                 }
             }
         }
 
         @Override
-        public void changedUpdate(DocumentEvent e)
-        {
+        public void changedUpdate(DocumentEvent e) {
             //Plain text components do not fire these events
         }
     }
 
-    private boolean validate(String condition)
-    {
+    private boolean validate(String condition) {
 
         String inputString = condition;
 
-        try
-        {
+        try {
             ChartParser.parseResultType = ChartParser.LOG;
             ChartParser.run(inputString);
 
             LogicalCond log = ChartParser.logResult;
 
             return (log != null) && !ChartParser.errorFlag;
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
 
             return false;
         }
     }
 
     /* 
-    * Initialize mTextPane and mValueEditor
+     * Initialize mTextPane and mValueEditor
      */
-    private void initEditBox()
-    {
+    private void initEditBox() {
 
         setLayout(null);
 
@@ -456,8 +413,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         Color borderColor = Preferences.sTEDGE_COLOR;
 
-        switch (mType)
-        {
+        switch (mType) {
 
             case TEDGE:
                 borderColor = Preferences.sTEDGE_COLOR;
@@ -491,27 +447,19 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mTextPanel.add(mValueEditor);
         mTextPanel.add(Box.createRigidArea(new Dimension(5, 5)));
 
-        if (mDataEdge != null)
-        {
-            if (mType.equals(TYPE.TEDGE))
-            {
+        if (mDataEdge != null) {
+            if (mType.equals(TYPE.TEDGE)) {
                 mValueEditor.setText("" + ((TEdge) mDataEdge).getTimeout());
-            }
-            else if (mType.equals(TYPE.PEDGE))
-            {
+            } else if (mType.equals(TYPE.PEDGE)) {
                 mValueEditor.setText("" + ((PEdge) mDataEdge).getProbability());
-            }
-            else
-            {
+            } else {
                 mValueEditor.setText(mDescription);
             }
         }
 
-        Action pressedAction = new AbstractAction()
-        {
+        Action pressedAction = new AbstractAction() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 setDeselected();
 
                 NodeSelectedEvent evt = new NodeSelectedEvent(mWorkSpace,
@@ -520,26 +468,21 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 EventDispatcher.getInstance().convey(evt);
                 updateFromTextEditor();
 
-                if (!validate(mValueEditor.getText()))
-                {
+                if (!validate(mValueEditor.getText())) {
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                             "Invalid Condition");
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);
                     // wrong condition
-                }
-                else
-                {
+                } else {
                     // correct condition
                 }
             }
         };
 
-        Action escapeAction = new AbstractAction()
-        {
+        Action escapeAction = new AbstractAction() {
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 setDeselected();
             }
         };
@@ -551,73 +494,54 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     /*
-    *   Take input value of mValueEditor and set it as value of the edge
+     *   Take input value of mValueEditor and set it as value of the edge
      */
-    public void updateFromTextEditor()
-    {
+    public void updateFromTextEditor() {
         String input = mValueEditor.getText();
 
-        if (mType.equals(TYPE.TEDGE))
-        {
-            try
-            {
+        if (mType.equals(TYPE.TEDGE)) {
+            try {
                 ((TEdge) mDataEdge).setTimeout(Long.valueOf(input));
-            } catch (NumberFormatException e)
-            {
+            } catch (NumberFormatException e) {
                 mLogger.warning("Invalid Number Format");
             }
 
-        }
-        else if (mType.equals(TYPE.CEDGE))
-        {
-            try
-            {
+        } else if (mType.equals(TYPE.CEDGE)) {
+            try {
                 ChartParser.parseResultType = ChartParser.LOG;
                 ChartParser.run(input);
 
                 LogicalCond log = ChartParser.logResult;
 
-                if ((log != null) && !ChartParser.errorFlag)
-                {
+                if ((log != null) && !ChartParser.errorFlag) {
                     ((CEdge) mDataEdge).setCondition(log);
-                }
-                else
-                {
+                } else {
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                             "Remember to wrap condition in parenthesis");
                     // Do nothing
                 }
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
             }
 
-        }
-        else if (mType.equals(TYPE.IEDGE))
-        {
-            try
-            {
+        } else if (mType.equals(TYPE.IEDGE)) {
+            try {
                 ChartParser.parseResultType = ChartParser.LOG;
                 ChartParser.run(input);
 
                 LogicalCond log = ChartParser.logResult;
 
-                if ((log != null) && !ChartParser.errorFlag)
-                {
+                if ((log != null) && !ChartParser.errorFlag) {
                     ((IEdge) mDataEdge).setCondition(log);
+                } else {
                 }
-                else
-                {
-                }
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
             }
         }
 
         EditorInstance.getInstance().refresh();
     }
 
-    public void setDeselected()
-    {
+    public void setDeselected() {
         mIsSelected = false;
         mCP1Selected = false;
         mCP2Selected = false;
@@ -629,40 +553,35 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     @Override
-    public void mouseClicked(java.awt.event.MouseEvent event)
-    {
+    public void mouseClicked(java.awt.event.MouseEvent event) {
 
         //////////!!!!!!!!!!!!!!!!!!!!
         // PG: 25.2.11 DISABELD: System.err.println("Sending node selected event");
         EventDispatcher.getInstance().convey(new EdgeSelectedEvent(this, this.getDataEdge()));
         mIsSelected = true;
 
-        if (mEg.controlPoint1HandlerContainsPoint(event.getPoint(), 10))
-        {
+        if (mEg.controlPoint1HandlerContainsPoint(event.getPoint(), 10)) {
             mCP1Selected = true;
             mCP2Selected = false;
             mCEPSelected = false;
             mCSPSelected = false;
         }
 
-        if (mEg.controlPoint2HandlerContainsPoint(event.getPoint(), 10))
-        {
+        if (mEg.controlPoint2HandlerContainsPoint(event.getPoint(), 10)) {
             mCP1Selected = false;
             mCP2Selected = true;
             mCEPSelected = false;
             mCSPSelected = false;
         }
 
-        if (!(mCP1Selected || mCP2Selected) && mEg.curveStartPointContainsPoint(event.getPoint(), 10))
-        {
+        if (!(mCP1Selected || mCP2Selected) && mEg.curveStartPointContainsPoint(event.getPoint(), 10)) {
             mCP1Selected = false;
             mCP2Selected = false;
             mCEPSelected = false;
             mCSPSelected = true;
         }
 
-        if (!(mCP1Selected || mCP2Selected) && mEg.curveEndPointContainsPoint(event.getPoint(), 10))
-        {
+        if (!(mCP1Selected || mCP2Selected) && mEg.curveEndPointContainsPoint(event.getPoint(), 10)) {
             mCP1Selected = false;
             mCP2Selected = false;
             mCEPSelected = true;
@@ -674,15 +593,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         repaint();
 
         // show contect menu
-        if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1))
-        {
+        if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
             mWorkSpace.showContextMenu(event, this);
-        }
-        else if ((event.getClickCount() == 2))
-        {
+        } else if ((event.getClickCount() == 2)) {
 
-            if (mType.equals(TYPE.TEDGE))
-            {
+            if (mType.equals(TYPE.TEDGE)) {
                 String timeout = getDescription();
                 timeout = timeout.replace("m", "");
                 timeout = timeout.replace("s", "");
@@ -690,22 +605,17 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 timeout = timeout.replace("\n", "");
                 mValueEditor.setText(timeout);
 
-            }
-            else if (mType.equals(TYPE.PEDGE))
-            {
+            } else if (mType.equals(TYPE.PEDGE)) {
                 ModifyEdgeAction modifyAction = new ModifyEdgeAction(this, mWorkSpace);
 
                 modifyAction.run();
                 EditorInstance.getInstance().refresh();
 
-            }
-            else if (mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE))
-            {
+            } else if (mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {
                 mValueEditor.setText(this.getDescription());
             }
 
-            if (mType.equals(TYPE.TEDGE) || mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE))
-            {
+            if (mType.equals(TYPE.TEDGE) || mType.equals(TYPE.CEDGE) || mType.equals(TYPE.IEDGE)) {
 
                 // mValueEditor.setText(getDescription());
                 mValueEditor.requestFocus();
@@ -722,12 +632,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      * Handles the mouse pressed event
      */
     @Override
-    public void mousePressed(java.awt.event.MouseEvent e)
-    {
+    public void mousePressed(java.awt.event.MouseEvent e) {
         mIsSelected = true;
 
-        if (mEg.controlPoint1HandlerContainsPoint(e.getPoint(), 10))
-        {
+        if (mEg.controlPoint1HandlerContainsPoint(e.getPoint(), 10)) {
             firstDrag = true;
             mCP1Selected = true;
             mCP2Selected = false;
@@ -735,8 +643,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             mCSPSelected = false;
         }
 
-        if (mEg.controlPoint2HandlerContainsPoint(e.getPoint(), 10))
-        {
+        if (mEg.controlPoint2HandlerContainsPoint(e.getPoint(), 10)) {
             firstDrag = true;
             mCP1Selected = false;
             mCP2Selected = true;
@@ -744,16 +651,14 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             mCSPSelected = false;
         }
 
-        if (!(mCP1Selected || mCP2Selected) && mEg.curveStartPointContainsPoint(e.getPoint(), 10))
-        {
+        if (!(mCP1Selected || mCP2Selected) && mEg.curveStartPointContainsPoint(e.getPoint(), 10)) {
             mCP1Selected = false;
             mCP2Selected = false;
             mCEPSelected = false;
             mCSPSelected = true;
         }
 
-        if (!(mCP1Selected || mCP2Selected) && mEg.curveEndPointContainsPoint(e.getPoint(), 10))
-        {
+        if (!(mCP1Selected || mCP2Selected) && mEg.curveEndPointContainsPoint(e.getPoint(), 10)) {
             mCP1Selected = false;
             mCP2Selected = false;
             mCEPSelected = true;
@@ -765,12 +670,10 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     @Override
-    public void mouseReleased(java.awt.event.MouseEvent e)
-    {
+    public void mouseReleased(java.awt.event.MouseEvent e) {
 
         // System.out.println("edge - mouse released");
-        if (mCSPSelected)
-        {
+        if (mCSPSelected) {
             Point relPos = (Point) mSourceNode.getLocation().clone();
 
             relPos.setLocation(e.getX() - relPos.x, e.getY() - relPos.y);
@@ -780,20 +683,16 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             mSourceNode.mDockingManager.getNearestDockPoint(this, relPos);
         }
 
-        if (mCEPSelected)
-        {
+        if (mCEPSelected) {
             Point relPos = (Point) mTargetNode.getLocation().clone();
 
             relPos.setLocation(e.getX() - relPos.x, e.getY() - relPos.y);
 
             // DEBUG System.out.println("set new dock point for pos " + relPos);
-            if (!mPointingToSameNode)
-            {
+            if (!mPointingToSameNode) {
                 mTargetNode.mDockingManager.freeDockPoint(this);
                 mTargetNode.mDockingManager.getNearestDockPoint(this, relPos);
-            }
-            else
-            {
+            } else {
                 mTargetNode.mDockingManager.freeSecondDockPoint(this);
                 mTargetNode.mDockingManager.getNearestSecondDockPoint(this, relPos);
             }
@@ -808,10 +707,8 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         repaint();
     }
 
-    public void mouseDragged(java.awt.event.MouseEvent e)
-    {
-        if (firstDrag)
-        {
+    public void mouseDragged(java.awt.event.MouseEvent e) {
+        if (firstDrag) {
             mUndoManager = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getUndoManager();
             mUndoManager.addEdit(new UndoDragEdge(mEg.mCCrtl1.getLocation(), mEg.mCCrtl2.getLocation()));
             UndoAction.getInstance().refreshUndoState();
@@ -821,42 +718,33 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         Point p = e.getPoint();
 
         // do not allow x and y values below 10
-        if (p.x - 10 < 0)
-        {
+        if (p.x - 10 < 0) {
             p.x = 10;
         }
 
-        if (p.y - 10 < 0)
-        {
+        if (p.y - 10 < 0) {
             p.y = 10;
         }
 
-        if (mCP1Selected)
-        {
+        if (mCP1Selected) {
             mEg.mCCrtl1.setLocation(p);
         }
 
-        if (mCP2Selected)
-        {
+        if (mCP2Selected) {
             mEg.mCCrtl2.setLocation(p);
         }
 
-        if (mCEPSelected)
-        {
-            if (!mPointingToSameNode)
-            {
+        if (mCEPSelected) {
+            if (!mPointingToSameNode) {
                 mLastTargetNodeDockPoint = mTargetNode.mDockingManager.freeDockPoint(this);
-            }
-            else
-            {
+            } else {
                 mLastTargetNodeDockPoint = mTargetNode.mDockingManager.freeSecondDockPoint(this);
             }
 
             mEg.mAbsoluteEndPos.setLocation(p);
         }
 
-        if (mCSPSelected)
-        {
+        if (mCSPSelected) {
             mSourceNode.mDockingManager.freeDockPoint(this);
 
             // TODO store last start /end node and start and end pos
@@ -867,34 +755,26 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     }
 
     @Override
-    public void mouseEntered(java.awt.event.MouseEvent e)
-    {
+    public void mouseEntered(java.awt.event.MouseEvent e) {
     }
 
     @Override
-    public void mouseExited(java.awt.event.MouseEvent e)
-    {
+    public void mouseExited(java.awt.event.MouseEvent e) {
     }
 
-    public void mouseMoved(java.awt.event.MouseEvent e)
-    {
+    public void mouseMoved(java.awt.event.MouseEvent e) {
     }
 
-    public void straightenEdge()
-    {
+    public void straightenEdge() {
         mEg.initCurve();
     }
 
-    public void rebuildEdgeNicely()
-    {
+    public void rebuildEdgeNicely() {
 
         // disconnectEdge
-        if (!mPointingToSameNode)
-        {
+        if (!mPointingToSameNode) {
             mTargetNode.mDockingManager.freeDockPoint(this);
-        }
-        else
-        {
+        } else {
             mTargetNode.mDockingManager.freeSecondDockPoint(this);
         }
 
@@ -902,8 +782,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mEg.initEdgeGraphics(this, null, null);
     }
 
-    private void paintRoundedTextBadge(Graphics2D graphics, Point position, String text)
-    {
+    private void paintRoundedTextBadge(final VectorGraphics graphics, Point position, String text) {
         mFontWidthCorrection = mFM.stringWidth(text) / 2;
 
         // do an exact font positioning
@@ -924,43 +803,40 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         graphics.drawString(text, position.x - mFontWidthCorrection, textY);
     }
 
+    //
     @Override
-    public void paintComponent(java.awt.Graphics g)
-    {
-        Graphics2D graphics = (Graphics2D) g;
+    public void paintComponent(final Graphics g) {
+        super.paintComponent(g);
+
+        final VectorGraphics g2d = VectorGraphics.create(g);
 
 //      if (mWorkSpace != null) {
 //        if (mEg.mEdge != null) {
         mEg.updateDrawingParameters();
 
-        Rectangle bounds = getBounds();
-
+        //Rectangle bounds = getBounds();
         // translate absolute to relative coordinates
-        // graphics.translate(-bounds.x, -bounds.y);
+        // g2d.translate(-bounds.x, -bounds.y);
         // Debug
-//      graphics.setColor(Color.BLACK);
-//      graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//      graphics.setStroke(new BasicStroke(0.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
-//      graphics.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
-        graphics.setColor(mColor);
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
+//      g2d.setColor(Color.BLACK);
+//      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//      g2d.setStroke(new BasicStroke(0.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
+//      g2d.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
+        g2d.setColor(mColor);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
                 BasicStroke.JOIN_MITER));
-        graphics.draw(mEg.mCurve);
+        g2d.draw(mEg.mCurve);
 
-        if (mEditMode == false)
-        {
-            if (mDescription.length() > 0)
-            {
-                paintRoundedTextBadge(graphics, new Point((int) mEg.mLeftCurve.x2, (int) mEg.mLeftCurve.y2),
+        if (mEditMode == false) {
+            if (mDescription.length() > 0) {
+                paintRoundedTextBadge(g2d, new Point((int) mEg.mLeftCurve.x2, (int) mEg.mLeftCurve.y2),
                         mDescription);
             }
-        }
-        else
-        {
+        } else {
 
             //  Dimension size = mValueEditor.getPreferredSize();
-            graphics.setColor(mColor);
+            g2d.setColor(mColor);
 
             int x = (int) mEg.mLeftCurve.x2 - (mValueEditor.getText().length() * 7);
             int y = (int) mEg.mLeftCurve.y2 - 20;
@@ -971,56 +847,50 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             mValueEditor.requestFocusInWindow();
         }
 
-        graphics.setColor(mColor);
+        g2d.setColor(mColor);
 
         // draw head
         mEg.computeHead();
 
         // if selected draw interface control points
-        if (mIsSelected)
-        {
-            graphics.setColor(Color.DARK_GRAY);
-            graphics.setStroke(new BasicStroke(0.5f));
-            graphics.drawLine((int) mEg.mCurve.x1, (int) mEg.mCurve.y1, (int) mEg.mCurve.ctrlx1,
+        if (mIsSelected) {
+            g2d.setColor(Color.DARK_GRAY);
+            g2d.setStroke(new BasicStroke(0.5f));
+            g2d.drawLine((int) mEg.mCurve.x1, (int) mEg.mCurve.y1, (int) mEg.mCurve.ctrlx1,
                     (int) mEg.mCurve.ctrly1);
-            graphics.drawLine((int) mEg.mCurve.x2, (int) mEg.mCurve.y2, (int) mEg.mCurve.ctrlx2,
+            g2d.drawLine((int) mEg.mCurve.x2, (int) mEg.mCurve.y2, (int) mEg.mCurve.ctrlx2,
                     (int) mEg.mCurve.ctrly2);
-            graphics.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
+            g2d.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
                     BasicStroke.JOIN_MITER));
 
-            if (mCP1Selected)
-            {
-                graphics.setColor(mColor);
+            if (mCP1Selected) {
+                g2d.setColor(mColor);
             }
 
-            graphics.drawOval((int) mEg.mCurve.ctrlx1 - 7, (int) mEg.mCurve.ctrly1 - 7, 14, 14);
-            graphics.fillOval((int) mEg.mCurve.ctrlx1 - 7, (int) mEg.mCurve.ctrly1 - 7, 14, 14);
-            graphics.setColor(Color.DARK_GRAY);
+            g2d.drawOval((int) mEg.mCurve.ctrlx1 - 7, (int) mEg.mCurve.ctrly1 - 7, 14, 14);
+            g2d.fillOval((int) mEg.mCurve.ctrlx1 - 7, (int) mEg.mCurve.ctrly1 - 7, 14, 14);
+            g2d.setColor(Color.DARK_GRAY);
 
-            if (mCP2Selected)
-            {
-                graphics.setColor(mColor);
+            if (mCP2Selected) {
+                g2d.setColor(mColor);
             }
 
-            graphics.drawOval((int) mEg.mCurve.ctrlx2 - 7, (int) mEg.mCurve.ctrly2 - 7, 14, 14);
-            graphics.fillOval((int) mEg.mCurve.ctrlx2 - 7, (int) mEg.mCurve.ctrly2 - 7, 14, 14);
-            graphics.setColor(Color.DARK_GRAY);
-            graphics.drawRect((int) mEg.mCurve.x1 - 7, (int) mEg.mCurve.y1 - 7, 14, 14);
-            graphics.drawPolygon(mEg.mHead);
-            graphics.fillRect((int) mEg.mCurve.x1 - 7, (int) mEg.mCurve.y1 - 7, 14, 14);
-            graphics.fillPolygon(mEg.mHead);
-        }
-        else
-        {
-            graphics.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
+            g2d.drawOval((int) mEg.mCurve.ctrlx2 - 7, (int) mEg.mCurve.ctrly2 - 7, 14, 14);
+            g2d.fillOval((int) mEg.mCurve.ctrlx2 - 7, (int) mEg.mCurve.ctrly2 - 7, 14, 14);
+            g2d.setColor(Color.DARK_GRAY);
+            g2d.drawRect((int) mEg.mCurve.x1 - 7, (int) mEg.mCurve.y1 - 7, 14, 14);
+            g2d.drawPolygon(mEg.mHead);
+            g2d.fillRect((int) mEg.mCurve.x1 - 7, (int) mEg.mCurve.y1 - 7, 14, 14);
+            g2d.fillPolygon(mEg.mHead);
+        } else {
+            g2d.setStroke(new BasicStroke(mEditorConfig.sNODEWIDTH / 30.0f, BasicStroke.CAP_BUTT,
                     BasicStroke.JOIN_MITER));
-            graphics.fillPolygon(mEg.mHead);
-            graphics.setColor(mColor);
-            graphics.drawPolygon(mEg.mHead);
+            g2d.fillPolygon(mEg.mHead);
+            g2d.setColor(mColor);
+            g2d.drawPolygon(mEg.mHead);
         }
 
-        if (hasAlternativeTargetNodes)
-        {
+        if (hasAlternativeTargetNodes) {
 
             // String targets = mDataEdge.getStart();
             String targets = mDataEdge.getAltStartNodesAsString();
@@ -1029,72 +899,68 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             mFontWidthCorrection = mFM.stringWidth(targets);
 
             // Get the current transform
-            AffineTransform currentAT = graphics.getTransform();
+            AffineTransform currentAT = g2d.getTransform();
 
             // Perform transformation
             AffineTransform at = new AffineTransform();
 
-            graphics.translate(mEg.mAbsoluteEndPos.x, mEg.mAbsoluteEndPos.y);
+            g2d.translate(mEg.mAbsoluteEndPos.x, mEg.mAbsoluteEndPos.y);
             at.setToRotation((2 * Math.PI) - (mEg.mArrowDir + (Math.PI / 2)));
-            graphics.transform(at);
-            graphics.setColor(Color.WHITE);
-            paintRoundedTextBadge(graphics, new Point(-(mFontWidthCorrection + 5), 0), targets);
-            graphics.setTransform(currentAT);
+            g2d.transform(at);
+            g2d.setColor(Color.WHITE);
+            paintRoundedTextBadge(g2d, new Point(-(mFontWidthCorrection + 5), 0), targets);
+            g2d.setTransform(currentAT);
         }
 
         // draw activity cue
-        if (mVisualisationTask != null)
-        {
-            if (mVisualisationTask.getActivityTime() <= 20)
-            {
+        if (mVisualisationTask != null) {
+            if (mVisualisationTask.getActivityTime() <= 20) {
 
                 // fade out
                 int gray = ((20 - mVisualisationTask.getActivityTime()) * 6);
 
-                graphics.setColor(new Color(246 - gray, gray, gray, ((mEditorConfig.sACTIVITYTRACE)
+                g2d.setColor(new Color(246 - gray, gray, gray, ((mEditorConfig.sACTIVITYTRACE)
                         ? 100
                         : 5 * mVisualisationTask.getActivityTime())));
-            }
-            else
-            {
+            } else {
 
                 // visualise activity
-                graphics.setColor(new Color(246, 0, 0, 100));
+                g2d.setColor(new Color(246, 0, 0, 100));
             }
 
-            graphics.setStroke(new BasicStroke(20f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
-            graphics.draw(mEg.mCurve);
+            g2d.setStroke(new BasicStroke(20f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
+            g2d.draw(mEg.mCurve);
         }
 
 //      }
 //    }
     }
 
-    public boolean isInEditMode()
-    {
+    public boolean isInEditMode() {
         return mEditMode;
     }
 
-    public void drawArrow(Graphics2D g2d, int x, int y, float stroke)
-    {    // int xCenter, int yCenter,
-        g2d.setColor(mColor);
+    /*
+     public void drawArrow(Graphics2D g2d, int x, int y, float stroke)
+     {    // int xCenter, int yCenter,
+     g2d.setColor(mColor);
 
-        double aDir = Math.atan2(x, y);    // xCenter-x,yCenter-y);
+     double aDir = Math.atan2(x, y);    // xCenter-x,yCenter-y);
 
-        g2d.setStroke(new BasicStroke(stroke));
-        g2d.drawLine(x + 2, y + 2, 40, 40);
-        g2d.setStroke(new BasicStroke(1f));    // make the arrow head solid even if dash pattern has been specified
+     g2d.setStroke(new BasicStroke(stroke));
+     g2d.drawLine(x + 2, y + 2, 40, 40);
+     g2d.setStroke(new BasicStroke(1f));    // make the arrow head solid even if dash pattern has been specified
 
-        Polygon tmpPoly = new Polygon();
-        int i1 = 16;    // + (int) (stroke * 2);
+     Polygon tmpPoly = new Polygon();
+     int i1 = 16;    // + (int) (stroke * 2);
 
-        tmpPoly.addPoint(x, y);      // arrow tip
-        tmpPoly.addPoint(x + xCor(i1, aDir + .5), y + yCor(i1, aDir + .5));
-        tmpPoly.addPoint(x + xCor(i1, aDir - .5), y + yCor(i1, aDir - .5));
-        tmpPoly.addPoint(x, y);      // arrow tip
-        g2d.fillPolygon(tmpPoly);    // paint arrow head
-    }
-
+     tmpPoly.addPoint(x, y);      // arrow tip
+     tmpPoly.addPoint(x + xCor(i1, aDir + .5), y + yCor(i1, aDir + .5));
+     tmpPoly.addPoint(x + xCor(i1, aDir - .5), y + yCor(i1, aDir - .5));
+     tmpPoly.addPoint(x, y);      // arrow tip
+     g2d.fillPolygon(tmpPoly);    // paint arrow head
+     }
+     */
     /**
      * helper method used to provive an arrow for the edge
      *
@@ -1102,8 +968,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      * @param dir
      * @return
      */
-    private static int yCor(int len, double dir)
-    {
+    private static int yCor(int len, double dir) {
         return (int) (len * Math.cos(dir));
     }
 
@@ -1114,16 +979,14 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      * @param dir
      * @return
      */
-    private static int xCor(int len, double dir)
-    {
+    private static int xCor(int len, double dir) {
         return (int) (len * Math.sin(dir));
     }
 
     /**
      * Nullifies the VisalisationTimer thread
      */
-    public void stopVisualisation()
-    {
+    public void stopVisualisation() {
         mVisualisationTimer.purge();
         mVisualisationTimer.cancel();
         mVisualisationTimer = null;
@@ -1133,24 +996,18 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      * Implements EventListener
      */
     @Override
-    public synchronized void update(EventObject event)
-    {
-        if (event instanceof SceneStoppedEvent)
-        {
+    public synchronized void update(EventObject event) {
+        if (event instanceof SceneStoppedEvent) {
             mVisualisationTask = null;
             repaint();
         }
 
-        if (mEditorConfig.sVISUALISATION)
-        {
-            if (event instanceof EdgeExecutedEvent)
-            {
+        if (mEditorConfig.sVISUALISATION) {
+            if (event instanceof EdgeExecutedEvent) {
                 de.dfki.vsm.model.sceneflow.AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
 
-                if (edge.equals(mDataEdge))
-                {
-                    if (mVisualisationTask != null)
-                    {
+                if (edge.equals(mDataEdge)) {
+                    if (mVisualisationTask != null) {
                         mVisualisationTask.cancel();
                     }
 
@@ -1168,8 +1025,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
      *
      *
      */
-    private class UndoDragEdge extends AbstractUndoableEdit
-    {
+    private class UndoDragEdge extends AbstractUndoableEdit {
 
         Point oldCP1;
         Point oldCP2;
@@ -1177,15 +1033,13 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         Point currentCP1;
         Point currentCP2;
 
-        public UndoDragEdge(Point p1, Point p2)
-        {
+        public UndoDragEdge(Point p1, Point p2) {
             oldCP1 = p1;
             oldCP2 = p2;
         }
 
         @Override
-        public void undo() throws CannotUndoException
-        {
+        public void undo() throws CannotUndoException {
             currentCP1 = mEg.mCCrtl1.getLocation();
             currentCP2 = mEg.mCCrtl2.getLocation();
             mEg.mCCrtl1.setLocation(oldCP1);
@@ -1194,34 +1048,29 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         }
 
         @Override
-        public void redo() throws CannotRedoException
-        {
+        public void redo() throws CannotRedoException {
             mEg.mCCrtl1.setLocation(currentCP1);
             mEg.mCCrtl2.setLocation(currentCP2);
             repaint();
         }
 
         @Override
-        public boolean canUndo()
-        {
+        public boolean canUndo() {
             return true;
         }
 
         @Override
-        public boolean canRedo()
-        {
+        public boolean canRedo() {
             return true;
         }
 
         @Override
-        public String getUndoPresentationName()
-        {
+        public String getUndoPresentationName() {
             return "Undo creation of edge";
         }
 
         @Override
-        public String getRedoPresentationName()
-        {
+        public String getRedoPresentationName() {
             return "Redo creation of edge";
         }
     }

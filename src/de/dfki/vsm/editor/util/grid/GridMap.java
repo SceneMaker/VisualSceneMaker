@@ -1,19 +1,8 @@
-
-/*
-* To change this license header, choose License Headers in Project Properties.
-* To change this template file, choose Tools | Templates
-* and open the template in the editor.
- */
 package de.dfki.vsm.editor.util.grid;
-
-//~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.util.grid.pathfinding.PathFindingContext;
 import de.dfki.vsm.editor.util.grid.pathfinding.TileBasedMap;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Graphics2D;
 
 /**
  *

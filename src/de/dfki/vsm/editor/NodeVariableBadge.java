@@ -1,14 +1,9 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.tpl.TPLTuple;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -21,41 +16,44 @@ import java.text.AttributedString;
 import java.util.ArrayList;
 
 import javax.swing.JComponent;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
 public class NodeVariableBadge extends JComponent {
-    LocationType                                  mLocation          = LocationType.RIGHT;
-    Node                                          mNode              = null;
-    WorkSpacePanel                                     mWorkSpace         = null;
-    de.dfki.vsm.model.sceneflow.BasicNode              mDataNode          = null;
-    Point                                         mRelPos            = null;
-    ArrayList<TPLTuple<String, AttributedString>> mLocalVarDefList   = null;
-    ArrayList<TPLTuple<String, AttributedString>> mGlobalVarDefList  = null;
-    ArrayList<TPLTuple<String, AttributedString>> mLocalTypeDefList  = null;
+
+    LocationType mLocation = LocationType.RIGHT;
+    Node mNode = null;
+    WorkSpacePanel mWorkSpace = null;
+    de.dfki.vsm.model.sceneflow.BasicNode mDataNode = null;
+    Point mRelPos = null;
+    ArrayList<TPLTuple<String, AttributedString>> mLocalVarDefList = null;
+    ArrayList<TPLTuple<String, AttributedString>> mGlobalVarDefList = null;
+    ArrayList<TPLTuple<String, AttributedString>> mLocalTypeDefList = null;
     ArrayList<TPLTuple<String, AttributedString>> mGlobalTypeDefList = null;
-    ArrayList<TPLTuple<String, AttributedString>> mCompleteList      = new ArrayList<TPLTuple<String,
-                                                                           AttributedString>>();
-    int                                           mPositionOffset    = 10;
-    int                                           mBeautyXOffSet     = 0;
-    int                                           mBeautyYOffSet     = 0;
-    EditorConfig                            mEditorConfig;
+    ArrayList<TPLTuple<String, AttributedString>> mCompleteList = new ArrayList<TPLTuple<String, AttributedString>>();
+    int mPositionOffset = 10;
+    int mBeautyXOffSet = 0;
+    int mBeautyYOffSet = 0;
+    EditorConfig mEditorConfig;
 
-    static enum LocationType { TOP, BOTTOM, LEFT, RIGHT }
+    static enum LocationType {
 
-    ;
+        TOP, BOTTOM, LEFT, RIGHT
+    };
+
     public NodeVariableBadge(Node node, WorkSpacePanel workSpace, ArrayList<String> localVarDefList,
-                             ArrayList<String> globalVarDefList, ArrayList<String> localTypeDefList,
-                             ArrayList<String> globalTypeDefList) {
-        mNode              = node;
-        mEditorConfig       = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
-        mDataNode          = node.getDataNode();
-        mWorkSpace         = workSpace;
-        mLocalVarDefList   = TextFormat.getPairList(localVarDefList);
-        mGlobalVarDefList  = TextFormat.getPairList(globalVarDefList);
-        mLocalTypeDefList  = TextFormat.getPairList(localTypeDefList);
+            ArrayList<String> globalVarDefList, ArrayList<String> localTypeDefList,
+            ArrayList<String> globalTypeDefList) {
+        mNode = node;
+        mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
+        mDataNode = node.getDataNode();
+        mWorkSpace = workSpace;
+        mLocalVarDefList = TextFormat.getPairList(localVarDefList);
+        mGlobalVarDefList = TextFormat.getPairList(globalVarDefList);
+        mLocalTypeDefList = TextFormat.getPairList(localTypeDefList);
         mGlobalTypeDefList = TextFormat.getPairList(globalTypeDefList);
         mCompleteList.addAll(mGlobalTypeDefList);
         mCompleteList.addAll(mLocalTypeDefList);
@@ -74,15 +72,15 @@ public class NodeVariableBadge extends JComponent {
         // compute location
         mRelPos = new Point(mNode.getLocation());
 
-        int width    = getSize().width;
-        int height   = getSize().height;
-        int wSWidth  = mWorkSpace.getSize().width;
+        int width = getSize().width;
+        int height = getSize().height;
+        int wSWidth = mWorkSpace.getSize().width;
         int wSHeight = mWorkSpace.getSize().height;
 
         // check where variable badge can be placed
-        int leftX   = mRelPos.x - width - mPositionOffset;
-        int topY    = mRelPos.y - height - mPositionOffset;
-        int rightX  = mRelPos.x + mEditorConfig.sNODEWIDTH + mPositionOffset;
+        int leftX = mRelPos.x - width - mPositionOffset;
+        int topY = mRelPos.y - height - mPositionOffset;
+        int rightX = mRelPos.x + mEditorConfig.sNODEWIDTH + mPositionOffset;
         int bottomY = mRelPos.x + mEditorConfig.sNODEHEIGHT + mPositionOffset;
 
         if (rightX + width < wSWidth) {              // right
@@ -110,13 +108,14 @@ public class NodeVariableBadge extends JComponent {
         return mRelPos;
     }
 
-    private Dimension computeTextRectSize(Graphics2D graphics) {
-        int width  = 0,
-            height = 0;
+    private Dimension computeTextRectSize(final VectorGraphics g2d) {
+        int width = 0,
+                height = 0;
 
         for (int i = 0; i < mCompleteList.size(); i++) {
-            TextLayout textLayout = new TextLayout(mCompleteList.get(i).getSecond().getIterator(),
-                                        graphics.getFontRenderContext());
+            TextLayout textLayout = new TextLayout(
+                    mCompleteList.get(i).getSecond().getIterator(),
+                    g2d.getFontRenderContext());
             int advance = (int) textLayout.getVisibleAdvance();
 
             if (advance > width) {
@@ -132,68 +131,67 @@ public class NodeVariableBadge extends JComponent {
     }
 
     private void correctBounds() {
-        Point     newStartPos;
-        Point     oldStartPos;
+        Point newStartPos;
+        Point oldStartPos;
         Dimension oldSize;
 
         switch (mLocation) {
-        case RIGHT :
-            newStartPos = mNode.getCenterPoint();
-            oldStartPos = getLocation();
-            oldSize     = getSize();
-            setLocation(newStartPos.x, oldStartPos.y);
-            mBeautyXOffSet = oldStartPos.x - newStartPos.x;
-            mBeautyYOffSet = 0;
-            setSize(oldSize.width + mBeautyXOffSet, oldSize.height);
+            case RIGHT:
+                newStartPos = mNode.getCenterPoint();
+                oldStartPos = getLocation();
+                oldSize = getSize();
+                setLocation(newStartPos.x, oldStartPos.y);
+                mBeautyXOffSet = oldStartPos.x - newStartPos.x;
+                mBeautyYOffSet = 0;
+                setSize(oldSize.width + mBeautyXOffSet, oldSize.height);
 
-            break;
+                break;
 
-        case LEFT :
+            case LEFT:
 
-            // TODO
-            break;
+                // TODO
+                break;
 
-        case TOP :
+            case TOP:
 
-            // TODO
-            break;
+                // TODO
+                break;
 
-        case BOTTOM :
+            case BOTTOM:
 
-            // TODO
-            break;
+                // TODO
+                break;
         }
     }
 
     @Override
     public void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
+        final VectorGraphics g2d = VectorGraphics.create(g);
 
-        Graphics2D graphics = (Graphics2D) g;
-
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Set Size, Location and Correct Bounds
-        Dimension dimension = computeTextRectSize(graphics);
+        Dimension dimension = computeTextRectSize(g2d);
 
         setSize(dimension);
         setLocation(computeLocation());
 
         // correctBounds();
         // Draw Background Rectangle
-        graphics.setColor(new Color(110, 110, 110, 110));
-        graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+        g2d.setColor(new Color(110, 110, 110, 110));
+        g2d.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
 
         // Draw Type Definitions and Variable Definition
         int currentDrawingOffset = 0;
 
         for (TPLTuple<String, AttributedString> pair : mCompleteList) {
             AttributedString attributedString = pair.getSecond();
-            TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
-                                                    graphics.getFontRenderContext());
+            TextLayout textLayout = new TextLayout(attributedString.getIterator(),
+                    g2d.getFontRenderContext());
 
             currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
-            graphics.drawString(attributedString.getIterator(), mPositionOffset, currentDrawingOffset);
+            g2d.drawString(attributedString.getIterator(), mPositionOffset, currentDrawingOffset);
             currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading() + (int) textLayout.getDescent();
         }
     }

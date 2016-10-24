@@ -12,7 +12,6 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.SceneFlow;
 import de.dfki.vsm.model.sceneflow.SuperNode;
@@ -26,8 +25,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -60,13 +57,13 @@ import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.undo.UndoManager;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public final class SceneFlowEditor extends JPanel implements EventListener
-{
+public final class SceneFlowEditor extends JPanel implements EventListener {
 
     // The singelton logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -97,8 +94,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
 
     // Create a sceneflow editor
-    public SceneFlowEditor(final EditorProject project)
-    {
+    public SceneFlowEditor(final EditorProject project) {
 
         // Initialize the editor project
         mEditorProject = project;
@@ -120,44 +116,38 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         mSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         mSplitPane.setBorder(BorderFactory.createEmptyBorder());
         mSplitPane.setContinuousLayout(true);
-        mSplitPane.setUI(new BasicSplitPaneUI()
-        {
+        mSplitPane.setUI(new BasicSplitPaneUI() {
             @Override
-            public BasicSplitPaneDivider createDefaultDivider()
-            {
-                return new BasicSplitPaneDivider(this)
-                {
+            public BasicSplitPaneDivider createDefaultDivider() {
+                return new BasicSplitPaneDivider(this) {
                     @Override
-                    public void setBorder(Border b)
-                    {
+                    public void setBorder(Border b) {
                     }
 
                     @Override
-                    public void paint(Graphics g)
-                    {
-                        Graphics2D graphics = (Graphics2D) g;
-
-                        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+                    public void paint(final Graphics g) {
+                        // final Graphics2D g2d = (Graphics2D) graphics;
+                        final VectorGraphics g2d = VectorGraphics.create(g);
+                        g2d.setRenderingHint(
+                                RenderingHints.KEY_ANTIALIASING,
+                                RenderingHints.VALUE_ANTIALIAS_ON);
                         Rectangle r = getBounds();
 
-                        graphics.setColor(UIManager.getColor("Panel.background"));
-                        graphics.fillRect(0, 0, r.width - 1, r.height);
+                        g2d.setColor(UIManager.getColor("Panel.background"));
+                        g2d.fillRect(0, 0, r.width - 1, r.height);
 //
-//                        // graphics.setColor(new Color(100, 100, 100));
-                        graphics.fillRect((r.width / 2 - 25), 0, 50, r.height);
-//                        graphics.drawPolygon(pUp);
-//                        graphics.fillPolygon(pUp);
-//                        graphics.drawPolygon(pDown);
-//                        graphics.fillPolygon(pDown);
+//                        // g2d.setColor(new Color(100, 100, 100));
+                        g2d.fillRect((r.width / 2 - 25), 0, 50, r.height);
+//                        g2d.drawPolygon(pUp);
+//                        g2d.fillPolygon(pUp);
+//                        g2d.drawPolygon(pDown);
+//                        g2d.fillPolygon(pDown);
                     }
 
                     @Override
-                    protected void processMouseEvent(MouseEvent me)
-                    {
+                    protected void processMouseEvent(MouseEvent me) {
                         super.processMouseEvent(me);
-                        switch (me.getID())
-                        {
+                        switch (me.getID()) {
                             case MouseEvent.MOUSE_CLICKED:
                                 toggleElementEditor();
                                 ElementEditorToggledEvent ev = new ElementEditorToggledEvent(this);
@@ -216,30 +206,24 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         mElementEditor.setMaximumSize(new Dimension(10000, 3000));
         mSplitPane.setResizeWeight(1.0);
         mSplitPane.setRightComponent(mElementEditor);
-        if (Boolean.valueOf(Preferences.getProperty("showelementproperties")))
-        {
+        if (Boolean.valueOf(Preferences.getProperty("showelementproperties"))) {
 
             mSplitPane.setDividerLocation((int) (EditorInstance.getInstance().getWidth() - 520));
 
             //mSplitPane.setDividerLocation(
             //    Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
             //THIS EVENT IS CASTED ONLY TO ACTIVATE THE ELEMENT EDITOR WITH THE INFO OF THE CURRENT PROJECT
-        }
-        else
-        {
+        } else {
             mSplitPane.setDividerLocation(1.0d);
         }
         add(mSplitPane, BorderLayout.CENTER);
 
-        mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener()
-        {
+        mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
             @Override
-            public void propertyChange(PropertyChangeEvent pce)
-            {
+            public void propertyChange(PropertyChangeEvent pce) {
 
                 // solve issue here
-                if (Preferences.getProperty("showelementproperties").equals("true"))
-                {
+                if (Preferences.getProperty("showelementproperties").equals("true")) {
                     mEditorProject.getEditorConfig().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
                 }
             }
@@ -257,19 +241,15 @@ public final class SceneFlowEditor extends JPanel implements EventListener
 
     // Update the visualization
     @Override
-    public final void update(final EventObject event)
-    {
-        if (mVisualizationTimer != null)
-        {
-            if (event instanceof NodeExecutedEvent)
-            {
+    public final void update(final EventObject event) {
+        if (mVisualizationTimer != null) {
+            if (event instanceof NodeExecutedEvent) {
                 setMessageLabelText("SceneFlow is running", false);
             }
         }
     }
 
-    public void setViewPosition(Point p)
-    {
+    public void setViewPosition(Point p) {
         mWorkSpaceScrollPane.getViewport().setViewPosition(p);
     }
 
@@ -280,17 +260,13 @@ public final class SceneFlowEditor extends JPanel implements EventListener
      *
      *
      */
-    public void toggleElementEditor()
-    {
-        if (Boolean.valueOf(Preferences.getProperty("showelementproperties")))
-        {
+    public void toggleElementEditor() {
+        if (Boolean.valueOf(Preferences.getProperty("showelementproperties"))) {
             mElementEditor.setVisible(false);
             Preferences.setProperty("showelementproperties", "false");
             Preferences.save();
             mSplitPane.setDividerLocation(1d);
-        }
-        else
-        {
+        } else {
             mElementEditor.setVisible(true);
             Preferences.setProperty("showelementproperties", "true");
             Preferences.save();
@@ -300,26 +276,20 @@ public final class SceneFlowEditor extends JPanel implements EventListener
 
     }
 
-    public void expandTree()
-    {
+    public void expandTree() {
         mDynamicElementsPanel.expandTree();
     }
 
-    public boolean isElementEditorVisible()
-    {
+    public boolean isElementEditorVisible() {
         return mElementEditor.isVisible();
     }
 
-    public void showElementDisplay()
-    {
-        if (mNewElementDisplay.isVisible())
-        {
+    public void showElementDisplay() {
+        if (mNewElementDisplay.isVisible()) {
             mNewElementDisplay.setVisible(false);
             Preferences.setProperty("showelements", "false");
             Preferences.save();
-        }
-        else
-        {
+        } else {
             mNewElementDisplay.setVisible(true);
             Preferences.setProperty("showelements", "true");
             Preferences.save();
@@ -327,81 +297,65 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         }
     }
 
-    public boolean isElementDisplayVisible()
-    {
+    public boolean isElementDisplayVisible() {
         return mNewElementDisplay.isVisible();
     }
 
-    public final SceneFlowToolBar getToolBar()
-    {
+    public final SceneFlowToolBar getToolBar() {
         return mSceneFlowToolBar;
     }
 
-    public SceneFlowManager getSceneFlowManager()
-    {
+    public SceneFlowManager getSceneFlowManager() {
         return mSceneFlowManager;
     }
 
-    public SceneFlow getSceneFlow()
-    {
+    public SceneFlow getSceneFlow() {
         return mSceneFlow;
     }
 
-    public WorkSpacePanel getWorkSpace()
-    {
+    public WorkSpacePanel getWorkSpace() {
         return mWorkSpacePanel;
     }
 
-    public UndoManager getUndoManager()
-    {
+    public UndoManager getUndoManager() {
         return mUndoManager;
     }
 
     // TODO: adding not explicit but via refresh method
-    public void addPathComponent(SuperNode supernode)
-    {
+    public void addPathComponent(SuperNode supernode) {
 
         // TODO: adding not explicit but via refresh method
         mSceneFlowToolBar.addPathComponent(supernode);
     }
 
-    public SuperNode removePathComponent()
-    {
+    public SuperNode removePathComponent() {
         return mSceneFlowToolBar.removePathComponent();
     }
 
-    public void setMessageLabelText(String value)
-    {
+    public void setMessageLabelText(String value) {
         setMessageLabelText(value, false);
     }
 
-    public void setMessageLabelText(String value, boolean forever)
-    {
-        if (forever)
-        {
+    public void setMessageLabelText(String value, boolean forever) {
+        if (forever) {
             mFooterLabel.setText(value);
-        }
-        else
-        {
+        } else {
             mFooterLabel.setText(value);
 
             VisuTask visuTask = new VisuTask(25, mFooterLabel);
 
-            try
-            {
+            try {
                 mVisualizationTimer.cancel();
                 mVisualizationTimer = new Timer();
                 mVisualizationTimer.schedule(visuTask, 0, 100);
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
 
                 // e.printStackTrace();
             }
         }
     }
 
-    public void close()
-    {
+    public void close() {
 
         // Delete all observers
 //      mObservable.deleteObservers();
@@ -415,10 +369,8 @@ public final class SceneFlowEditor extends JPanel implements EventListener
     /**
      * Nullifies the VisalisationTimer thread
      */
-    public void stopVisualisation()
-    {
-        if (mVisualizationTimer != null)
-        {
+    public void stopVisualisation() {
+        if (mVisualizationTimer != null) {
             mVisualizationTimer.purge();
             mVisualizationTimer.cancel();
 
@@ -427,13 +379,11 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         }
     }
 
-    public JSplitPane getSplitPane()
-    {
+    public JSplitPane getSplitPane() {
         return mSplitPane;
     }
 
-    public JLabel getFooterLabel()
-    {
+    public JLabel getFooterLabel() {
         return mFooterLabel;
     }
 
@@ -452,8 +402,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
 //          notifyObservers(obj);
 //      }
 //  }
-    public final void refresh()
-    {
+    public final void refresh() {
 
         // Print some information
         //mLogger.message("Refreshing '" + this + "'");
@@ -465,36 +414,29 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         mElementEditor.refresh();
     }
 
-    class SceneFlowImage extends TransferHandler implements Transferable
-    {
+    class SceneFlowImage extends TransferHandler implements Transferable {
 
-        private final DataFlavor flavors[] =
-        {
-            DataFlavor.imageFlavor
-        };
+        private final DataFlavor flavors[]
+                = {
+                    DataFlavor.imageFlavor
+                };
         private JPanel source;
         private Image image;
 
         @Override
-        public int getSourceActions(JComponent c)
-        {
+        public int getSourceActions(JComponent c) {
             return TransferHandler.COPY;
         }
 
         @Override
-        public boolean canImport(JComponent comp, DataFlavor flavor[])
-        {
-            if (!(comp instanceof JPanel))
-            {
+        public boolean canImport(JComponent comp, DataFlavor flavor[]) {
+            if (!(comp instanceof JPanel)) {
                 return false;
             }
 
-            for (int i = 0, n = flavor.length; i < n; i++)
-            {
-                for (int j = 0, m = flavors.length; j < m; j++)
-                {
-                    if (flavor[i].equals(flavors[j]))
-                    {
+            for (int i = 0, n = flavor.length; i < n; i++) {
+                for (int j = 0, m = flavors.length; j < m; j++) {
+                    if (flavor[i].equals(flavors[j])) {
                         return true;
                     }
                 }
@@ -504,15 +446,13 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         }
 
         @Override
-        public Transferable createTransferable(JComponent comp)
-        {
+        public Transferable createTransferable(JComponent comp) {
 
             // Clear
             source = null;
             image = new BufferedImage(comp.getWidth(), comp.getHeight(), BufferedImage.TYPE_INT_RGB);
 
-            if (comp instanceof JPanel)
-            {
+            if (comp instanceof JPanel) {
                 JPanel panel = (JPanel) comp;
                 Graphics g = image.getGraphics();
 
@@ -527,24 +467,18 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         }
 
         @Override
-        public boolean importData(JComponent comp, Transferable t)
-        {
-            if (comp instanceof JPanel)
-            {
+        public boolean importData(JComponent comp, Transferable t) {
+            if (comp instanceof JPanel) {
                 JPanel panel = (JPanel) comp;
 
-                if (t.isDataFlavorSupported(flavors[0]))
-                {
-                    try
-                    {
+                if (t.isDataFlavorSupported(flavors[0])) {
+                    try {
                         image = (Image) t.getTransferData(flavors[0]);
                         panel.paint(image.getGraphics());
 
                         return true;
-                    } catch (UnsupportedFlavorException ignored)
-                    {
-                    } catch (IOException ignored)
-                    {
+                    } catch (UnsupportedFlavorException ignored) {
+                    } catch (IOException ignored) {
                     }
                 }
             }
@@ -553,23 +487,19 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         }
 
         // Transferable
-        public Object getTransferData(DataFlavor flavor)
-        {
-            if (isDataFlavorSupported(flavor))
-            {
+        public Object getTransferData(DataFlavor flavor) {
+            if (isDataFlavorSupported(flavor)) {
                 return image;
             }
 
             return null;
         }
 
-        public DataFlavor[] getTransferDataFlavors()
-        {
+        public DataFlavor[] getTransferDataFlavors() {
             return flavors;
         }
 
-        public boolean isDataFlavorSupported(DataFlavor flavor)
-        {
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
             return flavor.equals(DataFlavor.imageFlavor);
         }
     }
@@ -581,8 +511,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
      *
      *
      */
-    private class VisuTask extends TimerTask
-    {
+    private class VisuTask extends TimerTask {
 
         int mSteps = 0;
         JLabel mLabel = null;
@@ -593,8 +522,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         int mBlueVal = 0;
         int mOpacyVal = 255;
 
-        VisuTask(int steps, JLabel l)
-        {
+        VisuTask(int steps, JLabel l) {
             mSteps = steps;
             mLabel = l;
             mLabelColor = l.getForeground();
@@ -604,13 +532,11 @@ public final class SceneFlowEditor extends JPanel implements EventListener
             mOpacyStep = 255 / mSteps;
         }
 
-        public synchronized int getActivityTime()
-        {
+        public synchronized int getActivityTime() {
             return mSteps;
         }
 
-        public void run()
-        {
+        public void run() {
             mSteps = (mSteps > 0)
                     ? mSteps - 1
                     : 0;
@@ -618,8 +544,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
             mLabel.setForeground(new Color(mRedVal, mGreenVal, mBlueVal, mOpacyVal));
             mLabel.repaint();
 
-            if (mSteps == 0)
-            {
+            if (mSteps == 0) {
                 mLabel.setText("");
                 cancel();
             }

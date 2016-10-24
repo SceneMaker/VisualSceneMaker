@@ -66,7 +66,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
@@ -102,6 +101,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Gregor Mehlmann
@@ -2633,15 +2633,13 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         deleteAction.run();
     }
 
-    /**
-     *
-     *
-     */
+    //
     @Override
-    public void paintComponent(Graphics g) {
+    public void paintComponent(final Graphics graphics) {
 
         // mLogger.message("Drawing Workspace");
-        Graphics2D g2d = (Graphics2D) g;
+        // GM 24.10.2016 We use a vercot graphics here now!
+        final VectorGraphics g2d = VectorGraphics.create(graphics);
 
         if (mSelectTargetNodeMode) {
             setBackground(Color.LIGHT_GRAY);
@@ -2655,7 +2653,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
         }
 
-        super.paintComponent(g);
+        //super.paintComponent(graphics);
+        super.paintComponent(g2d);
+        
+        
         mGridManager.drawGrid(g2d);
 
         if (mDoAreaSelection) {

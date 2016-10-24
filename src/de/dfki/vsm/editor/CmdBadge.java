@@ -18,7 +18,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -27,7 +27,6 @@ import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.Observer;
 import java.util.Timer;
-import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -37,6 +36,7 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Gregor Mehlmann
@@ -87,39 +87,34 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
     }
 
     @Override
-    public void paintComponent(java.awt.Graphics g) {
-        super.paintComponent(g);
+    public void paintComponent(final Graphics g) {
+        super.paintComponent(g);             
+ 
+        final VectorGraphics g2d = VectorGraphics.create(g);
         
-//        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-//        for(StackTraceElement st: stackTraceElements)
-//        {
-//            System.out.println(st.getClassName()+ "-----" + st.getFileName()+"-----"+st.getme+"-----"+st.getLineNumber());
-//        }
-        
-        Graphics2D graphics = (Graphics2D) g;
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Dimension dimension;
             
         if (mEditMode) {
             
             dimension = new Dimension((int) (10 + getEditorWidth() * mFont.getSize()/1.5), (int) (30 * (mCmdEditors.size())));
             // draw background
-            graphics.setColor(new Color(155, 155, 155, 100));
+            g2d.setColor(new Color(155, 155, 155, 100));
              
         } else {
             
-            dimension = computeTextRectSize(graphics);
+            dimension = computeTextRectSize(g2d);
             // draw background
-            graphics.setColor(new Color(100, 100, 100, 100));
+            g2d.setColor(new Color(100, 100, 100, 100));
 
             //
             // if (mVisualisationTask != null) {
             // if (mVisualisationTask.getActivityTime() > 20) {
-            // graphics.setColor(new Color(246, 0, 0, 100));
-            // graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+            // g2d.setColor(new Color(246, 0, 0, 100));
+            // g2d.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
             // } else {
-            // graphics.setColor(new Color(246, 0, 0, 100 - (100 - 5 * mVisualisationTask.getActivityTime())));
-            // graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+            // g2d.setColor(new Color(246, 0, 0, 100 - (100 - 5 * mVisualisationTask.getActivityTime())));
+            // g2d.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
             // }
             // }
 
@@ -129,10 +124,10 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
             for (TPLTuple<String, AttributedString> pair : mStringList) {
                 AttributedString attributedString = pair.getSecond();
                 TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
-                                                        graphics.getFontRenderContext());
+                                                        g2d.getFontRenderContext());
 
                 currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
-                graphics.drawString(attributedString.getIterator(), 5, 5 + currentDrawingOffset);
+                g2d.drawString(attributedString.getIterator(), 5, 5 + currentDrawingOffset);
                 currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
                                        + (int) textLayout.getDescent();
             }
@@ -141,20 +136,20 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
         setSize(dimension);
         setLocation( mNode.getLocation().x + (mEditorConfig.sNODEWIDTH / 2) - (dimension.width / 2),
                      mNode.getLocation().y + mEditorConfig.sNODEHEIGHT);
-        graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
-        graphics.setStroke(new BasicStroke(1.5f));
-        graphics.setColor(Color.BLACK);
+        g2d.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.setColor(Color.BLACK);
           
     }
 
     
-    private Dimension computeTextRectSize(Graphics2D graphics) {
+    private Dimension computeTextRectSize(final VectorGraphics g) {
         int width  = 0,
             height = 0;
 
         for (int i = 0; i < mStringList.size(); i++) {
             TextLayout textLayout = new TextLayout(mStringList.get(i).getSecond().getIterator(),
-                                        graphics.getFontRenderContext());
+                                        g.getFontRenderContext());
             int advance = (int) textLayout.getVisibleAdvance();
 
             if (advance > width) {

@@ -14,7 +14,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -28,6 +28,7 @@ import java.util.Observer;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Gregor Mehlmann
@@ -87,23 +88,17 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         mShowBadgeMenuItem.addActionListener(this);
     }
 
-    private Dimension computeTextRectSize(Graphics2D graphics) {
-        int width = 0,
-                height = 0;
-
+    private Dimension computeTextRectSize(final VectorGraphics graphics) {
+        int width = 0, height = 0;
         for (VariableEntry entry : mEntryList) {
             TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
             int advance = (int) textLayout.getVisibleAdvance();
-
             if (advance > width) {
                 width = advance;
             }
-
             int currentAll = (int) (textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading());
-
             height = height + currentAll;
         }
-
         return new Dimension(width + 2 * mPositionOffset, height + 2 * mPositionOffset);
     }
 
@@ -111,59 +106,46 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         return getBounds().contains(p.x, p.y);
     }
 
+    //
     @Override
-    public synchronized void paintComponent(java.awt.Graphics g) {
+    public synchronized void paintComponent(final Graphics g) {
         super.paintComponent(g);
+        // GM 24.10.2016 We use a vercot g2d here now!
+        final VectorGraphics g2d = VectorGraphics.create(g);
 
+        // Enable antialiasing       
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        //
         if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE && !mEntryList.isEmpty()) {
             if (mIsHidden) {
-
-                // Enable antialiasing
-                Graphics2D graphics = (Graphics2D) g;
-
-                graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 // Compute the size of the variable badge
                 Dimension dimension = new Dimension(135, 15);
-
-                graphics.setColor(new Color(50, 50, 50, 100));
+                g2d.setColor(new Color(50, 50, 50, 100));
                 setSize(dimension);
-
                 // draw background
-                graphics.fillRoundRect(0, 0, 15, 15, 5, 5);
-                graphics.setColor(new Color(51, 51, 51));
-                graphics.setFont(new Font("Serif", Font.PLAIN, 11));
-                graphics.drawString("Global Variables [...]", 18, 12);
+                g2d.fillRoundRect(0, 0, 15, 15, 5, 5);
+                g2d.setColor(new Color(51, 51, 51));
+                g2d.setFont(new Font("Serif", Font.PLAIN, 11));
+                g2d.drawString("Global Variables [...]", 18, 12);
             } else {
 
-                // Enable antialiasing
-                Graphics2D graphics = (Graphics2D) g;
-
-                graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 // Compute the size of the variable badge
-                Dimension dimension = computeTextRectSize(graphics);
-
+                Dimension dimension = computeTextRectSize(g2d);
                 setSize(dimension);
-
                 // draw background
-                graphics.setColor(new Color(200, 200, 200, 200));
-                graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
-
+                g2d.setColor(new Color(200, 200, 200, 200));
+                g2d.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
                 // Draw the variables
-                graphics.setStroke(new BasicStroke(1.5f));
-                graphics.setColor(Color.BLACK);
-
+                g2d.setStroke(new BasicStroke(1.5f));
+                g2d.setColor(Color.BLACK);
                 // Draw Type Definitions and Variable Definition
                 int currentDrawingOffset = 0;
-
                 for (VariableEntry entry : mEntryList) {
                     AttributedString attributedString = entry.getAttributed();
                     TextLayout textLayout = new TextLayout(attributedString.getIterator(),
-                            graphics.getFontRenderContext());
-
+                            g2d.getFontRenderContext());
                     currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
-                    graphics.drawString(attributedString.getIterator(), mPositionOffset,
+                    g2d.drawString(attributedString.getIterator(), mPositionOffset,
                             mPositionOffset + currentDrawingOffset);
                     currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
                             + (int) textLayout.getDescent();

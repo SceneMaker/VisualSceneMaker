@@ -1,23 +1,17 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.graphics.comment.CommentBoundary;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -25,17 +19,14 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-
 import java.util.Observable;
 import java.util.Observer;
-
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Patrick Gebhard
@@ -162,7 +153,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     }
 
     @Override
-    public void paintComponent(Graphics g) {
+    public void paintComponent(final Graphics g) {
         super.paintComponent(g);
 
 //      mFont = new Font("SansSerif", Font.PLAIN, /*(mWorkSpace != null) ?*/ sWORKSPACEFONTSIZE /*: sBUILDING_BLOCK_FONT_SIZE*/);
@@ -170,23 +161,23 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 //             mTextLabel.setText(mTextEditor.getText());
 //    S tring bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
 //    ( (HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
-        Graphics2D graphics = (Graphics2D) g;
+        
+        // GM 24.10.2016 We use a vercot g2d here now!
+        final VectorGraphics g2d = VectorGraphics.create(g);
 
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Rectangle r = getBounds();
-
-        // graphics.setColor(new Color(227, 206, 29, 127));
-        graphics.setColor(new Color(200, 200, 200, 200));
+        // g2d.setColor(new Color(227, 206, 29, 127));
+        g2d.setColor(new Color(200, 200, 200, 200));
 
         if (mEditMode) {
-            graphics.setStroke(new BasicStroke(2.0f));
-            graphics.drawRoundRect(0, 0, r.width - 1, r.height - 1, 15, 15);
+            g2d.setStroke(new BasicStroke(2.0f));
+            g2d.drawRoundRect(0, 0, r.width - 1, r.height - 1, 15, 15);
         } else {
-            graphics.fillRoundRect(0, 0, r.width, r.height, 15, 15);
-            graphics.setComposite(mAC);
-            graphics.drawImage(mResizeMarker, r.width - 13, r.height - 13, this);
-            graphics.setComposite(mACFull);
+            g2d.fillRoundRect(0, 0, r.width, r.height, 15, 15);
+            g2d.setComposite(mAC);
+            g2d.drawImage(mResizeMarker, r.width - 13, r.height - 13, this);
+            g2d.setComposite(mACFull);
         }
     }
 

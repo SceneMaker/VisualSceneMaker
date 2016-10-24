@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -9,10 +8,9 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import static de.dfki.vsm.Preferences.sSTART_SIGN_COLOR;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
@@ -21,33 +19,35 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.JComponent;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Patrick Gebhard
  * @author Gregor Mehlmann
  */
 public class StartSign extends JComponent implements Observer {
-    private final LOGDefaultLogger   mLogger      = LOGDefaultLogger.getInstance();
-    private final EventDispatcher        mEventCaster = EventDispatcher.getInstance();
-    private Point                    mRelPos      = new Point(0, 0);
-    private final Color              mColor;
-    private final Node               mNode;
-    private final boolean            mOutline;
-    private final EditorConfig       mEditorConfig;
-    private Polygon                  mHead;
-    private int                      mHalfHeight;
-    private int                      mWidth;
-    private int                      mStrokeSize;
+
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
+    private Point mRelPos = new Point(0, 0);
+    private final Color mColor;
+    private final Node mNode;
+    private final boolean mOutline;
+    private final EditorConfig mEditorConfig;
+    private Polygon mHead;
+    private int mHalfHeight;
+    private int mWidth;
+    private int mStrokeSize;
 
     public StartSign(Node node, Point point) {
-        mNode    = node;
+        mNode = node;
         mEditorConfig = mNode.getWorkSpace().getEditorConfig();
-        
+
         SetEditorConfig();
-        
-        mColor   = sSTART_SIGN_COLOR;
-      
-        mRelPos  = point;
+
+        mColor = sSTART_SIGN_COLOR;
+
+        mRelPos = point;
         mOutline = false;
         update();
     }
@@ -55,20 +55,20 @@ public class StartSign extends JComponent implements Observer {
     public StartSign(Node node, Point point, boolean mode) {
         mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
         SetEditorConfig();
-        mColor   = sSTART_SIGN_COLOR;
+        mColor = sSTART_SIGN_COLOR;
         mOutline = mode;
-        mNode    = node;
-        mRelPos  = point;
+        mNode = node;
+        mRelPos = point;
         update();
     }
 
     public StartSign(Node node, Point point, boolean mode, Color color) {
         mEditorConfig = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
         SetEditorConfig();
-        mColor   = color;
+        mColor = color;
         mOutline = mode;
-        mNode    = node;
-        mRelPos  = point;
+        mNode = node;
+        mRelPos = point;
         update();
     }
 
@@ -80,11 +80,11 @@ public class StartSign extends JComponent implements Observer {
 
     public void update() {
         mHalfHeight = mEditorConfig.sNODEWIDTH / 6;
-        mWidth      = mEditorConfig.sNODEWIDTH / 8;
+        mWidth = mEditorConfig.sNODEWIDTH / 8;
         mStrokeSize = ((mEditorConfig.sNODEWIDTH / 50) < 2
-                       ? 2
-                       : (mEditorConfig.sNODEWIDTH / 50));
-        mHead       = new Polygon();
+                ? 2
+                : (mEditorConfig.sNODEWIDTH / 50));
+        mHead = new Polygon();
         mHead.addPoint(2 * mStrokeSize, 2 * mStrokeSize);
         mHead.addPoint(mWidth + 2 * mStrokeSize, mHalfHeight + 2 * mStrokeSize);
         mHead.addPoint(2 * mStrokeSize, mHalfHeight * 2 + 2 * mStrokeSize);
@@ -97,38 +97,37 @@ public class StartSign extends JComponent implements Observer {
 
     private void SetEditorConfig() {
         mHalfHeight = mEditorConfig.sNODEWIDTH / 6;
-        mWidth      = mEditorConfig.sNODEWIDTH / 8;
+        mWidth = mEditorConfig.sNODEWIDTH / 8;
         mStrokeSize = ((mEditorConfig.sNODEWIDTH / 50) < 2
-                       ? 2
-                       : (mEditorConfig.sNODEWIDTH / 50));
+                ? 2
+                : (mEditorConfig.sNODEWIDTH / 50));
     }
 
+    //
     @Override
-    public void paintComponent(java.awt.Graphics g) {
+    public void paintComponent(final Graphics g) {
         super.paintComponent(g);
+        final VectorGraphics g2d = VectorGraphics.create(g);
 
-        Graphics2D graphics = (Graphics2D) g;
-
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         //
         setLocation(mNode.getLocation().x - mWidth - 2 * mStrokeSize,
-                    mNode.getLocation().y + mEditorConfig.sNODEWIDTH / 2 - mHalfHeight - 2 * mStrokeSize);
+                mNode.getLocation().y + mEditorConfig.sNODEWIDTH / 2 - mHalfHeight - 2 * mStrokeSize);
 
         /*
          * mNode.getLocation().x - mRelPos.x - mWidth - 2 * mStrokeSize,
          * mNode.getLocation().y + mRelPos.y - mHalfHeight - 2 * mStrokeSize);
          */
-
         //
-        graphics.setColor(mColor);
-        graphics.setStroke(new BasicStroke(mStrokeSize));
+        g2d.setColor(mColor);
+        g2d.setStroke(new BasicStroke(mStrokeSize));
 
         if (mOutline) {
-            graphics.drawPolygon(mHead);
+            g2d.drawPolygon(mHead);
         } else {
-            graphics.drawPolygon(mHead);
-            graphics.fillPolygon(mHead);
+            g2d.drawPolygon(mHead);
+            g2d.fillPolygon(mHead);
         }
     }
 }

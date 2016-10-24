@@ -8,7 +8,6 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,6 +20,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Gregor Mehlmann
@@ -73,11 +73,9 @@ public final class EditorMenuBar extends JMenuBar {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
+    protected void paintComponent(final Graphics g) {
         super.paintComponent(g);
-
-        Graphics2D g2d = (Graphics2D) g;
-
+        final VectorGraphics g2d = VectorGraphics.create(g);
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, getWidth() - 1, getHeight() - 1);
     }
@@ -265,7 +263,7 @@ public final class EditorMenuBar extends JMenuBar {
 
     private void initEditMenu() {
         mEditMenu = new JMenu("Edit");
-        
+
         //COPY ACTION
         mCopyMenuItem = new JMenuItem("Copy");
         mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,
@@ -299,7 +297,7 @@ public final class EditorMenuBar extends JMenuBar {
         //TODO DELETE ACTIONS
         mDeleteMenuItem = new JMenuItem("Delete");
         mDeleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-        
+
         //NORMALIZE EDGES
         mNormalizeMenuItem = new JMenuItem("Normalize all Edges");
         mNormalizeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
@@ -319,7 +317,7 @@ public final class EditorMenuBar extends JMenuBar {
                 mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
             }
         });
-        
+
         //***************************************OPTIONS********************************************************************
         mOptionsMenuItem = new JMenuItem("Options");
         mOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,

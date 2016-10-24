@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
@@ -11,13 +10,11 @@ import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
 import static de.dfki.vsm.Preferences.sABOUT_FILE;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -47,6 +44,7 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
+import org.freehep.graphics2d.VectorGraphics;
 
 /**
  * @author Patrick Gebhard
@@ -55,15 +53,15 @@ import javax.swing.text.html.HTMLEditorKit;
 public class AboutDialog extends JDialog {
 
     // Singelton instance
-    private static AboutDialog sInstance            = null;
-    private Font               mFont                = new Font("SansSerif", Font.PLAIN, 11);
-    private JPanel             mContentPanel        = null;
-    private JScrollPane        mAboutTextScrollPane = null;
-    private MyEditorPane       mAboutPane           = null;
-    private JViewport          mViewPort            = null;
-    private Timer              mScrollTimer         = null;
-    
-    protected HTMLEditorKit    editorKit            = new HTMLEditorKit() {
+    private static AboutDialog sInstance = null;
+    private Font mFont = new Font("SansSerif", Font.PLAIN, 11);
+    private JPanel mContentPanel = null;
+    private JScrollPane mAboutTextScrollPane = null;
+    private MyEditorPane mAboutPane = null;
+    private JViewport mViewPort = null;
+    private Timer mScrollTimer = null;
+
+    protected HTMLEditorKit editorKit = new HTMLEditorKit() {
         @Override
         public ViewFactory getViewFactory() {
             return new HTMLEditorKit.HTMLFactory() {
@@ -119,11 +117,11 @@ public class AboutDialog extends JDialog {
         mAboutPane.setBackground(new Color(224, 223, 227));
 
         try {
-            URL pageURL = sABOUT_FILE;           
+            URL pageURL = sABOUT_FILE;
             mAboutPane.setPage(pageURL);
         } catch (Exception e) {
             mAboutPane.setText("<html><body><font color=\"red\">No about available!<br>Unable to locate " + sABOUT_FILE
-                               + "</font></body></html>");
+                    + "</font></body></html>");
             e.printStackTrace();
         }
 
@@ -171,7 +169,7 @@ public class AboutDialog extends JDialog {
         mScrollTimer = new Timer(true);
         mScrollTimer.schedule(new ScrollTask(), 2000, 80);
 
-        Dimension bounds  = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension bounds = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension abounds = getSize();
 
         setLocation((bounds.width - abounds.width) / 2, (bounds.height - abounds.height) / 3);
@@ -189,6 +187,7 @@ public class AboutDialog extends JDialog {
     }
 
     class MyEditorPane extends JEditorPane {
+
         public MyEditorPane() {
             super();
         }
@@ -206,24 +205,24 @@ public class AboutDialog extends JDialog {
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g;
-
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            super.paintComponent(g2);
+        protected void paintComponent(final Graphics g) {
+            super.paintComponent(g);
+            final VectorGraphics g2d = VectorGraphics.create(g);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
     }
 
-
     class ScrollTask extends TimerTask {
-        int       xPos        = 0;
-        int       yPos        = 0;
-        int       initialYPos = 0;
-        int       height      = 0;
-        JViewport fViewPort   = null;
-        boolean   configured  = false;
 
-        public ScrollTask() {}
+        int xPos = 0;
+        int yPos = 0;
+        int initialYPos = 0;
+        int height = 0;
+        JViewport fViewPort = null;
+        boolean configured = false;
+
+        public ScrollTask() {
+        }
 
         public void run() {
             if (!configured) {
@@ -232,15 +231,15 @@ public class AboutDialog extends JDialog {
                 // fViewPort.setScrollMode(JViewport.BLIT_SCROLL_MODE);
                 Rectangle viewRect = fViewPort.getViewRect();
 
-                xPos        = new Double(viewRect.getX()).intValue();
-                yPos        = new Double(viewRect.getY()).intValue();
+                xPos = new Double(viewRect.getX()).intValue();
+                yPos = new Double(viewRect.getY()).intValue();
                 initialYPos = yPos;
-                height      = mAboutPane.getSize().height;
-                configured  = true;
+                height = mAboutPane.getSize().height;
+                configured = true;
             } else {
                 yPos = (yPos <= height)
-                       ? yPos + 1
-                       : initialYPos;
+                        ? yPos + 1
+                        : initialYPos;
                 fViewPort.setViewPosition(new Point(xPos, yPos));
             }
         }

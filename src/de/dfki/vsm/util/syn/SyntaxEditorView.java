@@ -1,22 +1,15 @@
 package de.dfki.vsm.util.syn;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Toolkit;
-
 import java.util.LinkedList;
 import java.util.Map;
-
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -28,17 +21,20 @@ import javax.swing.text.ViewFactory;
  * @author Gregor Mehlmann
  */
 public class SyntaxEditorView extends PlainView {
+
     private static RenderingHints sRendHints = null;
 
     static {
         try {
-            Toolkit                                                   toolkit = Toolkit.getDefaultToolkit();
-            @SuppressWarnings("unchecked") Map<RenderingHints.Key, ?> map     =
-                (Map<RenderingHints.Key, ?>) toolkit.getDesktopProperty("awt.font.desktophints");
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            @SuppressWarnings("unchecked")
+            Map<RenderingHints.Key, ?> map
+                    = (Map<RenderingHints.Key, ?>) toolkit.getDesktopProperty("awt.font.desktophints");
 
             //
             sRendHints = new RenderingHints(map);
-        } catch (Throwable t) {}
+        } catch (Throwable t) {
+        }
     }
 
     // The Syntax Style Policy

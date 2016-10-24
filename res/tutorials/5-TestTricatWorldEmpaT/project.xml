@@ -84,4 +84,6 @@
     <Agent name="display" device="mediadisplay">
     </Agent>
   </Agents>
+  <Player>
+  </Player>
 </Project>

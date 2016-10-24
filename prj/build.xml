@@ -49,7 +49,7 @@
     <!-- Define Library Path -->
     <path id="libpath">
         <fileset dir="${libdir}">
-            <include name="*.jar"/>
+            <include name="**/*.jar"/>
         </fileset>
     </path>    
     <!-- Define Build Path -->

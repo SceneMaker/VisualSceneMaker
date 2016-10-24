@@ -35,13 +35,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-import javax.swing.TransferHandler;
 import javax.swing.plaf.basic.BasicButtonUI;
 import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
 import de.dfki.vsm.editor.dialog.OptionsDialog;
-import de.dfki.vsm.editor.dialog.SaveFileDialog;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
+import org.freehep.util.export.ExportDialog;
 
 /**
  * @author Gregor Mehlmann
@@ -198,10 +197,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
 //            }
 //        }
         refreshButtons();
-        if(event instanceof ProjectChangedEvent )
-        {
-            if (event.getSource() instanceof OptionsDialog)
-            {
+        if (event instanceof ProjectChangedEvent) {
+            if (event.getSource() instanceof OptionsDialog) {
                 mSaveProject.setEnabled(true);
             }
         }
@@ -296,8 +293,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
          */
         mTogglePallete = add(new AbstractAction("ACTION_SHOW_ELEMENTS",
                 Boolean.valueOf(Preferences.getProperty("showelements"))
-                        ? ICON_MORE_STANDARD
-                        : ICON_LESS_STANDARD) {
+                ? ICON_MORE_STANDARD
+                : ICON_LESS_STANDARD) {
                     public void actionPerformed(ActionEvent evt) {
                         mSceneFlowEditor.showElementDisplay();
                         refreshButtons();
@@ -468,15 +465,18 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         Action action = new AbstractAction("ACTION_SCREEN_SHOT", ICON_SCREENSHOT_STANDARD) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                TransferHandler handler = mSceneFlowEditor.getWorkSpace().getTransferHandler();
-
-                if (handler != null) {
-                    handler.exportToClipboard(mSceneFlowEditor.getWorkSpace(), mSystemClipBoard, TransferHandler.COPY);
-                    SaveFileDialog fileChooser = new SaveFileDialog();
-                    fileChooser.save();
-                } else {
-                    System.err.println("handler null");
-                }
+                /*
+                 TransferHandler handler = mSceneFlowEditor.getWorkSpace().getTransferHandler();
+                 if (handler != null) {
+                 handler.exportToClipboard(mSceneFlowEditor.getWorkSpace(), mSystemClipBoard, TransferHandler.COPY);
+                 SaveFileDialog fileChooser = new SaveFileDialog();
+                 fileChooser.save();
+                 } else {
+                 System.err.println("handler null");
+                 }
+                 */
+                ExportDialog export = new ExportDialog();
+                export.showExportDialog(mSceneFlowEditor.getWorkSpace(), "Export view as ...", mSceneFlowEditor.getWorkSpace(), "export");
             }
         };
         action.putValue(Action.SHORT_DESCRIPTION, "Add/Remove window");
@@ -519,8 +519,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         add(Box.createHorizontalGlue());
         mToggleElementEditor = add(new AbstractAction("ACTION_SHOW_ELEMENTPROP",
                 Boolean.valueOf(Preferences.getProperty("showelementproperties"))
-                        ? ICON_LESS_STANDARD
-                        : ICON_MORE_STANDARD) {
+                ? ICON_LESS_STANDARD
+                : ICON_MORE_STANDARD) {
                     public void actionPerformed(ActionEvent evt) {
                         mSceneFlowEditor.toggleElementEditor();
                         updateElementEditorButton();
@@ -572,12 +572,12 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             //mLogger.message("Not Running");
             mPlayButton.setIcon(ICON_PLAY_STANDARD);
             mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
-            
+
             mPlayButton.setToolTipText("Initialize project/Start the execution of the sceneflow");
             // if an execution has been ended disable the play button
             if (/*mRunTime.wasExecuted(mEditorProject)*/mEditorProject.wasExecuted() && mStopButton.isEnabled()) {
                 mPlayButton.setEnabled(false);
-            } else if (!/*mRunTime.isRunning(mEditorProject)*/mEditorProject.isRunning()){
+            } else if (!/*mRunTime.isRunning(mEditorProject)*/mEditorProject.isRunning()) {
                 mPlayButton.setEnabled(true);
                 mStopButton.setEnabled(false);
             }
