@@ -38,19 +38,19 @@ public class SSILogMessageSender extends ActivityExecutor {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-
+    
     public SSILogMessageSender(PluginConfig config, RunTimeProject project) {
         super(config, project);
     }
-
+    
     @Override
     public synchronized String marker(long id) {
         return "$(" + id + ")";
     }
-
+    
     @Override
     public void execute(AbstractActivity activity) {
-
+        
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
@@ -65,55 +65,52 @@ public class SSILogMessageSender extends ActivityExecutor {
             }
         } else {
             final LinkedList<ActionFeature> features = activity.getFeatures();
-
+            
             String activityName = activity.getName().toLowerCase();
-
-            LogMessage.Class messageClass = LogMessage.Class.valueOf(activity.getName().toUpperCase());
-
+            
+            LogMessage.Class messageClass = LogMessage.Class.valueOf(activity.getName().toUpperCase().trim());
+            
             long duration = 1000; // set the default duration to 1000 (ms)
             try {
                 duration = Long.parseLong(getActionFeatureValue("duration", features));
             } catch (NumberFormatException nfe) {
             }
-
+            
             LogMessage logMessage = new LogMessage();
+            
+            logMessage.setClass(messageClass);
 
             // set state, if unknown set state COMPLETED
+            final String state = getActionFeatureValue("state", features).toUpperCase().trim().replace("'", "");
             try {
-                logMessage.setState(LogMessage.State.valueOf(getActionFeatureValue("state", features).toUpperCase()));
+                logMessage.setState(LogMessage.State.valueOf(state));
             } catch (IllegalArgumentException iae) {
                 logMessage.setState(LogMessage.State.COMPLETED);
             }
-
+            
             logMessage.setTimeStamp(System.currentTimeMillis());
             logMessage.setDuration(duration);
-
+            
             switch (messageClass) {
                 case ACT: // e.g. [<agent> ACT text='Inform'] 
-                    logMessage.setClass(messageClass);
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
-                case EVENT: // e.g. [<agent> EVENT text='InterviewPrepared']
-                    logMessage.setClass(messageClass);
+                case MESSAGE: // e.g. [<agent> MESSAGE text='InterviewPrepared']
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
                 case SCENE: // e.g. [<agent> SCENE text='Welcome'] or e.g. [<agent> STATE text='Welcome' state='COMPLETED' duration='5500']
-                    logMessage.setState(LogMessage.State.CONTINUED); //default for state is CONTINUED
-                    logMessage.setClass(messageClass);
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
                 case STATE: // e.g. [<agent> STATE text='UserIsSpeaking'] or e.g. [<agent> STATE text='UserIsSpeaking' state='COMPLETED' duration='2300']
                     logMessage.setState(LogMessage.State.CONTINUED); //default for state is CONTINUED
-                    logMessage.setClass(messageClass);
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
                 case VARREQUEST: // e.g. [<agent> VARREQUEST var='class' values='biology,math,music']
-                    logMessage.setClass(messageClass);
-                    logMessage.setContent(getActionFeatureValue("var", features) + ":" + getActionFeatureValue("values", features));
+                    logMessage.setContent(getActionFeatureValue("var", features).trim().replace("'", "") + ":" + getActionFeatureValue("values", features).trim().replace("'", ""));
                     send(logMessage.toString());
                     break;
                 default:
@@ -121,7 +118,7 @@ public class SSILogMessageSender extends ActivityExecutor {
             }
         }
     }
-
+    
     private void send(String message) {
         DatagramSocket c;
         // Find the server using UDP broadcast
@@ -129,7 +126,7 @@ public class SSILogMessageSender extends ActivityExecutor {
             //Open a random port to send the package
             c = new DatagramSocket();
             c.setBroadcast(true);
-
+            
             byte[] sendData = (message).getBytes("UTF8");
 
 //            //Try the 255.255.255.255 first
@@ -141,15 +138,15 @@ public class SSILogMessageSender extends ActivityExecutor {
 //            }
             // Broadcast the message over all the network interfaces
             String hosts = "";
-
+            
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = interfaces.nextElement();
-
+                
                 if (networkInterface.isLoopback() || !networkInterface.isUp()) {
                     continue; // Don't want to broadcast to the loopback interface
                 }
-
+                
                 for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                     InetAddress broadcast = interfaceAddress.getBroadcast();
                     if (broadcast == null) {
@@ -167,7 +164,7 @@ public class SSILogMessageSender extends ActivityExecutor {
                     } catch (Exception e) {
                         packetSend = false;
                     }
-
+                    
                     if (packetSend) {
                         mProject.setVariable(mSceneflowVar, new StringValue("Message successfully send"));
                     }
@@ -180,14 +177,14 @@ public class SSILogMessageSender extends ActivityExecutor {
             mLogger.message(ex.toString());
         }
     }
-
+    
     @Override
     public void launch() {
         mLogger.message("Loading Message Sender");
         mPort = Integer.parseInt(mConfig.getProperty("port"));
         mSceneflowVar = mConfig.getProperty("sceneflow_variable");
     }
-
+    
     @Override
     public void unload() {
     }
@@ -196,10 +193,12 @@ public class SSILogMessageSender extends ActivityExecutor {
     private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
         for (ActionFeature af : features) {
             if (af.getKey().equalsIgnoreCase(name)) {
+                mLogger.message(">>>>>>>>>>>>>>>> key=" + af.getKey() + "has value=" + af.getVal());
+                
                 return af.getVal();
             }
         }
         return "";
     }
-
+    
 }
