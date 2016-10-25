@@ -11,18 +11,20 @@ package de.dfki.vsm.xtension.remote.message;
  * 
  */
 public class LogMessage {
-    public static enum Class {ACT, EVENT, SCENE, STATE, VARASSIGN, VARREQUEST};
+    public static enum Class {ACT, MESSAGE, SCENE, STATE, VARASSIGN, VARREQUEST};
     public static enum State {COMPLETED, CONTINUED};
-    
+
     public static final String sID = "VSM";
     
     public Class mClass;
     public String mContent;
-    public long mTimeStamp;
-    public long mDuration;
+    public long mTimeStamp = -1;
+    public long mDuration = -1;
     public State mState;
     
-    public static final String sSeparator = "#";
+    public static final long SDEFAULTDURATION = 1000;
+    
+    public static final String sSEPARATOR = "#";
     
     public LogMessage() {
         //
@@ -53,7 +55,7 @@ public class LogMessage {
         
         // build message according to format: <sender>#<class>#<content>#<timestamp>#<duration>#<state>
         // for example                       : VSM#SCENE#Welcome#123123123123123#5300#COMPLETED
-        sb.append(sID).append(sSeparator).append(mClass.name()).append(sSeparator).append(mContent).append(sSeparator).append(mTimeStamp).append(sSeparator).append(mDuration).append(sSeparator).append(mState.name());
+        sb.append(sID).append(sSEPARATOR).append(mClass.name()).append(sSEPARATOR).append(mContent).append(sSEPARATOR).append(mTimeStamp).append(sSEPARATOR).append(mDuration).append(sSEPARATOR).append(mState.name());
         
         return sb.toString();
     }
