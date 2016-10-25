@@ -29,6 +29,9 @@ public class ReceiverThread extends Thread {
 
     private DatagramSocket mSocket;
 
+    // last raw data
+    private static byte[] lastReceivedData;
+
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -45,7 +48,6 @@ public class ReceiverThread extends Thread {
 //            mSocket.setReuseAddress(true);
 //            mSocket.setBroadcast(true);
 //            mSocket.joinGroup(InetAddress.getByName("230.0.0.1"));
-
             //Keep a mSocket open to listen to all the UDP trafic that is destined for this port
             mSocket = new DatagramSocket(null);
             mSocket.setReuseAddress(true);
@@ -61,7 +63,14 @@ public class ReceiverThread extends Thread {
                 mSocket.receive(packet);
 
                 // Read Packet
-                byte[] realData = Arrays.copyOf(packet.getData(), packet.getLength());;
+                byte[] data = Arrays.copyOf(packet.getData(), packet.getLength());
+
+                // Check if this has been received
+                if (data.equals(lastReceivedData)) {
+                    mLogger.message("Ommitting message - was received alread");
+                    break;
+                }
+                lastReceivedData = data;
 
                 String message = new String(packet.getData(), "UTF-8").trim();
                 mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
