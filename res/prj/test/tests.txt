@@ -1,0 +1,31 @@
+User Voice:
+jdd([type:event, name:user, mode:voice, data:start, time:85000, from:0, life:0, conf:1.0])
+jdd([type:event, name:user, mode:voice, data:stop, time:89000, from:0, life:0, conf:1.0])
+
+User Shift:
+[type:event, name:user, mode:shift, data:start, time:80000, from:250, life:0, conf:1.0]
+[type:event, name:user, mode:shift, data:start, time:83000, from:250, life:0, conf:1.0]
+
+
+Agent Voice:
+jdd([type:event, name:agent, mode:voice, data:start, time:85000, from:0, life:0, conf:1.0])
+jdd([type:event, name:agent, mode:voice, data:stop, time:89000, from:0, life:0, conf:1.0])
+
+
+Role Shifts:
+jdd([type:signal, recv:role, name:agent, data:occupy, time:0])
+jdd([type:signal, recv:role, name:agent, data:release, time:0])
+jdd([type:signal, recv:role, name:agent, data:offer, time:0])
+jdd([type:signal, recv:role, name:agent, data:request, time:0])
+jdd([type:signal, recv:role, name:agent, data:accept, time:0])
+jdd([type:signal, recv:role, name:agent, data:claim, time:0])
+
+jdd([type:signal, recv:role, name:user, data:occupy, time:0])
+jdd([type:signal, recv:role, name:user, data:release, time:0])
+jdd([type:signal, recv:role, name:user, data:offer, time:0])
+jdd([type:signal, recv:role, name:user, data:request, time:0])
+jdd([type:signal, recv:role, name:user, data:accept, time:0])
+jdd([type:signal, recv:role, name:user, data:claim, time:0])
+
+signal(role, agent, occupy)
+signal(role, agent, offer)

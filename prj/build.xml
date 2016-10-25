@@ -142,7 +142,7 @@
             <classpath refid="clspath"/>
         </java>
     </target>
-    <!-- Execute to Welcome Screen -->
+    <!-- -->
     <target name="exec">
         <java classname="de.dfki.vsm.SceneMaker3" fork="true">
             <!-- <arg line="runtime res/prj/test"/> -->
@@ -150,62 +150,14 @@
             <classpath refid="clspath"/>
         </java>
     </target>
-
-   <target name="debug">
-
-        <java classname="de.dfki.vsm.SceneMaker3" fork="true">
-            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" />
-            <classpath refid="clspath"/>
-        </java>
-    </target>
-    
-     <!-- Execute to Welcome Screen -->
-    <target name="test-ssi-plugin">
-        <java classname="de.dfki.vsm.xtesting.TestSSIPlugin" fork="true">
-            <!-- <arg line="runtime res/prj/test"/> -->
-            <!-- <arg line="editor res/prj/test"/> -->
-            <classpath refid="clspath"/>
-        </java>
-    </target>
-     <target name="test-swi-bfql">
-        <java classname="de.dfki.vsm.xtesting.jpl.JPLTestSuite" fork="true">
-            <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.test.pl"/>
-            <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.logs.pl"/>
-            <classpath refid="clspath"/>
-        </java>
-    </target>
-     <target name="test-wizard">
-        <java classname="de.dfki.vsm.SceneMaker3" fork="true">
-            <arg line="editor res\tutorials\11-WizardTestSuite"/>
-            <classpath refid="clspath"/>
-        </java>
-    </target>
-         <!-- Execute Property Manager-->
-    <target name="testPropertyManager">
-        <java classname="de.dfki.vsm.xtesting.TestFXGui" fork="true">
-            <!-- <arg line="runtime res/prj/test"/> -->
-            <!-- <arg line="editor res/prj/test"/> -->
-            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" />
-            <classpath refid="clspath"/>
-        </java>
-    </target>
-    
-    <!-- Execute Project -->
-    <!--    <target name="exec">
-            <java classname="de.dfki.vsm.ProjectEditor" fork="true">
-                    <classpath refid="clspath"/>
-                    <arg line="res/prj/hcm/vsm/config.xml"/>
-            </java>
-    </target>-->
-    <!-- Execute Project -->
-    <!--
+    <!--  -->   
     <target name="test">
-        <java classname="de.dfki.vsm.test.TestVSMAPI" fork="true">
-            <arg line="res/prj/test"/>
+       <java classname="de.dfki.vsm.SceneMaker3" fork="true">
+            <arg line="editor res/prj/test"/> 
             <classpath refid="clspath"/>
         </java>
-    </target>   
-    -->
+    </target> 
+    
     <!-- Scanner Generation -->
     <target name="-lexxer">
         <echo message="Generating '${scnscnfile}' ${line.separator}      from '${scnlexfile}'"/>

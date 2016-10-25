@@ -94,7 +94,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Make unique worker name
         final String task = process.getName() + ":" + name + "@";
         // Print some information
-         mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
+        //mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
 
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
@@ -109,6 +109,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                 if (cmdString.startsWith("[") && cmdString.endsWith("]")) {
                     cmdString = cmdString.substring(1, cmdString.length() - 1);
                     String[] parts = cmdString.split("[ ]+");
+
                     int cnt = 0;
                     for (String part : parts) {
                         if (cnt == 0) {
@@ -121,15 +122,11 @@ public final class ReactivePlayer extends RunTimePlayer {
                         }
                         cnt++;
                     }
-                }
-
-                // Schedule the activity without delay but blocking
-                ActionActivity aa = new ActionActivity(actor, "cmd", action, name, features);
-                aa.setType(AbstractActivity.Type.blocking);
-                mScheduler.schedule(0, null, aa, mProject.getAgentDevice(actor));
-                // Check for interruption
-                if (isDone()) {
-                    return;
+                    // Schedule the activity without delay but blocking
+                    ActionActivity aa = new ActionActivity(actor, "cmd", action, name, features);
+                    aa.setType(AbstractActivity.Type.blocking);
+                    //mLogger.message("Playing Action Activity '" + name + "' with actor '" + actor + "' on device '" + mProject.getAgentDevice(actor) + "'");
+                    mScheduler.schedule(0, null, aa, mProject.getAgentDevice(actor));
                 }
             }
         };
@@ -191,7 +188,6 @@ public final class ReactivePlayer extends RunTimePlayer {
                     for (SceneUttr uttr : turn.getUttrList()) {
 
                         //mLogger.message("Utterance " + uttr.getText().trim());
-
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
                         for (final UtteranceElement element : uttr.getWordList()) {
@@ -255,7 +251,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         };
         // Start the playback task
         worker.start();
-        
+
         // Wait for playback task
         boolean finished = false;
         while (!finished) {
@@ -275,7 +271,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                 worker.abort();
             }
         }
-        
+
         // Print some information
         //mLogger.message("Continuing '" + process + "'");
     }

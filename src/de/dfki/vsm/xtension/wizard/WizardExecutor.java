@@ -9,6 +9,7 @@ import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.jpl.JPLEngine;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -38,6 +39,9 @@ import javax.swing.text.StyledDocument;
 import javax.swing.BoxLayout;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+import javax.swing.text.BadLocationException;
 
 /**
  * @author Gregor Mehlmann
@@ -56,91 +60,92 @@ public final class WizardExecutor extends ActivityExecutor {
     private JPanel mAgentStatusPanel;
     private JPanel mAgentSignalPanel;
     private JPanel mAgentInputPanel;
-    private JPanel mUserVerbalPanel;
-    private JPanel mUserNonverbPanel;
+    // Output panel
     private JPanel mOutputWizardPanel;
-    // Output console
     private JTextPane mOutputWizardArea;
     private JScrollPane mOutputWizardPane;
     // Status labels
     private JLabel mUserStateLabel;
-    private JLabel mAgentStateLabel;
     private JLabel mUserRoleLabel;
+    private JLabel mUserActionLabel;
+    private JLabel mAgentStateLabel;
     private JLabel mAgentRoleLabel;
-    private JLabel mUserActLabel;
-    private JLabel mAgentActLabel;
-    // Status Buttons
+    private JLabel mAgentActionLabel;
+    // Status buttons
     private JButton mUserStateButton;
     private JButton mAgentStateButton;
     // Signal buttons
+    private JButton mUserOccupyButton;
+    private JButton mUserReleaseButton;
     private JButton mUserRequestButton;
     private JButton mUserAcceptButton;
     private JButton mUserRejectButton;
     private JButton mUserOfferButton;
     private JButton mUserLeaveButton;
     private JButton mUserClaimButton;
+    private JButton mAgentOccupyButton;
+    private JButton mAgentReleaseButton;
     private JButton mAgentRequestButton;
     private JButton mAgentAcceptButton;
     private JButton mAgentRejectButton;
     private JButton mAgentOfferButton;
     private JButton mAgentLeaveButton;
     private JButton mAgentClaimButton;
+    // User voice
+    private JLabel mUserVoiceLabel;
+    private JButton mUserVoiceButton;
+    // Agent voice
+    private JLabel mAgentVoiceLabel;
+    private JButton mAgentVoiceButton;
+    // User Speech
+    private JLabel mUserSpeechLabel;
+    private JTextField mUserSpeechField;
+    // Agent Scripts
+    private JLabel mAgentScriptLabel;
+    private JComboBox mAgentScriptCombo;
+    private DefaultComboBoxModel mScriptModel;
     //
     private JLabel mUserElicitLabel;
     private JButton mUserElicitButton;
-    // Input panels
-    private JLabel mUserVoiceLabel;
-    private JButton mUserVoiceButton;
-    // Affect Slider
-    private JLabel mAffectLabel;
-    private JSlider mAffectSlider;
+    // User expressions
+    private JLabel mUserExpLabel;
+    private JComboBox mUserExpCombo;
+    private DefaultComboBoxModel mUserEmoModel;
+    // User eyegaze
+    private JLabel mUserGazeLabel;
+    private JComboBox mUserGazeCombo;
+    private DefaultComboBoxModel mUserGazeModel;
     // Expressions
-    private JLabel mExpressionLabel;
-    private JComboBox mExpressionCombo;
-    private DefaultComboBoxModel mEmotionModel;
+    private JLabel mAgentExpLabel;
+    private JComboBox mAgentExpCombo;
+    private DefaultComboBoxModel mAgentEmoModel;
     // Eyegaze
-    private JLabel mEyegazeLabel;
-    private JComboBox mEyegazeCombo;
-    private DefaultComboBoxModel mObjectModel;
-    // Scenescript
-    private JLabel mScriptLabel;
-    private JComboBox mScriptCombo;
-    private DefaultComboBoxModel mScriptModel;
+    private JLabel mAgentGazeLabel;
+    private JComboBox mAgentGazeCombo;
+    private DefaultComboBoxModel mAgentGazeModel;
+    //
+    private JLabel mAgentBackLabel;
+    private JButton mAgentBackButton;
+
     // Style attributes
     private SimpleAttributeSet mDateStyle;
     private SimpleAttributeSet mTextStyle;
-    // The scene player 
-    //private final AOCScenePlayer mPlayer;
-    //private final RunTimeProject mProject;
-    //private final RunTimeInstance mRunTime;
+    // The scene script 
     private final SceneScript mSceneScript;
     // The date format
     private final SimpleDateFormat mFormat
             = new SimpleDateFormat("HH:mm:ss.SSS");
-    //
-    private WizardTimer mTimer;
 
     // Launch the executor 
     @Override
     public void launch() {
         show();
-        //
-        mTimer = new WizardTimer(10);
-        mTimer.start();
-
     }
 
     // Unload the executor 
     @Override
     public void unload() {
         hide();
-        //
-        mTimer.abort();
-        try {
-            mTimer.join();
-        } catch (final InterruptedException exc) {
-            mLogger.failure(exc.toString());
-        }
     }
 
     @Override
@@ -160,14 +165,14 @@ public final class WizardExecutor extends ActivityExecutor {
         final String type = activity.getType().name();
         final String text = activity.getText();
         final LinkedList<ActionFeature> features = activity.getFeatures();
-
-        mLogger.message(actor + ": " + name);
-
         if (activity instanceof ActionActivity) {
             final ActionActivity action = (ActionActivity) activity;
             if (name.equals("refresh")) {
-                mLogger.message("Refreshing Wizard");
                 refresh();
+            } else if (name.equals("output")) {
+                if (features.get(0).getKey().equals("text")) {
+                    output(features.get(0).getVal());
+                }
             }
         }
     }
@@ -178,10 +183,7 @@ public final class WizardExecutor extends ActivityExecutor {
             final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
-        // Initialize player reference 
-        //mPlayer = mProject;
-        //mRunTime = player.getRunTime();
-        //mProject = mPlayer.getProject();
+        // Initialize scene script
         mSceneScript = mProject.getSceneScript();
         // Load the data and init GUI
         load();
@@ -197,31 +199,48 @@ public final class WizardExecutor extends ActivityExecutor {
 
     // Initialize the expression box
     private void loadObjectNames() {
-        // Create the emotion model
-        mObjectModel = new DefaultComboBoxModel();
+        // Create the emotion models
+        mUserGazeModel = new DefaultComboBoxModel();
+        mAgentGazeModel = new DefaultComboBoxModel();
         // Add the emotion expressions
-        mObjectModel.addElement("pen");
-        mObjectModel.addElement("cup");
-        mObjectModel.addElement("book");
-        mObjectModel.addElement("robot");
+        mUserGazeModel.addElement("pen");
+        mUserGazeModel.addElement("cup");
+        mUserGazeModel.addElement("book");
+        mUserGazeModel.addElement("agent");
+        //
+        mAgentGazeModel.addElement("pen");
+        mAgentGazeModel.addElement("cup");
+        mAgentGazeModel.addElement("book");
+        mAgentGazeModel.addElement("user");
         // Deselect everything first
-        mObjectModel.setSelectedItem(null);
+        mUserGazeModel.setSelectedItem("agent");
+        mAgentGazeModel.setSelectedItem("user");
     }
 
     // Initialize the expression box
     private void loadEmotionExps() {
-        // Create the emotion model
-        mEmotionModel = new DefaultComboBoxModel();
+        // Create the emotion models
+        mUserEmoModel = new DefaultComboBoxModel();
+        mAgentEmoModel = new DefaultComboBoxModel();
         // Add the emotion expressions
-        mEmotionModel.addElement("neutral");
-        mEmotionModel.addElement("joy");
-        mEmotionModel.addElement("sad");
-        mEmotionModel.addElement("fear");
-        mEmotionModel.addElement("anger");
-        mEmotionModel.addElement("disgust");
-        mEmotionModel.addElement("surprise");
+        mUserEmoModel.addElement("neutral");
+        mUserEmoModel.addElement("joy");
+        mUserEmoModel.addElement("sad");
+        mUserEmoModel.addElement("fear");
+        mUserEmoModel.addElement("anger");
+        mUserEmoModel.addElement("disgust");
+        mUserEmoModel.addElement("surprise");
+        //
+        mAgentEmoModel.addElement("neutral");
+        mAgentEmoModel.addElement("joy");
+        mAgentEmoModel.addElement("sad");
+        mAgentEmoModel.addElement("fear");
+        mAgentEmoModel.addElement("anger");
+        mAgentEmoModel.addElement("disgust");
+        mAgentEmoModel.addElement("surprise");
         // Deselect everything first
-        mEmotionModel.setSelectedItem(null);
+        mUserEmoModel.setSelectedItem("neutral");
+        mAgentEmoModel.setSelectedItem("neutral");
     }
 
     // Initialize the scene group box
@@ -261,32 +280,97 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //final String userState = (String) mRunTime.getValueOf(mProject, "UserState").getValue();
-                //if (userState.equals("present")) {
-                //    mPlayer.event("state", "user", "leave");
-                //} else {
-                //    mPlayer.event("state", "user", "enter");
-                //}
+                final boolean userAttendant = (boolean) mProject.getValueOf("UserAttendant").getValue();
+                if (userAttendant) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "state" + "," + "\n"
+                            + "data:" + "leave" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                } else {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "state" + "," + "\n"
+                            + "data:" + "enter" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                }
             }
         });
-        mUserActLabel = new JLabel("Action:");
+        mUserActionLabel = new JLabel("Action:");
         mUserRoleLabel = new JLabel("Role:");
         mUserStateLabel = new JLabel("Status:");
+
+        sanitize(mUserStateLabel);
+        sanitize(mUserStateButton);
+        sanitize(mUserRoleLabel);
+        sanitize(mUserActionLabel);
+
         mUserStatusPanel = new JPanel();
         mUserStatusPanel.setLayout(new GridLayout(2, 2));
         mUserStatusPanel.setBorder(BorderFactory.createTitledBorder("Status Variables"));
         mUserStatusPanel.add(mUserStateLabel);
         mUserStatusPanel.add(mUserStateButton);
         mUserStatusPanel.add(mUserRoleLabel);
-        mUserStatusPanel.add(mUserActLabel);
+        mUserStatusPanel.add(mUserActionLabel);
 
         // Create the user signal panel ////////////////////////////////////////
+        mUserOccupyButton = new JButton("Occupy");
+        mUserOccupyButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "occupy" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
+            }
+        });
+
         mUserRequestButton = new JButton("Request");
         mUserRequestButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "request");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "request" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
+            }
+        });
+
+        mUserReleaseButton = new JButton("Release");
+        mUserReleaseButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "release" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mUserAcceptButton = new JButton("Accept");
@@ -294,7 +378,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "accept");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "accept" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mUserRejectButton = new JButton("Reject");
@@ -302,7 +393,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "reject");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "reject" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mUserOfferButton = new JButton("Offer");
@@ -310,7 +408,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "offer");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "offer" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mUserLeaveButton = new JButton("Leave");
@@ -318,7 +423,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "leave");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "leave" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mUserClaimButton = new JButton("Claim");
@@ -326,12 +438,31 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "claim");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "data:" + "claim" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
+
+        sanitize(mUserOccupyButton);
+        sanitize(mUserReleaseButton);
+        sanitize(mUserRequestButton);
+        sanitize(mUserAcceptButton);
+        sanitize(mUserRejectButton);
+        sanitize(mUserOfferButton);
+        sanitize(mUserLeaveButton);
+        sanitize(mUserClaimButton);
+
         mUserSignalPanel = new JPanel();
-        mUserSignalPanel.setLayout(new GridLayout(2, 3));
+        mUserSignalPanel.setLayout(new GridLayout(2, 4));
         mUserSignalPanel.setBorder(BorderFactory.createTitledBorder("Turn Regulation"));
+        mUserSignalPanel.add(mUserOccupyButton);
+        mUserSignalPanel.add(mUserReleaseButton);
         mUserSignalPanel.add(mUserRequestButton);
         mUserSignalPanel.add(mUserAcceptButton);
         mUserSignalPanel.add(mUserRejectButton);
@@ -340,63 +471,96 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserSignalPanel.add(mUserClaimButton);
 
         // Create the user verbal panel ////////////////////////////////////////
-        mUserVoiceLabel = new JLabel("Utterance:");
-        mUserVoiceLabel.setBounds(5, 30, 100, 25);
+        mUserVoiceLabel = new JLabel("Voice Activity:");
         mUserVoiceLabel.setBorder(BorderFactory.createEmptyBorder());
         mUserVoiceButton = new JButton();
         mUserVoiceButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //final String userVoice = (String) mRunTime.getValueOf(mProject, "UserVoice").getValue();
-                //if (userVoice.equals("speaking")) {
-                //    mPlayer.event("voice", "user", "stop");
-                //} else {
-                //    mPlayer.event("voice", "user", "start");
-                //}
+                final boolean userSpeaking = (boolean) mProject.getValueOf("UserSpeaking").getValue();
+                if (userSpeaking) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "voice" + "," + "\n"
+                            + "data:" + "stop" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                } else {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "voice" + "," + "\n"
+                            + "data:" + "start" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                }
             }
         });
-        mUserVerbalPanel = new JPanel();
-        mUserVerbalPanel.setLayout(new GridLayout());
-        mUserVerbalPanel.setBorder(BorderFactory.createEmptyBorder());
-        mUserVerbalPanel.add(mUserVoiceLabel);
-        mUserVerbalPanel.add(mUserVoiceButton);
 
-        // Create the user nonverbal panel /////////////////////////////////////
-        mExpressionLabel = new JLabel("Expression:");
-        mExpressionLabel.setBounds(240, 40, 100, 25);
-        mExpressionLabel.setBorder(BorderFactory.createEmptyBorder());
-        mExpressionCombo = new JComboBox(mEmotionModel);
-        mExpressionCombo.setBackground(Color.WHITE);
-        mExpressionCombo.setBounds(250, 65, 100, 25);
-        mExpressionCombo.setBorder(BorderFactory.createEtchedBorder());
-        mExpressionCombo.addItemListener(new ItemListener() {
+        mUserSpeechLabel = new JLabel("Utterance:");
+        mUserSpeechLabel.setBorder(BorderFactory.createEmptyBorder());
+        mUserSpeechField = new JTextField();
+
+        mUserExpLabel = new JLabel("Expression:");
+        mUserExpLabel.setBorder(BorderFactory.createEmptyBorder());
+        mUserExpCombo = new JComboBox(mUserEmoModel);
+        mUserExpCombo.setBackground(Color.WHITE);
+        mUserExpCombo.setBorder(BorderFactory.createEtchedBorder());
+        mUserExpCombo.addItemListener(new ItemListener() {
 
             @Override
             public void itemStateChanged(final ItemEvent event) {
-                //if (event.getStateChange() == ItemEvent.SELECTED) {
-                //    mPlayer.event("facs", "user", ((String) event.getItem()));
-                //}
+                JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "facs" + "," + "\n"
+                            + "data:" + ((String) event.getItem()) + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
             }
         });
-        mEyegazeLabel = new JLabel("Eyegaze:");
-        mEyegazeLabel.setBorder(BorderFactory.createEmptyBorder());
-        mEyegazeCombo = new JComboBox(mObjectModel);
-        mEyegazeCombo.setBackground(Color.WHITE);
-        mEyegazeCombo.setBorder(BorderFactory.createEtchedBorder());
-        mEyegazeCombo.addItemListener(new ItemListener() {
+        mUserGazeLabel = new JLabel("Eyegaze:");
+        mUserGazeLabel.setBorder(BorderFactory.createEmptyBorder());
+        mUserGazeCombo = new JComboBox(mUserGazeModel);
+        mUserGazeCombo.setBackground(Color.WHITE);
+        mUserGazeCombo.setBorder(BorderFactory.createEtchedBorder());
+        mUserGazeCombo.addItemListener(new ItemListener() {
 
             @Override
             public void itemStateChanged(final ItemEvent event) {
-                //if (event.getStateChange() == ItemEvent.SELECTED) {
-                //    mPlayer.event("gaze", "user", ((String) event.getItem()));
-                //}
+                if (event.getStateChange() == ItemEvent.SELECTED) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "gaze" + "," + "\n"
+                            + "data:" + ((String) event.getItem()) + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                }
             }
         });
 
         mUserElicitLabel = new JLabel("Feedback:");
         mUserElicitLabel.setBorder(BorderFactory.createEmptyBorder());
-        mUserElicitButton = new JButton("Elicit:");
+        mUserElicitButton = new JButton("Produce");
         mUserElicitButton.setBackground(Color.WHITE);
         mUserElicitButton.setBorder(BorderFactory.createEmptyBorder());
         mUserElicitButton.addActionListener(new ActionListener() {
@@ -407,38 +571,44 @@ public final class WizardExecutor extends ActivityExecutor {
             }
         });
 
-        mAffectLabel = new JLabel("Activity:");
-        mAffectLabel.setBorder(BorderFactory.createEmptyBorder());
-        mAffectSlider = new JSlider(JSlider.HORIZONTAL);
-        mAffectSlider.setBackground(Color.WHITE);
-        mAffectSlider.setBorder(BorderFactory.createEmptyBorder());
-        mAffectSlider.addChangeListener(new ChangeListener() {
+//        mUserAffectLabel = new JLabel("Activity:");
+//        mUserAffectLabel.setBorder(BorderFactory.createEmptyBorder());
+//        mUserAffectSlider = new JSlider(JSlider.HORIZONTAL);
+//        mUserAffectSlider.setBackground(Color.WHITE);
+//        mUserAffectSlider.setBorder(BorderFactory.createEmptyBorder());
+//        mUserAffectSlider.addChangeListener(new ChangeListener() {
+//
+//            @Override
+//            public void stateChanged(final ChangeEvent event) {
+//                //if (!mUserAffectSlider.getValueIsAdjusting()) {
+//                //    mPlayer.event("mood", "user", String.valueOf(mUserAffectSlider.getValue()));
+//                //}
+//            }
+//        });
+        sanitize(mUserVoiceLabel);
+        sanitize(mUserVoiceButton);
+        sanitize(mUserSpeechLabel);
+        sanitize(mUserSpeechField);
+        sanitize(mUserExpLabel);
+        sanitize(mUserExpCombo);
+        sanitize(mUserGazeLabel);
+        sanitize(mUserGazeCombo);
+        sanitize(mUserElicitLabel);
+        sanitize(mUserElicitButton);
 
-            @Override
-            public void stateChanged(final ChangeEvent event) {
-                //if (!mAffectSlider.getValueIsAdjusting()) {
-                //    mPlayer.event("mood", "user", String.valueOf(mAffectSlider.getValue()));
-                //}
-            }
-        });
-        mUserNonverbPanel = new JPanel();
-        mUserNonverbPanel.setLayout(new GridLayout(4, 3));
-        mUserNonverbPanel.setBorder(BorderFactory.createEmptyBorder());
-        mUserNonverbPanel.add(mExpressionLabel);
-        mUserNonverbPanel.add(mExpressionCombo);
-        mUserNonverbPanel.add(mEyegazeLabel);
-        mUserNonverbPanel.add(mEyegazeCombo);
-        mUserNonverbPanel.add(mUserElicitLabel);
-        mUserNonverbPanel.add(mUserElicitButton);
-        mUserNonverbPanel.add(mAffectLabel);
-        mUserNonverbPanel.add(mAffectSlider);
-
-        // Create the user input panel ///////////////////////////////////////       
         mUserInputPanel = new JPanel();
-        mUserInputPanel.setLayout(new BoxLayout(mUserInputPanel, Y_AXIS));
-        mUserInputPanel.setBorder(BorderFactory.createTitledBorder("Input Simulation"));
-        mUserInputPanel.add(mUserNonverbPanel);
-        mUserInputPanel.add(mUserVerbalPanel);
+        mUserInputPanel.setLayout(new GridLayout(5, 2));
+        mUserInputPanel.setBorder(BorderFactory.createEmptyBorder());
+        mUserInputPanel.add(mUserVoiceLabel);
+        mUserInputPanel.add(mUserVoiceButton);
+        mUserInputPanel.add(mUserSpeechLabel);
+        mUserInputPanel.add(mUserSpeechField);
+        mUserInputPanel.add(mUserExpLabel);
+        mUserInputPanel.add(mUserExpCombo);
+        mUserInputPanel.add(mUserGazeLabel);
+        mUserInputPanel.add(mUserGazeCombo);
+        mUserInputPanel.add(mUserElicitLabel);
+        mUserInputPanel.add(mUserElicitButton);
 
         // Create the agent status panel ///////////////////////////////////////
         mAgentStateButton = new JButton();
@@ -446,33 +616,95 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //final String agentState = (String) mRunTime.getValueOf(mProject, "AgentState").getValue();
-                // TODO: get variable values from interpreter
-                //if (agentState.equals("present")) {
-                //    mPlayer.event("state", "agent", "leave");
-                //} else {
-                //    mPlayer.event("state", "agent", "enter");
-                //}
+                final boolean agentAttendant = (boolean) mProject.getValueOf("AgentAttendant").getValue();
+                if (agentAttendant) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "agent" + "," + "\n"
+                            + "mode:" + "state" + "," + "\n"
+                            + "data:" + "leave" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                } else {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "agent" + "," + "\n"
+                            + "mode:" + "state" + "," + "\n"
+                            + "data:" + "enter" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                }
             }
         });
-        mAgentActLabel = new JLabel("Action:");
+        mAgentActionLabel = new JLabel("Action:");
         mAgentRoleLabel = new JLabel("Role:");
         mAgentStateLabel = new JLabel("Status:");
+
+        sanitize(mAgentStateLabel);
+        sanitize(mAgentStateButton);
+        sanitize(mAgentRoleLabel);
+        sanitize(mAgentActionLabel);
+
         mAgentStatusPanel = new JPanel();
         mAgentStatusPanel.setLayout(new GridLayout(2, 2));
         mAgentStatusPanel.setBorder(BorderFactory.createTitledBorder("Status Variables"));
         mAgentStatusPanel.add(mAgentStateLabel);
         mAgentStatusPanel.add(mAgentStateButton);
         mAgentStatusPanel.add(mAgentRoleLabel);
-        mAgentStatusPanel.add(mAgentActLabel);
+        mAgentStatusPanel.add(mAgentActionLabel);
 
         // Create the agent signal panel ///////////////////////////////////////
+        mAgentOccupyButton = new JButton("Occupy");
+        mAgentOccupyButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "occupy" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
+            }
+        });
+        mAgentReleaseButton = new JButton("Release");
+        mAgentReleaseButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "release" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
+            }
+        });
         mAgentRequestButton = new JButton("Request");
         mAgentRequestButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "request");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "request" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mAgentAcceptButton = new JButton("Accept");
@@ -480,7 +712,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "accept");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "accept" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mAgentRejectButton = new JButton("Reject");
@@ -488,7 +727,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                // mPlayer.event("turn", "agent", "reject");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "reject" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mAgentOfferButton = new JButton("Offer");
@@ -496,7 +742,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "offer");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "offer" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mAgentLeaveButton = new JButton("Leave");
@@ -504,7 +757,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "leave");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "leave" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
         mAgentClaimButton = new JButton("Claim");
@@ -512,12 +772,31 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "claim");
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "role" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + "claim" + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
             }
         });
+
+        sanitize(mAgentOccupyButton);
+        sanitize(mAgentReleaseButton);
+        sanitize(mAgentRequestButton);
+        sanitize(mAgentAcceptButton);
+        sanitize(mAgentRejectButton);
+        sanitize(mAgentOfferButton);
+        sanitize(mAgentLeaveButton);
+        sanitize(mAgentClaimButton);
+
         mAgentSignalPanel = new JPanel();
         mAgentSignalPanel.setLayout(new GridLayout(2, 3));
         mAgentSignalPanel.setBorder(BorderFactory.createTitledBorder("Turn Regulation"));
+        mAgentSignalPanel.add(mAgentOccupyButton);
+        mAgentSignalPanel.add(mAgentReleaseButton);
         mAgentSignalPanel.add(mAgentRequestButton);
         mAgentSignalPanel.add(mAgentAcceptButton);
         mAgentSignalPanel.add(mAgentRejectButton);
@@ -526,30 +805,130 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentSignalPanel.add(mAgentClaimButton);
 
         // Create the agent input panel ///////////////////////////////////////
-        mScriptLabel = new JLabel("Play Scene:");
-        mScriptLabel.setBorder(BorderFactory.createEmptyBorder());
-        mScriptCombo = new JComboBox(mScriptModel);
-        mScriptCombo.setBackground(Color.WHITE);
-        mScriptCombo.setBorder(BorderFactory.createEtchedBorder());
-        mScriptCombo.addItemListener(new ItemListener() {
+        mAgentVoiceLabel = new JLabel("Voice Activity:");
+        mAgentVoiceLabel.setBorder(BorderFactory.createEmptyBorder());
+        mAgentVoiceButton = new JButton();
+        mAgentVoiceButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final boolean agentSpeaking = (boolean) mProject.getValueOf("AgentSpeaking").getValue();
+                if (agentSpeaking) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "agent" + "," + "\n"
+                            + "mode:" + "voice" + "," + "\n"
+                            + "data:" + "stop" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                } else {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "agent" + "," + "\n"
+                            + "mode:" + "voice" + "," + "\n"
+                            + "data:" + "start" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                }
+            }
+        });
+
+        mAgentScriptLabel = new JLabel("Play Scene:");
+        mAgentScriptLabel.setBorder(BorderFactory.createEmptyBorder());
+        mAgentScriptCombo = new JComboBox(mScriptModel);
+        mAgentScriptCombo.setBackground(Color.WHITE);
+        mAgentScriptCombo.setBorder(BorderFactory.createEtchedBorder());
+        mAgentScriptCombo.addItemListener(new ItemListener() {
 
             @Override
             public void itemStateChanged(final ItemEvent event) {
                 if (event.getStateChange() == ItemEvent.SELECTED) {
-                    //mPlayer.event("contrib", "agent", (String) event.getItem());
+                      JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "signal" + "," + "\n"
+                        + "recv:" + "scene" + "," + "\n"
+                        + "name:" + "agent" + "," + "\n"
+                        + "data:" + ((String) event.getItem()) + "," + "\n"
+                        + "time:" + "Time" + "\n"
+                        + "]).");
                 }
-
             }
         });
+
+        mAgentExpLabel = new JLabel("Expression:");
+        mAgentExpLabel.setBorder(BorderFactory.createEmptyBorder());
+        mAgentExpCombo = new JComboBox(mAgentEmoModel);
+        mAgentExpCombo.setBackground(Color.WHITE);
+        mAgentExpCombo.setBorder(BorderFactory.createEtchedBorder());
+        mAgentExpCombo.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(final ItemEvent event) {
+                if (event.getStateChange() == ItemEvent.SELECTED) {
+                }
+            }
+        });
+
+        mAgentGazeLabel = new JLabel("Eyegaze:");
+        mAgentGazeLabel.setBorder(BorderFactory.createEmptyBorder());
+        mAgentGazeCombo = new JComboBox(mAgentGazeModel);
+        mAgentGazeCombo.setBackground(Color.WHITE);
+        mAgentGazeCombo.setBorder(BorderFactory.createEtchedBorder());
+        mAgentGazeCombo.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(final ItemEvent event) {
+                //if (event.getStateChange() == ItemEvent.SELECTED) {
+                //    mPlayer.event("gaze", "user", ((String) event.getItem()));
+                //}
+            }
+        });
+
+        mAgentBackLabel = new JLabel("Backchannel:");
+        mAgentBackLabel.setBorder(BorderFactory.createEmptyBorder());
+        mAgentBackButton = new JButton("Produce");
+        mAgentBackButton.setBackground(Color.WHITE);
+        mAgentBackButton.setBorder(BorderFactory.createEmptyBorder());
+        mAgentBackButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // mPlayer.event("feedback", "user", "elicit");
+            }
+        });
+
+        sanitize(mAgentVoiceLabel);
+        sanitize(mAgentVoiceButton);
+        sanitize(mAgentScriptLabel);
+        sanitize(mAgentScriptCombo);
+        sanitize(mAgentExpLabel);
+        sanitize(mAgentExpCombo);
+        sanitize(mAgentGazeLabel);
+        sanitize(mAgentGazeCombo);
+        sanitize(mAgentBackLabel);
+        sanitize(mAgentBackButton);
+
         mAgentInputPanel = new JPanel();
-        mAgentInputPanel.setLayout(new GridLayout(3, 2));
-        mAgentInputPanel.setBorder(BorderFactory.createTitledBorder("Input Simulation"));
-        mAgentInputPanel.add(mScriptLabel);
-        mAgentInputPanel.add(mScriptCombo);
-        mAgentInputPanel.add(new JPanel());
-        mAgentInputPanel.add(new JPanel());
-        mAgentInputPanel.add(new JPanel());
-        mAgentInputPanel.add(new JPanel());
+        mAgentInputPanel.setLayout(new GridLayout(5, 2));
+        mAgentInputPanel.setBorder(BorderFactory.createEmptyBorder());
+        mAgentInputPanel.add(mAgentVoiceLabel);
+        mAgentInputPanel.add(mAgentVoiceButton);
+        mAgentInputPanel.add(mAgentScriptLabel);
+        mAgentInputPanel.add(mAgentScriptCombo);
+        mAgentInputPanel.add(mAgentExpLabel);
+        mAgentInputPanel.add(mAgentExpCombo);
+        mAgentInputPanel.add(mAgentGazeLabel);
+        mAgentInputPanel.add(mAgentGazeCombo);
+        mAgentInputPanel.add(mAgentBackLabel);
+        mAgentInputPanel.add(mAgentBackButton);
 
         // Create the user wizard panel ////////////////////////////////////////
         mUserWizardPanel = new JPanel();
@@ -583,7 +962,7 @@ public final class WizardExecutor extends ActivityExecutor {
         mOutputWizardPanel = new JPanel();
         mOutputWizardPanel.setLayout(new BoxLayout(mOutputWizardPanel, X_AXIS));
         mOutputWizardPanel.setBorder(BorderFactory.createEmptyBorder());
-        mOutputWizardPanel.setPreferredSize(new Dimension(0, 150));
+        mOutputWizardPanel.setPreferredSize(new Dimension(600, 300));
         mOutputWizardPanel.add(mOutputWizardPane);
 
         // Create the main wizard panel ////////////////////////////////////////
@@ -602,106 +981,132 @@ public final class WizardExecutor extends ActivityExecutor {
         //refresh();
     }
 
+    private void sanitize(final JComponent component) {
+        final Dimension dim = new Dimension(100, 25);
+        component.setPreferredSize(dim);
+        component.setMaximumSize(dim);
+        component.setMinimumSize(dim);
+    }
+
     // Refresh the GUI components
     public void refresh() {
+        mLogger.message("Refreshing Wizard");
         // Reset the GUI components to default
         reset();
         try {
             // Get the user variables
-            final String userAct = (String) mProject.getValueOf("UserAct").getValue();
             final String userRole = (String) mProject.getValueOf("UserRole").getValue();
-            final String userState = (String) mProject.getValueOf("UserState").getValue();
-            final String userVoice = (String) mProject.getValueOf("UserVoice").getValue();
+            final String userAction = (String) mProject.getValueOf("UserAction").getValue();
+            final boolean userAttendant = (boolean) mProject.getValueOf("UserAttendant").getValue();
+            final boolean userSpeaking = (boolean) mProject.getValueOf("UserSpeaking").getValue();
             // get the agent variables
-            final String agentAct = (String) mProject.getValueOf("AgentAct").getValue();
             final String agentRole = (String) mProject.getValueOf("AgentRole").getValue();
-            final String agentState = (String) mProject.getValueOf("AgentState").getValue();
-            final String agentVoice = (String) mProject.getValueOf("AgentVoice").getValue();
+            final String agentAction = (String) mProject.getValueOf("AgentAction").getValue();
+            final boolean agentAttendant = (boolean) mProject.getValueOf("AgentAttendant").getValue();
+            final boolean agentSpeaking = (boolean) mProject.getValueOf("AgentSpeaking").getValue();
 
             // Refresh the text of the labels
-            mUserStateLabel.setText("State: " + userState);
-            mAgentStateLabel.setText("State: " + agentState);
+            mUserStateLabel.setText("State: " + (userAttendant ? "Present" : "Absent"));
+            mAgentStateLabel.setText("State: " + (agentAttendant ? "Present" : "Absent"));
             mUserRoleLabel.setText("Role: " + userRole);
             mAgentRoleLabel.setText("Role: " + agentRole);
-            mUserActLabel.setText("Action: " + userAct);
-            mAgentActLabel.setText("Action: " + agentAct);
+            mUserActionLabel.setText("Action: " + userAction);
+            mAgentActionLabel.setText("Action: " + agentAction);
 
             // Refresh the text of the buttons
-            if (userState.equals("absent")) {
-                mUserStateButton.setText("Enter");
-            } else {
+            if (userAttendant) {
                 mUserStateButton.setText("Leave");
-            }
-
-            if (agentState.equals("absent")) {
-                mAgentStateButton.setText("Enter");
             } else {
-                mAgentStateButton.setText("Leave");
+                mUserStateButton.setText("Enter");
             }
-
-            if (userVoice.equals("speaking")) {
+            if (agentAttendant) {
+                mAgentStateButton.setText("Leave");
+            } else {
+                mAgentStateButton.setText("Enter");
+            }
+            if (userSpeaking) {
                 mUserVoiceButton.setText("Stop");
             } else {
                 mUserVoiceButton.setText("Start");
             }
+            if (agentSpeaking) {
+                mAgentVoiceButton.setText("Stop");
+            } else {
+                mAgentVoiceButton.setText("Start");
+            }
 
             // Refresh the state of the buttons
-            if (userState.equals("present")
-                    && agentState.equals("present")) {
-                // Enable the user input
-                mAffectLabel.setEnabled(true);
-                mAffectSlider.setEnabled(true);
-                mEyegazeLabel.setEnabled(true);
-                mEyegazeCombo.setEnabled(true);
-                mExpressionLabel.setEnabled(true);
-                mExpressionCombo.setEnabled(true);
+            if (userAttendant && agentAttendant) {
+                // 
                 mUserVoiceLabel.setEnabled(true);
                 mUserVoiceButton.setEnabled(true);
-                //
-                mScriptLabel.setEnabled(true);
-                mScriptCombo.setEnabled(true);
+                mUserSpeechLabel.setEnabled(true);
+                mUserSpeechField.setEnabled(true);
+                mUserExpLabel.setEnabled(true);
+                mUserExpCombo.setEnabled(true);
+                mUserGazeLabel.setEnabled(true);
+                mUserGazeCombo.setEnabled(true);
+                mUserElicitLabel.setEnabled(true);
+                mUserElicitButton.setEnabled(true);
+                // 
+                mAgentVoiceLabel.setEnabled(true);
+                mAgentVoiceButton.setEnabled(true);
+                mAgentScriptLabel.setEnabled(true);
+                mAgentScriptCombo.setEnabled(true);
+                mAgentExpLabel.setEnabled(true);
+                mAgentExpCombo.setEnabled(true);
+                mAgentGazeLabel.setEnabled(true);
+                mAgentGazeCombo.setEnabled(true);
+                mAgentBackLabel.setEnabled(true);
+                mAgentBackButton.setEnabled(true);
                 //
                 if (userRole.equals("speaker")
                         && agentRole.equals("addressee")) {
                     //
-                    if (userAct.equals("offering")) {
+                    if (userAction.equals("offering")) {
                         mAgentAcceptButton.setEnabled(true);
                         mAgentRejectButton.setEnabled(true);
-                    } else if (agentAct.equals("requesting")) {
+                    } else if (agentAction.equals("requesting")) {
                         mUserLeaveButton.setEnabled(true);
                         mUserClaimButton.setEnabled(true);
                     } else {
                         mAgentRequestButton.setEnabled(true);
                         mUserOfferButton.setEnabled(true);
+                        mUserReleaseButton.setEnabled(true);
                     }
                 } else if (userRole.equals("addressee")
                         && agentRole.equals("speaker")) {
                     //
-                    if (userAct.equals("requesting")) {
+                    if (userAction.equals("requesting")) {
                         mAgentLeaveButton.setEnabled(true);
                         mAgentClaimButton.setEnabled(true);
-                    } else if (agentAct.equals("offering")) {
+                    } else if (agentAction.equals("offering")) {
                         mUserAcceptButton.setEnabled(true);
                         mUserRejectButton.setEnabled(true);
                     } else {
                         mUserRequestButton.setEnabled(true);
                         mAgentOfferButton.setEnabled(true);
+                        mAgentReleaseButton.setEnabled(true);
                     }
+                } else if (userRole.equals("bystander")
+                        && agentRole.equals("bystander")) {
+                    mUserOccupyButton.setEnabled(true);
+                    mAgentOccupyButton.setEnabled(true);
                 }
             }
         } catch (final NullPointerException exc) {
             mLogger.failure(exc.toString());
-                  
         }
     }
 
     private void reset() {
-        // User status variables
+        // 
         mUserRoleLabel.setEnabled(false);
-        mUserActLabel.setEnabled(false);
-        // User state button
+        mUserActionLabel.setEnabled(false);
         mUserStateButton.setEnabled(true);
-        // Regulation buttons
+        //
+        mUserOccupyButton.setEnabled(false);
+        mUserReleaseButton.setEnabled(false);
         mUserRequestButton.setEnabled(false);
         mUserAcceptButton.setEnabled(false);
         mUserRejectButton.setEnabled(false);
@@ -709,21 +1114,23 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserLeaveButton.setEnabled(false);
         mUserClaimButton.setEnabled(false);
         //
-        mAffectLabel.setEnabled(false);
-        mAffectSlider.setEnabled(false);
-        mEyegazeLabel.setEnabled(false);
-        mEyegazeCombo.setEnabled(false);
-        mExpressionLabel.setEnabled(false);
-        mExpressionCombo.setEnabled(false);
-        // User voice button
         mUserVoiceLabel.setEnabled(false);
         mUserVoiceButton.setEnabled(false);
-        // Agent status variables
+        mUserSpeechLabel.setEnabled(false);
+        mUserSpeechField.setEnabled(false);
+        mUserGazeLabel.setEnabled(false);
+        mUserGazeCombo.setEnabled(false);
+        mUserExpLabel.setEnabled(false);
+        mUserExpCombo.setEnabled(false);
+        mUserElicitLabel.setEnabled(false);
+        mUserElicitButton.setEnabled(false);
+        //
         mAgentRoleLabel.setEnabled(false);
-        mAgentActLabel.setEnabled(false);
-        // Agent state button
+        mAgentActionLabel.setEnabled(false);
         mAgentStateButton.setEnabled(true);
-        //mAgentVoiceButton.setEnabled(false);
+        //
+        mAgentOccupyButton.setEnabled(false);
+        mAgentReleaseButton.setEnabled(false);
         mAgentRequestButton.setEnabled(false);
         mAgentAcceptButton.setEnabled(false);
         mAgentRejectButton.setEnabled(false);
@@ -731,8 +1138,18 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentLeaveButton.setEnabled(false);
         mAgentClaimButton.setEnabled(false);
         //
-        mScriptLabel.setEnabled(false);
-        mScriptCombo.setEnabled(false);
+        mAgentVoiceLabel.setEnabled(false);
+        mAgentVoiceButton.setEnabled(false);
+        mAgentScriptLabel.setEnabled(false);
+        mAgentScriptCombo.setEnabled(false);
+        //
+        mAgentGazeLabel.setEnabled(false);
+        mAgentGazeCombo.setEnabled(false);
+        mAgentExpLabel.setEnabled(false);
+        mAgentExpCombo.setEnabled(false);
+        mAgentBackLabel.setEnabled(false);
+        mAgentBackButton.setEnabled(false);
+
     }
 
     // Show the agent wizard
@@ -753,6 +1170,7 @@ public final class WizardExecutor extends ActivityExecutor {
 
     // Add text to the output console
     public void output(final String text) {
+        mLogger.message(text);
         // Format the date
         final String date = mFormat.format(new Date());
         // Get the document
@@ -762,16 +1180,10 @@ public final class WizardExecutor extends ActivityExecutor {
             doc.insertString(0, text, mTextStyle);
             doc.insertString(0, ":\r\n", null);
             doc.insertString(0, date, mDateStyle);
-        } catch (final Exception exc) {
+        } catch (final BadLocationException exc) {
             // Do nothing
         }
         // Set the caret positio to the top
         mOutputWizardArea.setCaretPosition(0);
-    }
-
-    // Assert a fact to the fact base
-    public void insert(final String fact) {
-        // Assert the fact to the fact base 
-        //mPlayer.query("jdd(" + fact + ").");
     }
 }
