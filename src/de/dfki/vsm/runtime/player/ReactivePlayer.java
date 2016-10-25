@@ -112,8 +112,8 @@ public final class ReactivePlayer extends RunTimePlayer {
 
                 if (cmdString.startsWith("[") && cmdString.endsWith("]")) {
                     // PG: changed action and action feature parser to be more powerful
-                    // matching something like: agent Action text='Someone wants a beer!' other=bad some='things' state='Da fuck continued'
-                    Pattern p = Pattern.compile("^[\\w]+\\s|\\w+\\s|\\w+=\\w+|\\w+='[\\w\\s:\\.!?]+'");
+                    // matching something like: agent Action text='Someone wants a äöü beer!' other=bad some='things' state='Da=fuck.continued'
+                    Pattern p = Pattern.compile("^[\\w]+\\s|\\w+\\s|\\w+=\\w+|\\w+='[\\wäöüßÄÖÜ\\s:\\.,!?=]+'");
                     Matcher m = p.matcher(cmdString);
 
                     while (m.find()) {
