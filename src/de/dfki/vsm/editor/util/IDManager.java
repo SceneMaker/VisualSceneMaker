@@ -244,7 +244,7 @@ public class IDManager {
                     reassignSubSuperNodeStartNodeIDs(sNode, relationOldNewIDRef);
                 }
             }
-            else {
+            /*else {
                 HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
                 SuperNode             sn     = (SuperNode) node.getParentNode();
                 if(sn != null) {
@@ -254,7 +254,7 @@ public class IDManager {
                     }
                     sn.setStartNodeMap(newSNM);
                 }
-            }
+            }*/
         }
     }
 
