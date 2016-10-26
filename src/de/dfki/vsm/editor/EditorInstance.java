@@ -211,7 +211,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     
     
     private void setUIFonts() {
-        String defaultFont = "Helvetica";    // DEFAULT FONT FOR ALL COMPONENTS
+        String defaultFont = "Hattori Hanzo";    // DEFAULT FONT FOR ALL COMPONENTS
 
         UIManager.put("Button.font", new Font(defaultFont, Font.PLAIN, 14));
         UIManager.put("ToggleButton.font", new Font(defaultFont, Font.PLAIN, 14));

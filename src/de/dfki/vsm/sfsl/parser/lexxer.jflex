@@ -57,6 +57,11 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 //"list" { return new Symbol(_SFSLToken_.LIST); }
 //"struct" { return new Symbol(_SFSLToken_.STRUCT); }
 
+"fun" { return new Symbol(_SFSLToken_.FUN); }
+"obj" { return new Symbol(_SFSLToken_.OBJ); }
+"class" { return new Symbol(_SFSLToken_.CLASS); }
+
+
 "true" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "false" { return new Symbol(_SFSLToken_.BOOLEAN, new java.lang.Boolean(yytext())); }
 "null"  { return new Symbol(_SFSLToken_.NULL); }

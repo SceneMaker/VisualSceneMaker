@@ -129,6 +129,7 @@ terminal TIMEOUT;
 terminal QUERY;
 terminal NEW;
 terminal IN;
+terminal FUN, OBJ, CLASS;
 // Typenames
 terminal String TINT;
 terminal String TSHORT;
@@ -163,6 +164,7 @@ non terminal FunctionDefinition function_definition;
 non terminal VariableDefinition variable_definition;
 non terminal ParameterDefinition parameter_definition;
 non terminal DatatypeDefinition datatype_definition;
+non terminal Definition classpath_definition;
 ////////////////////////////////////////////////////////////////////////////////
 // Datatype Definitions
 non terminal ListTypeDefinition list_type_definition;
@@ -230,6 +232,7 @@ definition ::=
   datatype_definition:x                                                         {: RESULT = x; :}                                     
 | variable_definition:x                                                         {: RESULT = x; :}   
 | function_definition:x                                                         {: RESULT = x; :} 
+| classpath_definition:x                                                        {: RESULT = x; :} 
 ;
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * Datatype Definitions
@@ -291,6 +294,14 @@ class_qualifier ::=
   IDENTIFIER:x                                                                  {: RESULT = x; :}
 | class_qualifier:x DOT IDENTIFIER:y                                            {: RESULT = x + "." + y; :}
 ;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Classpath Definitions
+ *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+classpath_definition ::=
+  IDENTIFIER:x COLON CLASS LPAREN class_qualifier:y RPAREN                      {: System.err.println("Class Path Definition '" + y + "'"); RESULT = null; :} 
+;
+
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  * Variable Assignments
  *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -382,8 +393,8 @@ conditional_expression ::=
   LPAREN expression:x QUESTION expression:y COLON expression:z RPAREN           {: RESULT = new TernaryExpression(x, y, z); :}
 ;
 reflection_expression ::=
-  call_expression:x                                                          {: RESULT = x;  :}
-| new_expression:x                                                        {: RESULT = x;  :}
+  call_expression:x                                                             {: RESULT = x;  :}
+| new_expression:x                                                              {: RESULT = x;  :}
 ;
 new_expression ::=
   NEW IDENTIFIER:x LPAREN opt_expression_list:y RPAREN                              {: RESULT = new JavaNewExpression(x, y); :}
