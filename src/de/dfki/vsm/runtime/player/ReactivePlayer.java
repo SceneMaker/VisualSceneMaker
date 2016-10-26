@@ -22,6 +22,8 @@ import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Gregor Mehlmann
@@ -94,7 +96,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Make unique worker name
         final String task = process.getName() + ":" + name + "@";
         // Print some information
-         mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
+        mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
 
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
@@ -106,17 +108,24 @@ public final class ReactivePlayer extends RunTimePlayer {
                 String action = "";
                 LinkedList<ActionFeature> features = new LinkedList<>();
 
+                int cnt = 0;
+
                 if (cmdString.startsWith("[") && cmdString.endsWith("]")) {
-                    cmdString = cmdString.substring(1, cmdString.length() - 1);
-                    String[] parts = cmdString.split("[ ]+");
-                    int cnt = 0;
-                    for (String part : parts) {
+                    // PG: changed action and action feature parser to be more powerful
+                    // matching something like: agent Action x=2.5 y=0.0 z=-13.0 text='Someone wants a beer!' other=bad some='things' state='Da=fuck.continued and others']
+                    Pattern p = Pattern.compile("^\\w+|\\w+\\s|\\w+]|[a-zA-Z-_]+=[a-zA-Z]{1}[a-zA-Z-_]+|\\w+\\=-?[0-9\\.]+|\\w+='[\\wäöüßÄÖÜ\\s:\\.,!?=]+'");
+                    Matcher m = p.matcher(cmdString);
+
+                    while (m.find()) {
+                        String mStr = m.group().trim();
+
                         if (cnt == 0) {
-                            actor = part;
+                            actor = mStr;
                         } else if (cnt == 1) {
-                            action = part;
-                        } else if (part.contains("=")) {
-                            String[] pair = part.split("=");
+                            action = mStr;
+                            action = (action.contains("]")) ? action.replace("]", "") : action; 
+                        } else if (mStr.contains("=")) {
+                            String[] pair = mStr.split("=");
                             features.add(new ActionFeature(ActionFeature.Type.STRING, 0, pair[0].length(), pair[0], pair[1]));
                         }
                         cnt++;
@@ -160,6 +169,7 @@ public final class ReactivePlayer extends RunTimePlayer {
 
     // Call the play scene group method
     @Override
+
     public final void playSceneGroup(final String name, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
@@ -191,7 +201,6 @@ public final class ReactivePlayer extends RunTimePlayer {
                     for (SceneUttr uttr : turn.getUttrList()) {
 
                         //mLogger.message("Utterance " + uttr.getText().trim());
-
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
                         for (final UtteranceElement element : uttr.getWordList()) {
@@ -255,7 +264,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         };
         // Start the playback task
         worker.start();
-        
+
         // Wait for playback task
         boolean finished = false;
         while (!finished) {
@@ -275,7 +284,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                 worker.abort();
             }
         }
-        
+
         // Print some information
         //mLogger.message("Continuing '" + process + "'");
     }

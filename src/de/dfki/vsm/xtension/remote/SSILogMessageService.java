@@ -28,10 +28,13 @@ import java.util.LinkedList;
  * @author Patrick Gebhard
  *
  */
-public class SSILogMessageSender extends ActivityExecutor {
+public class SSILogMessageService extends ActivityExecutor {
 
     // The Port from which the message is send
     private int mPort;
+
+    // Message Receiver
+    LogMessageReceiverThread mSSILogMessageReceiver;
 
     // The Sceneflow variable for feedback
     private String mSceneflowVar;
@@ -39,7 +42,7 @@ public class SSILogMessageSender extends ActivityExecutor {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public SSILogMessageSender(PluginConfig config, RunTimeProject project) {
+    public SSILogMessageService(PluginConfig config, RunTimeProject project) {
         super(config, project);
     }
 
@@ -68,7 +71,7 @@ public class SSILogMessageSender extends ActivityExecutor {
 
             String activityName = activity.getName().toLowerCase();
 
-            LogMessage.Class messageClass = LogMessage.Class.valueOf(activity.getName().toUpperCase());
+            LogMessage.Class messageClass = LogMessage.Class.valueOf(activity.getName().toUpperCase().trim());
 
             long duration = 1000; // set the default duration to 1000 (ms)
             try {
@@ -78,9 +81,12 @@ public class SSILogMessageSender extends ActivityExecutor {
 
             LogMessage logMessage = new LogMessage();
 
+            logMessage.setClass(messageClass);
+
             // set state, if unknown set state COMPLETED
+            final String state = getActionFeatureValue("state", features).toUpperCase().trim().replace("'", "");
             try {
-                logMessage.setState(LogMessage.State.valueOf(getActionFeatureValue("state", features).toUpperCase()));
+                logMessage.setState(LogMessage.State.valueOf(state));
             } catch (IllegalArgumentException iae) {
                 logMessage.setState(LogMessage.State.COMPLETED);
             }
@@ -90,30 +96,25 @@ public class SSILogMessageSender extends ActivityExecutor {
 
             switch (messageClass) {
                 case ACT: // e.g. [<agent> ACT text='Inform'] 
-                    logMessage.setClass(messageClass);
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
-                case EVENT: // e.g. [<agent> EVENT text='InterviewPrepared']
-                    logMessage.setClass(messageClass);
+                case MESSAGE: // e.g. [<agent> MESSAGE text='InterviewPrepared']
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
                 case SCENE: // e.g. [<agent> SCENE text='Welcome'] or e.g. [<agent> STATE text='Welcome' state='COMPLETED' duration='5500']
-                    logMessage.setState(LogMessage.State.CONTINUED); //default for state is CONTINUED
-                    logMessage.setClass(messageClass);
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
                 case STATE: // e.g. [<agent> STATE text='UserIsSpeaking'] or e.g. [<agent> STATE text='UserIsSpeaking' state='COMPLETED' duration='2300']
-                    logMessage.setState(LogMessage.State.CONTINUED); //default for state is CONTINUED
-                    logMessage.setClass(messageClass);
                     logMessage.setContent(getActionFeatureValue("text", features));
                     send(logMessage.toString());
                     break;
                 case VARREQUEST: // e.g. [<agent> VARREQUEST var='class' values='biology,math,music']
-                    logMessage.setClass(messageClass);
-                    logMessage.setContent(getActionFeatureValue("var", features) + ":" + getActionFeatureValue("values", features));
+                    logMessage.setContent(getActionFeatureValue("var", features).trim().replace("'", "") + ":" + getActionFeatureValue("values", features).trim().replace("'", ""));
+                    logMessage.setDuration(-1);
+                    logMessage.setState(LogMessage.State.CONTINUED);
                     send(logMessage.toString());
                     break;
                 default:
@@ -183,13 +184,31 @@ public class SSILogMessageSender extends ActivityExecutor {
 
     @Override
     public void launch() {
-        mLogger.message("Loading Message Sender");
+        mLogger.message("Loading SSILogMessageService");
         mPort = Integer.parseInt(mConfig.getProperty("port"));
         mSceneflowVar = mConfig.getProperty("sceneflow_variable");
+
+        mSSILogMessageReceiver = new LogMessageReceiverThread(this, mPort);
+        mSSILogMessageReceiver.start();
     }
 
     @Override
     public void unload() {
+        mSSILogMessageReceiver.stopServer();
+    }
+
+    public boolean hasProjectVar(String var) {
+        return mProject.hasVariable(var);
+    }
+
+    public void setSceneFlowVariable(String message) {
+        mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
+        mProject.setVariable(mSceneflowVar, new StringValue(message));
+    }
+
+    public void setSceneFlowVariable(String var, String value) {
+        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
+        mProject.setVariable(var, new StringValue(value));
     }
 
     // get the value of a feature (added PG) - quick and dirty
