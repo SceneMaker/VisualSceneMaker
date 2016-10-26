@@ -112,17 +112,18 @@ public final class ReactivePlayer extends RunTimePlayer {
 
                 if (cmdString.startsWith("[") && cmdString.endsWith("]")) {
                     // PG: changed action and action feature parser to be more powerful
-                    // matching something like: agent Action text='Someone wants a äöü beer!' other=bad some='things' state='Da=fuck.continued'
-                    Pattern p = Pattern.compile("^[\\w]+\\s|\\w+\\s|\\w+=\\w+|\\w+='[\\wäöüßÄÖÜ\\s:\\.,!?=]+'");
+                    // matching something like: agent Action x=2.5 y=0.0 z=-13.0 text='Someone wants a beer!' other=bad some='things' state='Da=fuck.continued and others']
+                    Pattern p = Pattern.compile("^\\w+|\\w+\\s|\\w+]|[a-zA-Z-_]+=[a-zA-Z]{1}[a-zA-Z-_]+|\\w+\\=-?[0-9\\.]+|\\w+='[\\wäöüßÄÖÜ\\s:\\.,!?=]+'");
                     Matcher m = p.matcher(cmdString);
 
                     while (m.find()) {
                         String mStr = m.group().trim();
 
-                       if (cnt == 0) {
+                        if (cnt == 0) {
                             actor = mStr;
                         } else if (cnt == 1) {
                             action = mStr;
+                            action = (action.contains("]")) ? action.replace("]", "") : action; 
                         } else if (mStr.contains("=")) {
                             String[] pair = mStr.split("=");
                             features.add(new ActionFeature(ActionFeature.Type.STRING, 0, pair[0].length(), pair[0], pair[1]));
@@ -130,7 +131,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         cnt++;
                     }
                 }
-                
+
                 // Schedule the activity without delay but blocking
                 ActionActivity aa = new ActionActivity(actor, "cmd", action, name, features);
                 aa.setType(AbstractActivity.Type.blocking);
