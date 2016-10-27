@@ -153,6 +153,9 @@ public class SSILogMessageService extends ActivityExecutor {
     }
 
     private void send(String message) {
+        
+        mLogger.message("Sending log message: " + message);
+        
         DatagramSocket c;
         // Find the server using UDP broadcast
         try {
