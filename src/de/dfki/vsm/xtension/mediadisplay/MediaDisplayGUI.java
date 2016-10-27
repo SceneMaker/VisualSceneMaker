@@ -44,7 +44,7 @@ public class MediaDisplayGUI {
         mExecutor = executor;
         mDisplayValues = values;
 
-        mFrame = new JFrame("EmpaT Media Display");   
+        mFrame = new JFrame("EmpaT Media Display");
         mFrame.add(mJFXPanel);
 
         // Set Not Rezizable
@@ -77,7 +77,13 @@ public class MediaDisplayGUI {
     }
 
     public void setVisible(boolean visible) {
-        mFrame.setVisible(visible);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                mFrame.setVisible(visible);
+            }
+        });
+
     }
 
     private void initFX(JFXPanel jfxPanel) {
