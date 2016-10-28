@@ -49,15 +49,6 @@ public class PasteNodesAction extends EditorAction {
 
         // be sure to give all copied nodes (and edges) new ids
         im.reassignAllIDs(nodes);
-        if(nodes.size() > 0){//reasing the start node
-            BasicNode node = nodes.iterator().next();
-            BasicNode parent = node.getParentNode();
-            if(parent != null && parent instanceof SuperNode){
-                SuperNode superNode =  mWorkSpace.getSceneFlowManager().getCurrentActiveSuperNode();
-                HashMap<String, BasicNode> startMap = ((SuperNode)parent).getCopyOfStartNodeMap();
-                superNode.setStartNodeMap(startMap);
-            }
-        }
 
         // Remove edges
         for (BasicNode node : nodes) {
