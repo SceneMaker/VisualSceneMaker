@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -38,6 +39,9 @@ public class SSILogMessageService extends ActivityExecutor {
 
     // The Sceneflow variable for feedback
     private String mSceneflowVar;
+
+    // memory of ongoing (continued) log messages
+    private final HashMap<String, LogMessage> mContinuedLogMessages = new HashMap<>();
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -67,11 +71,20 @@ public class SSILogMessageService extends ActivityExecutor {
                 }
             }
         } else {
+            activity.setType(AbstractActivity.Type.parallel);
+
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
             String activityName = activity.getName().toLowerCase();
 
-            LogMessage.Class messageClass = LogMessage.Class.valueOf(activity.getName().toUpperCase().trim());
+            LogMessage.Class messageClass;
+            
+            try {
+                messageClass = LogMessage.Class.valueOf(activity.getName().toUpperCase().trim());
+            } catch (IllegalArgumentException iae) {
+                mLogger.warning("Wrong log Class - log message will be ignored");
+                return;
+            }
 
             long duration = 1000; // set the default duration to 1000 (ms)
             try {
@@ -81,18 +94,34 @@ public class SSILogMessageService extends ActivityExecutor {
 
             LogMessage logMessage = new LogMessage();
 
+            logMessage.setTimeStamp(System.currentTimeMillis());
+            logMessage.setDuration(duration);
+
             logMessage.setClass(messageClass);
 
             // set state, if unknown set state COMPLETED
             final String state = getActionFeatureValue("state", features).toUpperCase().trim().replace("'", "");
             try {
                 logMessage.setState(LogMessage.State.valueOf(state));
+
+                if (logMessage.mState.equals(LogMessage.State.COMPLETED)) {
+                    // check if there is a matching continued log message
+                    if (mContinuedLogMessages.containsKey(logMessage.mContent)) {
+                        LogMessage lm = mContinuedLogMessages.get(logMessage.mContent);
+                        long lmTimeStamp = lm.mTimeStamp;
+                        // set duration
+                        logMessage.setDuration(logMessage.mTimeStamp - lmTimeStamp);
+                    }
+                }
+
+                // remember continued log message for automatic caluclation of duration 
+                if (logMessage.mState.equals(LogMessage.State.CONTINUED)) {
+                    mContinuedLogMessages.put(logMessage.mContent, logMessage);
+                    logMessage.setDuration(0);
+                }
             } catch (IllegalArgumentException iae) {
                 logMessage.setState(LogMessage.State.COMPLETED);
             }
-
-            logMessage.setTimeStamp(System.currentTimeMillis());
-            logMessage.setDuration(duration);
 
             switch (messageClass) {
                 case ACT: // e.g. [<agent> ACT text='Inform'] 
@@ -124,6 +153,9 @@ public class SSILogMessageService extends ActivityExecutor {
     }
 
     private void send(String message) {
+        
+        mLogger.message("Sending log message: " + message);
+        
         DatagramSocket c;
         // Find the server using UDP broadcast
         try {
