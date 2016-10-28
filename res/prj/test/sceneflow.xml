@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="AAMAS" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 26 Okt 2016 14:20:40" start="S18;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="AAMAS" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fr, 28 Okt 2016 14:49:37" start="S18;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
-    <Variable type="String" name ="CurrentSystemTime">
-      <String><![CDATA[]]></String>
-    </Variable>
-    <Variable type="String" name ="UserSaidKeyword">
+    <Variable type="String" name ="SystemTime">
       <String><![CDATA[]]></String>
     </Variable>
     <Variable type="String" name ="UserRole">
@@ -25,6 +22,9 @@
       <String><![CDATA[]]></String>
     </Variable>
     <Variable type="String" name ="AgentGaze">
+      <String><![CDATA[]]></String>
+    </Variable>
+    <Variable type="String" name ="UserSpeech">
       <String><![CDATA[]]></String>
     </Variable>
     <Variable type="Bool" name ="UserAttendant">
@@ -69,7 +69,7 @@
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
-  <SuperNode id="S56" name="Interaction;and;Behavior;Model" comment="" hideLocalVar="false" hideGlobalVar="false" start="S20;S21;S26;S16;S2;">
+  <SuperNode id="S56" name="Interaction;and;Behavior;Model" comment="" hideLocalVar="false" hideGlobalVar="false" start="S20;S26;S16;S40;">
     <Define>
     </Define>
     <Declare>
@@ -110,7 +110,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="426" yPos="266"/>
+        <Position xPos="506" yPos="266"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="10" yPos="10"/>
@@ -810,8 +810,8 @@
             </Graphics>
             <Text style="color:blue">
               We could decide to barge into the turn of the user here for example because the user speaks to long or we have planned another important contribution in the meanwhile.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      In this case the agent would overlap the user's speech which could consequently cause the self interrupt of the agent as consequence of a bear up conflict.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      To avoid this self interrupt in this case, we could set the agent uninterruptible for the time of this particular contribution. Otherwise, we would react to the bear up conflict and then return to the dialog at an adequate point.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                In this case the agent would overlap the user's speech which could consequently cause the self interrupt of the agent as consequence of a bear up conflict.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                To avoid this self interrupt in this case, we could set the agent uninterruptible for the time of this particular contribution. Otherwise, we would react to the bear up conflict and then return to the dialog at an adequate point.
             </Text>
           </Comment>
           <Node id="N9" name="History" history="true">
@@ -1970,7 +1970,7 @@
         </SuperNode>
       </SuperNode>
     </SuperNode>
-    <SuperNode id="S26" name="Perception;And;Recognition;Levels" comment="" hideLocalVar="false" hideGlobalVar="false" start="S10;S78;S38;S40;">
+    <SuperNode id="S26" name="Multi-Modal;Incremental;Reciprocal;Recognition" comment="" hideLocalVar="false" hideGlobalVar="false" start="S10;S78;S38;">
       <Define>
       </Define>
       <Declare>
@@ -1978,7 +1978,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="426" yPos="106"/>
+        <Position xPos="426" yPos="186"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="10" yPos="10"/>
@@ -1997,1485 +1997,6 @@
           <Position xPos="266" yPos="26"/>
         </Graphics>
       </Node>
-      <SuperNode id="S40" name="Detection,;Processing,;Propagation" comment="" hideLocalVar="false" hideGlobalVar="false" start="S53;S41;S59;">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-        </Commands>
-        <Graphics>
-          <Position xPos="426" yPos="26"/>
-        </Graphics>
-        <LocalVariableBadge>
-          <Position xPos="10" yPos="10"/>
-        </LocalVariableBadge>
-        <GlobalVariableBadge>
-          <Position xPos="10" yPos="10"/>
-        </GlobalVariableBadge>
-        <Node id="N44" name="History" history="true">
-          <Define>
-          </Define>
-          <Declare>
-          </Declare>
-          <Commands>
-          </Commands>
-          <Graphics>
-            <Position xPos="266" yPos="26"/>
-          </Graphics>
-        </Node>
-        <SuperNode id="S41" name="Voice;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S44;">
-          <Define>
-          </Define>
-          <Declare>
-            <Variable type="String" name ="N">
-              <String><![CDATA[]]></String>
-            </Variable>
-            <Variable type="String" name ="D">
-              <String><![CDATA[]]></String>
-            </Variable>
-            <Variable type="String" name ="E">
-              <String><![CDATA[]]></String>
-            </Variable>
-          </Declare>
-          <Commands>
-            <Play>
-              <String><![CDATA[[wizard refresh]]]></String>
-            </Play>
-          </Commands>
-          <EEdge target="S41" start ="">
-          <Graphics>
-            <Connection>
-              <ControlPoint xPos="546" yPos="106" ctrlXPos="546" ctrlYPos="26"/>
-              <ControlPoint xPos="586" yPos="106" ctrlXPos="666" ctrlYPos="26"/>
-            </Connection>
-          </Graphics>
-          </EEdge>
-          <Graphics>
-            <Position xPos="506" yPos="106"/>
-          </Graphics>
-          <LocalVariableBadge>
-            <Position xPos="249" yPos="87"/>
-          </LocalVariableBadge>
-          <GlobalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </GlobalVariableBadge>
-          <Comment>
-            <Graphics>
-              <Boundary xPos="362" yPos="275" width="235" height="71"/>
-            </Graphics>
-            <Text style="color:blue">
-              Here we extract the oldest voice event and retract it from the fact base then. We do not delete the other probably newer events since we do not want to miss any voice events here.
-            </Text>
-          </Comment>
-          <Node id="N45" name="History" history="true">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="26" yPos="186"/>
-            </Graphics>
-          </Node>
-          <SuperNode id="S44" name="Get Next;Oldest;Voice Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="N75;">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S45" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="106" yPos="306" ctrlXPos="126" ctrlYPos="306"/>
-                  <ControlPoint xPos="266" yPos="306" ctrlXPos="246" ctrlYPos="306"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <String><![CDATA[voice(N, D, E).]]></String>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="26" yPos="266"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N73" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-            <Node id="N75" name="Wait" history="false">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <EEdge target="N75" start ="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="76" yPos="267" ctrlXPos="96" ctrlYPos="189"/>
-                  <ControlPoint xPos="101" yPos="286" ctrlXPos="171" ctrlYPos="246"/>
-                </Connection>
-              </Graphics>
-              </EEdge>
-              <Graphics>
-                <Position xPos="26" yPos="266"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S45" name="Check; Event;Name" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S46" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="306" yPos="266" ctrlXPos="306" ctrlYPos="236"/>
-                  <ControlPoint xPos="426" yPos="226" ctrlXPos="396" ctrlYPos="226"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="N"/>
-                </Add>
-                <String><![CDATA[, user).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <IEdge target="S47" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="306" yPos="346" ctrlXPos="306" ctrlYPos="375"/>
-                  <ControlPoint xPos="426" yPos="386" ctrlXPos="396" ctrlYPos="386"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="N"/>
-                </Add>
-                <String><![CDATA[, agent).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="266" yPos="266"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N74" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S46" name="User;Voice;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S48" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="186" ctrlXPos="572" ctrlYPos="119"/>
-                  <ControlPoint xPos="666" yPos="66" ctrlXPos="599" ctrlYPos="66"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, start).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <IEdge target="S49" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
-                  <ControlPoint xPos="666" yPos="226" ctrlXPos="606" ctrlYPos="226"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, stop).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="426" yPos="186"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N89" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S47" name="Agent;Voice;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S50" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="426" ctrlXPos="572" ctrlYPos="492"/>
-                  <ControlPoint xPos="666" yPos="546" ctrlXPos="599" ctrlYPos="546"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, start).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <IEdge target="S51" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="386" ctrlXPos="566" ctrlYPos="386"/>
-                  <ControlPoint xPos="666" yPos="386" ctrlXPos="606" ctrlYPos="386"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, stop).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="426" yPos="346"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N90" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S48" name="User;Starts;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="UserSpeaking"/>
-                <Expression>
-                  <Bool value="true"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[User starts speaking]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="26"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N91" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S49" name="User;Stops;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="UserSpeaking"/>
-                <Expression>
-                  <Bool value="false"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[User stops speaking]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="186"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N92" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S50" name="Agent;Starts;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="AgentSpeaking"/>
-                <Expression>
-                  <Bool value="true"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[Agent starts speaking]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="506"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N93" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S51" name="Agent;Stops;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="AgentSpeaking"/>
-                <Expression>
-                  <Bool value="false"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[Agent stops speaking]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="346"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N94" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-        </SuperNode>
-        <SuperNode id="S52" name="Move" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-          <Define>
-          </Define>
-          <Declare>
-          </Declare>
-          <Commands>
-          </Commands>
-          <Graphics>
-            <Position xPos="26" yPos="266"/>
-          </Graphics>
-          <LocalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </LocalVariableBadge>
-          <GlobalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </GlobalVariableBadge>
-          <Node id="N87" name="History" history="true">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="0" yPos="0"/>
-            </Graphics>
-          </Node>
-        </SuperNode>
-        <SuperNode id="S53" name="Gaze;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S109;">
-          <Define>
-          </Define>
-          <Declare>
-            <Variable type="String" name ="D">
-              <String><![CDATA[]]></String>
-            </Variable>
-            <Variable type="String" name ="E">
-              <String><![CDATA[]]></String>
-            </Variable>
-          </Declare>
-          <Commands>
-          </Commands>
-          <EEdge target="S53" start ="">
-          <Graphics>
-            <Connection>
-              <ControlPoint xPos="706" yPos="106" ctrlXPos="706" ctrlYPos="26"/>
-              <ControlPoint xPos="746" yPos="106" ctrlXPos="826" ctrlYPos="26"/>
-            </Connection>
-          </Graphics>
-          </EEdge>
-          <Graphics>
-            <Position xPos="666" yPos="106"/>
-          </Graphics>
-          <LocalVariableBadge>
-            <Position xPos="270" yPos="4"/>
-          </LocalVariableBadge>
-          <GlobalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </GlobalVariableBadge>
-          <Comment>
-            <Graphics>
-              <Boundary xPos="567" yPos="322" width="223" height="92"/>
-            </Graphics>
-            <Text style="color:blue">
-              The agent's gaze shifts, which means each change of the agent's current gaze target and thus it's visual focus of attention  have to be forwarded to the connection event detection processes.
-            </Text>
-          </Comment>
-          <Comment>
-            <Graphics>
-              <Boundary xPos="570" yPos="213" width="222" height="101"/>
-            </Graphics>
-            <Text style="color:blue">
-              The user's gaze shifts have to be forwarded to the connection event detection processes as well as to the processes that control the  automatic and reactive nonverbal behavior of the agent.
-            </Text>
-          </Comment>
-          <Node id="N88" name="History" history="true">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="26" yPos="346"/>
-            </Graphics>
-          </Node>
-          <SuperNode id="S109" name="Get Next;Oldest;Gaze Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="N165;">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S113" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="106" yPos="306" ctrlXPos="166" ctrlYPos="306"/>
-                  <ControlPoint xPos="186" yPos="306" ctrlXPos="126" ctrlYPos="306"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <String><![CDATA[gaze(E).]]></String>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="26" yPos="266"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N164" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-            <Node id="N165" name="Wait" history="false">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <EEdge target="N165" start ="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="76" yPos="267" ctrlXPos="96" ctrlYPos="189"/>
-                  <ControlPoint xPos="101" yPos="286" ctrlXPos="171" ctrlYPos="246"/>
-                </Connection>
-              </Graphics>
-              </EEdge>
-              <Graphics>
-                <Position xPos="26" yPos="266"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S110" name="Check;Event;Name" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S111" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="466" yPos="266" ctrlXPos="466" ctrlYPos="246"/>
-                  <ControlPoint xPos="466" yPos="186" ctrlXPos="466" ctrlYPos="206"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(name, user, ]]></String>
-                  <Variable name="E"/>
-                </Add>
-                <String><![CDATA[).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <IEdge target="S112" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="466" yPos="346" ctrlXPos="466" ctrlYPos="366"/>
-                  <ControlPoint xPos="466" yPos="426" ctrlXPos="466" ctrlYPos="406"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(name, agent, ]]></String>
-                  <Variable name="E"/>
-                </Add>
-                <String><![CDATA[).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="426" yPos="266"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N171" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S111" name="User;Gaze;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S114" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="146" ctrlXPos="566" ctrlYPos="146"/>
-                  <ControlPoint xPos="666" yPos="146" ctrlXPos="606" ctrlYPos="146"/>
-                </Connection>
-              </Graphics>
-              <Neq>
-                <Variable name="UserGaze"/>
-                <Variable name="D"/>
-              </Neq>
-            </IEdge>
-            <IEdge target="S115" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="426" yPos="146" ctrlXPos="366" ctrlYPos="146"/>
-                  <ControlPoint xPos="266" yPos="146" ctrlXPos="326" ctrlYPos="146"/>
-                </Connection>
-              </Graphics>
-              <Eq>
-                <Variable name="UserGaze"/>
-                <Variable name="D"/>
-              </Eq>
-            </IEdge>
-            <Graphics>
-              <Position xPos="426" yPos="106"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N172" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S112" name="Agent;Gaze;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S117" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="466" ctrlXPos="566" ctrlYPos="466"/>
-                  <ControlPoint xPos="666" yPos="466" ctrlXPos="606" ctrlYPos="466"/>
-                </Connection>
-              </Graphics>
-              <Neq>
-                <Variable name="AgentGaze"/>
-                <Variable name="D"/>
-              </Neq>
-            </IEdge>
-            <IEdge target="S116" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="426" yPos="466" ctrlXPos="406" ctrlYPos="466"/>
-                  <ControlPoint xPos="266" yPos="466" ctrlXPos="286" ctrlYPos="466"/>
-                </Connection>
-              </Graphics>
-              <Eq>
-                <Variable name="AgentGaze"/>
-                <Variable name="D"/>
-              </Eq>
-            </IEdge>
-            <Graphics>
-              <Position xPos="426" yPos="426"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N173" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S113" name="Get Gaze;Event;Data" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S110" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="266" yPos="306" ctrlXPos="326" ctrlYPos="306"/>
-                  <ControlPoint xPos="426" yPos="306" ctrlXPos="366" ctrlYPos="306"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(data, D, ]]></String>
-                  <Variable name="E"/>
-                </Add>
-                <String><![CDATA[).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="186" yPos="266"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N176" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S114" name="New;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="UserGaze"/>
-                <Expression>
-                  <Variable name="D"/>
-                </Expression>
-              </Assign>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="106"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N174" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S115" name="Same;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="186" yPos="106"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N175" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S116" name="Same;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="186" yPos="426"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N177" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S117" name="New;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="AgentGaze"/>
-                <Expression>
-                  <Variable name="D"/>
-                </Expression>
-              </Assign>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="426"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N178" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="0" yPos="0"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-        </SuperNode>
-        <SuperNode id="S54" name="Speech" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-          <Define>
-          </Define>
-          <Declare>
-          </Declare>
-          <Commands>
-          </Commands>
-          <Graphics>
-            <Position xPos="26" yPos="346"/>
-          </Graphics>
-          <LocalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </LocalVariableBadge>
-          <GlobalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </GlobalVariableBadge>
-          <Node id="N95" name="History" history="true">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="0" yPos="0"/>
-            </Graphics>
-          </Node>
-        </SuperNode>
-        <SuperNode id="S55" name="Facs" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-          <Define>
-          </Define>
-          <Declare>
-          </Declare>
-          <Commands>
-          </Commands>
-          <Graphics>
-            <Position xPos="106" yPos="266"/>
-          </Graphics>
-          <LocalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </LocalVariableBadge>
-          <GlobalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </GlobalVariableBadge>
-          <Node id="N96" name="History" history="true">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="0" yPos="0"/>
-            </Graphics>
-          </Node>
-        </SuperNode>
-        <SuperNode id="S58" name="Mood" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-          <Define>
-          </Define>
-          <Declare>
-          </Declare>
-          <Commands>
-          </Commands>
-          <Graphics>
-            <Position xPos="106" yPos="346"/>
-          </Graphics>
-          <LocalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </LocalVariableBadge>
-          <GlobalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </GlobalVariableBadge>
-          <Node id="N97" name="History" history="true">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="0" yPos="0"/>
-            </Graphics>
-          </Node>
-        </SuperNode>
-        <SuperNode id="S59" name="State;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S68;">
-          <Define>
-          </Define>
-          <Declare>
-            <Variable type="String" name ="N">
-              <String><![CDATA[]]></String>
-            </Variable>
-            <Variable type="String" name ="D">
-              <String><![CDATA[]]></String>
-            </Variable>
-            <Variable type="String" name ="E">
-              <String><![CDATA[]]></String>
-            </Variable>
-          </Declare>
-          <Commands>
-            <Play>
-              <String><![CDATA[[wizard refresh]]]></String>
-            </Play>
-          </Commands>
-          <EEdge target="S59" start ="">
-          <Graphics>
-            <Connection>
-              <ControlPoint xPos="386" yPos="106" ctrlXPos="386" ctrlYPos="26"/>
-              <ControlPoint xPos="426" yPos="106" ctrlXPos="506" ctrlYPos="26"/>
-            </Connection>
-          </Graphics>
-          </EEdge>
-          <Graphics>
-            <Position xPos="346" yPos="106"/>
-          </Graphics>
-          <LocalVariableBadge>
-            <Position xPos="240" yPos="53"/>
-          </LocalVariableBadge>
-          <GlobalVariableBadge>
-            <Position xPos="10" yPos="10"/>
-          </GlobalVariableBadge>
-          <Node id="N98" name="History" history="true">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <Graphics>
-              <Position xPos="26" yPos="186"/>
-            </Graphics>
-          </Node>
-          <SuperNode id="S68" name="Get Next;Oldest;State Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="N124;">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S69" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="106" yPos="306" ctrlXPos="126" ctrlYPos="306"/>
-                  <ControlPoint xPos="266" yPos="306" ctrlXPos="246" ctrlYPos="306"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <String><![CDATA[state(N, D, E).]]></String>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="26" yPos="266"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N123" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-            <Node id="N124" name="Wait" history="false">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <EEdge target="N124" start ="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="76" yPos="267" ctrlXPos="96" ctrlYPos="189"/>
-                  <ControlPoint xPos="101" yPos="286" ctrlXPos="171" ctrlYPos="246"/>
-                </Connection>
-              </Graphics>
-              </EEdge>
-              <Graphics>
-                <Position xPos="26" yPos="266"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S69" name="Check;Event;Name" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S70" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="306" yPos="266" ctrlXPos="306" ctrlYPos="236"/>
-                  <ControlPoint xPos="426" yPos="226" ctrlXPos="396" ctrlYPos="226"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="N"/>
-                </Add>
-                <String><![CDATA[, user).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <IEdge target="S71" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="317" yPos="346" ctrlXPos="325" ctrlYPos="375"/>
-                  <ControlPoint xPos="426" yPos="386" ctrlXPos="396" ctrlYPos="386"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="N"/>
-                </Add>
-                <String><![CDATA[, agent).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="266" yPos="266"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N125" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S70" name="User;State;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S73" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="186" ctrlXPos="590" ctrlYPos="101"/>
-                  <ControlPoint xPos="666" yPos="66" ctrlXPos="581" ctrlYPos="66"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, enter).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <IEdge target="S86" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
-                  <ControlPoint xPos="666" yPos="226" ctrlXPos="606" ctrlYPos="226"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, leave).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="426" yPos="186"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N126" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S71" name="Agent;State;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-            </Commands>
-            <IEdge target="S85" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="426" ctrlXPos="590" ctrlYPos="510"/>
-                  <ControlPoint xPos="666" yPos="546" ctrlXPos="581" ctrlYPos="546"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, enter).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <IEdge target="S74" start="">
-              <Graphics>
-                <Connection>
-                  <ControlPoint xPos="506" yPos="386" ctrlXPos="566" ctrlYPos="386"/>
-                  <ControlPoint xPos="666" yPos="386" ctrlXPos="606" ctrlYPos="386"/>
-                </Connection>
-              </Graphics>
-              <PrologQuery>
-              <Add>
-                <Add>
-                  <String><![CDATA[val(]]></String>
-                  <Variable name="D"/>
-                </Add>
-                <String><![CDATA[, leave).]]></String>
-              </Add>
-              </PrologQuery>
-            </IEdge>
-            <Graphics>
-              <Position xPos="426" yPos="346"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N127" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S73" name="User;Enters;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="UserAttendant"/>
-                <Expression>
-                  <Bool value="true"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[User enters dialog]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="26"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N128" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S74" name="Agent;Leaves;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="AgentAttendant"/>
-                <Expression>
-                  <Bool value="false"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[Agent leaves dialog]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="346"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N129" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S85" name="Agent;Enters;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="AgentAttendant"/>
-                <Expression>
-                  <Bool value="true"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[Agent enters dialog]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="506"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N130" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-          <SuperNode id="S86" name="User;Leaves;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
-            <Define>
-            </Define>
-            <Declare>
-            </Declare>
-            <Commands>
-              <Assign>
-                <Variable name="UserAttendant"/>
-                <Expression>
-                  <Bool value="false"/>
-                </Expression>
-              </Assign>
-              <UserCommand name="print">
-                <String><![CDATA[User leaves dialog]]></String>
-              </UserCommand>
-            </Commands>
-            <Graphics>
-              <Position xPos="666" yPos="186"/>
-            </Graphics>
-            <LocalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </LocalVariableBadge>
-            <GlobalVariableBadge>
-              <Position xPos="10" yPos="10"/>
-            </GlobalVariableBadge>
-            <Node id="N132" name="History" history="true">
-              <Define>
-              </Define>
-              <Declare>
-              </Declare>
-              <Commands>
-              </Commands>
-              <Graphics>
-                <Position xPos="26" yPos="186"/>
-              </Graphics>
-            </Node>
-          </SuperNode>
-        </SuperNode>
-      </SuperNode>
       <SuperNode id="S10" name="Recognize;Turn-Taking;Conflicts" comment="" hideLocalVar="false" hideGlobalVar="false" start="S33;">
         <Define>
         </Define>
@@ -3492,6 +2013,14 @@
         <GlobalVariableBadge>
           <Position xPos="10" yPos="10"/>
         </GlobalVariableBadge>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="570" yPos="332" width="156" height="62"/>
+          </Graphics>
+          <Text style="color:blue">
+            We also need to detect backchannels during overlaps in this process
+          </Text>
+        </Comment>
         <Node id="N54" name="History" history="true">
           <Define>
           </Define>
@@ -3500,10 +2029,10 @@
           <Commands>
           </Commands>
           <Graphics>
-            <Position xPos="26" yPos="186"/>
+            <Position xPos="266" yPos="106"/>
           </Graphics>
         </Node>
-        <SuperNode id="S17" name="User Barging In" comment="" hideLocalVar="false" hideGlobalVar="false" start="N56;">
+        <SuperNode id="S17" name="User;Barging In;Agent" comment="" hideLocalVar="false" hideGlobalVar="false" start="N56;">
           <Define>
           </Define>
           <Declare>
@@ -3519,8 +2048,8 @@
           <IEdge target="S33" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="226" yPos="186" ctrlXPos="226" ctrlYPos="206"/>
-                <ControlPoint xPos="226" yPos="266" ctrlXPos="226" ctrlYPos="246"/>
+                <ControlPoint xPos="466" yPos="106" ctrlXPos="466" ctrlYPos="126"/>
+                <ControlPoint xPos="466" yPos="186" ctrlXPos="466" ctrlYPos="166"/>
               </Connection>
             </Graphics>
             <Not>
@@ -3528,7 +2057,7 @@
             </Not>
           </IEdge>
           <Graphics>
-            <Position xPos="186" yPos="106"/>
+            <Position xPos="426" yPos="26"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -3567,7 +2096,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S30" name="Await Timeout" comment="" hideLocalVar="false" hideGlobalVar="false" start="N58;">
+        <SuperNode id="S30" name="Await;Timeout" comment="" hideLocalVar="false" hideGlobalVar="false" start="N58;">
           <Define>
           </Define>
           <Declare>
@@ -3577,8 +2106,8 @@
           <IEdge target="S33" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="346" yPos="346" ctrlXPos="326" ctrlYPos="366"/>
-                <ControlPoint xPos="266" yPos="346" ctrlXPos="286" ctrlYPos="366"/>
+                <ControlPoint xPos="586" yPos="266" ctrlXPos="566" ctrlYPos="286"/>
+                <ControlPoint xPos="506" yPos="266" ctrlXPos="526" ctrlYPos="286"/>
               </Connection>
             </Graphics>
             <Not>
@@ -3588,8 +2117,8 @@
           <IEdge target="S36" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="386" yPos="266" ctrlXPos="386" ctrlYPos="246"/>
-                <ControlPoint xPos="386" yPos="186" ctrlXPos="386" ctrlYPos="206"/>
+                <ControlPoint xPos="626" yPos="186" ctrlXPos="626" ctrlYPos="166"/>
+                <ControlPoint xPos="626" yPos="106" ctrlXPos="626" ctrlYPos="126"/>
               </Connection>
             </Graphics>
             <TimeoutCondition>
@@ -3597,7 +2126,7 @@
             </TimeoutCondition>
           </IEdge>
           <Graphics>
-            <Position xPos="346" yPos="266"/>
+            <Position xPos="586" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -3636,7 +2165,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S31" name="Await Timeout" comment="" hideLocalVar="false" hideGlobalVar="false" start="N60;">
+        <SuperNode id="S31" name="Await;Timeout" comment="" hideLocalVar="false" hideGlobalVar="false" start="N60;">
           <Define>
           </Define>
           <Declare>
@@ -3646,8 +2175,8 @@
           <IEdge target="S33" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="106" yPos="346" ctrlXPos="126" ctrlYPos="366"/>
-                <ControlPoint xPos="186" yPos="346" ctrlXPos="166" ctrlYPos="366"/>
+                <ControlPoint xPos="346" yPos="266" ctrlXPos="366" ctrlYPos="286"/>
+                <ControlPoint xPos="426" yPos="266" ctrlXPos="406" ctrlYPos="286"/>
               </Connection>
             </Graphics>
             <Not>
@@ -3657,8 +2186,8 @@
           <IEdge target="S37" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="66" yPos="346" ctrlXPos="66" ctrlYPos="366"/>
-                <ControlPoint xPos="66" yPos="426" ctrlXPos="66" ctrlYPos="406"/>
+                <ControlPoint xPos="306" yPos="266" ctrlXPos="306" ctrlYPos="286"/>
+                <ControlPoint xPos="306" yPos="346" ctrlXPos="306" ctrlYPos="326"/>
               </Connection>
             </Graphics>
             <TimeoutCondition>
@@ -3666,7 +2195,7 @@
             </TimeoutCondition>
           </IEdge>
           <Graphics>
-            <Position xPos="26" yPos="266"/>
+            <Position xPos="266" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -3705,7 +2234,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S33" name="No Turn Conflict" comment="" hideLocalVar="false" hideGlobalVar="false" start="N62;">
+        <SuperNode id="S33" name="No;Turn;Conflict" comment="" hideLocalVar="false" hideGlobalVar="false" start="N62;">
           <Define>
           </Define>
           <Declare>
@@ -3727,8 +2256,8 @@
           <IEdge target="S31" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="186" yPos="266" ctrlXPos="166" ctrlYPos="246"/>
-                <ControlPoint xPos="106" yPos="266" ctrlXPos="126" ctrlYPos="246"/>
+                <ControlPoint xPos="426" yPos="186" ctrlXPos="406" ctrlYPos="166"/>
+                <ControlPoint xPos="346" yPos="186" ctrlXPos="366" ctrlYPos="166"/>
               </Connection>
             </Graphics>
             <Variable name="AgentOverlapsUser"/>
@@ -3736,14 +2265,14 @@
           <IEdge target="S30" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="266" yPos="266" ctrlXPos="286" ctrlYPos="246"/>
-                <ControlPoint xPos="346" yPos="266" ctrlXPos="326" ctrlYPos="246"/>
+                <ControlPoint xPos="506" yPos="186" ctrlXPos="526" ctrlYPos="166"/>
+                <ControlPoint xPos="586" yPos="186" ctrlXPos="566" ctrlYPos="166"/>
               </Connection>
             </Graphics>
             <Variable name="UserOverlapsAgent"/>
           </IEdge>
           <Graphics>
-            <Position xPos="186" yPos="266"/>
+            <Position xPos="426" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -3782,7 +2311,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S34" name="User Bears Up" comment="" hideLocalVar="false" hideGlobalVar="false" start="N64;">
+        <SuperNode id="S34" name="User;Bearing Up;Agent" comment="" hideLocalVar="false" hideGlobalVar="false" start="N64;">
           <Define>
           </Define>
           <Declare>
@@ -3798,8 +2327,8 @@
           <IEdge target="S33" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="226" yPos="426" ctrlXPos="226" ctrlYPos="406"/>
-                <ControlPoint xPos="226" yPos="346" ctrlXPos="226" ctrlYPos="366"/>
+                <ControlPoint xPos="466" yPos="346" ctrlXPos="466" ctrlYPos="326"/>
+                <ControlPoint xPos="466" yPos="266" ctrlXPos="466" ctrlYPos="286"/>
               </Connection>
             </Graphics>
             <Not>
@@ -3807,7 +2336,7 @@
             </Not>
           </IEdge>
           <Graphics>
-            <Position xPos="186" yPos="426"/>
+            <Position xPos="426" yPos="346"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -3846,7 +2375,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S36" name="User Barges In" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <SuperNode id="S36" name="User;Barges In" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
           <Define>
           </Define>
           <Declare>
@@ -3859,13 +2388,13 @@
           <EEdge target="S17" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="346" yPos="146" ctrlXPos="326" ctrlYPos="146"/>
-              <ControlPoint xPos="266" yPos="146" ctrlXPos="286" ctrlYPos="146"/>
+              <ControlPoint xPos="586" yPos="66" ctrlXPos="566" ctrlYPos="66"/>
+              <ControlPoint xPos="506" yPos="66" ctrlXPos="526" ctrlYPos="66"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="346" yPos="106"/>
+            <Position xPos="586" yPos="26"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -3885,7 +2414,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S37" name="User Bears Up" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <SuperNode id="S37" name="User;Bears Up" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
           <Define>
           </Define>
           <Declare>
@@ -3898,13 +2427,13 @@
           <EEdge target="S34" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="106" yPos="466" ctrlXPos="126" ctrlYPos="466"/>
-              <ControlPoint xPos="186" yPos="466" ctrlXPos="166" ctrlYPos="466"/>
+              <ControlPoint xPos="346" yPos="386" ctrlXPos="366" ctrlYPos="386"/>
+              <ControlPoint xPos="426" yPos="386" ctrlXPos="406" ctrlYPos="386"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="26" yPos="426"/>
+            <Position xPos="266" yPos="346"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -3943,7 +2472,7 @@
         </GlobalVariableBadge>
         <Comment>
           <Graphics>
-            <Boundary xPos="13" yPos="307" width="209" height="86"/>
+            <Boundary xPos="16" yPos="316" width="209" height="86"/>
           </Graphics>
           <Text style="color:blue">
             Here we should also recognize backchannel signals or better in parallel or in the overlap automaton when an overlap is shorter than the timeout for a conflict?
@@ -3955,6 +2484,30 @@
           </Graphics>
           <Text style="color:blue">
             This process models the recognition of the behavioral patterns that could be interpreted as turn regulation signals. They are most important for the phases in which the agent is in the listener role and the user is in the speaker role and are supposed to serve the agent to recognize when a user accepts a role shift, continues to be in the speaker role or wants to offer the turn to the agent.
+          </Text>
+        </Comment>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="508" yPos="85" width="228" height="68"/>
+          </Graphics>
+          <Text style="color:blue">
+            TODO: The turn hold signal usually enfolds a gaze aversion. So we need to introduce an additinal timeout here
+          </Text>
+        </Comment>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="764" yPos="87" width="233" height="83"/>
+          </Graphics>
+          <Text style="color:blue">
+            We also need to detect backchannels during silence in this process. We send the turn take signal either before or after the bach-channel timeout.
+          </Text>
+        </Comment>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="353" yPos="14" width="263" height="61"/>
+          </Graphics>
+          <Text style="color:blue">
+            Better recognize such short utterances in a single process outside of overlap, conflict and signal process and classify it into backchannel or not.
           </Text>
         </Comment>
         <Node id="N67" name="History" history="true">
@@ -3978,8 +2531,8 @@
           <IEdge target="S75" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="626" yPos="266" ctrlXPos="626" ctrlYPos="286"/>
-                <ControlPoint xPos="626" yPos="346" ctrlXPos="626" ctrlYPos="326"/>
+                <ControlPoint xPos="786" yPos="266" ctrlXPos="786" ctrlYPos="286"/>
+                <ControlPoint xPos="786" yPos="346" ctrlXPos="786" ctrlYPos="326"/>
               </Connection>
             </Graphics>
             <Not>
@@ -3987,7 +2540,7 @@
             </Not>
           </IEdge>
           <Graphics>
-            <Position xPos="586" yPos="186"/>
+            <Position xPos="746" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -4033,7 +2586,7 @@
           </Declare>
           <Commands>
           </Commands>
-          <IEdge target="S76" start="">
+          <IEdge target="S44" start="">
             <Graphics>
               <Connection>
                 <ControlPoint xPos="317" yPos="266" ctrlXPos="325" ctrlYPos="236"/>
@@ -4128,31 +2681,20 @@
           </Declare>
           <Commands>
           </Commands>
-          <IEdge target="S72" start="">
-            <Graphics>
-              <Connection>
-                <ControlPoint xPos="626" yPos="426" ctrlXPos="626" ctrlYPos="479"/>
-                <ControlPoint xPos="506" yPos="546" ctrlXPos="559" ctrlYPos="546"/>
-              </Connection>
-            </Graphics>
-            <PrologQuery>
-            <String><![CDATA[consume(turn, gaze, agent).]]></String>
-            </PrologQuery>
-          </IEdge>
           <IEdge target="S77" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="666" yPos="386" ctrlXPos="695" ctrlYPos="386"/>
-                <ControlPoint xPos="775" yPos="346" ctrlXPos="766" ctrlYPos="375"/>
+                <ControlPoint xPos="826" yPos="386" ctrlXPos="855" ctrlYPos="386"/>
+                <ControlPoint xPos="935" yPos="346" ctrlXPos="926" ctrlYPos="375"/>
               </Connection>
             </Graphics>
             <Variable name="UserSpeaking"/>
           </IEdge>
-          <IEdge target="S96" start="">
+          <IEdge target="S41" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="586" yPos="386" ctrlXPos="566" ctrlYPos="386"/>
-                <ControlPoint xPos="506" yPos="386" ctrlXPos="526" ctrlYPos="386"/>
+                <ControlPoint xPos="746" yPos="386" ctrlXPos="726" ctrlYPos="386"/>
+                <ControlPoint xPos="666" yPos="386" ctrlXPos="686" ctrlYPos="386"/>
               </Connection>
             </Graphics>
             <TimeoutCondition>
@@ -4160,7 +2702,7 @@
             </TimeoutCondition>
           </IEdge>
           <Graphics>
-            <Position xPos="586" yPos="346"/>
+            <Position xPos="746" yPos="346"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -4199,7 +2741,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S76" name="User;Takes;Turn" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <SuperNode id="S76" name="User;No Back-;Channel" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
           <Define>
           </Define>
           <Declare>
@@ -4212,13 +2754,13 @@
           <EEdge target="S60" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="506" yPos="226" ctrlXPos="526" ctrlYPos="226"/>
-              <ControlPoint xPos="586" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
+              <ControlPoint xPos="666" yPos="226" ctrlXPos="686" ctrlYPos="226"/>
+              <ControlPoint xPos="746" yPos="226" ctrlXPos="726" ctrlYPos="226"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="426" yPos="186"/>
+            <Position xPos="586" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -4251,13 +2793,13 @@
           <EEdge target="S60" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="775" yPos="266" ctrlXPos="766" ctrlYPos="236"/>
-              <ControlPoint xPos="666" yPos="226" ctrlXPos="695" ctrlYPos="226"/>
+              <ControlPoint xPos="935" yPos="266" ctrlXPos="926" ctrlYPos="236"/>
+              <ControlPoint xPos="826" yPos="226" ctrlXPos="855" ctrlYPos="226"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="746" yPos="266"/>
+            <Position xPos="906" yPos="266"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -4305,6 +2847,193 @@
             <Position xPos="10" yPos="10"/>
           </GlobalVariableBadge>
           <Node id="N150" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S41" name="User Is;Still Not; Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="N45;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S96" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="586" yPos="386" ctrlXPos="566" ctrlYPos="386"/>
+                <ControlPoint xPos="506" yPos="386" ctrlXPos="526" ctrlYPos="386"/>
+              </Connection>
+            </Graphics>
+            <TimeoutCondition>
+            <Int value="2000"/>
+            </TimeoutCondition>
+          </IEdge>
+          <IEdge target="S72" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="615" yPos="426" ctrlXPos="600" ctrlYPos="479"/>
+                <ControlPoint xPos="506" yPos="546" ctrlXPos="559" ctrlYPos="546"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="UserGaze"/>
+              <String><![CDATA[agent]]></String>
+            </Eq>
+          </IEdge>
+          <IEdge target="S77" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="637" yPos="426" ctrlXPos="665" ctrlYPos="530"/>
+                <ControlPoint xPos="946" yPos="346" ctrlXPos="946" ctrlYPos="450"/>
+              </Connection>
+            </Graphics>
+            <Variable name="UserSpeaking"/>
+          </IEdge>
+          <Graphics>
+            <Position xPos="586" yPos="346"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N44" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="266" yPos="26"/>
+            </Graphics>
+          </Node>
+          <Node id="N45" name="Wait" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <EEdge target="N45" start ="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+                <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
+              </Connection>
+            </Graphics>
+            </EEdge>
+            <Graphics>
+              <Position xPos="266" yPos="106"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S44" name="User Is;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="N75;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S76" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="506" yPos="226" ctrlXPos="526" ctrlYPos="226"/>
+                <ControlPoint xPos="586" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
+              </Connection>
+            </Graphics>
+            <TimeoutCondition>
+            <Int value="1000"/>
+            </TimeoutCondition>
+          </IEdge>
+          <IEdge target="S45" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="466" yPos="186" ctrlXPos="466" ctrlYPos="156"/>
+                <ControlPoint xPos="346" yPos="146" ctrlXPos="375" ctrlYPos="146"/>
+              </Connection>
+            </Graphics>
+            <Not>
+              <Variable name="UserSpeaking"/>
+            </Not>
+          </IEdge>
+          <Graphics>
+            <Position xPos="426" yPos="186"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N73" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="266" yPos="26"/>
+            </Graphics>
+          </Node>
+          <Node id="N75" name="Wait" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <EEdge target="N75" start ="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+                <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
+              </Connection>
+            </Graphics>
+            </EEdge>
+            <Graphics>
+              <Position xPos="266" yPos="106"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S45" name="User Is Not; Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <PrologQuery>
+            <String><![CDATA[signal(turn, user, none).]]></String>
+            </PrologQuery>
+          </Commands>
+          <EEdge target="S64" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="306" yPos="186" ctrlXPos="306" ctrlYPos="206"/>
+              <ControlPoint xPos="306" yPos="266" ctrlXPos="306" ctrlYPos="246"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
+          <Graphics>
+            <Position xPos="266" yPos="106"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N74" name="History" history="true">
             <Define>
             </Define>
             <Declare>
@@ -4782,7 +3511,7 @@
         </SuperNode>
       </SuperNode>
     </SuperNode>
-    <SuperNode id="S16" name="Statistics" comment="" hideLocalVar="false" hideGlobalVar="false" start="N25;S42;S43;">
+    <SuperNode id="S16" name="Statistics;Monitoring;Garbage;Collection" comment="" hideLocalVar="false" hideGlobalVar="false" start="N25;S42;S43;">
       <Define>
       </Define>
       <Declare>
@@ -4806,7 +3535,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="26" yPos="186"/>
+          <Position xPos="266" yPos="26"/>
         </Graphics>
       </Node>
       <Node id="N25" name="Timer" history="false">
@@ -4816,19 +3545,19 @@
         </Declare>
         <Commands>
           <PrologQuery>
-          <String><![CDATA[now(CurrentSystemTime).]]></String>
+          <String><![CDATA[now(SystemTime).]]></String>
           </PrologQuery>
         </Commands>
         <EEdge target="N25" start ="">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="236" yPos="187" ctrlXPos="256" ctrlYPos="109"/>
-            <ControlPoint xPos="261" yPos="206" ctrlXPos="331" ctrlYPos="166"/>
+            <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+            <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
           </Connection>
         </Graphics>
         </EEdge>
         <Graphics>
-          <Position xPos="186" yPos="186"/>
+          <Position xPos="266" yPos="106"/>
         </Graphics>
       </Node>
       <SuperNode id="S42" name="Statistics" comment="" hideLocalVar="false" hideGlobalVar="false" start="N48;">
@@ -4844,8 +3573,8 @@
         <IEdge target="S42" start="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="66" yPos="346" ctrlXPos="66" ctrlYPos="266"/>
-              <ControlPoint xPos="106" yPos="346" ctrlXPos="186" ctrlYPos="266"/>
+              <ControlPoint xPos="466" yPos="106" ctrlXPos="466" ctrlYPos="26"/>
+              <ControlPoint xPos="506" yPos="106" ctrlXPos="586" ctrlYPos="26"/>
             </Connection>
           </Graphics>
           <PrologQuery>
@@ -4853,7 +3582,7 @@
           </PrologQuery>
         </IEdge>
         <Graphics>
-          <Position xPos="26" yPos="346"/>
+          <Position xPos="426" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -4869,7 +3598,7 @@
           <Commands>
           </Commands>
           <Graphics>
-            <Position xPos="186" yPos="106"/>
+            <Position xPos="287" yPos="25"/>
           </Graphics>
         </Node>
         <Node id="N48" name="Wait" history="false">
@@ -4882,13 +3611,13 @@
           <EEdge target="N48" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="236" yPos="187" ctrlXPos="256" ctrlYPos="109"/>
-              <ControlPoint xPos="261" yPos="206" ctrlXPos="331" ctrlYPos="166"/>
+              <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+              <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="186" yPos="186"/>
+            <Position xPos="287" yPos="105"/>
           </Graphics>
         </Node>
       </SuperNode>
@@ -4905,8 +3634,8 @@
         <IEdge target="S43" start="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="226" yPos="346" ctrlXPos="226" ctrlYPos="266"/>
-              <ControlPoint xPos="266" yPos="346" ctrlXPos="346" ctrlYPos="266"/>
+              <ControlPoint xPos="626" yPos="106" ctrlXPos="626" ctrlYPos="26"/>
+              <ControlPoint xPos="666" yPos="106" ctrlXPos="746" ctrlYPos="26"/>
             </Connection>
           </Graphics>
           <PrologQuery>
@@ -4914,7 +3643,7 @@
           </PrologQuery>
         </IEdge>
         <Graphics>
-          <Position xPos="186" yPos="346"/>
+          <Position xPos="586" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -4930,7 +3659,7 @@
           <Commands>
           </Commands>
           <Graphics>
-            <Position xPos="186" yPos="106"/>
+            <Position xPos="281" yPos="33"/>
           </Graphics>
         </Node>
         <Node id="N72" name="Wait" history="false">
@@ -4943,18 +3672,18 @@
           <EEdge target="N72" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="236" yPos="187" ctrlXPos="256" ctrlYPos="109"/>
-              <ControlPoint xPos="261" yPos="206" ctrlXPos="331" ctrlYPos="166"/>
+              <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+              <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="186" yPos="186"/>
+            <Position xPos="281" yPos="113"/>
           </Graphics>
         </Node>
       </SuperNode>
     </SuperNode>
-    <SuperNode id="S20" name="Participant;Role;Assignment;And Shifting" comment="" hideLocalVar="false" hideGlobalVar="false" start="S22;">
+    <SuperNode id="S20" name="Participant;Role / Turn;Assignment;And Shifting" comment="" hideLocalVar="false" hideGlobalVar="false" start="S22;">
       <Define>
       </Define>
       <Declare>
@@ -4962,7 +3691,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="426" yPos="186"/>
+        <Position xPos="586" yPos="346"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="10" yPos="10"/>
@@ -4972,10 +3701,10 @@
       </GlobalVariableBadge>
       <Comment>
         <Graphics>
-          <Boundary xPos="280" yPos="264" width="265" height="88"/>
+          <Boundary xPos="223" yPos="247" width="370" height="93"/>
         </Graphics>
         <Text style="color:blue">
-          This process determines the assignment of the different participant roles to the user and the agent as well as the shifts of these participant roles between the user and the agent. The determination of hte participant roles is nased on the attendance of the interaction partners as well as the role regulation signals.
+          This process determines the assignment of the different participant roles to the user and the agent as well as the shifts of these participant roles between the user and the agent. The determination of the participant roles is based on the attendance of the interaction partners as well as the role regulation signals.
         </Text>
       </Comment>
       <Node id="N1" name="History" history="true">
@@ -4986,7 +3715,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="26" yPos="186"/>
+          <Position xPos="266" yPos="26"/>
         </Graphics>
       </Node>
       <SuperNode id="S22" name="No;Interaction" comment="" hideLocalVar="false" hideGlobalVar="false" start="N52;">
@@ -5014,8 +3743,8 @@
         <IEdge target="S27" start="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="106" yPos="266" ctrlXPos="126" ctrlYPos="246"/>
-              <ControlPoint xPos="186" yPos="266" ctrlXPos="166" ctrlYPos="246"/>
+              <ControlPoint xPos="346" yPos="106" ctrlXPos="366" ctrlYPos="86"/>
+              <ControlPoint xPos="426" yPos="106" ctrlXPos="406" ctrlYPos="86"/>
             </Connection>
           </Graphics>
           <And>
@@ -5024,7 +3753,7 @@
           </And>
         </IEdge>
         <Graphics>
-          <Position xPos="26" yPos="266"/>
+          <Position xPos="266" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -5040,7 +3769,7 @@
           <Commands>
           </Commands>
           <Graphics>
-            <Position xPos="26" yPos="186"/>
+            <Position xPos="265" yPos="36"/>
           </Graphics>
         </Node>
         <Node id="N52" name="Wait" history="false">
@@ -5053,13 +3782,13 @@
           <EEdge target="N52" start ="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="76" yPos="267" ctrlXPos="96" ctrlYPos="189"/>
-              <ControlPoint xPos="101" yPos="286" ctrlXPos="171" ctrlYPos="246"/>
+              <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+              <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
             </Connection>
           </Graphics>
           </EEdge>
           <Graphics>
-            <Position xPos="26" yPos="266"/>
+            <Position xPos="265" yPos="116"/>
           </Graphics>
         </Node>
       </SuperNode>
@@ -5073,8 +3802,8 @@
         <IEdge target="S22" start="">
           <Graphics>
             <Connection>
-              <ControlPoint xPos="186" yPos="346" ctrlXPos="166" ctrlYPos="366"/>
-              <ControlPoint xPos="106" yPos="346" ctrlXPos="126" ctrlYPos="366"/>
+              <ControlPoint xPos="426" yPos="186" ctrlXPos="406" ctrlYPos="206"/>
+              <ControlPoint xPos="346" yPos="186" ctrlXPos="366" ctrlYPos="206"/>
             </Connection>
           </Graphics>
           <Or>
@@ -5087,7 +3816,7 @@
           </Or>
         </IEdge>
         <Graphics>
-          <Position xPos="186" yPos="266"/>
+          <Position xPos="426" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -5097,10 +3826,34 @@
         </GlobalVariableBadge>
         <Comment>
           <Graphics>
-            <Boundary xPos="126" yPos="455" width="213" height="50"/>
+            <Boundary xPos="225" yPos="402" width="186" height="58"/>
           </Graphics>
           <Text style="color:blue">
             Here we should use the timeout to switch to the speaker role after the user offered the turn.
+          </Text>
+        </Comment>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="475" yPos="35" width="291" height="54"/>
+          </Graphics>
+          <Text style="color:blue">
+            TODO: Here we should take the first occupy based on timestamps and not undeterministically to avoid racing conditions.
+          </Text>
+        </Comment>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="527" yPos="359" width="136" height="50"/>
+          </Graphics>
+          <Text style="color:blue">
+            How does a user reject look like?
+          </Text>
+        </Comment>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="803" yPos="58" width="166" height="102"/>
+          </Graphics>
+          <Text style="color:blue">
+            Should these timeouts better result in a bystander bystander constellation?
           </Text>
         </Comment>
         <Node id="N51" name="History" history="true">
@@ -5111,10 +3864,10 @@
           <Commands>
           </Commands>
           <Graphics>
-            <Position xPos="26" yPos="186"/>
+            <Position xPos="266" yPos="106"/>
           </Graphics>
         </Node>
-        <SuperNode id="S28" name="Agent is; Bystander; And User Is; Bystander" comment="" hideLocalVar="false" hideGlobalVar="false" start="N68;">
+        <SuperNode id="S28" name="Agent is; Bystander; And User Is;Bystander" comment="" hideLocalVar="false" hideGlobalVar="false" start="N68;">
           <Define>
           </Define>
           <Declare>
@@ -5151,8 +3904,8 @@
           <IEdge target="S32" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="586" yPos="215" ctrlXPos="686" ctrlYPos="187"/>
-                <ControlPoint xPos="826" yPos="215" ctrlXPos="726" ctrlYPos="187"/>
+                <ControlPoint xPos="666" yPos="215" ctrlXPos="766" ctrlYPos="187"/>
+                <ControlPoint xPos="906" yPos="215" ctrlXPos="806" ctrlYPos="187"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5162,8 +3915,8 @@
           <IEdge target="S29" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="506" yPos="215" ctrlXPos="406" ctrlYPos="187"/>
-                <ControlPoint xPos="266" yPos="215" ctrlXPos="366" ctrlYPos="187"/>
+                <ControlPoint xPos="586" yPos="215" ctrlXPos="486" ctrlYPos="187"/>
+                <ControlPoint xPos="346" yPos="215" ctrlXPos="446" ctrlYPos="187"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5171,7 +3924,7 @@
             </PrologQuery>
           </IEdge>
           <Graphics>
-            <Position xPos="506" yPos="186"/>
+            <Position xPos="586" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -5210,7 +3963,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S29" name="Agent Is; Speaker;And User Is; Adressee" comment="" hideLocalVar="false" hideGlobalVar="false" start="N109;">
+        <SuperNode id="S29" name="Agent Is; Speaker;And User Is;Addressee" comment="" hideLocalVar="false" hideGlobalVar="false" start="N109;">
           <Define>
           </Define>
           <Declare>
@@ -5247,8 +4000,8 @@
           <IEdge target="S28" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="266" yPos="237" ctrlXPos="366" ctrlYPos="264"/>
-                <ControlPoint xPos="506" yPos="237" ctrlXPos="406" ctrlYPos="264"/>
+                <ControlPoint xPos="346" yPos="237" ctrlXPos="446" ctrlYPos="264"/>
+                <ControlPoint xPos="586" yPos="237" ctrlXPos="486" ctrlYPos="264"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5258,16 +4011,27 @@
           <IEdge target="S35" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="266" yPos="266" ctrlXPos="375" ctrlYPos="375"/>
-                <ControlPoint xPos="426" yPos="426" ctrlXPos="316" ctrlYPos="316"/>
+                <ControlPoint xPos="346" yPos="266" ctrlXPos="455" ctrlYPos="375"/>
+                <ControlPoint xPos="506" yPos="426" ctrlXPos="396" ctrlYPos="316"/>
               </Connection>
             </Graphics>
             <PrologQuery>
             <String><![CDATA[consume(role, agent, offer).]]></String>
             </PrologQuery>
           </IEdge>
+          <IEdge target="S32" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="346" yPos="203" ctrlXPos="600" ctrlYPos="109"/>
+                <ControlPoint xPos="906" yPos="203" ctrlXPos="643" ctrlYPos="116"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <String><![CDATA[consume(role, user, conquer).]]></String>
+            </PrologQuery>
+          </IEdge>
           <Graphics>
-            <Position xPos="186" yPos="186"/>
+            <Position xPos="266" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -5306,7 +4070,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S32" name="AAUS" comment="" hideLocalVar="false" hideGlobalVar="false" start="N108;">
+        <SuperNode id="S32" name="Agent Is; Addressee;And User Is;Speaker" comment="" hideLocalVar="false" hideGlobalVar="false" start="N108;">
           <Define>
           </Define>
           <Declare>
@@ -5343,8 +4107,8 @@
           <IEdge target="S28" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="826" yPos="237" ctrlXPos="726" ctrlYPos="264"/>
-                <ControlPoint xPos="586" yPos="237" ctrlXPos="686" ctrlYPos="264"/>
+                <ControlPoint xPos="906" yPos="237" ctrlXPos="806" ctrlYPos="264"/>
+                <ControlPoint xPos="666" yPos="237" ctrlXPos="766" ctrlYPos="264"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5354,8 +4118,8 @@
           <IEdge target="S61" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="826" yPos="266" ctrlXPos="716" ctrlYPos="375"/>
-                <ControlPoint xPos="666" yPos="426" ctrlXPos="775" ctrlYPos="316"/>
+                <ControlPoint xPos="906" yPos="266" ctrlXPos="796" ctrlYPos="375"/>
+                <ControlPoint xPos="746" yPos="426" ctrlXPos="855" ctrlYPos="316"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5363,7 +4127,7 @@
             </PrologQuery>
           </IEdge>
           <Graphics>
-            <Position xPos="826" yPos="186"/>
+            <Position xPos="906" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -5402,7 +4166,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S35" name="AS!UA" comment="" hideLocalVar="false" hideGlobalVar="false" start="N112;">
+        <SuperNode id="S35" name="Agent Is;Speaker; And Offering;Turn Switch" comment="" hideLocalVar="false" hideGlobalVar="false" start="N112;">
           <Define>
           </Define>
           <Declare>
@@ -5421,8 +4185,8 @@
           <IEdge target="S29" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="443" yPos="426" ctrlXPos="379" ctrlYPos="316"/>
-                <ControlPoint xPos="266" yPos="249" ctrlXPos="375" ctrlYPos="312"/>
+                <ControlPoint xPos="523" yPos="426" ctrlXPos="459" ctrlYPos="316"/>
+                <ControlPoint xPos="346" yPos="249" ctrlXPos="455" ctrlYPos="312"/>
               </Connection>
             </Graphics>
             <TimeoutCondition>
@@ -5432,8 +4196,8 @@
           <IEdge target="S29" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="426" yPos="443" ctrlXPos="316" ctrlYPos="379"/>
-                <ControlPoint xPos="249" yPos="266" ctrlXPos="312" ctrlYPos="375"/>
+                <ControlPoint xPos="506" yPos="443" ctrlXPos="396" ctrlYPos="379"/>
+                <ControlPoint xPos="329" yPos="266" ctrlXPos="392" ctrlYPos="375"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5443,8 +4207,8 @@
           <IEdge target="S32" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="506" yPos="489" ctrlXPos="679" ctrlYPos="588"/>
-                <ControlPoint xPos="855" yPos="266" ctrlXPos="807" ctrlYPos="439"/>
+                <ControlPoint xPos="586" yPos="489" ctrlXPos="759" ctrlYPos="588"/>
+                <ControlPoint xPos="957" yPos="266" ctrlXPos="1004" ctrlYPos="439"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5452,7 +4216,7 @@
             </PrologQuery>
           </IEdge>
           <Graphics>
-            <Position xPos="426" yPos="426"/>
+            <Position xPos="506" yPos="426"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -5491,7 +4255,7 @@
             </Graphics>
           </Node>
         </SuperNode>
-        <SuperNode id="S61" name="AAUS!" comment="" hideLocalVar="false" hideGlobalVar="false" start="N113;">
+        <SuperNode id="S61" name="User Is;Speaker; And Offering;Turn Switch" comment="" hideLocalVar="false" hideGlobalVar="false" start="N113;">
           <Define>
           </Define>
           <Declare>
@@ -5510,8 +4274,8 @@
           <IEdge target="S29" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="586" yPos="489" ctrlXPos="412" ctrlYPos="588"/>
-                <ControlPoint xPos="237" yPos="266" ctrlXPos="284" ctrlYPos="439"/>
+                <ControlPoint xPos="666" yPos="489" ctrlXPos="492" ctrlYPos="588"/>
+                <ControlPoint xPos="317" yPos="266" ctrlXPos="364" ctrlYPos="439"/>
               </Connection>
             </Graphics>
             <PrologQuery>
@@ -5521,8 +4285,8 @@
           <IEdge target="S32" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="649" yPos="426" ctrlXPos="712" ctrlYPos="316"/>
-                <ControlPoint xPos="826" yPos="249" ctrlXPos="716" ctrlYPos="312"/>
+                <ControlPoint xPos="729" yPos="426" ctrlXPos="792" ctrlYPos="316"/>
+                <ControlPoint xPos="906" yPos="249" ctrlXPos="796" ctrlYPos="312"/>
               </Connection>
             </Graphics>
             <TimeoutCondition>
@@ -5532,16 +4296,27 @@
           <IEdge target="S32" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="666" yPos="443" ctrlXPos="775" ctrlYPos="379"/>
-                <ControlPoint xPos="843" yPos="266" ctrlXPos="779" ctrlYPos="375"/>
+                <ControlPoint xPos="746" yPos="443" ctrlXPos="855" ctrlYPos="379"/>
+                <ControlPoint xPos="923" yPos="266" ctrlXPos="859" ctrlYPos="375"/>
               </Connection>
             </Graphics>
             <PrologQuery>
             <String><![CDATA[consume(role, agent, reject).]]></String>
             </PrologQuery>
           </IEdge>
+          <IEdge target="S32" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="746" yPos="466" ctrlXPos="855" ctrlYPos="466"/>
+                <ControlPoint xPos="946" yPos="266" ctrlXPos="946" ctrlYPos="375"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <String><![CDATA[consume(role, user, reclaim).]]></String>
+            </PrologQuery>
+          </IEdge>
           <Graphics>
-            <Position xPos="586" yPos="426"/>
+            <Position xPos="666" yPos="426"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -5590,7 +4365,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="426" yPos="346"/>
+        <Position xPos="506" yPos="426"/>
       </Graphics>
       <LocalVariableBadge>
         <Position xPos="10" yPos="10"/>
@@ -5606,7 +4381,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="256" yPos="17"/>
+          <Position xPos="266" yPos="26"/>
         </Graphics>
       </Node>
       <SuperNode id="S98" name="No;Interaction" comment="" hideLocalVar="false" hideGlobalVar="false" start="N156;">
@@ -5635,7 +4410,7 @@
           </And>
         </IEdge>
         <Graphics>
-          <Position xPos="256" yPos="97"/>
+          <Position xPos="266" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -5700,7 +4475,7 @@
           </Or>
         </IEdge>
         <Graphics>
-          <Position xPos="416" yPos="97"/>
+          <Position xPos="426" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -6361,6 +5136,1513 @@
           </Node>
         </SuperNode>
       </SuperNode>
+    </SuperNode>
+    <SuperNode id="S40" name="Detection;Processing;Propagation" comment="" hideLocalVar="false" hideGlobalVar="false" start="S128;S118;S141;">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="426" yPos="106"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N179" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="266" yPos="26"/>
+        </Graphics>
+      </Node>
+      <SuperNode id="S118" name="Voice;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S119;">
+        <Define>
+        </Define>
+        <Declare>
+          <Variable type="String" name ="N">
+            <String><![CDATA[]]></String>
+          </Variable>
+          <Variable type="String" name ="D">
+            <String><![CDATA[]]></String>
+          </Variable>
+          <Variable type="String" name ="E">
+            <String><![CDATA[]]></String>
+          </Variable>
+        </Declare>
+        <Commands>
+          <Play>
+            <String><![CDATA[[wizard refresh]]]></String>
+          </Play>
+        </Commands>
+        <EEdge target="S118" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="546" yPos="106" ctrlXPos="546" ctrlYPos="26"/>
+            <ControlPoint xPos="586" yPos="106" ctrlXPos="666" ctrlYPos="26"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="506" yPos="106"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="249" yPos="87"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="18" yPos="406" width="235" height="71"/>
+          </Graphics>
+          <Text style="color:blue">
+            Here we extract the oldest voice event and retract it from the fact base then. We do not delete the other probably newer events since we do not want to miss any voice events here.
+          </Text>
+        </Comment>
+        <Node id="N180" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="26" yPos="186"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S119" name="Get Next;Oldest;Voice Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="N182;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S120" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="106" yPos="306" ctrlXPos="166" ctrlYPos="306"/>
+                <ControlPoint xPos="266" yPos="306" ctrlXPos="206" ctrlYPos="306"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <String><![CDATA[voice(N, D, E).]]></String>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="26" yPos="266"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N181" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+          <Node id="N182" name="Wait" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <EEdge target="N182" start ="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="76" yPos="267" ctrlXPos="96" ctrlYPos="189"/>
+                <ControlPoint xPos="101" yPos="286" ctrlXPos="171" ctrlYPos="246"/>
+              </Connection>
+            </Graphics>
+            </EEdge>
+            <Graphics>
+              <Position xPos="26" yPos="266"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S120" name="Check; Event;Name" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S121" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="306" yPos="266" ctrlXPos="306" ctrlYPos="246"/>
+                <ControlPoint xPos="306" yPos="186" ctrlXPos="306" ctrlYPos="206"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="N"/>
+              </Add>
+              <String><![CDATA[, user).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <IEdge target="S122" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="306" yPos="346" ctrlXPos="306" ctrlYPos="366"/>
+                <ControlPoint xPos="306" yPos="426" ctrlXPos="306" ctrlYPos="406"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="N"/>
+              </Add>
+              <String><![CDATA[, agent).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="266" yPos="266"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N183" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S121" name="User;Voice;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S123" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="346" yPos="123" ctrlXPos="412" ctrlYPos="84"/>
+                <ControlPoint xPos="506" yPos="66" ctrlXPos="439" ctrlYPos="66"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, start).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <IEdge target="S124" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="346" yPos="169" ctrlXPos="412" ctrlYPos="207"/>
+                <ControlPoint xPos="506" yPos="226" ctrlXPos="439" ctrlYPos="226"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, stop).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="266" yPos="106"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N184" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S122" name="Agent;Voice;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S125" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="346" yPos="489" ctrlXPos="412" ctrlYPos="527"/>
+                <ControlPoint xPos="506" yPos="546" ctrlXPos="439" ctrlYPos="546"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, start).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <IEdge target="S126" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="346" yPos="443" ctrlXPos="412" ctrlYPos="404"/>
+                <ControlPoint xPos="506" yPos="386" ctrlXPos="439" ctrlYPos="386"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, stop).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="266" yPos="426"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N185" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S123" name="User;Starts;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="UserSpeaking"/>
+              <Expression>
+                <Bool value="true"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[User starts speaking]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="500" yPos="25"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N186" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S124" name="User;Stops;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="UserSpeaking"/>
+              <Expression>
+                <Bool value="false"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[User stops speaking]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="500" yPos="185"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N187" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S125" name="Agent;Starts;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="AgentSpeaking"/>
+              <Expression>
+                <Bool value="true"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[Agent starts speaking]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="500" yPos="505"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N188" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S126" name="Agent;Stops;Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="AgentSpeaking"/>
+              <Expression>
+                <Bool value="false"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[Agent stops speaking]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="500" yPos="345"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N189" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S127" name="Move" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="26" yPos="266"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N190" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="0" yPos="0"/>
+          </Graphics>
+        </Node>
+      </SuperNode>
+      <SuperNode id="S128" name="Gaze;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S129;">
+        <Define>
+        </Define>
+        <Declare>
+          <Variable type="String" name ="D">
+            <String><![CDATA[]]></String>
+          </Variable>
+          <Variable type="String" name ="E">
+            <String><![CDATA[]]></String>
+          </Variable>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="S128" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="706" yPos="106" ctrlXPos="706" ctrlYPos="26"/>
+            <ControlPoint xPos="746" yPos="106" ctrlXPos="826" ctrlYPos="26"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="666" yPos="106"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="270" yPos="4"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="567" yPos="322" width="223" height="92"/>
+          </Graphics>
+          <Text style="color:blue">
+            The agent's gaze shifts, which means each change of the agent's current gaze target and thus it's visual focus of attention  have to be forwarded to the connection event detection processes.
+          </Text>
+        </Comment>
+        <Comment>
+          <Graphics>
+            <Boundary xPos="570" yPos="213" width="222" height="101"/>
+          </Graphics>
+          <Text style="color:blue">
+            The user's gaze shifts have to be forwarded to the connection event detection processes as well as to the processes that control the  automatic and reactive nonverbal behavior of the agent.
+          </Text>
+        </Comment>
+        <Node id="N191" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="26" yPos="346"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S129" name="Get Next;Oldest;Gaze Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="N193;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S133" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="106" yPos="306" ctrlXPos="166" ctrlYPos="306"/>
+                <ControlPoint xPos="186" yPos="306" ctrlXPos="126" ctrlYPos="306"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <String><![CDATA[gaze(E).]]></String>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="26" yPos="266"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N192" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+          <Node id="N193" name="Wait" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <EEdge target="N193" start ="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="76" yPos="267" ctrlXPos="96" ctrlYPos="189"/>
+                <ControlPoint xPos="101" yPos="286" ctrlXPos="171" ctrlYPos="246"/>
+              </Connection>
+            </Graphics>
+            </EEdge>
+            <Graphics>
+              <Position xPos="26" yPos="266"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S130" name="Check;Event;Name" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S131" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="466" yPos="266" ctrlXPos="466" ctrlYPos="246"/>
+                <ControlPoint xPos="466" yPos="186" ctrlXPos="466" ctrlYPos="206"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(name, user, ]]></String>
+                <Variable name="E"/>
+              </Add>
+              <String><![CDATA[).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <IEdge target="S132" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="466" yPos="346" ctrlXPos="466" ctrlYPos="366"/>
+                <ControlPoint xPos="466" yPos="426" ctrlXPos="466" ctrlYPos="406"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(name, agent, ]]></String>
+                <Variable name="E"/>
+              </Add>
+              <String><![CDATA[).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="426" yPos="266"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N194" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S131" name="User;Gaze;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S134" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="506" yPos="146" ctrlXPos="566" ctrlYPos="146"/>
+                <ControlPoint xPos="666" yPos="146" ctrlXPos="606" ctrlYPos="146"/>
+              </Connection>
+            </Graphics>
+            <Neq>
+              <Variable name="UserGaze"/>
+              <Variable name="D"/>
+            </Neq>
+          </IEdge>
+          <IEdge target="S135" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="426" yPos="146" ctrlXPos="366" ctrlYPos="146"/>
+                <ControlPoint xPos="266" yPos="146" ctrlXPos="326" ctrlYPos="146"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="UserGaze"/>
+              <Variable name="D"/>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="426" yPos="106"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N195" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S132" name="Agent;Gaze;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S137" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="506" yPos="466" ctrlXPos="566" ctrlYPos="466"/>
+                <ControlPoint xPos="666" yPos="466" ctrlXPos="606" ctrlYPos="466"/>
+              </Connection>
+            </Graphics>
+            <Neq>
+              <Variable name="AgentGaze"/>
+              <Variable name="D"/>
+            </Neq>
+          </IEdge>
+          <IEdge target="S136" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="426" yPos="466" ctrlXPos="406" ctrlYPos="466"/>
+                <ControlPoint xPos="266" yPos="466" ctrlXPos="286" ctrlYPos="466"/>
+              </Connection>
+            </Graphics>
+            <Eq>
+              <Variable name="AgentGaze"/>
+              <Variable name="D"/>
+            </Eq>
+          </IEdge>
+          <Graphics>
+            <Position xPos="426" yPos="426"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N196" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S133" name="Get Gaze;Event;Data" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S130" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="266" yPos="306" ctrlXPos="326" ctrlYPos="306"/>
+                <ControlPoint xPos="426" yPos="306" ctrlXPos="366" ctrlYPos="306"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(data, D, ]]></String>
+                <Variable name="E"/>
+              </Add>
+              <String><![CDATA[).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="186" yPos="266"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N197" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S134" name="New;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="UserGaze"/>
+              <Expression>
+                <Variable name="D"/>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="666" yPos="106"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N199" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S135" name="Same;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="186" yPos="106"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N200" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S136" name="Same;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="186" yPos="426"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N201" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S137" name="New;Gaze;Target" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="AgentGaze"/>
+              <Expression>
+                <Variable name="D"/>
+              </Expression>
+            </Assign>
+          </Commands>
+          <Graphics>
+            <Position xPos="666" yPos="426"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N202" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="0" yPos="0"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+      <SuperNode id="S138" name="Speech" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="26" yPos="346"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N203" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="0" yPos="0"/>
+          </Graphics>
+        </Node>
+      </SuperNode>
+      <SuperNode id="S139" name="Facs" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="106" yPos="266"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N204" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="0" yPos="0"/>
+          </Graphics>
+        </Node>
+      </SuperNode>
+      <SuperNode id="S140" name="Mood" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="106" yPos="346"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N205" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="0" yPos="0"/>
+          </Graphics>
+        </Node>
+      </SuperNode>
+      <SuperNode id="S141" name="State;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S142;">
+        <Define>
+        </Define>
+        <Declare>
+          <Variable type="String" name ="N">
+            <String><![CDATA[]]></String>
+          </Variable>
+          <Variable type="String" name ="D">
+            <String><![CDATA[]]></String>
+          </Variable>
+          <Variable type="String" name ="E">
+            <String><![CDATA[]]></String>
+          </Variable>
+        </Declare>
+        <Commands>
+          <Play>
+            <String><![CDATA[[wizard refresh]]]></String>
+          </Play>
+        </Commands>
+        <EEdge target="S141" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="386" yPos="106" ctrlXPos="386" ctrlYPos="26"/>
+            <ControlPoint xPos="426" yPos="106" ctrlXPos="506" ctrlYPos="26"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="346" yPos="106"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="240" yPos="53"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N206" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="26" yPos="186"/>
+          </Graphics>
+        </Node>
+        <SuperNode id="S142" name="Get Next;Oldest;State Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="N208;">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S143" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="106" yPos="306" ctrlXPos="126" ctrlYPos="306"/>
+                <ControlPoint xPos="266" yPos="306" ctrlXPos="246" ctrlYPos="306"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <String><![CDATA[state(N, D, E).]]></String>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="26" yPos="266"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N207" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+          <Node id="N208" name="Wait" history="false">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <EEdge target="N208" start ="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="76" yPos="267" ctrlXPos="96" ctrlYPos="189"/>
+                <ControlPoint xPos="101" yPos="286" ctrlXPos="171" ctrlYPos="246"/>
+              </Connection>
+            </Graphics>
+            </EEdge>
+            <Graphics>
+              <Position xPos="26" yPos="266"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S143" name="Check;Event;Name" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S144" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="306" yPos="266" ctrlXPos="306" ctrlYPos="236"/>
+                <ControlPoint xPos="426" yPos="226" ctrlXPos="396" ctrlYPos="226"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="N"/>
+              </Add>
+              <String><![CDATA[, user).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <IEdge target="S145" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="317" yPos="346" ctrlXPos="325" ctrlYPos="375"/>
+                <ControlPoint xPos="426" yPos="386" ctrlXPos="396" ctrlYPos="386"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="N"/>
+              </Add>
+              <String><![CDATA[, agent).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="266" yPos="266"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N209" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S144" name="User;State;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S146" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="506" yPos="186" ctrlXPos="590" ctrlYPos="101"/>
+                <ControlPoint xPos="666" yPos="66" ctrlXPos="581" ctrlYPos="66"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, enter).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <IEdge target="S149" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="506" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
+                <ControlPoint xPos="666" yPos="226" ctrlXPos="606" ctrlYPos="226"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, leave).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="426" yPos="186"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N211" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S145" name="Agent;State;Event" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <IEdge target="S148" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="506" yPos="426" ctrlXPos="590" ctrlYPos="510"/>
+                <ControlPoint xPos="666" yPos="546" ctrlXPos="581" ctrlYPos="546"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, enter).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <IEdge target="S147" start="">
+            <Graphics>
+              <Connection>
+                <ControlPoint xPos="506" yPos="386" ctrlXPos="566" ctrlYPos="386"/>
+                <ControlPoint xPos="666" yPos="386" ctrlXPos="606" ctrlYPos="386"/>
+              </Connection>
+            </Graphics>
+            <PrologQuery>
+            <Add>
+              <Add>
+                <String><![CDATA[val(]]></String>
+                <Variable name="D"/>
+              </Add>
+              <String><![CDATA[, leave).]]></String>
+            </Add>
+            </PrologQuery>
+          </IEdge>
+          <Graphics>
+            <Position xPos="426" yPos="346"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N214" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S146" name="User;Enters;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="UserAttendant"/>
+              <Expression>
+                <Bool value="true"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[User enters dialog]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="666" yPos="26"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N215" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S147" name="Agent;Leaves;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="AgentAttendant"/>
+              <Expression>
+                <Bool value="false"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[Agent leaves dialog]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="666" yPos="346"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N217" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S148" name="Agent;Enters;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="AgentAttendant"/>
+              <Expression>
+                <Bool value="true"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[Agent enters dialog]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="666" yPos="506"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N218" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+        <SuperNode id="S149" name="User;Leaves;Dialog" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+            <Assign>
+              <Variable name="UserAttendant"/>
+              <Expression>
+                <Bool value="false"/>
+              </Expression>
+            </Assign>
+            <UserCommand name="print">
+              <String><![CDATA[User leaves dialog]]></String>
+            </UserCommand>
+          </Commands>
+          <Graphics>
+            <Position xPos="666" yPos="186"/>
+          </Graphics>
+          <LocalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </LocalVariableBadge>
+          <GlobalVariableBadge>
+            <Position xPos="10" yPos="10"/>
+          </GlobalVariableBadge>
+          <Node id="N219" name="History" history="true">
+            <Define>
+            </Define>
+            <Declare>
+            </Declare>
+            <Commands>
+            </Commands>
+            <Graphics>
+              <Position xPos="26" yPos="186"/>
+            </Graphics>
+          </Node>
+        </SuperNode>
+      </SuperNode>
+    </SuperNode>
+    <SuperNode id="S46" name="Planning;Mind;Beliefs;" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="426" yPos="506"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N87" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="0" yPos="0"/>
+        </Graphics>
+      </Node>
     </SuperNode>
   </SuperNode>
   <SuperNode id="S57" name="Initialize;Agent;Engine" comment="" hideLocalVar="false" hideGlobalVar="false" start="N213;">
