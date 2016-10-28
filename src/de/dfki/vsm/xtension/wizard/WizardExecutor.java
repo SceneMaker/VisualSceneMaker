@@ -28,10 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTextPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -135,17 +132,23 @@ public final class WizardExecutor extends ActivityExecutor {
     // The date format
     private final SimpleDateFormat mFormat
             = new SimpleDateFormat("HH:mm:ss.SSS");
+    //
+    private GazeThread mUserGazeThread;
+    private GazeThread mAgentGazeThread;
 
     // Launch the executor 
     @Override
     public void launch() {
         show();
+        start();
     }
 
     // Unload the executor 
     @Override
     public void unload() {
         hide();
+        stop();
+        clear();
     }
 
     @Override
@@ -510,6 +513,27 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserSpeechLabel = new JLabel("Utterance:");
         mUserSpeechLabel.setBorder(BorderFactory.createEmptyBorder());
         mUserSpeechField = new JTextField();
+        mUserSpeechField.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent event) {
+
+                final String text = mUserSpeechField.getText().trim();
+                if (!text.isEmpty()) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "speech" + "," + "\n"
+                            + "data:" + "'" + text + "'" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                }
+            }
+        });
 
         mUserExpLabel = new JLabel("Expression:");
         mUserExpLabel.setBorder(BorderFactory.createEmptyBorder());
@@ -521,16 +545,16 @@ public final class WizardExecutor extends ActivityExecutor {
             @Override
             public void itemStateChanged(final ItemEvent event) {
                 JPLEngine.query("now(Time), "
-                            + "jdd(["
-                            + "type:" + "event" + "," + "\n"
-                            + "name:" + "user" + "," + "\n"
-                            + "mode:" + "facs" + "," + "\n"
-                            + "data:" + ((String) event.getItem()) + "," + "\n"
-                            + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
-                            + "life:" + 0 + "," + "\n"
-                            + "conf:" + 1.0 + "\n"
-                            + "]).");
+                        + "jdd(["
+                        + "type:" + "event" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "mode:" + "facs" + "," + "\n"
+                        + "data:" + ((String) event.getItem()) + "," + "\n"
+                        + "time:" + "Time" + "," + "\n"
+                        + "from:" + 0 + "," + "\n"
+                        + "life:" + 0 + "," + "\n"
+                        + "conf:" + 1.0 + "\n"
+                        + "]).");
             }
         });
         mUserGazeLabel = new JLabel("Eyegaze:");
@@ -538,25 +562,28 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserGazeCombo = new JComboBox(mUserGazeModel);
         mUserGazeCombo.setBackground(Color.WHITE);
         mUserGazeCombo.setBorder(BorderFactory.createEtchedBorder());
-        mUserGazeCombo.addItemListener(new ItemListener() {
+        //
+        /*
+         mUserGazeCombo.addItemListener(new ItemListener() {
 
-            @Override
-            public void itemStateChanged(final ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.SELECTED) {
-                    JPLEngine.query("now(Time), "
-                            + "jdd(["
-                            + "type:" + "event" + "," + "\n"
-                            + "name:" + "user" + "," + "\n"
-                            + "mode:" + "gaze" + "," + "\n"
-                            + "data:" + ((String) event.getItem()) + "," + "\n"
-                            + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
-                            + "life:" + 0 + "," + "\n"
-                            + "conf:" + 1.0 + "\n"
-                            + "]).");
-                }
-            }
-        });
+         @Override
+         public void itemStateChanged(final ItemEvent event) {
+         if (event.getStateChange() == ItemEvent.SELECTED) {
+         JPLEngine.query("now(Time), "
+         + "jdd(["
+         + "type:" + "event" + "," + "\n"
+         + "name:" + "user" + "," + "\n"
+         + "mode:" + "gaze" + "," + "\n"
+         + "data:" + ((String) event.getItem()) + "," + "\n"
+         + "time:" + "Time" + "," + "\n"
+         + "from:" + 0 + "," + "\n"
+         + "life:" + 0 + "," + "\n"
+         + "conf:" + 1.0 + "\n"
+         + "]).");
+         }
+         }
+         });
+         */
 
         mUserElicitLabel = new JLabel("Feedback:");
         mUserElicitLabel.setBorder(BorderFactory.createEmptyBorder());
@@ -851,14 +878,14 @@ public final class WizardExecutor extends ActivityExecutor {
             @Override
             public void itemStateChanged(final ItemEvent event) {
                 if (event.getStateChange() == ItemEvent.SELECTED) {
-                      JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "scene" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + ((String) event.getItem()) + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "signal" + "," + "\n"
+                            + "recv:" + "scene" + "," + "\n"
+                            + "name:" + "agent" + "," + "\n"
+                            + "data:" + ((String) event.getItem()) + "," + "\n"
+                            + "time:" + "Time" + "\n"
+                            + "]).");
                 }
             }
         });
@@ -873,6 +900,17 @@ public final class WizardExecutor extends ActivityExecutor {
             @Override
             public void itemStateChanged(final ItemEvent event) {
                 if (event.getStateChange() == ItemEvent.SELECTED) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "agent" + "," + "\n"
+                            + "mode:" + "facs" + "," + "\n"
+                            + "data:" + ((String) event.getItem()) + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "from:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
                 }
             }
         });
@@ -882,15 +920,28 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentGazeCombo = new JComboBox(mAgentGazeModel);
         mAgentGazeCombo.setBackground(Color.WHITE);
         mAgentGazeCombo.setBorder(BorderFactory.createEtchedBorder());
-        mAgentGazeCombo.addItemListener(new ItemListener() {
+        //
+        /*
+         mAgentGazeCombo.addItemListener(new ItemListener() {
 
-            @Override
-            public void itemStateChanged(final ItemEvent event) {
-                //if (event.getStateChange() == ItemEvent.SELECTED) {
-                //    mPlayer.event("gaze", "user", ((String) event.getItem()));
-                //}
-            }
-        });
+         @Override
+         public void itemStateChanged(final ItemEvent event) {
+         if (event.getStateChange() == ItemEvent.SELECTED) {
+         JPLEngine.query("now(Time), "
+         + "jdd(["
+         + "type:" + "event" + "," + "\n"
+         + "name:" + "agent" + "," + "\n"
+         + "mode:" + "gaze" + "," + "\n"
+         + "data:" + ((String) event.getItem()) + "," + "\n"
+         + "time:" + "Time" + "," + "\n"
+         + "from:" + 0 + "," + "\n"
+         + "life:" + 0 + "," + "\n"
+         + "conf:" + 1.0 + "\n"
+         + "]).");
+         }
+         }
+         });
+         */
 
         mAgentBackLabel = new JLabel("Backchannel:");
         mAgentBackLabel.setBorder(BorderFactory.createEmptyBorder());
@@ -900,8 +951,8 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentBackButton.addActionListener(new ActionListener() {
 
             @Override
-            public void actionPerformed(ActionEvent e) {
-                // mPlayer.event("feedback", "user", "elicit");
+            public void actionPerformed(final ActionEvent event) {
+
             }
         });
 
@@ -986,6 +1037,31 @@ public final class WizardExecutor extends ActivityExecutor {
         component.setPreferredSize(dim);
         component.setMaximumSize(dim);
         component.setMinimumSize(dim);
+    }
+
+    private void start() {
+        mUserGazeThread = new GazeThread(1000, "user", mUserGazeModel);
+        mAgentGazeThread = new GazeThread(2000, "agent", mAgentGazeModel);
+        mUserGazeThread.start();
+        mAgentGazeThread.start();
+    }
+
+    //
+    private void stop() {
+        mUserGazeThread.abort();
+        mAgentGazeThread.abort();
+        try {
+            mUserGazeThread.join();
+            mAgentGazeThread.join();
+        } catch (final InterruptedException exc) {
+            mLogger.failure(exc.toString());
+        }
+    }
+
+    //
+    private void clear() {
+        //final StyledDocument doc = mOutputWizardArea.getStyledDocument();
+        mOutputWizardArea.setText("");
     }
 
     // Refresh the GUI components
@@ -1186,4 +1262,57 @@ public final class WizardExecutor extends ActivityExecutor {
         // Set the caret positio to the top
         mOutputWizardArea.setCaretPosition(0);
     }
+
+    private final class GazeThread extends Thread {
+
+        private boolean mDone = false;
+        private final long mTime;
+        private final String mName;
+        private final DefaultComboBoxModel mModel;
+
+        public GazeThread(
+                final long time,
+                final String name,
+                final DefaultComboBoxModel model) {
+            mTime = time;
+            mName = name;
+            mModel = model;
+
+        }
+
+        public final void abort() {
+            mDone = true;
+            interrupt();
+        }
+
+        @Override
+        public final void run() {
+
+            while (!mDone) {
+                try {
+                    // Sleep some time
+                    Thread.sleep(mTime);
+                    // Get selected item
+                    final String item = (String) mModel.getSelectedItem();
+                    if (item != null) {
+                        // Add new gaze event
+                        JPLEngine.query("now(Time), "
+                                + "jdd(["
+                                + "type:" + "event" + "," + "\n"
+                                + "name:" + mName + "," + "\n"
+                                + "mode:" + "gaze" + "," + "\n"
+                                + "data:" + item + "," + "\n"
+                                + "time:" + "Time" + "," + "\n"
+                                + "from:" + 0 + "," + "\n"
+                                + "life:" + 0 + "," + "\n"
+                                + "conf:" + 1.0 + "\n"
+                                + "]).");
+                    }
+                } catch (final InterruptedException exc) {
+                    mLogger.warning(exc.toString());
+                }
+            }
+        }
+    };
+
 }

@@ -10,7 +10,7 @@
 <entry key="frame_posy">0</entry>
 <entry key="frame_posx">0</entry>
 <entry key="scriptfonttype">Monospaced</entry>
-<entry key="shownodeid">true</entry>
+<entry key="shownodeid">false</entry>
 <entry key="showsceneeditor">true</entry>
 <entry key="visualization">true</entry>
 <entry key="frame_height">600</entry>
@@ -31,7 +31,7 @@
 <entry key="showsmartpathcalculations">false</entry>
 <entry key="showelements">true</entry>
 <entry key="frame_title">Visual SceneMaker</entry>
-<entry key="workspace_fontsize">9</entry>
+<entry key="workspace_fontsize">12</entry>
 <entry key="showsceneelements">false</entry>
 <entry key="showscenefloweditor">true</entry>
 </properties>

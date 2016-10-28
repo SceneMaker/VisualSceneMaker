@@ -269,10 +269,10 @@ public final class Node extends JComponent implements EventListener, Observer {
         // Set the node's font to the updated font
         setFont(font);
 
+        //TODO!!!
         // Update the display name that has to be changed if the
         // node's size or the node's font size have chaged
         String prefix = "";
-
         if (fontMetrics.stringWidth(mDataNode.getName()) > (mEditorConfig.sNODEWIDTH - 10)) {
             for (char c : mDataNode.getName().toCharArray()) {
                 if (fontMetrics.stringWidth(prefix + c + "...") < mEditorConfig.sNODEWIDTH - 10) {
@@ -281,8 +281,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                     break;
                 }
             }
-
-            mDisplayName = prefix + "...";
+            mDisplayName = mDataNode.getName();//prefix + "...";
         } else {
             mDisplayName = mDataNode.getName();
         }
@@ -830,7 +829,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     @Override
     public void paintComponent(final Graphics graphics) {
         super.paintComponent(graphics);
-     
+
         final VectorGraphics g2d = VectorGraphics.create(graphics);
 
         // TODO move to update
@@ -965,15 +964,29 @@ public final class Node extends JComponent implements EventListener, Observer {
         }
 
         if (!mDisplayName.isEmpty()) {
-            g2d.drawString(mDisplayName, mEditorConfig.sNODEWIDTH / 2 - wNameOffset,
-                    (mEditorConfig.sNODEHEIGHT + 2) / 2 + hOffset);
-        }
+            final String[] lines = mDisplayName.split(";");
+            final int lOffset = mEditorConfig.sSHOWIDSOFNODES
+                    ? lines.length : (lines.length - 1);
+            for (int i = 0; i < lines.length; i++) {
+                g2d.drawString(lines[i],
+                        mEditorConfig.sNODEWIDTH / 2 - fontMetrics.stringWidth(lines[i]) / 2, // The x position
+                        mEditorConfig.sNODEHEIGHT / 2 + hOffset
+                        - lOffset * fontMetrics.getHeight() / 2
+                        + i * fontMetrics.getHeight()
+                );
+            }
 
-        // Draw the node's identifier string
-        if (mEditorConfig.sSHOWIDSOFNODES) {
-            g2d.setColor(Color.LIGHT_GRAY);
-            g2d.drawString("[" + mDataNode.getId() + "]", mEditorConfig.sNODEWIDTH / 2 - wIdOffset,
-                    ((mEditorConfig.sNODEHEIGHT + 2) / 2) + hOffset + fontMetrics.getHeight());
+            //g2d.drawString(mDisplayName, mEditorConfig.sNODEWIDTH / 2 - wNameOffset,
+            //        (mEditorConfig.sNODEHEIGHT + 2) / 2 + hOffset);
+            // Draw the node's identifier string
+            if (mEditorConfig.sSHOWIDSOFNODES) {
+                g2d.setColor(Color.LIGHT_GRAY);
+                g2d.drawString("[" + mDataNode.getId() + "]",
+                        mEditorConfig.sNODEWIDTH / 2 - wIdOffset, // The x position
+                        mEditorConfig.sNODEHEIGHT / 2 + hOffset
+                        - lOffset * fontMetrics.getHeight() / 2
+                        + lines.length * fontMetrics.getHeight());
+            }
         }
     }
 }

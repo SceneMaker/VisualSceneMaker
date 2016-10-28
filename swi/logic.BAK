@@ -55,7 +55,7 @@
     %signal/2,
     %consume/2,
     % Events
-    gaze/3,
+    gaze/1,
     move/3,
     voice/3,
     state/3,
@@ -167,8 +167,6 @@ voice(Name, Data, Event) :-
   val(name, Name, Event),
   val(data, Data, Event),
   jel(Event).
-  
-  
 /*----------------------------------------------------------------------------*
  * State Event Extraction
  *----------------------------------------------------------------------------*/
@@ -178,12 +176,21 @@ state(Name, Data, Event) :-
      val(type, event, Record),
      val(mode, state, Record)),
     List),
-  % Get oldest based on end times
   eoldest(Event, List),
   val(name, Name, Event),
   val(data, Data, Event),
   jel(Event).
-
+ /*----------------------------------------------------------------------------*
+ * Gaze Event Extraction
+ *----------------------------------------------------------------------------*/
+gaze(Event) :-
+  findall(Record,
+    (fsr(Record),
+     val(type, event, Record),
+     val(mode, gaze, Record)),
+    List),
+   eoldest(Event, List),
+   del(Event).
 
 /*----------------------------------------------------------------------------*
  * Move Event Extraction
@@ -200,22 +207,7 @@ move(N, D, E) :-
     (fsr(R),
      member(R, L)),
      jel(R)).
-/*----------------------------------------------------------------------------*
- * Gaze Event Extraction
- *----------------------------------------------------------------------------*/
-gaze(N, D, E) :-
-  findall(R,
-    (fsr(R),
-     val(type, event, R),
-     val(mode, gaze, R),
-     val(name, N, R)),
-    L),
-  latest(E, L),
-  val(data, D, E),
-  forall(
-    (fsr(R),
-     member(R, L)),
-     jel(R)).
+
      
 /*----------------------------------------------------------------------------*
  * Speech Event Extraction
@@ -248,9 +240,9 @@ count(Mode, Count) :-
 /*----------------------------------------------------------------------------*
  * Time/Ordering Predicates
  *----------------------------------------------------------------------------*/
-ilatest(R, [R]) :- !.
-ilatest(R, [H|T]) :-
-   ilatest(L, T),
+inewest(R, [R]) :- !.
+inewest(R, [H|T]) :-
+   inewest(L, T),
     (
       iafter(L, H), !, R = L
     ;
@@ -286,4 +278,26 @@ ebefore(A, B) :-
   val(life, LB, B),
   EA = TA - DA + LA,
   EB = TB - DB + LB,
-  EA < EB.
+  EA <= EB.
+
+test(R) :-
+add([
+    type:event,
+    name:agent,
+    mode:gaze,
+    data:user,
+    time:16010,
+    from:0,
+    life:0,
+    conf:1.0
+]),
+add([
+    type:event,
+    name:user,
+    mode:gaze,
+    data:agent,
+    time:16010,
+    from:0,
+    life:0,
+    conf:1.0
+]),gaze(R).

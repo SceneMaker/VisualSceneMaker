@@ -3,7 +3,6 @@ package de.dfki.vsm.editor;
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.dialog.*;
 import de.dfki.vsm.editor.project.sceneflow.workspace.ClipBoard;
-import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
