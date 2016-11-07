@@ -107,6 +107,9 @@ public class StickmanExecutor extends ActivityExecutor {
         } else if (activity instanceof ActionActivity) {
             stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
+                for (final ActionFeature feature : features) {
+                    stickmanAnimation.setParameter((Object)feature.getVal());
+                }
                 executeAnimation(stickmanAnimation);
             }
         }
