@@ -43,7 +43,7 @@ public class StickmanExecutor extends ActivityExecutor {
     private final HashMap<String, StickmanHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
-    private  Thread stickmanLaunchThread;
+    private Thread stickmanLaunchThread;
     private StageStickmanController stickmanStageC;
     private StickmanRepository stickmanFactory;
 
@@ -52,7 +52,6 @@ public class StickmanExecutor extends ActivityExecutor {
         // Initialize the plugin
         super(config, project);
         stickmanFactory = new StickmanRepository(config);
-
 
     }
 
@@ -82,7 +81,7 @@ public class StickmanExecutor extends ActivityExecutor {
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatures();
 
-        CommonAnimation stickmanAnimation ;
+        CommonAnimation stickmanAnimation;
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
@@ -102,13 +101,15 @@ public class StickmanExecutor extends ActivityExecutor {
             mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
             mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
             stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
-            stickmanAnimation.setParameter( wts);
+            stickmanAnimation.setParameter(wts);
             executeAnimationAndWait(activity, stickmanAnimation);
         } else if (activity instanceof ActionActivity) {
             stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
-                for (final ActionFeature feature : features) {
-                    stickmanAnimation.setParameter((Object)feature.getVal());
+                if (features != null && !(features.isEmpty())) {
+                    for (final ActionFeature feature : features) {
+                        stickmanAnimation.setParameter(feature.getVal());
+                    }
                 }
                 executeAnimation(stickmanAnimation);
             }
