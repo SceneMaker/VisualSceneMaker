@@ -39,7 +39,7 @@ public class StickmanExecutor extends ActivityExecutor {
 
     // The stickman stage window
     private static StickmanStageFX mStickmanStage;
-    private  Thread stickmanLaunchThread;
+    private Thread stickmanLaunchThread;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The tworld listener
@@ -86,28 +86,37 @@ public class StickmanExecutor extends ActivityExecutor {
         AnimationFX stickmanAnimation = new AnimationFX();
 
         if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-
-            // create a new word time mark sequence based on the current utterance blocks
-            WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
-
-            LinkedList blocks = sa.getBlocks();
-            for (final Object item : blocks) {
-                if (!item.toString().contains("$")) {
-                    wts.add(new Word(item.toString()));
-                } else {
-                    wts.add(new TimeMark(item.toString()));
+            String activityText = ((SpeechActivity) activity).getTextOnly("$").trim();
+            
+            if (activityText.isEmpty()) {
+                LinkedList<String> timemarks = ((SpeechActivity) activity).getTimeMarks("$");
+                for (String tm : timemarks) {
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
+            } else {
+                SpeechActivity sa = (SpeechActivity) activity;
+
+                // create a new word time mark sequence based on the current utterance blocks
+                WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
+
+                LinkedList blocks = sa.getBlocks();
+                for (final Object item : blocks) {
+                    if (!item.toString().contains("$")) {
+                        wts.add(new Word(item.toString()));
+                    } else {
+                        wts.add(new TimeMark(item.toString()));
+                    }
+                }
+
+                // schedule Mouth_open and Mouth closed activities
+                mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
+                mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
+
+                stickmanAnimation = AnimationLoaderFX.getInstance().loadEventAnimation(mStickmanStage.getStickmanFX(actor), "Speaking", 3000, false);
+                stickmanAnimation.setParameter(wts);
+
+                executeAnimationAndWait(activity, stickmanAnimation);
             }
-
-            // schedule Mouth_open and Mouth closed activities
-            mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
-            mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
-
-            stickmanAnimation = AnimationLoaderFX.getInstance().loadEventAnimation(mStickmanStage.getStickmanFX(actor), "Speaking", 3000, false);
-            stickmanAnimation.setParameter( wts);
-
-            executeAnimationAndWait(activity, stickmanAnimation);
         } else if (activity instanceof ActionActivity) {
             stickmanAnimation = AnimationLoaderFX.getInstance().loadAnimation(mStickmanStage.getStickmanFX(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
@@ -189,15 +198,13 @@ public class StickmanExecutor extends ActivityExecutor {
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
-                    
-                 
+
                     StickmanStageFX.lauchStickman(mProject.getProjectPath());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         };
-
 
         stickmanLaunchThread.start();
 
