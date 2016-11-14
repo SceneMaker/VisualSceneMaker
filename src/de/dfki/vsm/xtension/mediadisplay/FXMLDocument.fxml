@@ -5,8 +5,8 @@
 <?import javafx.scene.layout.HBox?>
 
 
-<AnchorPane id="AnchorPane" blendMode="MULTIPLY" depthTest="ENABLE" pickOnBounds="false" prefHeight="1080" prefWidth="1920" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane id="AnchorPane" blendMode="MULTIPLY" depthTest="ENABLE" pickOnBounds="false" prefHeight="768" prefWidth="1024" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-      <HBox fx:id="canvas" blendMode="ADD" layoutX="10.0" layoutY="10.0" prefHeight="1060" prefWidth="1900" style="-fx-background-color: #00000000"/>
+      <HBox fx:id="canvas" blendMode="ADD" layoutX="10.0" layoutY="10.0" prefHeight="768" prefWidth="1024" style="-fx-background-color: #00000000"/>
     </children>
 </AnchorPane>

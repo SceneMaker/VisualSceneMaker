@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="../prj/.." name="VisualSceneMaker-IDE">
+    <import file="../prj/build.xml"/>
+    <target name="-profile-check">
+        <startprofiler freeform="true"/>
+    </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://netbeans.org/kb/articles/freeform-config.html#profilej2se) -->
+    <target depends="-profile-check" if="profiler.configured" name="profile-nb">
+        <java classname="de.dfki.vsm.DefaultEditor" fork="true">
+            <classpath refid="clspath"/>
+            <jvmarg line="${agent.jvmargs}"/>
+        </java>
+    </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#debugj2se) -->
+   
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#debugj2se) -->
+    <target name="debug-nb">
+        <nbjpdastart addressproperty="jpda.address" name="VisualSceneMaker-Master" transport="dt_socket">
+            <classpath refid="clspath"/>
+        </nbjpdastart>
+        <java classname="de.dfki.vsm.SceneMaker3" fork="true">
+            <!-- <arg line="runtime res/prj/test"/> -->
+            <!-- <arg line="editor res/prj/test"/> -->
+            <classpath refid="clspath"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+</project>

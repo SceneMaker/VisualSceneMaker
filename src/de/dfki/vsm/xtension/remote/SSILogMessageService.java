@@ -111,6 +111,8 @@ public class SSILogMessageService extends ActivityExecutor {
                         long lmTimeStamp = lm.mTimeStamp;
                         // set duration
                         logMessage.setDuration(logMessage.mTimeStamp - lmTimeStamp);
+                        //remove remembered log messages
+                        mContinuedLogMessages.remove(lm);
                     }
                 }
 
