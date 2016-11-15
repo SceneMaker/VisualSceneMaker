@@ -31,8 +31,6 @@
   [
     % Facts
     fsr/1,
-    now/1,
-    set/2,
     val/3,
     add/5,
     del/1,
@@ -41,12 +39,17 @@
     jdd/1,
     rll/2,
     jll/2,
+    % Timer
+    now/1,
     % Print
     out/1,
     err/1,
     jog/1,
     % Timeout
+    destall/1,
+    install/2,
     timeout/2,
+    expired/1,
     % Signals
     s/3,
     c/3,
@@ -62,7 +65,8 @@
     speech/1,
     % Garbage
     garbage/2,
-    cleanup/0,
+    % Clean
+    clean/0,
     % Evaluation
     eq/2,
     ev/2
@@ -71,6 +75,18 @@
 :- reexport('facts').
 :- reexport('print').
 
+/*----------------------------------------------------------------------------*
+ * The current system time
+ *----------------------------------------------------------------------------*/
+:- dynamic start/1.
+
+now(Now) :-
+  statistics(walltime, [Time, _]),
+  start(Start), Now is Time - Start.
+
+/*----------------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------------*/
 %set(P, R, V) :-
 %  fsr(R), set(P, V, R, S), add(S), del(R).
 
@@ -90,13 +106,16 @@ garbage(M, P) :-
 /*----------------------------------------------------------------------------*
  * Cleanup Predicates
  *----------------------------------------------------------------------------*/
-cleanup :-
+clean :-
   write('Fact Base Cleanup'), nl,
-  retractall(tmt(_,_)),
-  retractall(now(_)),
-  assertz(now(0)),
+  retractall(timer(_,_)),
+  retractall(start(_)),
+  statistics(walltime, [Now, _]),
+  assertz(start(Now)),
   rll(type, event),
   rll(type, signal).
+
+:- clean.
 
 /*----------------------------------------------------------------------------*
  * Comparison Predicates
@@ -121,15 +140,30 @@ ev(X, Y) :-
  *----------------------------------------------------------------------------*/
 %timeout(S, T) :- now(N), N > S + T.
 
-:- dynamic tmt/2.
+:- dynamic timer/2.
 
-timeout(I, T) :-
-  tmt(I, S), now(N), !,
-  N > S + T,
-  retractall(tmt(I, S)).
-timeout(I, _) :-
-  now(N), !,
-  assertz(tmt(I, N)), fail.
+timeout(Name, Delay) :-
+  timer(Name, Time), !,
+  now(Now), Now > Time + Delay,
+  retractall(timer(Name, Time)).
+  
+timeout(Name, _) :-
+  !, now(Time),
+  assertz(timer(Name, Time)), fail.
+
+destall(Name) :-
+  retractall(timer(Name, _)).
+
+install(Name, Time) :-
+   retractall(timer(Name, _)), write(retracting), nl,
+   now(Now), End is Now + Time,    write(Now), nl,
+   assertz(timer(Name, End)),
+   write('Timer '), write(Name), write(' Set To '), write(End), nl.
+   
+expired(Name) :-
+  timer(Name, End),
+  now(Now), Now > End.
+
 
 /*----------------------------------------------------------------------------*
  * Signalling Predicates

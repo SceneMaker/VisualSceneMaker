@@ -39,7 +39,7 @@ public final class ReactivePlayer extends RunTimePlayer {
     // Flag if we use the JPL
     private boolean mUseJPL = false;
     // The runtime timer
-    private RunTimeTimer mTimer = null;
+    //private RunTimeTimer mTimer = null;
 
     // Create the scene player
     public ReactivePlayer(
@@ -53,10 +53,10 @@ public final class ReactivePlayer extends RunTimePlayer {
         mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
     }
 
-    @Override
-    public final long getTime() {
-        return mTimer.getTime();
-    }
+    //@Override
+    //public final long getTime() {
+    //    return mTimer.getTime();
+    //}
 
     // Launch the player
     @Override
@@ -68,8 +68,8 @@ public final class ReactivePlayer extends RunTimePlayer {
             JPLEngine.load("swi/*.pl");
         }
         // Start the system timer
-        mTimer = new RunTimeTimer(10, mUseJPL);
-        mTimer.start();
+        //mTimer = new RunTimeTimer(10, mUseJPL);
+        //mTimer.start();
     }
 
     // Unload the player
@@ -78,12 +78,12 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Print some information
         mLogger.message("Unloading reactive player '" + this + "'");
         // Abort the system timer
-        mTimer.abort();
-        try {
-            mTimer.join();
-        } catch (final InterruptedException exc) {
-            mLogger.failure(exc.toString());
-        }
+        //mTimer.abort();
+        //try {
+        //    mTimer.join();
+        //} catch (final InterruptedException exc) {
+        //    mLogger.failure(exc.toString());
+        //}
     }
 
     // Call the play action activity method

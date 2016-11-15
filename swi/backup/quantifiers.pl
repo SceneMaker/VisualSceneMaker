@@ -162,6 +162,12 @@ formorethan(Fraction, Template, Generator, Condition) :-
     forfraction(Portion, Template, Generator, Condition), write('Portion: '), write(Portion), nl,
     number(Fraction), Portion > Fraction.
 
+	
+%formorethan(Template, Generator, Condition, Percentage) :-
+%    bagof(Template, Generator, Range),
+%    bagof(Template,(Generator, Condition), Scope),
+%    length(Range, R), length(Scope, S), S/R > Percentage.
+	
 /*----------------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------------*/
