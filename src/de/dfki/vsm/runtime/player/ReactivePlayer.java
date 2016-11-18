@@ -65,7 +65,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         mLogger.message("Launching reactive player '" + this + "'");
         // Load the fact base
         if (mUseJPL) {
-            JPLEngine.load("swi/*.pl");
+            JPLEngine.load("swi/logic.pl");
         }
         // Start the system timer
         //mTimer = new RunTimeTimer(10, mUseJPL);

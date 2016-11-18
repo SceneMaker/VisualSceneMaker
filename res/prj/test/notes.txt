@@ -1,5 +1,0 @@
-- Barge ins als turn interrupt abhängig von rolle und unterbrechbarkeit interpretieren,analog zu den anderen turn signalen und dann an den rollen automaten als occupy event übergeben
-- Nach dem yield signal noch abwarten bis mindestens ein dialog akt im letzten turn angekommen ist bevor das ganze als turn offer event interpretiert wurde.
-- Bewegungen von Objektenzusammen mit Sprechevents im selben Prozess verarbeiten und zu turn signalen kombinieren.
-- Im Turn automaten nach einem user offer den turn akzeptieren und ein take signal generieren bzw. umgekehrt? 
-- Im turn automaten nach einem agent offer sofort die rolle wechseln.

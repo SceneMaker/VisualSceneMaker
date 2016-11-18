@@ -39,34 +39,30 @@
     jdd/1,
     rll/2,
     jll/2,
-    % Timer
-    now/1,
-    % Print
+   % Print
     out/1,
     err/1,
     jog/1,
-    % Timeout
-    destall/1,
-    install/2,
+    % Timer
+    now/1,
+    init/2,
+    stop/1,
+    start/1,
+    timer/2,
     timeout/2,
     expired/1,
+    %Clean
+    clean/0,
+    clean/2,
     % Signals
-    s/3,
-    c/3,
-    signal/3,
-    consume/3,
-    %signal/2,
-    %consume/2,
-    % Events
+    signal/2,
+    remove/2,
+   % Events
     gaze/1,
     move/3,
     voice/3,
     state/3,
     speech/1,
-    % Garbage
-    garbage/2,
-    % Clean
-    clean/0,
     % Evaluation
     eq/2,
     ev/2
@@ -74,48 +70,14 @@
 
 :- reexport('facts').
 :- reexport('print').
-
-/*----------------------------------------------------------------------------*
- * The current system time
- *----------------------------------------------------------------------------*/
-:- dynamic start/1.
-
-now(Now) :-
-  statistics(walltime, [Time, _]),
-  start(Start), Now is Time - Start.
-
+:- reexport('timer').
+:- reexport('clean').
+ 
 /*----------------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------------*/
 %set(P, R, V) :-
 %  fsr(R), set(P, V, R, S), add(S), del(R).
-
-/*----------------------------------------------------------------------------*
- * Garbage Predicates
- *----------------------------------------------------------------------------*/
-garbage(M, P) :-
-  forall((fsr(R),
-     val(mode, M, R),
-     val(time, T, R),
-     val(dist, D, R),
-     val(life, L, R),
-     E is T - D + L, now(Q),
-     B is Q - P, B > E),
-  jel(R)).
-  
-/*----------------------------------------------------------------------------*
- * Cleanup Predicates
- *----------------------------------------------------------------------------*/
-clean :-
-  write('Fact Base Cleanup'), nl,
-  retractall(timer(_,_)),
-  retractall(start(_)),
-  statistics(walltime, [Now, _]),
-  assertz(start(Now)),
-  rll(type, event),
-  rll(type, signal).
-
-:- clean.
 
 /*----------------------------------------------------------------------------*
  * Comparison Predicates
@@ -134,68 +96,30 @@ eq(X, Y) :-
 ev(X, Y) :-
    var(X),
    X is Y.
-   
-/*----------------------------------------------------------------------------*
- * Timeout Predicates
- *----------------------------------------------------------------------------*/
-%timeout(S, T) :- now(N), N > S + T.
-
-:- dynamic timer/2.
-
-timeout(Name, Delay) :-
-  timer(Name, Time), !,
-  now(Now), Now > Time + Delay,
-  retractall(timer(Name, Time)).
-  
-timeout(Name, _) :-
-  !, now(Time),
-  assertz(timer(Name, Time)), fail.
-
-destall(Name) :-
-  retractall(timer(Name, _)).
-
-install(Name, Time) :-
-   retractall(timer(Name, _)), write(retracting), nl,
-   now(Now), End is Now + Time,    write(Now), nl,
-   assertz(timer(Name, End)),
-   write('Timer '), write(Name), write(' Set To '), write(End), nl.
-   
-expired(Name) :-
-  timer(Name, End),
-  now(Now), Now > End.
-
 
 /*----------------------------------------------------------------------------*
  * Signalling Predicates
  *----------------------------------------------------------------------------*/
- %ToDo: Make a signal/4 with an identifier
-s(Process, Message, Content) :-
-  signal(Process, Message, Content).
-signal(Process, Message, Content) :-
+signal(Sent, Name) :-
   forall(
     (fsr(Record),
      val(type, signal, Record),
-     %val(name, Message, Record),
-     val(recv, Process, Record)),
-  jel(Record)), now(Timestamp),
-  jdd(
+     val(sent, Sent, Record),
+     val(name, Name, Record)),
+  del(Record)), now(Time),
+  add(
   [type:signal,
-   recv:Process,
-   name:Message,
-   data:Content,
-   time:Timestamp]).
+   sent:Sent,
+   name:Name,
+   time:Time]).
 
-
-c(Process, Message, Content) :-
-  consume(Process, Message, Content).
-consume(Process, Message, Content) :-
+remove(Sent, Name) :-
   fsr(Record),
   val(type, signal, Record),
-  val(recv, Process, Record),
-  val(name, Message, Record),
-  val(data, Content, Record),
-  jel(Record).
-
+  val(sent, Sent, Record),
+  val(name, Name, Record),
+  del(Record).
+  
 /*----------------------------------------------------------------------------*
  * Voice Event Extraction
  *----------------------------------------------------------------------------*/
@@ -212,6 +136,7 @@ voice(Name, Data, Event) :-
   val(name, Name, Event),
   val(data, Data, Event),
   jel(Event).
+  
 /*----------------------------------------------------------------------------*
  * State Event Extraction
  *----------------------------------------------------------------------------*/
@@ -225,6 +150,7 @@ state(Name, Data, Event) :-
   val(name, Name, Event),
   val(data, Data, Event),
   jel(Event).
+  
  /*----------------------------------------------------------------------------*
  * Gaze Event Extraction
  *----------------------------------------------------------------------------*/
@@ -325,13 +251,13 @@ ebefore(A, B) :-
   EB = TB - DB + LB,
   EA =< EB.
 
-test(R) :-
+test :-
 add([
     type:event,
     name:agent,
     mode:gaze,
     data:user,
-    time:16010,
+    time:16000,
     from:0,
     life:0,
     conf:1.0
@@ -339,10 +265,10 @@ add([
 add([
     type:event,
     name:user,
-    mode:gaze,
+    mode:speech,
     data:agent,
-    time:16010,
+    time:16500,
     from:0,
     life:0,
     conf:1.0
-]),gaze(R).
+]).
