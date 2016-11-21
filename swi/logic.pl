@@ -56,8 +56,11 @@
     clean/2,
     % Signals
     signal/2,
+    signal/3,
     remove/2,
-   % Events
+    remove/3,
+    % Events
+    scene/1,
     gaze/1,
     move/3,
     voice/3,
@@ -112,12 +115,34 @@ signal(Sent, Name) :-
    sent:Sent,
    name:Name,
    time:Time]).
+   
+signal(Sent, Name, Data) :-
+  forall(
+    (fsr(Record),
+     val(type, signal, Record),
+     val(sent, Sent, Record),
+     val(name, Name, Record)),
+  del(Record)), now(Time),
+  add(
+  [type:signal,
+   sent:Sent,
+   name:Name,
+   data:Data,
+   time:Time]).
 
 remove(Sent, Name) :-
   fsr(Record),
   val(type, signal, Record),
   val(sent, Sent, Record),
   val(name, Name, Record),
+  del(Record).
+
+remove(Sent, Name, Data) :-
+  fsr(Record),
+  val(type, signal, Record),
+  val(sent, Sent, Record),
+  val(name, Name, Record),
+  val(data, Data, Record),
   del(Record).
   
 /*----------------------------------------------------------------------------*
@@ -179,7 +204,6 @@ move(N, D, E) :-
      member(R, L)),
      jel(R)).
 
-     
 /*----------------------------------------------------------------------------*
  * Speech Event Extraction
  *----------------------------------------------------------------------------*/
@@ -199,6 +223,20 @@ content(Content, Event) :-
   fsr(Event),
   val(data:data:data:content, Content, Event).
 
+/*----------------------------------------------------------------------------*
+ * Scene Event Extraction
+ *----------------------------------------------------------------------------*/
+scene(Data) :-
+  findall(Record,
+    (fsr(Record),
+     val(type, event, Record),
+     val(name, agent, Record),
+     val(mode, scene, Record)),
+    List),
+  eoldest(Event, List),
+  val(data, Data, Event),
+  jel(Event).
+  
 /*----------------------------------------------------------------------------*
  * Event Counting Predicates
  *----------------------------------------------------------------------------*/
