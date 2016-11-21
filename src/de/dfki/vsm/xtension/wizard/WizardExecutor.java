@@ -1194,8 +1194,8 @@ public final class WizardExecutor extends ActivityExecutor {
             mLogger.failure(exc.toString());
         }
     }
-
-    private void reset() {
+    
+   private void reset() {
         // 
         mUserRoleLabel.setEnabled(false);
         mUserActionLabel.setEnabled(false);
