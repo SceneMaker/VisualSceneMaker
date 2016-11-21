@@ -881,7 +881,7 @@ public final class WizardExecutor extends ActivityExecutor {
         // Create the agent input panel ///////////////////////////////////////
         mAgentScriptLabel = new JLabel("Play Scene:");
         mAgentScriptLabel.setBorder(BorderFactory.createEmptyBorder());
-        mAgentScriptButton = new JButton("Try");
+        mAgentScriptButton = new JButton("Try Contribution");
         mAgentScriptButton.addActionListener(new ActionListener() {
 
             @Override
