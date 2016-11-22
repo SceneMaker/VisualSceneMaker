@@ -47,7 +47,9 @@
     formorethan/4,
     forlargest/4,
     forlargest/3,
-    forlongest/3
+    forlongest/3,
+    % Maximum Lists
+    max_size_list/2
   ]).
 
 :- reexport('terms').
@@ -177,13 +179,14 @@ forlessthan(Fraction, Template, Generator, Condition) :-
  
 % For the majority of individuals
 forlargest(Template, Generator, Condition, Scope) :-
-    collect(Template, Generator, Range), %write('Range: '), out(Range), nl, %For all possible range alternatives
-    findall(X, bagof(Template, (Generator, Condition), X), Scopes), %write('Scopes: '), nl, out(Scopes), nl, length(Range, R), write('Range Size: '), out(R), nl, forall(member(Set, Scopes), (length(Set, S), write('Scope Size: '), out(S), nl)),
-    max_size_list(Scopes, MaxList), %write('MaxSizeList: '), out(MaxList), nl, length(MaxList, M), write('MaxSizeList Size: '), out(M), nl,
-    %merging(X, max_size_list(Scopes, X), Candidates), write('Candidates: '), out(Candidates), nl,   %setof?  findall?
+    collect(Template, Generator, Range), %write('Range: '), out(Range), nl, length(Range, R), write('Range Size: '), out(R), nl, %For all possible range alternatives
+    findall(X, bagof(Template, (Generator, Condition), X), Scopes), %write('Scopes: '), nl, out(Scopes), nl, nl,nl,nl,nl,nl,%forall(member(Set, Scopes), (length(Set, S), write('Scope Size: '), out(S), nl)),
+    %max_size_list(Scopes, MaxList), write('MaxSizeList: '), out(MaxList), nl, length(MaxList, M), write('MaxSizeList Size: '), out(M), nl,
+    findall(X, max_size_list(Scopes, X), Candidates), %write('Candidates: '), out(Candidates), nl,   %Remove redundancies
+    sort(Candidates, SortedCandidates) ,   %write('Sorted Candidates: '), out(SortedCandidates), nl,   %Remove redundancies
     collect(Template, (Generator, Condition), Scope), %write('Scope '), out(Scope), nl,     %For all possible scope alternatives   length(Scope, Q), write('Scope Size: '), out(Q), nl ,
-    %member(Scope, Candidates)
-    Scope = MaxList .
+    member(Scope, SortedCandidates).
+    %Scope == MaxList .
 
 forlargest(Template, Generator, Condition) :-
     forlargest(Template, Generator, Condition, _).
@@ -192,12 +195,12 @@ forlargest(Template, Generator, Condition) :-
 max_size_list([List], List).
 max_size_list([Head|Tail], List) :-
       max_size_list(Tail, Some),
-      length(Some, SomeL),
-      length(Head, HeadL),
+      length(Some, SomeL), %out(SomeL), nl,
+      length(Head, HeadL), %out(HeadL), nl,
       (
         (SomeL  >  HeadL, List = Some);
         (SomeL  <  HeadL, List = Head);
-        (SomeL == HeadL, Some \== Head,
+        (SomeL == HeadL, Some \== Head, %out('inequal:'),nl, out(Some), nl, out(Head), nl,
           (List = Head ; List = Some)
         )
       ).

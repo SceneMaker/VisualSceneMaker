@@ -32,7 +32,8 @@
     % Facts
     fsr/1,
     val/3,
-    add/5,
+    add/4,
+    set/4,
     del/1,
     jel/1,
     add/1,
@@ -73,7 +74,14 @@
     ev/2,
     %Quantifier
     collect/3,
-    arrange/3
+    arrange/3,
+    %Disambiguate
+    disambiguate/2,
+    %Temporal
+    iduring/2,
+    iafter/2,
+    %
+    max_size_list/2
   ]).
 
 :- reexport('facts').
@@ -82,12 +90,6 @@
 :- reexport('clean').
 :- reexport('quant').
  
-/*----------------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------------*/
-%set(P, R, V) :-
-%  fsr(R), set(P, V, R, S), add(S), del(R).
-
 /*----------------------------------------------------------------------------*
  * Comparison Predicates
  *----------------------------------------------------------------------------*/
@@ -220,7 +222,7 @@ move(N, D, E) :-
      val(type, event, R),
      val(mode, move, R),
      val(name, N, R)), L),
-  latest(E, L),
+  eoldest(E, L),
   val(data, D, E),
   forall(
     (fsr(R),
@@ -236,7 +238,7 @@ speech(Event) :-
      type(R, event),
      mode(R, speech)),
   List),
-  latest(Event, List).
+  eoldest(Event, List).
 
 function(Function, Event) :-
   fsr(Event),
@@ -272,15 +274,6 @@ count(Mode, Count) :-
 /*----------------------------------------------------------------------------*
  * Time/Ordering Predicates
  *----------------------------------------------------------------------------*/
-inewest(R, [R]) :- !.
-inewest(R, [H|T]) :-
-   inewest(L, T),
-    (
-      iafter(L, H), !, R = L
-    ;
-      iafter(H, L), !, R = H
-    ).
-
 iafter(A, B) :-
   val(time, TA, A),
   val(time, TB, B),
@@ -291,6 +284,42 @@ iafter(A, B) :-
   SB = TB - DB,
   EB = SB + LB,
   SA > EB.
+  
+ibefore(A, B) :-
+  val(time, TA, A),
+  val(time, TB, B),
+  val(from, DA, A),
+  val(from, DB, B),
+  val(life, LA, A),
+  SA = TA - DA,
+  SB = TB - DB,
+  EA = SA + LA,
+  EA < SB.
+
+iduring(A, B) :-
+  val(time, TA, A),
+  val(time, TB, B),
+  val(from, DA, A),
+  val(from, DB, B),
+  val(life, LA, A),
+  val(life, LB, B),
+  SA = TA - DA,
+  EA = SA + LA,
+  SB = TB - DB,
+  EB = SB + LB,
+  SA > SB,
+  EA < EB.
+
+inewest(R, [R]) :- !.
+inewest(R, [H|T]) :-
+   inewest(L, T),
+    (
+      iafter(L, H), !, R = L
+    ;
+      iafter(H, L), !, R = H
+    ).
+
+
 
 eoldest(R, [R]) :- !.
 eoldest(R, [H|T]) :-
@@ -311,3 +340,93 @@ ebefore(A, B) :-
   EA = TA - DA + LA,
   EB = TB - DB + LB,
   EA =< EB.
+  
+
+%set(Path, Value, Input) :-
+%  fsr(Input), set(Path, Value, Input, Output), add(Output), del(Input).
+  
+%Works only for propositional questions
+disambiguate(SpeechEvent, FusedEvent) :-
+  val(data:data:location, [], SpeechEvent), !, % Location is a reference
+  write('Speech Event:'), out(SpeechEvent) ,nl,
+  val(data:data:shape, SpeechShape, SpeechEvent), out(SpeechShape), nl,
+  val(data:data:color, SpeechColor, SpeechEvent), out(SpeechColor), nl,
+  %TODO: filter such that the other attributes match
+  forlargest(GazeEvent,
+    (fsr(GazeEvent), % The majority of gaze events in the fact base
+     val(mode, gaze, GazeEvent), % that are from the gaze modality
+     %val(data:name, GazeName, GazeEvent), % TODO: Get the gaze target color and shape from name
+     iduring(GazeEvent, SpeechEvent),
+     %TODO: Make the filter using the stored data about objects in the fact base
+     (SpeechColor = [] -> true; val(data:data:color, SpeechColor, GazeEvent)),
+     (SpeechShape = [] -> true; val(data:data:shape, SpeechShape, GazeEvent))
+     ), % and during the speech event
+     val(data, GazeTarget, GazeEvent)), % have as target this object
+   write('Gaze Target:'), out(GazeTarget), nl,
+  add(data:data:fixation, GazeTarget, SpeechEvent, FusedEvent).
+
+disambiguate(SpeechEvent, SpeechEvent).
+
+%fsr(SpeechEvent), val(mode, speech, SpeechEvent), val(data:data:shape, square, SpeechEvent), disambiguate(SpeechEvent, FusedEvent), out(FusedEvent).
+/*
+fsr(SpeechEvent), val(mode, speech, SpeechEvent), val(data:data, [color:red,shape:square,location:[]], SpeechEvent), disambiguate(SpeechEvent, FusedEvent), out(FusedEvent).
+Speech Event:[
+    type:event,
+    name:agent,
+    mode:speech,
+    data:[
+        type:dialog_act,
+        cat:info_seeking,
+        fun:propositional,
+        data:[
+            color:red,
+            shape:square,
+            location:[]
+        ]
+    ],
+    time:9000,
+    from:2000,
+    life:1980,
+    conf:1.0
+]
+square
+red
+Gaze Target:[
+    type:puzzle_piece,
+    name:obj3,
+    data:[
+        color:red,
+        shape:square
+    ]
+]
+[
+    type:event,
+    name:agent,
+    mode:speech,
+    data:[
+        type:dialog_act,
+        cat:info_seeking,
+        fun:propositional,
+        data:[
+            fixation:[
+                type:puzzle_piece,
+                name:obj3,
+                data:[
+                    color:red,
+                    shape:square
+                ]
+            ],
+            color:red,
+            shape:square,
+            location:[]
+        ]
+    ],
+    time:9000,
+    from:2000,
+    life:1980,
+    conf:1.0
+]
+SpeechEvent = [type:event, name:agent, mode:speech, data:[type:dialog_act, cat:info_seeking, fun:propositional, ... : ...], time:9000, from:2000, life:1980, conf:1.0],
+FusedEvent = [type:event, name:agent, mode:speech, data:[type:dialog_act, cat:info_seeking, fun:propositional, ... : ...], time:9000, from:2000, life:1980, conf:1.0] ;
+false.
+*/
