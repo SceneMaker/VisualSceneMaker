@@ -27,7 +27,7 @@
     Public License. This exception does not invalidate any other reasons why
     the executable file might be covered by the 'GNU General Public License'.
 */
- :- module(inspections,
+:- module(inspections,
   [
     fkeyterm/1,
     fklsterm/1,
@@ -212,7 +212,7 @@ extqvars(G, V) :-
 /**
   uniqvars(?T:term, ?L:list) is det
 
-  Find all existantially quantified variables in the term =|T|= and return them
+  Find all existentially quantified variables in the term =|T|= and return them
   in the resulting output variable list =|L|=.
 */
 uniqvars(Term, List) :-
@@ -227,7 +227,7 @@ quantify([Head|Tail], Generator, Head^Quantified) :-
 %quantify([M, D], (fsr(E), val(type, event, E), val(mode, M, E), val(data, D, E)), Goal), bagof(E, Goal, List).
 
 /*----------------------------------------------------------------------------*
- *     Get template, existantial quantified, range and scope variables in term
+ *     Get template, existential quantified, range and scope variables in term
  *----------------------------------------------------------------------------*/
 inspect(Quanfifier, TemplVars, QuantVars, RangeVars, ScopeVars) :-
   Quanfifier =.. [Functor|[TemplTerm, QuantVars, RangeGoal, ScopeGoal]],

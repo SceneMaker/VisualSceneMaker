@@ -55,8 +55,10 @@
     clean/0,
     clean/2,
     % Signals
+    signal/1,
     signal/2,
     signal/3,
+    remove/1,
     remove/2,
     remove/3,
     % Events
@@ -68,13 +70,17 @@
     speech/1,
     % Evaluation
     eq/2,
-    ev/2
+    ev/2,
+    %Quantifier
+    collect/3,
+    arrange/3
   ]).
 
 :- reexport('facts').
 :- reexport('print').
 :- reexport('timer').
 :- reexport('clean').
+:- reexport('quant').
  
 /*----------------------------------------------------------------------------*
  *
@@ -103,6 +109,17 @@ ev(X, Y) :-
 /*----------------------------------------------------------------------------*
  * Signalling Predicates
  *----------------------------------------------------------------------------*/
+signal(Name) :-
+  forall(
+    (fsr(Record),
+     val(type, signal, Record),
+     val(name, Name, Record)),
+  del(Record)), now(Time),
+  add(
+  [type:signal,
+   name:Name,
+   time:Time]).
+
 signal(Sent, Name) :-
   forall(
     (fsr(Record),
@@ -130,6 +147,12 @@ signal(Sent, Name, Data) :-
    data:Data,
    time:Time]).
 
+remove(Name) :-
+  fsr(Record),
+  val(type, signal, Record),
+  val(name, Name, Record),
+  del(Record).
+  
 remove(Sent, Name) :-
   fsr(Record),
   val(type, signal, Record),
@@ -288,25 +311,3 @@ ebefore(A, B) :-
   EA = TA - DA + LA,
   EB = TB - DB + LB,
   EA =< EB.
-
-test :-
-add([
-    type:event,
-    name:agent,
-    mode:gaze,
-    data:user,
-    time:16000,
-    from:0,
-    life:0,
-    conf:1.0
-]),
-add([
-    type:event,
-    name:user,
-    mode:speech,
-    data:agent,
-    time:16500,
-    from:0,
-    life:0,
-    conf:1.0
-]).

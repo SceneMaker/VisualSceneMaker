@@ -29,7 +29,7 @@
 */
 :- module(tests,
     [
-      construct_fact_base/0
+      fact_base/0
     ]).
 
 :- reexport('facts').
@@ -42,33 +42,47 @@
 /*----------------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------------*/
-construct_fact_base :-
-%add([type:event,name:user,mode:voice,data:start,time:7315,from:129,life:0,conf:1.0]),  %end 7186
-%add([type:event,name:user,mode:voice,data:stop,time:8591,from:1429,life:720,conf:1.0]),%end 7882
-%add([type:event,name:user,mode:voice,data:start,time:12196,from:168,life:0,conf:1.0]), %end 12028
-%add([type:event,name:user,mode:voice,data:stop,time:13092,from:1070,life:390,conf:1.0]),%end 12412
-add([type:event,name:agent,mode:voice,data:start,time:8000,from:0,life:0,conf:1.0]), %end 8000
-add([type:event,name:agent,mode:voice,data:stop,time:9000,from:0,life:0,conf:1.0]).   %end 9000
+fact_base :-
+add([type:event,name:user,mode:gaze,data:triangle,time:5000,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:triangle,time:5100,from:20,life:100,conf:0.85]),
+add([type:event,name:user,mode:gaze,data:triangle,time:5200,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:star,time:5300,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:star,time:5400,from:20,life:100,conf:0.75]),
+add([type:event,name:agent,mode:gaze,data:star,time:5500,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:square,time:5600,from:20,life:100,conf:0.85]),
+add([type:event,name:user,mode:gaze,data:square,time:5700,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:triangle,time:5800,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:5900,from:20,life:100,conf:0.75]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:6000,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:triangle,time:6100,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:triangle,time:6200,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:triangle,time:6300,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:6400,from:20,life:100,conf:0.75]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:6500,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:triangle,time:6600,from:20,life:100,conf:0.85]),
+add([type:event,name:user,mode:gaze,data:star,time:6700,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:star,time:6800,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:square,time:6900,from:20,life:100,conf:0.85]),
+add([type:event,name:agent,mode:gaze,data:square,time:7000,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:square,time:7100,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:triangle,time:7200,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:star,time:7300,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:star,time:7400,from:20,life:100,conf:0.75]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:7500,from:20,life:100,conf:0.85]),
+add([type:event,name:user,mode:gaze,data:triangle,time:7600,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:star,time:7700,from:20,life:100,conf:0.85]),
+add([type:event,name:user,mode:gaze,data:star,time:7800,from:20,life:100,conf:0.75]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:7900,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:square,time:8000,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:square,time:8100,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:square,time:8200,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:square,time:8300,from:20,life:100,conf:0.85]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:8400,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:8500,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:triangle,time:8600,from:20,life:100,conf:0.95]),
+add([type:event,name:user,mode:gaze,data:triangle,time:8700,from:20,life:100,conf:0.75]),
+add([type:event,name:user,mode:gaze,data:star,time:8800,from:20,life:100,conf:0.75]),
+add([type:event,name:agent,mode:gaze,data:star,time:8900,from:20,life:100,conf:0.95]),
+add([type:event,name:agent,mode:gaze,data:triangle,time:9000,from:20,life:100,conf:0.85]),
 
-
-
-
-% add([type:event, mode:gaze, data:[type:object, name:chest, conf:0.95]]),
-% add([type:event, mode:gaze, data:[area:chest, name:c2, conf:0.95]]),
-% add([type:event, mode:gaze, data:[area:chest, name:c3, conf:0.95]]),
-% add([type:event, mode:gaze, data:[area:shoulder, name:s1, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:shoulder, name:s2, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:jaw, name:j1, conf:0.75]]),
-% add([type:event, mode:gaze, data:[area:jaw, name:j2, conf:0.75]]),
-% add([type:event, mode:gaze, data:[area:jaw, name:j3, conf:0.75]]),
-% add([type:event, mode:gaze, data:[area:jaw, name:j4, conf:0.75]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f1, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f2, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f3, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f4, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f5, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f6, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f7, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f8, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f9, conf:0.85]]),
-% add([type:event, mode:gaze, data:[area:forehead, name:f10, conf:0.85]]).
+add([type:event,name:agent,mode:speech,data:[],time:9000,from:4020,life:4000,conf:1.0]).
