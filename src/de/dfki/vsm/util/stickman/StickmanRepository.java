@@ -16,6 +16,8 @@ public class StickmanRepository {
         if (config.getProperty("stickman")!= null && config.getProperty("stickman").equals("StickmanLegacy")) {
             factory = new StickmanFactory(config);
 
+        } else if(config.getProperty("stickman")!= null && config.getProperty("stickman").equals("Pinocchio")){
+            factory = new Stickman3DFactory(config);
         } else {
             factory = new StickmanFxFactory(config);
         }
