@@ -77,6 +77,7 @@
     arrange/3,
     %Disambiguate
     disambiguate/2,
+    matches/2,
     %Temporal
     iduring/2,
     iafter/2,
@@ -277,8 +278,8 @@ count(Mode, Count) :-
 iafter(A, B) :-
   val(time, TA, A),
   val(time, TB, B),
-  val(from, DA, A),
-  val(from, DB, B),
+  val(dist, DA, A),
+  val(dist, DB, B),
   val(life, LB, B),
   SA = TA - DA,
   SB = TB - DB,
@@ -288,8 +289,8 @@ iafter(A, B) :-
 ibefore(A, B) :-
   val(time, TA, A),
   val(time, TB, B),
-  val(from, DA, A),
-  val(from, DB, B),
+  val(dist, DA, A),
+  val(dist, DB, B),
   val(life, LA, A),
   SA = TA - DA,
   SB = TB - DB,
@@ -299,8 +300,8 @@ ibefore(A, B) :-
 iduring(A, B) :-
   val(time, TA, A),
   val(time, TB, B),
-  val(from, DA, A),
-  val(from, DB, B),
+  val(dist, DA, A),
+  val(dist, DB, B),
   val(life, LA, A),
   val(life, LB, B),
   SA = TA - DA,
@@ -333,8 +334,8 @@ eoldest(R, [H|T]) :-
 ebefore(A, B) :-
   val(time, TA, A),
   val(time, TB, B),
-  val(from, DA, A),
-  val(from, DB, B),
+  val(dist, DA, A),
+  val(dist, DB, B),
   val(life, LA, A),
   val(life, LB, B),
   EA = TA - DA + LA,
@@ -346,26 +347,38 @@ ebefore(A, B) :-
 %  fsr(Input), set(Path, Value, Input, Output), add(Output), del(Input).
   
 %Works only for propositional questions
-disambiguate(SpeechEvent, FusedEvent) :-
-  val(data:data:location, [], SpeechEvent), !, % Location is a reference
-  write('Speech Event:'), out(SpeechEvent) ,nl,
-  val(data:data:shape, SpeechShape, SpeechEvent), out(SpeechShape), nl,
-  val(data:data:color, SpeechColor, SpeechEvent), out(SpeechColor), nl,
+disambiguate(Speech, Fused) :-
+  % Check if the question is a set or check type
+  val(data:cat, Cat, Speech), out(Cat), nl,
+  % Check if the question has a location reference
+  val(data:data:locref, Ref, Speech), out(Ref), nl, !,
+  % Get all other features from the speech event
+  %(val(data:data:size, Size, Speech)  -> out(Size); out('no size')), nl,
+  %(val(data:data:shape, Shape, Speech)-> out(Shape); out('no shape')), nl,
+  %(val(data:data:color, Color, Speech)-> out(Color); out('no color')), nl,
   %TODO: filter such that the other attributes match
-  forlargest(GazeEvent,
-    (fsr(GazeEvent), % The majority of gaze events in the fact base
-     val(mode, gaze, GazeEvent), % that are from the gaze modality
-     %val(data:name, GazeName, GazeEvent), % TODO: Get the gaze target color and shape from name
-     iduring(GazeEvent, SpeechEvent),
-     %TODO: Make the filter using the stored data about objects in the fact base
-     (SpeechColor = [] -> true; val(data:data:color, SpeechColor, GazeEvent)),
-     (SpeechShape = [] -> true; val(data:data:shape, SpeechShape, GazeEvent))
-     ), % and during the speech event
-     val(data, GazeTarget, GazeEvent)), % have as target this object
-   write('Gaze Target:'), out(GazeTarget), nl,
-  add(data:data:fixation, GazeTarget, SpeechEvent, FusedEvent).
+  
+  forlargest(Gaze, (fsr(Gaze), % For the majority of events
+    val(mode, gaze, Gaze),     % from the gaze modality
+    iduring(Gaze, Speech),     % during the speech event
+    matches(Gaze, Speech)),    % whose features match
 
-disambiguate(SpeechEvent, SpeechEvent).
+    % holds that they have the name
+    val(data:name, Name, Gaze)),
+    
+  write('Gaze Target Name:'), out(Name), nl,
+  add(data:data:name, Name, Speech, Fused).
+
+disambiguate(Event, Event).
+
+% Check if the features of a speech event match with those of the piece with the name
+matches(Gaze, Speech):-
+  val(data:name, Name, Gaze), out(Name), nl,
+  fsr(Piece), val(name, Name, Piece), out(Piece), nl,
+  (val(data:data:size, Size, Speech)   -> out(Size), nl, val(data:size, Size, Piece); true),
+  (val(data:data:color, Color, Speech) -> out(Color), nl,val(data:color, Color, Piece); true),
+  (val(data:data:shape, Shape, Speech) -> out(Shape), nl,val(data:shape, Shape, Piece); true).
+
 
 %fsr(SpeechEvent), val(mode, speech, SpeechEvent), val(data:data:shape, square, SpeechEvent), disambiguate(SpeechEvent, FusedEvent), out(FusedEvent).
 /*
