@@ -165,7 +165,29 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                         // Set keyword variable
                         mProject.setVariable("UserSaidKeyword", keyword);
                     }
-                } else {
+                // This condetion is used to receive structure sent by SSI
+                } else if (event.getSender().equals("audio")
+                        && event.getEvent().equals("speech")) {
+                    final String structure = ((SSIStringData) obj).toString().trim();
+                    // User started speaking
+                    mLogger.success("User said '" + structure + "'");
+                    if (mUseJPL) {
+                        JPLEngine.query("now(Time), "
+                                + "jdd(["
+                                + "type:" + "event" + ","
+                                + "mode:" + "speech" + ","
+                                + "name:" + "user" + ","
+                                + "time:" + "Time" + ","
+                                + "from:" + event.getFrom() + ","
+                                + "life:" + event.getDur() + ","
+                                + "conf:" + event.getProb() + ","
+                                + "data:" + structure
+                                + "]).");
+                    } else {
+                        // Set keyword variable
+                        mProject.setVariable("UserSaidStructure", structure);
+                    }
+                }else {
                     // Should not happen
                 }
 
