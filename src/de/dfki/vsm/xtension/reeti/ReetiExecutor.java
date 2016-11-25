@@ -104,17 +104,18 @@ public final class ReetiExecutor extends ActivityExecutor {
                 command = new CommandMessage(cmid, "speech");
                 // Append the tts text param
                 command.addParameter("text", "\\voice=" + "Kate" + " " + "\\language=" + "en" + " " + text);
-            
             }
-            
-           
-            
         } else if (activity instanceof ActionActivity) {
             // Create the action command
             command = new CommandMessage(cmid, name);
             // Append the action features
             for (final ActionFeature feature : features) {
-                command.addParameter(feature.getKey(), feature.getVal().replaceAll("'", ""));
+                // if there are some variables in the features, change them to the values we want.
+                if(ReetiCommandUtility.checkCommandValue(feature.getVal())){
+                    command.addParameter(feature.getKey(), ReetiCommandUtility.updateCommandValue(feature.getVal()));
+                }else{
+                    command.addParameter(feature.getKey(), feature.getVal().replaceAll("'", ""));
+                }
             }
         } else {
             // Print some error message
