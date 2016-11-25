@@ -45,7 +45,7 @@
 fact_base :-
 add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:present],desc:'the large yellow square']),
 add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:present],desc:'the small green triangle']),
-add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:red, shape:triangle, pos:[x:0, y:0], state:present],desc:'the large red star']),
+add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:yellow, shape:square, pos:[x:0, y:0], state:present],desc:'the large red star']),
 
 add([type:event,name:user,mode:gaze,data:[type:entity, sort:piece, name:p1, conf:1.0],time:5000,dist:100,life:100,conf:1.0]),
 add([type:event,name:user,mode:gaze,data:[type:entity, sort:piece, name:p1, conf:1.0],time:5100,dist:100,life:100,conf:1.0]),
@@ -89,17 +89,18 @@ add([type:event,name:user,mode:gaze,data:[type:entity, sort:piece, name:p2, conf
 add([type:event,name:agent,mode:gaze,data:[type:entity, sort:piece, name:p2, conf:1.0],time:8900,dist:100,life:100,conf:1.0]),
 add([type:event,name:agent,mode:gaze,data:[type:entity, sort:piece, name:p1, conf:1.0],time:9000,dist:100,life:100,conf:1.0]),
 
-%add([type:event,name:agent,mode:speech, id:1,
-%     data:[type:dialog_act,fun:info_seeking,cat:check_question,
-%         data:[color:yellow,shape:square,ref:here]],
-%     time:6000,dist:2000,life:2000,conf:1.0]),
-%add([type:event,name:agent,mode:speech, id:2,
-%     data:[type:dialog_act,fun:info_seeking,cat:check_question,
-%         data:[size:large,shape:star,ref:there]],
-%     time:7000,dist:500,life:500,conf:1.0]),
+add([type:event,name:agent,mode:speech, id:1,
+     data:[type:dialog_act,fun:info_seeking,cat:check_question,
+         data:[color:yellow,shape:square,locref:here]],
+     time:6000,dist:2000,life:2000,conf:1.0]),
+add([type:event,name:agent,mode:speech, id:2,
+     data:[type:dialog_act,fun:info_seeking,cat:check_question,
+         data:[size:large,shape:star,locref:there]],
+     time:7000,dist:500,life:500,conf:1.0]),
 add([type:event,name:agent,mode:speech, id:3,
      data:[type:dialog_act,fun:info_seeking,cat:check_question,
-         data:[size:small,shape:triangle,ref:'over there']],
+         data:[size:small,shape:triangle,locref:'over there']],
      time:9000,dist:9000,life:9000,conf:1.0]).
+
 
 %fsr(SE), val(id, 3, SE), out(SE), findall(GE, (fsr(GE), iduring(GE, SE)), GL), length(GL, L), out(L).

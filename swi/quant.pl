@@ -47,6 +47,7 @@
     formorethan/4,
     forlargest/4,
     forlargest/3,
+    forlargest/2,
     forlongest/3,
     % Maximum Lists
     max_size_list/2
@@ -191,6 +192,10 @@ forlargest(Template, Generator, Condition, Scope) :-
 forlargest(Template, Generator, Condition) :-
     forlargest(Template, Generator, Condition, _).
 
+forlargest(Generator, Condition) :-
+    gettemplfun(Generator, Condition, template, Template),
+    forlargest(Template, Generator, Condition, _).
+    
 % also implement max_duration_list      !!!!
 max_size_list([List], List).
 max_size_list([Head|Tail], List) :-

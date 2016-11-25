@@ -32,6 +32,7 @@
     % Facts
     fsr/1,
     val/3,
+    del/3,
     add/4,
     set/4,
     del/1,
@@ -349,35 +350,31 @@ ebefore(A, B) :-
 %Works only for propositional questions
 disambiguate(Speech, Fused) :-
   % Check if the question is a set or check type
-  val(data:cat, Cat, Speech), out(Cat), nl,
+  %val(data:cat, Cat, Speech),%out(Cat), nl,
   % Check if the question has a location reference
-  val(data:data:locref, Ref, Speech), out(Ref), nl, !,
-  % Get all other features from the speech event
-  %(val(data:data:size, Size, Speech)  -> out(Size); out('no size')), nl,
-  %(val(data:data:shape, Shape, Speech)-> out(Shape); out('no shape')), nl,
-  %(val(data:data:color, Color, Speech)-> out(Color); out('no color')), nl,
-  %TODO: filter such that the other attributes match
-  
-  forlargest(Gaze, (fsr(Gaze), % For the majority of events
+  val(data:data:locref, Ref, Speech), %out(Ref), nl,
+  !,
+  % Get name of the majority of gaze events
+  forlargest(/*Gaze,*/ (fsr(Gaze), % For the majority of events
     val(mode, gaze, Gaze),     % from the gaze modality
     iduring(Gaze, Speech),     % during the speech event
     matches(Gaze, Speech)),    % whose features match
-
     % holds that they have the name
     val(data:name, Name, Gaze)),
-    
-  write('Gaze Target Name:'), out(Name), nl,
-  add(data:data:name, Name, Speech, Fused).
+  write('Gaze Target Name:'), out(Name), nl, out(Speech), nl,
+  set(data:data:target, Name, Speech, Fused).
+  %del(data:data:name, Speech, T),
+  %add(data:data:name, Name, T, Fused).
 
 disambiguate(Event, Event).
 
 % Check if the features of a speech event match with those of the piece with the name
 matches(Gaze, Speech):-
-  val(data:name, Name, Gaze), out(Name), nl,
-  fsr(Piece), val(name, Name, Piece), out(Piece), nl,
-  (val(data:data:size, Size, Speech)   -> out(Size), nl, val(data:size, Size, Piece); true),
-  (val(data:data:color, Color, Speech) -> out(Color), nl,val(data:color, Color, Piece); true),
-  (val(data:data:shape, Shape, Speech) -> out(Shape), nl,val(data:shape, Shape, Piece); true).
+  val(data:name, Name, Gaze), %out(Name), nl,
+  fsr(Piece), val(name, Name, Piece), %out(Piece), nl,
+  (val(data:data:size, Size, Speech)   -> /*out(Size), nl,*/val(data:size, Size, Piece); true),
+  (val(data:data:color, Color, Speech) -> /*out(Color), nl,*/val(data:color, Color, Piece); true),
+  (val(data:data:shape, Shape, Speech) -> /*out(Shape), nl,*/val(data:shape, Shape, Piece); true).
 
 
 %fsr(SpeechEvent), val(mode, speech, SpeechEvent), val(data:data:shape, square, SpeechEvent), disambiguate(SpeechEvent, FusedEvent), out(FusedEvent).

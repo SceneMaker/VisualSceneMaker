@@ -31,6 +31,7 @@
   [
     fsr/1,
     val/3,
+    del/3,
     add/4,
     set/4,
     del/1,
@@ -94,10 +95,13 @@ val(F, V, [_|T]) :-
   the input record.
 
  *----------------------------------------------------------------------------*/
-add(P, V, I, O) :- add_(P, V, I, O, _).
+add(P, V, I, O)    :-
+    add_(P, V, I, O, _).
 
-add(P, V, I, O, C) :- add_(P, V, I, O, C).
+add(P, V, I, O, C) :-
+    add_(P, V, I, O, C).
 
+% Add object to simple list
 addl(P, I, O) :-
     O = [P|I], !.
 addl(P, [H|I], [H|O]) :-
@@ -130,7 +134,67 @@ add_(P, _, I, O, C) :-
 
 
 
+/*----------------------------------------------------------------------------*
 
+  del(?P:path, ?I:record, ?O:record, ?C:integer) is nondet
+
+  This predicate adds a certain feature value =|V|= to a specific feature
+  path =|P|= in the specified feature structure =|I|= and returns the new
+  feature structure =|O|= as result. The feature value, path and also the
+  structures may be partially instantiated terms containing free variables
+  when the predicate is called. The predicate takes care not to produce an
+  infinite number of solutions for the value, path or the feature structure
+  record and the interpreter cannot run into any stack errors. The feature
+  value term as well as the feature path term can be unbound variables. In
+  this case the variables are bound to the possible solutions for the value
+  and/or the path, respectively, that means the predicate call unifies the
+  value and/or the path with substitutions so that the new feature structure
+  has the value at the given feature path. This predicate only works if the
+  feature value pair is added to the end of the enclosing feature record in
+  the input record.
+
+ *----------------------------------------------------------------------------*/
+% Delete all the occurences of
+% this features on this level
+dell(F, [F:_|I], O) :-   out(x), nl,
+    dell(F, I, O), !.
+dell(F, [H|I], [H|O]) :-
+    dell(F, I, O), !.
+dell(_, V, V) :- fvalterm(V).
+
+
+del(F, I, O) :-
+  fkeyterm(F), !, out(1), nl,
+  dell(F, I, O).
+del(P, I, O) :-
+  fklsterm(P), P = F:Q,
+  I = [F:R|M], O = [F:S|N], !,  out(2), nl,
+  del(Q, R, S),
+   (\+allvarls([M, N])
+     -> del(P, M, N)
+      ; M = [], N = []
+    ).
+del(P, I, O) :-
+  fklsterm(P),
+  I = [H|M], O = [H|N], !, out(3), nl,
+   (\+allvarls([M, N])
+     -> del(P, M, N)
+      ; M = [], N = []
+    ).
+del(P, I, O) :-
+  fklsterm(P),
+  I = [], O = [], !,  out(4), nl.
+
+
+
+
+set(P, V, I, O) :-
+  del(P, I, T),
+  add(P, V, T, O).
+ 
+ 
+ 
+ 
 
 
 /**
@@ -138,7 +202,7 @@ add_(P, _, I, O, C) :-
   set(?F:path, ?V:value, ?I:record, ?O:record) is nondet
 
 */
-
+/*
 set(F, V, I, O) :- set_(F, V, I, O).
 
 % If the feature is a key, then try to find the feature in current level
@@ -160,8 +224,9 @@ set0(_, _, [], []).
 
 set1(Q, V, I, O) :-
     Q = F:P, I = [F:M|T], O = [F:R|S], \+allvarls([F, P, M]),
-    set1(P, V, M, R),
-    set1(Q, V, T, S).
+    set_(P, V, M, R),
+    set_(Q, V, T, S).
+*/
 /*
 set_(F, V, [F:_|T], [F:V|T]) :-
     validkey(F).
