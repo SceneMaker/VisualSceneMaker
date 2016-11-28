@@ -70,12 +70,18 @@
     voice/3,
     state/3,
     speech/1,
+    enter/3,
+    place/3,
+    user/2,
     % Evaluation
     eq/2,
     ev/2,
     %Quantifier
     collect/3,
     arrange/3,
+    %Templates
+    gettemplfun/4,
+    gettemplist/3,
     %Disambiguate
     disambiguate/2,
     matches/2,
@@ -344,6 +350,11 @@ ebefore(A, B) :-
   EA =< EB.
   
 
+oldest(Template, Generator, Oldest) :-
+  bagof(Template, Generator, List),
+  eoldest(Oldest, List).
+
+
 %set(Path, Value, Input) :-
 %  fsr(Input), set(Path, Value, Input, Output), add(Output), del(Input).
   
@@ -352,7 +363,7 @@ disambiguate(Speech, Fused) :-
   % Check if the question is a set or check type
   %val(data:cat, Cat, Speech),%out(Cat), nl,
   % Check if the question has a location reference
-  val(data:data:locref, Ref, Speech), %out(Ref), nl,
+  val(data:data:locref, _, Speech), %out(Ref), nl,
   !,
   % Get name of the majority of gaze events
   forlargest(/*Gaze,*/ (fsr(Gaze), % For the majority of events
@@ -440,3 +451,43 @@ SpeechEvent = [type:event, name:agent, mode:speech, data:[type:dialog_act, cat:i
 FusedEvent = [type:event, name:agent, mode:speech, data:[type:dialog_act, cat:info_seeking, fun:propositional, ... : ...], time:9000, from:2000, life:1980, conf:1.0] ;
 false.
 */
+
+
+
+
+enter(Name, Xpos, Ypos) :-
+  findall(Record,
+    (fsr(Record),
+     val(type, event, Record),
+     val(mode, touch, Record),
+     val(data:type, enter, Record)),
+    List),
+  eoldest(Event, List),
+  val(data:data:name, Name, Event),
+  val(data:pos:x, Xpos, Event),
+  val(data:pos:y, Ypos, Event),
+  del(Event).
+
+place(Name, Xpos, Ypos) :-
+  fsr(Old),
+  val(type, entity, Old),
+  val(sort, piece, Old),
+  val(name, Name, Old),
+  set(data:state, present, Old, T),
+  set(data:pos, [x:Xpos, y:Ypos], T, New),
+  del(Old), add(New).
+  
+%assertz(fsr([type:event, name:user, mode:touch, data:[type:enter, data:[type:entity, sort:piece, name:p3], pos:[x:344, y:857]], time:0, life:0, dist:0, conf:0]))
+
+user(Name, Version) :-
+  oldest(Record,
+    (fsr(Record),
+     val(type, event, Record),
+     val(mode, touch, Record),
+     val(data:type, user, Record)),
+    Oldest),
+  val(data:name, Name, Oldest),
+  val(data:version, Version, Oldest),
+  del(Oldest).
+
+%add([type:event, name:user, mode:touch, data:[type:user, age:29, name:'Gregor', gender:male, version:uo], time:0, life:0, dist:0, conf:0]).

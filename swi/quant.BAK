@@ -180,7 +180,7 @@ forlessthan(Fraction, Template, Generator, Condition) :-
  
 % For the majority of individuals
 forlargest(Template, Generator, Condition, Scope) :-
-    collect(Template, Generator, Range), %write('Range: '), out(Range), nl, length(Range, R), write('Range Size: '), out(R), nl, %For all possible range alternatives
+    collect(Template, Generator, _), %write('Range: '), out(Range), nl, length(Range, R), write('Range Size: '), out(R), nl, %For all possible range alternatives
     findall(X, bagof(Template, (Generator, Condition), X), Scopes), %write('Scopes: '), nl, out(Scopes), nl, nl,nl,nl,nl,nl,%forall(member(Set, Scopes), (length(Set, S), write('Scope Size: '), out(S), nl)),
     %max_size_list(Scopes, MaxList), write('MaxSizeList: '), out(MaxList), nl, length(MaxList, M), write('MaxSizeList Size: '), out(M), nl,
     findall(X, max_size_list(Scopes, X), Candidates), %write('Candidates: '), out(Candidates), nl,   %Remove redundancies

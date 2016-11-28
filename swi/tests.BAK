@@ -43,9 +43,9 @@
  *
  *----------------------------------------------------------------------------*/
 fact_base :-
-add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:present],desc:'the large yellow square']),
-add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:present],desc:'the small green triangle']),
-add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:red, shape:square, pos:[x:0, y:0], state:present],desc:'the large red star']),
+add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large yellow square']),
+add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the small green triangle']),
+add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:yellow, shape:square, pos:[x:0, y:0], state:absent],desc:'the large red star']),
 
 add([type:event,name:user,mode:gaze,data:[type:entity, sort:piece, name:p1, conf:1.0],time:5000,dist:100,life:100,conf:1.0]),
 add([type:event,name:user,mode:gaze,data:[type:entity, sort:piece, name:p1, conf:1.0],time:5100,dist:100,life:100,conf:1.0]),

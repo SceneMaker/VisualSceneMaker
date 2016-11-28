@@ -54,6 +54,7 @@ clean(Mode, Age) :-
  * Cleanup Predicates
  *----------------------------------------------------------------------------*/
 clean :-
+  write('Clean Fact Base'), nl,
   retractall(timer(_,_)),
   retractall(start(_)),
   forall((fsr(R),
