@@ -130,29 +130,29 @@ signal(Name) :-
    name:Name,
    time:Time]).
 
-signal(Sent, Name) :-
+signal(Mode, Name) :-
   forall(
     (fsr(Record),
      val(type, signal, Record),
-     val(sent, Sent, Record),
+     val(mode, Mode, Record),
      val(name, Name, Record)),
   del(Record)), now(Time),
   add(
   [type:signal,
-   sent:Sent,
+   mode:Mode,
    name:Name,
    time:Time]).
    
-signal(Sent, Name, Data) :-
+signal(Mode, Name, Data) :-
   forall(
     (fsr(Record),
      val(type, signal, Record),
-     val(sent, Sent, Record),
+     val(mode, Mode, Record),
      val(name, Name, Record)),
   del(Record)), now(Time),
   add(
   [type:signal,
-   sent:Sent,
+   mode:Mode,
    name:Name,
    data:Data,
    time:Time]).
@@ -163,17 +163,17 @@ remove(Name) :-
   val(name, Name, Record),
   del(Record).
   
-remove(Sent, Name) :-
+remove(Mode, Name) :-
   fsr(Record),
   val(type, signal, Record),
-  val(sent, Sent, Record),
+  val(mode, Mode, Record),
   val(name, Name, Record),
   del(Record).
 
 remove(Sent, Name, Data) :-
   fsr(Record),
   val(type, signal, Record),
-  val(sent, Sent, Record),
+  val(mode, Mode, Record),
   val(name, Name, Record),
   val(data, Data, Record),
   del(Record).
@@ -222,20 +222,16 @@ gaze(Event) :-
    del(Event).
 
 /*----------------------------------------------------------------------------*
- * Move Event Extraction
+ * Touch Event Extraction
  *----------------------------------------------------------------------------*/
-move(N, D, E) :-
-  findall(R,
-    (fsr(R),
-     val(type, event, R),
-     val(mode, move, R),
-     val(name, N, R)), L),
-  eoldest(E, L),
-  val(data, D, E),
-  forall(
-    (fsr(R),
-     member(R, L)),
-     jel(R)).
+touch(Event) :-
+  findall(Record,
+    (fsr(Record),
+     val(type, event, Record),
+     val(mode, touch, Record)),
+    List),
+   eoldest(Event, List),
+   del(Event).
 
 /*----------------------------------------------------------------------------*
  * Speech Event Extraction
@@ -357,104 +353,68 @@ oldest(Template, Generator, Oldest) :-
 
 %set(Path, Value, Input) :-
 %  fsr(Input), set(Path, Value, Input, Output), add(Output), del(Input).
-  
+
+/*----------------------------------------------------------------------------*
+ * Speech Event Disambiguation
+ *----------------------------------------------------------------------------*/
+ 
 %Works only for propositional questions
 disambiguate(Speech, Fused) :-
   % Check if the question is a set or check type
-  %val(data:cat, Cat, Speech),%out(Cat), nl,
+  val(data:cat, check_question, Speech),%out(Cat), nl,
   % Check if the question has a location reference
-  val(data:data:locref, _, Speech), %out(Ref), nl,
-  !,
+  val(data:data:locref, _, Speech), out('Found Location Reference'), nl,
   % Get name of the majority of gaze events
-  forlargest(/*Gaze,*/ (fsr(Gaze), % For the majority of events
+  forlargest(Gaze, (fsr(Gaze), % For the majority of events
     val(mode, gaze, Gaze),     % from the gaze modality
     iduring(Gaze, Speech),     % during the speech event
     matches(Gaze, Speech)),    % whose features match
     % holds that they have the name
-    val(data:name, Name, Gaze)),
-  write('Gaze Target Name:'), out(Name), nl, out(Speech), nl,
-  set(data:data:target, Name, Speech, Fused).
-  %del(data:data:name, Speech, T),
-  %add(data:data:name, Name, T, Fused).
+    val(data:name, Name, Gaze)), !,
+  set(data:data:name, Name, Speech, Fused).
 
-disambiguate(Event, Event).
 
-% Check if the features of a speech event match with those of the piece with the name
+disambiguate(Speech, Fused) :-
+  out('No Location Reference'), nl,
+  findall(Name, (fsr(Piece),
+    val(sort, piece, Piece),
+    matches(Piece, Speech),
+    val(name, Name, Piece)),
+  List), %nth1(1, List, Unique),
+  set(data:data:name, List, Speech, Fused).
+
 matches(Gaze, Speech):-
-  val(data:name, Name, Gaze), %out(Name), nl,
-  fsr(Piece), val(name, Name, Piece), %out(Piece), nl,
+  val(mode, gaze, Gaze), !,
+  val(data:name, Name, Gaze),
+  fsr(Piece), val(name, Name, Piece),
+  (val(data:data:size, Size, Speech)   -> /*out(Size), nl,*/val(data:size, Size, Piece); true),
+  (val(data:data:color, Color, Speech) -> /*out(Color), nl,*/val(data:color, Color, Piece); true),
+  (val(data:data:shape, Shape, Speech) -> /*out(Shape), nl,*/val(data:shape, Shape, Piece); true).
+
+matches(Piece, Speech):-
+  val(sort, piece, Piece), !,
+  %fsr(Piece), %val(name, Name, Piece), %out(Piece), nl,
   (val(data:data:size, Size, Speech)   -> /*out(Size), nl,*/val(data:size, Size, Piece); true),
   (val(data:data:color, Color, Speech) -> /*out(Color), nl,*/val(data:color, Color, Piece); true),
   (val(data:data:shape, Shape, Speech) -> /*out(Shape), nl,*/val(data:shape, Shape, Piece); true).
 
 
-%fsr(SpeechEvent), val(mode, speech, SpeechEvent), val(data:data:shape, square, SpeechEvent), disambiguate(SpeechEvent, FusedEvent), out(FusedEvent).
+% Check if the features of a speech event match with those of the piece with the name
 /*
-fsr(SpeechEvent), val(mode, speech, SpeechEvent), val(data:data, [color:red,shape:square,location:[]], SpeechEvent), disambiguate(SpeechEvent, FusedEvent), out(FusedEvent).
-Speech Event:[
-    type:event,
-    name:agent,
-    mode:speech,
-    data:[
-        type:dialog_act,
-        cat:info_seeking,
-        fun:propositional,
-        data:[
-            color:red,
-            shape:square,
-            location:[]
-        ]
-    ],
-    time:9000,
-    from:2000,
-    life:1980,
-    conf:1.0
-]
-square
-red
-Gaze Target:[
-    type:puzzle_piece,
-    name:obj3,
-    data:[
-        color:red,
-        shape:square
-    ]
-]
-[
-    type:event,
-    name:agent,
-    mode:speech,
-    data:[
-        type:dialog_act,
-        cat:info_seeking,
-        fun:propositional,
-        data:[
-            fixation:[
-                type:puzzle_piece,
-                name:obj3,
-                data:[
-                    color:red,
-                    shape:square
-                ]
-            ],
-            color:red,
-            shape:square,
-            location:[]
-        ]
-    ],
-    time:9000,
-    from:2000,
-    life:1980,
-    conf:1.0
-]
-SpeechEvent = [type:event, name:agent, mode:speech, data:[type:dialog_act, cat:info_seeking, fun:propositional, ... : ...], time:9000, from:2000, life:1980, conf:1.0],
-FusedEvent = [type:event, name:agent, mode:speech, data:[type:dialog_act, cat:info_seeking, fun:propositional, ... : ...], time:9000, from:2000, life:1980, conf:1.0] ;
-false.
+  matches(Gaze, Speech):-
+  val(data:name, Name, Gaze), %out(Name), nl,
+  fsr(Piece), val(name, Name, Piece), %out(Piece), nl,
+  (val(data:data:size, Size, Speech)   -> val(data:size, Size, Piece); true),
+  (val(data:data:color, Color, Speech) -> val(data:color, Color, Piece); true),
+  (val(data:data:shape, Shape, Speech) -> val(data:shape, Shape, Piece); true).
 */
 
+%fsr(SpeechEvent), val(mode, speech, SpeechEvent), val(data:data:shape, square, SpeechEvent), disambiguate(SpeechEvent, FusedEvent), out(FusedEvent).
 
 
-
+/*----------------------------------------------------------------------------*
+ * Puzzle Piece Placement
+ *----------------------------------------------------------------------------*/
 enter(Name, Xpos, Ypos) :-
   findall(Record,
     (fsr(Record),
@@ -477,8 +437,11 @@ place(Name, Xpos, Ypos) :-
   set(data:pos, [x:Xpos, y:Ypos], T, New),
   del(Old), add(New).
   
-%assertz(fsr([type:event, name:user, mode:touch, data:[type:enter, data:[type:entity, sort:piece, name:p3], pos:[x:344, y:857]], time:0, life:0, dist:0, conf:0]))
+%add([type:event, name:user, mode:touch, data:[type:enter, data:[type:entity, sort:piece, name:p3], pos:[x:344, y:857]], time:0, life:0, dist:0, conf:0]).
 
+/*----------------------------------------------------------------------------*
+ * User Data Inference
+ *----------------------------------------------------------------------------*/
 user(Name, Version) :-
   oldest(Record,
     (fsr(Record),
