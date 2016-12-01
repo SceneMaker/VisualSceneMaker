@@ -5,7 +5,7 @@
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="false"/>
-      <Feature key="stickman" val=""/>
+      <Feature key="stickman" val="Pinocchio"/>
     </Plugin>
     <Plugin type="device" name="questionnaire" class="de.dfki.vsm.xtension.questionnaire.QuestionnaireExecutor" load="true">
       <Feature key="strength1" val="Zielstrebig"/>

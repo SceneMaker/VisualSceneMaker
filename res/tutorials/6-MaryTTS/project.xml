@@ -5,14 +5,14 @@
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="true"/>
-      <Feature key="mary.base" val="/mnt/data2/WorkHiwi/marytts-5.1.2"/>
-      <Feature key="fullscreen" val="false"/>
+      <Feature key="mary.base" val="C:\Users\EmpaT\Desktop\marytts-5.2\marytts-5.2"/>
+      <Feature key="fullscreen" val="true"/>
       <Feature key="xStage" val="500"/>
       <Feature key="yStage" val="100"/>
       <Feature key="stickman" val="Pinocchio"/>
     </Plugin>
     <Plugin type="device" name="voiceover" class="de.dfki.vsm.xtension.voiceover.VoiceOverExecutor" load="true">
-      <Feature key="mary.base" val="/mnt/data2/WorkHiwi/marytts-5.1.2"/>
+      <Feature key="mary.base" val="C:\Users\EmpaT\Desktop\marytts-5.2\marytts-5.2"/>
       <Feature key="tts" val="cereproc"/>
       <Feature key="license" val="/home/alvaro/Documents/Universitat/TesisProject/license.lic"/>
     </Plugin>
