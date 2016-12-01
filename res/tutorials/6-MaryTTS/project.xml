@@ -9,6 +9,7 @@
       <Feature key="fullscreen" val="false"/>
       <Feature key="xStage" val="500"/>
       <Feature key="yStage" val="100"/>
+      <Feature key="stickman" val="Pinocchio"/>
     </Plugin>
     <Plugin type="device" name="voiceover" class="de.dfki.vsm.xtension.voiceover.VoiceOverExecutor" load="true">
       <Feature key="mary.base" val="/mnt/data2/WorkHiwi/marytts-5.1.2"/>

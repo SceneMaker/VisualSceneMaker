@@ -6,9 +6,9 @@
 package de.dfki.vsm.xtension.stickmantts;
 
 import de.dfki.action.sequence.WordTimeMarkSequence;
-import de.dfki.common.CommonAnimation;
-import de.dfki.common.StageStickmanController;
-import de.dfki.stickmanfx.StickmanStageFX;
+import de.dfki.common.interfaces.Animation;
+import de.dfki.common.interfaces.StageRoom;
+import de.dfki.common.interfaces.StickmanStage;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.vsm.editor.dialog.WaitingDialog;
@@ -45,7 +45,7 @@ import java.util.Properties;
 public class StickmanTtsExecutor extends ActivityExecutor {
 
     // The singelton logger instance
-    private static StickmanStageFX mStickmanStage;
+    private static StickmanStage mStickmanStage;
     private  Thread stickmanLaunchThread;
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private StickmanTtsListener mListener;
@@ -57,7 +57,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
     private MaryTTsProcess marySelfServer;
     public static String sExecutionId = "stickmanmary_";
     private String mDeviceName;
-    private StageStickmanController stickmanStageC;
+    private StageRoom stickmanStageC;
     private StickmanRepository stickmanFactory;
     // The word mapping properties
     Properties mWordMapping = new Properties();
@@ -135,7 +135,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
         //We will use these two later
         speechActivities.put(executionId, speakerActivity);
         wtsMap.put(executionId, wts);
-        CommonAnimation stickmanAnimation ;
+        Animation stickmanAnimation ;
         stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
         stickmanAnimation.setParameter( wts);
         executeAnimation(stickmanAnimation);
@@ -156,7 +156,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
     private void actionLoadAnimation(AbstractActivity activity) {
         final String actor = activity.getActor();
         final String name = activity.getName();
-        CommonAnimation stickmanAnimation ;
+        Animation stickmanAnimation ;
         int duration = 500;
         if (activity instanceof ActionMouthActivity) {
             duration = ((ActionMouthActivity) activity).getDuration();
@@ -197,7 +197,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
         return langVoince;
     }
 
-    protected void executeAnimation(CommonAnimation stickmanAnimation) {
+    protected void executeAnimation(Animation stickmanAnimation) {
         // executeAnimation command to platform
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
