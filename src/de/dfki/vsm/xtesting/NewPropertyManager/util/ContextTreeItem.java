@@ -1,8 +1,9 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
-import de.dfki.common.StageStickmanController;
-import de.dfki.stickmanfx.StickmanStageFX;
-import de.dfki.stickmanfx.stagecontroller.StageStickmanControllerFX;
+
+import de.dfki.common.interfaces.StageRoom;
+import de.dfki.stickmanFX.stage.StageRoomFX;
+
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
@@ -93,7 +94,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
     }
 
     private void launchStickmanConfiguration(EntryPlugin plugin) {
-        StageStickmanController stickmanStage = new StageStickmanControllerFX(0,0, false);
+        StageRoom stickmanStage = new StageRoomFX(0,0, false);
         String mDeviceName = plugin.getName();
         for (EntryAgent agent: plugin.getAgents()) {
             AgentConfig ac = agent.getAgentConfig();

@@ -1,7 +1,8 @@
 package de.dfki.vsm.editor;
 
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
-import de.dfki.stickman.Stickman;
+import de.dfki.common.Gender;
+import de.dfki.stickmanSwing.StickmanSwing;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.Preferences;
@@ -55,7 +56,7 @@ public class EditorStarter extends JPanel {
 	private final static Font sMENUHEADLINEFONT = new Font("Helvetica", Font.PLAIN, 24);
 	private final static Font sMENUITEMFONT = new Font("Helvetica", Font.PLAIN, 18);
 	// Welcome Stickman
-	private final static Stickman mWelcomeStickman = new Stickman("", (Math.random() > 0.5) ? Stickman.TYPE.FEMALE : Stickman.TYPE.MALE, 1.5f);
+	private final static StickmanSwing mWelcomeStickman = new StickmanSwing("", (Math.random() > 0.5) ? Gender.TYPE.FEMALE : Gender.TYPE.MALE, 1.5f);
 	private boolean mShowStickman = true;
 	
 	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);

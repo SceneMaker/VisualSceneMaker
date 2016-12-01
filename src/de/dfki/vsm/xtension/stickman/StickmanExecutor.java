@@ -8,8 +8,9 @@ package de.dfki.vsm.xtension.stickman;
 import de.dfki.action.sequence.TimeMark;
 import de.dfki.action.sequence.Word;
 import de.dfki.action.sequence.WordTimeMarkSequence;
-import de.dfki.common.CommonAnimation;
-import de.dfki.common.StageStickmanController;
+
+import de.dfki.common.interfaces.Animation;
+import de.dfki.common.interfaces.StageRoom;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.vsm.model.project.AgentConfig;
@@ -44,7 +45,7 @@ public class StickmanExecutor extends ActivityExecutor {
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     private Thread stickmanLaunchThread;
-    private StageStickmanController stickmanStageC;
+    private StageRoom stickmanStageC;
     private StickmanRepository stickmanFactory;
 
     // Construct the executor
@@ -81,7 +82,7 @@ public class StickmanExecutor extends ActivityExecutor {
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatures();
 
-        CommonAnimation stickmanAnimation;
+        Animation stickmanAnimation;
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
@@ -116,7 +117,7 @@ public class StickmanExecutor extends ActivityExecutor {
         }
     }
 
-    private void executeAnimation(CommonAnimation stickmanAnimation) {
+    private void executeAnimation(Animation stickmanAnimation) {
         // executeAnimation command to platform
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
@@ -124,7 +125,7 @@ public class StickmanExecutor extends ActivityExecutor {
         broadcast(out.toString().replace("\n", " "));
     }
 
-    private void executeAnimationAndWait(AbstractActivity activity, CommonAnimation stickmanAnimation) {
+    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation) {
         // executeAnimation command to platform
         synchronized (mActivityWorkerMap) {
             // executeAnimation command to platform
