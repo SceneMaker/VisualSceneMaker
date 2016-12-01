@@ -6,7 +6,7 @@
         <SceneWord lower="34" upper="39" text="Hello"/>
         <SceneWord lower="40" upper="43" text="and"/>
         <SceneWord lower="44" upper="51" text="welcome"/>
-        <ActionObject lower="52" upper="62" actor="" mode="" name="WaveLeft" >
+        <ActionObject lower="52" upper="62" actor="" mode="" name="TurnLeft" >
         </ActionObject>
       </SceneUttr>
       <SceneUttr lower="64" upper="83" punct=",">
