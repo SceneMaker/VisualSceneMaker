@@ -99,7 +99,7 @@
     <component name="jsgfGrammar" type="edu.cmu.sphinx.jsapi.JSGFGrammar">
         <property name="dictionary" value="dictionary"/>
         <property name="grammarLocation" 
-             value="file:///C:/Users/EmpaT/Desktop/HiwiVSM/VisualSceneMaker/res/voicegrammer/"/>
+             value="res/voicegrammer/"/>
         <property name="grammarName" value="voice"/>
 	<property name="logMath" value="logMath"/>
     </component>
