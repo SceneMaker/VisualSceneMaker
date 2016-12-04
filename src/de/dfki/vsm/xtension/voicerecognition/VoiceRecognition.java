@@ -78,13 +78,11 @@ public class VoiceRecognition extends Thread{
                     mProject.setVariable("action", name + " Angry");
                 }
                         
-                else if(resultText.contains("smail")  ||
-                    resultText.contains("smaili")     ||
-                    resultText.contains("smaily")     ||
-                    resultText.contains("smile"))
+                else if(resultText.contains("joy")  ||
+                    resultText.contains("joi"))     
                 {
-                    System.out.println("You said: " + name + " Smile/Smile please");
-                    mProject.setVariable("action", name + " Smile");
+                    System.out.println("You said: " + name + " Joy/Joy please");
+                    mProject.setVariable("action", name + " Joy");
                 }
                 else if(resultText.contains("sad") ||
                     resultText.contains("saad")    ||
