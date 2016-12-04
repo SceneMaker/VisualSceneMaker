@@ -64,6 +64,7 @@ public class VoiceRecognition extends Thread{
             if (result != null) 
             {
 		String resultText = result.getBestFinalResultNoFiller();
+                System.out.println(resultText);
                 String[] splitResultText = resultText.split(" ");
                 String name = splitResultText[0];
                 
