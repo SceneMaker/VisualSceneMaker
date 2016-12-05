@@ -6,6 +6,7 @@
 package de.dfki.vsm.xtension.voicerecognition;
 
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtension.stickman.StickmanExecutor;
 import edu.cmu.sphinx.frontend.util.Microphone;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.paint.Color;
 
 /**
  *
@@ -163,6 +165,20 @@ public class VoiceRecognition extends Thread{
                 {
                     System.out.println("You said: " + name + " Happy/Happy please");
                     mProject.setVariable("action", name + " Happy");
+                }
+                else if(resultText.contains("opaciti") || 
+                        resultText.contains("opacity"))
+                {
+                    int opacityfactor;
+                    switch(splitResultText[2])
+                    {
+                        case "one":
+                            opacityfactor = 1;
+                            mProject.setVariable("opacity", name + " " + opacityfactor);
+                            StickmanExecutor.stickmanContainer.get(name).mLeftUpperLegFX.mColor = Color.RED;
+                            StickmanExecutor.stickmanContainer.get(name).mLeftUpperLegFX.update();
+                            break;
+                    }
                 }
             } 
 	}

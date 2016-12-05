@@ -11,6 +11,7 @@ import de.dfki.action.sequence.WordTimeMarkSequence;
 
 import de.dfki.common.interfaces.Animation;
 import de.dfki.common.interfaces.StageRoom;
+import de.dfki.stickman3D.Stickman3D;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.vsm.model.project.AgentConfig;
@@ -29,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import javafx.scene.paint.Color;
 
 /**
  *
@@ -47,6 +49,7 @@ public class StickmanExecutor extends ActivityExecutor {
     private Thread stickmanLaunchThread;
     private StageRoom stickmanStageC;
     private StickmanRepository stickmanFactory;
+    public static HashMap<String, Stickman3D> stickmanContainer = new HashMap<>();
 
     // Construct the executor
     public StickmanExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -173,9 +176,15 @@ public class StickmanExecutor extends ActivityExecutor {
 
             if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
                 stickmanStageC.addStickman(name);
+                Stickman3D stickman3D = (Stickman3D) stickmanStageC.getStickman(name);
+                stickman3D.doAnimation("StartIdle", 3000, false);
+                stickmanContainer.put(name, stickman3D);
             }
         }
-
+//Stickman3D s = (Stickman3D) stickmanStageC.getStickman("bob");
+//        s.mLeftUpperLegFX.mColor = Color.rgb(0, 0, 0, 1);
+//        s.mLeftUpperLegFX.update();
+//        System.out.println("123456" + s);
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
