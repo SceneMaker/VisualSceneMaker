@@ -289,7 +289,7 @@ public class StickmanTtsExecutor extends ActivityExecutor {
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
-                    stickmanStageC.launchStickmanStage(true, mProject.getProjectPath());
+                    stickmanStageC.launchStickmanStage(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
