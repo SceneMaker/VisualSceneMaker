@@ -19,6 +19,6 @@ public <basicCmd> = <startPolite> <command> <endPolite>;
                         happy|hapy|hapi|heppy|hepy|hepi|happyy|happii|hapii|heppyy|heppii|hafy|haffy|haffyy|hafi|faffii|heffii|hefii|
                         Hello|Hi|hello|hallo|hellou|hallou|helou|halou|helo|halo|
                         joy|joi|
-                        opacity|opaciti;
-<startPolite> = (bob);
-<endPolite> = [please|one];
+                        background|beground;
+<startPolite> = [bob];
+<endPolite> = /1/ please|/2/ one|/10/ two|/9/ three|/5/ four|/3/ five;
