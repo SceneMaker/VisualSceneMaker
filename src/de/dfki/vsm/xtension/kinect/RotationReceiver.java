@@ -68,6 +68,8 @@ public class RotationReceiver extends Thread
                     
                     if(!Animation3D.isHeadTiltInAction)
                     {
+                        if(z>=-5 && z<=5)
+                           mProject.setVariable("headTilt", "noTiltDetected"); 
                         if(z>15)
                             mProject.setVariable("headTilt", "left");
                         else if(z<-15)
