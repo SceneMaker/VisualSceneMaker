@@ -21,4 +21,4 @@ public <basicCmd> = <startPolite> <command> <endPolite>;
                         joy|joi|
                         background|beground;
 <startPolite> = [bob];
-<endPolite> = /1/ please|/2/ one|/10/ two|/9/ three|/5/ four|/3/ five;
+<endPolite> = /1/ please|/2/ one|/10/ two|/9/ three|/5/ four|/3/ five|/8/ zero;
