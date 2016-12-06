@@ -141,8 +141,7 @@ public class VoiceRecognition extends Thread {
                         || resultText.contains("hefii")) {
                     System.out.println("You said: " + name + " Happy/Happy please");
                     mProject.setVariable("action", name + " Happy");
-                } 
-                else if (resultText.contains("Hello")
+                } else if (resultText.contains("Hello")
                         || resultText.contains("Hi")
                         || resultText.contains("hello")
                         || resultText.contains("hallo")
@@ -151,12 +150,10 @@ public class VoiceRecognition extends Thread {
                         || resultText.contains("helou")
                         || resultText.contains("halou")
                         || resultText.contains("helo")
-                        || resultText.contains("halo"))
-                         {
+                        || resultText.contains("halo")) {
                     System.out.println("You said: " + name + " Hello/Hi");
                     mProject.setVariable("action", name + " Hello");
-                }
-                else if (resultText.contains("background")
+                } else if (resultText.contains("background")
                         || resultText.contains("beground")) {
                     if (resultText.contains("one")) {
                         switchBackground("bg1");
@@ -168,6 +165,8 @@ public class VoiceRecognition extends Thread {
                         switchBackground("bg4");
                     } else if (resultText.contains("five")) {
                         switchBackground("bg5");
+                    } else if (resultText.contains("zero")) {
+                        switchBackground("zero");
                     }
                 }
             }
@@ -185,10 +184,14 @@ public class VoiceRecognition extends Thread {
                 Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
-        String pathTobackground = getClass().getClassLoader().getResource("res/img/background/" + background + ".jpg").toExternalForm();
-        stickmanBox.setStyle("-fx-background-image: url('" + pathTobackground + "'); "
-                                + "-fx-background-position: center center; " + "-fx-background-repeat: stretch;");
+
+        if (background.equalsIgnoreCase("zero")) {
+            stickmanBox.setStyle("-fx-background-color: white");
+        } else {
+            String pathTobackground = getClass().getClassLoader().getResource("res/img/background/" + background + ".jpg").toExternalForm();
+            stickmanBox.setStyle("-fx-background-image: url('" + pathTobackground + "'); "
+                    + "-fx-background-position: center center; " + "-fx-background-repeat: stretch;");
+        }
     }
 
 }
