@@ -52,6 +52,7 @@
     start/1,
     timer/2,
     timeout/2,
+    timeout/3,
     expired/1,
     %Clean
     clean/0,
@@ -66,7 +67,6 @@
     % Events
     scene/1,
     gaze/1,
-    move/3,
     voice/3,
     state/3,
     speech/1,
@@ -170,7 +170,7 @@ remove(Mode, Name) :-
   val(name, Name, Record),
   del(Record).
 
-remove(Sent, Name, Data) :-
+remove(Mode, Name, Data) :-
   fsr(Record),
   val(type, signal, Record),
   val(mode, Mode, Record),
@@ -237,20 +237,13 @@ touch(Event) :-
  * Speech Event Extraction
  *----------------------------------------------------------------------------*/
 speech(Event) :-
-  findall(R,
-    (fsr(R),
-     type(R, event),
-     mode(R, speech)),
+  findall(Record,
+    (fsr(Record),
+     val(type, event, Record),
+     val(mode, speech, Record)),
   List),
-  eoldest(Event, List).
-
-function(Function, Event) :-
-  fsr(Event),
-  val(data:data:data:function, Function, Event).
-  
-content(Content, Event) :-
-  fsr(Event),
-  val(data:data:data:content, Content, Event).
+  eoldest(Event, List),
+  del(Event).
 
 /*----------------------------------------------------------------------------*
  * Scene Event Extraction

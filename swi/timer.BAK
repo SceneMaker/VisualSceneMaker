@@ -35,8 +35,11 @@
     start/1,
     timer/2,
     timeout/2,
+    timeout/3,
     expired/1
     ]).
+    
+:- reexport('facts').
 
 /*----------------------------------------------------------------------------*
  * The Current System Time
@@ -75,3 +78,16 @@ timeout(Name, _) :-
 timeout(Name, Delay) :-
   now(Now), Time is Now + Delay,
   assertz(timer(Name, Time)), fail.
+  
+  
+timeout(Name, _, _) :-
+  timer(Name, Time),
+  now(Now), Now > Time,
+  retractall(timer(Name, Time)).
+timeout(Name, Delay, Event) :-
+  val(time, Time, Event),
+  val(dist, Dist, Event),
+  val(life, Life, Event),
+  End is Time - Dist + Life + Delay,
+  assertz(timer(Name, End)), fail.
+  

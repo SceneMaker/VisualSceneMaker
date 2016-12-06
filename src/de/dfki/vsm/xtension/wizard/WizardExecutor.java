@@ -291,7 +291,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "state" + "," + "\n"
                             + "data:" + "leave" + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -303,7 +303,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "state" + "," + "\n"
                             + "data:" + "enter" + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -513,7 +513,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "voice" + "," + "\n"
                             + "data:" + "stop" + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -525,7 +525,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "voice" + "," + "\n"
                             + "data:" + "start" + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -550,7 +550,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "speech" + "," + "\n"
                             + "data:" + "'" + text + "'" + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -574,7 +574,7 @@ public final class WizardExecutor extends ActivityExecutor {
                         + "mode:" + "facs" + "," + "\n"
                         + "data:" + ((String) event.getItem()) + "," + "\n"
                         + "time:" + "Time" + "," + "\n"
-                        + "from:" + 0 + "," + "\n"
+                        + "dist:" + 0 + "," + "\n"
                         + "life:" + 0 + "," + "\n"
                         + "conf:" + 1.0 + "\n"
                         + "]).");
@@ -599,7 +599,7 @@ public final class WizardExecutor extends ActivityExecutor {
          + "mode:" + "gaze" + "," + "\n"
          + "data:" + ((String) event.getItem()) + "," + "\n"
          + "time:" + "Time" + "," + "\n"
-         + "from:" + 0 + "," + "\n"
+         + "dist:" + 0 + "," + "\n"
          + "life:" + 0 + "," + "\n"
          + "conf:" + 1.0 + "\n"
          + "]).");
@@ -675,7 +675,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "state" + "," + "\n"
                             + "data:" + "leave" + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -687,7 +687,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "state" + "," + "\n"
                             + "data:" + "enter" + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -894,7 +894,7 @@ public final class WizardExecutor extends ActivityExecutor {
                         + "mode:" + "scene" + "," + "\n"
                         + "data:" + scene + "," + "\n"
                         + "time:" + "Time" + "," + "\n"
-                        + "from:" + 0 + "," + "\n"
+                        + "dist:" + 0 + "," + "\n"
                         + "life:" + 0 + "," + "\n"
                         + "conf:" + 1.0 + "\n"
                         + "]).");
@@ -925,7 +925,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "mode:" + "facs" + "," + "\n"
                             + "data:" + ((String) event.getItem()) + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
-                            + "from:" + 0 + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
                             + "life:" + 0 + "," + "\n"
                             + "conf:" + 1.0 + "\n"
                             + "]).");
@@ -952,7 +952,7 @@ public final class WizardExecutor extends ActivityExecutor {
          + "mode:" + "gaze" + "," + "\n"
          + "data:" + ((String) event.getItem()) + "," + "\n"
          + "time:" + "Time" + "," + "\n"
-         + "from:" + 0 + "," + "\n"
+         + "dist:" + 0 + "," + "\n"
          + "life:" + 0 + "," + "\n"
          + "conf:" + 1.0 + "\n"
          + "]).");
@@ -1070,7 +1070,7 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentGazeThread.abort();
         try {
             mUserGazeThread.join();
-            mAgentGazeThread.join();
+           mAgentGazeThread.join();
         } catch (final InterruptedException exc) {
             mLogger.failure(exc.toString());
         }
@@ -1323,7 +1323,7 @@ public final class WizardExecutor extends ActivityExecutor {
                                 + "mode:" + "gaze" + "," + "\n"
                                 + "data:" + item + "," + "\n"
                                 + "time:" + "Time" + "," + "\n"
-                                + "from:" + 0 + "," + "\n"
+                                + "dist:" + 0 + "," + "\n"
                                 + "life:" + 0 + "," + "\n"
                                 + "conf:" + 1.0 + "\n"
                                 + "]).");

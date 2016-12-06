@@ -195,7 +195,7 @@ forlargest(Template, Generator, Condition) :-
 forlargest(Generator, Condition) :-
     gettemplfun(Generator, Condition, template, Template),
     forlargest(Template, Generator, Condition, _).
-    
+
 % also implement max_duration_list      !!!!
 max_size_list([List], List).
 max_size_list([Head|Tail], List) :-
