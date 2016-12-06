@@ -27,9 +27,11 @@ public class KinectExecutor extends RunTimePlugin{
         SmileReceiver ec = new SmileReceiver(mProject);
         RotationReceiver rc = new RotationReceiver(mProject);
         SurprisedReceiver sr = new SurprisedReceiver(mProject);
+        AngryReceiver er = new AngryReceiver(mProject);
         ec.start();
         rc.start();
         sr.start();
+        er.start();
     }
 
     @Override
