@@ -141,7 +141,22 @@ public class VoiceRecognition extends Thread {
                         || resultText.contains("hefii")) {
                     System.out.println("You said: " + name + " Happy/Happy please");
                     mProject.setVariable("action", name + " Happy");
-                } else if (resultText.contains("background")
+                } 
+                else if (resultText.contains("Hello")
+                        || resultText.contains("Hi")
+                        || resultText.contains("hello")
+                        || resultText.contains("hallo")
+                        || resultText.contains("hellou")
+                        || resultText.contains("hallou")
+                        || resultText.contains("helou")
+                        || resultText.contains("halou")
+                        || resultText.contains("helo")
+                        || resultText.contains("halo"))
+                         {
+                    System.out.println("You said: " + name + " Hello/Hi");
+                    mProject.setVariable("action", name + " Hello");
+                }
+                else if (resultText.contains("background")
                         || resultText.contains("beground")) {
                     if (resultText.contains("one")) {
                         switchBackground("bg1");
