@@ -2,12 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/C:/Users/EmpaT/Desktop/HiwiVSM/VisualSceneMaker/res/voicegrammer/voice.config.xml</file>
-            <file>file:/C:/Users/EmpaT/Desktop/HiwiVSM/VisualSceneMaker/src/de/dfki/vsm/xtension/voicerecognition/VoiceRecognition.java</file>
-            <file>file:/C:/Users/EmpaT/Desktop/HiwiVSM/VisualSceneMaker/res/voicegrammer/voice.gram</file>
-            <file>file:/C:/Users/EmpaT/Desktop/HiwiVSM/VisualSceneMaker/src/de/dfki/vsm/xtension/voicerecognition/VoiceRecognitionExecutor.java</file>
-            <file>file:/C:/Users/EmpaT/Desktop/HiwiVSM/VisualSceneMaker/src/de/dfki/vsm/xtension/stickman/StickmanExecutor.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
