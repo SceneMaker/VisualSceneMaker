@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="AAMAS" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 7 Dez 2016 17:40:17" start="S18;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="AAMAS" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 7 Dez 2016 17:50:24" start="S18;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -107,13 +107,13 @@
       </Play>
     </Commands>
     <Graphics>
-      <Position xPos="586" yPos="106"/>
+      <Position xPos="506" yPos="106"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
     </LocalVariableBadge>
     <GlobalVariableBadge>
-      <Position xPos="-1" yPos="109"/>
+      <Position xPos="10" yPos="10"/>
     </GlobalVariableBadge>
     <Node id="N99" name="History" history="true">
       <Define>
@@ -9981,7 +9981,7 @@
         </SuperNode>
       </SuperNode>
     </SuperNode>
-    <SuperNode id="S192" name="Planned;Dialog;Behavior" comment="" hideLocalVar="false" hideGlobalVar="false" start="S37;S36;S193;">
+    <SuperNode id="S192" name="Control;Dialog;Behavior" comment="" hideLocalVar="false" hideGlobalVar="false" start="S37;S36;S193;">
       <Define>
       </Define>
       <Declare>
@@ -11043,7 +11043,7 @@
         </Node>
       </SuperNode>
     </SuperNode>
-    <SuperNode id="S4" name="Automatic;Dialog;Behavior" comment="" hideLocalVar="false" hideGlobalVar="false" start="S197;">
+    <SuperNode id="S4" name="Control;Automatic;Behavior" comment="" hideLocalVar="false" hideGlobalVar="false" start="S197;">
       <Define>
       </Define>
       <Declare>
@@ -11414,13 +11414,13 @@
     <EEdge target="S56" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="506" yPos="146" ctrlXPos="526" ctrlYPos="146"/>
-        <ControlPoint xPos="586" yPos="146" ctrlXPos="566" ctrlYPos="146"/>
+        <ControlPoint xPos="426" yPos="89" ctrlXPos="455" ctrlYPos="105"/>
+        <ControlPoint xPos="506" yPos="123" ctrlXPos="476" ctrlYPos="106"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="426" yPos="106"/>
+      <Position xPos="346" yPos="26"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -11606,8 +11606,8 @@
     <EEdge target="S56" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="346" yPos="146" ctrlXPos="446" ctrlYPos="146"/>
-        <ControlPoint xPos="586" yPos="169" ctrlXPos="486" ctrlYPos="184"/>
+        <ControlPoint xPos="346" yPos="146" ctrlXPos="406" ctrlYPos="146"/>
+        <ControlPoint xPos="506" yPos="146" ctrlXPos="446" ctrlYPos="146"/>
       </Connection>
     </Graphics>
     </EEdge>
