@@ -65,11 +65,8 @@
     remove/2,
     remove/3,
     % Events
-    scene/1,
-    gaze/1,
-    voice/3,
-    state/3,
-    speech/1,
+    oldest/2,
+    scene/3,
     enter/3,
     place/3,
     user/2,
@@ -179,84 +176,86 @@ remove(Mode, Name, Data) :-
   del(Record).
   
 /*----------------------------------------------------------------------------*
- * Voice Event Extraction
+ * Oldest Event Extraction
  *----------------------------------------------------------------------------*/
-% This predicate finds the oldest voice event based on the end times of the
-% events and sets the name, the data and the event itself before deleting it.
-voice(Name, Data, Event) :-
+oldest(Mode, Event) :-
   findall(Record,
     (fsr(Record),
      val(type, event, Record),
-     val(mode, voice, Record)),
+     val(mode, Mode, Record)),
     List),
-  % Get oldest based on end times
-  eoldest(Event, List),
-  val(name, Name, Event),
-  val(data, Data, Event),
-  jel(Event).
+  eoldest(Event, List), jel(Event).
+
   
-/*----------------------------------------------------------------------------*
- * State Event Extraction
- *----------------------------------------------------------------------------*/
-state(Name, Data, Event) :-
-  findall(Record,
-    (fsr(Record),
-     val(type, event, Record),
-     val(mode, state, Record)),
-    List),
-  eoldest(Event, List),
-  val(name, Name, Event),
-  val(data, Data, Event),
-  jel(Event).
-  
- /*----------------------------------------------------------------------------*
- * Gaze Event Extraction
- *----------------------------------------------------------------------------*/
-gaze(Event) :-
-  findall(Record,
-    (fsr(Record),
-     val(type, event, Record),
-     val(mode, gaze, Record)),
-    List),
-   eoldest(Event, List),
-   del(Event).
-
-/*----------------------------------------------------------------------------*
- * Touch Event Extraction
- *----------------------------------------------------------------------------*/
-touch(Event) :-
-  findall(Record,
-    (fsr(Record),
-     val(type, event, Record),
-     val(mode, touch, Record)),
-    List),
-   eoldest(Event, List),
-   del(Event).
-
-/*----------------------------------------------------------------------------*
- * Speech Event Extraction
- *----------------------------------------------------------------------------*/
-speech(Event) :-
-  findall(Record,
-    (fsr(Record),
-     val(type, event, Record),
-     val(mode, speech, Record)),
-  List),
-  eoldest(Event, List),
-  del(Event).
-
+% /*----------------------------------------------------------------------------*
+%  * State Event Extraction
+%  *----------------------------------------------------------------------------*/
+% state(Event) :-
+%   findall(Record,
+%     (fsr(Record),
+%      val(type, event, Record),
+%      val(mode, state, Record)),
+%     List),
+%   eoldest(Event, List), jel(Event).
+%   
+%  /*----------------------------------------------------------------------------*
+%  * Gaze Event Extraction
+%  *----------------------------------------------------------------------------*/
+% gaze(Event) :-
+%   findall(Record,
+%     (fsr(Record),
+%      val(type, event, Record),
+%      val(mode, gaze, Record)),
+%     List),
+%    eoldest(Event, List), jel(Event).
+% 
+% /*----------------------------------------------------------------------------*
+%  * Touch Event Extraction
+%  *----------------------------------------------------------------------------*/
+% touch(Event) :-
+%   findall(Record,
+%     (fsr(Record),
+%      val(type, event, Record),
+%      val(mode, touch, Record)),
+%     List),
+%    eoldest(Event, List), jel(Event).
+% 
+% /*----------------------------------------------------------------------------*
+%  * Speech Event Extraction
+%  *----------------------------------------------------------------------------*/
+% speech(Event) :-
+%   findall(Record,
+%     (fsr(Record),
+%      val(type, event, Record),
+%      val(mode, speech, Record)),
+%   List),
+%   eoldest(Event, List), jel(Event).
+% 
+% /*----------------------------------------------------------------------------*
+%  * Action Event Extraction
+%  *----------------------------------------------------------------------------*/
+% action(Event) :-
+%   findall(Record,
+%     (fsr(Record),
+%      val(type, event, Record),
+%      val(mode, action, Record)),
+%   List),
+%   eoldest(Event, List), jel(Event).
+%   
 /*----------------------------------------------------------------------------*
  * Scene Event Extraction
  *----------------------------------------------------------------------------*/
-scene(Data) :-
+scene(Scene, Abort, Target) :-
   findall(Record,
     (fsr(Record),
      val(type, event, Record),
      val(name, agent, Record),
-     val(mode, scene, Record)),
+     val(mode, contribution, Record)),
     List),
   eoldest(Event, List),
-  val(data, Data, Event),
+  val(data:scene, Scene, Event),
+  val(data:abort, Abort, Event),
+  val(data:target, Target, Event),
   jel(Event).
   
 /*----------------------------------------------------------------------------*

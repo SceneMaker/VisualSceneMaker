@@ -51,11 +51,10 @@ public final class WizardExecutor extends ActivityExecutor {
     private JPanel mInputWizardPanel;
     private JPanel mUserWizardPanel;
     private JPanel mAgentWizardPanel;
+
     private JPanel mUserStatusPanel;
-    private JPanel mUserSignalPanel;
-    private JPanel mUserInputPanel;
     private JPanel mAgentStatusPanel;
-    private JPanel mAgentSignalPanel;
+    private JPanel mUserInputPanel;
     private JPanel mAgentInputPanel;
     // Output panel
     private JPanel mOutputWizardPanel;
@@ -71,26 +70,14 @@ public final class WizardExecutor extends ActivityExecutor {
     // Status buttons
     private JButton mUserStateButton;
     private JButton mAgentStateButton;
-    // Signal buttons
-    private JButton mUserOccupyButton;
-    private JButton mUserReleaseButton;
-    private JButton mUserRequestButton;
-    private JButton mUserAcceptButton;
-    private JButton mUserRejectButton;
-    private JButton mUserOfferButton;
-    private JButton mUserLeaveButton;
-    private JButton mUserClaimButton;
-    private JButton mAgentOccupyButton;
-    private JButton mAgentReleaseButton;
-    private JButton mAgentRequestButton;
-    private JButton mAgentAcceptButton;
-    private JButton mAgentRejectButton;
-    private JButton mAgentOfferButton;
-    private JButton mAgentLeaveButton;
-    private JButton mAgentClaimButton;
     // User voice
     private JLabel mUserVoiceLabel;
     private JButton mUserVoiceButton;
+    // User touch
+    private JLabel mUserTouchLabel;
+    private JButton mUserStartButton;
+    private JButton mUserDragButton;
+    private JButton mUserStopButton;
     // User Speech
     private JLabel mUserSpeechLabel;
     private JTextField mUserSpeechField;
@@ -327,175 +314,6 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserStatusPanel.add(mUserRoleLabel);
         mUserStatusPanel.add(mUserActionLabel);
 
-        // Create the user signal panel ////////////////////////////////////////
-        mUserOccupyButton = new JButton("Occupy");
-        mUserOccupyButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, occupy)");
-                /*
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "occupy" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-
-        mUserRequestButton = new JButton("Request");
-        mUserRequestButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, request)");
-                /*
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "request" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-
-        mUserReleaseButton = new JButton("Release");
-        mUserReleaseButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, release)");
-                /*
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "release" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mUserAcceptButton = new JButton("Accept");
-        mUserAcceptButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, accept)");
-                /*
-                 JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "accept" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mUserRejectButton = new JButton("Reject");
-        mUserRejectButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, reject)");
-                /*
-                 JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "reject" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mUserOfferButton = new JButton("Offer");
-        mUserOfferButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, offer)");
-                /*
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "offer" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mUserLeaveButton = new JButton("Leave");
-        mUserLeaveButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, leave)");
-                /*
-                 JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "leave" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mUserClaimButton = new JButton("Claim");
-        mUserClaimButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(user, claim)");
-                /*
-                 JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "data:" + "claim" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-
-        sanitize(mUserOccupyButton);
-        sanitize(mUserReleaseButton);
-        sanitize(mUserRequestButton);
-        sanitize(mUserAcceptButton);
-        sanitize(mUserRejectButton);
-        sanitize(mUserOfferButton);
-        sanitize(mUserLeaveButton);
-        sanitize(mUserClaimButton);
-
-        mUserSignalPanel = new JPanel();
-        mUserSignalPanel.setLayout(new GridLayout(2, 4));
-        mUserSignalPanel.setBorder(BorderFactory.createTitledBorder("Turn Regulation"));
-        mUserSignalPanel.add(mUserOccupyButton);
-        mUserSignalPanel.add(mUserReleaseButton);
-        mUserSignalPanel.add(mUserRequestButton);
-        mUserSignalPanel.add(mUserAcceptButton);
-        mUserSignalPanel.add(mUserRejectButton);
-        mUserSignalPanel.add(mUserOfferButton);
-        mUserSignalPanel.add(mUserLeaveButton);
-        mUserSignalPanel.add(mUserClaimButton);
-
         // Create the user verbal panel ////////////////////////////////////////
         mUserVoiceLabel = new JLabel("Voice Activity:");
         mUserVoiceLabel.setBorder(BorderFactory.createEmptyBorder());
@@ -533,6 +351,76 @@ public final class WizardExecutor extends ActivityExecutor {
             }
         });
 
+        // Create the user verbal panel ////////////////////////////////////////
+        mUserTouchLabel = new JLabel("Touch Activity:");
+        mUserTouchLabel.setBorder(BorderFactory.createEmptyBorder());
+        mUserStartButton = new JButton("Start");
+        mUserStartButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "event" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "mode:" + "touch" + "," + "\n"
+                        + "data:" + "["
+                        + "  type:" + "start" + ","
+                        + "  name:" + "p1" + ","
+                        + "  pos:" + "[x:0, y:0]"
+                        + "]" + "," + "\n"
+                        + "time:" + "Time" + "," + "\n"
+                        + "dist:" + 0 + "," + "\n"
+                        + "life:" + 0 + "," + "\n"
+                        + "conf:" + 1.0 + "\n"
+                        + "]).");
+            }
+        });
+        mUserDragButton = new JButton("Drag");
+        mUserDragButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "event" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "mode:" + "touch" + "," + "\n"
+                        + "data:" + "["
+                        + "  type:" + "drag" + ","
+                        + "  name:" + "p1" + ","
+                        + "  pos:" + "[x:0, y:0]"
+                        + "]" + "," + "\n"
+                        + "time:" + "Time" + "," + "\n"
+                        + "dist:" + 0 + "," + "\n"
+                        + "life:" + 0 + "," + "\n"
+                        + "conf:" + 1.0 + "\n"
+                        + "]).");
+            }
+        });
+        mUserStopButton = new JButton("Stop");
+        mUserStopButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "event" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "mode:" + "touch" + "," + "\n"
+                        + "data:" + "["
+                        + "  type:" + "stop" + ","
+                        + "  name:" + "p1" + ","
+                        + "  pos:" + "[x:0, y:0]"
+                        + "]" + "," + "\n"
+                        + "time:" + "Time" + "," + "\n"
+                        + "dist:" + 0 + "," + "\n"
+                        + "life:" + 0 + "," + "\n"
+                        + "conf:" + 1.0 + "\n"
+                        + "]).");
+            }
+        });
+
         mUserSpeechLabel = new JLabel("Utterance:");
         mUserSpeechLabel.setBorder(BorderFactory.createEmptyBorder());
         mUserSpeechField = new JTextField();
@@ -544,15 +432,17 @@ public final class WizardExecutor extends ActivityExecutor {
                 final String text = mUserSpeechField.getText().trim();
                 if (!text.isEmpty()) {
                     JPLEngine.query("now(Time), "
-                            + "jdd(["
-                            + "type:" + "event" + "," + "\n"
-                            + "name:" + "user" + "," + "\n"
-                            + "mode:" + "speech" + "," + "\n"
-                            + "data:" + "'" + text + "'" + "," + "\n"
-                            + "time:" + "Time" + "," + "\n"
-                            + "dist:" + 0 + "," + "\n"
-                            + "life:" + 0 + "," + "\n"
-                            + "conf:" + 1.0 + "\n"
+                            + "signal(speech, dialog,"
+                            + "["
+                            + "  type:" + "dialog_act" + ","
+                            + "  fun:" + "info_seeking" + ","
+                            + "  cat:" + "check_question" + ","
+                            + "  data:" + "["
+                            + "    size:" + "large" + ","
+                            + "    color:" + "yellow" + ","
+                            + "    shape:" + "square" + ","
+                            + "    loc:" + (text.isEmpty() ? "[ ]" : text)
+                            + "  ]"
                             + "]).");
                 }
             }
@@ -585,30 +475,9 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserGazeCombo = new JComboBox(mUserGazeModel);
         mUserGazeCombo.setBackground(Color.WHITE);
         mUserGazeCombo.setBorder(BorderFactory.createEtchedBorder());
-        //
-        /*
-         mUserGazeCombo.addItemListener(new ItemListener() {
+       
 
-         @Override
-         public void itemStateChanged(final ItemEvent event) {
-         if (event.getStateChange() == ItemEvent.SELECTED) {
-         JPLEngine.query("now(Time), "
-         + "jdd(["
-         + "type:" + "event" + "," + "\n"
-         + "name:" + "user" + "," + "\n"
-         + "mode:" + "gaze" + "," + "\n"
-         + "data:" + ((String) event.getItem()) + "," + "\n"
-         + "time:" + "Time" + "," + "\n"
-         + "dist:" + 0 + "," + "\n"
-         + "life:" + 0 + "," + "\n"
-         + "conf:" + 1.0 + "\n"
-         + "]).");
-         }
-         }
-         });
-         */
-
-        mUserElicitLabel = new JLabel("Feedback:");
+        mUserElicitLabel = new JLabel("Head Nod:");
         mUserElicitLabel.setBorder(BorderFactory.createEmptyBorder());
         mUserElicitButton = new JButton("Produce");
         mUserElicitButton.setBackground(Color.WHITE);
@@ -617,24 +486,20 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                // mPlayer.event("feedback", "user", "elicit");
+                 JPLEngine.query("now(Time), "
+                        + "jdd(["
+                        + "type:" + "event" + "," + "\n"
+                        + "name:" + "user" + "," + "\n"
+                        + "mode:" + "head" + "," + "\n"
+                        + "data:" + "nod" + "," + "\n"
+                        + "time:" + "Time" + "," + "\n"
+                        + "dist:" + 0 + "," + "\n"
+                        + "life:" + 0 + "," + "\n"
+                        + "conf:" + 1.0 + "\n"
+                        + "]).");
             }
         });
 
-//        mUserAffectLabel = new JLabel("Activity:");
-//        mUserAffectLabel.setBorder(BorderFactory.createEmptyBorder());
-//        mUserAffectSlider = new JSlider(JSlider.HORIZONTAL);
-//        mUserAffectSlider.setBackground(Color.WHITE);
-//        mUserAffectSlider.setBorder(BorderFactory.createEmptyBorder());
-//        mUserAffectSlider.addChangeListener(new ChangeListener() {
-//
-//            @Override
-//            public void stateChanged(final ChangeEvent event) {
-//                //if (!mUserAffectSlider.getValueIsAdjusting()) {
-//                //    mPlayer.event("mood", "user", String.valueOf(mUserAffectSlider.getValue()));
-//                //}
-//            }
-//        });
         sanitize(mUserVoiceLabel);
         sanitize(mUserVoiceButton);
         sanitize(mUserSpeechLabel);
@@ -647,10 +512,14 @@ public final class WizardExecutor extends ActivityExecutor {
         sanitize(mUserElicitButton);
 
         mUserInputPanel = new JPanel();
-        mUserInputPanel.setLayout(new GridLayout(5, 2));
+        mUserInputPanel.setLayout(new GridLayout(7, 2));
         mUserInputPanel.setBorder(BorderFactory.createEmptyBorder());
         mUserInputPanel.add(mUserVoiceLabel);
         mUserInputPanel.add(mUserVoiceButton);
+        mUserInputPanel.add(mUserTouchLabel);
+        mUserInputPanel.add(mUserDragButton);
+        mUserInputPanel.add(mUserStartButton);
+        mUserInputPanel.add(mUserStopButton);
         mUserInputPanel.add(mUserSpeechLabel);
         mUserInputPanel.add(mUserSpeechField);
         mUserInputPanel.add(mUserExpLabel);
@@ -711,173 +580,6 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentStatusPanel.add(mAgentRoleLabel);
         mAgentStatusPanel.add(mAgentActionLabel);
 
-        // Create the agent signal panel ///////////////////////////////////////
-        mAgentOccupyButton = new JButton("Occupy");
-        mAgentOccupyButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, occupy)");
-                /*
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "occupy" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mAgentReleaseButton = new JButton("Release");
-        mAgentReleaseButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, release)");
-                /*
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "release" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mAgentRequestButton = new JButton("Request");
-        mAgentRequestButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, request)");
-                /*
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "request" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mAgentAcceptButton = new JButton("Accept");
-        mAgentAcceptButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, accept)");
-                /*                
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "accept" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mAgentRejectButton = new JButton("Reject");
-        mAgentRejectButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, reject)");
-                /*                
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "reject" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mAgentOfferButton = new JButton("Offer");
-        mAgentOfferButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, offer)");
-                /*                
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "offer" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mAgentLeaveButton = new JButton("Leave");
-        mAgentLeaveButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, leave)");
-                /*                
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "leave" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-        mAgentClaimButton = new JButton("Claim");
-        mAgentClaimButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JPLEngine.query("signal(agent, claim)");
-                /*                
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "signal" + "," + "\n"
-                        + "recv:" + "role" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "data:" + "claim" + "," + "\n"
-                        + "time:" + "Time" + "\n"
-                        + "]).");
-                 */
-            }
-        });
-
-        sanitize(mAgentOccupyButton);
-        sanitize(mAgentReleaseButton);
-        sanitize(mAgentRequestButton);
-        sanitize(mAgentAcceptButton);
-        sanitize(mAgentRejectButton);
-        sanitize(mAgentOfferButton);
-        sanitize(mAgentLeaveButton);
-        sanitize(mAgentClaimButton);
-
-        mAgentSignalPanel = new JPanel();
-        mAgentSignalPanel.setLayout(new GridLayout(2, 3));
-        mAgentSignalPanel.setBorder(BorderFactory.createTitledBorder("Turn Regulation"));
-        mAgentSignalPanel.add(mAgentOccupyButton);
-        mAgentSignalPanel.add(mAgentReleaseButton);
-        mAgentSignalPanel.add(mAgentRequestButton);
-        mAgentSignalPanel.add(mAgentAcceptButton);
-        mAgentSignalPanel.add(mAgentRejectButton);
-        mAgentSignalPanel.add(mAgentOfferButton);
-        mAgentSignalPanel.add(mAgentLeaveButton);
-        mAgentSignalPanel.add(mAgentClaimButton);
-
         // Create the agent input panel ///////////////////////////////////////
         mAgentScriptLabel = new JLabel("Play Scene:");
         mAgentScriptLabel.setBorder(BorderFactory.createEmptyBorder());
@@ -888,15 +590,11 @@ public final class WizardExecutor extends ActivityExecutor {
             public void actionPerformed(ActionEvent e) {
                 final String scene = (String) mAgentScriptCombo.getSelectedItem();
                 JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "event" + "," + "\n"
-                        + "name:" + "agent" + "," + "\n"
-                        + "mode:" + "scene" + "," + "\n"
-                        + "data:" + scene + "," + "\n"
-                        + "time:" + "Time" + "," + "\n"
-                        + "dist:" + 0 + "," + "\n"
-                        + "life:" + 0 + "," + "\n"
-                        + "conf:" + 1.0 + "\n"
+                        + "signal(planner, dialog,"
+                        + "["
+                        + "dialogscene:" + scene + ","
+                        + "abortscene:" + "abort" + ","
+                        + "addressee:" + "agent"
                         + "]).");
 
             }
@@ -1004,7 +702,6 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserWizardPanel.setLayout(new BoxLayout(mUserWizardPanel, Y_AXIS));
         mUserWizardPanel.setBorder(BorderFactory.createTitledBorder("User Wizard"));
         mUserWizardPanel.add(mUserStatusPanel);
-        mUserWizardPanel.add(mUserSignalPanel);
         mUserWizardPanel.add(mUserInputPanel);
 
         // Create the agent wizard panel ////////////////////////////////////////
@@ -1012,7 +709,6 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentWizardPanel.setLayout(new BoxLayout(mAgentWizardPanel, Y_AXIS));
         mAgentWizardPanel.setBorder(BorderFactory.createTitledBorder("Agent Wizard"));
         mAgentWizardPanel.add(mAgentStatusPanel);
-        mAgentWizardPanel.add(mAgentSignalPanel);
         mAgentWizardPanel.add(mAgentInputPanel);
 
         // Create the input wizard panel ///////////////////////////////////////
@@ -1070,7 +766,7 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentGazeThread.abort();
         try {
             mUserGazeThread.join();
-           mAgentGazeThread.join();
+            mAgentGazeThread.join();
         } catch (final InterruptedException exc) {
             mLogger.failure(exc.toString());
         }
@@ -1147,36 +843,13 @@ public final class WizardExecutor extends ActivityExecutor {
                 //
                 if (userRole.equals("speaker")
                         && agentRole.equals("addressee")) {
-                    //
-                    if (userAction.equals("offering")) {
-                        mAgentAcceptButton.setEnabled(true);
-                        mAgentRejectButton.setEnabled(true);
-                    } else if (agentAction.equals("requesting")) {
-                        mUserLeaveButton.setEnabled(true);
-                        mUserClaimButton.setEnabled(true);
-                    } else {
-                        mAgentRequestButton.setEnabled(true);
-                        mUserOfferButton.setEnabled(true);
-                        mUserReleaseButton.setEnabled(true);
-                    }
+                    //                    
                 } else if (userRole.equals("addressee")
                         && agentRole.equals("speaker")) {
-                    //
-                    if (userAction.equals("requesting")) {
-                        mAgentLeaveButton.setEnabled(true);
-                        mAgentClaimButton.setEnabled(true);
-                    } else if (agentAction.equals("offering")) {
-                        mUserAcceptButton.setEnabled(true);
-                        mUserRejectButton.setEnabled(true);
-                    } else {
-                        mUserRequestButton.setEnabled(true);
-                        mAgentOfferButton.setEnabled(true);
-                        mAgentReleaseButton.setEnabled(true);
-                    }
+                    //                    
                 } else if (userRole.equals("bystander")
                         && agentRole.equals("bystander")) {
-                    mUserOccupyButton.setEnabled(true);
-                    mAgentOccupyButton.setEnabled(true);
+                    //
                 }
 
                 if (userSpeaking) {
@@ -1194,21 +867,12 @@ public final class WizardExecutor extends ActivityExecutor {
             mLogger.failure(exc.toString());
         }
     }
-    
-   private void reset() {
+
+    private void reset() {
         // 
         mUserRoleLabel.setEnabled(false);
         mUserActionLabel.setEnabled(false);
         mUserStateButton.setEnabled(true);
-        //
-        mUserOccupyButton.setEnabled(false);
-        mUserReleaseButton.setEnabled(false);
-        mUserRequestButton.setEnabled(false);
-        mUserAcceptButton.setEnabled(false);
-        mUserRejectButton.setEnabled(false);
-        mUserOfferButton.setEnabled(false);
-        mUserLeaveButton.setEnabled(false);
-        mUserClaimButton.setEnabled(false);
         //
         mUserVoiceLabel.setEnabled(false);
         mUserVoiceButton.setEnabled(false);
@@ -1224,15 +888,6 @@ public final class WizardExecutor extends ActivityExecutor {
         mAgentRoleLabel.setEnabled(false);
         mAgentActionLabel.setEnabled(false);
         mAgentStateButton.setEnabled(true);
-        //
-        mAgentOccupyButton.setEnabled(false);
-        mAgentReleaseButton.setEnabled(false);
-        mAgentRequestButton.setEnabled(false);
-        mAgentAcceptButton.setEnabled(false);
-        mAgentRejectButton.setEnabled(false);
-        mAgentOfferButton.setEnabled(false);
-        mAgentLeaveButton.setEnabled(false);
-        mAgentClaimButton.setEnabled(false);
         //
         mAgentScriptLabel.setEnabled(false);
         mAgentScriptButton.setEnabled(false);
@@ -1314,6 +969,9 @@ public final class WizardExecutor extends ActivityExecutor {
                     Thread.sleep(mTime);
                     // Get selected item
                     final String item = (String) mModel.getSelectedItem();
+                    final String type = ((item.equals("user") || item.equals("agent")) ? "partner" : "entity");
+                    final String sort = (item.equals("user") ? "user" : (item.equals("agent") ? "agent" : "piece"));
+
                     if (item != null) {
                         // Add new gaze event
                         JPLEngine.query("now(Time), "
@@ -1321,7 +979,12 @@ public final class WizardExecutor extends ActivityExecutor {
                                 + "type:" + "event" + "," + "\n"
                                 + "name:" + mName + "," + "\n"
                                 + "mode:" + "gaze" + "," + "\n"
-                                + "data:" + item + "," + "\n"
+                                + "data:" + "[" + "\n"
+                                + "    type:" + type + ","
+                                + "    sort:" + sort + ","
+                                + "    name:" + item + ","
+                                + "    conf:" + 1.0 + "\n"
+                                + "]" + "," + "\n"
                                 + "time:" + "Time" + "," + "\n"
                                 + "dist:" + 0 + "," + "\n"
                                 + "life:" + 0 + "," + "\n"
