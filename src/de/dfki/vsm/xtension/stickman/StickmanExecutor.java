@@ -115,6 +115,7 @@ public class StickmanExecutor extends ActivityExecutor {
                         stickmanAnimation.setParameter(feature.getVal());
                     }
                 }
+                System.out.println("de.dfki.vsm.xtension.stickman.StickmanExecutor.execute()");
                 executeAnimation(stickmanAnimation);
             }
         }

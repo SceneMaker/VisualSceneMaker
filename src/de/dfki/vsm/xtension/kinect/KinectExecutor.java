@@ -30,8 +30,8 @@ public class KinectExecutor extends RunTimePlugin{
         AngryReceiver er = new AngryReceiver(mProject);
         ec.start();
         rc.start();
-        sr.start();
-        er.start();
+        //sr.start();
+        //er.start();
     }
 
     @Override
