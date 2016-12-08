@@ -64,6 +64,9 @@
     remove/1,
     remove/2,
     remove/3,
+    ignore/1,
+    ignore/2,
+    ignore/3,
     % Events
     oldest/2,
     scene/3,
@@ -174,6 +177,29 @@ remove(Mode, Name, Data) :-
   val(name, Name, Record),
   val(data, Data, Record),
   del(Record).
+  
+ignore(Name) :-
+  forall(
+    (fsr(Record),
+     val(type, signal, Record),
+     val(name, Name, Record)),
+  del(Record)).
+
+ignore(Mode, Name) :-
+  forall(
+    (fsr(Record),
+     val(type, signal, Record),
+     val(mode, Mode, Record),
+     val(name, Name, Record)),
+  del(Record)).
+
+ignore(Mode, Name, _) :-
+  forall(
+    (fsr(Record),
+     val(type, signal, Record),
+     val(mode, Mode, Record),
+     val(name, Name, Record)),
+  del(Record)).
   
 /*----------------------------------------------------------------------------*
  * Oldest Event Extraction
