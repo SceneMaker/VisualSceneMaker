@@ -10,7 +10,7 @@
 <entry key="frame_posy">0</entry>
 <entry key="frame_posx">0</entry>
 <entry key="scriptfonttype">Monospaced</entry>
-<entry key="shownodeid">false</entry>
+<entry key="shownodeid">true</entry>
 <entry key="showsceneeditor">true</entry>
 <entry key="visualization">true</entry>
 <entry key="frame_height">600</entry>
