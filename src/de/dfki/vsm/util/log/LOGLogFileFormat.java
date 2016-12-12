@@ -3,6 +3,7 @@ package de.dfki.vsm.util.log;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.Preferences;
+import java.text.SimpleDateFormat;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -36,8 +37,12 @@ public class LOGLogFileFormat extends Formatter {
         // Create The Method Name
         Object method = trace[2];
 
+           // PG added milliseconds
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        
+        
         // Create The String For Logging
-        String message = record.getLevel() + " to " + "LOGFILE" + " on " + date + " by " + name + " in " + thread
+        String message = record.getLevel() + " to " + "LOGFILE" + " on " + df.format(date) + " by " + name + " in " + thread
                          + " at " + method;
 
         // Append The User Message

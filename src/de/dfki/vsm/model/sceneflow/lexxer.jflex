@@ -102,6 +102,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "null"  { return new Symbol(ChartFields.NULL); }
 "new"   { return new Symbol(ChartFields.NEW); }
 "query" { return new Symbol(ChartFields.QUERY); }
+"Query" { return new Symbol(ChartFields.QUERY); }
 "?-" { return new Symbol(ChartFields.QUERY); }
 "!-" { return new Symbol(ChartFields.PLAY); }
 

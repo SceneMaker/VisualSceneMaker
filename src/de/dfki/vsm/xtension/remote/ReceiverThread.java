@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 import java.util.Arrays;
 
 /**
@@ -27,6 +29,9 @@ public class ReceiverThread extends Thread {
 
     private DatagramSocket mSocket;
 
+    // last raw data
+    private static byte[] lastReceivedData;
+
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -38,9 +43,16 @@ public class ReceiverThread extends Thread {
     @Override
     public void run() {
         try {
+
+//            mSocket = new MulticastSocket(mPort);
+//            mSocket.setReuseAddress(true);
+//            mSocket.setBroadcast(true);
+//            mSocket.joinGroup(InetAddress.getByName("230.0.0.1"));
             //Keep a mSocket open to listen to all the UDP trafic that is destined for this port
-            mSocket = new DatagramSocket(mPort, InetAddress.getByName("0.0.0.0"));
+            mSocket = new DatagramSocket(null);
+            mSocket.setReuseAddress(true);
             mSocket.setBroadcast(true);
+            mSocket.bind(new InetSocketAddress(mPort));
 
             while (mRunning) {
                 mLogger.message("Ready to receive messages ...");
@@ -51,7 +63,14 @@ public class ReceiverThread extends Thread {
                 mSocket.receive(packet);
 
                 // Read Packet
-                byte[] realData = Arrays.copyOf(packet.getData(), packet.getLength());;
+                byte[] data = Arrays.copyOf(packet.getData(), packet.getLength());
+
+                // Check if this has been received
+                if (data.equals(lastReceivedData)) {
+                    mLogger.message("Ommitting message - was received alread");
+                    break;
+                }
+                lastReceivedData = data;
 
                 String message = new String(packet.getData(), "UTF-8").trim();
                 mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
@@ -69,7 +88,7 @@ public class ReceiverThread extends Thread {
                         if (msg.equalsIgnoreCase("VAR")) {
                             String var = msgParts[2];
                             String value = msgParts[3];
-                            
+
                             if (mExecutor.hasProjectVar(var)) {
                                 mExecutor.setSceneFlowVariable(var, value);
                             }
@@ -95,12 +114,14 @@ public class ReceiverThread extends Thread {
                 }
             }
         } catch (IOException ex) {
-            mLogger.message("Exception while receiving data ...");
+            mLogger.message("Exception while receiving data ... " + ex.getMessage());
         }
     }
 
     public void stopServer() {
-        mSocket.close();
+        if (mSocket != null) {
+            mSocket.close();
+        }
         mRunning = false;
     }
 }

@@ -372,7 +372,7 @@ public class SuperNode extends BasicNode {
         String[] arr = element.getAttribute("start").split(";");
 
         for (String str : arr) {
-            if (!str.isEmpty()) {
+            if (!str.isEmpty() && !str.equals("null")) {
                 mStartNodeMap.put(str, null);
             }
         }
