@@ -4,7 +4,6 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.util.tts.SpeakerTts;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
-
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 
@@ -27,13 +26,10 @@ public class CereProgTTsSpeaker extends SpeakerTts {
         speechClient = new Cereproc();
     }
 
-    public  CereProgTTsSpeaker(SpeechActivity pSpeech, String pLanguage, String pVoiceFilePath, String pLicenseName){
+    public  CereProgTTsSpeaker(SpeechActivity pSpeech, String pLanguage, String pVoiceFilePath, String pLicenseName, String audioDevice){
         speech = pSpeech;
         langVoice = pLanguage;
-        //voiceName = pVoiceName;
-        //Cereproc.licensePath = pLicenseName;
-        speechClient = new Cereproc(pLicenseName, pVoiceFilePath);
-
+        speechClient = new Cereproc(pLicenseName, pVoiceFilePath, audioDevice);
     }
 
     @Override

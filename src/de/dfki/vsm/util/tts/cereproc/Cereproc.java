@@ -1,15 +1,14 @@
 package de.dfki.vsm.util.tts.cereproc;
 
-import com.cereproc.cerevoice_eng.*;
 import com.cereproc.cerevoice_eng.SWIGTYPE_p_CPRCEN_engine;
 import com.cereproc.cerevoice_eng.TtsEngineCallback;
+import com.cereproc.cerevoice_eng.cerevoice_eng;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.tts.SpeechClient;
 import de.dfki.vsm.util.tts.cereproc.util.Audioline;
 import de.dfki.vsm.util.tts.cereproc.util.CereprocLoader;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStop;
+import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStop;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,8 @@ public class Cereproc extends SpeechClient {
     private PhrasePhonemeCache phonemeCache;
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     private byte[] utf8bytes;
-    private  CereprocLoader cereprocLoader;
+    private String audioDevice;
+    private CereprocLoader cereprocLoader;
     static {
         // The cerevoice_eng library must be on the path,
         // specify with eg:
@@ -74,12 +74,13 @@ public class Cereproc extends SpeechClient {
     }
 
 
-    public Cereproc(final String licenseNamePath, final String voicePath){
+    public Cereproc(final String licenseNamePath, final String voicePath, String audioDevice){
 
         cereprocLoader = new CereprocLoader(voicePath, licenseNamePath);
         phonemeCache = new PhrasePhonemeCache();
         eng = cereprocLoader.getEng();
         chan_handle = cereprocLoader.getChan_handle();
+        this.audioDevice = audioDevice;
     }
 
     public Cereproc() {
@@ -178,9 +179,11 @@ public class Cereproc extends SpeechClient {
     }
 
     private void setGenericCallback(final Audioline au, final String executionId) {
-        genericCallback = new GenericCallback(au.line(), executionId, phonemeCache, finalWord);
+        genericCallback = new GenericCallback(au.line(), executionId, phonemeCache, finalWord, audioDevice);
         genericCallback.SetCallback(eng, chan_handle);
     }
+
+
 
     private void setPhonemeCallback(final Audioline au) {
         //The callback function, if set, is fired for every phrase returned by the synthesiser.

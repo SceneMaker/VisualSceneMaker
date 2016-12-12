@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.tts.marytts;
 
 import de.dfki.action.sequence.Word;
-import de.dfki.stickman.Stickman;
+import de.dfki.common.Gender;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.util.tts.VoiceName;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
@@ -24,7 +24,7 @@ public class MaryStickmanPhonemes {
 
 
 
-    public LinkedList<Phoneme> getPhonemesSpeechActivity(SpeechActivity sa, Stickman.TYPE gender, VoiceName voiceName, String language){
+    public LinkedList<Phoneme> getPhonemesSpeechActivity(SpeechActivity sa, Gender.TYPE gender, VoiceName voiceName, String language){
         LinkedList<Phoneme> phonemes = new LinkedList<>();
         try {
             if(!sa.getTextOnly("$").equals("")){
@@ -40,7 +40,7 @@ public class MaryStickmanPhonemes {
         return getPhonemesAndMouthPosition(sa, null, voiceName, language);
     }
 
-    public HashMap<Integer, LinkedList<Phoneme>> getPhonemesAndMouthPosition(SpeechActivity sa, Stickman.TYPE gender, VoiceName voiceName, String language){
+    public HashMap<Integer, LinkedList<Phoneme>> getPhonemesAndMouthPosition(SpeechActivity sa, Gender.TYPE gender, VoiceName voiceName, String language){
         LinkedList<Phoneme> phonemes = getPhonemesSpeechActivity(sa, gender, voiceName, language);
        //For computing correctly the whole sentnce
         //Must be index related because with hashmap can happen that two words occurre in the same utterance

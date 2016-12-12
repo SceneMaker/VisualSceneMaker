@@ -2,7 +2,9 @@ package de.dfki.vsm.xtension.stickmantts.action;
 
 import de.dfki.action.sequence.WordTimeMarkSequence;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
+import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
+
+import java.security.Policy;
 
 /**
  * Created by alvaro on 4/7/16.

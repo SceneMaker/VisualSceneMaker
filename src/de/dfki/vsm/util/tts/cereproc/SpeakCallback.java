@@ -1,6 +1,8 @@
 package de.dfki.vsm.util.tts.cereproc;
 
-import com.cereproc.cerevoice_eng.*;
+import com.cereproc.cerevoice_eng.SWIGTYPE_p_CPRC_abuf;
+import com.cereproc.cerevoice_eng.TtsEngineCallback;
+import com.cereproc.cerevoice_eng.cerevoice_eng;
 
 import javax.sound.sampled.SourceDataLine;
 
