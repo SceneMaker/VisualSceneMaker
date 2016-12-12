@@ -17,4 +17,6 @@
       <Feature key="show" val="button_help"/>
     </Agent>
   </Agents>
+  <Player>
+  </Player>
 </Project>

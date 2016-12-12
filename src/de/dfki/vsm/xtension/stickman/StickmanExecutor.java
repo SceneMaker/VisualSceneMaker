@@ -8,14 +8,12 @@ package de.dfki.vsm.xtension.stickman;
 import de.dfki.action.sequence.TimeMark;
 import de.dfki.action.sequence.Word;
 import de.dfki.action.sequence.WordTimeMarkSequence;
-import de.dfki.stickman.StickmanStage;
-import de.dfki.stickman.animationlogic.Animation;
-import de.dfki.stickman.animationlogic.AnimationLoader;
-import de.dfki.stickmanfx.StickmanStageFX;
-import de.dfki.stickmanfx.animationlogic.AnimationFX;
-import de.dfki.stickmanfx.animationlogic.AnimationLoaderFX;
-import de.dfki.util.xml.XMLUtilities;
+
+import de.dfki.common.interfaces.Animation;
+import de.dfki.common.interfaces.StageRoom;
+import de.dfki.stickman3D.Stickman3D;
 import de.dfki.util.ios.IOSIndentWriter;
+import de.dfki.util.xml.XMLUtilities;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -26,10 +24,13 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.stickman.StickmanRepository;
+
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import javafx.scene.paint.Color;
 
 /**
  *
@@ -37,29 +38,30 @@ import java.util.LinkedList;
  */
 public class StickmanExecutor extends ActivityExecutor {
 
-    // The stickman stage window
-    private static StickmanStageFX mStickmanStage;
-    private Thread stickmanLaunchThread;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     // The tworld listener
     private StickmanListener mListener;
-    // The map of processes
-    private final HashMap<String, Process> mProcessMap = new HashMap();
     // The client thread list
     private final HashMap<String, StickmanHandler> mClientMap = new HashMap();
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
+    private Thread stickmanLaunchThread;
+    private StageRoom stickmanStageC;
+    private StickmanRepository stickmanFactory;
+    public static HashMap<String, Stickman3D> stickmanContainer = new HashMap<>();
 
     // Construct the executor
     public StickmanExecutor(final PluginConfig config, final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
+        stickmanFactory = new StickmanRepository(config);
+
     }
 
     // Accept some socket
     public void accept(final Socket socket) {
-        // Make new client thread 
+        // Make new client thread
         final StickmanHandler client = new StickmanHandler(socket, this);
         // Add the client to list
         // TODO: Get some reasonable name for references here!
@@ -83,60 +85,54 @@ public class StickmanExecutor extends ActivityExecutor {
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatures();
 
-        AnimationFX stickmanAnimation = new AnimationFX();
+        Animation stickmanAnimation;
 
         if (activity instanceof SpeechActivity) {
-            String activityText = ((SpeechActivity) activity).getTextOnly("$").trim();
-            
-            if (activityText.isEmpty()) {
-                LinkedList<String> timemarks = ((SpeechActivity) activity).getTimeMarks("$");
-                for (String tm : timemarks) {
-                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+            SpeechActivity sa = (SpeechActivity) activity;
+            // create a new word time mark sequence based on the current utterance blocks
+            WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
+
+            LinkedList blocks = sa.getBlocks();
+            for (final Object item : blocks) {
+                if (!item.toString().contains("$")) {
+                    wts.add(new Word(item.toString()));
+                } else {
+                    wts.add(new TimeMark(item.toString()));
                 }
-            } else {
-                SpeechActivity sa = (SpeechActivity) activity;
+            }
 
-                // create a new word time mark sequence based on the current utterance blocks
-                WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
-
-                LinkedList blocks = sa.getBlocks();
-                for (final Object item : blocks) {
-                    if (!item.toString().contains("$")) {
-                        wts.add(new Word(item.toString()));
-                    } else {
-                        wts.add(new TimeMark(item.toString()));
+            // schedule Mouth_open and Mouth closed activities
+            mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
+            mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
+            stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
+            stickmanAnimation.setParameter(wts);
+            executeAnimationAndWait(activity, stickmanAnimation);
+        } else if (activity instanceof ActionActivity) {
+            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
+            if (stickmanAnimation != null) {
+                if (features != null && !(features.isEmpty())) {
+                    for (final ActionFeature feature : features) {
+                        stickmanAnimation.setParameter(feature.getVal());
                     }
                 }
-
-                // schedule Mouth_open and Mouth closed activities
-                mScheduler.schedule(20, null, new ActionActivity(actor, "face", "Mouth_O", null, null), mProject.getAgentDevice(actor));
-                mScheduler.schedule(200, null, new ActionActivity(actor, "face", "Mouth_Default", null, null), mProject.getAgentDevice(actor));
-
-                stickmanAnimation = AnimationLoaderFX.getInstance().loadEventAnimation(mStickmanStage.getStickmanFX(actor), "Speaking", 3000, false);
-                stickmanAnimation.setParameter(wts);
-
-                executeAnimationAndWait(activity, stickmanAnimation);
-            }
-        } else if (activity instanceof ActionActivity) {
-            stickmanAnimation = AnimationLoaderFX.getInstance().loadAnimation(mStickmanStage.getStickmanFX(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
-            if (stickmanAnimation != null) {
+                System.out.println("de.dfki.vsm.xtension.stickman.StickmanExecutor.execute()");
                 executeAnimation(stickmanAnimation);
             }
         }
     }
 
-    private void executeAnimation(AnimationFX stickmanAnimation) {
-        // executeAnimation command to platform 
+    private void executeAnimation(Animation stickmanAnimation) {
+        // executeAnimation command to platform
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
         broadcast(out.toString().replace("\n", " "));
     }
 
-    private void executeAnimationAndWait(AbstractActivity activity, AnimationFX stickmanAnimation) {
-        // executeAnimation command to platform 
+    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation) {
+        // executeAnimation command to platform
         synchronized (mActivityWorkerMap) {
-            // executeAnimation command to platform 
+            // executeAnimation command to platform
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             IOSIndentWriter iosw = new IOSIndentWriter(out);
             boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
@@ -144,10 +140,10 @@ public class StickmanExecutor extends ActivityExecutor {
 
             // organize wait for feedback
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(stickmanAnimation.mID, cAW);
+            mActivityWorkerMap.put(stickmanAnimation.getmID(), cAW);
 
             // wait until we got feedback
-            mLogger.message("ActivityWorker " + stickmanAnimation.mID + " waiting ....");
+            mLogger.message("ActivityWorker " + stickmanAnimation.getmID() + " waiting ....");
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
                     mActivityWorkerMap.wait();
@@ -155,7 +151,7 @@ public class StickmanExecutor extends ActivityExecutor {
                     mLogger.failure(exc.toString());
                 }
             }
-            mLogger.message("ActivityWorker " + stickmanAnimation.mID + "  done ....");
+            mLogger.message("ActivityWorker " + stickmanAnimation.getmID() + "  done ....");
         }
     }
 
@@ -172,34 +168,28 @@ public class StickmanExecutor extends ActivityExecutor {
 
         final boolean showStickmanNames = mConfig.containsKey("showstickmanname") ? mConfig.getProperty("showstickmanname").equalsIgnoreCase("true") : true;
 
-        // Start the StickmanStage client application 
+        // Start the StickmanStage client application
         mLogger.message("Starting StickmanStage Client Application ...");
-        if (mConfig.containsKey("fullscreen")) {
-            if (mConfig.getProperty("fullscreen").equalsIgnoreCase(Boolean.TRUE.toString())) {
-                mStickmanStage = StickmanStageFX.getNetworkInstanceFullScreen(host, Integer.parseInt(port));
-            } else {
-                mStickmanStage = StickmanStageFX.getNetworkInstance(host, Integer.parseInt(port));
-            }
-        } else {
-            mStickmanStage = StickmanStageFX.getNetworkInstance(host, Integer.parseInt(port));
-        }
-
-        mStickmanStage.showStickmanNameFX(showStickmanNames);
-
+        stickmanStageC = stickmanFactory.createStickman();
         // Get Stickman agents configuration
         for (String name : mProject.getAgentNames()) {
             AgentConfig ac = mProject.getAgentConfig(name);
 
             if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
-                StickmanStageFX.addStickmanFX(name);
+                stickmanStageC.addStickman(name);
+                Stickman3D stickman3D = (Stickman3D) stickmanStageC.getStickman(name);
+                stickman3D.doAnimation("StartIdle", 3000, false);
+                stickmanContainer.put(name, stickman3D);
             }
         }
-
+//Stickman3D s = (Stickman3D) stickmanStageC.getStickman("bob");
+//        s.mLeftUpperLegFX.mColor = Color.rgb(0, 0, 0, 1);
+//        s.mLeftUpperLegFX.update();
+//        System.out.println("123456" + s);
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
-
-                    StickmanStageFX.lauchStickman(mProject.getProjectPath());
+                    stickmanStageC.launchStickmanStage(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -208,7 +198,7 @@ public class StickmanExecutor extends ActivityExecutor {
 
         stickmanLaunchThread.start();
 
-        // Wait for stickman stage to be initialized 
+        // Wait for stickman stage to be initialized
         while (mClientMap.isEmpty()) {
             mLogger.message("Waiting for StickmanStage");
             try {
@@ -222,7 +212,7 @@ public class StickmanExecutor extends ActivityExecutor {
     @Override
     public void unload() {
         // clear the stage
-        StickmanStageFX.clearStage();
+        stickmanStageC.clearStage();
         //stickmanLaunchThread.interrupt();
         // Abort the client threads
         for (final StickmanHandler client : mClientMap.values()) {

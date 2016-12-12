@@ -143,7 +143,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     private void addAgentNodeToPluginNode(EntryPlugin entryPlugin, ContextTreeItem pluginNode){
         for(EntryAgent agent: entryPlugin.getAgents() ) {
-            ContextTreeItem agentNode = new ContextTreeItem(agent, mProject); //It should not be ContextTreeItem
+
+            ContextTreeItem agentNode = new ContextTreeItem(agent, mProject.getProjectPath()); //It should not be ContextTreeItem
             agentNode.registerObserver(this);
             pluginNode.getChildren().add(agentNode);
         }
@@ -171,7 +172,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     private void addPluginToList(EntryPlugin entryPlugin){
-        ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin, mProject);
+        ContextTreeItem pluginNode = new ContextTreeItem(entryPlugin, mProject.getProjectPath());
         pluginNode.registerObserver(this);
         addAgentNodeToPluginNode(entryPlugin, pluginNode);
         devices.getChildren().add(pluginNode);
@@ -214,9 +215,9 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML
     public void selectConfig(MouseEvent event){
         try {
-           processClickedTreeElement(event.getButton().toString().equals("SECONDARY"));
+            processClickedTreeElement(event.getButton().toString().equals("SECONDARY"));
         } catch (Exception e) {
-          System.out.println(e);
+            System.out.println(e);
         }
     }
 
@@ -274,7 +275,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private AbstractTreeEntry getSelectedTreeItem(boolean isRightClicked) throws Exception {
         Object selectedItem = treeView.getSelectionModel().getSelectedItem();
         if(selectedItem == null){
-           throw  new Exception("Not selected item");
+            throw  new Exception("Not selected item");
         }
         AbstractTreeEntry itemEntry;
         if(selectedItem instanceof  ContextTreeItem){
@@ -296,7 +297,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private AbstractTreeEntry getContextItemSelected(boolean isRightClicked){
         Object selectedItem = treeView.getSelectionModel().getSelectedItem();
         if(isRightClicked){
-
             ((ContextTreeItem)selectedItem).getMenu();
             new ContextMenu(new MenuItem("HOLA"));
 
@@ -402,7 +402,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                                 t.getTablePosition().getRow())
                         ).setValue(t.getNewValue());
                         TableConfig dataConfig = t.getRowValue();
-                       saveEditedTableEntry(dataConfig);
+                        saveEditedTableEntry(dataConfig);
                     }
                 }
         );
@@ -449,7 +449,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             agentEntry.setAgentConfig(mProject.getAgentConfig(agent));
         } else if(object instanceof CellEvent){//We change either the name of the agent or device
             changeItemName((CellEvent) object);
-            saveConfig();
         } else if(object instanceof DeleteContextEventAgent){
             removeSelectedItem();
             deleteAgent(((DeleteContextEventAgent) object).getTreeEntry());

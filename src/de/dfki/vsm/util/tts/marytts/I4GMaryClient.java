@@ -29,17 +29,17 @@
 package de.dfki.vsm.util.tts.marytts;
 
 
-import de.dfki.stickman.Stickman;
+import de.dfki.common.Gender;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.tts.SpeechClient;
 import de.dfki.vsm.util.tts.VoiceName;
 import de.dfki.vsm.util.tts.marytts.phonemes.EnglishPhoneme;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.AudioClosed;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.AudioOpened;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStart;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.events.LineStop;
-import de.dfki.vsm.xtension.stickmanmarytts.util.tts.sequence.Phoneme;
+import de.dfki.vsm.xtension.stickmantts.util.tts.events.AudioClosed;
+import de.dfki.vsm.xtension.stickmantts.util.tts.events.AudioOpened;
+import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStart;
+import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStop;
+import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 import marytts.client.MaryClient;
 import marytts.util.data.audio.AudioPlayer;
 import marytts.util.http.Address;
@@ -381,7 +381,7 @@ public class I4GMaryClient extends SpeechClient {
         return phoneticParams;
     }
 
-    public String getAllCousticParms(String word, Stickman.TYPE gender, VoiceName voiceName, String language) throws IOException { //Get phonetic information from a word
+    public String getAllCousticParms(String word, Gender.TYPE gender, VoiceName voiceName, String language) throws IOException { //Get phonetic information from a word
         if(language == null || language.equals("")){
             language = "en";
         }
@@ -392,7 +392,7 @@ public class I4GMaryClient extends SpeechClient {
         return phoneticParams;
     }
 
-    public long getWordDuration(String word, Stickman.TYPE gender, VoiceName voiceName, String language) throws IOException {
+    public long getWordDuration(String word, Gender.TYPE gender, VoiceName voiceName, String language) throws IOException {
         String acousticParams = getAllCousticParms(word, gender, voiceName, language);
         InputStream stream = new ByteArrayInputStream(acousticParams.getBytes(StandardCharsets.UTF_8));
         String endTime = null;
@@ -413,7 +413,7 @@ public class I4GMaryClient extends SpeechClient {
         return (long)0;
     }
 
-    public LinkedList getWordPhonemeList(String word, Stickman.TYPE gender, VoiceName voiceName, String language) throws IOException {
+    public LinkedList getWordPhonemeList(String word, Gender.TYPE gender, VoiceName voiceName, String language) throws IOException {
         String acousticParams = getAllCousticParms(word, gender, voiceName, language);
         InputStream stream = new ByteArrayInputStream(acousticParams.getBytes(StandardCharsets.UTF_8));
         String endTime = null;
@@ -468,13 +468,13 @@ public class I4GMaryClient extends SpeechClient {
     
     }
 
-    public VoiceName getSpeakingVoice(Stickman.TYPE gender, VoiceName voiceName){
+    public VoiceName getSpeakingVoice(Gender.TYPE gender, VoiceName voiceName){
         VoiceName speakerVoice = null;
         if(voiceName != null){
             return voiceName;
         }
 
-        if(gender != null && gender == Stickman.TYPE.MALE){
+        if(gender != null && gender == Gender.TYPE.MALE){
             speakerVoice  = I4GMaryClient.OBADIAH;
         }
         else{
@@ -483,9 +483,9 @@ public class I4GMaryClient extends SpeechClient {
         return speakerVoice;
     }
 
-    public VoiceName getSpeakingVoice(Stickman.TYPE gender){
+    public VoiceName getSpeakingVoice(Gender.TYPE gender){
         VoiceName speakerVoice = null;
-        if(gender != null && gender == Stickman.TYPE.MALE){
+        if(gender != null && gender == Gender.TYPE.MALE){
             speakerVoice  = I4GMaryClient.OBADIAH;
         }
         else{
@@ -494,7 +494,7 @@ public class I4GMaryClient extends SpeechClient {
         return speakerVoice;
     }
 
-    public void speak(Stickman.TYPE gender, String language, VoiceName voiceName) throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public void speak(Gender.TYPE gender, String language, VoiceName voiceName) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
         if(language == null || language.equals("")){
             language = "en";
@@ -514,7 +514,7 @@ public class I4GMaryClient extends SpeechClient {
 
     }
 
-    public void speak(Stickman.TYPE gender, String executionId, VoiceName voiceName, String language) throws IOException, UnknownHostException, UnsupportedAudioFileException,
+    public void speak(Gender.TYPE gender, String executionId, VoiceName voiceName, String language) throws IOException, UnknownHostException, UnsupportedAudioFileException,
             InterruptedException, Exception {
         String text = this.getPhrase();
         this.clearWordList();
