@@ -244,6 +244,17 @@ public class IDManager {
                     reassignSubSuperNodeStartNodeIDs(sNode, relationOldNewIDRef);
                 }
             }
+            /*else {
+                HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
+                SuperNode             sn     = (SuperNode) node.getParentNode();
+                if(sn != null) {
+                    HashMap<String, BasicNode> snm = sn.getStartNodeMap();
+                    for (String key : snm.keySet()) {
+                        newSNM.put(relationOldNewIDRef.get(key), snm.get(key));
+                    }
+                    sn.setStartNodeMap(newSNM);
+                }
+            }*/
         }
     }
 
@@ -273,17 +284,7 @@ public class IDManager {
 
                     // check possible default edges
                     if (node.hasDEdge()) {
-
-                        // DEBUG System.out.println("+ default edge");
-                        String teID = relationOldNewIDRef.get(node.getDedge().getTarget());
-
-                        if (teID != null) {
-                            node.getDedge().setTarget(teID);
-                        } else {
-
-                            // DEBUG System.err.println("unvalid tedge (no target) - removing edge.");
-                            node.removeDEdge();
-                        }
+                        reasignDedge(relationOldNewIDRef, node);
                     }
 
                     break;
@@ -364,43 +365,22 @@ public class IDManager {
                         }
                     }
 
+                    if(node.hasDEdge()){
+                        reasignDedge(relationOldNewIDRef, node);
+                    }
+
                     break;
 
                 case TNODE :
-
                     // DEBUG System.out.println("tedge");
-                    String teID = relationOldNewIDRef.get(node.getDedge().getTarget());
-
-                    if (teID != null) {
-                        node.getDedge().setTarget(teID);
-                    } else {
-
-                        // DEBUG System.err.println("unvalid tedge (no target) - removing edge.");
-                        node.removeDEdge();
-                    }
-
+                    reasignDedge(relationOldNewIDRef, node);
                     break;
 
                 case ENODE :
-                    String eeID = relationOldNewIDRef.get(node.getDedge().getTarget());
-
-                    if (eeID != null) {
-                        node.getDedge().setTarget(eeID);
-                    } else {
-                        node.removeDEdge();
-                    }
-
+                    reasignDedge(relationOldNewIDRef, node);
                     break;
-
                 case NONE :
-                    String neID = relationOldNewIDRef.get(node.getDedge().getTarget());
-
-                    if (neID != null) {
-                        node.getDedge().setTarget(neID);
-                    } else {
-                        node.removeDEdge();
-                    }
-
+                    reasignDedge(relationOldNewIDRef, node);
                     break;
                 }
             }
@@ -410,6 +390,16 @@ public class IDManager {
 
                 reassignEdgesID(childNodes, relationOldNewIDRef);
             }
+        }
+    }
+
+    private void reasignDedge(Hashtable<String, String> relationOldNewIDRef, BasicNode node) {
+        String eID = relationOldNewIDRef.get(node.getDedge().getTarget());
+
+        if (eID != null) {
+            node.getDedge().setTarget(eID);
+        } else {
+            node.removeDEdge();
         }
     }
 }

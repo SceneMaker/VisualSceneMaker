@@ -60,6 +60,8 @@ public class MediaDisplayExecutor extends ActivityExecutor {
                 }
             }
         } else {
+            activity.setType(AbstractActivity.Type.parallel);
+
             final String name = activity.getName();
 
             if (name.equalsIgnoreCase("show")) {

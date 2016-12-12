@@ -98,7 +98,7 @@ public class Play extends Command {
 
     @Override
     public String getConcreteSyntax() {
-        String desc = "!- ( ";
+        String desc = "Play ( ";
 
         desc += ((mArg != null)
                 ? mArg.getConcreteSyntax()
@@ -113,7 +113,7 @@ public class Play extends Command {
 
     @Override
     public String getFormattedSyntax() {
-        String desc = "#p#!- ( ";
+        String desc = "#p#Play ( ";
 
         desc += ((mArg != null)
                 ? mArg.getFormattedSyntax()

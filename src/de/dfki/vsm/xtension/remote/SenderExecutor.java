@@ -33,8 +33,11 @@ public class SenderExecutor extends ActivityExecutor {
 	private String mSceneflowVar;
 
 	// The message, format "VSMMessage#<string without space>#<timestamp>"
-	public static final String sMSG_SEPARATOR = "#";
+	
+        public static final String sMSG_SEPARATOR = "#";
 	public static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
+        
+        
 	private String mMessage = "";
 	private String mMessageTimeInfo = "";
 	private String mMessageRequestVar;

@@ -61,7 +61,7 @@ public class LOGConsoleFormat extends Formatter {
 
         // Append The User Message
         message += Preferences.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
-                   + Preferences.sSYSPROPS_LINE_SEPR + Preferences.sSYSPROPS_LINE_SEPR + "\033[0m";;
+                   + Preferences.sSYSPROPS_LINE_SEPR + Preferences.sSYSPROPS_LINE_SEPR + "\033[0m";
 
         // return The Final Log Message
         return message;

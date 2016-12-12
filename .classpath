@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="de/dfki/vsm/xapistuff/|de/dfki/vsm/xtension/ssi/event/data/|de/dfki/vsm/runtime/activity/feedback/|de/dfki/vsm/util/jpl/|de/dfki/vsm/editor/|de/dfki/vsm/runtime/player/|de/dfki/vsm/editor/project/auxiliary/" kind="src" path="src"/>
+	<classpathentry excluding="project/auxiliary/" kind="src" path="src/de/dfki/vsm/editor"/>
+	<classpathentry kind="src" path="src/de/dfki/vsm/editor/project/auxiliary"/>
+	<classpathentry kind="src" path="src/de/dfki/vsm/runtime/activity/feedback"/>
+	<classpathentry kind="src" path="src/de/dfki/vsm/runtime/player"/>
+	<classpathentry kind="src" path="src/de/dfki/vsm/util/jpl"/>
+	<classpathentry kind="src" path="src/de/dfki/vsm/xapistuff"/>
+	<classpathentry kind="src" path="src/de/dfki/vsm/xtension/ssi/event/data"/>
+	<classpathentry kind="lib" path="bld/VisualSceneMaker3.jar"/>
+	<classpathentry kind="lib" path="lib/affect.jar"/>
+	<classpathentry kind="lib" path="lib/cerevoice_eng.jar"/>
+	<classpathentry kind="lib" path="lib/Charamelapi-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/javaGeom-0.11.1.jar"/>
+	<classpathentry kind="lib" path="lib/JCup.jar"/>
+	<classpathentry kind="lib" path="lib/JFlex.jar"/>
+	<classpathentry kind="lib" path="lib/jna-4.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/jna-platform-4.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/JPL3.jar"/>
+	<classpathentry kind="lib" path="lib/marytts-client-5.1.2-jar-with-dependencies.jar"/>
+	<classpathentry kind="lib" path="lib/RobotEngineApplication.jar"/>
+	<classpathentry kind="lib" path="lib/Stickman.jar"/>
+	<classpathentry kind="lib" path="lib/ujmp-complete-0.2.5.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="tmp"/>
+</classpath>

@@ -266,7 +266,7 @@ public class SceneFlow extends SuperNode {
         String[] arr = start.split(";");
 
         for (String str : arr) {
-            if (!str.isEmpty()) {
+            if (!str.isEmpty()  && !str.equals("null")) {
                 mStartNodeMap.put(str, null);
             }
         }
