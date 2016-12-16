@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="VisualSceneMaker-Master-IDE">
+    <property name="ant.script" value="prj/build.xml"/>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="debug-selected-file-in-src">
+        <fail unless="debug.class">Must set property 'debug.class'</fail>
+        <path id="cp">
+            <pathelement path="lib/JCup.jar;lib/JFlex.jar;lib/JPL3.jar;lib/javaGeom-0.11.1.jar;lib/ujmp-complete-0.2.5.jar;lib/core.jar;lib/Stickman.jar;lib/Charamelapi-1.0.jar;lib/marytts-client-5.1.2-jar-with-dependencies.jar;lib/marytts-lang-en-5.1.2.jar;lib/marytts-runtime-5.1.2-jar-with-dependencies.jar;lib/voice-dfki-obadiah-5.1.jar;lib/voice-dfki-poppy-5.1.jar;lib/voice-dfki-prudence-5.1.jar;lib/voice-dfki-spike-5.1.jar;lib/affect.jar;lib/RobotEngineApplication.jar;lib/cerevoice_eng.jar;lib/TIDIGITS_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;lib/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;lib/jsapi.jar;lib/sphinx4.jar"/>
+        </path>
+        <nbjpdastart addressproperty="jpda.address" name="VisualSceneMaker-Master" transport="dt_socket">
+            <classpath refid="cp"/>
+        </nbjpdastart>
+        <java classname="${debug.class}" fork="true">
+            <classpath refid="cp"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+</project>

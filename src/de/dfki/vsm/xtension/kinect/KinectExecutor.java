@@ -8,6 +8,10 @@ package de.dfki.vsm.xtension.kinect;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -24,6 +28,12 @@ public class KinectExecutor extends RunTimePlugin{
     @Override
     public void launch() 
     {
+//        try {
+//            Runtime.getRuntime().exec("C:\\Users\\EmpaT\\Desktop\\UDP\\FaceTrackingVisualization\\Out\\SingleFace\\Win32\\Debug\\SingleFace.exe", null, 
+//                    new File("C:\\Users\\EmpaT\\Desktop\\UDP\\FaceTrackingVisualization\\Out\\SingleFace\\Win32\\Debug\\"));
+//        } catch (IOException ex) {
+//            Logger.getLogger(KinectExecutor.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         SmileReceiver ec = new SmileReceiver(mProject);
         RotationReceiver rc = new RotationReceiver(mProject);
         SurprisedReceiver sr = new SurprisedReceiver(mProject);
