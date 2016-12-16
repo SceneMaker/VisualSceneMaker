@@ -432,8 +432,12 @@ public final class WizardExecutor extends ActivityExecutor {
                 final String text = mUserSpeechField.getText().trim();
                 if (!text.isEmpty()) {
                     JPLEngine.query("now(Time), "
-                            + "signal(speech, dialog,"
-                            + "["
+                            //+ "signal(speech, dialog,"
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "speech" + "," + "\n"
+                            + "data:" + "["
                             + "  type:" + "dialog_act" + ","
                             + "  fun:" + "info_seeking" + ","
                             + "  cat:" + "check_question" + ","
@@ -442,7 +446,12 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "    color:" + "yellow" + ","
                             + "    shape:" + "square" + ","
                             + "    loc:" + (text.isEmpty() ? "[ ]" : text)
-                            + "  ]"
+                            + "  ]" + "\n"
+                            + "]" + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
                             + "]).");
                 }
             }
@@ -475,7 +484,6 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserGazeCombo = new JComboBox(mUserGazeModel);
         mUserGazeCombo.setBackground(Color.WHITE);
         mUserGazeCombo.setBorder(BorderFactory.createEtchedBorder());
-       
 
         mUserElicitLabel = new JLabel("Head Nod:");
         mUserElicitLabel.setBorder(BorderFactory.createEmptyBorder());
@@ -486,7 +494,7 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                 JPLEngine.query("now(Time), "
+                JPLEngine.query("now(Time), "
                         + "jdd(["
                         + "type:" + "event" + "," + "\n"
                         + "name:" + "user" + "," + "\n"

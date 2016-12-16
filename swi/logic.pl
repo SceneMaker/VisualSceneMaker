@@ -61,21 +61,26 @@
     signal/1,
     signal/2,
     signal/3,
-    remove/1,
-    remove/2,
-    remove/3,
+    detect/1,
+    detect/2,
+    detect/3,
     ignore/1,
     ignore/2,
     ignore/3,
-    % Events
+    % Oldest
     oldest/2,
+    % Helpers
+    state/2,
+    voice/2,
+    touch/4,
+    speech/2,
+    gaze/2,
+    %
     scene/3,
     enter/3,
     place/3,
     user/2,
-    % Evaluation
-    eq/2,
-    ev/2,
+    update/3,
     %Quantifier
     collect/3,
     arrange/3,
@@ -98,24 +103,6 @@
 :- reexport('clean').
 :- reexport('quant').
  
-/*----------------------------------------------------------------------------*
- * Comparison Predicates
- *----------------------------------------------------------------------------*/
-eq(X, Y) :-
-   nonvar(X),
-   nonvar(Y),
-   X == Y.
-   
-/*----------------------------------------------------------------------------*
- * Assignment Predicates
- *----------------------------------------------------------------------------*/
-%set(V, N) :-
-%  var(V), nonvar(N), V = N.
-
-ev(X, Y) :-
-   var(X),
-   X is Y.
-
 /*----------------------------------------------------------------------------*
  * Signalling Predicates
  *----------------------------------------------------------------------------*/
@@ -157,20 +144,20 @@ signal(Mode, Name, Data) :-
    data:Data,
    time:Time]).
 
-remove(Name) :-
+detect(Name) :-
   fsr(Record),
   val(type, signal, Record),
   val(name, Name, Record),
   del(Record).
   
-remove(Mode, Name) :-
+detect(Mode, Name) :-
   fsr(Record),
   val(type, signal, Record),
   val(mode, Mode, Record),
   val(name, Name, Record),
   del(Record).
 
-remove(Mode, Name, Data) :-
+detect(Mode, Name, Data) :-
   fsr(Record),
   val(type, signal, Record),
   val(mode, Mode, Record),
@@ -212,62 +199,64 @@ oldest(Mode, Event) :-
     List),
   eoldest(Event, List), jel(Event).
 
+/*
+oldest_state(Event) :-
+  oldest(state, Event).
+
+oldest_voice(Event) :-
+  oldest(voice, Event).
   
-% /*----------------------------------------------------------------------------*
-%  * State Event Extraction
-%  *----------------------------------------------------------------------------*/
-% state(Event) :-
-%   findall(Record,
-%     (fsr(Record),
-%      val(type, event, Record),
-%      val(mode, state, Record)),
-%     List),
-%   eoldest(Event, List), jel(Event).
-%   
-%  /*----------------------------------------------------------------------------*
-%  * Gaze Event Extraction
-%  *----------------------------------------------------------------------------*/
-% gaze(Event) :-
-%   findall(Record,
-%     (fsr(Record),
-%      val(type, event, Record),
-%      val(mode, gaze, Record)),
-%     List),
-%    eoldest(Event, List), jel(Event).
-% 
-% /*----------------------------------------------------------------------------*
-%  * Touch Event Extraction
-%  *----------------------------------------------------------------------------*/
-% touch(Event) :-
-%   findall(Record,
-%     (fsr(Record),
-%      val(type, event, Record),
-%      val(mode, touch, Record)),
-%     List),
-%    eoldest(Event, List), jel(Event).
-% 
-% /*----------------------------------------------------------------------------*
-%  * Speech Event Extraction
-%  *----------------------------------------------------------------------------*/
-% speech(Event) :-
-%   findall(Record,
-%     (fsr(Record),
-%      val(type, event, Record),
-%      val(mode, speech, Record)),
-%   List),
-%   eoldest(Event, List), jel(Event).
-% 
-% /*----------------------------------------------------------------------------*
-%  * Action Event Extraction
-%  *----------------------------------------------------------------------------*/
-% action(Event) :-
-%   findall(Record,
-%     (fsr(Record),
-%      val(type, event, Record),
-%      val(mode, action, Record)),
-%   List),
-%   eoldest(Event, List), jel(Event).
-%   
+oldest_gaze(Event) :-
+  oldest(gaze, Event).
+
+oldest_touch(Event) :-
+  oldest(touch, Event).
+  
+oldest_face(Event) :-
+  oldest(face, Event).
+
+oldest_head(Event) :-
+  oldest(head, Event).
+
+oldest_speech(Event) :-
+  oldest(speech, Event).
+
+oldest_move(Event) :-
+  oldest(move, Event).
+*/
+
+/*----------------------------------------------------------------------------*
+ * Event Extraction Helpers
+ *----------------------------------------------------------------------------*/
+state(Name, Data) :-
+  oldest(state, Event),
+  val(name, Name, Event),
+  val(data, Data, Event).
+
+voice(Name, Data) :-
+  oldest(voice, Event),
+  val(name, Name, Event),
+  val(data, Data, Event).
+  
+gaze(Name, Data) :-
+  oldest(gaze, Event),
+  val(name, Name, Event),
+  val(data:name, Data, Event).
+  
+touch(Type, Name, Xpos, Ypos) :-
+  oldest(touch, Event),
+  val(data:type, Type, Event),
+  val(data:name, Name, Event),
+  val(data:pos:x, Xpos, Event),
+  val(data:pos:y, Ypos, Event).
+
+update(_, _, _).
+
+speech(Event, Cat) :-
+  oldest(speech, Event),
+  val(data:cat, Cat, Event).
+  
+
 /*----------------------------------------------------------------------------*
  * Scene Event Extraction
  *----------------------------------------------------------------------------*/
