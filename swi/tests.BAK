@@ -89,7 +89,6 @@ add([type:event,name:user,mode:gaze,data:[type:entity, sort:piece, name:p1, conf
 add([type:event,name:user,mode:gaze,data:[type:entity, sort:piece, name:p2, conf:1.0],time:8800,dist:100,life:100,conf:1.0]),
 add([type:event,name:agent,mode:gaze,data:[type:entity, sort:piece, name:p2, conf:1.0],time:8900,dist:100,life:100,conf:1.0]),
 add([type:event,name:agent,mode:gaze,data:[type:entity, sort:piece, name:p1, conf:1.0],time:9000,dist:100,life:100,conf:1.0]),
-
 add([type:event,name:agent,mode:speech, id:1,
      data:[type:dialog_act,fun:info_seeking,cat:check_question,
          data:[color:yellow,shape:square,locref:here]],
@@ -102,6 +101,3 @@ add([type:event,name:agent,mode:speech, id:3,
      data:[type:dialog_act,fun:info_seeking,cat:check_question,
          data:[size:small,shape:triangle,locref:'over there']],
      time:9000,dist:9000,life:9000,conf:1.0]).
-
-
-%fsr(SE), val(id, 3, SE), out(SE), findall(GE, (fsr(GE), iduring(GE, SE)), GL), length(GL, L), out(L).

@@ -73,7 +73,7 @@
     state/2,
     voice/2,
     touch/4,
-    speech/2,
+    speech/3,
     gaze/2,
     %
     scene/3,
@@ -199,32 +199,6 @@ oldest(Mode, Event) :-
     List),
   eoldest(Event, List), jel(Event).
 
-/*
-oldest_state(Event) :-
-  oldest(state, Event).
-
-oldest_voice(Event) :-
-  oldest(voice, Event).
-  
-oldest_gaze(Event) :-
-  oldest(gaze, Event).
-
-oldest_touch(Event) :-
-  oldest(touch, Event).
-  
-oldest_face(Event) :-
-  oldest(face, Event).
-
-oldest_head(Event) :-
-  oldest(head, Event).
-
-oldest_speech(Event) :-
-  oldest(speech, Event).
-
-oldest_move(Event) :-
-  oldest(move, Event).
-*/
-
 /*----------------------------------------------------------------------------*
  * Event Extraction Helpers
  *----------------------------------------------------------------------------*/
@@ -252,9 +226,10 @@ touch(Type, Name, Xpos, Ypos) :-
 
 update(_, _, _).
 
-speech(Event, Cat) :-
+speech(Event, Act, Fun) :-
   oldest(speech, Event),
-  val(data:cat, Cat, Event).
+  val(data, Act, Event),
+  val(fun, Fun, Act).
   
 
 /*----------------------------------------------------------------------------*
@@ -368,7 +343,8 @@ oldest(Template, Generator, Oldest) :-
 %Works only for propositional questions
 disambiguate(Speech, Fused) :-
   % Check if the question is a set or check type
-  val(data:cat, check_question, Speech),%out(Cat), nl,
+  val(data:fun, info_seeking, Speech),
+  val(data:cat, check_question, Speech),
   % Check if the question has a location reference
   val(data:data:locref, _, Speech), out('Found Location Reference'), nl,
   % Get name of the majority of gaze events
