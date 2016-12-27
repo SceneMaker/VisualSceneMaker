@@ -6,11 +6,11 @@
 <entry key="num_magnets">8</entry>
 <entry key="grid">false</entry>
 <entry key="node_width">80</entry>
-<entry key="showvariables">false</entry>
+<entry key="showvariables">true</entry>
 <entry key="frame_posy">0</entry>
 <entry key="frame_posx">0</entry>
 <entry key="scriptfonttype">Monospaced</entry>
-<entry key="shownodeid">true</entry>
+<entry key="shownodeid">false</entry>
 <entry key="showsceneeditor">true</entry>
 <entry key="visualization">true</entry>
 <entry key="frame_height">600</entry>
@@ -23,7 +23,7 @@
 <entry key="scriptfonsize">16</entry>
 <entry key="frame_width">800</entry>
 <entry key="defaultsupernodename">default</entry>
-<entry key="visualizationtrace">true</entry>
+<entry key="visualizationtrace">false</entry>
 <entry key="grid_y">1</entry>
 <entry key="propertiesdividerlocation">867</entry>
 <entry key="grid_x">1</entry>

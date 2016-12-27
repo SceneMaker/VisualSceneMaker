@@ -442,9 +442,9 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "  fun:" + "info_seeking" + ","
                             + "  cat:" + "check_question" + ","
                             + "  data:" + "["
-                            + "    size:" + "large" + ","
+                            //+ "    size:" + "large" + ","
                             + "    color:" + "yellow" + ","
-                            + "    shape:" + "square" + ","
+                            //+ "    shape:" + "square" + ","
                             + "    loc:" + (text.isEmpty() ? "[ ]" : text)
                             + "  ]" + "\n"
                             + "]" + "," + "\n"
