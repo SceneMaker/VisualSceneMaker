@@ -470,7 +470,7 @@ public final class WizardExecutor extends ActivityExecutor {
                         + "jdd(["
                         + "type:" + "event" + "," + "\n"
                         + "name:" + "user" + "," + "\n"
-                        + "mode:" + "facs" + "," + "\n"
+                        + "mode:" + "face" + "," + "\n"
                         + "data:" + ((String) event.getItem()) + "," + "\n"
                         + "time:" + "Time" + "," + "\n"
                         + "dist:" + 0 + "," + "\n"
@@ -602,7 +602,7 @@ public final class WizardExecutor extends ActivityExecutor {
                         + "["
                         + "dialogscene:" + scene + ","
                         + "abortscene:" + "abort" + ","
-                        + "addressee:" + "agent"
+                        + "assignscene:" + "agent"
                         + "]).");
 
             }
@@ -628,7 +628,7 @@ public final class WizardExecutor extends ActivityExecutor {
                             + "jdd(["
                             + "type:" + "event" + "," + "\n"
                             + "name:" + "agent" + "," + "\n"
-                            + "mode:" + "facs" + "," + "\n"
+                            + "mode:" + "face" + "," + "\n"
                             + "data:" + ((String) event.getItem()) + "," + "\n"
                             + "time:" + "Time" + "," + "\n"
                             + "dist:" + 0 + "," + "\n"

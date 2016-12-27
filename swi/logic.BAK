@@ -75,6 +75,8 @@
     touch/4,
     speech/3,
     gaze/2,
+    face/1,
+    head/1,
     %
     scene/3,
     enter/3,
@@ -233,7 +235,16 @@ speech(Event, Fun, Cat) :-
   val(data:fun, Fun, Event),
   val(data:cat, Cat, Event).
   
-
+face(Data) :-
+  oldest(face, Event),
+  val(name, Name, Event),
+  val(data, Data, Event).
+  
+head(Data) :-
+  oldest(head, Event),
+  val(name, Name, Event),
+  val(data, Data, Event).
+  
 /*----------------------------------------------------------------------------*
  * Scene Event Extraction
  *----------------------------------------------------------------------------*/
@@ -444,4 +455,4 @@ test :-
 add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large yellow square']),
 add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the small green triangle']),
 add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:yellow, shape:square, pos:[x:0, y:0], state:absent],desc:'the large red star']),
-add([type:entity,sort:piece,name:p4,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large red star']),
+add([type:entity,sort:piece,name:p4,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large red star']).

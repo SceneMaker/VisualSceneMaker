@@ -75,6 +75,8 @@
     touch/4,
     speech/3,
     gaze/2,
+    face/1,
+    head/1,
     %
     scene/3,
     enter/3,
@@ -233,7 +235,14 @@ speech(Event, Fun, Cat) :-
   val(data:fun, Fun, Event),
   val(data:cat, Cat, Event).
   
-
+face(Data) :-
+  oldest(face, Event),
+  val(data, Data, Event).
+  
+head(Data) :-
+  oldest(head, Event),
+  val(data, Data, Event).
+  
 /*----------------------------------------------------------------------------*
  * Scene Event Extraction
  *----------------------------------------------------------------------------*/
