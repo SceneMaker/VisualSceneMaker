@@ -98,7 +98,7 @@
     %
     max_size_list/2,
     %Test
-    test/0
+    reset/0
   ]).
 
 :- reexport('facts').
@@ -449,7 +449,7 @@ user(Name, Version) :-
 
 
 
-test :-
+reset :-
 add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large yellow square']),
 add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the small green triangle']),
 add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:yellow, shape:square, pos:[x:0, y:0], state:absent],desc:'the large red star']),
