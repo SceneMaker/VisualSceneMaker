@@ -29,6 +29,9 @@ public final class ReetiExecutor extends ActivityExecutor {
             = new HashMap();
     // The reeti connection handler
     private ReetiHandler mHandler;
+    
+    // record the curernt positon of the motor (neckRotat)
+    private static int iPosition;
 
     // Construct the executor
     public ReetiExecutor(
@@ -103,7 +106,8 @@ public final class ReetiExecutor extends ActivityExecutor {
                      // Create the speech command
                 command = new CommandMessage(cmid, "speech");
                 // Append the tts text param
-                command.addParameter("text", "\\voice=" + "Stefan" + " " + "\\language=" + "de" + " " + text);
+                command.addParameter("text", "\\voice=" + "Cereproc" + " " + "\\language=" + "en" + " " + text);
+//                command.addParameter("text", "\\voice=" + "Kate" + " " + "\\language=" + "en" + " " + text);
             }
         } else if (activity instanceof ActionActivity) {
             // Create the action command
@@ -169,7 +173,17 @@ public final class ReetiExecutor extends ActivityExecutor {
                 mLogger.message("Worker '" + worker + "' finished execution of command with id '" + uid + "'");
                 // Notify waiting workers
                 mWorkerMap.notifyAll();
-            } else if (status.equals("rejected")) {
+            } else if (typ.equals("request")) {
+                // record the current motor position
+                String sPosition = status.getStatusDetails().get("neckRotat");
+                iPosition = Integer.parseInt(sPosition);
+                // Remove the worker thread
+                final Thread worker = mWorkerMap.remove(uid);
+                // Debug information
+                mLogger.message("Worker '" + worker + "' request execution of command with id '" + uid + "'");
+                // Notify waiting workers
+                mWorkerMap.notifyAll();
+            }else if (status.equals("rejected")) {
                 // Remove the worker thread
                 final Thread worker = mWorkerMap.remove(uid);
                 // Debug information
@@ -191,5 +205,9 @@ public final class ReetiExecutor extends ActivityExecutor {
                 //
             }
         }
+    }
+    
+    public static int getCurrentPosition(){
+        return iPosition;
     }
 }
