@@ -51,15 +51,20 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
         // Load the plugin configuration
         final String ssidir = mConfig.getProperty("ssidir");
         final String ssibat = mConfig.getProperty("ssibat");
-        // Create the plugin's processes
-//        try {
-//            mProcessMap.put(ssibat, Runtime.getRuntime().exec(
-//                    "cmd /c start " + ssibat + "" + "", null, new File(ssidir)));
-//        } catch (final IOException exc) {
-//            mLogger.failure(exc.toString());
-//        }
-        // Print some information 
-        mLogger.message("Launching TWorld SSI Plugin");
+
+        final Boolean autoloadssi = Boolean.parseBoolean(mConfig.getProperty("autoloadssi"));
+
+        if (autoloadssi) {
+            // Create the plugin's processes
+            try {
+                mProcessMap.put(ssibat, Runtime.getRuntime().exec(
+                        "cmd /c start " + ssibat + "" + "", null, new File(ssidir)));
+            } catch (final IOException exc) {
+                mLogger.failure(exc.toString());
+            }
+            // Print some information 
+            mLogger.message("Launching TWorld SSI Plugin");
+        }
     }
 
     // Unload SSI plugin
@@ -92,7 +97,8 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
 
     // Handle SSI event array
     @Override
-    public void handle(final SSIEventArray array) {
+    public void handle(final SSIEventArray array
+    ) {
         // Print some information 
         mLogger.message("Handling SSI event array:\n " + array.toString());
 
@@ -102,8 +108,73 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
             if (!mUseSuperEvent) {
                 mLogger.success("######################");
 
-                if (event.getSender().equals("audio")
-                        && event.getEvent().equals("vad")) {
+                // Added by PG - LEARNTEC demo - fubi events
+                if (event.getSender().equals("Fubi")) {
+                    String eventName = event.getEvent(); //Valid event names (and SceneMaker variables) are ArmsOpen, ArmsCrossed, RightHandHeadTouch, LeftHandHeadTouch, LookLeft, LookRight, Waving
+                    if (event.getState().equalsIgnoreCase("completed")) {
+                        mLogger.success("User stopped " + eventName);
+
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set speaking variable
+                            mProject.setVariable(eventName, false);
+                        }
+                    } else if (event.getState().equalsIgnoreCase("continued")) {
+                        mLogger.success("User started " + eventName);
+
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set speaking variable
+                            mProject.setVariable(eventName, true);
+                        }
+                    }
+                    // Added by PG - LEARNTEC demo - shore events
+                } else if (event.getSender().equals("facialexpression")) {
+                    String eventName = event.getEvent(); //Valid event name is smile - note that SceneMaker variable is not smile. it is UserSmileShore
+                    if (event.getState().equalsIgnoreCase("completed")) {
+                        mLogger.success("User stopped smiling (Shore)");
+
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set speaking variable
+                            mProject.setVariable("UserSmileShore", false);
+                        }
+                    } else if (event.getState().equalsIgnoreCase("continued")) {
+                        mLogger.success("User started smiling (Shore)");
+
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set speaking variable
+                            mProject.setVariable("UserSmileShore", true);
+                        }
+                    }
+                    // Added by PG - LEARNTEC demo - fubi events
+                } else if (event.getSender().equals("kinect")) {
+                    String eventName = event.getEvent(); //Valid event name is smile - note that SceneMaker variable is not smile. it is UserSmileKinect
+                    if (event.getState().equalsIgnoreCase("completed")) {
+                        mLogger.success("User stopped smiling (Kinect)");
+
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set speaking variable
+                            mProject.setVariable("UserSmileKinect", false);
+                        }
+                    } else if (event.getState().equalsIgnoreCase("continued")) {
+                        mLogger.success("User started smiling (Kinect)");
+
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set speaking variable
+                            mProject.setVariable("UserSmileKinect", true);
+                        }
+                    }
+                } else if (event.getSender().equals("audio") && event.getEvent().equals("vad")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
                         // User stopped speaking
                         mLogger.success("User stopped speaking");
@@ -166,7 +237,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                         // Set keyword variable
                         mProject.setVariable("UserSaidKeyword", keyword);
                     }
-                // This condetion is used to receive structure sent by SSI
+                    // This condetion is used to receive structure sent by SSI
                 } else if (event.getSender().equals("audio")
                         && event.getEvent().equals("speech")) {
                     final String structure = ((SSIStringData) obj).toString().trim();
@@ -188,7 +259,7 @@ public final class TWorldSSIPlugin extends SSIRunTimePlugin {
                         // Set keyword variable
                         mProject.setVariable("UserSaidStructure", structure);
                     }
-                }else {
+                } else {
                     // Should not happen
                 }
 
