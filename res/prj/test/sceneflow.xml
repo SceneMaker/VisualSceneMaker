@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="AAMAS" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 28 Dez 2016 18:44:06" start="N651;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="Behavior Flow Model" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Sa, 14 Jan 2017 12:12:28" start="N651;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -139,7 +139,7 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="746" yPos="26"/>
+        <Position xPos="266" yPos="26"/>
       </Graphics>
     </Node>
     <SuperNode id="S26" name="Behavior;Pattern;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S112;S1;">
@@ -169,7 +169,7 @@
           <Position xPos="266" yPos="26"/>
         </Graphics>
       </Node>
-      <SuperNode id="S47" name="Detect;Connection;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S15;">
+      <SuperNode id="S47" name="Connection;Event;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S15;">
         <Define>
         </Define>
         <Declare>
@@ -177,7 +177,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="426" yPos="186"/>
+          <Position xPos="586" yPos="346"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -615,7 +615,7 @@
           </Node>
         </SuperNode>
       </SuperNode>
-      <SuperNode id="S112" name="Detect;Overlaps;And;Conflicts" comment="" hideLocalVar="false" hideGlobalVar="false" start="S10;S150;">
+      <SuperNode id="S112" name="Voice;Overlap And;Conflict;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S10;S150;">
         <Define>
         </Define>
         <Declare>
@@ -685,13 +685,13 @@
             <EEdge target="S115" start ="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="1026" yPos="186" ctrlXPos="1026" ctrlYPos="215"/>
-                <ControlPoint xPos="986" yPos="266" ctrlXPos="1015" ctrlYPos="236"/>
+                <ControlPoint xPos="1071" yPos="206" ctrlXPos="1026" ctrlYPos="215"/>
+                <ControlPoint xPos="1003" yPos="346" ctrlXPos="1015" ctrlYPos="236"/>
               </Connection>
             </Graphics>
             </EEdge>
             <Graphics>
-              <Position xPos="986" yPos="106"/>
+              <Position xPos="1066" yPos="186"/>
             </Graphics>
           </Node>
           <Node id="N86" name="Agent;Overlaps;User" history="false">
@@ -710,13 +710,13 @@
             <EEdge target="S115" start ="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="1026" yPos="426" ctrlXPos="1026" ctrlYPos="396"/>
-                <ControlPoint xPos="986" yPos="346" ctrlXPos="1015" ctrlYPos="375"/>
+                <ControlPoint xPos="1071" yPos="526" ctrlXPos="1026" ctrlYPos="396"/>
+                <ControlPoint xPos="1015" yPos="346" ctrlXPos="1015" ctrlYPos="375"/>
               </Connection>
             </Graphics>
             </EEdge>
             <Graphics>
-              <Position xPos="986" yPos="426"/>
+              <Position xPos="1066" yPos="506"/>
             </Graphics>
           </Node>
           <SuperNode id="S78" name="None; Speaking" comment="" hideLocalVar="false" hideGlobalVar="false" start="N228;">
@@ -845,7 +845,7 @@
               <Graphics>
                 <Connection>
                   <ControlPoint xPos="746" yPos="146" ctrlXPos="846" ctrlYPos="146"/>
-                  <ControlPoint xPos="986" yPos="146" ctrlXPos="886" ctrlYPos="146"/>
+                  <ControlPoint xPos="1078" yPos="198" ctrlXPos="886" ctrlYPos="146"/>
                 </Connection>
               </Graphics>
               <And>
@@ -932,7 +932,7 @@
               <Graphics>
                 <Connection>
                   <ControlPoint xPos="746" yPos="466" ctrlXPos="846" ctrlYPos="466"/>
-                  <ControlPoint xPos="986" yPos="466" ctrlXPos="886" ctrlYPos="466"/>
+                  <ControlPoint xPos="1078" yPos="518" ctrlXPos="886" ctrlYPos="466"/>
                 </Connection>
               </Graphics>
               <And>
@@ -990,7 +990,7 @@
             <IEdge target="S114" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="906" yPos="329" ctrlXPos="821" ctrlYPos="377"/>
+                  <ControlPoint xPos="986" yPos="346" ctrlXPos="821" ctrlYPos="377"/>
                   <ControlPoint xPos="746" yPos="426" ctrlXPos="830" ctrlYPos="341"/>
                 </Connection>
               </Graphics>
@@ -1004,7 +1004,7 @@
             <IEdge target="S78" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="906" yPos="306" ctrlXPos="726" ctrlYPos="306"/>
+                  <ControlPoint xPos="986" yPos="363" ctrlXPos="726" ctrlYPos="306"/>
                   <ControlPoint xPos="506" yPos="306" ctrlXPos="686" ctrlYPos="306"/>
                 </Connection>
               </Graphics>
@@ -1020,7 +1020,7 @@
             <IEdge target="S113" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="906" yPos="283" ctrlXPos="821" ctrlYPos="234"/>
+                  <ControlPoint xPos="986" yPos="375" ctrlXPos="821" ctrlYPos="234"/>
                   <ControlPoint xPos="746" yPos="186" ctrlXPos="830" ctrlYPos="270"/>
                 </Connection>
               </Graphics>
@@ -1032,7 +1032,7 @@
               </And>
             </IEdge>
             <Graphics>
-              <Position xPos="906" yPos="266"/>
+              <Position xPos="986" yPos="346"/>
             </Graphics>
             <LocalVariableBadge>
               <Position xPos="10" yPos="10"/>
@@ -1583,7 +1583,7 @@
             <IEdge target="S175" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="906" yPos="363" ctrlXPos="787" ctrlYPos="294"/>
+                  <ControlPoint xPos="946" yPos="403" ctrlXPos="787" ctrlYPos="294"/>
                   <ControlPoint xPos="666" yPos="249" ctrlXPos="784" ctrlYPos="317"/>
                 </Connection>
               </Graphics>
@@ -1599,7 +1599,7 @@
             <IEdge target="S181" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="906" yPos="409" ctrlXPos="821" ctrlYPos="457"/>
+                  <ControlPoint xPos="946" yPos="415" ctrlXPos="821" ctrlYPos="457"/>
                   <ControlPoint xPos="746" yPos="523" ctrlXPos="830" ctrlYPos="474"/>
                 </Connection>
               </Graphics>
@@ -1609,7 +1609,7 @@
               </And>
             </IEdge>
             <Graphics>
-              <Position xPos="906" yPos="346"/>
+              <Position xPos="946" yPos="386"/>
             </Graphics>
             <LocalVariableBadge>
               <Position xPos="10" yPos="10"/>
@@ -1725,7 +1725,7 @@
               <Graphics>
                 <Connection>
                   <ControlPoint xPos="666" yPos="215" ctrlXPos="766" ctrlYPos="187"/>
-                  <ControlPoint xPos="906" yPos="215" ctrlXPos="806" ctrlYPos="187"/>
+                  <ControlPoint xPos="946" yPos="226" ctrlXPos="806" ctrlYPos="187"/>
                 </Connection>
               </Graphics>
               <And>
@@ -1799,7 +1799,7 @@
             <IEdge target="S175" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="906" yPos="226" ctrlXPos="806" ctrlYPos="226"/>
+                  <ControlPoint xPos="946" yPos="243" ctrlXPos="806" ctrlYPos="226"/>
                   <ControlPoint xPos="666" yPos="226" ctrlXPos="766" ctrlYPos="226"/>
                 </Connection>
               </Graphics>
@@ -1816,7 +1816,7 @@
               <Graphics>
                 <Connection>
                   <ControlPoint xPos="946" yPos="266" ctrlXPos="946" ctrlYPos="286"/>
-                  <ControlPoint xPos="946" yPos="346" ctrlXPos="946" ctrlYPos="326"/>
+                  <ControlPoint xPos="946" yPos="386" ctrlXPos="946" ctrlYPos="326"/>
                 </Connection>
               </Graphics>
               <PrologQuery>
@@ -1826,7 +1826,7 @@
             <IEdge target="S177" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="946" yPos="186" ctrlXPos="946" ctrlYPos="166"/>
+                  <ControlPoint xPos="963" yPos="226" ctrlXPos="946" ctrlYPos="166"/>
                   <ControlPoint xPos="946" yPos="106" ctrlXPos="946" ctrlYPos="126"/>
                 </Connection>
               </Graphics>
@@ -1836,7 +1836,7 @@
               </And>
             </IEdge>
             <Graphics>
-              <Position xPos="906" yPos="186"/>
+              <Position xPos="946" yPos="226"/>
             </Graphics>
             <LocalVariableBadge>
               <Position xPos="10" yPos="10"/>
@@ -1888,7 +1888,7 @@
             <IEdge target="S178" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="906" yPos="66" ctrlXPos="726" ctrlYPos="66"/>
+                  <ControlPoint xPos="946" yPos="66" ctrlXPos="726" ctrlYPos="66"/>
                   <ControlPoint xPos="506" yPos="66" ctrlXPos="686" ctrlYPos="66"/>
                 </Connection>
               </Graphics>
@@ -1902,8 +1902,8 @@
             <IEdge target="S180" start="">
               <Graphics>
                 <Connection>
-                  <ControlPoint xPos="986" yPos="106" ctrlXPos="1087" ctrlYPos="102"/>
-                  <ControlPoint xPos="1226" yPos="186" ctrlXPos="1172" ctrlYPos="132"/>
+                  <ControlPoint xPos="986" yPos="66" ctrlXPos="1087" ctrlYPos="102"/>
+                  <ControlPoint xPos="1266" yPos="226" ctrlXPos="1172" ctrlYPos="132"/>
                 </Connection>
               </Graphics>
               <And>
@@ -1914,7 +1914,7 @@
               </And>
             </IEdge>
             <Graphics>
-              <Position xPos="906" yPos="26"/>
+              <Position xPos="946" yPos="66"/>
             </Graphics>
             <LocalVariableBadge>
               <Position xPos="10" yPos="10"/>
@@ -2017,13 +2017,13 @@
             <EEdge target="S58" start ="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="1066" yPos="506" ctrlXPos="1012" ctrlYPos="452"/>
-                <ControlPoint xPos="986" yPos="426" ctrlXPos="1039" ctrlYPos="479"/>
+                <ControlPoint xPos="1106" yPos="563" ctrlXPos="1012" ctrlYPos="452"/>
+                <ControlPoint xPos="1026" yPos="426" ctrlXPos="1039" ctrlYPos="479"/>
               </Connection>
             </Graphics>
             </EEdge>
             <Graphics>
-              <Position xPos="1066" yPos="506"/>
+              <Position xPos="1106" yPos="546"/>
             </Graphics>
             <LocalVariableBadge>
               <Position xPos="10" yPos="10"/>
@@ -2062,13 +2062,13 @@
             <EEdge target="S58" start ="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="1226" yPos="266" ctrlXPos="1172" ctrlYPos="319"/>
-                <ControlPoint xPos="986" yPos="346" ctrlXPos="1039" ctrlYPos="292"/>
+                <ControlPoint xPos="1266" yPos="266" ctrlXPos="1172" ctrlYPos="319"/>
+                <ControlPoint xPos="986" yPos="386" ctrlXPos="1039" ctrlYPos="292"/>
               </Connection>
             </Graphics>
             </EEdge>
             <Graphics>
-              <Position xPos="1226" yPos="186"/>
+              <Position xPos="1266" yPos="226"/>
             </Graphics>
             <LocalVariableBadge>
               <Position xPos="10" yPos="10"/>
@@ -2102,7 +2102,7 @@
               <Graphics>
                 <Connection>
                   <ControlPoint xPos="746" yPos="546" ctrlXPos="886" ctrlYPos="546"/>
-                  <ControlPoint xPos="1066" yPos="546" ctrlXPos="926" ctrlYPos="546"/>
+                  <ControlPoint xPos="1106" yPos="546" ctrlXPos="926" ctrlYPos="546"/>
                 </Connection>
               </Graphics>
               <And>
@@ -2204,7 +2204,7 @@
           </SuperNode>
         </SuperNode>
       </SuperNode>
-      <SuperNode id="S6" name="Detect;Feedback;Eliciting" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+      <SuperNode id="S6" name="Feedback; And Mimicry;Eliciting;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
         <Define>
         </Define>
         <Declare>
@@ -2212,7 +2212,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="586" yPos="186"/>
+          <Position xPos="426" yPos="346"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -2232,7 +2232,7 @@
           </Graphics>
         </Node>
       </SuperNode>
-      <SuperNode id="S7" name="Detect;Mimicry;Eliciting" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+      <SuperNode id="S12" name="Shared And;Mutual Gaze;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S13;">
         <Define>
         </Define>
         <Declare>
@@ -2240,35 +2240,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="586" yPos="346"/>
-        </Graphics>
-        <LocalVariableBadge>
-          <Position xPos="10" yPos="10"/>
-        </LocalVariableBadge>
-        <GlobalVariableBadge>
-          <Position xPos="10" yPos="10"/>
-        </GlobalVariableBadge>
-        <Node id="N5" name="History" history="true">
-          <Define>
-          </Define>
-          <Declare>
-          </Declare>
-          <Commands>
-          </Commands>
-          <Graphics>
-            <Position xPos="26" yPos="26"/>
-          </Graphics>
-        </Node>
-      </SuperNode>
-      <SuperNode id="S12" name="Detect;Gaze;Relations" comment="" hideLocalVar="false" hideGlobalVar="false" start="S13;">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-        </Commands>
-        <Graphics>
-          <Position xPos="426" yPos="346"/>
+          <Position xPos="426" yPos="186"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="471" yPos="273"/>
@@ -2844,21 +2816,13 @@
           </SuperNode>
         </SuperNode>
       </SuperNode>
-      <SuperNode id="S1" name="Detect;Turn Taking;Signals" comment="" hideLocalVar="false" hideGlobalVar="false" start="S24;">
+      <SuperNode id="S1" name="Turn Taking;Signal;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S24;">
         <Define>
         </Define>
         <Declare>
         </Declare>
         <Commands>
         </Commands>
-        <EEdge target="S1" start ="">
-        <Graphics>
-          <Connection>
-            <ControlPoint xPos="306" yPos="186" ctrlXPos="306" ctrlYPos="106"/>
-            <ControlPoint xPos="346" yPos="186" ctrlXPos="426" ctrlYPos="106"/>
-          </Connection>
-        </Graphics>
-        </EEdge>
         <Graphics>
           <Position xPos="266" yPos="186"/>
         </Graphics>
@@ -2876,7 +2840,7 @@
           <Commands>
           </Commands>
           <Graphics>
-            <Position xPos="906" yPos="26"/>
+            <Position xPos="1146" yPos="266"/>
           </Graphics>
         </Node>
         <Node id="N97" name="User;Takes;Turn" history="false">
@@ -2933,6 +2897,14 @@
             <String><![CDATA[signal(user, turn, yield).]]></String>
             </PrologQuery>
           </Commands>
+          <EEdge target="S24" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="507" yPos="236" ctrlXPos="455" ctrlYPos="249"/>
+              <ControlPoint xPos="426" yPos="375" ctrlXPos="479" ctrlYPos="360"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
           <Graphics>
             <Position xPos="506" yPos="186"/>
           </Graphics>
@@ -2947,6 +2919,14 @@
             <String><![CDATA[signal(user, turn, assign).]]></String>
             </PrologQuery>
           </Commands>
+          <EEdge target="S24" start ="">
+          <Graphics>
+            <Connection>
+              <ControlPoint xPos="506" yPos="386" ctrlXPos="486" ctrlYPos="386"/>
+              <ControlPoint xPos="426" yPos="386" ctrlXPos="446" ctrlYPos="386"/>
+            </Connection>
+          </Graphics>
+          </EEdge>
           <Graphics>
             <Position xPos="506" yPos="346"/>
           </Graphics>
@@ -3311,6 +3291,34 @@
             </Graphics>
           </Node>
         </SuperNode>
+      </SuperNode>
+      <SuperNode id="S5" name="Back-;Channel And;Response;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="586" yPos="186"/>
+        </Graphics>
+        <LocalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </LocalVariableBadge>
+        <GlobalVariableBadge>
+          <Position xPos="10" yPos="10"/>
+        </GlobalVariableBadge>
+        <Node id="N3" name="History" history="true">
+          <Define>
+          </Define>
+          <Declare>
+          </Declare>
+          <Commands>
+          </Commands>
+          <Graphics>
+            <Position xPos="0" yPos="0"/>
+          </Graphics>
+        </Node>
       </SuperNode>
     </SuperNode>
     <SuperNode id="S20" name="Participant;Role Shift;Decisions" comment="" hideLocalVar="false" hideGlobalVar="false" start="S22;">
@@ -7811,7 +7819,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="346" yPos="26"/>
+          <Position xPos="266" yPos="26"/>
         </Graphics>
       </Node>
       <SuperNode id="S4" name="Dialog;Flow;Control" comment="" hideLocalVar="false" hideGlobalVar="false" start="S49;N139;">
@@ -7837,7 +7845,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="506" yPos="26"/>
+          <Position xPos="266" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="815" yPos="355"/>
@@ -8806,7 +8814,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="666" yPos="26"/>
+          <Position xPos="266" yPos="186"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -8835,8 +8843,8 @@
           <IEdge target="S130" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="666" yPos="106" ctrlXPos="646" ctrlYPos="126"/>
-                <ControlPoint xPos="586" yPos="106" ctrlXPos="606" ctrlYPos="126"/>
+                <ControlPoint xPos="506" yPos="266" ctrlXPos="486" ctrlYPos="286"/>
+                <ControlPoint xPos="426" yPos="266" ctrlXPos="446" ctrlYPos="286"/>
               </Connection>
             </Graphics>
             <Or>
@@ -8851,7 +8859,7 @@
             </Or>
           </IEdge>
           <Graphics>
-            <Position xPos="664" yPos="57"/>
+            <Position xPos="506" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -9270,8 +9278,8 @@
           <IEdge target="S103" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="586" yPos="26" ctrlXPos="606" ctrlYPos="15"/>
-                <ControlPoint xPos="666" yPos="26" ctrlXPos="646" ctrlYPos="15"/>
+                <ControlPoint xPos="426" yPos="186" ctrlXPos="446" ctrlYPos="175"/>
+                <ControlPoint xPos="506" yPos="186" ctrlXPos="486" ctrlYPos="175"/>
               </Connection>
             </Graphics>
             <And>
@@ -9286,7 +9294,7 @@
             </And>
           </IEdge>
           <Graphics>
-            <Position xPos="504" yPos="57"/>
+            <Position xPos="346" yPos="186"/>
           </Graphics>
           <LocalVariableBadge>
             <Position xPos="10" yPos="10"/>
@@ -9334,7 +9342,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="826" yPos="26"/>
+          <Position xPos="266" yPos="266"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -9446,7 +9454,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="426" yPos="26"/>
+          <Position xPos="266" yPos="106"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -9557,7 +9565,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="586" yPos="26"/>
+          <Position xPos="266" yPos="186"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
