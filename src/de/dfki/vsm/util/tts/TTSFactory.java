@@ -5,6 +5,8 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.tts.cereproc.CereProgTTsSpeaker;
+import de.dfki.vsm.util.tts.cereproc.Cereproc;
+import de.dfki.vsm.util.tts.cereproc.util.CereprocLibPath;
 import de.dfki.vsm.util.tts.marytts.MaryTTsSpeaker;
 
 /**
@@ -29,6 +31,7 @@ public class TTSFactory {
             VoiceName voiceName = new VoiceName(voice);
             return new MaryTTsSpeaker(pSpeech, voiceLang, voiceName);
         }else if(ttsType.equalsIgnoreCase("cereproc")){
+            CereprocLibPath.cerevoiceLibPath =  pluginConfig.getProperty("cereproc_library_path");
             return new CereProgTTsSpeaker(pSpeech, voiceLang, voice, licensePath, deviceName);
         }
         return new DummyTTsSpeaker();

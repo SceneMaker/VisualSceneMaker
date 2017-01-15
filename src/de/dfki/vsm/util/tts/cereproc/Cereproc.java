@@ -6,6 +6,7 @@ import com.cereproc.cerevoice_eng.cerevoice_eng;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.tts.SpeechClient;
 import de.dfki.vsm.util.tts.cereproc.util.Audioline;
+import de.dfki.vsm.util.tts.cereproc.util.CereprocLibPath;
 import de.dfki.vsm.util.tts.cereproc.util.CereprocLoader;
 import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStop;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -32,6 +34,7 @@ public class Cereproc extends SpeechClient {
     private byte[] utf8bytes;
     private String audioDevice;
     private CereprocLoader cereprocLoader;
+
     static {
         // The cerevoice_eng library must be on the path,
         // specify with eg:
@@ -39,14 +42,17 @@ public class Cereproc extends SpeechClient {
         //System.setProperty("java.library.path", "/home/alvaro/Documentos/Tesis/cerevoice_sdk_3.2.0_linux_x86_64_python26_10980_academic/cerevoice_eng");
 
         try { //Adding Library path
-                addDir("/home/alvaro/Documents/Universitat/TesisProject/cerevoice_sdk_3.2.0_linux_x86_64_python26_10980_academic/cerevoice_eng/javalib");
-                System.loadLibrary("cerevoice_eng");
+            String javalibPath = CereprocLibPath.getCereprocLibraryPath();
+            addDir(javalibPath);
+            System.loadLibrary("cerevoice_eng");
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
+
+
 
     public static void addDir(String s) throws IOException {
         try {
@@ -75,6 +81,7 @@ public class Cereproc extends SpeechClient {
 
 
     public Cereproc(final String licenseNamePath, final String voicePath, String audioDevice){
+
 
         cereprocLoader = new CereprocLoader(voicePath, licenseNamePath);
         phonemeCache = new PhrasePhonemeCache();
