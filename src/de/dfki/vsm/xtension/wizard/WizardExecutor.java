@@ -466,17 +466,19 @@ public final class WizardExecutor extends ActivityExecutor {
 
             @Override
             public void itemStateChanged(final ItemEvent event) {
-                JPLEngine.query("now(Time), "
-                        + "jdd(["
-                        + "type:" + "event" + "," + "\n"
-                        + "name:" + "user" + "," + "\n"
-                        + "mode:" + "face" + "," + "\n"
-                        + "data:" + ((String) event.getItem()) + "," + "\n"
-                        + "time:" + "Time" + "," + "\n"
-                        + "dist:" + 0 + "," + "\n"
-                        + "life:" + 0 + "," + "\n"
-                        + "conf:" + 1.0 + "\n"
-                        + "]).");
+                if (event.getStateChange() == ItemEvent.SELECTED) {
+                    JPLEngine.query("now(Time), "
+                            + "jdd(["
+                            + "type:" + "event" + "," + "\n"
+                            + "name:" + "user" + "," + "\n"
+                            + "mode:" + "face" + "," + "\n"
+                            + "data:" + ((String) event.getItem()) + "," + "\n"
+                            + "time:" + "Time" + "," + "\n"
+                            + "dist:" + 0 + "," + "\n"
+                            + "life:" + 0 + "," + "\n"
+                            + "conf:" + 1.0 + "\n"
+                            + "]).");
+                }
             }
         });
         mUserGazeLabel = new JLabel("Eyegaze:");

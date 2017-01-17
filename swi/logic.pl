@@ -74,6 +74,7 @@
     voice/2,
     touch/4,
     speech/3,
+    action/1,
     gaze/2,
     face/1,
     head/1,
@@ -234,6 +235,10 @@ speech(Event, Fun, Cat) :-
   oldest(speech, Event),
   val(data:fun, Fun, Event),
   val(data:cat, Cat, Event).
+
+action(Data) :-
+  oldest(action, Event),
+  val(data, Data, Event).
   
 face(Data) :-
   oldest(face, Event),
