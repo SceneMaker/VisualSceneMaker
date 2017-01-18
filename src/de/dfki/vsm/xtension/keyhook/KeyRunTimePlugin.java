@@ -41,7 +41,7 @@ public final class KeyRunTimePlugin extends RunTimePlugin {
     }
 
     public KeyRunTimePlugin(
-            final PluginConfig config,d
+            final PluginConfig config,
             final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
