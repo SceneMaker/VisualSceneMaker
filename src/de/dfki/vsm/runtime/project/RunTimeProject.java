@@ -286,6 +286,7 @@ public class RunTimeProject {
     // Launch the runtime objects of the project
     public final boolean launch() {
         // Launch the scene player
+        createRuntimePlayerIfNeeded();
         mRunTimePlayer.launch();
         // Launch all plugins
         for (final RunTimePlugin plugin : mPluginMap.values()) {
@@ -295,6 +296,12 @@ public class RunTimeProject {
         mInterpreter = new Interpreter(this);//GM
         // Return true at success
         return true;
+    }
+
+    private void createRuntimePlayerIfNeeded() {
+        if(mRunTimePlayer == null && mProjectConfig != null && mProjectConfig.getPlayerConfig() != null){
+            mRunTimePlayer = new ReactivePlayer(mProjectConfig.getPlayerConfig(), this);
+        }
     }
 
     // Unload the runtime objects of the project
