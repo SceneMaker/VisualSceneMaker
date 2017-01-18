@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 27 Jul 2016 14:12:03" start="S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 18 Jan 2017 11:22:37" start="N10;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
+    <Variable type="String" name ="PressedKey">
+      <String><![CDATA[]]></String>
+    </Variable>
   </Declare>
   <Commands>
   </Commands>
@@ -12,6 +15,25 @@
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
+  <Node id="N10" name="N10" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N10" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="557" yPos="94" ctrlXPos="575" ctrlYPos="26"/>
+        <ControlPoint xPos="578" yPos="110" ctrlXPos="638" ctrlYPos="74"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="513" yPos="93"/>
+    </Graphics>
+  </Node>
   <SuperNode id="S1" name="S1" comment="" hideLocalVar="false" hideGlobalVar="false" start="N3;">
     <Define>
     </Define>
