@@ -39,7 +39,6 @@ public abstract class RunTimePlayer {
     public abstract void unload();
 
     //public abstract long getTime();
-
     // Get the activity scheduler
     public ActivityScheduler getActivityScheduler() {
         return mScheduler;
@@ -47,6 +46,8 @@ public abstract class RunTimePlayer {
 
     // Call the play action activity method
     public abstract void playActionActivity(final String name, final LinkedList args);
+
+    public abstract void abortActionActivity(final String name, final LinkedList args);
 
     // Call the play scenegroup method
     public abstract void playSceneGroup(final String name, final LinkedList args);

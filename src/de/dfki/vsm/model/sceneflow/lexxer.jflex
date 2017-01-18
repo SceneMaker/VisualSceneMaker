@@ -104,6 +104,8 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "query" { return new Symbol(ChartFields.QUERY); }
 "?-" { return new Symbol(ChartFields.QUERY); }
 "!-" { return new Symbol(ChartFields.PLAY); }
+"!~" { return new Symbol(ChartFields.ABORT); }
+"!=" { return new Symbol(ChartFields.ABORT); }
 
 [0-9]+\.[0-9]+ { return new Symbol(ChartFields.FLOAT, new java.lang.Float(yytext())); }
 [0-9]+ { return new Symbol(ChartFields.INTEGER, new java.lang.Integer(yytext())); }

@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
+import de.dfki.vsm.model.sceneflow.command.Abort;
 import de.dfki.vsm.model.sceneflow.command.Assignment;
 import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
@@ -115,6 +116,23 @@ public class Evaluator {
             if (value.getType() == AbstractValue.Type.STRING) {
                 mInterpreter.unlock();
                 mInterpreter.getScenePlayer().playActionActivity(((StringValue) value).getValue(), valueList);
+                mInterpreter.lock();
+            } else {
+                java.lang.String errorMsg = "An error occured while executing thread "
+                        + Process.currentThread().toString() + " : "
+                        + "The argument of the playback command '"
+                        + cmd.getConcreteSyntax() + " was evaluated to '"
+                        + value.getConcreteSyntax() + "' which is not a string constant";
+
+                throw new InterpreterError(cmd, errorMsg);
+            }
+        } else if (cmd instanceof Abort) {
+            AbstractValue value = evaluate(((Abort) cmd).getArg(), env);
+            LinkedList<AbstractValue> valueList = evaluateExpList(((Abort) cmd).getArgList(), env);
+
+            if (value.getType() == AbstractValue.Type.STRING) {
+                mInterpreter.unlock();
+                mInterpreter.getScenePlayer().abortActionActivity(((StringValue) value).getValue(), valueList);
                 mInterpreter.lock();
             } else {
                 java.lang.String errorMsg = "An error occured while executing thread "

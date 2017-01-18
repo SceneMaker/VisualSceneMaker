@@ -86,6 +86,11 @@ public final class ReactivePlayer extends RunTimePlayer {
         //}
     }
 
+    @Override
+    public void abortActionActivity(final String name, final LinkedList args) {
+        // Implement this
+    }
+    
     // Call the play action activity method
     @Override
     public final void playActionActivity(final String name, final LinkedList args) {
