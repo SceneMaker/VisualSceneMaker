@@ -14,8 +14,6 @@ public class StringToInt {
    public static int changeStringToInt(String s){
        int i;
        i = Integer.parseInt(s);
-       System.out.println("**********************************   " + i);
        return i;
    }
-    
 }
