@@ -1,322 +1,152 @@
-﻿/*  This code is part of the Behavior Flow Query Language based on SWI-Prolog.
-
-    Author:        Gregor Mehlmann
-    E-mail:        mehlmann@hcm-lab.de
-    WWW:           http://www.hcm-lab.de
-
-    Copyright (C): 2008-2018,
-                   University of Augsburg
-                   Applied Computer Sciences
-                   Human Centered Multimedia
-
-    This program is free software; you can redistribute it and/or modify it
-    under the terms of the 'GNU General Public License' as published by the
-    Free Software Foundation, version 2 or any later version of the License.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY and without even the implied warranty
-        of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    You should have received a copy of the GNU General Public License along
-    with this library; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
-    As an exception, if you link this library with other files, compiled with
-    a Free Software compiler, to produce an executable, this library does not
-    by itself cause the resulting executable to be covered by the GNU General
-    Public License. This exception does not invalidate any other reasons why
-    the executable file might be covered by the 'GNU General Public License'.
-*/
-:- module(facts,
-  [
-    fsr/1,
-    val/3,
-    del/3,
-    add/4,
-    set/4,
-    del/1,
-    jel/1,
-    add/1,
-    jdd/1,
-    rll/2,
-    jll/2
-  ]).
-  
+﻿:- module('facts', [ fsr/1, val/3, add/4, del/3, set/4,
+                     del/1, jel/1, add/1, jdd/1, rll/2, jll/2 ]).
 :- reexport('terms').
 :- reexport('print').
 
-/*----------------------------------------------------------------------------*
- * A feature structure record
- *----------------------------------------------------------------------------*/
 :- dynamic fsr/1.
 
-/*----------------------------------------------------------------------------*
+/*----------------------------------------------------------*
+  Infer A Feature Value
+ *----------------------------------------------------------*/
+val(Feature, Value,
+    [Feature:Value|_]) :-
+    fkeyterm(Feature).
+val(Feature:Path, Value,
+    [Feature:Record|_]) :-
+    \+allvarls([Feature, Path, Record]),
+    val(Path, Value, Record).
+val(Feature, Value, [_|Record]) :-
+    nonvar(Record),
+    val(Feature, Value, Record).
 
-  val(?F:path, ?V:value, ?R:record) is nondet
+/*----------------------------------------------------------*
+  Insert A Feature Value
+ *----------------------------------------------------------*/
+add(Path, Value, Input, Output) :-
+    add_(Path, Value, Input, Output, _).
 
-  This predicate checks if a feature structure has a certain value on the
-  specified path of the feature structure. The feature structure may be a
-  partially instantiated term containing free variables when the predicate
-  is called. The predicate takes care not to produce an infinite number of
-  solutions for the feature structure record and the interpreter cannot run
-  into any stack errors. The feature term as well as the value term can be
-  unbound variables. In this case the variables are bound to the possible
-  solutions for the feature and/or the value, respectively, that means the
-  predicate call unifies the value and/or the path with substitutions so
-  that the given feature structure has the value at the given feature path.
-
- *----------------------------------------------------------------------------*/
-val(F, V, [F:V|_]) :-
-    fkeyterm(F).
-val(F:P, V, [F:M|_]) :-
-    \+allvarls([F, P, M]),
-    val(P, V, M).
-val(F, V, [_|T]) :-
-    nonvar(T),
-    val(F, V, T).
-
-/*----------------------------------------------------------------------------*
-
-  add(?P:path, ?V:value, ?I:record, ?O:record, ?C:integer) is nondet
-
-  This predicate adds a certain feature value =|V|= to a specific feature
-  path =|P|= in the specified feature structure =|I|= and returns the new
-  feature structure =|O|= as result. The feature value, path and also the
-  structures may be partially instantiated terms containing free variables
-  when the predicate is called. The predicate takes care not to produce an
-  infinite number of solutions for the value, path or the feature structure
-  record and the interpreter cannot run into any stack errors. The feature
-  value term as well as the feature path term can be unbound variables. In
-  this case the variables are bound to the possible solutions for the value
-  and/or the path, respectively, that means the predicate call unifies the
-  value and/or the path with substitutions so that the new feature structure
-  has the value at the given feature path. This predicate only works if the
-  feature value pair is added to the end of the enclosing feature record in
-  the input record.
-
- *----------------------------------------------------------------------------*/
-add(P, V, I, O)    :-
-    add_(P, V, I, O, _).
-
-add(P, V, I, O, C) :-
-    add_(P, V, I, O, C).
+add_(Feature, Value, Input, Output, Counter) :-
+    fkeyterm(Feature), !,
+    fvalterm(Value),
+    fvlsterm(Input),
+    % Add the pair to the list
+    addl(Feature:Value,
+         Input, Output),
+    Counter is 1.
+add_(Path, Value, Input, Output, Counter) :-
+    fklsterm(Path),
+    Path = Feature:Q,
+    Input = [Feature:R|M],
+    Output = [Feature:S|N], !,
+    % Recursively add the value
+    add_(Q, Value, R, S, K),
+    % Proceed with the remainder
+    (\+allvarls([M, N])
+     -> add_(Path, Value, M, N, L)
+      ; M = [], N = [], L is 0
+    ), Counter is K + L.
+add_(Path, Value, Input, Output, Counter) :-
+    fklsterm(Path),
+    Input = [H|M],
+    Output = [H|N], !,
+    % Proceed with the remainder
+    (\+allvarls([M, N])
+     -> add_(Path, Value, M, N, K)
+      ; M = [], N = [], K is 0
+    ), Counter is K.
+add_(Path, _, Input, Output, Counter) :-
+    fklsterm(Path),
+    Input = [],
+    Output = [],
+    Counter is 0.%, !.
 
 % Add object to simple list
-addl(P, I, O) :-
-    O = [P|I], !.
-addl(P, [H|I], [H|O]) :-
-    addl(P, I, O), !.
-addl(P, [], [P]).
+addl(Object, Input, Output) :-
+    Output = [Object|Input], !.
+addl(Object, [H|Input], [H|Output]) :-
+    addl(Object, Input, Output), !.
+addl(Object, [], [Object]).
 
-add_(F, V, I, O, C) :-
-    fkeyterm(F), !,
-    fvalterm(V),
-    fvlsterm(I),
-    addl(F:V, I, O), C is 1.
-add_(P, V, I, O, C) :-
-    fklsterm(P), P = F:Q,
-    I = [F:R|M], O = [F:S|N], !,
-    add_(Q, V, R, S, K),
-    (\+allvarls([M, N])
-     -> add_(P, V, M, N, L)
-      ; M = [], N = [], L is 0
-    ), C is K + L.
-add_(P, V, I, O, C) :-
-    fklsterm(P),
-    I = [H|M], O = [H|N], !,
-    (\+allvarls([M, N])
-     -> add_(P, V, M, N, K)
-      ; M = [], N = [], K is 0
-    ), C is K.
-add_(P, _, I, O, C) :-
-    fklsterm(P),
-    I = [], O = [], C is 0.
-
-
-
-/*----------------------------------------------------------------------------*
-
-  del(?P:path, ?I:record, ?O:record, ?C:integer) is nondet
-
-  This predicate adds a certain feature value =|V|= to a specific feature
-  path =|P|= in the specified feature structure =|I|= and returns the new
-  feature structure =|O|= as result. The feature value, path and also the
-  structures may be partially instantiated terms containing free variables
-  when the predicate is called. The predicate takes care not to produce an
-  infinite number of solutions for the value, path or the feature structure
-  record and the interpreter cannot run into any stack errors. The feature
-  value term as well as the feature path term can be unbound variables. In
-  this case the variables are bound to the possible solutions for the value
-  and/or the path, respectively, that means the predicate call unifies the
-  value and/or the path with substitutions so that the new feature structure
-  has the value at the given feature path. This predicate only works if the
-  feature value pair is added to the end of the enclosing feature record in
-  the input record.
-
- *----------------------------------------------------------------------------*/
-% Delete all the occurences of
-% this features on this level
-dell(F, [F:_|I], O) :-   out(x), nl,
-    dell(F, I, O), !.
-dell(F, [H|I], [H|O]) :-
-    dell(F, I, O), !.
-dell(_, V, V) :- fvalterm(V).
-
-
-del(F, I, O) :-
-  fkeyterm(F), !, out(1), nl,
-  dell(F, I, O).
-del(P, I, O) :-
-  fklsterm(P), P = F:Q,
-  I = [F:R|M], O = [F:S|N], !,  out(2), nl,
+/*----------------------------------------------------------*
+  Delete A Feature Value
+ *----------------------------------------------------------*/
+del(Feature, Input, Output) :-
+  fkeyterm(Feature), !,
+  % Delete feature from list
+  dell(Feature, Input, Output).
+del(Path, Input, Output) :-
+  fklsterm(Path),
+  Path = Feature:Q,
+  Input = [Feature:R|M],
+  Output = [Feature:S|N], !,
+  % Recursively delete feature
   del(Q, R, S),
-   (\+allvarls([M, N])
-     -> del(P, M, N)
-      ; M = [], N = []
-    ).
-del(P, I, O) :-
-  fklsterm(P),
-  I = [H|M], O = [H|N], !, out(3), nl,
-   (\+allvarls([M, N])
-     -> del(P, M, N)
-      ; M = [], N = []
-    ).
-del(P, I, O) :-
-  fklsterm(P),
-  I = [], O = [], !,  out(4), nl.
+  % Procees with the remainder
+  (\+allvarls([M, N])
+     -> del(Path, M, N)
+      ; M = [], N = []).
+del(Path, Input, Output) :-
+  fklsterm(Path),
+  Input = [H|M],
+  Output = [H|N], !,
+  % Procees with the remainder
+  (\+allvarls([M, N])
+     -> del(Path, M, N)
+      ; M = [], N = []).
+del(Path, Input, Output) :-
+  fklsterm(Path),
+  Input = [],
+  Output = [].%, !.
 
+% Delete object from the list
+dell(Feature, [Feature:_|Input], Output) :-
+    dell(Feature, Input, Output), !.
+dell(Feature, [H|Input], [H|Output]) :-
+    dell(Feature, Input, Output), !.
+dell(_, Value, Value) :- fvalterm(Value).
 
+/*----------------------------------------------------------*
+  Change A Feature Value
+ *----------------------------------------------------------*/
+set(Path, Value, Input, Output) :-
+  del(Path, Input, Temp),
+  add(Path, Value, Temp, Output).
 
+/*----------------------------------------------------------*
+  Retract A Feature Record
+ *----------------------------------------------------------*/
+del(Record) :-
+  retract(fsr(Record)),
+  out('Retracting:\n'), out(Record).
+  
+jel(Record) :-
+  retract(fsr(Record)), jvw(Record, String),
+  concat('Retracting:\n', String, Output), jog(Output).
+  
+/*----------------------------------------------------------*
+  Assert A Feature Record
+ *----------------------------------------------------------*/
+add(Record) :-
+  assertz(fsr(Record)),
+  out('Asserting:\n'), out(Record), !.
+add(Record) :-
+  out('Cannot Assert:\n'), out(Record).
 
-set(P, V, I, O) :-
-  del(P, I, T),
-  add(P, V, T, O).
- 
- 
- 
- 
+jdd(Record) :-
+  assertz(fsr(Record)), jvw(Record, String),
+  concat('Asserting:\n', String, Output), jog(Output), !.
+jdd(Record) :-
+  jog('Cannot Assert:\n'), jog(Record).
 
+/*----------------------------------------------------------*
+  Retract Feature Records
+ *----------------------------------------------------------*/
+rll(Path, Value) :-
+  forall((fsr(Record),
+    val(Path, Value, Record)),
+  del(Record)).
 
-/**
-
-  set(?F:path, ?V:value, ?I:record, ?O:record) is nondet
-
-*/
-/*
-set(F, V, I, O) :- set_(F, V, I, O).
-
-% If the feature is a key, then try to find the feature in current level
-% and if we find it, then we replace the value and return with success.
-%If the
-
-set_(F, V, I, O) :-
-    fkeyterm(F), !, write('set0'),
-    set0(F, V, I, O).
-set_(Q, V, I, O) :-  write('set1'),
-    set1(Q, V, I, O).
-
-set0(F, V, [F:M|T], [F:V|R]) :- !, set0(F, V, T, R).
-set0(F, V, [H|T], [H|R]) :- nonvar(T), set0(F, V, T, R).
-set0(_, _, [], []).
-
-% This is set but we want set all on a list
-% (which possible is always true or returns the number of sets)
-
-set1(Q, V, I, O) :-
-    Q = F:P, I = [F:M|T], O = [F:R|S], \+allvarls([F, P, M]),
-    set_(P, V, M, R),
-    set_(Q, V, T, S).
-*/
-/*
-set_(F, V, [F:_|T], [F:V|T]) :-
-    validkey(F).
-set_(Q, V, [F:M|T], [F:R|T]) :-
-    Q = F:P, \+allvarls([F, P, M]),
-    set_(P, V, M, R).
-set_(F, V, [H|T], [H|R]) :-
-    nonvar(T),
-    set_(F, V, T, R).
-*/
-/*----------------------------------------------------------------------------*
- *                       DEPRECATED VERSIONS
- *----------------------------------------------------------------------------*
-set(F:P, V, [F:[E|M]|T], [F:R|L]) :-
-  !, set(P, V, [E|M], R),
-     set(F:P, V, T, L).
-set(F, V, [F:_|T], [F:V|R]) :-
-  !, set(F, V, T, R).
-set(_, _, [], []) :-
-  !.
-set(F, V, [H|T], [H|R]) :-
-  !, set(F, V, T, R).
-*-----------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
-/*----------------------------------------------------------------------------*
- * Retract A Feature Structure Record
- *----------------------------------------------------------------------------*/
-del(R) :-
-  retract(fsr(R)),
-  out('Retracting:\n'),
-  out(R). % Retract The Fact
-
-/*----------------------------------------------------------------------------*
- * Retract A Feature Structure Record
- *----------------------------------------------------------------------------*/
-jel(R) :-
-  retract(fsr(R)),
-  jvw(R, M),
-  concat('Retracting:\n', M, O),
-  %jog('Retracting:\n'),
-  jog(O). % Retract The Fact
-
-/*----------------------------------------------------------------------------*
- * Assert A Feature Structure Record
- *----------------------------------------------------------------------------*/
-add(R) :-
-  assertz(fsr(R)),
-  out('Asserting:\n'),
-  out(R), !. % Assertz The Fact
-
-add(R) :-
-  out('Cannot Assert:\n'),
-  out(R). % Print Information
-
-/*----------------------------------------------------------------------------*
- * Assert A Feature Structure Record
- *----------------------------------------------------------------------------*/
-jdd(R) :-
-  assertz(fsr(R)),
-  jvw(R, M),
-  concat('Asserting:\n', M, O),
-  %jog('Asserting:\n'),
-  jog(O), !. % Assertz The Fact
-
-jdd(R) :-
-  jog('Cannot Assert:\n'),
-  jog(R). % Print Information
-
-/*----------------------------------------------------------------------------*
- * Retract All With Features
- *----------------------------------------------------------------------------*/
-rll(P, V) :-
-  forall((fsr(R), val(P, V, R)), del(R)).
-
-/*----------------------------------------------------------------------------*
- * Retract With Features
- *----------------------------------------------------------------------------*/
-jll(P, V) :-
-  forall((fsr(R), val(P, V, R)), jel(R)).
-
-/*----------------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------------*/
+jll(Path, Value) :-
+  forall((fsr(Record),
+    val(Path, Value, Record)),
+  jel(Record)).

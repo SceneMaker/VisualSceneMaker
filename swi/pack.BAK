@@ -28,7 +28,7 @@
     the executable file might be covered by the 'GNU General Public License'.
 */
 
-name(bfql).
+name('bfql').
 version('1.0').
 home('http://www.hcm-lab.de').
 title('Behavior Flow Query Language').

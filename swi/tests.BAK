@@ -29,7 +29,8 @@
 */
 :- module(tests,
     [
-      fact_base/0
+      fact_base/0,
+      reset/0
     ]).
 
 :- reexport('facts').
@@ -42,6 +43,10 @@
 /*----------------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------------*/
+ 
+
+
+
 fact_base :-
 add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large yellow square']),
 add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the small green triangle']),

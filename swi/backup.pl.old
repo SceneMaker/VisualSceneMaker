@@ -621,4 +621,26 @@ isAlignedScrollLocRef(B, L) :-
     type(L, scroll),
     distlessthan(L, B, 6000).
 
+	
+	
+	
+	
+	
+	forlargest(Template, Generator, Condition, Scope) :-
+    collect(Template, Generator, Range), write('Range: '), out(Range), nl, length(Range, R), write('Range Size: '), out(R), nl,
+    findall(X, bagof(Template, (Generator, Condition), X), Scopes), write('Scopes: '), nl, out(Scopes), nl,
+    findall(X, max_size_list(Scopes, X), Candidates),
+    sort(Candidates, SortedCandidates) ,   write('Sorted Candidates: '), out(SortedCandidates), nl,
+    collect(Template, (Generator, Condition), Scope), write('Scope: '), out(Scope), nl,
+    member(Scope, SortedCandidates).
+    %Scope == MaxList .
     
+	
+/*
+reset :-
+  add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large yellow square']),
+  add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the small green triangle']),
+  add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:yellow, shape:square, pos:[x:0, y:0], state:absent],desc:'the large red star']),
+  add([type:entity,sort:piece,name:p4,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large red star']).
+*/
+
