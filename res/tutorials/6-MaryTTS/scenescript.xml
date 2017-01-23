@@ -1,162 +1,167 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="192" language="en" identifier="SusanneWelcome">
-    <SceneTurn lower="25" upper="117" speaker="susanne">
-      <SceneUttr lower="34" upper="63" punct=",">
-        <SceneWord lower="34" upper="39" text="Hello"/>
-        <SceneWord lower="40" upper="43" text="and"/>
-        <SceneWord lower="44" upper="51" text="welcome"/>
-        <ActionObject lower="52" upper="62" actor="" mode="" name="TurnLeft" >
+  <SceneObject lower="0" upper="215" language="en" identifier="SusanneWelcome">
+    <SceneTurn lower="25" upper="47" speaker="voiceoff">
+      <SceneUttr lower="35" upper="47" punct=".">
+        <SceneWord lower="35" upper="40" text="Hello"/>
+        <SceneWord lower="41" upper="46" text="world"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="48" upper="140" speaker="susanne">
+      <SceneUttr lower="57" upper="86" punct=",">
+        <SceneWord lower="57" upper="62" text="Hello"/>
+        <SceneWord lower="63" upper="66" text="and"/>
+        <SceneWord lower="67" upper="74" text="welcome"/>
+        <ActionObject lower="75" upper="85" actor="" mode="" name="TurnLeft" >
         </ActionObject>
       </SceneUttr>
-      <SceneUttr lower="64" upper="83" punct=",">
-        <ActionObject lower="64" upper="82" actor="patrick" mode="" name="WaveLeft" >
+      <SceneUttr lower="87" upper="106" punct=",">
+        <ActionObject lower="87" upper="105" actor="patrick" mode="" name="WaveLeft" >
         </ActionObject>
       </SceneUttr>
-      <SceneUttr lower="84" upper="117" punct=".">
-        <SceneWord lower="84" upper="88" text="nice"/>
-        <ActionObject lower="89" upper="99" actor="" mode="" name="TiltLeft" >
+      <SceneUttr lower="107" upper="140" punct=".">
+        <SceneWord lower="107" upper="111" text="nice"/>
+        <ActionObject lower="112" upper="122" actor="" mode="" name="TiltLeft" >
         </ActionObject>
-        <SceneWord lower="100" upper="102" text="to"/>
-        <SceneWord lower="103" upper="107" text="have"/>
-        <SceneWord lower="108" upper="111" text="you"/>
-        <SceneWord lower="112" upper="116" text="here"/>
+        <SceneWord lower="123" upper="125" text="to"/>
+        <SceneWord lower="126" upper="130" text="have"/>
+        <SceneWord lower="131" upper="134" text="you"/>
+        <SceneWord lower="135" upper="139" text="here"/>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="118" upper="192" speaker="patrick">
-      <SceneUttr lower="127" upper="142" punct=".">
-        <ActionObject lower="127" upper="141" actor="" mode="" name="set" >
-          <ActionFeature lower="132" upper="140" typ="IDENTIFIER" key="voice" val="de"/></ActionObject>
+    </SceneTurn><SceneTurn lower="141" upper="215" speaker="patrick">
+      <SceneUttr lower="150" upper="165" punct=".">
+        <ActionObject lower="150" upper="164" actor="" mode="" name="set" >
+          <ActionFeature lower="155" upper="163" typ="IDENTIFIER" key="voice" val="de"/></ActionObject>
       </SceneUttr>
-      <SceneUttr lower="143" upper="192" punct=".">
-        <SceneWord lower="143" upper="145" text="Es"/>
-        <SceneWord lower="146" upper="151" text="freut"/>
-        <SceneWord lower="152" upper="156" text="mich"/>
-        <ActionObject lower="157" upper="164" actor="" mode="" name="Smile" >
+      <SceneUttr lower="166" upper="215" punct=".">
+        <SceneWord lower="166" upper="168" text="Es"/>
+        <SceneWord lower="169" upper="174" text="freut"/>
+        <SceneWord lower="175" upper="179" text="mich"/>
+        <ActionObject lower="180" upper="187" actor="" mode="" name="Smile" >
         </ActionObject>
-        <SceneWord lower="165" upper="168" text="Sie"/>
-        <SceneWord lower="169" upper="183" text="kennenzulernen"/>
-        <ActionObject lower="184" upper="191" actor="" mode="" name="Smile" >
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="194" upper="599" language="en" identifier="PatrickWelcome">
-    <SceneTurn lower="219" upper="318" speaker="patrick">
-      <SceneUttr lower="228" upper="231" punct=",">
-        <SceneWord lower="228" upper="230" text="So"/>
-      </SceneUttr>
-      <SceneUttr lower="232" upper="288" punct=",">
-        <ActionObject lower="232" upper="245" actor="susanne" mode="" name="Sad" >
-        </ActionObject>
-        <SceneWord lower="246" upper="248" text="Es"/>
-        <SceneWord lower="249" upper="253" text="gibt"/>
-        <SceneWord lower="254" upper="259" text="einen"/>
-        <SceneWord lower="260" upper="266" text="Anfang"/>
-        <SceneWord lower="267" upper="270" text="und"/>
-        <SceneWord lower="271" upper="273" text="es"/>
-        <SceneWord lower="274" upper="278" text="gibt"/>
-        <SceneWord lower="279" upper="282" text="ein"/>
-        <SceneWord lower="283" upper="287" text="Ende"/>
-      </SceneUttr>
-      <SceneUttr lower="289" upper="318" punct=".">
-        <SceneWord lower="289" upper="296" text="Tschüss"/>
-        <ActionObject lower="297" upper="309" actor="" mode="" name="CoverMouth" >
-        </ActionObject>
-        <SceneWord lower="310" upper="317" text="Tschüss"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="319" upper="378" speaker="susanne">
-      <SceneUttr lower="328" upper="342" punct=",">
-        <SceneWord lower="328" upper="333" text="Sorry"/>
-        <SceneWord lower="334" upper="341" text="Patrick"/>
-      </SceneUttr>
-      <SceneUttr lower="343" upper="378" punct=".">
-        <SceneWord lower="343" upper="346" text="but"/>
-        <SceneWord lower="347" upper="349" text="my"/>
-        <SceneWord lower="350" upper="356" text="german"/>
-        <SceneWord lower="357" upper="359" text="is"/>
-        <SceneWord lower="360" upper="363" text="not"/>
-        <SceneWord lower="364" upper="368" text="very"/>
-        <SceneWord lower="369" upper="373" text="good"/>
-        <SceneWord lower="374" upper="377" text="yet"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="379" upper="445" speaker="patrick">
-      <SceneUttr lower="388" upper="403" punct=".">
-        <ActionObject lower="388" upper="402" actor="" mode="" name="set" >
-          <ActionFeature lower="393" upper="401" typ="IDENTIFIER" key="voice" val="en"/></ActionObject>
-      </SceneUttr>
-      <SceneUttr lower="404" upper="445" punct=".">
-        <SceneWord lower="404" upper="408" text="Nice"/>
-        <ActionObject lower="409" upper="416" actor="" mode="" name="Smile" >
-        </ActionObject>
-        <SceneWord lower="417" upper="419" text="to"/>
-        <SceneWord lower="420" upper="424" text="meet"/>
-        <SceneWord lower="425" upper="428" text="you"/>
-        <ActionObject lower="429" upper="444" actor="susanne" mode="" name="Smile" >
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="446" upper="511" speaker="susanne">
-      <SceneUttr lower="455" upper="511" punct=".">
-        <SceneWord lower="455" upper="460" text="There"/>
-        <SceneWord lower="461" upper="463" text="is"/>
-        <SceneWord lower="464" upper="465" text="a"/>
-        <SceneWord lower="466" upper="475" text="beginning"/>
-        <SceneWord lower="476" upper="479" text="and"/>
-        <SceneWord lower="480" upper="485" text="there"/>
-        <SceneWord lower="486" upper="488" text="is"/>
-        <SceneWord lower="489" upper="491" text="an"/>
-        <SceneWord lower="492" upper="495" text="end"/>
-        <ActionObject lower="496" upper="510" actor="" mode="" name="TiltLeftBack" >
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="512" upper="541" speaker="patrick">
-      <SceneUttr lower="521" upper="541" punct=".">
-        <SceneWord lower="521" upper="524" text="Now"/>
-        <SceneWord lower="525" upper="529" text="this"/>
-        <SceneWord lower="530" upper="532" text="is"/>
-        <SceneWord lower="533" upper="536" text="the"/>
-        <SceneWord lower="537" upper="540" text="end"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="542" upper="570" speaker="susanne">
-      <SceneUttr lower="551" upper="570" punct=".">
-        <SceneWord lower="551" upper="554" text="bye"/>
-        <ActionObject lower="555" upper="565" actor="" mode="" name="WaveLeft" >
-        </ActionObject>
-        <SceneWord lower="566" upper="569" text="bye"/>
-      </SceneUttr>
-    </SceneTurn><SceneTurn lower="571" upper="599" speaker="patrick">
-      <SceneUttr lower="580" upper="599" punct=".">
-        <SceneWord lower="580" upper="583" text="bye"/>
-        <ActionObject lower="584" upper="594" actor="" mode="" name="WaveLeft" >
-        </ActionObject>
-        <SceneWord lower="595" upper="598" text="bye"/>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="601" upper="642" language="en" identifier="Susanne_Blink">
-    <SceneTurn lower="625" upper="642" speaker="susanne">
-      <SceneUttr lower="634" upper="642" punct=".">
-        <ActionObject lower="634" upper="641" actor="" mode="" name="Blink" >
+        <SceneWord lower="188" upper="191" text="Sie"/>
+        <SceneWord lower="192" upper="206" text="kennenzulernen"/>
+        <ActionObject lower="207" upper="214" actor="" mode="" name="Smile" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="644" upper="698" language="en" identifier="Blink">
-    <SceneTurn lower="660" upper="677" speaker="patrick">
-      <SceneUttr lower="669" upper="677" punct=".">
-        <ActionObject lower="669" upper="676" actor="" mode="" name="Blink" >
+  <SceneObject lower="217" upper="622" language="en" identifier="PatrickWelcome">
+    <SceneTurn lower="242" upper="341" speaker="patrick">
+      <SceneUttr lower="251" upper="254" punct=",">
+        <SceneWord lower="251" upper="253" text="So"/>
+      </SceneUttr>
+      <SceneUttr lower="255" upper="311" punct=",">
+        <ActionObject lower="255" upper="268" actor="susanne" mode="" name="Sad" >
+        </ActionObject>
+        <SceneWord lower="269" upper="271" text="Es"/>
+        <SceneWord lower="272" upper="276" text="gibt"/>
+        <SceneWord lower="277" upper="282" text="einen"/>
+        <SceneWord lower="283" upper="289" text="Anfang"/>
+        <SceneWord lower="290" upper="293" text="und"/>
+        <SceneWord lower="294" upper="296" text="es"/>
+        <SceneWord lower="297" upper="301" text="gibt"/>
+        <SceneWord lower="302" upper="305" text="ein"/>
+        <SceneWord lower="306" upper="310" text="Ende"/>
+      </SceneUttr>
+      <SceneUttr lower="312" upper="341" punct=".">
+        <SceneWord lower="312" upper="319" text="Tschüss"/>
+        <ActionObject lower="320" upper="332" actor="" mode="" name="CoverMouth" >
+        </ActionObject>
+        <SceneWord lower="333" upper="340" text="Tschüss"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="342" upper="401" speaker="susanne">
+      <SceneUttr lower="351" upper="365" punct=",">
+        <SceneWord lower="351" upper="356" text="Sorry"/>
+        <SceneWord lower="357" upper="364" text="Patrick"/>
+      </SceneUttr>
+      <SceneUttr lower="366" upper="401" punct=".">
+        <SceneWord lower="366" upper="369" text="but"/>
+        <SceneWord lower="370" upper="372" text="my"/>
+        <SceneWord lower="373" upper="379" text="german"/>
+        <SceneWord lower="380" upper="382" text="is"/>
+        <SceneWord lower="383" upper="386" text="not"/>
+        <SceneWord lower="387" upper="391" text="very"/>
+        <SceneWord lower="392" upper="396" text="good"/>
+        <SceneWord lower="397" upper="400" text="yet"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="402" upper="468" speaker="patrick">
+      <SceneUttr lower="411" upper="426" punct=".">
+        <ActionObject lower="411" upper="425" actor="" mode="" name="set" >
+          <ActionFeature lower="416" upper="424" typ="IDENTIFIER" key="voice" val="en"/></ActionObject>
+      </SceneUttr>
+      <SceneUttr lower="427" upper="468" punct=".">
+        <SceneWord lower="427" upper="431" text="Nice"/>
+        <ActionObject lower="432" upper="439" actor="" mode="" name="Smile" >
+        </ActionObject>
+        <SceneWord lower="440" upper="442" text="to"/>
+        <SceneWord lower="443" upper="447" text="meet"/>
+        <SceneWord lower="448" upper="451" text="you"/>
+        <ActionObject lower="452" upper="467" actor="susanne" mode="" name="Smile" >
         </ActionObject>
       </SceneUttr>
-    </SceneTurn><SceneTurn lower="678" upper="698" speaker="patrick">
-      <SceneUttr lower="687" upper="698" punct=".">
-        <ActionObject lower="687" upper="697" actor="" mode="" name="TiltLeft" >
+    </SceneTurn><SceneTurn lower="469" upper="534" speaker="susanne">
+      <SceneUttr lower="478" upper="534" punct=".">
+        <SceneWord lower="478" upper="483" text="There"/>
+        <SceneWord lower="484" upper="486" text="is"/>
+        <SceneWord lower="487" upper="488" text="a"/>
+        <SceneWord lower="489" upper="498" text="beginning"/>
+        <SceneWord lower="499" upper="502" text="and"/>
+        <SceneWord lower="503" upper="508" text="there"/>
+        <SceneWord lower="509" upper="511" text="is"/>
+        <SceneWord lower="512" upper="514" text="an"/>
+        <SceneWord lower="515" upper="518" text="end"/>
+        <ActionObject lower="519" upper="533" actor="" mode="" name="TiltLeftBack" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="535" upper="564" speaker="patrick">
+      <SceneUttr lower="544" upper="564" punct=".">
+        <SceneWord lower="544" upper="547" text="Now"/>
+        <SceneWord lower="548" upper="552" text="this"/>
+        <SceneWord lower="553" upper="555" text="is"/>
+        <SceneWord lower="556" upper="559" text="the"/>
+        <SceneWord lower="560" upper="563" text="end"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="565" upper="593" speaker="susanne">
+      <SceneUttr lower="574" upper="593" punct=".">
+        <SceneWord lower="574" upper="577" text="bye"/>
+        <ActionObject lower="578" upper="588" actor="" mode="" name="WaveLeft" >
+        </ActionObject>
+        <SceneWord lower="589" upper="592" text="bye"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="594" upper="622" speaker="patrick">
+      <SceneUttr lower="603" upper="622" punct=".">
+        <SceneWord lower="603" upper="606" text="bye"/>
+        <ActionObject lower="607" upper="617" actor="" mode="" name="WaveLeft" >
+        </ActionObject>
+        <SceneWord lower="618" upper="621" text="bye"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="624" upper="665" language="en" identifier="Susanne_Blink">
+    <SceneTurn lower="648" upper="665" speaker="susanne">
+      <SceneUttr lower="657" upper="665" punct=".">
+        <ActionObject lower="657" upper="664" actor="" mode="" name="Blink" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="700" upper="741" language="en" identifier="Normal">
-    <SceneTurn lower="717" upper="741" speaker="patrick">
-      <SceneUttr lower="726" upper="741" punct=".">
-        <ActionObject lower="726" upper="740" actor="" mode="" name="TiltLeftBack" >
+  <SceneObject lower="667" upper="721" language="en" identifier="Blink">
+    <SceneTurn lower="683" upper="700" speaker="patrick">
+      <SceneUttr lower="692" upper="700" punct=".">
+        <ActionObject lower="692" upper="699" actor="" mode="" name="Blink" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="701" upper="721" speaker="patrick">
+      <SceneUttr lower="710" upper="721" punct=".">
+        <ActionObject lower="710" upper="720" actor="" mode="" name="TiltLeft" >
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="723" upper="764" language="en" identifier="Normal">
+    <SceneTurn lower="740" upper="764" speaker="patrick">
+      <SceneUttr lower="749" upper="764" punct=".">
+        <ActionObject lower="749" upper="763" actor="" mode="" name="TiltLeftBack" >
         </ActionObject>
       </SceneUttr>
     </SceneTurn>

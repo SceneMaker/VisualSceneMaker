@@ -9,6 +9,8 @@ import de.dfki.stickmanSwing.decorators.StageRoomNetworkSwingDecorator;
 import de.dfki.stickmanSwing.stage.StageRoomSwing;
 import de.dfki.vsm.model.project.PluginConfig;
 
+import java.util.HashMap;
+
 /**
  * Created by alvaro on 9/19/16.
  */
@@ -45,5 +47,10 @@ public class StickmanFactory extends StickmanAbstractFactory {
     @Override
     public Animation loadAnimation(Stickman sm, String name, int duration, boolean block) {
         return AnimationLoaderSwing.getInstance().loadAnimation(sm, name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+    }
+
+    @Override
+    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+        return null;
     }
 }
