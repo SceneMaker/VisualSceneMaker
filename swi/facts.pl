@@ -1,27 +1,22 @@
-﻿:- module('facts', [ fsr/1, val/3, add/4, del/3, set/4,
-                     del/1, jel/1, add/1, jdd/1, rll/2, jll/2 ]).
+﻿:- module('facts',
+  [ fsr/1, val/3, add/4, del/3, set/4,
+    del/1, jel/1, add/1, jdd/1, rll/2, jll/2 ]).
 :- reexport('terms').
 :- reexport('print').
 
 :- dynamic fsr/1.
 
-/*----------------------------------------------------------*
-  Infer A Feature Value
- *----------------------------------------------------------*/
-val(Feature, Value,
-    [Feature:Value|_]) :-
+/* Infer A Feature Value Pair */
+val(Feature, Value, [Feature:Value|_]) :-
     fkeyterm(Feature).
-val(Feature:Path, Value,
-    [Feature:Record|_]) :-
+val(Feature:Path, Value, [Feature:Record|_]) :-
     \+allvarls([Feature, Path, Record]),
     val(Path, Value, Record).
 val(Feature, Value, [_|Record]) :-
     nonvar(Record),
     val(Feature, Value, Record).
 
-/*----------------------------------------------------------*
-  Insert A Feature Value
- *----------------------------------------------------------*/
+/* Insert A Feature Value Pair */
 add(Path, Value, Input, Output) :-
     add_(Path, Value, Input, Output, _).
 
@@ -67,9 +62,7 @@ addl(Object, [H|Input], [H|Output]) :-
     addl(Object, Input, Output), !.
 addl(Object, [], [Object]).
 
-/*----------------------------------------------------------*
-  Delete A Feature Value
- *----------------------------------------------------------*/
+/* Delete A Feature Value  Pair */
 del(Feature, Input, Output) :-
   fkeyterm(Feature), !,
   % Delete feature from list
@@ -105,16 +98,12 @@ dell(Feature, [H|Input], [H|Output]) :-
     dell(Feature, Input, Output), !.
 dell(_, Value, Value) :- fvalterm(Value).
 
-/*----------------------------------------------------------*
-  Change A Feature Value
- *----------------------------------------------------------*/
+/* Change A Feature Value */
 set(Path, Value, Input, Output) :-
   del(Path, Input, Temp),
   add(Path, Value, Temp, Output).
 
-/*----------------------------------------------------------*
-  Retract A Feature Record
- *----------------------------------------------------------*/
+/* Retract A Feature Record */
 del(Record) :-
   retract(fsr(Record)),
   out('Retracting:\n'), out(Record).
@@ -123,9 +112,7 @@ jel(Record) :-
   retract(fsr(Record)), jvw(Record, String),
   concat('Retracting:\n', String, Output), jog(Output).
   
-/*----------------------------------------------------------*
-  Assert A Feature Record
- *----------------------------------------------------------*/
+/* Assert A Feature Record */
 add(Record) :-
   assertz(fsr(Record)),
   out('Asserting:\n'), out(Record), !.
@@ -138,9 +125,7 @@ jdd(Record) :-
 jdd(Record) :-
   jog('Cannot Assert:\n'), jog(Record).
 
-/*----------------------------------------------------------*
-  Retract Feature Records
- *----------------------------------------------------------*/
+/* Retract Feature Records */
 rll(Path, Value) :-
   forall((fsr(Record),
     val(Path, Value, Record)),

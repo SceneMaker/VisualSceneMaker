@@ -1,31 +1,34 @@
-﻿:- module('logic', [
-  % Clean and Garbage Collection
-  reset/0, clean/0, clean/2,
-  % Time and Timeout Handling
-  now/1, timeout/2,
-  % Signal Production and Detection
-  signal/2, signal/3, detect/2, detect/3,
-  % Modality-Specific Data Extraction
-  state/2, voice/2, gaze/2, touch/4, speech/3, action/1, face/1, head/1,
-  % Object Update And Disambiguation
-  update/3, disambiguate/2 ]).
+﻿:- module('logic',
+  [ % Cleanup and Garbage Collection
+    reset/0, clean/0, clean/2,
+    % System Time and Timeout Handling
+    now/1, timeout/2,
+    % Signal Production and Consumption
+    signal/2, signal/3, detect/2, detect/3,
+    % Modality-Specific Data Extraction
+    state/2, voice/2, gaze/2, touch/4, speech/3, action/1, face/1, head/1,
+    % Object Update And Disambiguation
+    update/3, disambiguate/2 ]).
+  
 :- reexport('facts').
 :- reexport('print').
+:- reexport('terms').
 :- reexport('quant').
+:- reexport('tempr').
 :- reexport('timer').
 :- reexport('clean').
 
-/* Signal Production and Detection */
+reset.
+
+/* Signal Production and Consumption */
 signal(Mode, Name) :-
   forall((fsr(Record),
     val('type', 'signal', Record),
     val('mode', Mode, Record),
     val('name', Name, Record)),
   del(Record)), now(Time),
-  add(['type':'signal',
-       'mode':Mode,
-       'name':Name,
-       'time':Time]).
+  add(['type':'signal', 'mode':Mode,
+       'name':Name, 'time':Time]).
        
 signal(Mode, Name, Data) :-
   forall((fsr(Record),
@@ -33,9 +36,7 @@ signal(Mode, Name, Data) :-
     val('mode', Mode, Record),
     val('name', Name, Record)),
   del(Record)), now(Time),
-  add(['type':'signal',
-       'mode':Mode, 'name':Name,
-       'data':Data, 'time':Time]).
+  add(['type':'signal', 'mode':Mode, 'name':Name, 'data':Data, 'time':Time]).
 
 detect(Mode, Name) :-
   fsr(Record),
@@ -54,46 +55,46 @@ detect(Mode, Name, Data) :-
 
 /* Modality-Specific Data Extraction */
 state(Name, Data) :-
-  oldest('state', Event),
+  oldest_of('state', Event),
   val('name', Name, Event),
   val('data', Data, Event).
   
 voice(Name, Data) :-
-  oldest('voice', Event),
+  oldest_of('voice', Event),
   val('name', Name, Event),
   val('data', Data, Event).
   
 gaze(Name, Data) :-
-  oldest('gaze', Event),
+  oldest_of('gaze', Event),
   val('name', Name, Event),
   val('data':'name', Data, Event).
   
 touch(Type, Name, Xpos, Ypos) :-
-  oldest('touch', Event),
+  oldest_of('touch', Event),
   val('data':'type', Type, Event),
   val('data':'name', Name, Event),
   val('data':'pos':'x', Xpos, Event),
   val('data':'pos':'y', Ypos, Event).
   
 speech(Event, Fun, Cat) :-
-  oldest('speech', Event),
+  oldest_of('speech', Event),
   val('data':'fun', Fun, Event),
   val('data':'cat', Cat, Event).
   
 action(Data) :-
-  oldest('action', Event),
+  oldest_of('action', Event),
   val('data', Data, Event).
   
 face(Data) :-
-  oldest('face', Event),
+  oldest_of('face', Event),
   val('data', Data, Event).
   
 head(Data) :-
-  oldest('head', Event),
+  oldest_of('head', Event),
   val('data', Data, Event).
 
-/* Event Ordering Predicates */
-oldest(Mode, Event) :-
+/* Temporal Event Ordering Predicates */
+oldest_of(Mode, Event) :-
   findall(Record, (fsr(Record),
     val('type', 'event', Record),
     val('mode', Mode, Record)), List),
@@ -106,17 +107,12 @@ eoldest(R, [H|T]) :-
   ; ebefore(H, L), !, R = H ).
 
 ebefore(A, B) :-
-  val('time', TA, A),
-  val('time', TB, B),
-  val('dist', DA, A),
-  val('dist', DB, B),
-  val('life', LA, A),
-  val('life', LB, B),
-  EA = TA - DA + LA,
-  EB = TB - DB + LB,
-  EA =< EB.
+  val('time', TA, A), val('time', TB, B),
+  val('dist', DA, A), val('dist', DB, B),
+  val('life', LA, A), val('life', LB, B),
+  EA = TA - DA + LA, EB = TB - DB + LB, EA =< EB.
 
-/* Speech Disambiguation */
+/* Location Referent Disambiguation */
 disambiguate(Speech, Fused) :-
   % Check if the speech event's dialog act
   % is a question and has the check category
@@ -137,8 +133,7 @@ disambiguate(Speech, Fused) :-
   findall(Name, (fsr(Piece),
     val('sort', 'piece', Piece),
     matches(Piece, Speech),
-    val('name', Name, Piece)),
-  List),
+    val('name', Name, Piece)), List),
   set('data':'data':'name', List, Speech, Fused).
 
 matches(Gaze, Speech):-
@@ -165,7 +160,7 @@ matches(Piece, Speech):-
   (val('data':'data':'shape', Shape, Speech)
     -> val('data':'shape', Shape, Piece); true). % Check the shape
 
-/* Puzzle Piece Update */
+/* Puzzle Piece Position Update */
 update(Name, Xpos, Ypos) :-
   fsr(Old),
   val('type', 'entity', Old),
@@ -174,4 +169,3 @@ update(Name, Xpos, Ypos) :-
   set('data':'state', 'present', Old, Temp),
   set('data':'pos', ['x':Xpos, 'y':Ypos], Temp, New),
   del(Old), add(New).
-

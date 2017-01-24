@@ -1,6 +1,7 @@
-﻿:- module('terms', [ fkeyterm/1, fklsterm/1, fvalterm/1, fvlsterm/1,
-                     allvarls/1, nonvarls/1, termvars/2, extgvars/2,
-                     extlvars/2, extqvars/2, uniqvars/2 ]).
+﻿:- module('terms',
+   [ fkeyterm/1, fklsterm/1, fvalterm/1, fvlsterm/1,
+     allvarls/1, nonvarls/1, termvars/2, extgvars/2,
+     extlvars/2, extqvars/2, nonqvars/2 ]).
 
 /* Keys Of A Feature Pair */
 fkeyterm(Term) :- var(Term), !.
@@ -46,7 +47,7 @@ nonvarls([Head|Tail]) :-
 termvars(Term, List) :-
     term_variables(Term, List).
     
-/* Extentially Qualified */
+/* Extential Qualified Variables */
 extgvars(Goal, []) :- var(Goal), !.
 extgvars(Head^Goal, [Head|Tail]) :-
     var(Head), !, extgvars(Goal, Tail).
@@ -74,8 +75,8 @@ extqvars(Goal, ExtVars) :-
     Goal =.. [_|List],
     extlvars(List, ExtVars).
 
-/* Universally Qualified */
-uniqvars(Term, List) :-
+/* Non-Qualified Variables*/
+nonqvars(Term, List) :-
   termvars(Term, All), sort(All, AllVars),
   extqvars(Term, Ext), sort(Ext, ExtVars),
   ord_subtract(AllVars, ExtVars, UniVars),

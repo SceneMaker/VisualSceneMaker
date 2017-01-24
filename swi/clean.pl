@@ -1,18 +1,7 @@
-﻿:- module('clean', [ clean/0, clean/2 ]).
+﻿:- module('clean',
+   [ clean/0, clean/2 ]).
 :- reexport('facts').
 :- reexport('timer').
-
-/* Garbage Collection */
-clean(Mode, Age) :-
-  now(Now), Lim is Now - Age,
-  forall((fsr(Record),
-    val('mode', Mode, Record),
-    val('time', Time, Record),
-    val('from', Dist, Record),
-    val('life', Life, Record),
-    End is Time - Dist
-         + Life, Lim > End),
-  retract(fsr(Record))).
 
 /* Fact Base Cleanup */
 clean :-
@@ -31,3 +20,15 @@ clean :-
   forall((fsr(Record),
     val('type', 'instruct', Record)),
     retract(fsr(Record))).
+
+/* Garbage Collection */
+clean(Mode, Age) :-
+  now(Now), Lim is Now - Age,
+  forall((fsr(Record),
+    val('mode', Mode, Record),
+    val('time', Time, Record),
+    val('from', Dist, Record),
+    val('life', Life, Record),
+    End is Time - Dist
+         + Life, Lim > End),
+  retract(fsr(Record))).

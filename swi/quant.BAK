@@ -1,6 +1,7 @@
-﻿:- module('quant', [ collect/3, arrange/3, template/4, forevery/4, forsome/4,
-  fornone/4, formost/3, formost/4, forfraction/3, forfraction/4, forfraction/5,
-  forlessthan/4, formorethan/4, forlargest/2, forlargest/3, forlargest/4 ]).
+﻿:- module('quant',
+   [ collect/3, arrange/3, template/4, forevery/4, forsome/4, fornone/4,
+     formost/3, formost/4, forfraction/3, forfraction/4, forfraction/5,
+     forlessthan/4, formorethan/4, forlargest/2, forlargest/3, forlargest/4 ]).
 
 :- reexport('terms').
 :- reexport('print').

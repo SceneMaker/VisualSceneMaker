@@ -1,20 +1,20 @@
-﻿:- module('timer', [ start/1, now/1, stop/1, init/2,
-                     timer/2, timeout/2, timeout/3, expired/1 ]).
+﻿:- module('timer',
+   [ now/1, stop/1, init/2,
+     expired/1, timeout/2 ]).
 :- reexport('facts').
 
 /* Current System Time */
 :- dynamic start/1.
 
 now(Now) :-
-  start(Start), !,
+  start(Start), !, % System running
   statistics('walltime', [Time, _]),
   Now is Time - Start.
-  
-now(Now) :-
+now(Now) :- % Register startup time
   statistics('walltime', [Time, _]),
   assertz(start(Time)), Now is 0.
 
-/* Timeout Predicates */
+/* Timeout Handling */
 :- dynamic timer/2.
 
 stop(Name) :-
@@ -36,14 +36,3 @@ timeout(Name, _) :-
 timeout(Name, Delay) :-
   now(Now), Time is Now + Delay,
   assertz(timer(Name, Time)), fail.
-
-timeout(Name, _, _) :-
-  timer(Name, Time),
-  now(Now), Now > Time,
-  retractall(timer(Name, Time)).
-timeout(Name, Delay, Event) :-
-  val('time', Time, Event),
-  val('dist', Dist, Event),
-  val('life', Life, Event),
-  End is Time - Dist + Life + Delay,
-  assertz(timer(Name, End)), fail.
