@@ -2,6 +2,7 @@ package de.dfki.vsm.util.tts.cereproc.audioplayer;
 
 import com.cereproc.cerevoice_eng.SWIGTYPE_p_CPRC_abuf;
 import com.cereproc.cerevoice_eng.cerevoice_eng;
+import de.dfki.vsm.util.tts.cereproc.util.AudioControl;
 
 import javax.sound.sampled.*;
 import javax.sound.sampled.Mixer.Info;
@@ -100,7 +101,14 @@ public class ClipPlayer implements Audioplayer {
         Clip clip = AudioSystem.getClip(info);
         clip.open(inputStream);
         clip.start();
+        AudioControl.setClip(clip);
+        AudioControl.setPlayer(this);
         waitPlayToEnd(clip);
+        clip.close();
+    }
+
+    public void stop(Clip clip){
+        clip.stop();
         clip.close();
     }
 
