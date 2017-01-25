@@ -1275,7 +1275,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         getSceneFlowManager().addActiveSuperNode(superNode);
         mSceneFlowEditor.addPathComponent(superNode);
 
-        mGridManager.update();
+        mGridManager.update(superNode);
 
         showCurrentWorkSpace();
     }

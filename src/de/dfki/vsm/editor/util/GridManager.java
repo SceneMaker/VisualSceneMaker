@@ -13,6 +13,11 @@ import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.GridConstants;
 import de.dfki.vsm.editor.util.grid.GridRectangle;
 import de.dfki.vsm.model.project.EditorConfig;
+import de.dfki.vsm.model.sceneflow.BasicNode;
+import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.graphics.workspace.WorkAreaSize;
+import de.dfki.vsm.model.sceneflow.graphics.workspace.WorkSpaceInitNodeSize;
+import de.dfki.vsm.model.sceneflow.graphics.workspace.WorkSpaceSuperNode;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -56,11 +61,12 @@ public class GridManager {
         mEditorConfig = mWorkSpacePanel.getEditorConfig();
         isDebug       = mEditorConfig.sSHOW_SMART_PATH_DEBUG;
         isDockingView = false;
-        compute();
+        WorkAreaSize workAreaSize = new WorkSpaceInitNodeSize(mWorkSpacePanel, mEditorConfig.sGRID_NODEWIDTH, mEditorConfig.sGRID_NODEHEIGHT);
+        compute(workAreaSize);
     }
 
-    public final void compute() {
-        Dimension area = obtainWorkAreaSize();
+    public final void compute(WorkAreaSize workAreaSize) {
+        Dimension area = workAreaSize.calculate();
         int       w    = area.width;
         int       h    = area.height;    // <-
 
@@ -217,48 +223,24 @@ public class GridManager {
     public void update() {
         isDebug      = mEditorConfig.sSHOW_SMART_PATH_DEBUG;
         mPlacedNodes = new HashSet<>();
-        compute();
+        WorkAreaSize workAreaSize = new WorkSpaceInitNodeSize(mWorkSpacePanel, mEditorConfig.sGRID_NODEWIDTH, mEditorConfig.sGRID_NODEHEIGHT);
+        compute(workAreaSize);
     }
 
-    private Dimension obtainWorkAreaSize() {
-        int w = 0;
-        int h = 0;
-
-        for (de.dfki.vsm.model.sceneflow.BasicNode n : mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getNodeList()) {
-            if (n.getGraphics().getPosition().getXPos() > w) {
-                w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
-            }
-
-            if (n.getGraphics().getPosition().getYPos() > h) {
-                h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
-            }
-        }
-
-        for (de.dfki.vsm.model.sceneflow.SuperNode n :
-                mWorkSpacePanel.getSceneFlowEditor().getSceneFlow().getSuperNodeList()) {
-            if (n.getGraphics().getPosition().getXPos() > w) {
-                w = n.getGraphics().getPosition().getXPos() + mEditorConfig.sNODEWIDTH;
-            }
-
-            if (n.getGraphics().getPosition().getYPos() > h) {
-                h = n.getGraphics().getPosition().getYPos() + mEditorConfig.sNODEHEIGHT;
-            }
-        }
-            
-        if(mWorkSpacePanel.getSize().height>h){
-            h = mWorkSpacePanel.getSize().height;
-        }
-
-        if(mWorkSpacePanel.getSize().width>w){
-            w = mWorkSpacePanel.getSize().width;
-        }
-    
-
-        return new Dimension(w, h);
+    public void update(SuperNode superNode) {
+        isDebug      = mEditorConfig.sSHOW_SMART_PATH_DEBUG;
+        mPlacedNodes = new HashSet<>();
+        WorkAreaSize workAreaSize = new WorkSpaceSuperNode(mWorkSpacePanel, mEditorConfig.sGRID_NODEWIDTH, mEditorConfig.sGRID_NODEHEIGHT, superNode);
+        compute(workAreaSize);
     }
+
+
+
+    //private Point isBiggerThan
 
     public void drawGrid(Graphics2D g2d) {
-        compute();
+        WorkAreaSize workAreaSize = new WorkSpaceInitNodeSize(mWorkSpacePanel, mEditorConfig.sGRID_NODEWIDTH, mEditorConfig.sGRID_NODEHEIGHT);
+        compute(workAreaSize);
 
         if (mEditorConfig.sSHOWGRID) {
             g2d.setStroke(new BasicStroke(1.0f));
