@@ -108,11 +108,8 @@ auxiliary.show.customizer.message=<message>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/4">
             <compilation-unit>
                 <package-root>res</package-root>
-                <source-level>1.8</source-level>
-            </compilation-unit>
-            <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">lib/JCup.jar;lib/JFlex.jar;lib/JPL3.jar;lib/javaGeom-0.11.1.jar;lib/ujmp-complete-0.2.5.jar;lib/core.jar;lib/Stickman.jar;lib/Charamelapi-1.0.jar;lib/marytts-client-5.1.2-jar-with-dependencies.jar;lib/marytts-lang-en-5.1.2.jar;lib/marytts-runtime-5.1.2-jar-with-dependencies.jar;lib/voice-dfki-obadiah-5.1.jar;lib/voice-dfki-poppy-5.1.jar;lib/voice-dfki-prudence-5.1.jar;lib/voice-dfki-spike-5.1.jar;lib/affect.jar;lib/RobotEngineApplication.jar;lib/cerevoice_eng.jar;lib/TIDIGITS_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;lib/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;lib/jsapi.jar;lib/sphinx4.jar</classpath>
+                <classpath mode="compile">lib/Charamelapi-1.0.jar;lib/JCup.jar;lib/JFlex.jar;lib/JPL3.jar;lib/RobotEngineApplication.jar;lib/Stickman.jar;lib/TIDIGITS_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;lib/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;lib/affect.jar;lib/cerevoice_eng.jar;lib/javaGeom-0.11.1.jar;lib/jna-4.2.2.jar;lib/jna-platform-4.2.2.jar;lib/jnativehook-2.0.3.jar;lib/jsapi.jar;lib/marytts-client-5.1.2-jar-with-dependencies.jar;lib/sphinx4.jar;lib/ujmp-complete-0.2.5.jar</classpath>
                 <source-level>1.8</source-level>
             </compilation-unit>
         </java-data>
