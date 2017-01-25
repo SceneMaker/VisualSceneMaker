@@ -38,7 +38,7 @@ public abstract class RunTimePlayer {
     // Unload the plugin
     public abstract void unload();
 
-    public abstract long getTime();
+    //public abstract long getTime();
 
     // Get the activity scheduler
     public ActivityScheduler getActivityScheduler() {
