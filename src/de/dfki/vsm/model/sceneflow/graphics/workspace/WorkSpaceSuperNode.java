@@ -8,14 +8,11 @@ import java.awt.*;
 
 /**
  * Created by alvaro on 1/24/17.
+ * Compute workspace area inside super node (When changing level)
  */
 public class WorkSpaceSuperNode extends WorkAreaSize {
 
-    private SuperNode superNode;
-
-    public WorkSpaceSuperNode(WorkSpacePanel workSpacePanel, int nodeWidth, int nodeHeight) {
-        super(workSpacePanel, nodeWidth, nodeHeight);
-    }
+    private SuperNode superNode = null;
 
     public WorkSpaceSuperNode(WorkSpacePanel workSpacePanel, int nodeWidth, int nodeHeight, SuperNode superNode) {
         super(workSpacePanel, nodeWidth, nodeHeight);
