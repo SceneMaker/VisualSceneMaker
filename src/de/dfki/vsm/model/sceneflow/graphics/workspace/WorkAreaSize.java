@@ -7,18 +7,20 @@ import de.dfki.vsm.model.sceneflow.SuperNode;
 import java.awt.*;
 
 /**
- * Created by alvaro on 1/24/17.
+ * Created by Alvaro on 1/24/17.
+ * Calculate the current area workspace
  */
 public abstract class WorkAreaSize {
-    protected WorkSpacePanel mWorkSpacePanel;
-    protected int nodeWidth;
-    protected int nodeHeight;
-    protected int width = 0;
+    protected int width;
     protected int height = 0;
-    public WorkAreaSize(WorkSpacePanel workSpacePanel, int nodeWidth, int nodeHeight){
+    int nodeWidth;
+    int nodeHeight;
+    private WorkSpacePanel mWorkSpacePanel;
+    WorkAreaSize(WorkSpacePanel workSpacePanel, int nodeWidth, int nodeHeight){
             this.mWorkSpacePanel = workSpacePanel;
             this.nodeHeight = nodeHeight;
             this.nodeWidth = nodeWidth;
+        width = 0;
     }
 
     public Dimension calculate() {
