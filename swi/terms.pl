@@ -11,11 +11,9 @@ fkeyterm(Term) :- number(Term).
 /* Matrix Of A Feature Pair */
 fklsterm(Term) :- var(Term), !, fail.
 fklsterm(Feature:Path) :-
-    fkeyterm(Feature),
-    fkeyterm(Path).
+    fkeyterm(Feature), fkeyterm(Path).
 fklsterm(Feature:Path) :-
-    fkeyterm(Feature),
-    fklsterm(Path).
+    fkeyterm(Feature), fklsterm(Path).
 
 /* Values Of A Feature Pair */
 fvalterm(Term) :- var(Term), !.

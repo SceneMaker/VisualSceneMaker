@@ -1,9 +1,9 @@
 :- module('tempr',
-  [ concurrent/2, during/2, contains/2, before/2, after/2, overlaps/2,
-    overlapped/2, meets/2, met/2, starts/2, started/2, finishes/2, finished/2,
-    distexactly/3, distlessthan/3, distmorethan/3, follows/2, followed/2,
-    between/3, followers/2, ancestors/2, interims/3, nextto/2, prevto/2,
-    framed/3, newest_of_list/2, oldest_of_list/2, newest/3, oldest/3 ]).
+   [ concurrent/2, during/2, contains/2, before/2, after/2, overlaps/2,
+     overlapped/2, meets/2, met/2, starts/2, started/2, finishes/2, finished/2,
+     distexactly/3, distlessthan/3, distmorethan/3, follows/2, followed/2,
+     between/3, followers/2, ancestors/2, interims/3, nextto/2, prevto/2,
+     framed/3, newest_of_list/2, oldest_of_list/2, newest/3, oldest/3 ]).
 :- reexport('facts').
 :- reexport('print').
 

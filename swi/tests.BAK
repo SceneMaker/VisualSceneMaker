@@ -106,3 +106,26 @@ add([type:event,name:agent,mode:speech, id:3,
      data:[type:dialog_act,fun:info_seeking,cat:check_question,
          data:[size:small,shape:triangle,locref:'over there']],
      time:9000,dist:9000,life:9000,conf:1.0]).
+     
+
+
+
+
+
+
+
+test :-
+add([mode:1, time:1000,dist:100,life:100]),
+add([mode:2, time:2000,dist:100,life:100]),
+add([mode:1, time:3000,dist:100,life:100]),
+add([mode:1, time:4000,dist:100,life:100]),
+add([mode:2, time:5000,dist:100,life:100]),
+add([mode:3, time:6000,dist:100,life:100]),
+add([mode:1, time:7000,dist:100,life:100]),
+add([mode:2, time:8000,dist:100,life:100]),
+add([mode:1, time:9000,dist:100,life:100]),
+followers([mode:1, time:3000,dist:100,life:100], L1), out(L1),
+ancestors([mode:2, time:8000,dist:100,life:100], L2), out(L2),
+interims([mode:2, time:8000,dist:100,life:100], [mode:2, time:2000,dist:100,life:100], L3), out(L3).
+
+

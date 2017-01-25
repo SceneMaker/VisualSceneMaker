@@ -5,21 +5,20 @@
 
 /* Fact Base Cleanup */
 clean :-
-  write('Clean Fact Base'), nl,
   retractall(start(_)),
   retractall(timer(_,_)),
   forall((fsr(Record),
     val('type', 'event', Record)),
-    retract(fsr(Record))),
+  retract(fsr(Record))),
   forall((fsr(Record),
     val('type', 'signal', Record)),
-    retract(fsr(Record))),
+  retract(fsr(Record))),
   forall((fsr(Record),
     val('type', 'entity', Record)),
-    retract(fsr(Record))),
+  retract(fsr(Record))),
   forall((fsr(Record),
     val('type', 'instruct', Record)),
-    retract(fsr(Record))).
+  retract(fsr(Record))).
 
 /* Garbage Collection */
 clean(Mode, Age) :-
@@ -29,6 +28,5 @@ clean(Mode, Age) :-
     val('time', Time, Record),
     val('from', Dist, Record),
     val('life', Life, Record),
-    End is Time - Dist
-         + Life, Lim > End),
+    End is Time - Dist + Life, Lim > End),
   retract(fsr(Record))).

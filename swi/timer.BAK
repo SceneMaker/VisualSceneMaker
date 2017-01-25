@@ -1,6 +1,5 @@
 ﻿:- module('timer',
-   [ now/1, stop/1, init/2,
-     expired/1, timeout/2 ]).
+   [ now/1, stop/1, init/2, expired/1, timeout/2 ]).
 :- reexport('facts').
 
 /* Current System Time */

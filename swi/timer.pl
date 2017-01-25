@@ -20,17 +20,14 @@ stop(Name) :-
   retractall(timer(Name, _)).
 
 init(Name, Delay) :-
-   stop(Name), now(Now),
-   Time is Now + Delay,
+   stop(Name), now(Now), Time is Now + Delay,
    assertz(timer(Name, Time)).
 
 expired(Name) :-
-  timer(Name, Time),
-  now(Now), Now > Time.
+  timer(Name, Time), now(Now), Now > Time.
   
 timeout(Name, _) :-
-  timer(Name, Time), !,
-  now(Now), Now > Time,
+  timer(Name, Time), !, now(Now), Now > Time,
   retractall(timer(Name, Time)).
 timeout(Name, Delay) :-
   now(Now), Time is Now + Delay,

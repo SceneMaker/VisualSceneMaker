@@ -47,7 +47,7 @@ nonvarls([Head|Tail]) :-
 termvars(Term, List) :-
     term_variables(Term, List).
     
-/* Extentially Qualified */
+/* Extential Qualified Variables */
 extgvars(Goal, []) :- var(Goal), !.
 extgvars(Head^Goal, [Head|Tail]) :-
     var(Head), !, extgvars(Goal, Tail).

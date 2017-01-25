@@ -94,8 +94,7 @@ forlargest(Template, Generator, Condition, Scope) :-
 max_size_list([List], List).
 max_size_list([Head|Tail], List) :-
       max_size_list(Tail, Some),
-      length(Some, SomeL),
-      length(Head, HeadL),
+      length(Some, SomeL), length(Head, HeadL),
       ((SomeL  >  HeadL, List = Some);
        (SomeL  <  HeadL, List = Head);
        (SomeL == HeadL, Some \== Head,
