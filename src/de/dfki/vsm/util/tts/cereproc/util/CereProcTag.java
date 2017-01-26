@@ -34,7 +34,7 @@ public class CereProcTag {
         vocalGesture.put("longerrGesture", "<spurt audio=\"g0001_018\">err</spurt>");
         vocalGesture.put("giggleGesture", "<spurt audio=\"g0001_019\">giggle</spurt>");
         vocalGesture.put("shortgiggleGesture", "<spurt audio=\"g0001_020\">giggle</spurt>");
-        vocalGesture.put("longlaughiiGesture", "<spurt audio=\"g0001_021\">laugh</spurt>");
+        vocalGesture.put("longlaughiGesture", "<spurt audio=\"g0001_021\">laugh</spurt>");
         vocalGesture.put("laughiGesture", "<spurt audio=\"g0001_022\">laugh</spurt>");
         vocalGesture.put("laughGesture", "<spurt audio=\"g0001_023\">laugh</spurt>");
         vocalGesture.put("longlaughGesture", "<spurt audio=\"g0001_024\">laugh</spurt>");
