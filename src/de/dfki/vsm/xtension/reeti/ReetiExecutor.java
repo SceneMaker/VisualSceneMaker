@@ -31,7 +31,7 @@ public final class ReetiExecutor extends ActivityExecutor {
     private ReetiHandler mHandler;
     
     // record the curernt positon of the motor (neckRotat)
-    private static int iPosition;
+    private static int iPosition =0;
 
     // Construct the executor
     public ReetiExecutor(
