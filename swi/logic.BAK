@@ -10,6 +10,8 @@
 :- reexport('timer').
 :- reexport('clean').
 
+reset.
+
 /* Signal Production and Consumption */
 signal(Mode, Name) :-
   forall((fsr(Record),
@@ -83,7 +85,7 @@ head(Data) :-
   oldest_of('head', Event),
   val('data', Data, Event).
 
-/* Temporal Event Ordering Predicates */
+/* Temporal Ordering Predicates */
 oldest_of(Mode, Event) :-
   findall(Record, (fsr(Record),
     val('type', 'event', Record),

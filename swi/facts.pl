@@ -109,8 +109,9 @@ del(Record) :-
   out('Retracting:\n'), out(Record).
   
 jel(Record) :-
-  retract(fsr(Record)), jvw(Record, String),
-  concat('Retracting:\n', String, Output), jog(Output).
+  retract(fsr(Record))%, jvw(Record, String),
+  %concat('Retracting:\n', String, Output), jog(Output)
+  .
   
 /* Assert A Feature Record */
 add(Record) :-
@@ -120,8 +121,9 @@ add(Record) :-
   out('Cannot Assert:\n'), out(Record).
 
 jdd(Record) :-
-  assertz(fsr(Record)), jvw(Record, String),
-  concat('Asserting:\n', String, Output), jog(Output), !.
+  assertz(fsr(Record)), %jvw(Record, String),
+  %concat('Asserting:\n', String, Output), jog(Output),
+  !.
 jdd(Record) :-
   jog('Cannot Assert:\n'), jog(Record).
 

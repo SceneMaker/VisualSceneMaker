@@ -2,11 +2,15 @@
    [ clean/0, clean/2 ]).
 :- reexport('facts').
 :- reexport('timer').
+:- reexport('print').
 
 /* Fact Base Cleanup */
 clean :-
+  out('Cleaning Fact Base'), nl,
   retractall(start(_)),
-  retractall(timer(_,_)),
+  forall(timer(Name, Delay),
+   (out('Retracting Timer '), out(Name), nl, retract(timer(Name, Delay)))),
+  
   forall((fsr(Record),
     val('type', 'event', Record)),
   retract(fsr(Record))),
