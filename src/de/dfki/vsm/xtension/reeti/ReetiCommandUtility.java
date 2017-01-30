@@ -88,10 +88,13 @@ public class ReetiCommandUtility {
             Logger.getLogger(ReetiCommandUtility.class.getName()).log(Level.SEVERE, null, ex);
         }
         if (feedback.contains("left")) {
+            System.out.println("feedback:   " + "left");
             return "left";
         } else if (feedback.contains("mid")) {
+            System.out.println("feedback:   " + "mid");
             return "mid";
         } else if (feedback.contains("right")) {
+            System.out.println("feedback:   " + "right");
             return "right";
         } else {
             return "unknown";
@@ -100,6 +103,7 @@ public class ReetiCommandUtility {
 
     // get current position of neckRotate motor
     public static int getCurrentPosition() {
+        System.out.println("getCurrentPosition:   " + ReetiExecutor.getCurrentPosition());
         return ReetiExecutor.getCurrentPosition();
     }
 }
