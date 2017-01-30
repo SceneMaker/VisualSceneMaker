@@ -30,6 +30,11 @@ public class WorkSpaceSuperNode extends WorkAreaSize {
             updateWidth(childNode);
             updateHeight(childNode);
         }
+
+        for(BasicNode childNode: superNode.getSuperNodeList()){
+            updateWidth(childNode);
+            updateHeight(childNode);
+        }
     }
 
     private void updateHeight(BasicNode childNode) {
