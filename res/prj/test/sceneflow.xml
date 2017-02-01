@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="Behavior Flow Model" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Sa, 28 Jan 2017 16:13:24" start="N651;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="Behavior Flow Model" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 1 Feb 2017 15:40:47" start="N651;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -10898,6 +10898,9 @@
         <Define>
         </Define>
         <Declare>
+          <Variable type="String" name ="Report">
+            <String><![CDATA[5000]]></String>
+          </Variable>
         </Declare>
         <Commands>
         </Commands>
@@ -10905,7 +10908,7 @@
           <Position xPos="426" yPos="26"/>
         </Graphics>
         <LocalVariableBadge>
-          <Position xPos="10" yPos="10"/>
+          <Position xPos="400" yPos="234"/>
         </LocalVariableBadge>
         <GlobalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -10956,13 +10959,13 @@
           <IEdge target="S64" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="455" yPos="106" ctrlXPos="451" ctrlYPos="54"/>
-                <ControlPoint xPos="506" yPos="135" ctrlXPos="552" ctrlYPos="108"/>
+                <ControlPoint xPos="477" yPos="106" ctrlXPos="507" ctrlYPos="54"/>
+                <ControlPoint xPos="506" yPos="135" ctrlXPos="552" ctrlYPos="126"/>
               </Connection>
             </Graphics>
-            <PrologQuery>
-            <String><![CDATA[timeout(status, 5000).]]></String>
-            </PrologQuery>
+            <TimeoutCondition>
+            <Variable name="Report"/>
+            </TimeoutCondition>
           </IEdge>
           <Graphics>
             <Position xPos="426" yPos="106"/>
@@ -11009,6 +11012,15 @@
         <Define>
         </Define>
         <Declare>
+          <Variable type="String" name ="Cleanup">
+            <String><![CDATA[5000]]></String>
+          </Variable>
+          <Variable type="String" name ="GazeAge">
+            <String><![CDATA[10000]]></String>
+          </Variable>
+          <Variable type="String" name ="SpeechAge">
+            <String><![CDATA[30000]]></String>
+          </Variable>
         </Declare>
         <Commands>
         </Commands>
@@ -11016,7 +11028,7 @@
           <Position xPos="586" yPos="26"/>
         </Graphics>
         <LocalVariableBadge>
-          <Position xPos="10" yPos="10"/>
+          <Position xPos="377" yPos="236"/>
         </LocalVariableBadge>
         <GlobalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -11039,22 +11051,34 @@
           </Declare>
           <Commands>
             <PrologQuery>
-            <String><![CDATA[clean(speech, 30000).]]></String>
+            <Add>
+              <Add>
+                <String><![CDATA[clean(gaze, ]]></String>
+                <Variable name="GazeAge"/>
+              </Add>
+              <String><![CDATA[).]]></String>
+            </Add>
             </PrologQuery>
             <PrologQuery>
-            <String><![CDATA[clean(gaze, 10000).]]></String>
+            <Add>
+              <Add>
+                <String><![CDATA[clean(speech, ]]></String>
+                <Variable name="SpeechAge"/>
+              </Add>
+              <String><![CDATA[).]]></String>
+            </Add>
             </PrologQuery>
           </Commands>
           <IEdge target="S68" start="">
             <Graphics>
               <Connection>
-                <ControlPoint xPos="455" yPos="106" ctrlXPos="446" ctrlYPos="51"/>
-                <ControlPoint xPos="506" yPos="135" ctrlXPos="547" ctrlYPos="106"/>
+                <ControlPoint xPos="477" yPos="106" ctrlXPos="500" ctrlYPos="48"/>
+                <ControlPoint xPos="506" yPos="135" ctrlXPos="562" ctrlYPos="118"/>
               </Connection>
             </Graphics>
-            <PrologQuery>
-            <String><![CDATA[timeout(trash, 5000).]]></String>
-            </PrologQuery>
+            <TimeoutCondition>
+            <Variable name="Cleanup"/>
+            </TimeoutCondition>
           </IEdge>
           <Graphics>
             <Position xPos="426" yPos="106"/>
