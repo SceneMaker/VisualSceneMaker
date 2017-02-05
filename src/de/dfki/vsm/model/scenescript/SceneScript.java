@@ -11,6 +11,7 @@ import org.w3c.dom.Element;
 //~--- JDK imports ------------------------------------------------------------
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -412,5 +413,10 @@ public final class SceneScript extends SceneEntity {
                 ? 0
                 : getText().hashCode()) ;
         return hashCode;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    public final Set<String> getLangSet() {
+        return mLangMap.keySet();
     }
 }
