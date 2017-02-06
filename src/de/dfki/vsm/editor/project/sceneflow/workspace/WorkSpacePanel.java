@@ -1576,6 +1576,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                     }
                 }
             }
+        }else{
+            mDoAreaAction = false;
         }
 
         // if there is a specific selected edge use it - much faster than checking all edges
