@@ -366,7 +366,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             mProjectSettings.setEnabled(false);
         }
         mProjectSettings.setRolloverIcon(ICON_PROJECT_SETTINGS_ROLLOVER);
-        mProjectSettings.setToolTipText("Project Preferences");
+        mProjectSettings.setToolTipText("Project Settings");
 
         sanitizeButton(mProjectSettings, tinyButtonDim);
 
