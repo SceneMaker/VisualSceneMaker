@@ -232,6 +232,9 @@ public class RunTimeProject {
                 return false;
             }
         }
+        if(mProjectPath.equals("")){
+            mProjectPath = file.getPath();
+        }
         // Save the project to the base directory
         return (writeProjectConfig(base)
                 && writeSceneFlow(base)
