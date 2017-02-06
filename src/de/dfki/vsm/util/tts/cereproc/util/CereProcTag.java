@@ -18,7 +18,7 @@ public class CereProcTag {
         vocalGesture.put("tuttutGesture", "<spurt audio=\"g0001_002\">tut tut</spurt>"); // kiss 2 times
         vocalGesture.put("coughGesture", "<spurt audio=\"g0001_003\">cough</spurt>");
         vocalGesture.put("longcoughGesture", "<spurt audio=\"g0001_004\">cough</spurt>");
-        vocalGesture.put("shortcoughiiGesture", "<spurt audio=\"g0001_005\">cough</spurt>");
+        vocalGesture.put("shortcoughGesture", "<spurt audio=\"g0001_005\">cough</spurt>");
         vocalGesture.put("clearthroatGesture", "<spurt audio=\"g0001_006\">clear throat</spurt>");
         vocalGesture.put("breathinGesture", "<spurt audio=\"g0001_007\">breath in</spurt>");
         vocalGesture.put("sharpintakeofbreathGesture", "<spurt audio=\"g0001_008\">sharp intake of breath</spurt>");

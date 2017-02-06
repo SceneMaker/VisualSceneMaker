@@ -10,6 +10,8 @@
   </Plugins>
   <Agents>
     <Agent name="reeti" device="reeti">
+      <Feature key="language" val="en"/>
+      <Feature key="voice" val="Simon"/>
     </Agent>
   </Agents>
   <Player>
