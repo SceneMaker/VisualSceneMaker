@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
  */
 public class PropertyManagerController implements Initializable, TreeObserver {
 
+    public static final String FX_TEXT_BOX_BORDER_RED = "-fx-text-box-border: red";
     private RunTimeProject mProject = null;
     @FXML
     TreeView<AbstractTreeEntry> treeView;
@@ -160,15 +161,37 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML
     public void addDevice(){
         String deviceName = txtDeviceName.getText();
+        try {
+            tryToAddNewDevice(deviceName);
+        }catch (ArrayIndexOutOfBoundsException e){
+            cmbExecutor.setStyle("-fx-outer-border: red" );
+        }
+    }
+
+    private void tryToAddNewDevice(String deviceName) {
         String className = activityClassesLongNames.get( cmbExecutor.getSelectionModel().getSelectedIndex());
+        if(!deviceName.equals("")){
+            addNewDevice(deviceName, className);
+        }else{
+            cmbExecutor.setStyle(null);
+            txtDeviceName.setStyle(FX_TEXT_BOX_BORDER_RED);
+        }
+    }
+
+    private void addNewDevice(String deviceName, String className) {
         boolean added = projectConfigWrapper.addNewPlugin(deviceName, className);
         if(added){
             PluginConfig plugin = mProject.getPluginConfig(deviceName);
             EntryPlugin entryPlugin = new EntryPlugin(plugin);
             entryDevice.addPlugin(entryPlugin);
             addPluginToList(entryPlugin);
-
+            clearBorders();
         }
+    }
+
+    private void clearBorders() {
+        txtDeviceName.setStyle(null);
+        cmbExecutor.setStyle(null);
     }
 
     private void addPluginToList(EntryPlugin entryPlugin){
