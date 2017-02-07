@@ -73,8 +73,8 @@ speech(Event, Fun, Cat) :-
   val('data':'fun', Fun, Event),
   val('data':'cat', Cat, Event).
   
-action(Data) :-
-  oldest_of('action', Event),
+move(Data) :-
+  oldest_of('move', Event),
   val('data', Data, Event).
   
 face(Data) :-
