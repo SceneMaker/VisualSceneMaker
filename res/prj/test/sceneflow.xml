@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="Behavior Flow Model" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 9 Feb 2017 09:41:12" start="N651;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="Behavior Flow Model" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 9 Feb 2017 16:10:39" start="N651;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -191,7 +191,7 @@
           <Position xPos="666" yPos="186"/>
         </Graphics>
       </Node>
-      <SuperNode id="S112" name="Voice;Overlap And;Conflict;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S10;S46;S150;">
+      <SuperNode id="S112" name="Turn-Taking;Conflict;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S10;S46;S150;">
         <Define>
         </Define>
         <Declare>
@@ -1827,7 +1827,7 @@
           </SuperNode>
         </SuperNode>
       </SuperNode>
-      <SuperNode id="S6" name="Feedback;Eliciting;Signal;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S55;S54;">
+      <SuperNode id="S6" name="Feedback;Eliciting;Cue;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S55;S54;">
         <Define>
         </Define>
         <Declare>
@@ -1835,7 +1835,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="346" yPos="186"/>
+          <Position xPos="506" yPos="186"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
@@ -2335,7 +2335,7 @@
           </SuperNode>
         </SuperNode>
       </SuperNode>
-      <SuperNode id="S12" name="Gaze;State And;Event;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S76;S8;">
+      <SuperNode id="S12" name="Gaze;Connection;Event;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S76;S8;">
         <Define>
         </Define>
         <Declare>
@@ -2362,7 +2362,7 @@
             <Position xPos="666" yPos="106"/>
           </Graphics>
         </Node>
-        <SuperNode id="S8" name="Gaze;Connection;Event;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S11;">
+        <SuperNode id="S8" name="Gaze;Connection;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S11;">
           <Define>
           </Define>
           <Declare>
@@ -2763,7 +2763,7 @@
             </Node>
           </SuperNode>
         </SuperNode>
-        <SuperNode id="S76" name="Gaze;Relation;State;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S77;">
+        <SuperNode id="S76" name="Gaze;Direction;Relations" comment="" hideLocalVar="false" hideGlobalVar="false" start="S77;">
           <Define>
           </Define>
           <Declare>
@@ -2798,7 +2798,7 @@
               <Position xPos="746" yPos="106"/>
             </Graphics>
           </Node>
-          <SuperNode id="S77" name="User;And Agent;Not Sharing;Gaze" comment="" hideLocalVar="false" hideGlobalVar="false" start="S82;">
+          <SuperNode id="S77" name="No;Shared;Gaze" comment="" hideLocalVar="false" hideGlobalVar="false" start="S82;">
             <Define>
             </Define>
             <Declare>
@@ -2843,7 +2843,7 @@
                 <Position xPos="746" yPos="106"/>
               </Graphics>
             </Node>
-            <SuperNode id="S82" name="User;And Agent;Having;Mutual Gaze" comment="" hideLocalVar="false" hideGlobalVar="false" start="N267;">
+            <SuperNode id="S82" name="No;Mutual;Gaze" comment="" hideLocalVar="false" hideGlobalVar="false" start="N267;">
               <Define>
               </Define>
               <Declare>
@@ -2914,7 +2914,7 @@
                 </Graphics>
               </Node>
             </SuperNode>
-            <SuperNode id="S88" name="User;And Agent;Having;Mutual Gaze" comment="" hideLocalVar="false" hideGlobalVar="false" start="N270;">
+            <SuperNode id="S88" name="Mutual;Gaze;Detected" comment="" hideLocalVar="false" hideGlobalVar="false" start="N270;">
               <Define>
               </Define>
               <Declare>
@@ -2986,7 +2986,7 @@
               </Node>
             </SuperNode>
           </SuperNode>
-          <SuperNode id="S89" name="User;And Agent;Are Sharing;Gaze" comment="" hideLocalVar="false" hideGlobalVar="false" start="N282;">
+          <SuperNode id="S89" name="Shared;Gaze;Detected" comment="" hideLocalVar="false" hideGlobalVar="false" start="N282;">
             <Define>
             </Define>
             <Declare>
@@ -3053,7 +3053,7 @@
           </SuperNode>
         </SuperNode>
       </SuperNode>
-      <SuperNode id="S1" name="Turn;Regulation;Signal;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S24;">
+      <SuperNode id="S1" name="Turn-Taking;Action;Detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="S24;">
         <Define>
         </Define>
         <Declare>
@@ -3584,7 +3584,7 @@
         <Commands>
         </Commands>
         <Graphics>
-          <Position xPos="506" yPos="186"/>
+          <Position xPos="346" yPos="186"/>
         </Graphics>
         <LocalVariableBadge>
           <Position xPos="10" yPos="10"/>
