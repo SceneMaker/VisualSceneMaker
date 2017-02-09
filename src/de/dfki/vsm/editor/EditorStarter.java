@@ -585,7 +585,7 @@ public class EditorStarter extends JPanel {
 
                 mRightProjectBox.add(Box.createVerticalStrut(20));
                 mScrollPanel.setMaximumSize(new Dimension((int) (java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight() / 2), 
-                                                          (int) java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight() * 2/5));
+                                                          (int) java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight() * 9/20));
 
 	}
 
