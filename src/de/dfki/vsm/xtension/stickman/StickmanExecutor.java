@@ -177,15 +177,9 @@ public class StickmanExecutor extends ActivityExecutor {
 
             if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
                 stickmanStageC.addStickman(name);
-                Stickman3D stickman3D = (Stickman3D) stickmanStageC.getStickman(name);
-                stickman3D.doAnimation("StartIdle", 3000, false);
-                stickmanContainer.put(name, stickman3D);
             }
         }
-//Stickman3D s = (Stickman3D) stickmanStageC.getStickman("bob");
-//        s.mLeftUpperLegFX.mColor = Color.rgb(0, 0, 0, 1);
-//        s.mLeftUpperLegFX.update();
-//        System.out.println("123456" + s);
+        
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {

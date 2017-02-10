@@ -67,8 +67,8 @@ public class GenericCallback extends TtsEngineCallback {
 
     protected Audioplayer createAudioPlayer(SWIGTYPE_p_CPRC_abuf abuf){
         if( audioDevice == null || audioDevice.equals("") || audioDevice.equals("default")){
-            return new ClipPlayer(line.getFormat(), abuf, "default");
-            //return new LinePlayer(line, abuf);
+//            return new ClipPlayer(line.getFormat(), abuf, "default");
+            return new LinePlayer(line, abuf);
         }else{
             return new ClipPlayer(line.getFormat(), abuf, audioDevice);
         }
