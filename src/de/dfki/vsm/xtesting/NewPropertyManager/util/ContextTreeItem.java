@@ -1,10 +1,12 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
-
 import de.dfki.common.interfaces.StageRoom;
+import de.dfki.stickman3D.stage.StageRoom3D;
 import de.dfki.stickmanFX.stage.StageRoomFX;
+import de.dfki.stickmanSwing.stage.StageRoomSwing;
 
 import de.dfki.vsm.model.project.AgentConfig;
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryPlugin;
@@ -22,18 +24,21 @@ import java.util.LinkedList;
 /**
  * Created by alvaro on 5/14/16.
  */
-public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
+public class ContextTreeItem extends AbstractTreeItem implements TreeObservable {
+
     private LinkedList<TreeObserver> observers = new LinkedList<>();
     private String contextValue = "Agent";
     private String pluginName = null;
     private AbstractTreeEntry entryItem;
+
     public ContextTreeItem(String name) {
         this.setValue(name);
     }
     public static int agentCounter = 1;
     public String contextName;
     private String filepath;
-    private String getContextValueName(){
+
+    private String getContextValueName() {
         String name = contextValue + agentCounter;
         contextName = name;
         return name;
@@ -50,17 +55,17 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         this.filepath = filepath;
     }
 
-    public AbstractTreeEntry getEntryItem(){
+    public AbstractTreeEntry getEntryItem() {
         return entryItem;
     }
 
     @Override
-    public ContextMenu getMenu(){
+    public ContextMenu getMenu() {
         ContextMenu menu = new ContextMenu();
-        if(entryItem instanceof EntryPlugin) {
+        if (entryItem instanceof EntryPlugin) {
             MenuItem addNewAgent = getAddNewAgentItem();
             menu.getItems().add(addNewAgent);
-            if(((EntryPlugin)entryItem).getPluginConfig().getClassName().contains("Stickman")){
+            if (((EntryPlugin) entryItem).getPluginConfig().getClassName().contains("Stickman")) {
                 MenuItem editStickman = getEditStickmanItem((EntryPlugin) entryItem);
                 menu.getItems().add(editStickman);
             }
@@ -86,26 +91,51 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
                     }
                 };
 
-
                 stickmanLaunchThread.start();
             }
         });
-        return  editStickman;
+        return editStickman;
     }
 
     private void launchStickmanConfiguration(EntryPlugin plugin) {
-        StageRoom stickmanStage = new StageRoomFX(0,0, false);
+//        StageRoom stickmanStage;
         String mDeviceName = plugin.getName();
-        for (EntryAgent agent: plugin.getAgents()) {
-            AgentConfig ac = agent.getAgentConfig();
-            if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
-                stickmanStage.addStickman(ac.getAgentName());
+        PluginConfig config = plugin.getPluginConfig();
+
+        if (config.getProperty("stickman") != null && config.getProperty("stickman").equals("StickmanLegacy")) {
+            throw new UnsupportedOperationException("StickmanLegacy config is not defined.");
+            
+        } else if (config.getProperty("stickman") != null && config.getProperty("stickman").equals("Pinocchio")) {
+            StageRoom stickmanStage = new StageRoom3D(0, 0, false);
+            for (EntryAgent agent : plugin.getAgents()) {
+                AgentConfig ac = agent.getAgentConfig();
+                if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
+                    stickmanStage.addStickman(ac.getAgentName());
+                }
             }
+            stickmanStage.launchStickmanConfiguration(filepath);
+            
+        } else {
+            StageRoom stickmanStage = new StageRoomFX(0, 0, false);
+            for (EntryAgent agent : plugin.getAgents()) {
+                AgentConfig ac = agent.getAgentConfig();
+                if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
+                    stickmanStage.addStickman(ac.getAgentName());
+                }
+            }
+            stickmanStage.launchStickmanConfiguration(filepath);
         }
-        stickmanStage.launchStickmanConfiguration(filepath);
+
+//        for (EntryAgent agent: plugin.getAgents()) {
+//            AgentConfig ac = agent.getAgentConfig();
+//            if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
+//                stickmanStage.addStickman(ac.getAgentName());
+//            }
+//        }
+//        stickmanStage.launchStickmanConfiguration(filepath);
     }
 
-    private MenuItem getAddNewAgentItem(){
+    private MenuItem getAddNewAgentItem() {
         MenuItem addNewAgent = new MenuItem("Add new agent");
         addNewAgent.setOnAction(new EventHandler() {
             public void handle(Event t) {
@@ -118,24 +148,23 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
                 newBox.getParent().setExpanded(true);
             }
         });
-        return  addNewAgent;
+        return addNewAgent;
     }
 
-    private MenuItem getDeleteItem(){
+    private MenuItem getDeleteItem() {
         MenuItem deleteItem = new MenuItem("Delete " + entryItem.getName());
         deleteItem.setOnAction(new EventHandler() {
             public void handle(Event t) {
                 AbstractTreeEntry item = getEntryItem();
-                if(item instanceof EntryAgent){
+                if (item instanceof EntryAgent) {
                     notifyObserverOnDeleteAgent(item);
-                }else if(item instanceof EntryPlugin){
+                } else if (item instanceof EntryPlugin) {
                     notifyObserverOnDeletePlugin(item);
                 }
             }
         });
-        return  deleteItem;
+        return deleteItem;
     }
-
 
     @Override
     public void registerObserver(TreeObserver object) {
@@ -149,25 +178,25 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
 
     @Override
     public void notifyObserver() {
-        for (TreeObserver observer:observers) {
+        for (TreeObserver observer : observers) {
             observer.update(new ContextEvent(contextName, this.getValue().toString(), entryItem));
         }
     }
 
     public void notifyObserver(AbstractTreeEntry entry) {
-        for (TreeObserver observer:observers) {
+        for (TreeObserver observer : observers) {
             observer.update(new ContextEvent(contextName, this.getValue().toString(), entry));
         }
     }
 
     private void notifyObserverOnDeleteAgent(AbstractTreeEntry entry) {
-        for (TreeObserver observer:observers) {
+        for (TreeObserver observer : observers) {
             observer.update(new DeleteContextEventAgent(entry));
         }
     }
 
     private void notifyObserverOnDeletePlugin(AbstractTreeEntry entry) {
-        for (TreeObserver observer:observers) {
+        for (TreeObserver observer : observers) {
             observer.update(new DeleteContextEventPlugin(entry));
         }
     }
@@ -176,6 +205,3 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable{
         return pluginName;
     }
 }
-
-
-
