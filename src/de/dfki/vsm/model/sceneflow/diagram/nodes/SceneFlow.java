@@ -95,10 +95,11 @@ public final class SceneFlow extends SuperNode {
 
         int i = 0;
 
-        out.println("<Define>").push();
+       // out.println("<Define>").push();
 
-        out.pop().println("</Define>");
-        out.println("<Declare>").push();
+       // out.pop().println("</Define>");
+       
+       out.println("<Declare>").push();
 
         for (i = 0; i < mVarDefList.size(); i++) {
             mVarDefList.get(i).writeXML(out);
@@ -190,6 +191,8 @@ public final class SceneFlow extends SuperNode {
             @Override
             public void run(final Element element) throws XMLParseError {
                 final String tag = element.getTagName();
+                
+                System.err.println("PARSING TAG " + tag);
 
                 if (tag.equals("Declare")) {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {

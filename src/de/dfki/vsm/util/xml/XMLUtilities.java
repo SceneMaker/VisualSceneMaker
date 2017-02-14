@@ -41,7 +41,8 @@ public final class XMLUtilities {
             return true;
         } catch (final XMLParseError | IOException | ParserConfigurationException | SAXException exc) {
             // Print an error message in this case
-            sLogger.failure(exc.toString());
+            //sLogger.failure(exc.toString());
+            exc.printStackTrace();
             // Return failure if the parsing failed
             return false;
         }
