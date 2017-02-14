@@ -183,7 +183,7 @@ public class StickmanExecutor extends ActivityExecutor {
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
-                    stickmanStageC.launchStickmanStage(true);
+                    stickmanStageC.launchStickmanStage(true, mProject.getProjectPath());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
