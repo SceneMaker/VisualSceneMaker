@@ -179,7 +179,7 @@ public class VoiceRecognition extends Thread {
             String stageID = e.getValue().getStickmanStageController().getStageIdentifier();
             try {
                 stickmanBox = e.getValue().getStickmanStageController().getStickmanStage()
-                        .getStickmanPane(stageID);
+                        .getStickmanBox(stageID);
             } catch (Exception ex) {
                 Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
             }

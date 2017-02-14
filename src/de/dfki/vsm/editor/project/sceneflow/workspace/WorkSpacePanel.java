@@ -1275,7 +1275,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         getSceneFlowManager().addActiveSuperNode(superNode);
         mSceneFlowEditor.addPathComponent(superNode);
 
-        mGridManager.update();
+        mGridManager.update(superNode);
 
         showCurrentWorkSpace();
     }
@@ -1320,6 +1320,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         SuperNode sn = mSceneFlowEditor.removePathComponent();
         NodeSelectedEvent e = new NodeSelectedEvent(this, getSceneFlowManager().getCurrentActiveSuperNode());
         mEventCaster.convey(e);
+        if(e.getNode() instanceof SuperNode){
+            mGridManager.update((SuperNode) e.getNode());
+        }
         showCurrentWorkSpace();
     }
 
@@ -1573,6 +1576,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                     }
                 }
             }
+        }else{
+            mDoAreaAction = false;
         }
 
         // if there is a specific selected edge use it - much faster than checking all edges

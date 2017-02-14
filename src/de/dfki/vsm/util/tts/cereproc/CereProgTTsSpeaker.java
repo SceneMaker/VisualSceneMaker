@@ -2,6 +2,7 @@ package de.dfki.vsm.util.tts.cereproc;
 
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.util.tts.SpeakerTts;
+import de.dfki.vsm.util.tts.cereproc.util.CereProcTag;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
 import java.io.UnsupportedEncodingException;
@@ -16,17 +17,17 @@ public class CereProgTTsSpeaker extends SpeakerTts {
     private String voiceName;
     private String gender;
 
-    public CereProgTTsSpeaker(){
+    public CereProgTTsSpeaker() {
     }
 
-    public  CereProgTTsSpeaker(SpeechActivity pSpeech, String pLanguage, String pVoiceName){
+    public CereProgTTsSpeaker(SpeechActivity pSpeech, String pLanguage, String pVoiceName) {
         speech = pSpeech;
         langVoice = pLanguage;
         //voiceName = pVoiceName;
         speechClient = new Cereproc();
     }
 
-    public  CereProgTTsSpeaker(SpeechActivity pSpeech, String pLanguage, String pVoiceFilePath, String pLicenseName, String audioDevice){
+    public CereProgTTsSpeaker(SpeechActivity pSpeech, String pLanguage, String pVoiceFilePath, String pLicenseName, String audioDevice) {
         speech = pSpeech;
         langVoice = pLanguage;
         speechClient = new Cereproc(pLicenseName, pVoiceFilePath, audioDevice);
@@ -38,10 +39,10 @@ public class CereProgTTsSpeaker extends SpeakerTts {
         addWords();
         getAsCereproc().setText(getPhrase());
         try {
-            if(phonemes.size() <= 0){
+            if (phonemes.size() <= 0) {
                 phonemes = getAsCereproc().getPhonemes();
             }
-            if(phonemes.containsKey(index)) {
+            if (phonemes.containsKey(index)) {
                 wordPhonemes = phonemes.get(index);
             }
         } catch (UnsupportedEncodingException e) {
@@ -53,9 +54,8 @@ public class CereProgTTsSpeaker extends SpeakerTts {
     }
 
     private Cereproc getAsCereproc() {
-        return (Cereproc)speechClient;
+        return (Cereproc) speechClient;
     }
-
 
     @Override
     public String speak(String executionId) throws Exception {
@@ -63,7 +63,17 @@ public class CereProgTTsSpeaker extends SpeakerTts {
         return getAsCereproc().speak(executionId);
     }
 
+    @Override
+    protected String processEmotionTags(String str) {
 
+        String voice;
+        if (CereProcTag.vocalGesture.get(str) != null) {
+            voice = CereProcTag.vocalGesture.get(str);
+        } else {
+            voice = str;
+        }
 
+        return voice;
+    }
 
 }

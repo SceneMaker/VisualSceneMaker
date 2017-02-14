@@ -187,7 +187,15 @@ public final class ReactivePlayer extends RunTimePlayer {
         }
         // Get the scene object
         final SceneScript script = mProject.getSceneScript();
-        final SceneGroup group = script.getSceneGroup("en", name);
+        String slang = null;
+        // find the language used by SceneGroup
+        for(String str:script.getLangSet()){
+            if(script.getSceneGroup(str, name) != null){
+                slang = str;
+                break;
+            }
+        }
+        final SceneGroup group = script.getSceneGroup(slang, name);
         final SceneObject scene = group.select();
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {

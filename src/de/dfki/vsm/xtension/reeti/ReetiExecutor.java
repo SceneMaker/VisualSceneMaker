@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.reeti;
 
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -31,7 +32,11 @@ public final class ReetiExecutor extends ActivityExecutor {
     private ReetiHandler mHandler;
     
     // record the curernt positon of the motor (neckRotat)
-    private static int iPosition;
+    private static int iPosition =0;
+    
+    // //language settings
+    private String sLanguage = null;
+    private String sVoice = null;
 
     // Construct the executor
     public ReetiExecutor(
@@ -54,6 +59,7 @@ public final class ReetiExecutor extends ActivityExecutor {
         final String rhost = mConfig.getProperty("rhost");
         final int lport = Integer.parseInt(mConfig.getProperty("lport"));
         final int rport = Integer.parseInt(mConfig.getProperty("rport"));
+        
         // Start the connection handler
         mHandler = new ReetiHandler(
                 this, lhost, lport, rhost, rport);
@@ -103,11 +109,15 @@ public final class ReetiExecutor extends ActivityExecutor {
                         mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                     }
             }else{
-                     // Create the speech command
+                //language settings
+                AgentConfig agent = mProject.getAgentConfig(actor);              
+                sLanguage = agent.getProperty("language");
+                sVoice = agent.getProperty("voice");
+                
+                // Create the speech command
                 command = new CommandMessage(cmid, "speech");
                 // Append the tts text param
-                command.addParameter("text", "\\voice=" + "Cereproc" + " " + "\\language=" + "en" + " " + text);
-//                command.addParameter("text", "\\voice=" + "Kate" + " " + "\\language=" + "en" + " " + text);
+                command.addParameter("text", "\\voice=" + sVoice + " " + "\\language=" + sLanguage + " " + text);
             }
         } else if (activity instanceof ActionActivity) {
             // Create the action command

@@ -5,6 +5,8 @@ import de.dfki.common.interfaces.StageRoom;
 import de.dfki.common.interfaces.Stickman;
 import de.dfki.vsm.model.project.PluginConfig;
 
+import java.util.HashMap;
+
 public class StickmanRepository {
     private final PluginConfig config;
     private StickmanAbstractFactory factory;
@@ -33,5 +35,10 @@ public class StickmanRepository {
     }
     public Animation loadAnimation(Stickman sm, String name, int duration, boolean block){
         return factory.loadAnimation(sm, name, duration, block);
+    }
+
+
+    public Animation loadAnimation(Stickman stickman, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+        return factory.loadAnimation(stickman, name, duration, block, extraParams);
     }
 }

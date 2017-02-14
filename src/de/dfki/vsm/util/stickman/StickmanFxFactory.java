@@ -10,6 +10,8 @@ import de.dfki.stickmanFX.decorators.StageRoomNetworkFXDecorator;
 import de.dfki.stickmanFX.stage.StageRoomFX;
 import de.dfki.vsm.model.project.PluginConfig;
 
+import java.util.HashMap;
+
 /**
  * Created by alvaro on 9/19/16.
  */
@@ -64,5 +66,10 @@ public class StickmanFxFactory extends StickmanAbstractFactory {
     @Override
     public Animation loadAnimation(Stickman sm, String name, int duration, boolean block) {
         return AnimationLoaderFX.getInstance().loadAnimation(sm, name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+    }
+
+    @Override
+    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+        return null;
     }
 }

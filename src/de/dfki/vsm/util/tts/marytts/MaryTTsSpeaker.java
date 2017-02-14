@@ -4,6 +4,7 @@ import de.dfki.common.Gender;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.util.tts.SpeakerTts;
 import de.dfki.vsm.util.tts.VoiceName;
+import de.dfki.vsm.util.tts.cereproc.util.CereProcTag;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
 import java.util.LinkedList;
@@ -19,24 +20,24 @@ public class MaryTTsSpeaker extends SpeakerTts {
     private LinkedList blockText = new LinkedList(); //Comes from speechActivity
     MaryStickmanPhonemes maryPhonemes = new MaryStickmanPhonemes();
 
-    public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName){
+    public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName) {
         speech = pSpeech;
         langVoice = pLanguage;
         voiceName = pVoiceName;
-        maryPhonemes =  new MaryStickmanPhonemes();
+        maryPhonemes = new MaryStickmanPhonemes();
         initMaryClientInstance();
 
     }
 
-    public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName, MaryStickmanPhonemes phonemesList){
+    public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName, MaryStickmanPhonemes phonemesList) {
         speech = pSpeech;
         langVoice = pLanguage;
         voiceName = pVoiceName;
-        maryPhonemes =  phonemesList;
+        maryPhonemes = phonemesList;
         initMaryClientInstance();
     }
 
-    public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName, String pGender){
+    public MaryTTsSpeaker(SpeechActivity pSpeech, String pLanguage, VoiceName pVoiceName, String pGender) {
         speech = pSpeech;
         langVoice = pLanguage;
         voiceName = pVoiceName;
@@ -44,15 +45,15 @@ public class MaryTTsSpeaker extends SpeakerTts {
         initMaryClientInstance();
     }
 
-    public MaryTTsSpeaker(LinkedList pBlockText, String pLanguage, VoiceName pVoiceName){
+    public MaryTTsSpeaker(LinkedList pBlockText, String pLanguage, VoiceName pVoiceName) {
         blockText = pBlockText;
         langVoice = pLanguage;
         voiceName = pVoiceName;
-        maryPhonemes =  new MaryStickmanPhonemes();
+        maryPhonemes = new MaryStickmanPhonemes();
         initMaryClientInstance();
     }
 
-    private void initMaryClientInstance(){
+    private void initMaryClientInstance() {
         if (speechClient == null) {
             try {
 
@@ -64,16 +65,16 @@ public class MaryTTsSpeaker extends SpeakerTts {
         }
     }
 
-    public void setSpeechActivity(SpeechActivity pSpeech){
+    public void setSpeechActivity(SpeechActivity pSpeech) {
         speech = pSpeech;
     }
 
-    public LinkedList<Phoneme> getWordPhonemeList(int index){
+    public LinkedList<Phoneme> getWordPhonemeList(int index) {
         LinkedList<Phoneme> wordPhonemes = new LinkedList<>();
-        if(phonemes.size() <= 0){
+        if (phonemes.size() <= 0) {
             phonemes = maryPhonemes.getPhonemesAndMouthPosition(speech, voiceName, langVoice);
         }
-        if(phonemes.containsKey(index)) {
+        if (phonemes.containsKey(index)) {
             wordPhonemes = phonemes.get(index);
         }
         return wordPhonemes;
@@ -84,31 +85,41 @@ public class MaryTTsSpeaker extends SpeakerTts {
         try {
             addWords();
             textToSepak = getAsMaryClient().getText();
-            if(textToSepak.length()>0) {
+            if (textToSepak.length() > 0) {
                 getAsMaryClient().speak(getGenderTypeFromString(), executionId, voiceName, langVoice);
             }
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
-        return  textToSepak;
+        return textToSepak;
     }
 
-
-
-    private I4GMaryClient getAsMaryClient(){
+    private I4GMaryClient getAsMaryClient() {
         return (I4GMaryClient) speechClient;
     }
 
-
-    private Gender.TYPE getGenderTypeFromString(){
-        if(gender == Gender.TYPE.MALE.toString()){
+    private Gender.TYPE getGenderTypeFromString() {
+        if (gender == Gender.TYPE.MALE.toString()) {
             return Gender.TYPE.MALE;
         }
         return Gender.TYPE.FEMALE;
     }
 
+    @Override
+    protected String processEmotionTags(String str) {
 
+        String voice = " ";
+        if (CereProcTag.vocalGesture.get(str) != null) {
+            voice = " ";
+            throw new UnsupportedOperationException("Gesture Not Supported ");
 
+        } else {
+            voice = str;
+        }
+
+        return voice;
+
+    }
 
 }
