@@ -115,7 +115,7 @@ public class ExtensionsFromJar {
             String className = fullClassName.substring(0, entryName.lastIndexOf('.'));
             Class classEntry = Class.forName(className);
             Class superClass = classEntry.getSuperclass();
-            return  (superClass != null && superClass.getSimpleName().equals("ActivityExecutor"));
+            return  (superClass != null && (superClass.getSimpleName().equals("ActivityExecutor")));
         }
         return false;
 
@@ -126,7 +126,6 @@ public class ExtensionsFromJar {
         String className = entryName.substring(0, entryName.lastIndexOf('.'));
         mScenePlayersLongNames.add(className);
         mScenePlayersShortNames.add(className.substring(className.lastIndexOf('.') + 1));
-
     }
 
 
