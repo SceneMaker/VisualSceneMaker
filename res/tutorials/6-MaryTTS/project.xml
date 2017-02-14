@@ -5,7 +5,7 @@
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8000"/>
       <Feature key="showstickmanname" val="true"/>
-      <Feature key="mary.base" val="C:\Users\EmpaT\Desktop\marytts-5.2\marytts-5.2"/>
+      <Feature key="mary.base" val="/mnt/data2/marytts-5.1.2"/>
       <Feature key="fullscreen" val="false"/>
       <Feature key="xStage" val="500"/>
       <Feature key="yStage" val="100"/>
@@ -15,15 +15,16 @@
       <Feature key="mary.base" val="C:\Users\EmpaT\Desktop\marytts-5.2\marytts-5.2"/>
       <Feature key="tts" val="cereproc"/>
       <Feature key="license" val="/home/alvaro/Documents/Universitat/TesisProject/license.lic"/>
+      <Feature key="cereproc_library_path" val="/home/alvaro/Documents/Universitat/TesisProject/cerevoice_sdk_3.2.0_linux_x86_64_python26_10980_academic/cerevoice_eng/javalib"/>
     </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="stickmanmarytts">
       <Feature key="default-voice" val="en"/>
-      <Feature key="en" val="dfki-poppy"/>
+      <Feature key="en" val="dfki-spike"/>
     </Agent>
     <Agent name="patrick" device="stickmanmarytts">
-      <Feature key="default-voice" val="de"/>
+      <Feature key="default-voice" val="en"/>
       <Feature key="en" val="dfki-spike"/>
       <Feature key="de" val="bits3"/>
     </Agent>

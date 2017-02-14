@@ -9,6 +9,8 @@ import de.dfki.stickman3D.decorators.StageRoomNetwork3DDecorator;
 import de.dfki.stickman3D.stage.StageRoom3D;
 import de.dfki.vsm.model.project.PluginConfig;
 
+import java.util.HashMap;
+
 /**
  * Created by alvaro on 11/18/16.
  */
@@ -62,5 +64,10 @@ public class Stickman3DFactory extends StickmanAbstractFactory {
     @Override
     public Animation loadAnimation(Stickman sm, String name, int duration, boolean block) {
         return AnimationLoader3D.getInstance().loadAnimation(sm, name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+    }
+
+    @Override
+    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+        return AnimationLoader3D.getInstance().loadAnimation(sm, name, duration, block, extraParams);
     }
 }

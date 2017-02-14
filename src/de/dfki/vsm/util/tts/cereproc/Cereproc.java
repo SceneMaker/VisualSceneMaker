@@ -110,6 +110,8 @@ public class Cereproc extends SpeechClient {
         return spokenText;
     }
 
+    
+
     private Audioline initializeSpeak(String executionId) {
         final Audioline au = cereprocLoader.openAudioLine();
         getPhrase();

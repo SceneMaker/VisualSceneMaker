@@ -42,6 +42,7 @@ import de.dfki.vsm.editor.dialog.OptionsDialog;
 import de.dfki.vsm.editor.dialog.SaveFileDialog;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
 import de.dfki.vsm.editor.event.ProjectChangedEvent;
+import de.dfki.vsm.xtesting.NewPropertyManager.PropertyManagerGUI;
 
 /**
  * @author Gregor Mehlmann
@@ -110,6 +111,10 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
 
     private final ImageIcon ICON_SETTINGS_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/settings.png");
     private final ImageIcon ICON_SETTINGS_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/settings_blue.png");
+
+   private final ImageIcon ICON_PROJECT_SETTINGS_STANDARD = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/project_config.png");
+    private final ImageIcon ICON_PROJECT_SETTINGS_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/toolbar_icons/project_config_blue.png");
+
     /**
      * ***********************************************************************************************************************
      */
@@ -144,6 +149,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
     private JButton mPreferences;
     private JButton mUndo;
     private JButton mRedo;
+    private JButton mProjectSettings;
 
     //Dimension for buttons
     private Dimension tinyButtonDim = new Dimension(40, 40);
@@ -290,6 +296,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         // | Element Space |  Sceneflow Space | Property Space
         //
         // Element space
+
         add(Box.createHorizontalStrut(2));
         /**
          * LESS AND MORE BUTTONS ARE INVERTED TO MATCH WITH THE LEFT SIZE
@@ -308,6 +315,29 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
                 : ICON_LESS_ROLLOVER);
         sanitizeButton(mTogglePallete, tinyButtonDim);
         add(Box.createHorizontalGlue());
+
+
+        //EDIT PROJECT SECTION
+        //Save project
+        mSaveProject = add(new AbstractAction("ACTION_SAVEPROJECT", ICON_SAVE_STANDARD) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mEditorInstance.save();
+                mSaveProject.setEnabled(false);
+                mProjectSettings.setEnabled(true);
+            }
+        });
+        mSaveProject.setRolloverIcon(ICON_SAVE_ROLLOVER);
+        mSaveProject.setDisabledIcon(ICON_SAVE_DISABLED);
+        mSaveProject.setToolTipText("Save current project");
+        sanitizeButton(mSaveProject, tinyButtonDim);
+        mSaveProject.setEnabled(false);
+
+
+        /*add(Box.createHorizontalStrut(10));
+        add(createSeparator());*/
+
+
         //Preferences
         mPreferences = add(new AbstractAction("ACTION_SHOW_OPTIONS", ICON_SETTINGS_STANDARD) {
             @Override
@@ -317,23 +347,32 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         });
         mPreferences.setRolloverIcon(ICON_SETTINGS_ROLLOVER);
         mPreferences.setToolTipText("Project Preferences");
-        sanitizeButton(mPreferences, tinyButtonDim);
 
-        //******************************************************************************************************
-        //EDIT PROJECT SECTION
-        //Save project
-        mSaveProject = add(new AbstractAction("ACTION_SAVEPROJECT", ICON_SAVE_STANDARD) {
+
+        mProjectSettings = add(new AbstractAction("ACTION_SHOW_OPTIONS", ICON_PROJECT_SETTINGS_STANDARD) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mEditorInstance.save();
-                mSaveProject.setEnabled(false);
+                if (mEditorProject.getProjectFile() != null) {
+                    PropertyManagerGUI gui = new PropertyManagerGUI();
+                    gui.init(mEditorProject);
+                    gui.setVisible(true);
+                }else{
+                    mProjectSettings.setEnabled(false);
+                }
+
             }
         });
-        mSaveProject.setRolloverIcon(ICON_SAVE_ROLLOVER);
-        mSaveProject.setDisabledIcon(ICON_SAVE_DISABLED);
-        mSaveProject.setToolTipText("Save current project");
-        sanitizeButton(mSaveProject, tinyButtonDim);
-        mSaveProject.setEnabled(false);
+        if (mEditorProject.getProjectFile() == null) {
+            mProjectSettings.setEnabled(false);
+        }
+        mProjectSettings.setRolloverIcon(ICON_PROJECT_SETTINGS_ROLLOVER);
+        mProjectSettings.setToolTipText("Project Settings");
+
+        sanitizeButton(mProjectSettings, tinyButtonDim);
+
+        add(Box.createHorizontalStrut(20));
+        add(createSeparator());
+
 
         //Undo last action
         mUndo = add(new AbstractAction("ACTION_UNDO", ICON_UNDO_STANDARD) {
@@ -362,8 +401,8 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         mRedo.setToolTipText("Redo last action");
         sanitizeButton(mRedo, tinyButtonDim);
         mRedo.setEnabled(false);
-        add(Box.createHorizontalStrut(10));
-        add(createSeparator());
+        //******************************************************************************************************
+
         //******************************************************************************************************
         //PROJECT EDITION SECTION 
         // Button to straighten all edeges

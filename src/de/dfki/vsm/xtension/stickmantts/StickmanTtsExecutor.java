@@ -161,13 +161,29 @@ public class StickmanTtsExecutor extends ActivityExecutor {
         if (activity instanceof ActionMouthActivity) {
             duration = ((ActionMouthActivity) activity).getDuration();
         }
-        stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+        stickmanAnimation = loadAnimation(actor, name, duration, activity);
         if (activity instanceof ActionMouthActivity) {
             stickmanAnimation.setParameter( ((ActionMouthActivity) activity).getWortTimeMark());
         }
         if (stickmanAnimation != null) {
             executeAnimation(stickmanAnimation);
         }
+    }
+
+    private Animation loadAnimation(String actor, String name, int duration, AbstractActivity activity) {
+        Animation stickmanAnimation;
+        HashMap<String, String> extraParams = new HashMap<>();
+        if(activity.getFeatures() != null) {
+            for (ActionFeature feat : activity.getFeatures()) {
+                extraParams.put(feat.getKey(), feat.getVal());
+            }
+        }
+        if(extraParams.size() > 0){
+            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, duration, true, extraParams);
+        }else{
+            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+        }
+        return stickmanAnimation;
     }
 
     private void actionSetVoice(AbstractActivity activity) {
