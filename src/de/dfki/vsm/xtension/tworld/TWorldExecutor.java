@@ -186,7 +186,7 @@ public final class TWorldExecutor extends ActivityExecutor {
         final Type activity_type = activity.getType();
         final String activity_text = activity.getText();
         final String activity_name = activity.getName();
-        final String activity_mode = activity.getMode();
+        //final String activity_mode = activity.getMode();
         final String activity_actor = activity.getActor();
         final List activity_features = activity.getFeatures();
         // Initialize the command

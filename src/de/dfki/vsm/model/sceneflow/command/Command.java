@@ -14,7 +14,7 @@ public abstract class Command implements SyntaxObject {
 
     public enum CmdType {
 
-        PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD, PLAY
+        PSG, PDA, UASG, USG, ASGN, EXP, HC, HDC, HSD, PLAY, PSBA, PCBA
     }
 
     public abstract CmdType getCmdType();
@@ -29,8 +29,14 @@ public abstract class Command implements SyntaxObject {
         if (tag.equals("PlaySceneGroup")) {
             cmd = new PlaySceneGroup();
             cmd.parseXML(element);
-        } else if (tag.equals("Play")) {
-            cmd = new Play();
+        } else if (tag.equals("PlayActionCmd")) {
+            cmd = new PlayActionCmd();
+            cmd.parseXML(element);
+        } else if (tag.equals("PlaySeqAction")) {
+            cmd = new PlaySeqAction();
+            cmd.parseXML(element);
+        } else if (tag.equals("PlayConAction")) {
+            cmd = new PlayConAction();
             cmd.parseXML(element);
         } else if (tag.equals("PlayDialogueAct")) {
             cmd = new PlayDialogueAct();

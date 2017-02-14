@@ -24,7 +24,7 @@ public abstract class AbstractActivity {
     // The activity name
     protected final String mName;
     // The activity mode
-    protected final String mMode;
+   // protected final String mMode;
     // The related action features
     protected final LinkedList<ActionFeature> mFeatures;
 
@@ -32,11 +32,11 @@ public abstract class AbstractActivity {
     public AbstractActivity(
             final Type type,
             final String actor,
-            final String mode,
+           // final String mode,
             final String name) {
         mType = type;
         mActor = actor;
-        mMode = mode;
+      //  mMode = mode;
         mName = name;
         mFeatures = null;
     }
@@ -45,12 +45,12 @@ public abstract class AbstractActivity {
     public AbstractActivity(
             final Type type,
             final String actor,
-            final String mode,
+           // final String mode,
             final String name,
             final LinkedList<ActionFeature> featureList) {
         mType = type;
         mActor = actor;
-        mMode = mode;
+       // mMode = mode;
         mName = name;
         mFeatures = featureList;
     }
@@ -71,9 +71,9 @@ public abstract class AbstractActivity {
     }
 
     // Get the activity mode (added PG)
-    public final String getMode() {
-        return mMode;
-    }
+  //  public final String getMode() {
+   //     return mMode;
+   // }
 
     // Get the activity name (added PG)
     public final String getName() {

@@ -1,13 +1,10 @@
 package de.dfki.vsm.model.scenescript;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-
 import org.w3c.dom.Element;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -21,13 +18,13 @@ public final class ActionObject extends UtteranceElement {
     // The Name Of The Agent
     private String mActor;
     // The Mode Of The Action
-    private String mMode;
+    //private String mMode;
     // The Name Of The Action
     private String mName;
 
     public ActionObject() {
         mActor = null;
-        mMode = null;
+        //mMode = null;
         mName = null;
     }
 
@@ -35,14 +32,14 @@ public final class ActionObject extends UtteranceElement {
             final int lower,
             final int upper,
             final String actor,
-            final String mode,
+            //final String mode,
             final String name,
             final LinkedList<ActionFeature> list) {
         // Initialize The Boundary
         super(lower, upper);
         // Initialize The Members
         mActor = actor;
-        mMode = mode;
+        //mMode = mode;
         mName = name;
         // Initialize Fature List
         mFeatureList = list;
@@ -52,9 +49,9 @@ public final class ActionObject extends UtteranceElement {
         return mActor;
     }
 
-    public final String getMode() {
-        return mMode;
-    }
+    //public final String getMode() {
+     //   return mMode;
+    //}
 
     public final String getName() {
         return mName;
@@ -79,7 +76,6 @@ public final class ActionObject extends UtteranceElement {
         return copy;
     }
 
-     
     public final ActionFeature getValueOf(final String key) {
         for (final ActionFeature feature : mFeatureList) {
             if (feature.getKey().equals(key)) {
@@ -89,16 +85,15 @@ public final class ActionObject extends UtteranceElement {
         return null;
     }
 
-   
     @Override
     public final String getText() {
 
         // Append The Identifiers
-        String actor = (mActor == null || mActor.equalsIgnoreCase("")) ? "" : mActor + " ";
-        String mode = (mMode == null || mMode.equalsIgnoreCase("")) ? "" : mMode;
-        String name = (mName == null) ? "" : (mode.equalsIgnoreCase("")) ? mName : " " + mName;
+        String actor = (mActor == null || mActor.isEmpty()) ? "" : mActor + ": ";
+        //String mode = (mMode == null || mMode.isEmpty()) ? "" : mMode;
+        String name = (mName == null || mName.isEmpty()) ? "" : mName;
 
-        String result = "[" + actor + mode + name;
+        String result = "[" + actor + name;
         if (!mFeatureList.isEmpty()) {
             result += " ";
 
@@ -117,17 +112,15 @@ public final class ActionObject extends UtteranceElement {
         return result + "]";
     }
 
-   
     @Override
     public final String getText(final HashMap<String, String> args) {
 
-        // Append The Identifiers
-        String actor = (mActor == null || mActor.equalsIgnoreCase("")) ? "" : mActor + " ";
-        String mode = (mMode == null || mMode.equalsIgnoreCase("")) ? "" : mMode;
-        String name = (mName == null) ? "" : (mode.equalsIgnoreCase("")) ? mName : " " + mName;
+       // Append The Identifiers
+        String actor = (mActor == null || mActor.isEmpty()) ? "" : mActor + ": ";
+       // String mode = (mMode == null || mMode.isEmpty()) ? "" : mMode;
+        String name = (mName == null || mName.isEmpty()) ? "" : mName;
 
-        String result = "[" + actor + mode + name;
-
+        String result = "[" + actor + name;
         if (!mFeatureList.isEmpty()) {
             result += " ";
 
@@ -146,7 +139,6 @@ public final class ActionObject extends UtteranceElement {
         return result + "]";
     }
 
-   
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
 
@@ -154,7 +146,7 @@ public final class ActionObject extends UtteranceElement {
                 + "lower=\"" + mLower + "\" "
                 + "upper=\"" + mUpper + "\" "
                 + "actor=\"" + ((mActor == null) ? "" : mActor) + "\" "
-                + "mode=\"" + ((mMode == null) ? "" : mMode) + "\" "
+                //+ "mode=\"" + ((mMode == null) ? "" : mMode) + "\" "
                 + "name=\"" + mName + "\" "
                 + ">");
         stream.push();
@@ -171,7 +163,6 @@ public final class ActionObject extends UtteranceElement {
         stream.print("</ActionObject>");
     }
 
-   
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
 
@@ -181,7 +172,7 @@ public final class ActionObject extends UtteranceElement {
 
         // Parse The Members
         mActor = element.getAttribute("actor");
-        mMode = element.getAttribute("mode");
+        //mMode = element.getAttribute("mode");
         mName = element.getAttribute("name");
 
         // Process The Child Nodes
@@ -220,6 +211,6 @@ public final class ActionObject extends UtteranceElement {
 
     @Override
     public final ActionObject getCopy() {
-        return new ActionObject(mLower, mUpper, mActor, mMode, mName, copyFeatureList());
+        return new ActionObject(mLower, mUpper, mActor, /*mMode,*/ mName, copyFeatureList());
     }
 }

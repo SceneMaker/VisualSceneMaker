@@ -140,7 +140,7 @@ terminal SyntaxDocToken PLACEHOLDER;    // Placeholder
 terminal SyntaxDocToken BOOLEAN;        // Boolean Values
 terminal SyntaxDocToken INTEGER;        // Integer Values
 terminal SyntaxDocToken FLOATING;       // Floating Values
-terminal SyntaxDocToken STRING;         // String Sequences
+terminal SyntaxDocToken SQSTRING;       // String Sequences
 terminal SyntaxDocToken COLONMARK;      // Colon Seperator
 terminal SyntaxDocToken UNDERLINE;      // Underline Sign
 terminal SyntaxDocToken LANGUAGE;       // Language Suffix
@@ -149,108 +149,126 @@ terminal SyntaxDocToken IDENTIFIER;     // Identifiers
 terminal SyntaxDocToken NEWLINE;        // Newlines
 terminal SyntaxDocToken WHITESPACE;     // Whitespaces
 terminal SyntaxDocToken ASSIGNMENT;     // Assignments
-terminal SyntaxDocToken SCENEHEADER;    // Scene Header
+terminal SyntaxDocToken SCENEWORD;    // Scene Header
 terminal SyntaxDocToken ERRORSTATE;     // Error Symbols
 // Nonterminal Arrays
-non terminal LinkedList turn_sequence;
-non terminal LinkedList word_sequence;
-non terminal LinkedList entity_sequence;
-non terminal LinkedList feature_sequence;
-non terminal LinkedList utterance_sequence;
-non terminal LinkedList entity_sequence_opt;
-non terminal LinkedList feature_sequence_opt;
+non terminal LinkedList turn_list;
+non terminal LinkedList utterance_element_list;
+non terminal LinkedList scene_script_entity_list;
+non terminal LinkedList scene_script_entity_list_opt;
+non terminal LinkedList feature_list;
+non terminal LinkedList turn_element_list;
+non terminal LinkedList feature_list_opt;
 // Nonterminal Objects
+non terminal SceneScript scene_script_definition;
+non terminal SceneEntity scene_script_entity;
+non terminal SceneObject scene_definition;
+non terminal SceneComment script_comment;
 non terminal SceneTurn turn;
-non terminal UtteranceElement word;
-non terminal SceneObject scene;
-non terminal SceneEntity entity;
-non terminal SceneUttr utterance;
-non terminal ActionFeature feature;
-non terminal SceneScript scenescript;
+non terminal SceneUttr turn_element;
+non terminal SceneUttr utterance_definition;
+non terminal UtteranceElement utterance_element;
+//
+non terminal SceneWord utterance_word;
+non terminal SceneParam utterance_variable;
+non terminal SceneAbbrev utterance_abbreviation;
+//
+non terminal ActionObject utterance_action;
+non terminal ActionObject action_definition;
+non terminal ActionFeature action_feature;
+//
+non terminal SyntaxDocToken action_name;
+non terminal SyntaxDocToken action_actor;
+non terminal SyntaxDocToken feature_name;
+non terminal SyntaxDocToken feature_value;
+non terminal SyntaxDocToken parameter;
+non terminal SyntaxDocToken identifier;
+non terminal SyntaxDocToken boolean;
+non terminal SyntaxDocToken integer;
+non terminal SyntaxDocToken floating;
+non terminal SyntaxDocToken sqstring;
+non terminal SyntaxDocToken punctuation;
+non terminal SyntaxDocToken whitespaces;
 // Start Symbol Script
-start with scenescript;
-////////////////////////////////////////////////////////////////////////////////
-// Scenescript /////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-scenescript ::=
-    entity_sequence_opt:sequence
+start with scene_script_definition;
+
+// Scene Script Definition 
+scene_script_definition ::=
+    scene_script_entity_list_opt:l
     {:
-        RESULT = new SceneScript(0, 0, sequence);
+        RESULT = new SceneScript(0, 0, l);
     :}
 ;
-////////////////////////////////////////////////////////////////////////////////
-// Optional Scene Sequence /////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-entity_sequence_opt ::=
+// Scene Script Entity List 
+scene_script_entity_list_opt ::=
 
     {:
         RESULT = new LinkedList<SceneEntity>();
     :}
-  | entity_sequence:sequence
+  | scene_script_entity_list:l
     {:
-        RESULT = sequence;
+        RESULT = l;
     :}
 ;
-////////////////////////////////////////////////////////////////////////////////
-// Required Scene Sequence /////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-entity_sequence ::=
-    entity_sequence:sequence entity:entity
+scene_script_entity_list ::=
+    scene_script_entity_list:l scene_script_entity:x
     {:
-        RESULT = sequence;
-        RESULT.add(entity);
+        RESULT = l;
+        RESULT.add(x);
     :}
-  | entity:entity
+  | scene_script_entity:x
     {:
         RESULT = new LinkedList<SceneEntity>();
-        RESULT.add(entity);
+        RESULT.add(x);
     :}
 ;
-////////////////////////////////////////////////////////////////////////////////
-// SceneEntity Definition //////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-entity ::=
-    scene:scene
+// Scene Script Entity
+scene_script_entity ::=
+    scene_definition:x
     {:
-          RESULT = scene;
+          RESULT = x;
     :}  
-  | COMMENT:comment 
+  | script_comment:x 
     {:
-          RESULT = new SceneComment( 
-                comment.getLower(), 
-                comment.getUpper(), 
-                comment.getValue());
+          RESULT = x;
     :}  
 ;
-////////////////////////////////////////////////////////////////////////////////
-// Scene Definition ////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-scene ::=
-    SCENEHEADER:header 
-    UNDERLINE:underline 
+// Script Comment
+script_comment ::=
+    COMMENT:x 
+    {:
+          RESULT = new SceneComment( 
+                x.getLower(), x.getUpper(), x.getValue());
+    :}  
+;
+// Scene Definition 
+scene_definition ::=
+    SCENEWORD:x 
+    //UNDERLINE
     LANGUAGE:language 
     IDENTIFIER:identifier 
-    COLONMARK:colonmark 
-    turn_sequence:sequence
+    //COLONMARK 
+    turn_list:list
     {:
         // Get The Last Turn Object
-        final SceneTurn lastturn = (SceneTurn)sequence.getLast();
+        final SceneTurn lastturn = (SceneTurn)list.getLast();
         // Construct Scene Object
         RESULT = new SceneObject(
-            header.getLower(), 
+            x.getLower(), 
             lastturn.getUpper(), 
             language.getValue(), 
             identifier.getValue(), 
-            sequence);
+            list);
     :}  
 ;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Turn Sequence ///////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-turn_sequence ::=
-    turn_sequence:sequence turn:turn
+turn_list ::=
+    turn_list:l turn:turn
     {:
-        RESULT = sequence;
+        RESULT = l;
         RESULT.add(turn);
     :}
   | turn:turn
@@ -260,213 +278,276 @@ turn_sequence ::=
     :}
 ;
 ////////////////////////////////////////////////////////////////////////////////
-// Speaker Turns ///////////////////////////////////////////////////////////////
+// Turn Definitions 
 ////////////////////////////////////////////////////////////////////////////////
 turn ::=
-    IDENTIFIER:identifier 
-    COLONMARK:colonmark 
-    utterance_sequence:sequence
+    IDENTIFIER:x COLONMARK turn_element_list:l
     {:
         // Get The Last Turn Object
-        final SceneUttr lastuttr = (SceneUttr)sequence.getLast();
+        final SceneUttr lastuttr = (SceneUttr)l.getLast();
         // Construct The Turn Object
         RESULT = new SceneTurn(
-            identifier.getLower(), 
+            x.getLower(), 
             lastuttr.getUpper(), 
-            identifier.getValue(), 
-            sequence);
+            x.getValue(), 
+            l);
     :}
 ;
+
 ////////////////////////////////////////////////////////////////////////////////
-// Utterance Sequences /////////////////////////////////////////////////////////
+// Turn Element List 
 ////////////////////////////////////////////////////////////////////////////////
-utterance_sequence ::=
-    utterance_sequence:sequence utterance:utterance
+turn_element_list ::=
+    turn_element_list:l turn_element:x
     {:
-        RESULT = sequence;
-        RESULT.add(utterance);
+        RESULT = l;
+        RESULT.add(x);
     :}
-  | utterance:utterance
+  | turn_element:x
     {:
         RESULT = new LinkedList<SceneUttr>();
-        RESULT.add(utterance);
+        RESULT.add(x);
     :} 
 ;
+
+turn_element ::=
+    utterance_definition:x
+    {:
+        RESULT = x;
+    :}
+;
+
 ////////////////////////////////////////////////////////////////////////////////
-// Utterances //////////////////////////////////////////////////////////////////
+// Utterance Definitions 
 ////////////////////////////////////////////////////////////////////////////////
-utterance ::=
-    word_sequence:sequence 
-    PUNCTUATION:punctuation
+utterance_definition ::=
+    utterance_element_list:l punctuation:p
     {:
         // Get The First Word In List
-        UtteranceElement firstword = (UtteranceElement)sequence.getFirst();
+        UtteranceElement firstelement = (UtteranceElement)l.getFirst();
         // Construct A New Utterance
         RESULT = new SceneUttr(
-            firstword.getLower(), 
-            punctuation.getUpper(), 
-            sequence,
-            punctuation.getValue());
+            firstelement.getLower(), p.getUpper(), l, p.getValue());
     :}
 ;
-////////////////////////////////////////////////////////////////////////////////
-// Word Sequences //////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-word_sequence ::=
-    word_sequence:sequence word:word
+// Punctuation Marks
+punctuation ::=
+    PUNCTUATION:x
     {:
-        RESULT = sequence;
-        RESULT.add(word);
+        RESULT = x;
     :}
-  | word:word
+;
+// Utterance Element List
+utterance_element_list ::=
+    utterance_element_list:l utterance_element:x
+    {:
+        RESULT = l;
+        RESULT.add(x);
+    :}
+  | utterance_element:x
     {:
         RESULT = new LinkedList<UtteranceElement>();
-        RESULT.add(word);
+        RESULT.add(x);
     :}
 ;
-////////////////////////////////////////////////////////////////////////////////
-// Single Words ////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-word ::=
-    SIMPLEWORD:identifier
+// Utterance Element
+utterance_element ::=
+    utterance_word:x
+    {:
+        RESULT = x;
+    :}
+  | utterance_action:x
+    {:
+        RESULT = x;
+    :}
+  | utterance_variable:x
+    {:
+        RESULT = x;
+    :}
+  | utterance_abbreviation:x
+    {:
+        RESULT = x;
+    :}
+;
+// Utterance Word
+utterance_word ::=
+    SIMPLEWORD:x
     {:
         RESULT = new SceneWord(
-            identifier.getLower(), 
-            identifier.getUpper(), 
-            identifier.getValue());
+            x.getLower(), x.getUpper(), x.getValue());
     :}
-  | SIMPLEWORD:left 
-    ABBREVIATION 
-    SIMPLEWORD:right
-    {:
-        RESULT = new SceneAbbrev(
-            left.getLower(), 
-            right.getUpper(), 
-            left.getValue(), 
-            right.getValue());
-    :}
-  | PLACEHOLDER:placeholder 
-    VARIABLE:identifier
+;
+// Utterance Variable
+utterance_variable ::=
+    PLACEHOLDER:x VARIABLE:y
     {:
         RESULT = new SceneParam(
-            placeholder.getLower(), 
-            identifier.getUpper(), 
-            identifier.getValue());
-    :}
-  | ACTIONHEAD:header 
-    IDENTIFIER:activity 
-    feature_sequence_opt:sequence 
-    ACTIONFOOT:footer
-    {:
-        RESULT = new ActionObject(
-                header.getLower(), 
-                footer.getUpper(),
-                null, // No actor
-                null, // No modality
-                activity.getValue(), // name
-                sequence);
-    :}
-  | ACTIONHEAD:header 
-    IDENTIFIER:character 
-    IDENTIFIER:activity 
-    feature_sequence_opt:sequence 
-    ACTIONFOOT:footer
-    {:
-        RESULT = new ActionObject(
-                header.getLower(), 
-                footer.getUpper(),
-                character.getValue(),
-                null, // No modality
-                activity.getValue(), // name
-                sequence);
-    :}
-  | ACTIONHEAD:header 
-    IDENTIFIER:character 
-    IDENTIFIER:modality 
-    IDENTIFIER:activity 
-    feature_sequence_opt:sequence 
-    ACTIONFOOT:footer
-    {:
-        RESULT = new ActionObject(
-                header.getLower(), 
-                footer.getUpper(),
-                character.getValue(),
-                modality.getValue(), 
-                activity.getValue(), 
-                sequence);
+            x.getLower(), y.getUpper(), y.getValue());
     :}
 ;
-////////////////////////////////////////////////////////////////////////////////
-// Optional Feature List ///////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-feature_sequence_opt ::=
-    feature_sequence:sequence
+// Utterance Abbreviation
+utterance_abbreviation ::=
+     SIMPLEWORD:x ABBREVIATION SIMPLEWORD:y
     {:
-        RESULT = sequence;
+        RESULT = new SceneAbbrev(
+            x.getLower(), y.getUpper(), 
+            x.getValue(), y.getValue());
     :}
-   |
+;
+// Utterance Action
+utterance_action ::=
+    ACTIONHEAD:h action_definition:x ACTIONFOOT:f
+    {:
+        RESULT = x;
+    :}
+;
+// Action Definition
+action_definition ::= 
+    action_name:y feature_list_opt:l
+    {:
+        RESULT = new ActionObject(
+                y.getLower(), y.getUpper(),
+                null, y.getValue(), l);
+    :}
+  | action_actor:x action_name:y feature_list_opt:l
+    {:
+        RESULT = new ActionObject(
+                x.getLower(), y.getUpper(),
+                x.getValue(), y.getValue(), l);
+    :}
+;
+// Action Actor
+action_actor ::=
+    IDENTIFIER:x COLONMARK
+    {:
+        RESULT = x;
+    :}
+;
+// Action Name
+action_name ::= 
+    IDENTIFIER:x
+    {:
+        RESULT = x;
+    :}
+;
+// Feature List 
+feature_list_opt ::=
+
     {:
         RESULT = new LinkedList<ActionFeature>();
     :}
-;
-////////////////////////////////////////////////////////////////////////////////
-// Required Feature List ///////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-feature_sequence ::=
-    feature_sequence:sequence feature:feature
+  | feature_list:l
     {:
-        RESULT = sequence;
-        RESULT.add(feature);
+        RESULT = l;
     :}
-  | feature:feature
+;
+feature_list ::=
+    feature_list:l action_feature:x
+    {:
+        RESULT = l;
+        RESULT.add(x);
+    :}
+  | action_feature:x
     {:
         RESULT = new LinkedList<ActionFeature>();
-        RESULT.add(feature);
+        RESULT.add(x);
     :}
 ;
-////////////////////////////////////////////////////////////////////////////////
-// Single Action Feature ///////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-feature ::=
-    IDENTIFIER:key ASSIGNMENT PLACEHOLDER VARIABLE:val
-    {:
-        RESULT = new ActionParam(
-            key.getLower(), val.getUpper(), 
-            key.getValue(), val.getValue());
-    :}
-  | IDENTIFIER:key ASSIGNMENT BOOLEAN:val
+// Action Features 
+action_feature ::=
+    feature_name:x ASSIGNMENT feature_value:y
     {:
         RESULT = new ActionFeature(
-            ActionFeature.Type.BOOLEAN,
-            key.getLower(), val.getUpper(), 
-            key.getValue(), val.getValue());
-    :}
-  | IDENTIFIER:key ASSIGNMENT INTEGER:val
-    {:
-         RESULT = new ActionFeature(
-            ActionFeature.Type.INTEGER,
-            key.getLower(), val.getUpper(), 
-            key.getValue(), val.getValue());
-    :}
-  | IDENTIFIER:key ASSIGNMENT FLOATING:val
-    {:
-        RESULT = new ActionFeature(
-            ActionFeature.Type.FLOATING,
-            key.getLower(), val.getUpper(), 
-            key.getValue(), val.getValue());
-    :}
-  | IDENTIFIER:key ASSIGNMENT STRING:val
-    {:
-        RESULT = new ActionFeature(
-            ActionFeature.Type.STRING,
-            key.getLower(), val.getUpper(), 
-            key.getValue(), val.getValue());
-    :}
-  | IDENTIFIER:key ASSIGNMENT IDENTIFIER:val
-    {:
-        RESULT = new ActionFeature(
-            ActionFeature.Type.IDENTIFIER,
-            key.getLower(), val.getUpper(), 
-            key.getValue(), val.getValue());
+            x.getLower(), y.getUpper(), 
+            x.getValue(), y.getValue());
     :}
 ;
+// Feature Name
+feature_name ::= 
+    IDENTIFIER:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Feature Value 
+feature_value ::= 
+    parameter:x
+    {:
+        RESULT = x;
+    :}
+  | identifier:x
+    {:
+        RESULT = x;
+    :}
+  | boolean:x
+    {:
+        RESULT = x;
+    :}    
+  | integer:x
+    {:
+        RESULT = x;
+    :}    
+  | floating:x
+    {:
+        RESULT = x;
+    :}    
+  | sqstring:x
+    {:
+        RESULT = x;
+    :}
+;
+// Identifier
+identifier ::= 
+    IDENTIFIER:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Parameter
+parameter ::= 
+    PLACEHOLDER VARIABLE:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Boolean Value
+boolean ::= 
+    BOOLEAN:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Integer Number
+integer ::= 
+    INTEGER:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Floating Point Number
+floating ::= 
+    FLOATING:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Single Quote String
+sqstring ::= 
+    SQSTRING:x 
+    {:
+        RESULT = x;
+    :}
+;
+
+/*
+whitespaces ::=
+    whitespaces:l WHITESPACE:x
+    {:
+        RESULT = x;
+    :}
+  | WHITESPACE:x
+    {:
+        RESULT = x;
+    :}
+;
+*/

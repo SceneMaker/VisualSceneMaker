@@ -24,7 +24,7 @@ public final class SpeechActivity extends AbstractActivity {
             final String actor,
             final LinkedList list,
             final String punct) {
-        super(Type.blocking, actor, "speech", "speak");
+        super(Type.blocking, actor, /*"speech",*/ "speak");
         // Initialize the content
         mBlocks = list;
         mPunct = punct;

@@ -381,29 +381,32 @@ public final class SceneScript extends SceneEntity {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public final void parseTXT(final String text) {
+    public final boolean parseTXT(final String text) {
 
         // Parse Content Into Scene Script
         final SceneScript script = ScriptParser.run("", text, false, true, false, false);
 
         // Copy Content If Successfully
         if (script != null) {
-
             // Initialize The Scene List
             mEntityList = script.getEntityList();
-
             // Initialize The Two Lists
             initObjectLists();
-
             // Initialize The Group Map
             initLangMap();
             initGroupMap();
+            //
+            return true;
         } else {
-           /* mEntityList.clear();
+           // Why has this been commented???
+           /*
+           mEntityList.clear();
             mSceneList.clear();
             mCommentList.clear();
             mGroupMap.clear();
-            mLangMap.clear();*/
+            mLangMap.clear();
+        */
+            return false;
         }
     }
 

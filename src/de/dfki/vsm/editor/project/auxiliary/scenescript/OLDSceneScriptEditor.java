@@ -440,7 +440,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             // Get the document text
             final String text = document.getText(0, document.getLength());
             // Parse the scenescript
-            mSceneScript.parseTXT(text);
+            final boolean result = mSceneScript.parseTXT(text);
             // Update the editor UI because the
             // scenescript and thus the project
             // may have changed due to the parse
@@ -449,9 +449,16 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             // various editor subcomponents
             EditorInstance.getInstance().refresh();
             // Print some information
-            mLogger.message("Updating editor after successful parsing the scenescript document");
-            // Return true at success
-            return true;
+            mLogger.message("Updating editor after parsing the scene script");
+            
+            if(!result) {
+                mEditorPane.setBackground(Color.YELLOW.brighter());
+            } else {
+                mEditorPane.setBackground(Color.WHITE);
+            }
+            // Return result
+            return result;
+
         } catch (final BadLocationException exc) {
             // Catch error or exception
             mLogger.failure(exc.toString());

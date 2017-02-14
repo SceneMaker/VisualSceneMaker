@@ -189,7 +189,7 @@ SIGN            = ([-]?)
 INTEGER         = {SIGN}(0|[1-9][0-9]*)
 FLOATING        = {SIGN}((0|([1-9][0-9]*))\.[0-9]+)
 //STRING          = (\"({CHARACTER}|{DIGITAL}|{SPECIAL}|{WHITESPACE})*\")
-STRING          = ('({CHARACTER}|{DIGITAL}|{SPECIAL}|{WHITESPACE})*')
+SQSTRING          = ('({CHARACTER}|{DIGITAL}|{SPECIAL}|{WHITESPACE})*')
 link            = (<a {WHITESPACE}+ "href="\"(.*?)\" {WHITESPACE}+ "target="\"(.*?)\">(.*?)<\/a>)
 // Abbreviation
 ABBREVIATION    = {SINGLEQUOTE}
@@ -203,7 +203,7 @@ IDENTIFIER      = ({CHARACTER}({CHARACTER}|{DIGITAL}|_)*)
 COMMENTHEAD    = (\/\*)
 COMMENTFOOT    = (\*\/)
 // Scenes & Turns
-SCENEHEADER     = (scene|Scene)
+SCENEWORD     = (scene|Scene)
 %%
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -219,12 +219,14 @@ SCENEHEADER     = (scene|Scene)
 }
 // Scene Header 
 <YYINITIAL>
-{SCENEHEADER}
+{SCENEWORD}
 {   
     // Enter The Scene Head Scope
-    yybegin(YY_SCENE_HEAD);
+    //yybegin(YY_SCENE_HEAD);
+    yybegin(YY_SCENE_UNDL);
+
     // Return The Scene Head Token
-    return create(ScriptFields.SCENEHEADER);
+    return create(ScriptFields.SCENEWORD);
 }
 // Whitespace
 <YYINITIAL>
@@ -279,6 +281,14 @@ SCENEHEADER     = (scene|Scene)
 ////////////////////////////////////////////////////////////////////////////////
 // Underline
 <YY_SCENE_UNDL>
+{WHITESPACE}
+{   
+    if(mWhiteSpace) {
+        // Return The Whitespace Token
+        return create(ScriptFields.WHITESPACE);
+    } 
+}
+<YY_SCENE_UNDL>
 {LANGUAGE}
 {   
     // Enter The Scene Lang Scope
@@ -311,7 +321,8 @@ SCENEHEADER     = (scene|Scene)
 {IDENTIFIER}
 {   
     // Enter The Scene Lang Scope
-    yybegin(YY_SCENE_NAME);
+    //yybegin(YY_SCENE_NAME);
+    yybegin(YY_SCENE_BODY);
     // Return The Scene Name Token
     return create(ScriptFields.IDENTIFIER);
 }
@@ -357,6 +368,14 @@ SCENEHEADER     = (scene|Scene)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // Turn Header
+<YY_SCENE_BODY>
+{WHITESPACE}
+{   
+    if(mWhiteSpace) {
+        // Return The Scene Lang Token
+        return create(ScriptFields.WHITESPACE);
+    } 
+}
 <YY_SCENE_BODY>
 {NEWLINE}
 {
@@ -668,6 +687,11 @@ SCENEHEADER     = (scene|Scene)
 // Action Body /////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 <YY_ACTION_BODY>
+{COLONMARK}
+{
+    return create(ScriptFields.COLONMARK);
+}
+<YY_ACTION_BODY>
 {ASSIGNMENT}
 {
     return create(ScriptFields.ASSIGNMENT);
@@ -698,9 +722,9 @@ SCENEHEADER     = (scene|Scene)
     return create(ScriptFields.FLOATING);
 }
 <YY_ACTION_BODY>
-{STRING}
+{SQSTRING}
 {
-    return create(ScriptFields.STRING);
+    return create(ScriptFields.SQSTRING);
 }
 <YY_ACTION_BODY>
 {IDENTIFIER}

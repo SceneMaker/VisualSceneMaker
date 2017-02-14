@@ -6,7 +6,7 @@ import de.dfki.vsm.model.sceneflow.command.Command;
 import de.dfki.vsm.model.sceneflow.command.HistoryClear;
 import de.dfki.vsm.model.sceneflow.command.HistoryDeepClear;
 import de.dfki.vsm.model.sceneflow.command.HistorySetDepth;
-import de.dfki.vsm.model.sceneflow.command.Play;
+import de.dfki.vsm.model.sceneflow.command.PlayActionCmd;
 import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
 import de.dfki.vsm.model.sceneflow.command.UnblockAllSceneGroups;
 import de.dfki.vsm.model.sceneflow.command.UnblockSceneGroup;
@@ -108,9 +108,9 @@ public class Evaluator {
 
                 throw new InterpreterError(cmd, errorMsg);
             }
-        } else if (cmd instanceof Play) {
-            AbstractValue value = evaluate(((Play) cmd).getArg(), env);
-            LinkedList<AbstractValue> valueList = evaluateExpList(((Play) cmd).getArgList(), env);
+        } else if (cmd instanceof PlayActionCmd) {
+            AbstractValue value = evaluate(((PlayActionCmd) cmd).getArg(), env);
+            LinkedList<AbstractValue> valueList = evaluateExpList(((PlayActionCmd) cmd).getArgList(), env);
 
             if (value.getType() == AbstractValue.Type.STRING) {
                 mInterpreter.unlock();

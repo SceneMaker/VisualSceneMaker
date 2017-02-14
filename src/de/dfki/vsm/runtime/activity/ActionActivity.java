@@ -28,11 +28,11 @@ public final class ActionActivity extends AbstractActivity {
     // Construct the activity
     public ActionActivity( // (added PG)
             final String actor,
-            final String mode,
+            //final String mode,
             final String name,
             final String text,
             final LinkedList<ActionFeature> featureList) {
-        super(Type.parallel, actor, mode, name, featureList);
+        super(Type.parallel, actor,/* mode,*/ name, featureList);
         // Initialize the text
         mText = text;
     }

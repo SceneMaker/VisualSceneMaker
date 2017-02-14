@@ -155,7 +155,7 @@ public final class WizardExecutor extends ActivityExecutor {
         final ActivityWorker worker = (ActivityWorker) Thread.currentThread();
         // Get activity information
         final String name = activity.getName();
-        final String mode = activity.getMode();
+        //final String mode = activity.getMode();
         final String actor = activity.getActor();
         final String type = activity.getType().name();
         final String text = activity.getText();
