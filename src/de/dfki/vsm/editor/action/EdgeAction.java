@@ -22,11 +22,14 @@ import de.dfki.vsm.model.sceneflow.IEdge;
 import de.dfki.vsm.model.sceneflow.PEdge;
 import de.dfki.vsm.model.sceneflow.TEdge;
 
+import static de.dfki.vsm.Preferences.sBASIC_NODE_COLOR;
 import static de.dfki.vsm.editor.Edge.TYPE.CEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.EEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.TEDGE;
+import static de.dfki.vsm.model.sceneflow.BasicNode.FLAVOUR.ENODE;
+
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -407,7 +410,6 @@ public abstract class EdgeAction extends EditorAction {
 
         case CEDGE :
             mSourceGUINode.getDataNode().removeCEdge((CEdge) mDataEdge);
-
             break;
 
         case PEDGE :
@@ -460,7 +462,19 @@ public abstract class EdgeAction extends EditorAction {
             mSourceGUINode.setFlavour(Flavour.INode);
 
             break;
+
+        case ENODE:
+            mSourceGUINode.setFlavour(Flavour.ENode);
+            break;
+
+        case TNODE:
+            mSourceGUINode.setFlavour(Flavour.TNode);
+            break;
         }
+
+
+
+
 
         // Remove the GUI-AbstractEdge from the workspace and
         // update the source node appearance
