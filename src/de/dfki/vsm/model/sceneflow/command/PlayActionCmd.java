@@ -1,4 +1,5 @@
 package de.dfki.vsm.model.sceneflow.command;
+
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -7,26 +8,26 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 
-
 /**
  * @author Gregor Mehlmann
  */
-public class PlaySceneGroup extends Command {
-    private Expression         mArg;
+public final class PlayActionCmd extends Command {
+
+    private Expression mArg;
     private ArrayList<Expression> mArgList;
 
-    public PlaySceneGroup() {
-        mArg     = null;
+    public PlayActionCmd() {
+        mArg = null;
         mArgList = new ArrayList<Expression>();
     }
 
-    public PlaySceneGroup(Expression arg) {
-        mArg     = arg;
+    public PlayActionCmd(Expression arg) {
+        mArg = arg;
         mArgList = new ArrayList<Expression>();
     }
 
-    public PlaySceneGroup(Expression arg, ArrayList<Expression> argList) {
-        mArg     = arg;
+    public PlayActionCmd(Expression arg, ArrayList<Expression> argList) {
+        mArg = arg;
         mArgList = argList;
     }
 
@@ -72,16 +73,18 @@ public class PlaySceneGroup extends Command {
         return copy;
     }
 
+    @Override
     public CmdType getCmdType() {
-        return CmdType.PSG;
+        return CmdType.PLAY;
     }
 
+    @Override
     public String getAbstractSyntax() {
-        String desc = "PlaySceneGroup" + " ( ";
+        String desc = "PlayActionCmd ( ";
 
         desc += ((mArg != null)
-                 ? mArg.getAbstractSyntax()
-                 : "");
+                ? mArg.getAbstractSyntax()
+                : "");
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getAbstractSyntax();
@@ -90,12 +93,13 @@ public class PlaySceneGroup extends Command {
         return desc + " ) ";
     }
 
+    @Override
     public String getConcreteSyntax() {
-        String desc = "PlaySceneGroup" + " ( ";
+        String desc = "PlayActionCmd ( ";
 
         desc += ((mArg != null)
-                 ? mArg.getConcreteSyntax()
-                 : "");
+                ? mArg.getConcreteSyntax()
+                : "");
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getConcreteSyntax();
@@ -104,12 +108,13 @@ public class PlaySceneGroup extends Command {
         return desc + " ) ";
     }
 
+    @Override
     public String getFormattedSyntax() {
-        String desc = "#p#PlaySceneGroup" + " ( ";
+        String desc = "#p#PlayActionCmd ( ";
 
         desc += ((mArg != null)
-                 ? mArg.getFormattedSyntax()
-                 : "");
+                ? mArg.getFormattedSyntax()
+                : "");
 
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getFormattedSyntax();
@@ -118,12 +123,14 @@ public class PlaySceneGroup extends Command {
         return desc + " ) ";
     }
 
-    public PlaySceneGroup getCopy() {
-        return new PlaySceneGroup(mArg.getCopy(), getCopyOfArgList());
+    @Override
+    public PlayActionCmd getCopy() {
+        return new PlayActionCmd(mArg.getCopy(), getCopyOfArgList());
     }
 
+    @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<PlaySceneGroup>").push();
+        out.println("<PlayActionCmd>").push();
 
         if (mArg != null) {
             mArg.writeXML(out);
@@ -133,18 +140,20 @@ public class PlaySceneGroup extends Command {
             mArgList.get(i).writeXML(out);
         }
 
-        out.pop().println("</PlaySceneGroup>");
+        out.pop().println("</PlayActionCmd>");
     }
 
+    @Override
     public void parseXML(Element element) throws XMLParseError {
-        final ArrayList<Expression> expList = new ArrayList<Expression>();
+        final ArrayList<Expression> expList = new ArrayList<>();
 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            @Override
             public void run(Element element) throws XMLParseError {
                 expList.add(Expression.parse(element));
             }
         });
-        mArg     = expList.remove(0);
+        mArg = expList.remove(0);
         mArgList = expList;
     }
 }

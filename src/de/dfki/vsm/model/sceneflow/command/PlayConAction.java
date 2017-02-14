@@ -1,35 +1,32 @@
 package de.dfki.vsm.model.sceneflow.command;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.model.sceneflow.command.expression.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
-
 import org.w3c.dom.Element;
 
-//~--- JDK imports ------------------------------------------------------------
 /**
  * @author Gregor Mehlmann
  */
-public class Play extends Command {
+public final class PlayConAction extends Command {
 
     private Expression mArg;
     private ArrayList<Expression> mArgList;
 
-    public Play() {
+    public PlayConAction() {
         mArg = null;
         mArgList = new ArrayList<Expression>();
     }
 
-    public Play(Expression arg) {
+    public PlayConAction(Expression arg) {
         mArg = arg;
         mArgList = new ArrayList<Expression>();
     }
 
-    public Play(Expression arg, ArrayList<Expression> argList) {
+    public PlayConAction(Expression arg, ArrayList<Expression> argList) {
         mArg = arg;
         mArgList = argList;
     }
@@ -78,12 +75,12 @@ public class Play extends Command {
 
     @Override
     public CmdType getCmdType() {
-        return CmdType.PLAY;
+        return CmdType.PCBA;
     }
 
     @Override
     public String getAbstractSyntax() {
-        String desc = "Play ( ";
+        String desc = "PlayConAction ( ";
 
         desc += ((mArg != null)
                 ? mArg.getAbstractSyntax()
@@ -98,7 +95,7 @@ public class Play extends Command {
 
     @Override
     public String getConcreteSyntax() {
-        String desc = "Play ( ";
+        String desc = "PlayConAction ( ";
 
         desc += ((mArg != null)
                 ? mArg.getConcreteSyntax()
@@ -113,7 +110,7 @@ public class Play extends Command {
 
     @Override
     public String getFormattedSyntax() {
-        String desc = "#p#Play ( ";
+        String desc = "#p#!= ";
 
         desc += ((mArg != null)
                 ? mArg.getFormattedSyntax()
@@ -123,17 +120,17 @@ public class Play extends Command {
             desc += " , " + mArgList.get(i).getFormattedSyntax();
         }
 
-        return desc + " ) ";
+        return desc + " .";
     }
 
     @Override
-    public Play getCopy() {
-        return new Play(mArg.getCopy(), getCopyOfArgList());
+    public PlayConAction getCopy() {
+        return new PlayConAction(mArg.getCopy(), getCopyOfArgList());
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<Play>").push();
+        out.println("<PlayConAction>").push();
 
         if (mArg != null) {
             mArg.writeXML(out);
@@ -143,7 +140,7 @@ public class Play extends Command {
             mArgList.get(i).writeXML(out);
         }
 
-        out.pop().println("</Play>");
+        out.pop().println("</PlayConAction>");
     }
 
     @Override

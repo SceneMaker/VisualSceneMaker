@@ -44,7 +44,7 @@ public final class PrologQuery extends LogicalCond {
 
     @Override
     public String getFormattedSyntax() {
-        return "#p#Query ( " + mExpression.getFormattedSyntax() + " )";
+        return "#p#?- " + mExpression.getFormattedSyntax() + " .";
     }
 
     @Override

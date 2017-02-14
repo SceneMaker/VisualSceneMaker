@@ -85,7 +85,7 @@ public final class ReetiExecutor extends ActivityExecutor {
         final ActivityWorker worker = (ActivityWorker) Thread.currentThread();
         // Get activity information
         final String name = activity.getName();
-        final String mode = activity.getMode();
+        //final String mode = activity.getMode();
         final String actor = activity.getActor();
         final String type = activity.getType().name();
         final String text = activity.getText();
@@ -130,7 +130,7 @@ public final class ReetiExecutor extends ActivityExecutor {
             mLogger.warning("Activity worker " + worker + " executing behavior activity " + activity + ":\n"
                     + "Activity features:\n"
                     + "    actor: " + actor + "\n"
-                    + "    mode: " + mode + "\n"
+                    //+ "    mode: " + mode + "\n"
                     + "    name: " + name + "\n"
                     + "    type: " + type + "\n"
                     + "    text: " + text + "\n"

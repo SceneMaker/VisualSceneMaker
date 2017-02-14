@@ -403,7 +403,8 @@ public class StickmanTtsExecutor extends ActivityExecutor {
                     if (p.getLipPosition() == null) {
                         continue;
                     }
-                    mScheduler.schedule((int) p.getmStart(), null, new ActionMouthActivity(actor, "face", "Mouth_" + p.getLipPosition(), null, (int) (p.getmEnd() - p.getmStart()), wts), mProject.getAgentDevice(actor));
+                    mScheduler.schedule((int) p.getmStart(), null, 
+                            new ActionMouthActivity(actor, /*"face",*/ "Mouth_" + p.getLipPosition(), null, (int) (p.getmEnd() - p.getmStart()), wts), mProject.getAgentDevice(actor));
                     totalTime+= (int) (p.getmEnd() - p.getmStart());
                 }
                 wordIndex++;

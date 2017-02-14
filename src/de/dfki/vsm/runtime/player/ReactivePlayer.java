@@ -126,14 +126,14 @@ public final class ReactivePlayer extends RunTimePlayer {
                             action = (action.contains("]")) ? action.replace("]", "") : action; 
                         } else if (mStr.contains("=")) {
                             String[] pair = mStr.split("=");
-                            features.add(new ActionFeature(ActionFeature.Type.STRING, 0, pair[0].length(), pair[0], pair[1]));
+                            features.add(new ActionFeature(/*ActionFeature.Type.STRING,*/ 0, pair[0].length(), pair[0], pair[1]));
                         }
                         cnt++;
                     }
                 }
 
                 // Schedule the activity without delay but blocking
-                ActionActivity aa = new ActionActivity(actor, "cmd", action, name, features);
+                ActionActivity aa = new ActionActivity(actor, /*"cmd",*/ action, name, features);
                 aa.setType(AbstractActivity.Type.blocking);
                 mScheduler.schedule(0, null, aa, mProject.getAgentDevice(actor));
                 // Check for interruption
@@ -225,7 +225,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                                                 marker, // Execute at this marker
                                                 new ActionActivity(
                                                         (action.getActor() == null) ? turn.getSpeaker() : action.getActor(), // added PG 5.4.2016
-                                                        action.getMode(),
+                                                        //action.getMode(),
                                                         action.getName(),
                                                         action.getText(map),
                                                         action.getFeatureList()),

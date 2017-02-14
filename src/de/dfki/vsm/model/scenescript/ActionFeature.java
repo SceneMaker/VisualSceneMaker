@@ -11,6 +11,7 @@ import java.util.HashMap;
  */
 public class ActionFeature extends SceneEntity {
 
+    /*
     public enum Type {
 
         STRING,
@@ -23,7 +24,7 @@ public class ActionFeature extends SceneEntity {
 
     // The Type Of The Feature
     protected Type mTyp;
-
+     */
     // The Key Of The Member
     protected String mKey;
 
@@ -34,7 +35,7 @@ public class ActionFeature extends SceneEntity {
     }
 
     public ActionFeature(
-            final Type typ,
+            //final Type typ,
             final int lower,
             final int upper,
             final String key,
@@ -42,11 +43,12 @@ public class ActionFeature extends SceneEntity {
         super(lower, upper);
 
         // Initialize The Members
-        mTyp = typ;
+        //mTyp = typ;
         mKey = key;
         mVal = val;
     }
 
+    /*
     public final Type getTyp() {
         return mTyp;
     }
@@ -54,7 +56,7 @@ public class ActionFeature extends SceneEntity {
     public final void setTyp(final Type typ) {
         mTyp = typ;
     }
-
+     */
     public final String getKey() {
         return mKey;
     }
@@ -87,21 +89,25 @@ public class ActionFeature extends SceneEntity {
 
     @Override
     public void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.print("<ActionFeature " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "typ=\"" + mTyp
-                + "\" " + "key=\"" + mKey + "\" " + "val=\"" + mVal + "\"/>");
+        stream.print("<ActionFeature "
+                + "lower=\"" + mLower + "\" "
+                + "upper=\"" + mUpper + "\" "
+                //+ "typ=\"" + mTyp + "\" "
+                + "key=\"" + mKey + "\" "
+                + "val=\"" + mVal + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mLower = Integer.parseInt(element.getAttribute("lower"));
         mUpper = Integer.parseInt(element.getAttribute("upper"));
-        mTyp = Type.valueOf(element.getAttribute("typ"));
+        //mTyp = Type.valueOf(element.getAttribute("typ"));
         mKey = element.getAttribute("key");
         mVal = element.getAttribute("val");
     }
 
     @Override
     public ActionFeature getCopy() {
-        return new ActionFeature(mTyp, mLower, mUpper, mKey, mVal);
+        return new ActionFeature(/*mTyp,*/mLower, mUpper, mKey, mVal);
     }
 }

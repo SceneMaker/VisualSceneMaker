@@ -48,7 +48,7 @@ terminal RANDOM, REMOVEFIRST, REMOVELAST, FIRST, LAST, CLEAR, SIZE, CONTAINS;
 terminal LPAREN, RPAREN, LBRACK, RBRACK, LBRACE, RBRACE, COMMA, QUESTION, COLON, DOT, AT;
 terminal NOT; 
 terminal EQUAL;
-terminal DEFAULT, IN, EMPTY, TIMEOUT, PSG, PDA, USG, UASG, PLAY;
+terminal DEFAULT, IN, EMPTY, TIMEOUT, PSG, PDA, USG, UASG, PLAY, PSBA, PCBA;
 terminal HISTORYCLEAR, HISTORYDEEPCLEAR, HISTORYCONTAINSSTATE, HISTORYVALUEOF, HISTORYSETDEPTH, HISTORYRUNTIMEOF;
 terminal VALUEOF;
 terminal NEW;
@@ -114,8 +114,13 @@ precedence left DOT;
 command ::=
   expression:x                                                                  {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } :}
 | assignment:x                                                                  {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PSBA expression:x DOT                                                          {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySeqAction(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PSBA expression:x COMMA non_empty_expression_list:y DOT                        {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySeqAction(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PCBA expression:x DOT                                                          {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayConAction(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PCBA expression:x COMMA non_empty_expression_list:y DOT                        {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayConAction(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PLAY LPAREN expression:x RPAREN                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionCmd(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PLAY LPAREN expression:x COMMA non_empty_expression_list:y RPAREN             {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionCmd(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
 | PSG LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
-| PLAY LPAREN expression:x RPAREN                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.Play(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
 | PSG LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
 | PDA LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogueAct(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
 | PDA LPAREN expression:x COMMA non_empty_expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogueAct(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
@@ -312,7 +317,7 @@ instate_condition ::=
 
 // Query expression
 prolog_condition ::=
-  QUERY LPAREN expression:x RPAREN                                                           {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologQuery(x); :};
+  QUERY expression:x DOT                                                        {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologQuery(x); :};
 
 /*
  * DEFAULT CONDITION

@@ -1,3 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="64" language="en" identifier="welcome">
+    <SceneTurn lower="17" upper="64" speaker="charly">
+      <SceneUttr lower="25" upper="64" punct="?">
+        <SceneWord lower="25" upper="30" text="Hello"/>
+        <ActionObject lower="32" upper="36" actor="" name="name" >
+        </ActionObject>
+        <SceneWord lower="38" upper="41" text="how"/>
+        <ActionObject lower="43" upper="54" actor="actor" name="name" >
+        </ActionObject>
+        <SceneWord lower="56" upper="59" text="are"/>
+        <SceneWord lower="60" upper="63" text="you"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>

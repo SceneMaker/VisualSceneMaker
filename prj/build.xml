@@ -233,7 +233,10 @@
             <arg file="${sflcupfile}"/>
             <classpath refid="clspath"/>
         </java>
-    </target>    
+    </target>  
+    <!-- Scanner Generation -->
+    <target name="generate" depends="clean,-lexxer,-parser">  
+    </target>
     <!--- Version -->
     <target name="version">
         <!-- update build details -->
