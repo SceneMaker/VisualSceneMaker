@@ -14,13 +14,13 @@ import de.dfki.vsm.editor.util.grid.DockingPoint;
 import de.dfki.vsm.editor.util.grid.GridConstants;
 import de.dfki.vsm.editor.util.grid.GridRectangle;
 import de.dfki.vsm.editor.util.grid.pathfinding.Path;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.EEdge;
-import de.dfki.vsm.model.sceneflow.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.FEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.TEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 
 import static de.dfki.vsm.Preferences.sBASIC_NODE_COLOR;
 import static de.dfki.vsm.editor.Edge.TYPE.CEDGE;
@@ -28,7 +28,7 @@ import static de.dfki.vsm.editor.Edge.TYPE.EEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.TEDGE;
-import static de.dfki.vsm.model.sceneflow.BasicNode.FLAVOUR.ENODE;
+import static de.dfki.vsm.model.sceneflow.chart.BasicNode.FLAVOUR.ENODE;
 
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 
@@ -64,7 +64,7 @@ public abstract class EdgeAction extends EditorAction {
     public void create() {
         mDataEdge.setTargetNode(mTargetGUINode.getDataNode());
         mDataEdge.setSourceNode(mSourceGUINode.getDataNode());
-        mDataEdge.setTarget(mDataEdge.getTargetNode().getId());
+        mDataEdge.setTargetUnid(mDataEdge.getTargetNode().getId());
 
         switch (mGUIEdgeType) {
         case EEDGE :
@@ -73,7 +73,7 @@ public abstract class EdgeAction extends EditorAction {
             break;
 
         case FEDGE :
-            mSourceGUINode.getDataNode().addFEdge((FEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addFEdge((ForkingEdge) mDataEdge);
 
             break;
 
@@ -83,17 +83,17 @@ public abstract class EdgeAction extends EditorAction {
             break;
 
         case CEDGE :
-            mSourceGUINode.getDataNode().addCEdge((CEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addCEdge((GuargedEdge) mDataEdge);
 
             break;
 
         case PEDGE :
-            mSourceGUINode.getDataNode().addPEdge((PEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addPEdge((RandomEdge) mDataEdge);
 
             break;
 
         case IEDGE :
-            mSourceGUINode.getDataNode().addIEdge((IEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addIEdge((InterruptEdge) mDataEdge);
 
             break;
         }
@@ -103,9 +103,9 @@ public abstract class EdgeAction extends EditorAction {
         case NONE :
             AbstractEdge dedge = mSourceGUINode.getDataNode().getDedge();
 
-            if (dedge instanceof EEdge) {
+            if (dedge instanceof EpsilonEdge) {
                 mSourceGUINode.setFlavour(Flavour.ENode);
-            } else if (dedge instanceof TEdge) {
+            } else if (dedge instanceof TimeoutEdge) {
                 mSourceGUINode.setFlavour(Flavour.TNode);
             } else {
                 mSourceGUINode.setFlavour(Flavour.None);
@@ -409,21 +409,21 @@ public abstract class EdgeAction extends EditorAction {
             break;
 
         case CEDGE :
-            mSourceGUINode.getDataNode().removeCEdge((CEdge) mDataEdge);
+            mSourceGUINode.getDataNode().removeCEdge((GuargedEdge) mDataEdge);
             break;
 
         case PEDGE :
-            mSourceGUINode.getDataNode().removePEdge((PEdge) mDataEdge);
+            mSourceGUINode.getDataNode().removePEdge((RandomEdge) mDataEdge);
 
             break;
 
         case FEDGE :
-            mSourceGUINode.getDataNode().removeFEdge((FEdge) mDataEdge);
+            mSourceGUINode.getDataNode().removeFEdge((ForkingEdge) mDataEdge);
 
             break;
 
         case IEDGE :
-            mSourceGUINode.getDataNode().removeIEdge((IEdge) mDataEdge);
+            mSourceGUINode.getDataNode().removeIEdge((InterruptEdge) mDataEdge);
 
             break;
         }
@@ -433,9 +433,9 @@ public abstract class EdgeAction extends EditorAction {
         case NONE :
             AbstractEdge dedge = mSourceGUINode.getDataNode().getDedge();
 
-            if (dedge instanceof EEdge) {
+            if (dedge instanceof EpsilonEdge) {
                 mSourceGUINode.setFlavour(Flavour.ENode);
-            } else if (dedge instanceof TEdge) {
+            } else if (dedge instanceof TimeoutEdge) {
                 mSourceGUINode.setFlavour(Flavour.TNode);
             } else {
                 mSourceGUINode.setFlavour(Flavour.None);

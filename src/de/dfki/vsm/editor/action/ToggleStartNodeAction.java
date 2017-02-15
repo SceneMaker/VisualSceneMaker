@@ -4,7 +4,7 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 
 //~--- JDK imports ------------------------------------------------------------
 

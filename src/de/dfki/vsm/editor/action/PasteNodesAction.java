@@ -2,6 +2,13 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
@@ -21,10 +28,10 @@ import javax.swing.undo.CannotUndoException;
 public class PasteNodesAction extends EditorAction {
     Set<CreateNodeAction>          mCreateNodeActions = new HashSet<CreateNodeAction>();
     WorkSpacePanel                      mWorkSpace         = null;
-    Hashtable<BasicNode, ArrayList<CEdge>> mNodesCEdges       = new Hashtable<BasicNode, ArrayList<CEdge>>();
-    Hashtable<BasicNode, ArrayList<PEdge>> mNodesPEdges       = new Hashtable<BasicNode, ArrayList<PEdge>>();
-    Hashtable<BasicNode, ArrayList<FEdge>> mNodesFEdges       = new Hashtable<BasicNode, ArrayList<FEdge>>();
-    Hashtable<BasicNode, ArrayList<IEdge>> mNodesIEdges       = new Hashtable<BasicNode, ArrayList<IEdge>>();
+    Hashtable<BasicNode, ArrayList<GuargedEdge>> mNodesCEdges       = new Hashtable<BasicNode, ArrayList<GuargedEdge>>();
+    Hashtable<BasicNode, ArrayList<RandomEdge>> mNodesPEdges       = new Hashtable<BasicNode, ArrayList<RandomEdge>>();
+    Hashtable<BasicNode, ArrayList<ForkingEdge>> mNodesFEdges       = new Hashtable<BasicNode, ArrayList<ForkingEdge>>();
+    Hashtable<BasicNode, ArrayList<InterruptEdge>> mNodesIEdges       = new Hashtable<BasicNode, ArrayList<InterruptEdge>>();
     Hashtable<BasicNode, AbstractEdge>          mNodesDefaultEdge  = new Hashtable<BasicNode, AbstractEdge>();
     SceneFlowEditor                mSceneFlowEditor;
 
@@ -64,7 +71,7 @@ public class PasteNodesAction extends EditorAction {
             if (node.hasEdge()) {
                 switch (node.getFlavour()) {
                 case CNODE :
-                    ArrayList<CEdge> ces = node.getCEdgeList();
+                    ArrayList<GuargedEdge> ces = node.getCEdgeList();
 
                     mNodesCEdges.put(node, ces);
                     node.removeAllCEdges();
@@ -77,7 +84,7 @@ public class PasteNodesAction extends EditorAction {
                     break;
 
                 case PNODE :
-                    ArrayList<PEdge> pes = node.getPEdgeList();
+                    ArrayList<RandomEdge> pes = node.getPEdgeList();
 
                     mNodesPEdges.put(node, pes);
                     node.removeAllPEdges();
@@ -85,7 +92,7 @@ public class PasteNodesAction extends EditorAction {
                     break;
 
                 case FNODE :
-                    ArrayList<FEdge> fes = node.getFEdgeList();
+                    ArrayList<ForkingEdge> fes = node.getFEdgeList();
 
                     mNodesFEdges.put(node, fes);
                     node.removeAllFEdges();
@@ -93,7 +100,7 @@ public class PasteNodesAction extends EditorAction {
                     break;
 
                 case INODE :
-                    ArrayList<IEdge> ies = node.getIEdgeList();
+                    ArrayList<InterruptEdge> ies = node.getIEdgeList();
 
                     mNodesIEdges.put(node, ies);
                     node.removeAllIEdges();
@@ -134,11 +141,11 @@ public class PasteNodesAction extends EditorAction {
 
             // cedge
             if (mNodesCEdges.containsKey(node)) {
-                ArrayList<CEdge> ces = mNodesCEdges.get(node);
+                ArrayList<GuargedEdge> ces = mNodesCEdges.get(node);
 
-                for (CEdge c : ces) {
+                for (GuargedEdge c : ces) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
-                                               mWorkSpace.getNode(c.getTarget()), c,
+                                               mWorkSpace.getNode(c.getTargetUnid()), c,
                                                de.dfki.vsm.editor.Edge.TYPE.CEDGE);
 
                     cea.run();
@@ -147,11 +154,11 @@ public class PasteNodesAction extends EditorAction {
 
             // pedge
             if (mNodesPEdges.containsKey(node)) {
-                ArrayList<PEdge> pes = mNodesPEdges.get(node);
+                ArrayList<RandomEdge> pes = mNodesPEdges.get(node);
 
-                for (PEdge p : pes) {
+                for (RandomEdge p : pes) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
-                                               mWorkSpace.getNode(p.getTarget()), p,
+                                               mWorkSpace.getNode(p.getTargetUnid()), p,
                                                de.dfki.vsm.editor.Edge.TYPE.PEDGE);
 
                     cea.run();
@@ -160,11 +167,11 @@ public class PasteNodesAction extends EditorAction {
 
             // fedge
             if (mNodesFEdges.containsKey(node)) {
-                ArrayList<FEdge> fes = mNodesFEdges.get(node);
+                ArrayList<ForkingEdge> fes = mNodesFEdges.get(node);
 
-                for (FEdge f : fes) {
+                for (ForkingEdge f : fes) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
-                                               mWorkSpace.getNode(f.getTarget()), f,
+                                               mWorkSpace.getNode(f.getTargetUnid()), f,
                                                de.dfki.vsm.editor.Edge.TYPE.FEDGE);
 
                     cea.run();
@@ -173,11 +180,11 @@ public class PasteNodesAction extends EditorAction {
 
             // iedge
             if (mNodesIEdges.containsKey(node)) {
-                ArrayList<IEdge> ies = mNodesIEdges.get(node);
+                ArrayList<InterruptEdge> ies = mNodesIEdges.get(node);
 
-                for (IEdge i : ies) {
+                for (InterruptEdge i : ies) {
                     CreateEdgeAction cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
-                                               mWorkSpace.getNode(i.getTarget()), i,
+                                               mWorkSpace.getNode(i.getTargetUnid()), i,
                                                de.dfki.vsm.editor.Edge.TYPE.IEDGE);
 
                     cea.run();
@@ -189,13 +196,13 @@ public class PasteNodesAction extends EditorAction {
                 AbstractEdge             e   = mNodesDefaultEdge.get(node);
                 CreateEdgeAction cea = null;
 
-                if (TEdge.class.isInstance(e)) {
+                if (TimeoutEdge.class.isInstance(e)) {
                     cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
-                                               mWorkSpace.getNode(e.getTarget()), e,
+                                               mWorkSpace.getNode(e.getTargetUnid()), e,
                                                de.dfki.vsm.editor.Edge.TYPE.TEDGE);
                 } else {
                     cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
-                                               mWorkSpace.getNode(e.getTarget()), e,
+                                               mWorkSpace.getNode(e.getTargetUnid()), e,
                                                de.dfki.vsm.editor.Edge.TYPE.EEDGE);
                 }
 

@@ -4,7 +4,7 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.graphics.comment.CommentBoundary;
+import de.dfki.vsm.model.sceneflow.chart.graphics.comment.CommentBoundary;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
@@ -61,7 +61,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
     private Image                               mResizeMarker;
     private AlphaComposite                      mAC;
     private AlphaComposite                      mACFull;
-    private de.dfki.vsm.model.sceneflow.Comment mDataComment;
+    private de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge mDataComment;
 
     // interaction flags
     public boolean mSelected;
@@ -75,7 +75,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mDataComment = null;
     }
 
-    public Comment(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.Comment dataComment) {
+    public Comment(WorkSpacePanel ws, de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge dataComment) {
         mAC          = AlphaComposite.getInstance(AlphaComposite.XOR, 0.15f);
         mACFull      = AlphaComposite.getInstance(AlphaComposite.SRC, 1.0f);
         mWorkSpace   = ws;
@@ -157,7 +157,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         return toString();
     }
 
-    public de.dfki.vsm.model.sceneflow.Comment getData() {
+    public de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge getData() {
         return mDataComment;
     }
 

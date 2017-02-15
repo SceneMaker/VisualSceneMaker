@@ -1,13 +1,12 @@
 package de.dfki.vsm.runtime.interpreter.value;
 
-//~--- JDK imports ------------------------------------------------------------
-
 import java.util.LinkedList;
 
 /**
  * @author Gregor Mehlmann
  */
 public class ListValue extends AbstractValue {
+
     private final LinkedList<AbstractValue> mValueList;
 
     public ListValue(LinkedList<AbstractValue> valueList) {

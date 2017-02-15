@@ -6,8 +6,8 @@ import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.graphics.node.NodeGraphics;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodeGraphics;
 import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -72,12 +72,12 @@ public class ChangeNodeTypeAction extends NodeAction {
        
        
         if(newDataNode.getDedge()!=null){
-            if(newDataNode.getDedge().getTarget().equals(newDataNode.getId())){
-                mDataNode.getDedge().setTarget(mDataNode.getId());
+            if(newDataNode.getDedge().getTargetUnid().equals(newDataNode.getId())){
+                mDataNode.getDedge().setTargetUnid(mDataNode.getId());
             }
         }
        
-        de.dfki.vsm.model.sceneflow.BasicNode mHistoryDataNode = new de.dfki.vsm.model.sceneflow.BasicNode();
+        de.dfki.vsm.model.sceneflow.chart.BasicNode mHistoryDataNode = new de.dfki.vsm.model.sceneflow.chart.BasicNode();
 
         mHistoryDataNode.setHistoryNodeFlag(true);
         mHistoryDataNode.setName("History");
@@ -103,14 +103,14 @@ public class ChangeNodeTypeAction extends NodeAction {
         
         for (Edge edge : mConnectedEdgesVector) {
             
-            de.dfki.vsm.model.sceneflow.AbstractEdge newDataEdge      = edge.getDataEdge().getCopy();
+            de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge newDataEdge      = edge.getDataEdge().getCopy();
             Edge.TYPE newEdgeType      = edge.getType();
             Node      newSourceGUINode = (edge.getSourceNode().equals(mOldGUINode))? mGUINode : edge.getSourceNode();
             Node      newTargetGUINode = (edge.getTargetNode().equals(mOldGUINode))? mGUINode : edge.getTargetNode();
 
-            newDataEdge.setSource(newSourceGUINode.getDataNode().getId());
+            newDataEdge.setSourceUnid(newSourceGUINode.getDataNode().getId());
             newDataEdge.setSourceNode(newSourceGUINode.getDataNode());
-            newDataEdge.setTarget(newTargetGUINode.getDataNode().getId());
+            newDataEdge.setTargetUnid(newTargetGUINode.getDataNode().getId());
             newDataEdge.setTargetNode(newTargetGUINode.getDataNode());
             mCreateEdgeActionList.add(new CreateEdgeAction(mWorkSpace, newSourceGUINode, newTargetGUINode, newDataEdge,
                     newEdgeType));

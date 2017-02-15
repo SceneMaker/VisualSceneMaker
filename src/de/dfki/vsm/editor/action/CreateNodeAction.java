@@ -6,9 +6,9 @@ import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Type;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.graphics.node.NodeGraphics;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodeGraphics;
 
 import static de.dfki.vsm.editor.Node.Type.BasicNode;
 import static de.dfki.vsm.editor.Node.Type.SuperNode;
@@ -28,7 +28,7 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class CreateNodeAction extends NodeAction {
-    public CreateNodeAction(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.BasicNode node) {
+    public CreateNodeAction(WorkSpacePanel workSpace, de.dfki.vsm.model.sceneflow.chart.BasicNode node) {
         mWorkSpace        = workSpace;
         mCoordinate       = new Point(node.getGraphics().getPosition().getXPos(),
                                       node.getGraphics().getPosition().getYPos());

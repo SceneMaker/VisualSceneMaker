@@ -1,26 +1,23 @@
 package de.dfki.vsm.editor.dialog;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
-import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
-import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -29,7 +26,6 @@ import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -40,11 +36,10 @@ import javax.swing.JPanel;
 /**
  * @author Gregor Mehlmann
  */
-public class VarDefDialog extends Dialog
-{
+public class VarDefDialog extends Dialog {
 
     private final BasicNode mNode;
-    private VarDef mVarDef;
+    private VariableDefinition mVarDef;
 
     // GUI Components
     private JLabel mNameLabel;
@@ -62,33 +57,28 @@ public class VarDefDialog extends Dialog
     private JLabel errorMsg;
     private boolean isNewVariable = true;
 
-    public VarDefDialog(BasicNode node, VarDef varDef)
-    {
+    public VarDefDialog(BasicNode node, VariableDefinition varDef) {
         super(EditorInstance.getInstance(), "Create/Modify Variable Definition", true);
         mNode = node;
 
-        if (varDef != null)
-        {
+        if (varDef != null) {
             mVarDef = varDef.getCopy();
             isNewVariable = false;
-        } else
-        {
+        } else {
             isNewVariable = true;
-            mVarDef = new VarDef("NewVar", "Bool", new Bool(true));
+            mVarDef = new VariableDefinition("NewVar", "Bool", new BoolLiteral(true));
         }
 
         initComponents();
         fillComponents();
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
 
         //
         mNameLabel = new JLabel("Name:");
         mNameTextField = new HintTextField("Enter Name");
-        if (!mVarDef.getName().equals("NewVar"))
-        {
+        if (!mVarDef.getName().equals("NewVar")) {
             mNameTextField.setText(mVarDef.getName());
         }
         sanitizeComponent(mNameLabel, labelSize);
@@ -123,10 +113,8 @@ public class VarDefDialog extends Dialog
         mAddExpButton.setOpaque(false);
         mAddExpButton.setContentAreaFilled(false);
         mAddExpButton.setFocusable(false);
-        mAddExpButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
+        mAddExpButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 selectExp();
             }
         });
@@ -140,76 +128,56 @@ public class VarDefDialog extends Dialog
         expBox.add(Box.createHorizontalStrut(20));
         expBox.add(mAddExpButton);
 
-        mTypeDefComboBox.addItemListener(new ItemListener()
-        {
+        mTypeDefComboBox.addItemListener(new ItemListener() {
 
             @Override
             @SuppressWarnings("empty-statement")
-            public void itemStateChanged(ItemEvent e)
-            {
+            public void itemStateChanged(ItemEvent e) {
 
-                switch ((String) e.getItem())
-                {
+                switch ((String) e.getItem()) {
                     case "Int":
-                        mVarDef = new VarDef("NewVar", "Int", new Int(0));
+                        mVarDef = new VariableDefinition("NewVar", "Int", new IntLiteral(0));
                         break;
                     case "Bool":
-                        mVarDef = new VarDef("NewVar", "Bool", new Bool(true));
-                        ;
+                        mVarDef = new VariableDefinition("NewVar", "Bool", new BoolLiteral(true));
                         break;
                     case "Float":
-                        mVarDef = new VarDef("NewVar", "Float", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float(0));
-                        ;
+                        mVarDef = new VariableDefinition("NewVar", "Float", new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral(0));
                         break;
                     case "String":
-                        mVarDef = new VarDef("NewVar", "String", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(""));
-                        ;
-                        break;
-
-                    case "Object":
-                        mVarDef = new VarDef("NewVar", "Object", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object());
-                        ;
+                        mVarDef = new VariableDefinition("NewVar", "String", new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral(""));
                         break;
                     default:
                         String a = "";
                         // Look in the definition list for the data type
-                        for (TypeDef def : mNode.getTypeDefList())
-                        {
-                            if (def.getName().equals((String) e.getItem()))
-                            {
-                                if (def instanceof ListTypeDef)
-                                {
-                                    mVarDef = new VarDef("NewVar", "List", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord());;
-                                } else if (def instanceof StructTypeDef)
-                                {
-                                    mVarDef = new VarDef("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord());;
+                        for (DataTypeDefinition def : mNode.getTypeDefList()) {
+                            if (def.getName().equals((String) e.getItem())) {
+                                if (def instanceof ListTypeDefinition) {
+                                    mVarDef = new VariableDefinition("NewVar", "List", new de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression());
+                                } else if (def instanceof StructTypeDefinition) {
+                                    mVarDef = new VariableDefinition("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression());
                                 }
                             }
-
                         }
-
                         break;
                 }
                 mExpTextField.setText(mVarDef.getExp().getAbstractSyntax());
             }
-
         });
 
         //
         mOkButton = new OKButton();
-        mOkButton.addMouseListener(new java.awt.event.MouseAdapter()
-        {
-            public void mouseClicked(java.awt.event.MouseEvent evt)
-            {
+        mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
         //
         mCancelButton = new CancelButton();
-        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter()
-        {
-            public void mouseClicked(java.awt.event.MouseEvent evt)
-            {
+        mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 cancelActionPerformed();
             }
         });
@@ -226,9 +194,9 @@ public class VarDefDialog extends Dialog
         //Error message
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
-        sanitizeComponent(errorMsg,new Dimension(400,30));
+        sanitizeComponent(errorMsg, new Dimension(400, 30));
         erroBox.add(errorMsg);
-        
+
         //Key listener need to gain focus on the text field
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
 
@@ -236,8 +204,7 @@ public class VarDefDialog extends Dialog
             public boolean dispatchKeyEvent(KeyEvent ke) {
                 //boolean keyHandled = false;
                 if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if(!mNameTextField.hasFocus())
-                    {
+                    if (!mNameTextField.hasFocus()) {
                         //mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
                         mNameTextField.requestFocus();
                     }
@@ -261,47 +228,35 @@ public class VarDefDialog extends Dialog
         mOkButton.requestFocus();
     }
 
-    /**
-     * Set the correct size of the components
-     *
-     * @param jb
-     * @param dim
-     */
-    private void sanitizeComponent(JComponent jb, Dimension dim)
-    {
+    //
+    private void sanitizeComponent(JComponent jb, Dimension dim) {
         jb.setPreferredSize(dim);
         jb.setMinimumSize(dim);
         jb.setMaximumSize(dim);
     }
 
-    private void fillComponents()
-    {
+    private void fillComponents() {
 
-        VarDef varDefCopy = mVarDef.getCopy();
+        VariableDefinition varDefCopy = mVarDef.getCopy();
         // Show the basic built-in types
         mTypeDefComboBoxModel.addElement("Int");
         mTypeDefComboBoxModel.addElement("Bool");
         mTypeDefComboBoxModel.addElement("Float");
         mTypeDefComboBoxModel.addElement("String");
-        mTypeDefComboBoxModel.addElement("Object");
-        if(varDefCopy == null){
+        if (varDefCopy == null) {
             varDefCopy = mVarDef.getCopy();
         }
 
-
         // Show the type definitions of the current node modification status.
-        for (TypeDef def : mNode.getTypeDefList())
-        {
+        for (DataTypeDefinition def : mNode.getTypeDefList()) {
             mTypeDefComboBoxModel.addElement(def.getName());
         }
 
         // Show the type definitions of all parent nodes of the current node
         SuperNode parentNode = mNode.getParentNode();
 
-        while (parentNode != null)
-        {
-            for (TypeDef def : parentNode.getTypeDefList())
-            {
+        while (parentNode != null) {
+            for (DataTypeDefinition def : parentNode.getTypeDefList()) {
                 mTypeDefComboBoxModel.addElement(def.getName());
             }
 
@@ -312,63 +267,56 @@ public class VarDefDialog extends Dialog
         mTypeDefComboBox.setSelectedItem(varDefCopy.getType());
 
         // Select the expression of the variable definition
-        if (varDefCopy.getExp() != null)
-        {
+        if (varDefCopy.getExp() != null) {
             mExpTextField.setText(varDefCopy.getExp().getAbstractSyntax());
         }
         mVarDef = varDefCopy;
     }
 
-    private void selectExp()
-    {
+    private void selectExp() {
         Expression exp = new CreateExpDialog(null).run();
 
-        if (exp != null)
-        {
+        if (exp != null) {
             mVarDef.setExp(exp);
             mExpTextField.setText(exp.getAbstractSyntax());
         }
     }
 
-    public VarDef run()
-    {
+    public VariableDefinition run() {
         setVisible(true);
 
-        if (mPressedButton == Button.OK)
-        {
+        if (mPressedButton == Button.OK) {
             return mVarDef;
-        } else
-        {
+        } else {
             return null;
         }
     }
 
     @Override
-    protected void okActionPerformed()
-    {
-        if (mNameTextField.getText().length() == 0)
-        {
+    protected void okActionPerformed() {
+        if (mNameTextField.getText().isEmpty()) {
             mNameTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
         } else {
-            //This set the variable
-            boolean rightType = mVarDef.validate(mNameTextField.getText().trim(),
-                    (String) mTypeDefComboBoxModel.getSelectedItem(), isNewVariable);
-            if (!rightType)
-            {
+            // Set the variable
+            mVarDef.setType((String)mTypeDefComboBoxModel.getSelectedItem());
+            mVarDef.setName(mNameTextField.getText().trim());
+            dispose(Button.OK);
+            /*
+            boolean rightType = mVarDef.validate(mNameTextField.getText().trim(),(String) mTypeDefComboBoxModel.getSelectedItem(), isNewVariable);
+            if (!rightType) {
                 mExpTextField.setBorder(BorderFactory.createLineBorder(Color.red));
                 errorMsg.setForeground(Color.red);
-                errorMsg.setText(mVarDef.getmErrorMsg());
+                //errorMsg.setText(mVarDef.getmErrorMsg());
             } else {
                 dispose(Button.OK);
             }
-
+            */
         }
     }
 
     @Override
-    protected void cancelActionPerformed()
-    {
+    protected void cancelActionPerformed() {
         dispose(Button.CANCEL);
     }
 }

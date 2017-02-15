@@ -10,8 +10,8 @@ import de.dfki.vsm.editor.event.FunctionSelectedEvent;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.definition.FunDef;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -124,11 +124,11 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     public void updateFunctions() {
         mFunctionsEntry.removeAllChildren();
 
-        List<FunDef> functionDefinitions = new ArrayList<FunDef>(mSceneFlow.getUsrCmdDefMap().values());
+        List<FunctionDefinition> functionDefinitions = new ArrayList<FunctionDefinition>(mSceneFlow.getUsrCmdDefMap().values());
 
         Collections.sort(functionDefinitions);
 
-        for (final FunDef def : functionDefinitions) {
+        for (final FunctionDefinition def : functionDefinitions) {
             mFunctionsEntry.add(new TreeEntry(def.getName(), def.isValidClass()
                     ? Preferences.ICON_FUNCTION_ENTRY
                     : Preferences.ICON_FUNCTION_ERROR_ENTRY, def));
@@ -185,7 +185,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 // Realize that with the update event mechanism!!!!!
                 //mScriptEditorPanel.getmParentPE().showSceneDocEditor();
 
-                FunDef selectedDef = (FunDef) ((TreeEntry) path.getLastPathComponent()).getData();
+                FunctionDefinition selectedDef = (FunctionDefinition) ((TreeEntry) path.getLastPathComponent()).getData();
 
                 launchFunctionSelectedEvent(selectedDef);
             } 
@@ -439,7 +439,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                     TreePath parentPath = path.getParentPath();
 
                     if (parentPath.getLastPathComponent().equals(mFunctionsEntry)) {
-                        FunDef selectedDef = (FunDef) ((TreeEntry) path.getLastPathComponent()).getData();
+                        FunctionDefinition selectedDef = (FunctionDefinition) ((TreeEntry) path.getLastPathComponent()).getData();
 
                         launchFunctionSelectedEvent(selectedDef);
 
@@ -468,7 +468,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 }
             }
 
-            private void launchFunctionSelectedEvent(FunDef funDef) {
+            private void launchFunctionSelectedEvent(FunctionDefinition funDef) {
                 FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
 
                 mEventCaster.convey(ev);
@@ -496,10 +496,10 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
      */
     private final void modifyFunctionAction(final TreeEntry entry) {
         if (entry != null) {
-            FunDef usrCmdDef = new FunDefDialog((FunDef) entry.getData()).run();
+            FunctionDefinition usrCmdDef = new FunDefDialog((FunctionDefinition) entry.getData()).run();
 
             if (usrCmdDef != null) {
-                FunDef oldFunDef = (FunDef) entry.getData();
+                FunctionDefinition oldFunDef = (FunctionDefinition) entry.getData();
 
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
@@ -515,7 +515,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
    //
     private String getEntryName(final TreeEntry entry) {
         if (entry != null) {
-            FunDef oldFunDef = (FunDef) entry.getData();
+            FunctionDefinition oldFunDef = (FunctionDefinition) entry.getData();
 
             return oldFunDef.getName();
         }
@@ -530,7 +530,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         Object source = e.getSource();
 
         if (source == functionsAdd) {
-            FunDef usrCmdDef = new FunDefDialog(null).run();
+            FunctionDefinition usrCmdDef = new FunDefDialog(null).run();
 
             if (usrCmdDef != null) {
                 mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
@@ -543,29 +543,29 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
             modifyFunctionAction(entry);
             EditorInstance.getInstance().refresh();
-            launchFunctionSelectedEvent((FunDef) entry.getData());
+            launchFunctionSelectedEvent((FunctionDefinition) entry.getData());
         } else if (source == functionRemove) {
             TreeEntry entry = (TreeEntry) getLastSelectedPathComponent();
 
             if (entry != null) {
-                FunDef oldFunDef = (FunDef) entry.getData();
+                FunctionDefinition oldFunDef = (FunctionDefinition) entry.getData();
 
                 mSceneFlow.removeUsrCmdDef(oldFunDef.getName());
                 updateFunctions();
 
                 EditorInstance.getInstance().refresh();
-                launchFunctionCreatedEvent((FunDef) entry.getData());
+                launchFunctionCreatedEvent((FunctionDefinition) entry.getData());
             }
         }
     }
 
-    private void launchFunctionSelectedEvent(FunDef funDef) {
+    private void launchFunctionSelectedEvent(FunctionDefinition funDef) {
         FunctionSelectedEvent ev = new FunctionSelectedEvent(this, funDef);
 
         mEventCaster.convey(ev);
     }
 
-    private void launchFunctionCreatedEvent(FunDef funDef) {
+    private void launchFunctionCreatedEvent(FunctionDefinition funDef) {
         FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
 
         mEventCaster.convey(ev);

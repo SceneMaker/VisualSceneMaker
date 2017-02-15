@@ -3,10 +3,10 @@ package de.dfki.vsm.editor;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.event.VariableChangedEvent;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.VariableEntry;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.model.sceneflow.graphics.node.NodePosition;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.badge.VariableEntry;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
 import de.dfki.vsm.util.TextFormat;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -63,9 +63,9 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         SuperNode parentNode = mSuperNode;
         mEntryList.clear();
 
-        ArrayList<VarDef> varDefList = parentNode.getVarDefList();
+        ArrayList<VariableDefinition> varDefList = parentNode.getVarDefList();
 
-        for (VarDef varDef : varDefList) {
+        for (VariableDefinition varDef : varDefList) {
             mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
                     TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
         }
@@ -285,7 +285,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         // Recompute the entry list
         SuperNode parentNode = mSuperNode;
 
-        for (VarDef varDef : parentNode.getVarDefList()) {
+        for (VariableDefinition varDef : parentNode.getVarDefList()) {
 //          String varName = varDef.getName();
             mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
                     TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));

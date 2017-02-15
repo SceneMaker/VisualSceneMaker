@@ -1,16 +1,11 @@
 package de.dfki.vsm.editor.dialog;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.ChartParser;
-
-//~--- JDK imports ------------------------------------------------------------
-
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.ChartParser;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
@@ -22,7 +17,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-
 /**
  *
  * @author Gregor Mehlmann
@@ -33,8 +27,8 @@ public class CreateExpDialog extends Dialog {
     private Expression mExpression;
 
     //
-    private HintTextField   mInputTextField;
-    private OKButton     mOkButton;
+    private HintTextField mInputTextField;
+    private OKButton mOkButton;
     private CancelButton mCancelButton;
     private JLabel errorMsg;
 
@@ -77,7 +71,7 @@ public class CreateExpDialog extends Dialog {
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(new Dimension(300, 30));
-        
+
         //Key listener need to gain focus on the text field
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
 
@@ -85,23 +79,22 @@ public class CreateExpDialog extends Dialog {
             public boolean dispatchKeyEvent(KeyEvent ke) {
                 //boolean keyHandled = false;
                 if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if(!mInputTextField.hasFocus())
-                    {
-                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                    if (!mInputTextField.hasFocus()) {
+                        mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
                         mInputTextField.requestFocus();
                     }
                 }
                 return false;
             }
         });
-        
+
         Box finalBox = Box.createVerticalBox();
         finalBox.add(mInputTextField);
         finalBox.add(Box.createVerticalStrut(30));
         finalBox.add(errorMsg);
         finalBox.add(Box.createVerticalStrut(10));
         finalBox.add(mButtonPanel);
-        
+
         addComponent(finalBox, 10, 10, 300, 160);
         packComponents(320, 180);
         mOkButton.requestFocus();
@@ -130,7 +123,7 @@ public class CreateExpDialog extends Dialog {
     }
 
     private boolean process() {
-        if(mInputTextField.getText().length() == 0){
+        if (mInputTextField.getText().length() == 0) {
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
 
@@ -139,12 +132,11 @@ public class CreateExpDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            ChartParser.parseResultType = ChartParser.EXP;
-            ChartParser.run(inputString);
+            //ChartParser.parseResultType = ChartParser.EXP;
+            Expression exp = (Expression) ChartParser.run(inputString);
 
-            Expression exp = ChartParser.expResult;
-
-            if ((exp != null) &&!ChartParser.errorFlag) {
+            //Expression exp = ChartParser.expResult;
+            if ((exp != null) && !ChartParser.errorFlag) {
                 mExpression = exp;
 
                 return true;
@@ -153,7 +145,6 @@ public class CreateExpDialog extends Dialog {
             }
         } catch (Exception e) {
             e.printStackTrace();
-
             return false;
         }
     }

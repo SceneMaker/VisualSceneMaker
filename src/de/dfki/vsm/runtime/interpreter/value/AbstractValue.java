@@ -1,18 +1,16 @@
 package de.dfki.vsm.runtime.interpreter.value;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.cpy.Copyable;
 
 /**
  * @author Gregor Mehlmann
  */
 public abstract class AbstractValue implements Copyable {
+
     public enum Type {
         BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR, STRING, LIST, STRUCT, VOID, OBJECT
-    }
+    };
 
-    ;
     public abstract String getAbstractSyntax();
 
     public abstract String getConcreteSyntax();

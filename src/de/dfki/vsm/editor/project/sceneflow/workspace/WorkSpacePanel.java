@@ -44,20 +44,20 @@ import de.dfki.vsm.editor.util.SceneFlowLayoutManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.dialogact.DialogAct;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.EEdge;
-import de.dfki.vsm.model.sceneflow.FEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.model.sceneflow.command.PlayDialogueAct;
-import de.dfki.vsm.model.sceneflow.command.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.command.expression.UsrCmd;
-import de.dfki.vsm.model.sceneflow.definition.FunDef;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.model.sceneflow.graphics.node.NodePosition;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.JavaCallExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -459,10 +459,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                         }
 
                         // TODO: reject drop if not on a c!!!
-                    } else if (data instanceof FunDef) {
+                    } else if (data instanceof FunctionDefinition) {
                         for (Node node : mNodeSet) {
                             if (node.containsPoint(dtde.getLocation().x, dtde.getLocation().y)) {
-                                createFunCall(node, ((FunDef) data).getName());
+                                createFunCall(node, ((FunctionDefinition) data).getName());
 
                                 dtde.acceptDrop(mAcceptableActions);
                                 dtde.getDropTargetContext().dropComplete(true);
@@ -557,9 +557,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         ArrayList<String> globalTypeDefList = new ArrayList<>();
         ArrayList<String> localVarDefList = new ArrayList<>();
         ArrayList<String> globalVarDefList = new ArrayList<>();
-        ArrayList<TypeDef> typeDefs = node.getDataNode().getTypeDefList();
+        ArrayList<DataTypeDefinition> typeDefs = node.getDataNode().getTypeDefList();
 
-        for (TypeDef typeDef : typeDefs) {
+        for (DataTypeDefinition typeDef : typeDefs) {
             localTypeDefList.add(typeDef.getFormattedSyntax());
         }
 
@@ -571,19 +571,19 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         if (parentSNss != null) {
             for (SuperNode sn : parentSNss) {
-                ArrayList<TypeDef> snTypeDefs = sn.getTypeDefList();
+                ArrayList<DataTypeDefinition> snTypeDefs = sn.getTypeDefList();
 
                 if (snTypeDefs.size() > 0) {
-                    for (TypeDef typeDef : snTypeDefs) {
+                    for (DataTypeDefinition typeDef : snTypeDefs) {
                         globalTypeDefList.add(typeDef.getFormattedSyntax() + " (" + sn.getName() + ") ");
                     }
                 }
             }
         }
 
-        ArrayList<VarDef> varDefs = node.getDataNode().getVarDefList();
+        ArrayList<VariableDefinition> varDefs = node.getDataNode().getVarDefList();
 
-        for (VarDef varDef : varDefs) {
+        for (VariableDefinition varDef : varDefs) {
             localVarDefList.add(varDef.getFormattedSyntax());
         }
 
@@ -595,10 +595,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         if (parentSNs != null) {
             for (SuperNode sn : parentSNs) {
-                ArrayList<VarDef> snVarDefs = sn.getVarDefList();
+                ArrayList<VariableDefinition> snVarDefs = sn.getVarDefList();
 
                 if (snVarDefs.size() > 0) {
-                    for (VarDef varDef : snVarDefs) {
+                    for (VariableDefinition varDef : snVarDefs) {
                         globalVarDefList.add(varDef.getFormattedSyntax() + " (" + sn.getName() + ") ");
                     }
                 }
@@ -673,9 +673,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void createPDA(Node node, String name) {
-        PlayDialogueAct pdaCmd = new PlayDialogueAct();
+        PlayDialogAction pdaCmd = new PlayDialogAction();
 
-        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(name));
+        pdaCmd.setDialogueAct(new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral(name));
         node.getDataNode().addCmd(pdaCmd);
     }
 
@@ -686,7 +686,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createPSG(Node node, String name) {
         PlaySceneGroup psgCmd = new PlaySceneGroup();
 
-        psgCmd.setArg(new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(name));
+        psgCmd.setArgument(new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral(name));
         node.getDataNode().addCmd(psgCmd);
     }
 
@@ -695,7 +695,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void createFunCall(Node node, String name) {
-        UsrCmd cmd = new UsrCmd();
+        JavaCallExpression cmd = new JavaCallExpression();
 
         cmd.setName(name);
 
@@ -1043,7 +1043,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         JMenuItem item = null;
 
         if (!node.getDataNode().isHistoryNode()) {
-            HashMap<String, de.dfki.vsm.model.sceneflow.BasicNode> startNodes
+            HashMap<String, de.dfki.vsm.model.sceneflow.chart.BasicNode> startNodes
                     = node.getDataNode().getParentNode().getStartNodeMap();
 
             item = new JMenuItem((startNodes.containsKey(node.getDataNode().getId()))
@@ -1056,7 +1056,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             pop.add(item);
             pop.add(new JSeparator());
 
-            if (!(node.getDataNode() instanceof de.dfki.vsm.model.sceneflow.SuperNode)) {
+            if (!(node.getDataNode() instanceof de.dfki.vsm.model.sceneflow.chart.SuperNode)) {
                 item = new JMenuItem("To Supernode");
 
                 ChangeNodeTypeAction changetypeAction = new ChangeNodeTypeAction(this, node);
@@ -1375,10 +1375,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void showNodesOnWorkSpace() {
-        ArrayList<de.dfki.vsm.model.sceneflow.BasicNode> nodeList
+        ArrayList<de.dfki.vsm.model.sceneflow.chart.BasicNode> nodeList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getNodeAndSuperNodeList();
 
-        for (de.dfki.vsm.model.sceneflow.BasicNode n : nodeList) {
+        for (de.dfki.vsm.model.sceneflow.chart.BasicNode n : nodeList) {
             Point p = mGridManager.getNodeLocation(new Point(n.getGraphics().getPosition().getXPos(),
                     n.getGraphics().getPosition().getYPos()));
 
@@ -1392,10 +1392,10 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             addCmdBadge(guiNode, cmdBadge);
         }
 
-        ArrayList<de.dfki.vsm.model.sceneflow.Comment> commentList
+        ArrayList<de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge> commentList
                 = getSceneFlowManager().getCurrentActiveSuperNode().getCommentList();
 
-        for (de.dfki.vsm.model.sceneflow.Comment n : commentList) {
+        for (de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge n : commentList) {
             add(new Comment(this, n));
         }
     }
@@ -1408,8 +1408,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         for (Node sourceNode : mNodeSet) {
             Node targetNode = null;
 
-            for (CEdge cedge : sourceNode.getDataNode().getCEdgeList()) {
-                targetNode = getNode(cedge.getTarget());
+            for (GuargedEdge cedge : sourceNode.getDataNode().getCEdgeList()) {
+                targetNode = getNode(cedge.getTargetUnid());
 
                 if (targetNode != null) {
 
@@ -1421,8 +1421,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 }
             }
 
-            for (PEdge pedge : sourceNode.getDataNode().getPEdgeList()) {
-                targetNode = getNode(pedge.getTarget());
+            for (RandomEdge pedge : sourceNode.getDataNode().getPEdgeList()) {
+                targetNode = getNode(pedge.getTargetUnid());
 
                 if (targetNode != null) {
 
@@ -1434,8 +1434,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 }
             }
 
-            for (FEdge fedge : sourceNode.getDataNode().getFEdgeList()) {
-                targetNode = getNode(fedge.getTarget());
+            for (ForkingEdge fedge : sourceNode.getDataNode().getFEdgeList()) {
+                targetNode = getNode(fedge.getTargetUnid());
 
                 if (targetNode != null) {
 
@@ -1447,8 +1447,8 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 }
             }
 
-            for (IEdge iedge : sourceNode.getDataNode().getIEdgeList()) {
-                targetNode = getNode(iedge.getTarget());
+            for (InterruptEdge iedge : sourceNode.getDataNode().getIEdgeList()) {
+                targetNode = getNode(iedge.getTargetUnid());
 
                 if (targetNode != null) {
 
@@ -1461,15 +1461,15 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
 
             // Show the DEdge
-            de.dfki.vsm.model.sceneflow.AbstractEdge dedge = sourceNode.getDataNode().getDedge();
+            de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge dedge = sourceNode.getDataNode().getDedge();
             Edge.TYPE dEdgeType = null;
 
             if (dedge != null) {
-                targetNode = getNode(dedge.getTarget());
+                targetNode = getNode(dedge.getTargetUnid());
 
-                if (dedge instanceof EEdge) {
+                if (dedge instanceof EpsilonEdge) {
                     dEdgeType = Edge.TYPE.EEDGE;
-                } else if (dedge instanceof TEdge) {
+                } else if (dedge instanceof TimeoutEdge) {
                     dEdgeType = Edge.TYPE.TEDGE;
                 } else {
 

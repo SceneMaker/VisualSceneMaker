@@ -9,9 +9,9 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -52,13 +52,13 @@ import javax.swing.text.PlainDocument;
 public class ModifyPEdgeDialog extends Dialog {
 
     //
-    private HashMap<PEdge, JTextField> mPEdgeMap = new HashMap<PEdge, JTextField>();
+    private HashMap<RandomEdge, JTextField> mPEdgeMap = new HashMap<RandomEdge, JTextField>();
     private final Dimension buttonSize = new Dimension(150, 30);
     private final Dimension smallButtonSize = new Dimension(30, 30);
     // Data model components
     private final BasicNode mSourceNode;
     private final BasicNode mTargetNode;
-    private final PEdge mPEdge;
+    private final RandomEdge mPEdge;
 
     //
     private final AltStartNodeManager mAltStartNodeManager;
@@ -107,14 +107,14 @@ public class ModifyPEdgeDialog extends Dialog {
         mTargetNode = targetNode;
 
         // Create a new probability edge
-        mPEdge = new PEdge();
-        mPEdge.setTarget(mTargetNode.getId());
-        mPEdge.setSource(mSourceNode.getId());
+        mPEdge = new RandomEdge();
+        mPEdge.setTargetUnid(mTargetNode.getId());
+        mPEdge.setSourceUnid(mSourceNode.getId());
         mPEdge.setSourceNode(mSourceNode);
         mPEdge.setTargetNode(mTargetNode);
 
         // Fill the local data map with the existing edges
-        for (PEdge edge : mSourceNode.getPEdgeList()) {
+        for (RandomEdge edge : mSourceNode.getPEdgeList()) {
             mPEdgeMap.put(edge, null);
         }
 
@@ -131,14 +131,14 @@ public class ModifyPEdgeDialog extends Dialog {
         loadAltStartNodeMap();
     }
 
-    public ModifyPEdgeDialog(PEdge edge) {
+    public ModifyPEdgeDialog(RandomEdge edge) {
         super(EditorInstance.getInstance(), "Modify Probability Edge", true);
         mPEdge = edge;
         mSourceNode = mPEdge.getSourceNode();
         mTargetNode = mPEdge.getTargetNode();
 
         // Fill the map with the data
-        for (PEdge pedge : mSourceNode.getPEdgeList()) {
+        for (RandomEdge pedge : mSourceNode.getPEdgeList()) {
             mPEdgeMap.put(pedge, /* new JTextField("", 3) */ null);
         }
 
@@ -254,7 +254,7 @@ public class ModifyPEdgeDialog extends Dialog {
         //
         boolean requiresUniformAction = false;
         
-        for (PEdge pedge : mPEdgeMap.keySet()) {
+        for (RandomEdge pedge : mPEdgeMap.keySet()) {
 
             // Init description label
             JLabel pedgeDescription = new JLabel(mSourceNode.getName() + " ( " + mSourceNode.getId() + " ) "
@@ -477,7 +477,7 @@ public class ModifyPEdgeDialog extends Dialog {
 
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
-            PEdge edge = (PEdge) entry.getKey();
+            RandomEdge edge = (RandomEdge) entry.getKey();
             JTextField field = (JTextField) entry.getValue();
 
             edge.setProbability(Integer.valueOf(field.getText().trim()));
@@ -503,7 +503,7 @@ public class ModifyPEdgeDialog extends Dialog {
         return (sum == 100);
     }
 
-    public PEdge run() {
+    public RandomEdge run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {
@@ -653,7 +653,7 @@ public class ModifyPEdgeDialog extends Dialog {
         return mAltStartNodePanel;
     }
 
-    public HashMap<PEdge, JTextField> getPEdgeMap() {
+    public HashMap<RandomEdge, JTextField> getPEdgeMap() {
         return mPEdgeMap;
     }
 }

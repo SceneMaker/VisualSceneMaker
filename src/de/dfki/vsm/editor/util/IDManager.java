@@ -6,12 +6,12 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.FEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -49,7 +49,7 @@ public class IDManager {
         for (SuperNode sn : supernodes) {
 
             // only scan for supernodes and nodes
-            if (!de.dfki.vsm.model.sceneflow.SceneFlow.class.isInstance(sn)) {
+            if (!de.dfki.vsm.model.sceneflow.chart.SceneFlow.class.isInstance(sn)) {
                 mSuperNodeIDs.add(new Integer(sn.getId().substring(1)));
             }
 
@@ -263,21 +263,21 @@ public class IDManager {
             if (node.hasEdge()) {
                 switch (node.getFlavour()) {
                 case CNODE :
-                    ArrayList<CEdge> cEdgeList        = node.getCEdgeList();
-                    ArrayList<CEdge> invalidCEdgeList = new ArrayList<CEdge>();
+                    ArrayList<GuargedEdge> cEdgeList        = node.getCEdgeList();
+                    ArrayList<GuargedEdge> invalidCEdgeList = new ArrayList<GuargedEdge>();
 
-                    for (CEdge c : cEdgeList) {
-                        String newID = relationOldNewIDRef.get(c.getTarget());
+                    for (GuargedEdge c : cEdgeList) {
+                        String newID = relationOldNewIDRef.get(c.getTargetUnid());
 
                         if (newID != null) {
-                            c.setTarget(newID);
+                            c.setTargetUnid(newID);
                         } else {
                             invalidCEdgeList.add(c);
                         }
                     }
 
                     if (invalidCEdgeList.size() > 0) {
-                        for (CEdge ce : invalidCEdgeList) {
+                        for (GuargedEdge ce : invalidCEdgeList) {
                             cEdgeList.remove(ce);
                         }
                     }
@@ -292,14 +292,14 @@ public class IDManager {
                 case PNODE :
 
                     // DEBUG System.out.println("pedge(s)");
-                    ArrayList<PEdge> pes           = node.getPEdgeList();
-                    ArrayList<PEdge> unvalidPEdges = new ArrayList<PEdge>();
+                    ArrayList<RandomEdge> pes           = node.getPEdgeList();
+                    ArrayList<RandomEdge> unvalidPEdges = new ArrayList<RandomEdge>();
 
-                    for (PEdge p : pes) {
-                        String newID = relationOldNewIDRef.get(p.getTarget());
+                    for (RandomEdge p : pes) {
+                        String newID = relationOldNewIDRef.get(p.getTargetUnid());
 
                         if (newID != null) {
-                            p.setTarget(newID);
+                            p.setTargetUnid(newID);
                         } else {
 
                             // DEBUG System.err.println("unvalid pedge (no target) - removing edge.");
@@ -308,7 +308,7 @@ public class IDManager {
                     }
 
                     if (unvalidPEdges.size() > 0) {
-                        for (PEdge ce : unvalidPEdges) {
+                        for (RandomEdge ce : unvalidPEdges) {
                             pes.remove(ce);
                         }
                     }
@@ -318,14 +318,14 @@ public class IDManager {
                 case FNODE :
 
                     // DEBUG System.out.println("fedge(s)");
-                    ArrayList<FEdge> fes           = node.getFEdgeList();
-                    ArrayList<FEdge> unvalidFEdges = new ArrayList<FEdge>();
+                    ArrayList<ForkingEdge> fes           = node.getFEdgeList();
+                    ArrayList<ForkingEdge> unvalidFEdges = new ArrayList<ForkingEdge>();
 
-                    for (FEdge f : fes) {
-                        String newID = relationOldNewIDRef.get(f.getTarget());
+                    for (ForkingEdge f : fes) {
+                        String newID = relationOldNewIDRef.get(f.getTargetUnid());
 
                         if (newID != null) {
-                            f.setTarget(newID);
+                            f.setTargetUnid(newID);
                         } else {
 
                             // DEBUG System.err.println("unvalid fedge (no target) - removing edge.");
@@ -334,7 +334,7 @@ public class IDManager {
                     }
 
                     if (unvalidFEdges.size() > 0) {
-                        for (FEdge ce : unvalidFEdges) {
+                        for (ForkingEdge ce : unvalidFEdges) {
                             fes.remove(ce);
                         }
                     }
@@ -344,14 +344,14 @@ public class IDManager {
                 case INODE :
 
                     // DEBUG System.out.println("iedge(s)");
-                    ArrayList<IEdge> ies           = node.getIEdgeList();
-                    ArrayList<IEdge> unvalidIEdges = new ArrayList<IEdge>();
+                    ArrayList<InterruptEdge> ies           = node.getIEdgeList();
+                    ArrayList<InterruptEdge> unvalidIEdges = new ArrayList<InterruptEdge>();
 
-                    for (IEdge i : ies) {
-                        String newID = relationOldNewIDRef.get(i.getTarget());
+                    for (InterruptEdge i : ies) {
+                        String newID = relationOldNewIDRef.get(i.getTargetUnid());
 
                         if (newID != null) {
-                            i.setTarget(newID);
+                            i.setTargetUnid(newID);
                         } else {
 
                             // DEBUG System.err.println("unvalid iedge (no target) - removing edge.");
@@ -360,7 +360,7 @@ public class IDManager {
                     }
 
                     if (unvalidIEdges.size() > 0) {
-                        for (IEdge ce : unvalidIEdges) {
+                        for (InterruptEdge ce : unvalidIEdges) {
                             ies.remove(ce);
                         }
                     }
@@ -394,10 +394,10 @@ public class IDManager {
     }
 
     private void reasignDedge(Hashtable<String, String> relationOldNewIDRef, BasicNode node) {
-        String eID = relationOldNewIDRef.get(node.getDedge().getTarget());
+        String eID = relationOldNewIDRef.get(node.getDedge().getTargetUnid());
 
         if (eID != null) {
-            node.getDedge().setTarget(eID);
+            node.getDedge().setTargetUnid(eID);
         } else {
             node.removeDEdge();
         }

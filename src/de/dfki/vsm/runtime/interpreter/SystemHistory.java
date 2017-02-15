@@ -2,8 +2,8 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.command.Command;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.runtime.interpreter.symbol.SymbolTable;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
@@ -66,10 +66,10 @@ public class SystemHistory {
     public void setDepth(String state, int depth) {}
 
     // TODO:
-    public void erase(String id) {}
+    public void eraseFlat(String id) {}
 
     // TODO:
-    public void deepErase(String id) {}
+    public void eraseDeep(String id) {}
 
     public void clear() {
         mHistoryStackMap.clear();

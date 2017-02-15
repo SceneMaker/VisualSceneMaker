@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
@@ -11,11 +10,11 @@ import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.Dialog.Button;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
-import de.dfki.vsm.model.sceneflow.ChartParser;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -41,28 +40,28 @@ import javax.swing.JScrollPane;
 public class ModifyIEdgeDialog extends Dialog {
 
     // The edge that we want to modify
-    private final IEdge mIEdge;
+    private final InterruptEdge mIEdge;
     // GUI-Components
     private final AltStartNodeManager mAltStartNodeManager;
     // GUI-Components
-    private JPanel       mInputPanel;
-    private JLabel       mInputLabel;
-    private JPanel       mButtonPanel;
-    private HintTextField   mInputTextField;
-    private OKButton     mOkButton;
+    private JPanel mInputPanel;
+    private JLabel mInputLabel;
+    private JPanel mButtonPanel;
+    private HintTextField mInputTextField;
+    private OKButton mOkButton;
     private CancelButton mCancelButton;
-    private JPanel       mAltStartNodePanel;
-    private JLabel       mAltStartNodeLabel;
-    private JList        mAltStartNodeList;
-    private JScrollPane  mAltStartNodeScrollPane;
-    private AddButton    mAddAltStartNodeButton;
+    private JPanel mAltStartNodePanel;
+    private JLabel mAltStartNodeLabel;
+    private JList mAltStartNodeList;
+    private JScrollPane mAltStartNodeScrollPane;
+    private AddButton mAddAltStartNodeButton;
     private RemoveButton mRemoveAltStartNodeButton;
     private EditButton mEditAltStartNodeButton;
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
     private JLabel errorMsg;
 
-    public ModifyIEdgeDialog(IEdge iedge) {
+    public ModifyIEdgeDialog(InterruptEdge iedge) {
         super(EditorInstance.getInstance(), "Modify Interruptive Edge", true);
         mIEdge = iedge;
         // TODO: move to EdgeDialog
@@ -76,8 +75,8 @@ public class ModifyIEdgeDialog extends Dialog {
     public ModifyIEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
         super(EditorInstance.getInstance(), "Create Interruptive Edge", true);
         // Init edge data
-        mIEdge = new IEdge();
-        mIEdge.setTarget(targetNode.getId());
+        mIEdge = new InterruptEdge();
+        mIEdge.setTargetUnid(targetNode.getId());
         mIEdge.setSourceNode(sourceNode);
         mIEdge.setTargetNode(targetNode);
         // TODO: move to EdgeDialog
@@ -93,12 +92,12 @@ public class ModifyIEdgeDialog extends Dialog {
         initButtonPanel();
         // Init alternative start node panel
         initAltStartNodePanel();
-        
+
         //Error message
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(labelSize);
-        
+
         //Key listener need to gain focus on the text field
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
 
@@ -106,9 +105,8 @@ public class ModifyIEdgeDialog extends Dialog {
             public boolean dispatchKeyEvent(KeyEvent ke) {
                 //boolean keyHandled = false;
                 if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if(!mInputTextField.hasFocus())
-                    {
-                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                    if (!mInputTextField.hasFocus()) {
+                        mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
                         mInputTextField.requestFocus();
                     }
                 }
@@ -149,8 +147,9 @@ public class ModifyIEdgeDialog extends Dialog {
 
     /**
      * Set the correct size of the components
+     *
      * @param jb
-     * @param dim 
+     * @param dim
      */
     private void sanitizeComponent(JComponent jb, Dimension dim) {
         jb.setPreferredSize(dim);
@@ -190,7 +189,7 @@ public class ModifyIEdgeDialog extends Dialog {
         mAltStartNodeLabel = new JLabel("Alternative Start Nodes:");
         sanitizeComponent(mAltStartNodeLabel, labelSize);
         // Init alternative start node list
-        mAltStartNodeList       = new JList(new DefaultListModel());
+        mAltStartNodeList = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
         Dimension tfSize = new Dimension(200, 110);
         mAltStartNodeScrollPane.setPreferredSize(tfSize);
@@ -235,7 +234,7 @@ public class ModifyIEdgeDialog extends Dialog {
         mAltStartNodePanel.add(buttonsBox);
     }
 
-    public IEdge run() {
+    public InterruptEdge run() {
         setVisible(true);
         if (mPressedButton == Button.OK) {
             return mIEdge;
@@ -248,10 +247,9 @@ public class ModifyIEdgeDialog extends Dialog {
     protected void okActionPerformed() {
         if (process()) {
             dispose(Button.OK);
-        }
-        else{
+        } else {
             mInputTextField.setForeground(Color.red);
-            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");
         }
     }
 
@@ -261,24 +259,25 @@ public class ModifyIEdgeDialog extends Dialog {
     }
 
     private boolean process() {
-        if(mInputTextField.getText().length() == 0){
+        if (mInputTextField.getText().length() == 0) {
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
-            
+
             return false;
         }
         String inputString = mInputTextField.getText().trim();
-        
-        
-        
-        try {
-            ChartParser.parseResultType = ChartParser.CND;//LOG;
-            ChartParser.run(inputString);
-            //LogicalCond log = ChartParser.logResult;
-            Condition log = ChartParser.cndResult;//logResult;
-            
 
-            if ((log != null) &&!ChartParser.errorFlag) {
+        try {
+
+            //ChartParser.parseResultType = ChartParser.CND;//LOG;
+            //ChartParser.parseResultType = ChartParser.EXP;
+            Expression log = (Expression)  ChartParser.run(inputString);
+
+            //LogicalCond log = ChartParser.logResult;
+            //Condition log = ChartParser.cndResult;//logResult;
+            //Expression log = ChartParser.expResult;
+
+            if ((log != null) && !ChartParser.errorFlag) {
                 mIEdge.setCondition(log);
 
                 // /
@@ -289,6 +288,7 @@ public class ModifyIEdgeDialog extends Dialog {
                 return false;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -299,8 +299,8 @@ public class ModifyIEdgeDialog extends Dialog {
         if (mIEdge.getTargetNode() instanceof SuperNode) {
             Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry              pairs            = (Map.Entry) it.next();
-                TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+                Map.Entry pairs = (Map.Entry) it.next();
+                TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
                 TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
                         startNodePair.getFirst() + "/" + altStartNodePair.getFirst());
@@ -328,8 +328,8 @@ public class ModifyIEdgeDialog extends Dialog {
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
         Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+            Map.Entry pairs = (Map.Entry) it.next();
+            TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
@@ -340,8 +340,8 @@ public class ModifyIEdgeDialog extends Dialog {
     private void removeAltStartNode() {
         String selectedValue = (String) mAltStartNodeList.getSelectedValue();
         if (selectedValue != null) {
-            String[] idPair      = selectedValue.split("/");
-            String   startNodeId = idPair[0];
+            String[] idPair = selectedValue.split("/");
+            String startNodeId = idPair[0];
 
             // String altStartNodeId = idPair[1];
             System.err.println("remove alt start node" + startNodeId);
@@ -350,7 +350,8 @@ public class ModifyIEdgeDialog extends Dialog {
         }
     }
 
-    private void editAltStartNode() {}
+    private void editAltStartNode() {
+    }
 
     public JPanel getInputPanel() {
 

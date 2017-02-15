@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="64" language="en" identifier="welcome">
-    <SceneTurn lower="17" upper="64" speaker="charly">
-      <SceneUttr lower="25" upper="64" punct="?">
+  <SceneObject lower="0" upper="76" language="en" identifier="welcome">
+    <SceneTurn lower="17" upper="76" speaker="charly">
+      <SceneUttr lower="25" upper="76" punct="?">
         <SceneWord lower="25" upper="30" text="Hello"/>
         <ActionObject lower="32" upper="36" actor="" name="name" >
         </ActionObject>
@@ -11,6 +11,8 @@
         </ActionObject>
         <SceneWord lower="56" upper="59" text="are"/>
         <SceneWord lower="60" upper="63" text="you"/>
+        <SceneParam lower="64" upper="69" name="user"/>
+        <SceneWord lower="70" upper="75" text="today"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

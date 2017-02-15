@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
-import de.dfki.vsm.model.sceneflow.PEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -28,16 +28,16 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
 
     @Override
     public void run() {
-        for (PEdge pedge : mSourceGUINode.getDataNode().getPEdgeList()) {
+        for (RandomEdge pedge : mSourceGUINode.getDataNode().getPEdgeList()) {
             mOldProbList.add(pedge.getProbability());
 
             // System.out.println("Old Probability " + pedge.getProbability());
         }
 
-        ModifyPEdgeDialog dialog = new ModifyPEdgeDialog((PEdge) mDataEdge);
-        PEdge             pedg   = dialog.run();
+        ModifyPEdgeDialog dialog = new ModifyPEdgeDialog((RandomEdge) mDataEdge);
+        RandomEdge             pedg   = dialog.run();
 
-        for (PEdge pedge : mSourceGUINode.getDataNode().getPEdgeList()) {
+        for (RandomEdge pedge : mSourceGUINode.getDataNode().getPEdgeList()) {
             mNewProbList.add(pedge.getProbability());
 
             // System.out.println("New Probability " + pedge.getProbability());

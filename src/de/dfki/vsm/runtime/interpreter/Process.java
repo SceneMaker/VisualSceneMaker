@@ -5,17 +5,17 @@ import de.dfki.vsm.editor.event.EdgeExecutedEvent;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.event.NodeStartedEvent;
 import de.dfki.vsm.editor.event.NodeTerminatedEvent;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.EEdge;
-import de.dfki.vsm.model.sceneflow.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.FEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.runtime.interpreter.signal.InterruptionSignal;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.signal.TerminationSignal;
@@ -571,7 +571,7 @@ public class Process extends java.lang.Thread {
 				/////////////////////////////////////////////////////////////
 				// FIND NEXT EDGE
 				////////////////////////////////////////////////////////////
-				ArrayList<FEdge> nextEdgeList = mCurrentNode.getFEdgeList();
+				ArrayList<ForkingEdge> nextEdgeList = mCurrentNode.getFEdgeList();
 
 				if (nextEdgeList.isEmpty()) {
 
@@ -607,8 +607,8 @@ public class Process extends java.lang.Thread {
 						// Default edge
 						AbstractEdge dedge = mCurrentNode.getDedge();
 
-						if (dedge instanceof TEdge) {
-							TEdge tedge = (TEdge) dedge;
+						if (dedge instanceof TimeoutEdge) {
+							TimeoutEdge tedge = (TimeoutEdge) dedge;
 
 							if ((java.lang.System.currentTimeMillis() - mNodeTime) >= tedge.getTimeout()) {
 								nextEdge = tedge;
@@ -620,8 +620,8 @@ public class Process extends java.lang.Thread {
 
 								continue;
 							}
-						} else if (dedge instanceof EEdge) {
-							EEdge eedge = (EEdge) dedge;
+						} else if (dedge instanceof EpsilonEdge) {
+							EpsilonEdge eedge = (EpsilonEdge) dedge;
 
 							nextEdge = eedge;
 
@@ -702,7 +702,7 @@ public class Process extends java.lang.Thread {
 
 					return;
 				}
-			} ////////////////////////////////////////////////////////////
+			} //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// ////////////////////////////////////////////////////////////
 			/////////////////////////////////////////////////////////////
 			// HANDLE INTERRUPTION REQUESTS AND TERMINATIOJ REQUESTS
 			////////////////////////////////////////////////////////////
@@ -936,15 +936,15 @@ public class Process extends java.lang.Thread {
 	/**
 	 */
 	private void processVarDefList() throws InterpreterError {
-		for (VarDef varDef : mCurrentNode.getVarDefList()) {
-			mEvaluator.declare(varDef, mEnvironment);
+		for (VariableDefinition varDef : mCurrentNode.getVarDefList()) {
+			mEvaluator.define(varDef, mEnvironment);
 		}
 	}
 
 	/**
 	 */
 	private void processTimeoutConditionList() throws InterpreterError {
-		for (VarDef varDef : mCurrentNode.getVarDefList()) {
+		for (VariableDefinition varDef : mCurrentNode.getVarDefList()) {
 			mTimeoutManager.startTimeoutHandler(varDef, mEnvironment);
 		}
 
@@ -952,19 +952,19 @@ public class Process extends java.lang.Thread {
 			mTimeoutManager.startTimeoutHandler(cmd, mEnvironment);
 		}
 
-		for (CEdge cedge : mCurrentNode.getCEdgeList()) {
+		for (GuargedEdge cedge : mCurrentNode.getCEdgeList()) {
 			mTimeoutManager.startTimeoutHandler(cedge.getCondition(), mEnvironment);
 		}
 
-		for (IEdge iedge : mCurrentNode.getIEdgeList()) {
+		for (InterruptEdge iedge : mCurrentNode.getIEdgeList()) {
 			mTimeoutManager.startTimeoutHandler(iedge.getCondition(), mEnvironment);
 		}
 	}
 
 	/**
 	 */
-	private CEdge checkCEdgeList() throws InterpreterError {
-		for (CEdge cedge : mCurrentNode.getCEdgeList()) {
+	private GuargedEdge checkCEdgeList() throws InterpreterError {
+		for (GuargedEdge cedge : mCurrentNode.getCEdgeList()) {
 			try {
 				BooleanValue value = (BooleanValue) mEvaluator.evaluate(cedge.getCondition(), mEnvironment);
 
@@ -976,8 +976,8 @@ public class Process extends java.lang.Thread {
 				java.lang.String errorMsg = "An error occured while executing thread "
 				  + Process.currentThread().toString() + " : " + "The condition '"
 				  + cedge.getCondition().getConcreteSyntax()
-				  + "' of the conditional edge from node '" + cedge.getSource()
-				  + "' to node '" + cedge.getTarget()
+				  + "' of the conditional edge from node '" + cedge.getSourceUnid()
+				  + "' to node '" + cedge.getTargetUnid()
 				  + "' could not be evaluated to a boolean value.";
 
 				throw new InterpreterError(this, errorMsg);
@@ -987,12 +987,12 @@ public class Process extends java.lang.Thread {
 		return null;
 	}
 
-	private PEdge checkPEdgeList() {
+	private RandomEdge checkPEdgeList() {
 		int random = new Random().nextInt(100);
 		int low = 0,
 		  high = 0;
 
-		for (PEdge pedge : mCurrentNode.getPEdgeList()) {
+		for (RandomEdge pedge : mCurrentNode.getPEdgeList()) {
 			high = low + pedge.getProbability() - 1;
 
 			if ((low <= random) && (random <= high)) {

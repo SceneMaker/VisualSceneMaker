@@ -10,11 +10,11 @@ import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.model.sceneflow.ChartParser;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 
@@ -47,7 +47,7 @@ import javax.swing.JComponent;
 public class ModifyCEdgeDialog extends Dialog {
 
     // The edge that we want to modify
-    private final CEdge mCEdge;
+    private final GuargedEdge mCEdge;
 
     // GUI-Components
     private final AltStartNodeManager mAltStartNodeManager;
@@ -73,8 +73,8 @@ public class ModifyCEdgeDialog extends Dialog {
     public ModifyCEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
         super(EditorInstance.getInstance(), "Create Conditional Edge", true);
         // Set the edge data
-        mCEdge = new CEdge();
-        mCEdge.setTarget(targetNode.getId());
+        mCEdge = new GuargedEdge();
+        mCEdge.setTargetUnid(targetNode.getId());
         mCEdge.setSourceNode(sourceNode);
         mCEdge.setTargetNode(targetNode);
         // TODO: move to EdgeDialog
@@ -82,7 +82,7 @@ public class ModifyCEdgeDialog extends Dialog {
         // Init GUI-Components
         initComponents();
     }
-    public ModifyCEdgeDialog(CEdge cedge) {
+    public ModifyCEdgeDialog(GuargedEdge cedge) {
         super(EditorInstance.getInstance(), "Modify Conditional Edge", true);
         mCEdge = cedge;
 
@@ -247,7 +247,7 @@ public class ModifyCEdgeDialog extends Dialog {
         mAltStartNodePanel.add(buttonsBox);
     }
 
-    public CEdge run() {
+    public GuargedEdge run() {
         setVisible(true);
 
         if (mPressedButton == Dialog.Button.OK) {
@@ -282,10 +282,12 @@ public class ModifyCEdgeDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            ChartParser.parseResultType = ChartParser.LOG;
-            ChartParser.run(inputString);
+            //ChartParser.parseResultType = ChartParser.LOG;
+            //ChartParser.parseResultType = ChartParser.EXP;
+            Expression log = (Expression)  ChartParser.run(inputString);
 
-            LogicalCond log = ChartParser.logResult;
+            //LogicalCond log = ChartParser.logResult;
+            //Expression log = ChartParser.expResult;
 
             if ((log != null) &&!ChartParser.errorFlag) {
                 mCEdge.setCondition(log);
@@ -295,6 +297,7 @@ public class ModifyCEdgeDialog extends Dialog {
                 return false;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

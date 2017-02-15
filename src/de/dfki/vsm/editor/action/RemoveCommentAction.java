@@ -6,7 +6,7 @@ import de.dfki.vsm.editor.Comment;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.SceneFlowManager;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -31,7 +31,7 @@ public class RemoveCommentAction extends EditorAction {
     private SuperNode                           mSuperNode;
     private Comment                             mGUIComment;
     private Point                               mLocation;
-    private de.dfki.vsm.model.sceneflow.Comment mDataComment;
+    private de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge mDataComment;
 
     public RemoveCommentAction(WorkSpacePanel workSpace, Comment c) {
         mWorkSpace        = workSpace;

@@ -6,8 +6,9 @@ import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
@@ -138,10 +139,10 @@ public class CmdDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            ChartParser.parseResultType = ChartParser.CMD;
-            ChartParser.run(inputString);
+            //ChartParser.parseResultType = ChartParser.CMD;
+            Command cmd = (Command) ChartParser.run(inputString);
 
-            Command cmd = ChartParser.cmdResult;
+            //Command cmd = ChartParser.cmdResult;
 
             if ((cmd != null) &&!ChartParser.errorFlag) {
                 mCommand = cmd;
@@ -151,6 +152,7 @@ public class CmdDialog extends Dialog {
                 return false;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

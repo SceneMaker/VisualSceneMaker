@@ -2,21 +2,21 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.definition.FunDef;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
  * @author Sergio Soto
  */
 public class FunctionSelectedEvent extends EventObject {
-    private FunDef mFunDef;
+    private FunctionDefinition mFunDef;
 
-    public FunctionSelectedEvent(Object source, FunDef funDef) {
+    public FunctionSelectedEvent(Object source, FunctionDefinition funDef) {
         super(source);
         mFunDef = funDef;
     }
 
-    public FunDef getFunction() {
+    public FunctionDefinition getFunction() {
         return mFunDef;
     }
 

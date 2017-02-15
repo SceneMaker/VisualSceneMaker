@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor.dialog;
 
-//~--- non-JDK imports --------------------------------------------------------
 import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
@@ -8,18 +7,17 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.command.expression.Expression;
-import de.dfki.vsm.model.sceneflow.command.expression.UnaryExp;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
-//import de.dfki.vsm.runtime.RunTimeInstance;
-import de.dfki.vsm.model.sceneflow.ChartParser;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.ChartParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -55,8 +53,8 @@ public class MonitorDialog extends JDialog implements EventListener {
     private HintTextField mInputTextField;
     private HintTextField mQueryTextField;
     private JScrollPane mVariableScrollPane;
-    private ArrayList<VarDef> mGlobalVarDefListData;
-    private ArrayList<VarDef> mLocalVarDefListData;
+    private ArrayList<VariableDefinition> mGlobalVarDefListData;
+    private ArrayList<VariableDefinition> mLocalVarDefListData;
     private static EditorProject mEditorProject;
     private JLabel errorMsg;
 
@@ -198,7 +196,7 @@ public class MonitorDialog extends JDialog implements EventListener {
         int selectedGlobalVarsIndex = mGlobalVariableTable.getSelectedRow();
         int selectedLocalVarsIndex = mLocalVariableTable.getSelectedRow();
 
-        VarDef varDef;
+        VariableDefinition varDef;
         java.lang.String inputString;
 
         if (selectedGlobalVarsIndex != -1) {
@@ -215,45 +213,45 @@ public class MonitorDialog extends JDialog implements EventListener {
         return false;
     }
 
-    public boolean updateAVariable(VarDef varDef, java.lang.String value) {
+    public boolean updateAVariable(VariableDefinition varDef, java.lang.String value) {
         try {
-            ChartParser.parseResultType = ChartParser.EXP;
-            ChartParser.run(value);
+            //ChartParser.parseResultType = ChartParser.EXP;
+            Expression exp = (Expression) ChartParser.run(value);
 
-            Expression exp = ChartParser.expResult;
+            //Expression exp = ChartParser.expResult;
 
             //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
             if ((exp != null) && !ChartParser.errorFlag) {
-                if (exp instanceof Bool) {
-                    return mEditorProject.setVariable(varDef.getName(), ((Bool) exp).getValue());
+                if (exp instanceof BoolLiteral) {
+                    return mEditorProject.setVariable(varDef.getName(), ((BoolLiteral) exp).getValue());
                     //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());
-                } else if (exp instanceof Int) {
-                    return mEditorProject.setVariable(varDef.getName(), ((Int) exp).getValue());
+                } else if (exp instanceof IntLiteral) {
+                    return mEditorProject.setVariable(varDef.getName(), ((IntLiteral) exp).getValue());
                     //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Int) exp).getValue());
-                } else if (exp instanceof UnaryExp) {
-                    if (((UnaryExp) exp).getExp() instanceof Int) {
-                        return mEditorProject.setVariable(varDef.getName(), -1 * ((Int) ((UnaryExp) exp).getExp()).getValue());
+                } else if (exp instanceof UnaryExpression) {
+                    if (((UnaryExpression) exp).getExp() instanceof IntLiteral) {
+                        return mEditorProject.setVariable(varDef.getName(), -1 * ((IntLiteral) ((UnaryExpression) exp).getExp()).getValue());
                         //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Int) ((UnaryExp) exp).getExp()).getValue());
                     }
-                    if (((UnaryExp) exp).getExp() instanceof Float) {
-                        return mEditorProject.setVariable(varDef.getName(), -1 * ((Float) ((UnaryExp) exp).getExp()).getValue());
+                    if (((UnaryExpression) exp).getExp() instanceof FloatLiteral) {
+                        return mEditorProject.setVariable(varDef.getName(), -1 * ((FloatLiteral) ((UnaryExpression) exp).getExp()).getValue());
                         //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), -1 * ((Float) ((UnaryExp) exp).getExp()).getValue());
                     }
 
-                } else if (exp instanceof Float) {
-                    return mEditorProject.setVariable(varDef.getName(), ((Float) exp).getValue());
+                } else if (exp instanceof FloatLiteral) {
+                    return mEditorProject.setVariable(varDef.getName(), ((FloatLiteral) exp).getValue());
                     //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Float) exp).getValue());
                 } else if (exp instanceof StringLiteral) {
                     return mEditorProject.setVariable(varDef.getName(), ((StringLiteral) exp).getValue());
                     //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((StringLiteral) exp).getValue());
-                } else if (exp instanceof ListRecord) {
+                } else if (exp instanceof ArrayExpression) {
                     System.out.println("ListRecord could not be parsed");
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
 
                     // Evaluator eval = interpreter.getEvaluator();
                     // Environment env = interpreter.getEnvironment();
                     // return RunTime.getInstance().setVariable(mSceneFlow, varDef.getName(), eval.evaluate(exp, env));
-                } else if (exp instanceof StructRecord) {
+                } else if (exp instanceof StructExpression) {
                     System.out.println("StructRecord could not be parsed");
                     //return RunTimeInstance.getInstance().setVariable(mEditorProject,  varDef.getName(), exp);
                 } else {
@@ -344,7 +342,7 @@ public class MonitorDialog extends JDialog implements EventListener {
                     "Variable", "Value"
                 };
         int counter = 0;
-        for (VarDef varDef : mGlobalVarDefListData) {
+        for (VariableDefinition varDef : mGlobalVarDefListData) {
             java.lang.String[] tempString
                     = {
                         varDef.getName(), varDef.getExp().toString(), varDef.getFormattedSyntax()
@@ -378,7 +376,7 @@ public class MonitorDialog extends JDialog implements EventListener {
                     "Variable", "Value"
                 };
         int counter = 0;
-        for (VarDef varDef : mLocalVarDefListData) {
+        for (VariableDefinition varDef : mLocalVarDefListData) {
             java.lang.String[] tempString
                     = {
                         varDef.getName(), varDef.getExp().toString(), varDef.getFormattedSyntax()

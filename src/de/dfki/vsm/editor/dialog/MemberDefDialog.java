@@ -5,7 +5,7 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.definition.MemberDef;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefinition;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
@@ -29,7 +29,7 @@ import javax.swing.JLabel;
 public class MemberDefDialog extends Dialog {
 
     // The member definition created or modified by this dialog
-    private MemberDef mMemberDef;
+    private MemberDefinition mMemberDef;
 
     // GUI Components
     private JLabel       mNameLabel;
@@ -42,13 +42,13 @@ public class MemberDefDialog extends Dialog {
     private Dimension textFielSize = new Dimension(175, 30);
     private JLabel errorMsg;
     
-    public MemberDefDialog(JDialog parent, MemberDef memberDef) {
+    public MemberDefDialog(JDialog parent, MemberDefinition memberDef) {
         super(parent, "Member Definition", true);
 
         if (memberDef != null) {
             mMemberDef = memberDef.getCopy();
         } else {
-            mMemberDef = new MemberDef("newMember", "Bool");
+            mMemberDef = new MemberDefinition("newMember", "Bool");
         }
 
         initComponents();
@@ -143,7 +143,7 @@ public class MemberDefDialog extends Dialog {
         jb.setMinimumSize(dim);
         jb.setMaximumSize(dim);
     }
-    public MemberDef run() {
+    public MemberDefinition run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {

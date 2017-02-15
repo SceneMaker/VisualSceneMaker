@@ -5,8 +5,8 @@ import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.model.sceneflow.definition.FunDef;
-import de.dfki.vsm.model.sceneflow.definition.ParamDef;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
 
 //~--- JDK imports ------------------------------------------------------------
 import java.awt.Color;
@@ -74,7 +74,7 @@ public class FunDefDialog extends Dialog {
     };
 
     // The function definition that has to be maintained
-    private final FunDef mFunDef;
+    private final FunctionDefinition mFunDef;
 
     // The Java reflect method that is mapped to
     private Method mSelectedMethod;
@@ -104,7 +104,7 @@ public class FunDefDialog extends Dialog {
     private Dimension labelSize = new Dimension(100, 30);
     private Dimension textFielSize = new Dimension(250, 30);
 
-    public FunDefDialog(FunDef funDef) {
+    public FunDefDialog(FunctionDefinition funDef) {
         super(EditorInstance.getInstance(), "Function Definition", true);
 
         if (funDef != null) {
@@ -114,8 +114,8 @@ public class FunDefDialog extends Dialog {
         } else {
 
             // Create a new function definition
-            mFunDef = new FunDef("newCommand", "java.lang.System.out", "println");
-            mFunDef.addParam(new ParamDef("text", "String"));
+            mFunDef = new FunctionDefinition("newCommand", "java.lang.System.out", "println");
+            mFunDef.addParam(new ArgumentDefinition("text", "String"));
         }
 
         initComponents();
@@ -585,7 +585,7 @@ public class FunDefDialog extends Dialog {
         while (args.hasMoreElements()) {
             String argString = (String) args.nextElement();
 
-            mFunDef.addParam(new ParamDef(mNameMap.get(argString), mTypeMap.get(argString)));
+            mFunDef.addParam(new ArgumentDefinition(mNameMap.get(argString), mTypeMap.get(argString)));
         }
         //
         dispose(Button.OK);
@@ -596,7 +596,7 @@ public class FunDefDialog extends Dialog {
         dispose(Button.CANCEL);
     }
 
-    public FunDef run() {
+    public FunctionDefinition run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {
@@ -606,7 +606,7 @@ public class FunDefDialog extends Dialog {
         }
     }
 
-    public FunDef getFunDef() {
+    public FunctionDefinition getFunDef() {
         return mFunDef;
     }
 
