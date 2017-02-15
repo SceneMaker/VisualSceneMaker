@@ -9,8 +9,8 @@ import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 
 import static de.dfki.vsm.editor.Node.Type.BasicNode;
 import static de.dfki.vsm.editor.Node.Type.SuperNode;
@@ -63,7 +63,7 @@ public abstract class NodeAction extends EditorAction {
         }
 
         // Check the start node status of the removed node
-        HashMap<String, de.dfki.vsm.model.sceneflow.BasicNode> startNodeMap = mParentDataNode.getStartNodeMap();
+        HashMap<String, de.dfki.vsm.model.sceneflow.chart.BasicNode> startNodeMap = mParentDataNode.getStartNodeMap();
 
         if (startNodeMap.containsKey(mDataNode.getId())) {
             startNodeMap.remove(mDataNode.getId());
@@ -79,12 +79,12 @@ public abstract class NodeAction extends EditorAction {
                     } else {
 
                         // Get a supernode as start node
-                        de.dfki.vsm.model.sceneflow.BasicNode newStartNode = mParentDataNode.getSuperNodeAt(0);
+                        de.dfki.vsm.model.sceneflow.chart.BasicNode newStartNode = mParentDataNode.getSuperNodeAt(0);
 
                         mParentDataNode.getStartNodeMap().put(newStartNode.getId(), newStartNode);
                     }
                 } else {
-                    for (de.dfki.vsm.model.sceneflow.BasicNode n : mParentDataNode.getNodeList()) {
+                    for (de.dfki.vsm.model.sceneflow.chart.BasicNode n : mParentDataNode.getNodeList()) {
                         if (n.isHistoryNode()) {
                             continue;
                         } else {

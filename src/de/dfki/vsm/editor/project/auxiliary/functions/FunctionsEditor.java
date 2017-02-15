@@ -9,9 +9,9 @@ import de.dfki.vsm.editor.event.FunctionCreatedEvent;
 import de.dfki.vsm.editor.event.FunctionModifiedEvent;
 import de.dfki.vsm.editor.event.FunctionRemovedEvent;
 import de.dfki.vsm.editor.event.FunctionSelectedEvent;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.definition.FunDef;
-import de.dfki.vsm.model.sceneflow.definition.ParamDef;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -91,7 +91,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         repaint();
 
         // Iterate through all existing functions in the sceneflow
-        for (FunDef i : mSceneFlow.getUsrCmdDefMap().values())
+        for (FunctionDefinition i : mSceneFlow.getUsrCmdDefMap().values())
         {
 
             // Create a SingleFunctionContainer object for every existing function
@@ -130,8 +130,8 @@ public class FunctionsEditor extends JPanel implements EventListener
             nameCounter++;
             funcName = defaulFuncName + nameCounter;
         }
-        FunDef usrCmdDef = new FunDef(funcName, "java.lang.System.out", "println");
-        usrCmdDef.addParam(new ParamDef("text", "String"));
+        FunctionDefinition usrCmdDef = new FunctionDefinition(funcName, "java.lang.System.out", "println");
+        usrCmdDef.addParam(new ArgumentDefinition("text", "String"));
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
 
         SingleFunctionContainer singleFunctionContainer
@@ -147,7 +147,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         mEventCaster.convey(new FunctionCreatedEvent(this, usrCmdDef));
     }
 
-    public void redoAddFunction(FunDef usrCmdDef)
+    public void redoAddFunction(FunctionDefinition usrCmdDef)
     {
         mSceneFlow.putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
 
@@ -161,7 +161,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         EditorInstance.getInstance().refresh();
     }
 
-    public void undoDeleteFunction(FunDef usrCmdDef)
+    public void undoDeleteFunction(FunctionDefinition usrCmdDef)
     {
         mSceneFlow.removeUsrCmdDef(usrCmdDef.getName());
 
@@ -174,7 +174,7 @@ public class FunctionsEditor extends JPanel implements EventListener
     {
         if (event instanceof FunctionSelectedEvent)
         {
-            FunDef functionData = ((FunctionSelectedEvent) event).getFunction();
+            FunctionDefinition functionData = ((FunctionSelectedEvent) event).getFunction();
 
             for (SingleFunctionContainer currentPanel : mFunctionContainerList)
             {
@@ -196,7 +196,7 @@ public class FunctionsEditor extends JPanel implements EventListener
             refreshFunctionsContainerPanel();
 
             // Highlight and set scrollbar to selected function
-            FunDef functionData = ((FunctionCreatedEvent) event).getFunction();
+            FunctionDefinition functionData = ((FunctionCreatedEvent) event).getFunction();
 
             for (SingleFunctionContainer currentPanel : mFunctionContainerList)
             {
@@ -228,7 +228,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         {
             refreshFunctionsContainerPanel();
 
-            FunDef functionData = ((FunctionModifiedEvent) event).getFunction();
+            FunctionDefinition functionData = ((FunctionModifiedEvent) event).getFunction();
 
             // Look for function in list
             for (SingleFunctionContainer currentPanel : mFunctionContainerList)
@@ -287,7 +287,7 @@ public class FunctionsEditor extends JPanel implements EventListener
     /**
      *
      */
-    private void launchFunctionCreatedEvent(FunDef funDef)
+    private void launchFunctionCreatedEvent(FunctionDefinition funDef)
     {
         FunctionCreatedEvent ev = new FunctionCreatedEvent(this, funDef);
         mEventCaster.convey(ev);
@@ -301,10 +301,10 @@ public class FunctionsEditor extends JPanel implements EventListener
     private class Edit extends AbstractUndoableEdit
     {
 
-        FunDef funDef;
+        FunctionDefinition funDef;
         Boolean newFunction = false;
 
-        public Edit(FunDef fd, Boolean newFun)
+        public Edit(FunctionDefinition fd, Boolean newFun)
         {
             funDef = fd;
             newFunction = newFun;

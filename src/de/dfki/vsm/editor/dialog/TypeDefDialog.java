@@ -1,7 +1,5 @@
 package de.dfki.vsm.editor.dialog;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
@@ -9,16 +7,12 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.definition.MemberDef;
-import de.dfki.vsm.model.sceneflow.definition.type.ListTypeDef;
-import de.dfki.vsm.model.sceneflow.definition.type.StructTypeDef;
-import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.model.sceneflow.definition.type.TypeDef.Flavour;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
 import java.awt.Color;
 import java.awt.Dimension;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -44,9 +38,9 @@ import javax.swing.JSeparator;
 public class TypeDefDialog extends Dialog {
 
     // The type definition that we want to create or edit.
-    private TypeDef       mTypeDef;
-    private ListTypeDef   mListTypeDef;
-    private StructTypeDef mStructTypeDef;
+    private DataTypeDefinition       mTypeDef;
+    private ListTypeDefinition   mListTypeDef;
+    private StructTypeDefinition mStructTypeDef;
 
     //
     // The list of member definitions if the type definition is a struct.
@@ -72,7 +66,7 @@ public class TypeDefDialog extends Dialog {
     private Dimension            labelSize = new Dimension(75, 30);
     private Dimension            textFielSize = new Dimension(250, 30);
     
-    public TypeDefDialog(TypeDef typeDef) {
+    public TypeDefDialog(DataTypeDefinition typeDef) {
         super(EditorInstance.getInstance(), "Create/Modify Type Definition", true);
 
         if (typeDef != null) {
@@ -81,34 +75,34 @@ public class TypeDefDialog extends Dialog {
             mTypeDef = typeDef.getCopy();
 
             //
-            if (mTypeDef instanceof StructTypeDef) {
+            if (mTypeDef instanceof StructTypeDefinition) {
 
                 // Create the default list type def
-                mListTypeDef = new ListTypeDef("IntList", "Int");
+                mListTypeDef = new ListTypeDefinition("IntList", "Int");
 
                 //
-                mStructTypeDef = (StructTypeDef) mTypeDef;
+                mStructTypeDef = (StructTypeDefinition) mTypeDef;
             } else {
 
                 // Create the default struct type def
-                ArrayList<MemberDef> memberDefList = new ArrayList<MemberDef>();
+                ArrayList<MemberDefinition> memberDefList = new ArrayList<MemberDefinition>();
 
-                memberDefList.add(new MemberDef("someMember", "Bool"));
-                mStructTypeDef = new StructTypeDef("SomeStruct", memberDefList);
+                memberDefList.add(new MemberDefinition("someMember", "Bool"));
+                mStructTypeDef = new StructTypeDefinition("SomeStruct", memberDefList);
 
                 //
-                mListTypeDef = (ListTypeDef) mTypeDef;
+                mListTypeDef = (ListTypeDefinition) mTypeDef;
             }
         } else {
 
             // Create the default list type def
-            mListTypeDef = new ListTypeDef("IntList", "Int");
+            mListTypeDef = new ListTypeDefinition("IntList", "Int");
 
             // Create the default struct type def
-            ArrayList<MemberDef> memberDefList = new ArrayList<MemberDef>();
+            ArrayList<MemberDefinition> memberDefList = new ArrayList<MemberDefinition>();
 
-            memberDefList.add(new MemberDef("someMember", "Bool"));
-            mStructTypeDef = new StructTypeDef("SomeStruct", memberDefList);
+            memberDefList.add(new MemberDefinition("someMember", "Bool"));
+            mStructTypeDef = new StructTypeDefinition("SomeStruct", memberDefList);
 
             // Set the default type def to the struct type def
             mTypeDef = mStructTypeDef;
@@ -280,15 +274,15 @@ public class TypeDefDialog extends Dialog {
         mFlavourComboBox.setSelectedItem(mTypeDef.getFlavour().name());
         mNameTextField.setText(mTypeDef.getName());
 
-        if (mTypeDef.getFlavour() == Flavour.List) {
+        if (mTypeDef.getFlavour() == DataTypeDefinition.Flavour.List) {
             setListTypeComponentsVisible(true);
             setStructTypeComponentsVisible(false);
-            mListTypeComboBox.setSelectedItem(((ListTypeDef) mTypeDef).getType());
+            mListTypeComboBox.setSelectedItem(((ListTypeDefinition) mTypeDef).getType());
         } else {
             setListTypeComponentsVisible(false);
             setStructTypeComponentsVisible(true);
 
-            for (MemberDef member : ((StructTypeDef) mTypeDef).getMemberDefList()) {
+            for (MemberDefinition member : ((StructTypeDefinition) mTypeDef).getMemberList()) {
                 mMemberDefListModel.addElement(member.getConcreteSyntax());
             }
         }
@@ -309,11 +303,11 @@ public class TypeDefDialog extends Dialog {
     }
 
     private void addMemberDef() {
-        MemberDef memberDef = new MemberDefDialog(this, null).run();
+        MemberDefinition memberDef = new MemberDefDialog(this, null).run();
 
         if (memberDef != null) {
             mMemberDefListModel.addElement(memberDef.getConcreteSyntax());
-            ((StructTypeDef) mTypeDef).addMemberDef(memberDef);
+            ((StructTypeDefinition) mTypeDef).addMemberDef(memberDef);
 
             // mMemberDefListData.add(memberDef);
         }
@@ -324,7 +318,7 @@ public class TypeDefDialog extends Dialog {
 
         if (index >= 0) {
             mMemberDefListModel.removeElementAt(index);
-            ((StructTypeDef) mTypeDef).removeMemberDefAt(index);
+            ((StructTypeDefinition) mTypeDef).removeMemberDefAt(index);
 
             // mMemberDefListData.removeElementAt(index);
         }
@@ -334,12 +328,12 @@ public class TypeDefDialog extends Dialog {
         int index = mMemberDefList.getSelectedIndex();
 
         if (index >= 0) {
-            MemberDef oldMemberDef = ((StructTypeDef) mTypeDef).getMemberDefAt(index);
-            MemberDef newMemberDef = new MemberDefDialog(this, oldMemberDef).run();
+            MemberDefinition oldMemberDef = ((StructTypeDefinition) mTypeDef).getMemberDefAt(index);
+            MemberDefinition newMemberDef = new MemberDefDialog(this, oldMemberDef).run();
 
             if (newMemberDef != null) {
                 mMemberDefListModel.set(index, newMemberDef.getConcreteSyntax());
-                ((StructTypeDef) mTypeDef).setMemberDefAt(index, newMemberDef);
+                ((StructTypeDefinition) mTypeDef).setMemberDefAt(index, newMemberDef);
             }
         }
     }
@@ -355,7 +349,7 @@ public class TypeDefDialog extends Dialog {
 //      }
 //      return true;
 //  }
-    public TypeDef run() {
+    public DataTypeDefinition run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {
@@ -374,13 +368,13 @@ public class TypeDefDialog extends Dialog {
         else
         {
             // Get the flavour
-            Flavour flavour = Flavour.valueOf((String) mFlavourComboBox.getSelectedItem());
+            DataTypeDefinition.Flavour flavour = DataTypeDefinition.Flavour.valueOf((String) mFlavourComboBox.getSelectedItem());
             //
-            if (flavour == Flavour.List) {
-                ((ListTypeDef) mTypeDef).setName(mNameTextField.getText().trim());
-                ((ListTypeDef) mTypeDef).setType((String) mListTypeComboBox.getSelectedItem());
+            if (flavour == DataTypeDefinition.Flavour.List) {
+                ((ListTypeDefinition) mTypeDef).setName(mNameTextField.getText().trim());
+                ((ListTypeDefinition) mTypeDef).setType((String) mListTypeComboBox.getSelectedItem());
             } else {
-                ((StructTypeDef) mTypeDef).setName(mNameTextField.getText().trim());
+                ((StructTypeDefinition) mTypeDef).setName(mNameTextField.getText().trim());
             }
             //
             dispose(Button.OK);

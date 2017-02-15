@@ -1,15 +1,10 @@
 package de.dfki.vsm.editor.action;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.Edge;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
-
-//~--- JDK imports ------------------------------------------------------------
-
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -19,8 +14,8 @@ import javax.swing.undo.CannotUndoException;
  * @author Gregor Mehlmann
  */
 public class ModifyIEdgeAction extends ModifyEdgeAction {
-    private Condition mOldCondition;
-    private Condition mNewCondition;
+    private Expression mOldCondition;
+    private Expression mNewCondition;
 
     public ModifyIEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);
@@ -30,11 +25,11 @@ public class ModifyIEdgeAction extends ModifyEdgeAction {
     public void run() {
 
         // Remember the old condition
-        mOldCondition = ((IEdge) mDataEdge).getCondition();
+        mOldCondition = ((InterruptEdge) mDataEdge).getCondition();
 
         // Show a dialog to modify the condition
-        ModifyIEdgeDialog dialog = new ModifyIEdgeDialog(((IEdge) mDataEdge));
-        IEdge             iedge  = dialog.run();
+        ModifyIEdgeDialog dialog = new ModifyIEdgeDialog(((InterruptEdge) mDataEdge));
+        InterruptEdge             iedge  = dialog.run();
 
         // If the condition was successfully modified then
         // remember the new condition and update the undomanager
@@ -49,7 +44,7 @@ public class ModifyIEdgeAction extends ModifyEdgeAction {
     private class Edit extends AbstractUndoableEdit {
         @Override
         public void undo() throws CannotUndoException {
-            ((IEdge) mDataEdge).setCondition(mOldCondition);
+            ((InterruptEdge) mDataEdge).setCondition(mOldCondition);
 
             // mGUIEdge.update();
             mGUIEdge.repaint();
@@ -57,7 +52,7 @@ public class ModifyIEdgeAction extends ModifyEdgeAction {
 
         @Override
         public void redo() throws CannotRedoException {
-            ((IEdge) mDataEdge).setCondition(mNewCondition);
+            ((InterruptEdge) mDataEdge).setCondition(mNewCondition);
 
             // mGUIEdge.update();
             mGUIEdge.repaint();

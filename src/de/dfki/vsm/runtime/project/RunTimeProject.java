@@ -5,7 +5,7 @@ import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;

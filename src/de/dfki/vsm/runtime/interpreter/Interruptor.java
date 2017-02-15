@@ -1,7 +1,7 @@
 package de.dfki.vsm.runtime.interpreter;
 
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.Condition;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.Configuration.State;
@@ -37,10 +37,10 @@ public final class Interruptor {
             // Check the node of the state            
             //if (state.getNode() instanceof SuperNode) {
             // Iterate over the list of interruptive edges
-            for (final IEdge iedge : state.getNode().getIEdgeList()) {
+            for (final InterruptEdge iedge : state.getNode().getIEdgeList()) {
                 try {
                     // Get the condition of the edge
-                    final Condition condition = iedge.getCondition();
+                    final Expression condition = iedge.getCondition();
                     // Get the current environment
                     final Environment environment = state.getThread().getEnvironment();
                     // Evauate the condition then
@@ -65,8 +65,8 @@ public final class Interruptor {
                     String errorMsg = "An error occured while executing thread "
                             + Process.currentThread().toString() + " : " + "The condition '"
                             + iedge.getCondition().getConcreteSyntax()
-                            + "' of the interruptive edge from node '" + iedge.getSource()
-                            + "' to node '" + iedge.getTarget()
+                            + "' of the interruptive edge from node '" + iedge.getSourceUnid()
+                            + "' to node '" + iedge.getTargetUnid()
                             + "' could not be evaluated to a boolean value.";
                     InterpreterError exception = new InterpreterError(this, errorMsg);
 

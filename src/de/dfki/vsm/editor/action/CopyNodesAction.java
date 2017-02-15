@@ -41,7 +41,7 @@ public class CopyNodesAction extends EditorAction {
         for (Node node : mNodes) {
 
             // store a copy of each selected node
-            de.dfki.vsm.model.sceneflow.BasicNode nodeCopy = node.getDataNode().getCopy();
+            de.dfki.vsm.model.sceneflow.chart.BasicNode nodeCopy = node.getDataNode().getCopy();
 
             mWorkSpace.getClipBoard().add(nodeCopy);
         }

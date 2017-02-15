@@ -3,7 +3,7 @@ package de.dfki.vsm.runtime.interpreter;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.model.sceneflow.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;

@@ -7,12 +7,12 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.Node.Flavour;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.EEdge;
-import de.dfki.vsm.model.sceneflow.FEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.TEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -52,7 +52,7 @@ public class DeflectEdgeAction extends EdgeAction {
                         + mTargetGUINode.getDataNode().getName());
         mDataEdge.setTargetNode(mTargetGUINode.getDataNode());
         mDataEdge.setSourceNode(mSourceGUINode.getDataNode());    // this is the new node
-        mDataEdge.setTarget(mDataEdge.getTargetNode().getId());
+        mDataEdge.setTargetUnid(mDataEdge.getTargetNode().getId());
 
         switch (mGUIEdgeType) {
         case EEDGE :
@@ -61,7 +61,7 @@ public class DeflectEdgeAction extends EdgeAction {
             break;
 
         case FEDGE :
-            mSourceGUINode.getDataNode().addFEdge((FEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addFEdge((ForkingEdge) mDataEdge);
 
             break;
 
@@ -71,17 +71,17 @@ public class DeflectEdgeAction extends EdgeAction {
             break;
 
         case CEDGE :
-            mSourceGUINode.getDataNode().addCEdge((CEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addCEdge((GuargedEdge) mDataEdge);
 
             break;
 
         case PEDGE :
-            mSourceGUINode.getDataNode().addPEdge((PEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addPEdge((RandomEdge) mDataEdge);
 
             break;
 
         case IEDGE :
-            mSourceGUINode.getDataNode().addIEdge((IEdge) mDataEdge);
+            mSourceGUINode.getDataNode().addIEdge((InterruptEdge) mDataEdge);
 
             break;
         }
@@ -89,11 +89,11 @@ public class DeflectEdgeAction extends EdgeAction {
         // Revalidate data node and graphical node types
         switch (mSourceGUINode.getDataNode().getFlavour()) {
         case NONE :
-            de.dfki.vsm.model.sceneflow.AbstractEdge dedge = mSourceGUINode.getDataNode().getDedge();
+            de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge dedge = mSourceGUINode.getDataNode().getDedge();
 
-            if (dedge instanceof EEdge) {
+            if (dedge instanceof EpsilonEdge) {
                 mSourceGUINode.setFlavour(Flavour.ENode);
-            } else if (dedge instanceof TEdge) {
+            } else if (dedge instanceof TimeoutEdge) {
                 mSourceGUINode.setFlavour(Flavour.TNode);
             } else {
                 mSourceGUINode.setFlavour(Flavour.None);

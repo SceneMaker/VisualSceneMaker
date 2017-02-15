@@ -35,7 +35,7 @@
     <!-- Define Script Parser File -->
     <property name="scnprsfile" value="${scngendir}${file.separator}ScriptParser.java"/>    
     <!-- Define Destination Directory For Parser -->
-    <property name="sflgendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}sceneflow"/>
+    <property name="sflgendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}sceneflow${file.separator}glue"/>
     <!-- Define Scenes Lex File -->
     <property name="sfllexfile" value="${sflgendir}${file.separator}lexxer.jflex"/>
     <!-- Define Scenes Cup File -->
@@ -145,8 +145,6 @@
     <!-- Execute to Welcome Screen -->
     <target name="exec">
         <java classname="de.dfki.vsm.SceneMaker3" fork="true">
-            <!-- <arg line="runtime res/prj/test"/> -->
-            <!-- <arg line="editor res/prj/test"/> -->
             <classpath refid="clspath"/>
         </java>
     </target>

@@ -15,21 +15,21 @@ import de.dfki.vsm.editor.dialog.TypeDefDialog;
 import de.dfki.vsm.editor.dialog.VarDefDialog;
 import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.AbstractEdge.Type;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.TEdge;
-import de.dfki.vsm.model.sceneflow.command.Command;
-import de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond;
-import de.dfki.vsm.model.sceneflow.definition.FunDef;
-import de.dfki.vsm.model.sceneflow.definition.VarDef;
-import de.dfki.vsm.model.sceneflow.definition.type.TypeDef;
-import de.dfki.vsm.model.sceneflow.ChartParser;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge.EdgeType;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.RegularExpressions;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -380,7 +380,7 @@ class CmdEditor extends AttributeEditor {
  */
 class ConditionEditor extends JPanel implements EventListener {
 
-    private CEdge mDataCEdge;
+    private GuargedEdge mDataCEdge;
     private ModifyCEdgeDialog mCEdgeDialog;
 
     public ConditionEditor() {
@@ -397,8 +397,8 @@ class ConditionEditor extends JPanel implements EventListener {
     public void update(EventObject event) {
         if (event instanceof EdgeSelectedEvent) {
             if (event instanceof EdgeSelectedEvent) {
-                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.CEdge)) {
-                    mDataCEdge = (CEdge) ((EdgeSelectedEvent) event).getEdge();
+                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.GuardedEdge)) {
+                    mDataCEdge = (GuargedEdge) ((EdgeSelectedEvent) event).getEdge();
                     mCEdgeDialog = new ModifyCEdgeDialog(mDataCEdge);
                     removeAll();
                     mCEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
@@ -430,10 +430,12 @@ class ConditionEditor extends JPanel implements EventListener {
         String inputString = mCEdgeDialog.getInputTextField().getText().trim();
 
         try {
-            ChartParser.parseResultType = ChartParser.LOG;
-            ChartParser.run(inputString);
+            //ChartParser.parseResultType = ChartParser.LOG;
+            //ChartParser.parseResultType = ChartParser.EXP;
+            Expression log = (Expression) ChartParser.run(inputString);
 
-            LogicalCond log = ChartParser.logResult;
+            //LogicalCond log = ChartParser.logResult;
+            //Expression log = ChartParser.expResult;
 
             if ((log != null) && !ChartParser.errorFlag) {
                 mDataCEdge.setCondition(log);
@@ -486,25 +488,25 @@ class EdgeEditor extends JPanel implements EventListener {
             // Get the selected node
             AbstractEdge edge = ((EdgeSelectedEvent) event).getEdge();
 
-            if (edge instanceof TEdge) {
+            if (edge instanceof TimeoutEdge) {
                 mTimeOutEditor.setVisible(true);
             } else {
                 mTimeOutEditor.setVisible(false);
             }
 
-            if (edge instanceof CEdge) {
+            if (edge instanceof GuargedEdge) {
                 mConditionEditor.setVisible(true);
             } else {
                 mConditionEditor.setVisible(false);
             }
 
-            if (edge instanceof IEdge) {
+            if (edge instanceof InterruptEdge) {
                 mInterruptEditor.setVisible(true);
             } else {
                 mInterruptEditor.setVisible(false);
             }
 
-            if (edge instanceof PEdge) {
+            if (edge instanceof RandomEdge) {
                 mProbabilityEditor.setVisible(true);
             } else {
                 mProbabilityEditor.setVisible(false);
@@ -604,7 +606,7 @@ class FunDefEditor extends AttributeEditor {
             if (mDataNode instanceof SceneFlow) {
                 mListModel.clear();
 
-                for (FunDef def : ((SceneFlow) mDataNode).getUsrCmdDefMap().values()) {
+                for (FunctionDefinition def : ((SceneFlow) mDataNode).getUsrCmdDefMap().values()) {
                     mListModel.addElement(def);
                 }
             }
@@ -616,7 +618,7 @@ class FunDefEditor extends AttributeEditor {
 
     @Override
     protected void add() {
-        FunDef usrCmdDef = new FunDefDialog(null).run();
+        FunctionDefinition usrCmdDef = new FunDefDialog(null).run();
 
         if (usrCmdDef != null) {
             ((SceneFlow) mDataNode).putUsrCmdDef(usrCmdDef.getName(), usrCmdDef);
@@ -629,13 +631,13 @@ class FunDefEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if (index >= 0) {
-            FunDef oldUsrCmdDef = (FunDef) mList.getSelectedValue();
+            FunctionDefinition oldUsrCmdDef = (FunctionDefinition) mList.getSelectedValue();
 
             // Remove the old function definition from the sceneflow
             ((SceneFlow) mDataNode).removeUsrCmdDef(oldUsrCmdDef.getName());
 
             // Edit the old function definition
-            FunDef newUsrCmdDef = new FunDefDialog(oldUsrCmdDef).run();
+            FunctionDefinition newUsrCmdDef = new FunDefDialog(oldUsrCmdDef).run();
 
             if (newUsrCmdDef != null) {
 
@@ -650,7 +652,7 @@ class FunDefEditor extends AttributeEditor {
 
     @Override
     protected void remove() {
-        FunDef oldUsrCmdDef = (FunDef) mList.getSelectedValue();
+        FunctionDefinition oldUsrCmdDef = (FunctionDefinition) mList.getSelectedValue();
 
         if (oldUsrCmdDef != null) {
 
@@ -681,7 +683,7 @@ class FunDefEditor extends AttributeEditor {
  */
 class InterruptEditor extends JPanel implements EventListener {
 
-    private IEdge mDataIEdge;
+    private InterruptEdge mDataIEdge;
     private ModifyIEdgeDialog mIEdgeDialog;
 
     public InterruptEditor() {
@@ -699,8 +701,8 @@ class InterruptEditor extends JPanel implements EventListener {
     public void update(EventObject event) {
         if (event instanceof EdgeSelectedEvent) {
             if (event instanceof EdgeSelectedEvent) {
-                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.IEdge)) {
-                    mDataIEdge = (IEdge) ((EdgeSelectedEvent) event).getEdge();
+                if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.InterruptEdge)) {
+                    mDataIEdge = (InterruptEdge) ((EdgeSelectedEvent) event).getEdge();
                     mIEdgeDialog = new ModifyIEdgeDialog(mDataIEdge);
                     removeAll();
                     mIEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
@@ -733,10 +735,12 @@ class InterruptEditor extends JPanel implements EventListener {
         String inputString = mIEdgeDialog.getInputTextField().getText().trim();
 
         try {
-            ChartParser.parseResultType = ChartParser.LOG;
-            ChartParser.run(inputString);
+            //ChartParser.parseResultType = ChartParser.LOG;
+            //ChartParser.parseResultType = ChartParser.EXP;
+            Expression log = (Expression) ChartParser.run(inputString);
 
-            LogicalCond log = ChartParser.logResult;
+            //LogicalCond log = ChartParser.logResult;
+            //Expression log = ChartParser.expResult;
 
             if ((log != null) && !ChartParser.errorFlag) {
                 mDataIEdge.setCondition(log);
@@ -745,6 +749,7 @@ class InterruptEditor extends JPanel implements EventListener {
                 // Do nothing
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
@@ -900,8 +905,8 @@ class NodeEditor extends JPanel implements EventListener {
  */
 class ProbabilityEditor extends JPanel implements EventListener {
 
-    private final HashMap<PEdge, JTextField> mPEdgeMap = new HashMap<PEdge, JTextField>();
-    private PEdge mDataPEdge;
+    private final HashMap<RandomEdge, JTextField> mPEdgeMap = new HashMap<RandomEdge, JTextField>();
+    private RandomEdge mDataPEdge;
     private ModifyPEdgeDialog mPEdgeDialog;
     private JPanel mButtonPanel;
 
@@ -920,8 +925,8 @@ class ProbabilityEditor extends JPanel implements EventListener {
     @Override
     public void update(EventObject event) {
         if (event instanceof EdgeSelectedEvent) {
-            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.PEdge)) {
-                mDataPEdge = (PEdge) ((EdgeSelectedEvent) event).getEdge();
+            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.RandomEdge)) {
+                mDataPEdge = (RandomEdge) ((EdgeSelectedEvent) event).getEdge();
                 mPEdgeDialog = new ModifyPEdgeDialog(mDataPEdge);
                 removeAll();
                 mPEdgeDialog.getEdgeProbPanel().setMinimumSize(new Dimension(200, 140));
@@ -1071,7 +1076,7 @@ class StartNodeEditor extends AttributeEditor {
  */
 class TimeOutEditor extends JPanel implements EventListener {
 
-    private TEdge mDataTEdge;
+    private TimeoutEdge mDataTEdge;
     private ModifyTEdgeDialog mTEdgeDialog;
 
     public TimeOutEditor() {
@@ -1088,8 +1093,8 @@ class TimeOutEditor extends JPanel implements EventListener {
     @Override
     public void update(EventObject event) {
         if (event instanceof EdgeSelectedEvent) {
-            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(Type.TEdge)) {
-                mDataTEdge = (TEdge) ((EdgeSelectedEvent) event).getEdge();
+            if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.TimeoutEdge)) {
+                mDataTEdge = (TimeoutEdge) ((EdgeSelectedEvent) event).getEdge();
                 mTEdgeDialog = new ModifyTEdgeDialog(mDataTEdge);
                 removeAll();
                 mTEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
@@ -1137,7 +1142,7 @@ class TypeDefEditor extends AttributeEditor {
             mDataNode = ((NodeSelectedEvent) event).getNode();
             // Reload the type definition list
             mListModel.clear();
-            for (TypeDef def : mDataNode.getTypeDefList()) {
+            for (DataTypeDefinition def : mDataNode.getTypeDefList()) {
                 mListModel.addElement(def);
             }
         }
@@ -1145,7 +1150,7 @@ class TypeDefEditor extends AttributeEditor {
 
     @Override
     protected void add() {
-        final TypeDef typeDef = new TypeDefDialog(null).run();
+        final DataTypeDefinition typeDef = new TypeDefDialog(null).run();
         if (typeDef != null) {
             mDataNode.addTypeDef(typeDef);
             mListModel.addElement(typeDef);
@@ -1157,8 +1162,8 @@ class TypeDefEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if (index >= 0) {
-            TypeDef oldTypeDef = mDataNode.getTypeDefAt(index);
-            TypeDef newTypeDef = new TypeDefDialog(oldTypeDef).run();
+            DataTypeDefinition oldTypeDef = mDataNode.getTypeDefAt(index);
+            DataTypeDefinition newTypeDef = new TypeDefDialog(oldTypeDef).run();
 
             //
             if (newTypeDef != null) {
@@ -1183,8 +1188,8 @@ class TypeDefEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if (index >= 1) {
-            TypeDef thisTypeDef = mDataNode.getTypeDefAt(index);
-            TypeDef otherTypeDef = mDataNode.getTypeDefAt(index - 1);
+            DataTypeDefinition thisTypeDef = mDataNode.getTypeDefAt(index);
+            DataTypeDefinition otherTypeDef = mDataNode.getTypeDefAt(index - 1);
 
             mDataNode.setTypeDefAt(thisTypeDef, index - 1);
             mDataNode.setTypeDefAt(otherTypeDef, index);
@@ -1199,8 +1204,8 @@ class TypeDefEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if ((index >= 0) && (index < mListModel.size() - 1)) {
-            TypeDef thisTypeDef = mDataNode.getTypeDefAt(index);
-            TypeDef otherTypeDef = mDataNode.getTypeDefAt(index + 1);
+            DataTypeDefinition thisTypeDef = mDataNode.getTypeDefAt(index);
+            DataTypeDefinition otherTypeDef = mDataNode.getTypeDefAt(index + 1);
 
             mDataNode.setTypeDefAt(thisTypeDef, index + 1);
             mDataNode.setTypeDefAt(otherTypeDef, index);
@@ -1234,7 +1239,7 @@ class VarDefEditor extends AttributeEditor {
             // Reload the variable definition list
             mListModel.clear();
 
-            for (VarDef def : mDataNode.getVarDefList()) {
+            for (VariableDefinition def : mDataNode.getVarDefList()) {
                 mListModel.addElement(def);
             }
         } else {
@@ -1247,7 +1252,7 @@ class VarDefEditor extends AttributeEditor {
     public void add() {
 
         // Show the variable definition dialog
-        VarDef varDef = new VarDefDialog(mDataNode, null).run();
+        VariableDefinition varDef = new VarDefDialog(mDataNode, null).run();
 
         // Add the new variable definition if the creation was successful
         if (varDef != null) {
@@ -1261,8 +1266,8 @@ class VarDefEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if (index > -1) {
-            VarDef oldVarDef = mDataNode.getVarDefAt(index);
-            VarDef newVarDef = new VarDefDialog(mDataNode, oldVarDef).run();
+            VariableDefinition oldVarDef = mDataNode.getVarDefAt(index);
+            VariableDefinition newVarDef = new VarDefDialog(mDataNode, oldVarDef).run();
 
             // Add the new variable definition if the creation was successful
             if (newVarDef != null) {
@@ -1287,8 +1292,8 @@ class VarDefEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if (index >= 1) {
-            VarDef thisVarDef = mDataNode.getVarDefAt(index);
-            VarDef otherVarDef = mDataNode.getVarDefAt(index - 1);
+            VariableDefinition thisVarDef = mDataNode.getVarDefAt(index);
+            VariableDefinition otherVarDef = mDataNode.getVarDefAt(index - 1);
 
             mDataNode.setVarDefAt(thisVarDef, index - 1);
             mDataNode.setVarDefAt(otherVarDef, index);
@@ -1303,8 +1308,8 @@ class VarDefEditor extends AttributeEditor {
         int index = mList.getSelectedIndex();
 
         if ((index >= 0) && (index < mListModel.size() - 1)) {
-            VarDef thisVarDef = mDataNode.getVarDefAt(index);
-            VarDef otherVarDef = mDataNode.getVarDefAt(index + 1);
+            VariableDefinition thisVarDef = mDataNode.getVarDefAt(index);
+            VariableDefinition otherVarDef = mDataNode.getVarDefAt(index + 1);
 
             mDataNode.setVarDefAt(thisVarDef, index + 1);
             mDataNode.setVarDefAt(otherVarDef, index);

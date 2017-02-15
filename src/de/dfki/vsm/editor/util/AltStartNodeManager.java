@@ -2,9 +2,9 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.util.ArrayList;
 
@@ -28,7 +28,7 @@ public class AltStartNodeManager {
     }
 
     public void saveAltStartNodeMap() {
-        mEdge.setAltStartNodeMap(mAltStartNodeMap);
+        mEdge.setAltMap(mAltStartNodeMap);
     }
 
     public void loadAltStartNodeMap() {

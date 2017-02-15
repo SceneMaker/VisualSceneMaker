@@ -13,11 +13,11 @@ import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.GridConstants;
 import de.dfki.vsm.editor.util.grid.GridRectangle;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.graphics.workspace.WorkAreaSize;
-import de.dfki.vsm.model.sceneflow.graphics.workspace.WorkSpaceInitNodeSize;
-import de.dfki.vsm.model.sceneflow.graphics.workspace.WorkSpaceSuperNode;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.graphics.workspace.WorkAreaSize;
+import de.dfki.vsm.model.sceneflow.chart.graphics.workspace.WorkSpaceInitNodeSize;
+import de.dfki.vsm.model.sceneflow.chart.graphics.workspace.WorkSpaceSuperNode;
 
 //~--- JDK imports ------------------------------------------------------------
 

@@ -5,9 +5,9 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.Comment;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.SceneFlowManager;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.graphics.comment.CommentGraphics;
-import de.dfki.vsm.model.sceneflow.graphics.comment.CommentBoundary;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.graphics.comment.CommentGraphics;
+import de.dfki.vsm.model.sceneflow.chart.graphics.comment.CommentBoundary;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -27,8 +27,8 @@ public class CreateCommentAction extends EditorAction {
     private WorkSpacePanel                             mWorkSpace   = null;
     private Point                                 mCoordinate  = null;
     private Comment                               mGUIComment;
-    private de.dfki.vsm.model.sceneflow.Comment   mComment;
-    private de.dfki.vsm.model.sceneflow.SuperNode mParentDataNode;
+    private de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge   mComment;
+    private de.dfki.vsm.model.sceneflow.chart.SuperNode mParentDataNode;
     private SuperNode mSuperNode;
     private SceneFlowManager mSceneFlowManager;
 
@@ -36,7 +36,7 @@ public class CreateCommentAction extends EditorAction {
         mWorkSpace   = workSpace;
         mCoordinate  = coordinate;
         mUndoManager = mWorkSpace.getSceneFlowEditor().getUndoManager();
-        mComment     = new de.dfki.vsm.model.sceneflow.Comment();
+        mComment     = new de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge();
         mComment.setGraphics(new CommentGraphics(new CommentBoundary(coordinate.x, coordinate.y, 100, 100)));
         mParentDataNode = mWorkSpace.getSceneFlowManager().getCurrentActiveSuperNode();
         mSceneFlowManager = mWorkSpace.getSceneFlowManager();

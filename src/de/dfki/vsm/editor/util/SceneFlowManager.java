@@ -2,12 +2,12 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.CEdge;
-import de.dfki.vsm.model.sceneflow.IEdge;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.PEdge;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import java.util.ArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -79,9 +79,9 @@ public class SceneFlowManager {
                 if (node.hasEdge()) {
                     switch (node.getFlavour()) {
                     case CNODE :
-                        ArrayList<CEdge> ces = node.getCEdgeList();
+                        ArrayList<GuargedEdge> ces = node.getCEdgeList();
 
-                        for (CEdge c : ces) {
+                        for (GuargedEdge c : ces) {
 
                             // collectAltStartNodeIDs(processIDs(c.getStart()), currentNodeIDs, altStartNodeIDs);
                         }
@@ -89,9 +89,9 @@ public class SceneFlowManager {
                         break;
 
                     case PNODE :
-                        ArrayList<PEdge> pes = node.getPEdgeList();
+                        ArrayList<RandomEdge> pes = node.getPEdgeList();
 
-                        for (PEdge p : pes) {
+                        for (RandomEdge p : pes) {
 
                             // collectAltStartNodeIDs(processIDs(p.getStart()), currentNodeIDs, altStartNodeIDs);
                         }
@@ -99,9 +99,9 @@ public class SceneFlowManager {
                         break;
 
                     case INODE :
-                        ArrayList<IEdge> ies = node.getIEdgeList();
+                        ArrayList<InterruptEdge> ies = node.getIEdgeList();
 
-                        for (IEdge i : ies) {
+                        for (InterruptEdge i : ies) {
 
                             // collectAltStartNodeIDs(processIDs(i.getStart()), currentNodeIDs, altStartNodeIDs);
                         }

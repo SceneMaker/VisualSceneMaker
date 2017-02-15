@@ -8,7 +8,7 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.Preferences;
-import de.dfki.vsm.model.sceneflow.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 //import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;

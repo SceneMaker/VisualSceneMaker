@@ -6,9 +6,9 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.event.FunctionRemovedEvent;
-import de.dfki.vsm.model.sceneflow.SceneFlow;
-import de.dfki.vsm.model.sceneflow.definition.FunDef;
-import de.dfki.vsm.model.sceneflow.definition.ParamDef;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -82,8 +82,8 @@ public class SingleFunctionContainer extends JPanel {
     };
 
     // The function definition that has to be maintained
-    private final FunDef mFunDef;
-    private final FunDef mFunDefBackup;
+    private final FunctionDefinition mFunDef;
+    private final FunctionDefinition mFunDefBackup;
 
     private final SceneFlow mSceneFlow;
 
@@ -114,7 +114,7 @@ public class SingleFunctionContainer extends JPanel {
     private final Dimension labelSize = new Dimension(100, 30);
     private final Dimension textFielSize = new Dimension(250, 30);
 
-    public SingleFunctionContainer(FunDef funDef, SceneFlow sceneflow) {
+    public SingleFunctionContainer(FunctionDefinition funDef, SceneFlow sceneflow) {
         mFunDef = funDef;
         mFunDefBackup = funDef.getCopy();
         mSceneFlow = sceneflow;
@@ -149,7 +149,7 @@ public class SingleFunctionContainer extends JPanel {
             while (args.hasMoreElements()) {
                 String argString = (String) args.nextElement();
 
-                mFunDef.addParam(new ParamDef(getNameMap().get(argString),
+                mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString),
                         getTypeMap().get(argString)));
             }
         } catch (Exception ex) {
@@ -391,8 +391,7 @@ public class SingleFunctionContainer extends JPanel {
                     while (args.hasMoreElements()) {
                         String argString = (String) args.nextElement();
 
-                        mFunDef.addParam(
-                                new ParamDef(getNameMap().get(argString), getTypeMap().get(argString)));
+                        mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString), getTypeMap().get(argString)));
                     }
 
                     EditorInstance.getInstance().refresh();
@@ -462,8 +461,7 @@ public class SingleFunctionContainer extends JPanel {
                         while (args.hasMoreElements()) {
                             String argString = (String) args.nextElement();
 
-                            mFunDef.addParam(
-                                    new ParamDef(getNameMap().get(argString), getTypeMap().get(argString)));
+                            mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString), getTypeMap().get(argString)));
                         }
 
                         EditorInstance.getInstance().refresh();
@@ -500,7 +498,7 @@ public class SingleFunctionContainer extends JPanel {
                 while (args.hasMoreElements()) {
                     String argString = (String) args.nextElement();
 
-                    mFunDef.addParam(new ParamDef(getNameMap().get(argString),
+                    mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString),
                             getTypeMap().get(argString)));
                 }
 
@@ -769,7 +767,7 @@ public class SingleFunctionContainer extends JPanel {
             while (args.hasMoreElements()) {
                 String argString = (String) args.nextElement();
 
-                mFunDef.addParam(new ParamDef(getNameMap().get(argString),
+                mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString),
                         getTypeMap().get(argString)));
             }
 
@@ -835,7 +833,7 @@ public class SingleFunctionContainer extends JPanel {
         jb.setMaximumSize(dim);
     }
 
-    public FunDef getFunDef() {
+    public FunctionDefinition getFunDef() {
         return mFunDef;
     }
 

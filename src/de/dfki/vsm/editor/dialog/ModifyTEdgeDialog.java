@@ -11,9 +11,9 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
-import de.dfki.vsm.model.sceneflow.BasicNode;
-import de.dfki.vsm.model.sceneflow.SuperNode;
-import de.dfki.vsm.model.sceneflow.TEdge;
+import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 
@@ -42,7 +42,7 @@ import javax.swing.JScrollPane;
 public class ModifyTEdgeDialog extends Dialog {
 
     // The edge that should be created
-    private final TEdge mTEdge;
+    private final TimeoutEdge mTEdge;
 
     // private HashMap<Pair<String, BasicNode>, Pair<String, BasicNode>> mAltStartNodeMap = null;
     private final AltStartNodeManager mAltStartNodeManager;
@@ -69,8 +69,8 @@ public class ModifyTEdgeDialog extends Dialog {
         super(EditorInstance.getInstance(), "Create Timeout Edge", true);
 
         // Set the edge data
-        mTEdge = new TEdge();
-        mTEdge.setTarget(targetNode.getId());
+        mTEdge = new TimeoutEdge();
+        mTEdge.setTargetUnid(targetNode.getId());
         mTEdge.setSourceNode(sourceNode);
         mTEdge.setTargetNode(targetNode);
 
@@ -81,7 +81,7 @@ public class ModifyTEdgeDialog extends Dialog {
         initComponents();
     }
     
-    public ModifyTEdgeDialog(TEdge tedge) {
+    public ModifyTEdgeDialog(TimeoutEdge tedge) {
         super(EditorInstance.getInstance(), "Modify Timeout Edge:", true);
         mTEdge = tedge;
 
@@ -258,7 +258,7 @@ public class ModifyTEdgeDialog extends Dialog {
         mAltStartNodePanel.add(buttonsBox);
     }
 
-    public TEdge run() {
+    public TimeoutEdge run() {
         setVisible(true);
 
         if (mPressedButton == Button.OK) {
