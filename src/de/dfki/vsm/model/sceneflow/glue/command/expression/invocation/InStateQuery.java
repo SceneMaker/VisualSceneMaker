@@ -2,19 +2,20 @@ package de.dfki.vsm.model.sceneflow.glue.command.expression.invocation;
 
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
+import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class InStateCond extends Expression {
+public final class InStateQuery extends Expression {
 
     String mState;
 
-    public InStateCond() {
+    public InStateQuery() {
     }
 
-    public InStateCond(final String state) {
+    public InStateQuery(final String state) {
         mState = state;
     }
 
@@ -24,27 +25,27 @@ public final class InStateCond extends Expression {
 
     @Override
     public final String getAbstractSyntax() {
-        return "InStateCond(" + mState + ")";
+        return "InStateQuery(" + mState + ")";
     }
 
     @Override
     public final String getConcreteSyntax() {
-        return "InStateCond(" + mState + ")";
+        return "In (" + mState + ")";
     }
 
     @Override
     public final String getFormattedSyntax() {
-        return "#p#InStateCond ( " + "#c#" + mState + " ) ";
+        return "#p#In ( " + "#c#" + mState + " ) ";
     }
 
     @Override
-    public final InStateCond getCopy() {
-        return new InStateCond(mState);
+    public final InStateQuery getCopy() {
+        return new InStateQuery(mState);
     }
 
     @Override
     public final void writeXML(final IOSIndentWriter out) {
-        out.println("<InStateCond state=\"" + mState + "\"/>");
+        out.println("<InStateQuery state=\"" + mState + "\"/>");
     }
 
     @Override

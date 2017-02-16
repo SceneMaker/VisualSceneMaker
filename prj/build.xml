@@ -41,11 +41,11 @@
     <!-- Define Scenes Cup File -->
     <property name="sflcupfile" value="${sflgendir}${file.separator}parser.cup"/>
     <!-- Define Scenes Parser File -->
-    <property name="sflprsfile" value="${sflgendir}${file.separator}ChartParser.java"/>
+    <property name="sflprsfile" value="${sflgendir}${file.separator}GlueParser.java"/>
     <!-- Define Scenes Scanner File -->
-    <property name="sflscnfile" value="${sflgendir}${file.separator}ChartLexxer.java"/>
+    <property name="sflscnfile" value="${sflgendir}${file.separator}GlueLexxer.java"/>
     <!-- Define Scenes Token File -->
-    <property name="sfltknfile" value="${sflgendir}${file.separator}ChartFields.java"/>    
+    <property name="sfltknfile" value="${sflgendir}${file.separator}GlueFields.java"/>    
     <!-- Define Library Path -->
     <path id="libpath">
         <fileset dir="${libdir}">
@@ -165,6 +165,13 @@
             <classpath refid="clspath"/>
         </java>
     </target>
+     <target name="test-parser">
+        <java classname="de.dfki.vsm.xtesting.TestParser" fork="true">
+            <classpath refid="clspath"/>
+        </java>
+    </target>
+    
+    
      <target name="test-swi-bfql">
         <java classname="de.dfki.vsm.xtesting.jpl.JPLTestSuite" fork="true">
             <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.test.pl"/>
@@ -206,12 +213,12 @@
     -->
     <!-- Scanner Generation -->
     <target name="-lexxer">
-        <echo message="Generating '${scnscnfile}' ${line.separator}      from '${scnlexfile}'"/>
+        <!-- <echo message="Generating '${scnscnfile}' ${line.separator}      from '${scnlexfile}'"/> -->
         <java classname="JFlex.Main">
             <arg file="${scnlexfile}"/>
             <classpath refid="clspath"/>
         </java>
-        <echo message="Generating '${sflscnfile}' ${line.separator}      from '${sfllexfile}'"/>
+        <!-- <echo message="Generating '${sflscnfile}' ${line.separator}      from '${sfllexfile}'"/> -->
         <java classname="JFlex.Main">
             <arg file="${sfllexfile}"/>
             <classpath refid="clspath"/>
@@ -219,15 +226,15 @@
     </target>    
     <!-- Parser Generation -->
     <target name="-parser">
-        <echo message="Generating '${scnprsfile}' ${line.separator}      from '${scncupfile}'"/>
+        <!-- <echo message="Generating '${scnprsfile}' ${line.separator}      from '${scncupfile}'"/> -->
         <java classname="java_cup.Main">
             <arg line="-progress -time -interface -parser ScriptParser -symbols ScriptFields -destdir '${scngendir}'"/>
             <arg file="${scncupfile}"/>
             <classpath refid="clspath"/>
         </java>
-        <echo message="Generating '${sflprsfile}' ${line.separator}      from '${sflcupfile}'"/>
+        <!-- <echo message="Generating '${sflprsfile}' ${line.separator}      from '${sflcupfile}'"/> -->
         <java classname="java_cup.Main">
-            <arg line="-progress -time -interface -parser ChartParser -symbols ChartFields -destdir '${sflgendir}'"/>
+            <arg line="-progress -time -interface -parser GlueParser -symbols GlueFields -destdir '${sflgendir}'"/>
             <arg file="${sflcupfile}"/>
             <classpath refid="clspath"/>
         </java>

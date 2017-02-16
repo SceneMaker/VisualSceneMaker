@@ -14,7 +14,7 @@ import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
-import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -294,15 +294,13 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
         String inputString = mInputTextField.getText().trim();
 
         try {
-            //ChartParser.parseResultType = ChartParser.LOG;
-            //ChartParser.parseResultType = ChartParser.EXP;
-            Expression log = (Expression)  ChartParser.run(inputString);
+            final Expression exp = (Expression)  GlueParser.run(inputString);
 
             //LogicalCond log = ChartParser.logResult;
             //Expression log = ChartParser.expResult;
 
-            if ((log != null) &&!ChartParser.errorFlag) {
-                mCEdge.setCondition(log);
+            if (exp != null) {
+                mCEdge.setCondition(exp);
                 mAltStartNodeManager.saveAltStartNodeMap();
                 return true;
             } else {

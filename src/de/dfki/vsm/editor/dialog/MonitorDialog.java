@@ -17,7 +17,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpressio
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
-import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -215,13 +215,10 @@ public class MonitorDialog extends JDialog implements EventListener {
 
     public boolean updateAVariable(VariableDefinition varDef, java.lang.String value) {
         try {
-            //ChartParser.parseResultType = ChartParser.EXP;
-            Expression exp = (Expression) ChartParser.run(value);
-
-            //Expression exp = ChartParser.expResult;
+            final Expression exp = (Expression) GlueParser.run(value);
 
             //TODO UNARY EXPRESSION MUST BE SEPARATED FOR EACH DIFFERENT VALUE (FLOAT, INT, DOUBLE)
-            if ((exp != null) && !ChartParser.errorFlag) {
+            if (exp != null) {
                 if (exp instanceof BoolLiteral) {
                     return mEditorProject.setVariable(varDef.getName(), ((BoolLiteral) exp).getValue());
                     //RunTimeInstance.getInstance().setVariable(mEditorProject, varDef.getName(), ((Bool) exp).getValue());

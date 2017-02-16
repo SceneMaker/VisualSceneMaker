@@ -11,15 +11,15 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class PrologQuery extends Expression {
+public final class RandomQuery extends Expression {
 
     private Expression mExpression;
 
-    public PrologQuery() {
+    public RandomQuery() {
     }
 
-    public PrologQuery(final Expression expression) {
-        mExpression = expression;
+    public RandomQuery(final Expression exp) {
+        mExpression = exp;
     }
 
     public final Expression getExpression() {
@@ -28,33 +28,33 @@ public final class PrologQuery extends Expression {
 
     @Override
     public final String getAbstractSyntax() {
-        return "PrologQuery(" + mExpression.getAbstractSyntax() + ")";
+        return "RandomValue(" + mExpression.getAbstractSyntax() + ")";
     }
 
     @Override
     public final String getConcreteSyntax() {
-        return "?- " + mExpression.getConcreteSyntax() + ".";
+        return "Random(" + mExpression.getConcreteSyntax() + ")";
     }
 
     @Override
-    public String getFormattedSyntax() {
-        return "#p#?- " + mExpression.getFormattedSyntax() + " .";
+    public final String getFormattedSyntax() {
+        return "#p#Random ( " + "#c#" + mExpression.getConcreteSyntax() + " ) ";
     }
 
     @Override
-    public final PrologQuery getCopy() {
-        return new PrologQuery(mExpression.getCopy());
+    public final RandomQuery getCopy() {
+        return new RandomQuery(mExpression.getCopy());
     }
 
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
-        out.println("<PrologQuery>");
+        out.println("<RandomQuery>");
         mExpression.writeXML(out);
-        out.println("</PrologQuery>");
+        out.println("</RandomQuery>");
     }
 
     @Override
-    public void parseXML(final Element element) throws XMLParseError {
+    public final void parseXML(final Element element) throws XMLParseError {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public final void run(final Element element) throws XMLParseError {

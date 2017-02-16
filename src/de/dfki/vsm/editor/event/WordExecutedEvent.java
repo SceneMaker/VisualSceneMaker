@@ -7,21 +7,21 @@ package de.dfki.vsm.editor.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.scenescript.UtteranceElement;
+import de.dfki.vsm.model.scenescript.UttrElement;
 import de.dfki.vsm.util.evt.EventObject;
 
 /**
  * @author Gregor Mehlmann
  */
 public class WordExecutedEvent extends EventObject {
-    private UtteranceElement mTurn;
+    private UttrElement mTurn;
 
-    public WordExecutedEvent(Object source, UtteranceElement turn) {
+    public WordExecutedEvent(Object source, UttrElement turn) {
         super(source);
         mTurn = turn;
     }
 
-    public UtteranceElement getWord() {
+    public UttrElement getWord() {
         return mTurn;
     }
 

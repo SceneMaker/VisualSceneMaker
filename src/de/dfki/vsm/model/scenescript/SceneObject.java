@@ -11,7 +11,7 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public final class SceneObject extends SceneEntity {
+public final class SceneObject extends ScriptEntity {
 
     // The List Of Scene Turns
     private LinkedList<SceneTurn> mTurnList = new LinkedList<>();

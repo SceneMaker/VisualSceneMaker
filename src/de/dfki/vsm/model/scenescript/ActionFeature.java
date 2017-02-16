@@ -9,7 +9,7 @@ import java.util.HashMap;
 /**
  * @author Gregor Mehlmann
  */
-public class ActionFeature extends SceneEntity {
+public class ActionFeature extends ScriptEntity {
 
     /*
     public enum Type {
