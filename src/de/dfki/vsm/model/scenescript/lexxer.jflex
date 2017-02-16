@@ -180,8 +180,8 @@ DIGITAL         = [0-9]
 SIGN            = ([-]?)
 INTEGER         = {SIGN}(0|[1-9][0-9]*)
 FLOATING        = {SIGN}((0|([1-9][0-9]*))\.[0-9]+)
-//STRING          = (\"({CHARACTER}|{DIGITAL}|{SPECIAL}|{WHITESPACE})*\")
-SQSTRING          = ('({CHARACTER}|{DIGITAL}|{SPECIAL}|{WHITESPACE})*')
+DQSTRING         = (\"({CHARACTER}|{DIGITAL}|{SPECIAL}|{WHITESPACE})*\")
+SQSTRING         = ('({CHARACTER}|{DIGITAL}|{SPECIAL}|{WHITESPACE})*')
 link            = (<a {WHITESPACE}+ "href="\"(.*?)\" {WHITESPACE}+ "target="\"(.*?)\">(.*?)<\/a>)
 // Abbreviation
 ABBREVIATION    = {SINGLEQUOTE}

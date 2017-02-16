@@ -54,7 +54,7 @@ integer     = (({digit})+) //[0-9]+
 float       = (({digit})+\.({digit})+) //[0-9]+\.[0-9]+ 
 identifier  = (({alpha}|_)({alpha}|{digit}|_)*) //[a-zA-Z_][a-zA-Z0-9_]* 
 //character = (\'({alpha}|{digit}|{special})\')
-string      = (\"({alpha}|{digit}|{special}|{white})*\")
+string      = (\"({alpha}|{digit}|{special}|{white}|(\\\"))*\")
 boolean     = (true|false)
 object      = (null)
 %%
