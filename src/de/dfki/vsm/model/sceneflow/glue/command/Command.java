@@ -22,53 +22,12 @@ public abstract class Command extends SyntaxObject {
             command = new Assignment();
             command.parseXML(element);
         } else {
-            // Try to parse expression
-            command = Expression.parse(element);
-            if (command == null) {
-                // Try to parse invocation
-                command = Invocation.parse(element);
-                if (command == null) {
-                    // Try to parse invocation
-                    command = Definition.parse(element);
-                }
-            }
+            command = Invocation.parse(element);
         }
-        return command;
-        /*
-        else if (tag.equals("PlaySceneGroup")) {
-            command = new PlaySceneGroup();
-            command.parseXML(element);
-        } else if (tag.equals("PlayActionCommand")) {
-            command = new PlayActionCommand();
-            command.parseXML(element);
-        } else if (tag.equals("PlayActionSequential")) {
-            command = new PlayActionSequential();
-            command.parseXML(element);
-        } else if (tag.equals("PlayActionConcurrent")) {
-            command = new PlayActionConcurrent();
-            command.parseXML(element);
-        } else if (tag.equals("PlayDialogAct")) {
-            command = new PlayDialogAction();
-            command.parseXML(element);
-        } else if (tag.equals("FreeOneSceneGroup")) {
-            command = new FreeOneSceneGroup();
-            command.parseXML(element);
-        } else if (tag.equals("FreeAllSceneGroups")) {
-            command = new FreeAllSceneGroups();
-            command.parseXML(element);
-        } else if (tag.equals("HistoryClearFlat")) {
-            command = new HistoryClearFlat();
-            command.parseXML(element);
-        } else if (tag.equals("HistoryClearDeep")) {
-            command = new HistoryClearDeep();
-            command.parseXML(element);
-        } else if (tag.equals("HistorySetDepth")) {
-            command = new HistorySetDepth();
-            command.parseXML(element);
-        } else {
+        // Parse the expression
+        if (command == null) {
             command = Expression.parse(element);
         }
         return command;
-         */
     }
 }
