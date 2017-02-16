@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * @author Gregor Mehlmann
  */
-public final class SceneParam extends UtteranceElement {
+public final class SceneParam extends UttrElement {
 
     // The Parameter Name
     private String mName;

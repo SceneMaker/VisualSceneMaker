@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * @author Gregor Mehlmann
  */
-public final class SceneComment extends SceneEntity {
+public final class SceneComment extends ScriptEntity {
 
     // The Scene Comment
     private String mComment;

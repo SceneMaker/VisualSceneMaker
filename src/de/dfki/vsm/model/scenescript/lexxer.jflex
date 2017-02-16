@@ -1,49 +1,47 @@
-////////////////////////////////////////////////////////////////////////////////
-// Start User Code /////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-// Package Definition
 package de.dfki.vsm.model.scenescript;
-// All Import Directives
-import de.dfki.vsm.util.syn.*;
-// Java Cup Runtime
-import java.io.*;
 
-////////////////////////////////////////////////////////////////////////////////
-// End User Code ///////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+// Import Directives
+import de.dfki.vsm.util.syn.*;
+import java.io.*;
 %%
-////////////////////////////////////////////////////////////////////////////////
-// Start Directives ////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-%char                                       // Enable Token Symbol Char Counting
-%line                                       // Enable Token Symbol Line Counting
-%column                                     // Enable Token Symbol Column Counting
-%unicode                                    // 16-Bit Unicode Character Encoding
-%final                                      // Make Generated Scanner Class Final
-%public                                     // Make Generated Scanner Class Public
+
+// Lexer Configuration /////////////////////////////////////////////////////////
+// Enable Token Symbol Char Counting
+%char 
+// Enable Token Symbol Line Counting                                      
+%line 
+// Enable Token Symbol Column Counting                                     
+%column   
+// 16-Bit Unicode Character Encoding                                  
+%unicode 
+// Make Generated Scanner Class Final                                   
+%final    
+// Make Generated Scanner Class Public                                 
+%public 
+// Set The Scanner Base Class                            
+%extends SyntaxDocLexxer                                   
 // Set The Scanner Class Name     
 %class ScriptLexxer     
-// Set The Scanner Interface                            
-%extends SyntaxDocLexxer
-// Set The Scanner Token Function
-%function next_token                        
 // Set The Scanner Class Token            
-%type ScriptSymbol   
-// The Standard Construtor Stuff                  
+%type ScriptSymbol 
+// Set The Scanner Token Function
+%function next_token                       
+// Construtor Initialization                     
 %init{  
-    // Do Nothing Here
+    // Do nothing here
 %init}
 %eofval{
     // Return NULL At End Of File
     return null;
-    // Return End Of File Token EOF At End                                    
+    // Return EOF Token At File End                                   
     //return create(ScriptFields.EOF);
 %eofval}
 %eof{
     // Do Nothing
 %eof}
 %eofclose
-// Define Lexical States
+
+// State Definitions ///////////////////////////////////////////////////////////
 %state YY_SCENE_HEAD
 %state YY_SCENE_UNDL
 %state YY_SCENE_LANG
@@ -60,14 +58,12 @@ import java.io.*;
 %state YY_ACTION_BODY
 %state YY_ERROR_STATE
 %state YYCOMMENT
-////////////////////////////////////////////////////////////////////////////////
-// End Directives //////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-%{
-    //////////////////////////////////////////////////////////////////////////////
-    // Start User Code ///////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////
 
+%state YY_ACTION_ACTIVITY
+
+
+// User Code ///////////////////////////////////////////////////////////////////
+%{
     // Reset The Token Scanner 
     @Override
     public final void init(
@@ -145,13 +141,9 @@ import java.io.*;
         // Return The New Symbol
         return symbol;
     }
-////////////////////////////////////////////////////////////////////////////////
-// End User Code ///////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 %}
-////////////////////////////////////////////////////////////////////////////////
-//////////////////// Macro Definitions /////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+
+// Macro Definitions ///////////////////////////////////////////////////////////
 // Underline
 UNDERLINE      = "_"
 // Colon Marks
@@ -205,9 +197,72 @@ COMMENTFOOT    = (\*\/)
 // Scenes & Turns
 SCENEWORD     = (scene|Scene)
 %%
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+<YYINITIAL>
+{ACTIONHEAD}
+{
+    // Enter The Action Scope
+    yybegin(YY_ACTION_ACTIVITY);
+}
+<YY_ACTION_ACTIVITY>
+{COLONMARK}
+{
+    return create(ScriptFields.COLONMARK);
+}
+<YY_ACTION_ACTIVITY>
+{ASSIGNMENT}
+{
+    return create(ScriptFields.ASSIGNMENT);
+}
+<YY_ACTION_ACTIVITY>
+{PLACEHOLDER}
+{
+    // Enter The Placeholder Scope 
+    yybegin(YY_VARIABLE);
+    // Remember The Last Lexxer State
+    mLastState = YY_ACTION_ACTIVITY;
+    // Return The Parameter Token 
+    return create(ScriptFields.PLACEHOLDER);
+}
+<YY_ACTION_ACTIVITY>
+{BOOLEAN}
+{
+    return create(ScriptFields.BOOLEAN);
+}
+<YY_ACTION_ACTIVITY>
+{INTEGER}
+{
+    return create(ScriptFields.INTEGER);
+}
+<YY_ACTION_ACTIVITY>
+{FLOATING}
+{
+    return create(ScriptFields.FLOATING);
+}
+<YY_ACTION_ACTIVITY>
+{SQSTRING}
+{
+    return create(ScriptFields.SQSTRING);
+}
+<YY_ACTION_ACTIVITY>
+{IDENTIFIER}
+{
+    return create(ScriptFields.IDENTIFIER);
+}
+<YY_ACTION_ACTIVITY>
+{ACTIONFOOT}
+{
+    // Leave The Action Tag Scope 
+    yybegin(YYINITIAL);
+}
+
+
+
+// Token Definitions ///////////////////////////////////////////////////////////
 // All Comments 
 <YYINITIAL>
 {COMMENTHEAD}(.*){COMMENTFOOT}

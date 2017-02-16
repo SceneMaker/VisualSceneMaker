@@ -11,24 +11,24 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class JavaCallExpression extends Expression {
+public final class ConstructExpression extends Expression {
 
     private String mName;
     private ArrayList<Expression> mArgList;
 
-    public JavaCallExpression() {
+    public ConstructExpression() {
         mName = new String();
         mArgList = new ArrayList();
     }
 
-    public JavaCallExpression(final String name) {
+    public ConstructExpression(final String name) {
         mName = name;
         mArgList = new ArrayList();
     }
 
-    public JavaCallExpression(final String name, final ArrayList list) {
+    public ConstructExpression(final String name, final ArrayList argList) {
         mName = name;
-        mArgList = list;
+        mArgList = argList;
     }
 
     public final String getName() {
@@ -43,7 +43,7 @@ public final class JavaCallExpression extends Expression {
         return mArgList;
     }
 
-    public final void setArgList(final ArrayList<Expression> value) {
+    public final void setArgList(final ArrayList value) {
         mArgList = value;
     }
 
@@ -52,12 +52,10 @@ public final class JavaCallExpression extends Expression {
     }
 
     public final ArrayList<Expression> getCopyOfArgList() {
-        ArrayList<Expression> copy = new ArrayList<Expression>();
-
+        final ArrayList<Expression> copy = new ArrayList();
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
         }
-
         return copy;
     }
 
@@ -71,23 +69,21 @@ public final class JavaCallExpression extends Expression {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "JavaCallExpression( " + mName + "( ";
+        String desc = "ConstructExpression( " + mName + "( ";
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getAbstractSyntax();
-
             if (i != mArgList.size() - 1) {
-                desc += " , ";
+                desc += ", ";
             }
         }
-        return desc + " ) )";
+        return desc + "))";
     }
 
     @Override
     public final String getConcreteSyntax() {
-        String desc = mName + " ( ";
+        String desc = "new " + mName + " ( ";
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getConcreteSyntax();
-
             if (i != mArgList.size() - 1) {
                 desc += " , ";
             }
@@ -97,10 +93,9 @@ public final class JavaCallExpression extends Expression {
 
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#b#" + mName + " ( ";
+        String desc = "#r#new " + "#b#" + mName + " ( ";
         for (int i = 0; i < mArgList.size(); i++) {
             desc += mArgList.get(i).getFormattedSyntax();
-
             if (i != mArgList.size() - 1) {
                 desc += " , ";
             }
@@ -109,17 +104,17 @@ public final class JavaCallExpression extends Expression {
     }
 
     @Override
-    public final JavaCallExpression getCopy() {
-        return new JavaCallExpression(mName, getCopyOfArgList());
+    public final ConstructExpression getCopy() {
+        return new ConstructExpression(mName, getCopyOfArgList());
     }
 
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
-        out.println("<JavaCallExpression name=\"" + mName + "\">").push();
+        out.println("<ConstructExpression name=\"" + mName + "\">").push();
         for (int i = 0; i < mArgList.size(); i++) {
             mArgList.get(i).writeXML(out);
         }
-        out.pop().println("</JavaCallExpression>");
+        out.pop().println("</ConstructExpression>");
     }
 
     @Override
