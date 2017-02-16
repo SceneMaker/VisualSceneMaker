@@ -61,7 +61,7 @@ parser code {:
       final Object object = symbol.value;
       if(object instanceof SyntaxDocToken) {
         SyntaxDocToken token = (SyntaxDocToken)object;
-        mLogger.failure("Error: Syntax Error With Token '" + token + "'");
+        mLogger.failure("Error: Syntax Error With Token\n'" + token + "'");
       } 
       // Propagate Error
       super.done_parsing();
@@ -72,7 +72,7 @@ parser code {:
       final Object object = symbol.value;
       if(object instanceof SyntaxDocToken) {
         final SyntaxDocToken token = (SyntaxDocToken)object;
-        mLogger.failure("Error: Unrecovered Syntax Error '" + token + "'");
+        mLogger.failure("Error: Unrecovered Syntax Error\n'" + token + "'");
       } 
       // Propagate Error
       super.done_parsing();
@@ -106,17 +106,13 @@ parser code {:
             final ScriptParser parser = new ScriptParser(lexxer, debug);
             // Parse Input Content
             final Symbol symbol = parser.parse();
-            // Cast The Symbol Down
+             // Cast The Symbol Down
             if(symbol != null) {
                 //if(symbol.value instanceof SceneScript) {
                 mLogger.success("Parsing Success:\n" + symbol.value);  
-                if(action) {
-                     // Return result at success
-                     return (ActionObject)symbol.value;
-                } else {
-                    // Return result at success
-                     return (SceneScript)symbol.value;
-                }
+                // Return result at success
+                return symbol.value;
+              
             } else {
                 mLogger.failure("Parsing Failure: Invalid Parsing Result");  
                 // Return NULL at failure
@@ -176,7 +172,7 @@ non terminal SceneWord utterance_word;
 non terminal SceneParam utterance_variable;
 non terminal SceneAbbrev utterance_abbreviation;
 //
-non terminal ActionObject utterance_action;
+non terminal ActionObject nested_action;
 non terminal ActionObject action_definition;
 non terminal ActionFeature action_feature;
 //
@@ -195,9 +191,20 @@ non terminal SyntaxDocToken whitespaces;
 //
 non terminal ScriptEntity script_entity;
 // Start Symbol Script
-start with scene_script_definition;
+//start with scene_script_definition;
 
 // Grammar Rule Definitions ////////////////////////////////////////////////////
+script_entity ::=
+  scene_script_definition:x
+    {:
+        RESULT = x;
+    :}
+| action_definition:x
+    {:
+        RESULT =x;
+    :}
+;
+
 // Scene Script Definition 
 scene_script_definition ::=
     scene_script_entity_list_opt:l
@@ -362,7 +369,7 @@ utterance_element ::=
     {:
         RESULT = x;
     :}
-  | utterance_action:x
+  | nested_action:x
     {:
         RESULT = x;
     :}
@@ -400,8 +407,8 @@ utterance_abbreviation ::=
             x.getValue(), y.getValue());
     :}
 ;
-// Utterance Action
-utterance_action ::=
+// Nested Action
+nested_action ::=
     ACTIONHEAD:h action_definition:x ACTIONFOOT:f
     {:
         RESULT = x;
