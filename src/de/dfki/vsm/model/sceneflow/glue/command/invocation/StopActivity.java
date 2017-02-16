@@ -12,35 +12,34 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class PlayActionCommand extends Invocation {
+public final class StopActivity extends Invocation {
 
-    public enum ExecutionMode {
+    public enum StopMode {
         Default,
-        Concurrent,
-        Sequential
+        Operator
     };
-    private ExecutionMode mMode;
+    private StopMode mMode;
     private Expression mCommand;
     private ArrayList<Expression> mArgList;
 
-    public PlayActionCommand() {
-        mMode = ExecutionMode.Concurrent;
+    public StopActivity() {
+        mMode = StopMode.Default;
         mCommand = null;
         mArgList = new ArrayList();
     }
-        
-    public PlayActionCommand(
+
+    public StopActivity(
             final Expression arg,
-            final ExecutionMode mode) {
+            final StopMode mode) {
         mMode = mode;
         mCommand = arg;
         mArgList = new ArrayList();
     }
 
-    public PlayActionCommand(
+    public StopActivity(
             final Expression arg,
             final ArrayList<Expression> argList,
-            final ExecutionMode mode) {
+            final StopMode mode) {
         mMode = mode;
         mCommand = arg;
         mArgList = argList;
@@ -72,7 +71,7 @@ public final class PlayActionCommand extends Invocation {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "PlayActionCommand(";
+        String desc = "StopActivity(";
         desc += ((mCommand != null)
                 ? mCommand.getAbstractSyntax()
                 : "");
@@ -84,51 +83,52 @@ public final class PlayActionCommand extends Invocation {
 
     @Override
     public final String getConcreteSyntax() {
-        String desc = "PlayActionCommand(";
+
+        String desc = (mMode == StopMode.Default ? "StopActivity(" : "!~");
         desc += ((mCommand != null)
                 ? mCommand.getConcreteSyntax()
                 : "");
         for (int i = 0; i < mArgList.size(); i++) {
             desc += ", " + mArgList.get(i).getConcreteSyntax();
         }
-        return desc + ")";
+        return desc + (mMode == StopMode.Default ? ")" : ".");
     }
 
     // TODO: Check the mode for syntax here
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#p#PlayActionCommand ( ";
+        String desc = "#p#" + (mMode == StopMode.Default ? "StopActivity ( " : "!~ ");
         desc += ((mCommand != null)
                 ? mCommand.getFormattedSyntax()
                 : "");
         for (int i = 0; i < mArgList.size(); i++) {
             desc += " , " + mArgList.get(i).getFormattedSyntax();
         }
-        return desc + " ) ";
+        return desc + (mMode == StopMode.Default ? " ) " : " .");
     }
 
     @Override
-    public final PlayActionCommand getCopy() {
-        return new PlayActionCommand(mCommand.getCopy(), getCopyOfArgList(), mMode);
+    public final StopActivity getCopy() {
+        return new StopActivity(mCommand.getCopy(), getCopyOfArgList(), mMode);
     }
 
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
-        out.println("<PlayActionCommand mode=\""+ mMode+"\">").push();
+        out.println("<StopActivity mode=\"" + mMode + "\">").push();
         if (mCommand != null) {
             mCommand.writeXML(out);
         }
         for (int i = 0; i < mArgList.size(); i++) {
             mArgList.get(i).writeXML(out);
         }
-        out.pop().println("</PlayActionCommand>");
+        out.pop().println("</StopActivity>");
     }
 
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
-        
-        mMode = ExecutionMode.valueOf(element.getAttribute("mode"));
-        
+
+        mMode = StopMode.valueOf(element.getAttribute("mode"));
+
         final ArrayList<Expression> expList = new ArrayList();
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override

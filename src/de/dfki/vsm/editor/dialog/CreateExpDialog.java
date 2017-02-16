@@ -5,7 +5,7 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
-import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
@@ -132,13 +132,10 @@ public class CreateExpDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            //ChartParser.parseResultType = ChartParser.EXP;
-            Expression exp = (Expression) ChartParser.run(inputString);
+            final Expression exp = (Expression) GlueParser.run(inputString);
 
-            //Expression exp = ChartParser.expResult;
-            if ((exp != null) && !ChartParser.errorFlag) {
+            if (exp != null) {
                 mExpression = exp;
-
                 return true;
             } else {
                 return false;

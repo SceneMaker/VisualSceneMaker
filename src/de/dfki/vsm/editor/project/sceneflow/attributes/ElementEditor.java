@@ -28,7 +28,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
-import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.RegularExpressions;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -432,12 +432,11 @@ class ConditionEditor extends JPanel implements EventListener {
         try {
             //ChartParser.parseResultType = ChartParser.LOG;
             //ChartParser.parseResultType = ChartParser.EXP;
-            Expression log = (Expression) ChartParser.run(inputString);
+            Expression log = (Expression) GlueParser.run(inputString);
 
             //LogicalCond log = ChartParser.logResult;
             //Expression log = ChartParser.expResult;
-
-            if ((log != null) && !ChartParser.errorFlag) {
+            if (log != null) {
                 mDataCEdge.setCondition(log);
             } else {
 
@@ -735,17 +734,10 @@ class InterruptEditor extends JPanel implements EventListener {
         String inputString = mIEdgeDialog.getInputTextField().getText().trim();
 
         try {
-            //ChartParser.parseResultType = ChartParser.LOG;
-            //ChartParser.parseResultType = ChartParser.EXP;
-            Expression log = (Expression) ChartParser.run(inputString);
-
-            //LogicalCond log = ChartParser.logResult;
-            //Expression log = ChartParser.expResult;
-
-            if ((log != null) && !ChartParser.errorFlag) {
-                mDataIEdge.setCondition(log);
+            final Expression exp = (Expression) GlueParser.run(inputString);
+            if (exp != null) {
+                mDataIEdge.setCondition(exp);
             } else {
-
                 // Do nothing
             }
         } catch (Exception e) {

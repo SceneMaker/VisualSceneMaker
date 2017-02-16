@@ -1,21 +1,15 @@
 package de.dfki.vsm.model.scenescript;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-
 import org.w3c.dom.Element;
-
-//~--- JDK imports ------------------------------------------------------------
-
 import java.util.HashMap;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class SceneAbbrev extends UtteranceElement {
+public final class SceneAbbrev extends UttrElement {
 
     // The First Part
     private String mFirst;

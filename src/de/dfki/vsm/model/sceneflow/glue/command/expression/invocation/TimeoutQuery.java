@@ -11,47 +11,47 @@ import org.w3c.dom.Element;
 /**
  * @author Gregor Mehlmann
  */
-public final class TimeoutCond extends Expression {
+public final class TimeoutQuery extends Expression {
 
     // private long mTimeout;
-    private Expression mTimeoutExp;
+    private Expression mExpression;
 
-    public TimeoutCond() {
+    public TimeoutQuery() {
     }
 
-    public TimeoutCond(final Expression exp) {
-        mTimeoutExp = exp;
+    public TimeoutQuery(final Expression exp) {
+        mExpression = exp;
     }
 
-    public final Expression getTimeout() {
-        return mTimeoutExp;
+    public final Expression getExpression() {
+        return mExpression;
     }
 
     @Override
     public final String getAbstractSyntax() {
-        return "TimeoutCond(" + mTimeoutExp.getAbstractSyntax() + ")";
+        return "TimeoutCond(" + mExpression.getAbstractSyntax() + ")";
     }
 
     @Override
     public final String getConcreteSyntax() {
-        return "Timeout(" + mTimeoutExp.getConcreteSyntax() + ")";
+        return "Timeout(" + mExpression.getConcreteSyntax() + ")";
     }
 
     @Override
     public final String getFormattedSyntax() {
-        return "#p#Timeout ( " + "#c#" + mTimeoutExp.getConcreteSyntax() + " ) ";
+        return "#p#Timeout ( " + "#c#" + mExpression.getConcreteSyntax() + " ) ";
     }
 
     @Override
-    public final TimeoutCond getCopy() {
-        return new TimeoutCond(mTimeoutExp.getCopy());
+    public final TimeoutQuery getCopy() {
+        return new TimeoutQuery(mExpression.getCopy());
     }
 
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
-        out.println("<TimeoutCond>");
-        mTimeoutExp.writeXML(out);
-        out.println("</TimeoutCond>");
+        out.println("<TimeoutQuery>");
+        mExpression.writeXML(out);
+        out.println("</TimeoutQuery>");
     }
 
     @Override
@@ -59,7 +59,7 @@ public final class TimeoutCond extends Expression {
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public final void run(final Element element) throws XMLParseError {
-                mTimeoutExp = Expression.parse(element);
+                mExpression = Expression.parse(element);
             }
         });
     }

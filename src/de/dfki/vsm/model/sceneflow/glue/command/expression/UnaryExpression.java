@@ -13,9 +13,9 @@ import org.w3c.dom.Element;
 public final class UnaryExpression extends Expression {
 
     private Expression mExp;
-    private Operator mOperator;
+    private UnaryOp mOperator;
 
-    public enum Operator {
+    public enum UnaryOp {
 
         Neg, Not, Lnot, Inc, Dec
     }
@@ -25,7 +25,7 @@ public final class UnaryExpression extends Expression {
         mOperator = null;
     }
 
-    public UnaryExpression(Expression exp, Operator operator) {
+    public UnaryExpression(Expression exp, UnaryOp operator) {
         mExp = exp;
         mOperator = operator;
     }
@@ -38,11 +38,11 @@ public final class UnaryExpression extends Expression {
         return mExp;
     }
 
-    public void setOperator(Operator value) {
+    public void setOperator(UnaryOp value) {
         mOperator = value;
     }
 
-    public Operator getOperator() {
+    public UnaryOp getOperator() {
         return mOperator;
     }
 
@@ -127,7 +127,7 @@ public final class UnaryExpression extends Expression {
 
     @Override
     public void parseXML(Element element) throws XMLParseError {
-        mOperator = Operator.valueOf(element.getTagName());
+        mOperator = UnaryOp.valueOf(element.getTagName());
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(Element element) throws XMLParseError {

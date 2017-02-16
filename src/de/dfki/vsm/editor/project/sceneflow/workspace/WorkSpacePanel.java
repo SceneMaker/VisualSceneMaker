@@ -53,7 +53,7 @@ import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.glue.command.expression.JavaCallExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
@@ -695,7 +695,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void createFunCall(Node node, String name) {
-        JavaCallExpression cmd = new JavaCallExpression();
+        CallingExpression cmd = new CallingExpression();
 
         cmd.setName(name);
 

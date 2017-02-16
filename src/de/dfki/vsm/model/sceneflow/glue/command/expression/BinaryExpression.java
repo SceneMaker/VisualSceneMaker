@@ -8,6 +8,34 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.LinkedList;
 import org.w3c.dom.Element;
 
+// Static Imports
+/*
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity.Mode;
+import static de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity.Mode.Sequential;
+import static de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity.Mode.Concurrent;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Neg;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Not;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Lnot;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Inc;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Dec;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.AndAnd;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.OrOr;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.And;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Or;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Xor;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Add;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Sub;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Mul;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Div;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Mod;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Eq;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Neq;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Ge;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Gt;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Le;
+import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Lt;
+*/
+
 /**
  * @author Gregor Mehlmann
  */
@@ -15,9 +43,9 @@ public final class BinaryExpression extends Expression {
 
     private Expression mLeftExp;
     private Expression mRightExp;
-    private Operator mOperator;
+    private BinaryOp mOperator;
 
-    public enum Operator {
+    public enum BinaryOp {
         // Logical Expressions
         AndAnd, OrOr, And, Or, Xor,
         // Arithmetric Expressions
@@ -34,7 +62,7 @@ public final class BinaryExpression extends Expression {
 
     public BinaryExpression(
             final Expression left,
-            final Operator op,
+            final BinaryOp op,
             final Expression right) {
         mLeftExp = left;
         mOperator = op;
@@ -57,11 +85,11 @@ public final class BinaryExpression extends Expression {
         return mRightExp;
     }
 
-    public final void setOperator(final Operator value) {
+    public final void setOperator(final BinaryOp value) {
         mOperator = value;
     }
 
-    public final Operator getOperator() {
+    public final BinaryOp getOperator() {
         return mOperator;
     }
 
@@ -223,7 +251,7 @@ public final class BinaryExpression extends Expression {
 
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
-        mOperator = Operator.valueOf(element.getTagName());
+        mOperator = BinaryOp.valueOf(element.getTagName());
         final LinkedList<Expression> expList = new LinkedList();
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override

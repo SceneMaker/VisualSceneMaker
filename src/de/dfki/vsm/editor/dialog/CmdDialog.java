@@ -1,13 +1,12 @@
 package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -21,8 +20,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 //~--- JDK imports ------------------------------------------------------------
-
-
 /**
  *
  * @author Gregor Mehlmann
@@ -33,8 +30,8 @@ public class CmdDialog extends Dialog {
     private Command mCommand;
 
     // GUI-Components
-    private HintTextField   mInputTextField;
-    private OKButton     mOkButton;
+    private HintTextField mInputTextField;
+    private OKButton mOkButton;
     private CancelButton mCancelButton;
     private JLabel errorMsg;
 
@@ -76,7 +73,7 @@ public class CmdDialog extends Dialog {
         errorMsg = new JLabel("Information Required");
         errorMsg.setForeground(Color.white);
         errorMsg.setMinimumSize(new Dimension(300, 30));
-        
+
         //Key listener need to gain focus on the text field
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
 
@@ -84,16 +81,15 @@ public class CmdDialog extends Dialog {
             public boolean dispatchKeyEvent(KeyEvent ke) {
                 //boolean keyHandled = false;
                 if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if(!mInputTextField.hasFocus())
-                    {
-                        mInputTextField.setText(mInputTextField.getText()+ke.getKeyChar());
+                    if (!mInputTextField.hasFocus()) {
+                        mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
                         mInputTextField.requestFocus();
                     }
                 }
                 return false;
             }
         });
-        
+
         Box finalBox = Box.createVerticalBox();
         finalBox.add(Box.createVerticalStrut(15));
         finalBox.add(mInputTextField);
@@ -101,7 +97,7 @@ public class CmdDialog extends Dialog {
         finalBox.add(errorMsg);
         finalBox.add(Box.createVerticalStrut(10));
         finalBox.add(mButtonPanel);
-        
+
         addComponent(finalBox, 10, 10, 300, 160);
         packComponents(320, 180);
         mOkButton.requestFocus();
@@ -130,7 +126,7 @@ public class CmdDialog extends Dialog {
     }
 
     private boolean process() {
-        if(mInputTextField.getText().length() == 0){
+        if (mInputTextField.getText().length() == 0) {
             mInputTextField.setBorder(BorderFactory.createLineBorder(Color.red));
             errorMsg.setForeground(Color.red);
 
@@ -139,14 +135,10 @@ public class CmdDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            //ChartParser.parseResultType = ChartParser.CMD;
-            Command cmd = (Command) ChartParser.run(inputString);
+            final Command cmd = (Command) GlueParser.run(inputString);
 
-            //Command cmd = ChartParser.cmdResult;
-
-            if ((cmd != null) &&!ChartParser.errorFlag) {
+            if (cmd != null) {
                 mCommand = cmd;
-
                 return true;
             } else {
                 return false;

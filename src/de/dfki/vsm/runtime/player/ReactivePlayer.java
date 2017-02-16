@@ -9,7 +9,7 @@ import de.dfki.vsm.model.scenescript.SceneParam;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.model.scenescript.SceneUttr;
-import de.dfki.vsm.model.scenescript.UtteranceElement;
+import de.dfki.vsm.model.scenescript.UttrElement;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.activity.ActionActivity;
@@ -55,11 +55,6 @@ public final class ReactivePlayer extends RunTimePlayer {
         mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
     }
 
-    //@Override
-    //public final long getTime() {
-    //    return mTimer.getTime();
-    //}
-
     // Launch the player
     @Override
     public final void launch() {
@@ -69,9 +64,6 @@ public final class ReactivePlayer extends RunTimePlayer {
         if (mUseJPL) {
             JPLEngine.load("swi/logic.pl");
         }
-        // Start the system timer
-        //mTimer = new RunTimeTimer(10, mUseJPL);
-        //mTimer.start();
     }
 
     // Unload the player
@@ -79,24 +71,17 @@ public final class ReactivePlayer extends RunTimePlayer {
     public final void unload() {
         // Print some information
         mLogger.message("Unloading reactive player '" + this + "'");
-        // Abort the system timer
-        //mTimer.abort();
-        //try {
-        //    mTimer.join();
-        //} catch (final InterruptedException exc) {
-        //    mLogger.failure(exc.toString());
-        //}
     }
 
     // Call the play action activity method
     @Override
-    public final void playActionActivity(final String name, final LinkedList args) {
+    public final void playAction(final String name, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
         final String task = process.getName() + ":" + name + "@";
         // Print some information
-        mLogger.message("Playing Action Activity '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
+        mLogger.message("Playing Action '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
 
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
@@ -123,10 +108,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                             actor = mStr;
                         } else if (cnt == 1) {
                             action = mStr;
-                            action = (action.contains("]")) ? action.replace("]", "") : action; 
+                            action = (action.contains("]")) ? action.replace("]", "") : action;
                         } else if (mStr.contains("=")) {
                             String[] pair = mStr.split("=");
-                            features.add(new ActionFeature(/*ActionFeature.Type.STRING,*/ 0, pair[0].length(), pair[0], pair[1]));
+                            features.add(new ActionFeature(/*ActionFeature.Type.STRING,*/0, pair[0].length(), pair[0], pair[1]));
                         }
                         cnt++;
                     }
@@ -170,7 +155,7 @@ public final class ReactivePlayer extends RunTimePlayer {
     // Call the play scene group method
     @Override
 
-    public final void playSceneGroup(final String name, final LinkedList args) {
+    public final void playScene(final String name, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
@@ -189,8 +174,8 @@ public final class ReactivePlayer extends RunTimePlayer {
         final SceneScript script = mProject.getSceneScript();
         String slang = null;
         // find the language used by SceneGroup
-        for(String str:script.getLangSet()){
-            if(script.getSceneGroup(str, name) != null){
+        for (String str : script.getLangSet()) {
+            if (script.getSceneGroup(str, name) != null) {
                 slang = str;
                 break;
             }
@@ -211,7 +196,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         //mLogger.message("Utterance " + uttr.getText().trim());
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
-                        for (final UtteranceElement element : uttr.getWordList()) {
+                        for (final UttrElement element : uttr.getWordList()) {
                             //mLogger.message("element " + element);
 
                             if (element instanceof ActionObject) {
