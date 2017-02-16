@@ -15,7 +15,7 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public final class SceneTurn extends SceneEntity {
+public final class SceneTurn extends ScriptEntity {
 
 	// The Utterance List
 	private LinkedList<SceneUttr> mUttrList = new LinkedList<>();
@@ -93,7 +93,7 @@ public final class SceneTurn extends SceneEntity {
 
 		for (SceneUttr utt : mUttrList) {
 
-			for (UtteranceElement word : utt.getWordList()) {
+			for (UttrElement word : utt.getWordList()) {
 				if (word instanceof SceneWord) {
 					result += ((SceneWord) word).getText() + " ";
 				}

@@ -17,21 +17,17 @@ public abstract class Command extends SyntaxObject {
         Command command = null;
         // The name of the XML tag
         final String tag = element.getTagName();
-        System.err.println("Parsing Command " + tag);
         // Parse the command
         if (tag.equals("Assignment")) {
             command = new Assignment();
             command.parseXML(element);
         } else {
-            System.err.println("No Assignment");
             // Try to parse expression
             command = Expression.parse(element);
             if (command == null) {
-                System.err.println("No Expression");
                 // Try to parse invocation
                 command = Invocation.parse(element);
                 if (command == null) {
-                    System.err.println("No Invocation");
                     // Try to parse invocation
                     command = Definition.parse(element);
                 }

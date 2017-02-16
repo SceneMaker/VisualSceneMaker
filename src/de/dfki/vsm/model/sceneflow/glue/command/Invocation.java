@@ -5,9 +5,10 @@ import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneGroup;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearDeep;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearFlat;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistorySetDepth;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionCommand;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActivity;
 import de.dfki.vsm.util.xml.XMLParseError;
 import org.w3c.dom.Element;
 
@@ -22,15 +23,17 @@ public abstract class Invocation extends Command {
     public static Invocation parse(final Element element) throws XMLParseError {
         Invocation invocation;
         final String tag = element.getTagName();
-        System.err.println("Parsing Invocation " + tag);
-        if (tag.equals("PlayDialogAct")) {
+        if (tag.equals("StopActivity")) {
+            invocation = new StopActivity();
+            invocation.parseXML(element);
+        } else if (tag.equals("PlayActivity")) {
+            invocation = new PlayActivity();
+            invocation.parseXML(element);
+        } else if (tag.equals("PlayDialogAct")) {
             invocation = new PlayDialogAction();
             invocation.parseXML(element);
         } else if (tag.equals("PlaySceneGroup")) {
             invocation = new PlaySceneGroup();
-            invocation.parseXML(element);
-        } else if (tag.equals("PlayActionCommand")) {
-            invocation = new PlayActionCommand();
             invocation.parseXML(element);
         } else if (tag.equals("FreeOneSceneGroup")) {
             invocation = new UnblockSceneGroup();

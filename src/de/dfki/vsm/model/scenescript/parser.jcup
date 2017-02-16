@@ -1,30 +1,24 @@
-////////////////////////////////////////////////////////////////////////////////
-// Start User Code /////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-// Package Definition
 package de.dfki.vsm.model.scenescript;
+
 // Java System Imports
 import java.io.*;
 import java.util.*;
 import java_cup.runtime.*;
-// SceneMaker Imports
 import de.dfki.vsm.util.log.*;
 import de.dfki.vsm.util.syn.*;
-////////////////////////////////////////////////////////////////////////////////
-// Start Action Code ///////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
+// Action Code
 action code
 {:
     // The Singelton Logger
     private final LOGDefaultLogger mLogger = 
       LOGDefaultLogger.getInstance();
     // The Debugging Flag
-    private boolean mDebugFlag = false;
+    //private boolean mDebugFlag = false;
     // Set Debugging Flag
-    public final void debug(final boolean flag) {
-        mDebugFlag = flag;
-    }
+    //public final void debug(final boolean flag) {
+    //    mDebugFlag = flag;
+    //}
     // Create a Java Class From A String
     private final Class clazz(final String name) {
         Class clazz = null;
@@ -39,28 +33,28 @@ action code
         }
     }
     // Print A Debug Message
-    private final void debug(final String message) {
-        if(mDebugFlag) {
-            mLogger.message(message);
-        }
-    }
+    //private final void debug(final String message) {
+    //    if(mDebugFlag) {
+    //        mLogger.message(message);
+    //    }
+    //}
 :};
-////////////////////////////////////////////////////////////////////////////////
-// Start Initial Code //////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+
+// Initial Code 
 init with {:
     // Switch On/Off Debug Mode
-    action_obj.debug(mDebugFlag);
+    //action_obj.debug(mDebugFlag);
 :};
-////////////////////////////////////////////////////////////////////////////////
-// Start Parser Code ///////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+
+// Parser Code 
 parser code {:
     // The System Logger
     private final static LOGDefaultLogger mLogger 
       = LOGDefaultLogger.getInstance();
+
     // The Debugging Flag
     private boolean mDebugFlag = false;
+
     // Handle An Error 
     @Override
     public final void syntax_error(final Symbol symbol) {
@@ -91,45 +85,52 @@ parser code {:
         mDebugFlag = debug;
     }
     // Parse A Scene Script From  String
-    public final static SceneScript run(
-        final String start, 
+    public final static Object run(
         final String input,
+        final boolean action,
         final boolean debug, 
         final boolean comment, 
         final boolean newline,
         final boolean whitespace) {
+        //
+        final String string = (action ? "[" + input + "]" : input);
+        //
+        mLogger.message("Parsing Input String '" + string + "'");
         try {
             // Create A String Reader
-            final StringReader reader = new StringReader(input);
-            // Create A Script Lexxer
+            final StringReader reader = new StringReader(string);
+             // Create A Script Lexxer
             final ScriptLexxer lexxer = new ScriptLexxer(
                 reader, comment, newline, whitespace);
-            // Create A Script PArser
+            // Create A Script Parser
             final ScriptParser parser = new ScriptParser(lexxer, debug);
-            //mLogger.failure("Parsing Content:\n" + input);  
+            // Parse Input Content
             final Symbol symbol = parser.parse();
             // Cast The Symbol Down
             if(symbol != null) {
-                if(symbol.value instanceof SceneScript) {
-                    //mLogger.failure("Parsing Result:\n" + symbol.value);  
-                    return (SceneScript)symbol.value;
+                //if(symbol.value instanceof SceneScript) {
+                mLogger.success("Parsing Success:\n" + symbol.value);  
+                if(action) {
+                     // Return result at success
+                     return (ActionObject)symbol.value;
                 } else {
-                    //mLogger.failure("Error: Cannot Parse Scene Script");
-                    return null;
+                    // Return result at success
+                     return (SceneScript)symbol.value;
                 }
             } else {
-                //mLogger.failure("Error: Cannot Parse Scene Script");
+                mLogger.failure("Parsing Failure: Invalid Parsing Result");  
+                // Return NULL at failure
                 return null;
             }
-        } catch(Exception exc) {
-            //mLogger.failure("Error: Parsing Scene Script " + exc.toString() + "");
+        } catch(final Exception exc) {
+            mLogger.failure("Parsing Failure:\n" + exc.toString()); 
+            // Return NULL at failure 
             return null;
         }
     }
 :};
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+
+// Terminal Definitions ////////////////////////////////////////////////////////
 terminal SyntaxDocToken SIMPLEWORD;     // Simple Words
 terminal SyntaxDocToken ABBREVIATION;   // Abbreviations
 terminal SyntaxDocToken VARIABLE;       // Variables
@@ -151,6 +152,8 @@ terminal SyntaxDocToken WHITESPACE;     // Whitespaces
 terminal SyntaxDocToken ASSIGNMENT;     // Assignments
 terminal SyntaxDocToken SCENEWORD;    // Scene Header
 terminal SyntaxDocToken ERRORSTATE;     // Error Symbols
+
+// Non-Terminal Definitions ////////////////////////////////////////////////////
 // Nonterminal Arrays
 non terminal LinkedList turn_list;
 non terminal LinkedList utterance_element_list;
@@ -161,13 +164,13 @@ non terminal LinkedList turn_element_list;
 non terminal LinkedList feature_list_opt;
 // Nonterminal Objects
 non terminal SceneScript scene_script_definition;
-non terminal SceneEntity scene_script_entity;
+non terminal ScriptEntity scene_script_entity;
 non terminal SceneObject scene_definition;
 non terminal SceneComment script_comment;
 non terminal SceneTurn turn;
 non terminal SceneUttr turn_element;
 non terminal SceneUttr utterance_definition;
-non terminal UtteranceElement utterance_element;
+non terminal UttrElement utterance_element;
 //
 non terminal SceneWord utterance_word;
 non terminal SceneParam utterance_variable;
@@ -189,9 +192,12 @@ non terminal SyntaxDocToken floating;
 non terminal SyntaxDocToken sqstring;
 non terminal SyntaxDocToken punctuation;
 non terminal SyntaxDocToken whitespaces;
+//
+non terminal ScriptEntity script_entity;
 // Start Symbol Script
 start with scene_script_definition;
 
+// Grammar Rule Definitions ////////////////////////////////////////////////////
 // Scene Script Definition 
 scene_script_definition ::=
     scene_script_entity_list_opt:l
@@ -203,7 +209,7 @@ scene_script_definition ::=
 scene_script_entity_list_opt ::=
 
     {:
-        RESULT = new LinkedList<SceneEntity>();
+        RESULT = new LinkedList<ScriptEntity>();
     :}
   | scene_script_entity_list:l
     {:
@@ -218,7 +224,7 @@ scene_script_entity_list ::=
     :}
   | scene_script_entity:x
     {:
-        RESULT = new LinkedList<SceneEntity>();
+        RESULT = new LinkedList<ScriptEntity>();
         RESULT.add(x);
     :}
 ;
@@ -324,7 +330,7 @@ utterance_definition ::=
     utterance_element_list:l punctuation:p
     {:
         // Get The First Word In List
-        UtteranceElement firstelement = (UtteranceElement)l.getFirst();
+        UttrElement firstelement = (UttrElement)l.getFirst();
         // Construct A New Utterance
         RESULT = new SceneUttr(
             firstelement.getLower(), p.getUpper(), l, p.getValue());
@@ -346,7 +352,7 @@ utterance_element_list ::=
     :}
   | utterance_element:x
     {:
-        RESULT = new LinkedList<UtteranceElement>();
+        RESULT = new LinkedList<UttrElement>();
         RESULT.add(x);
     :}
 ;

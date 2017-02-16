@@ -4,7 +4,6 @@ import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -33,24 +32,10 @@ public abstract class RunTimePlayer {
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
 
-    // Launch the plugin
-    public abstract void launch();
-
-    // Unload the plugin
-    public abstract void unload();
-
-    //public abstract long getTime();
-
     // Get the activity scheduler
     public ActivityScheduler getActivityScheduler() {
         return mScheduler;
     }
-
-    // Call the play action activity method
-    public abstract void playActionActivity(final String name, final LinkedList args);
-
-    // Call the play scenegroup method
-    public abstract void playSceneGroup(final String name, final LinkedList args);
 
     // The scene player worker
     public class PlayerWorker extends Thread {
@@ -78,4 +63,16 @@ public abstract class RunTimePlayer {
             mDone = false;
         }
     }
+
+    // Launch the plugin
+    public abstract void launch();
+
+    // Unload the plugin
+    public abstract void unload();
+
+    // Play an action
+    public abstract void playAction(final String name, final LinkedList args);
+
+    // Play a scene
+    public abstract void playScene(final String name, final LinkedList args);
 }

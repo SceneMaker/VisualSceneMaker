@@ -16,7 +16,7 @@ import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.glue.ChartParser;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
@@ -395,11 +395,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         try {
             //ChartParser.parseResultType = ChartParser.LOG;
             //ChartParser.parseResultType = ChartParser.EXP;
-            Expression log = (Expression) ChartParser.run(inputString);
+            Expression log = (Expression) GlueParser.run(inputString);
 
             //LogicalCond log = ChartParser.logResult;
             //Expression log = ChartParser.expResult;
-            return (log != null) && !ChartParser.errorFlag;
+            return (log != null);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -517,11 +517,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 //ChartParser.parseResultType = ChartParser.LOG;
                 //ChartParser.parseResultType = ChartParser.EXP;
 
-                Expression log = (Expression) ChartParser.run(input);
+                Expression log = (Expression) GlueParser.run(input);
 
                 //LogicalCond log = ChartParser.logResult;
                 //Expression log = ChartParser.expResult;
-                if ((log != null) && !ChartParser.errorFlag) {
+                if (log != null) {
                     ((GuargedEdge) mDataEdge).setCondition(log);
                 } else {
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
@@ -536,11 +536,11 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 //ChartParser.parseResultType = ChartParser.LOG;
                 //ChartParser.parseResultType = ChartParser.EXP;
 
-                Expression log = (Expression) ChartParser.run(input);
+                Expression log = (Expression) GlueParser.run(input);
 
                 //LogicalCond log = ChartParser.logResult;
                 //Expression log = ChartParser.expResult;
-                if ((log != null) && !ChartParser.errorFlag) {
+                if (log != null) {
                     ((InterruptEdge) mDataEdge).setCondition(log);
                 } else {
                 }

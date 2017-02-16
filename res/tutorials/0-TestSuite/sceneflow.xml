@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 15 Feb 2017 20:09:55" start="N5;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 16 Feb 2017 12:46:23" start="N5;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -36,7 +36,7 @@
       <Assignment>
         <SimpleVariable name="WrongVariable"/>
         <Expression>
-          <StringLiteral><![CDATA[other]]></StringLiteral>
+          <StringLiteral><![CDATA[other µ?%#]]></StringLiteral>
         </Expression>
       </Assignment>
     </Commands>
@@ -81,6 +81,14 @@
         </Expression>
       </Assignment>
     </Commands>
+    <TEdge target="N9" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="793" yPos="58" ctrlXPos="810" ctrlYPos="58"/>
+        <ControlPoint xPos="933" yPos="58" ctrlXPos="915" ctrlYPos="58"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
     <Graphics>
       <Position xPos="723" yPos="23"/>
     </Graphics>
@@ -110,6 +118,11 @@
     <Declare>
     </Declare>
     <Commands>
+      <PlayActivity mode="Concurrent">
+        <StringLiteral><![CDATA[hello]]></StringLiteral>
+        <StringLiteral><![CDATA[jo]]></StringLiteral>
+        <IntLiteral value="12"/>
+      </PlayActivity>
     </Commands>
     <CEdge target="N1" start="">
       <Graphics>
@@ -198,6 +211,9 @@
     <Declare>
     </Declare>
     <Commands>
+      <PlayActivity mode="Sequential">
+        <StringLiteral><![CDATA[hello world]]></StringLiteral>
+      </PlayActivity>
     </Commands>
     <TEdge target="N5" start="" timeout="10000">
     <Graphics>
@@ -228,6 +244,60 @@
     </TEdge>
     <Graphics>
       <Position xPos="583" yPos="163"/>
+    </Graphics>
+  </Node>
+  <Node id="N9" name="N9" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayActivity mode="Default">
+        <StringLiteral><![CDATA[hello]]></StringLiteral>
+        <ArrayExpression>
+        </ArrayExpression>
+      </PlayActivity>
+      <PlaySceneGroup>
+        <StringLiteral><![CDATA[welcome]]></StringLiteral>
+      </PlaySceneGroup>
+    </Commands>
+    <EEdge target="N10" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="968" yPos="93" ctrlXPos="968" ctrlYPos="110"/>
+        <ControlPoint xPos="968" yPos="163" ctrlXPos="968" ctrlYPos="145"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="933" yPos="23"/>
+    </Graphics>
+  </Node>
+  <Node id="N10" name="N10" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PrologQuery>
+      <Add>
+        <Add>
+          <StringLiteral><![CDATA[hello ]]></StringLiteral>
+          <SimpleVariable name="T"/>
+        </Add>
+        <StringLiteral><![CDATA[ RRworld]]></StringLiteral>
+      </Add>
+      </PrologQuery>
+      <StopActivity mode="Operator">
+        <StringLiteral><![CDATA[helllo]]></StringLiteral>
+      </StopActivity>
+      <StopActivity mode="Default">
+        <StringLiteral><![CDATA[Some]]></StringLiteral>
+        <IntLiteral value="23"/>
+      </StopActivity>
+    </Commands>
+    <Graphics>
+      <Position xPos="933" yPos="163"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="Some;Super;Node" comment="" hideLocalVar="false" hideGlobalVar="false" start="">

@@ -11,7 +11,7 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public final class ActionObject extends UtteranceElement {
+public final class ActionObject extends UttrElement {
 
     // The Action Arguments
     private LinkedList<ActionFeature> mFeatureList = new LinkedList<>();
@@ -147,18 +147,16 @@ public final class ActionObject extends UtteranceElement {
                 + "upper=\"" + mUpper + "\" "
                 + "actor=\"" + ((mActor == null) ? "" : mActor) + "\" "
                 //+ "mode=\"" + ((mMode == null) ? "" : mMode) + "\" "
-                + "name=\"" + mName + "\" "
+                + "name=\"" + mName + "\""
                 + ">");
         stream.push();
 
         for (final ActionFeature feature : mFeatureList) {
             feature.writeXML(stream);
-
-            if (!feature.equals(mFeatureList.getLast())) {
+            //if (!feature.equals(mFeatureList.getLast())) {
                 stream.endl();
-            }
+            //}
         }
-
         stream.pop();
         stream.print("</ActionObject>");
     }
