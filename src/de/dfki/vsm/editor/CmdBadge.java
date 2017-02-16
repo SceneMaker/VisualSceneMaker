@@ -88,12 +88,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
     @Override
     public void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
-        
-//        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-//        for(StackTraceElement st: stackTraceElements)
-//        {
-//            System.out.println(st.getClassName()+ "-----" + st.getFileName()+"-----"+st.getme+"-----"+st.getLineNumber());
-//        }
+
         
         Graphics2D graphics = (Graphics2D) g;
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
