@@ -16,4 +16,11 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
+  <SceneObject lower="78" upper="106" language="de" identifier="joman">
+    <SceneTurn lower="93" upper="106" speaker="gregor">
+      <SceneUttr lower="101" upper="106" punct="?">
+        <SceneWord lower="101" upper="105" text="juju"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>
