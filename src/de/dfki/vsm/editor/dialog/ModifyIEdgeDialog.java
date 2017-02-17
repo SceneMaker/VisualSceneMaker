@@ -263,11 +263,17 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
             mInputTextField.setForeground(Color.red);
             EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");
         }
+        removeListener();
+    }
+
+    public void removeListener() {
+        mEventCaster.remove(this);
     }
 
     @Override
     protected void cancelActionPerformed() {
         dispose(Button.CANCEL);
+        removeListener();
     }
 
     private boolean process() {
