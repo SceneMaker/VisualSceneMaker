@@ -400,10 +400,7 @@ class ConditionEditor extends JPanel implements EventListener {
             if (event instanceof EdgeSelectedEvent) {
                 if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.GuardedEdge)) {
                     mDataCEdge = (GuargedEdge) ((EdgeSelectedEvent) event).getEdge();
-                    if(mCEdgeDialog != null){
-                        mCEdgeDialog.removeListener();
-                    }
-                    mCEdgeDialog = new ModifyCEdgeDialog(mDataCEdge);
+                    createNewDialog();
                     removeAll();
                     mCEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
                     mCEdgeDialog.getInputPanel().setMaximumSize(new Dimension(1000, 40));
@@ -430,6 +427,13 @@ class ConditionEditor extends JPanel implements EventListener {
               int a = 0;
           }
         }
+    }
+
+    private void createNewDialog() {
+        if(mCEdgeDialog != null){
+            mCEdgeDialog.removeListener();
+        }
+        mCEdgeDialog = new ModifyCEdgeDialog(mDataCEdge);
     }
 
     private void save() {
@@ -708,10 +712,7 @@ class InterruptEditor extends JPanel implements EventListener {
             if (event instanceof EdgeSelectedEvent) {
                 if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.InterruptEdge)) {
                     mDataIEdge = (InterruptEdge) ((EdgeSelectedEvent) event).getEdge();
-                    if(mIEdgeDialog != null){
-                        mIEdgeDialog.removeListener();
-                    }
-                    mIEdgeDialog = new ModifyIEdgeDialog(mDataIEdge);
+                    createNewDialog();
                     removeAll();
                     mIEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
                     mIEdgeDialog.getInputPanel().setMaximumSize(new Dimension(1000, 40));
@@ -737,6 +738,13 @@ class InterruptEditor extends JPanel implements EventListener {
 
             // Do nothing
         }
+    }
+
+    private void createNewDialog() {
+        if(mIEdgeDialog != null){
+            mIEdgeDialog.removeListener();
+        }
+        mIEdgeDialog = new ModifyIEdgeDialog(mDataIEdge);
     }
 
     private void save() {
