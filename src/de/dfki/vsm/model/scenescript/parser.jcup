@@ -108,14 +108,18 @@ parser code {:
             final Symbol symbol = parser.parse();
              // Cast The Symbol Down
             if(symbol != null) {
-                if(symbol.value instanceof ScriptEntity) {
-                mLogger.success("Parsing Success: Parsing Script Entity\n" + symbol.value);  
-                // Return result at success
-                return symbol.value;
+                if(action && symbol.value instanceof ActionObject) {
+                    mLogger.success("Parsing Success: Parsing\n" + symbol.value);  
+                    // Return result at success
+                    return symbol.value;
+                } else if(!action && symbol.value instanceof SceneScript) {
+                    mLogger.success("Parsing Success: Parsing\n" + symbol.value);  
+                    // Return result at success
+                    return symbol.value;
                 } else {
-                mLogger.warning("Parsing Warning: Result Is No Script Entity");  
-                // Return NULL at failure
-                return null;
+                    mLogger.warning("Parsing Warning: Result Is No Script Entity");  
+                    // Return NULL at failure
+                    return null;
                 }
             } else {
                 mLogger.failure("Parsing Failure: Invalid Parsing Result");  
