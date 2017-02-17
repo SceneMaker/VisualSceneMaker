@@ -16,6 +16,7 @@ import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
+import org.apache.commons.lang.StringUtils;
 import org.ujmp.core.collections.ArrayIndexList;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -91,6 +92,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final EditorProject mEditorProject;
     private final EditorConfig mEditorConfig;
     private final SceneScript mSceneScript;
+    public static final int MAX_LINE_BREAKERS_ALLOWED = 2;
 
     //
     public OLDSceneScriptEditor(final EditorProject project) {
@@ -273,7 +275,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
                     //                        //PLUS ACTION FOR DIALGOACTEDITOR
                     //                    }
                     else {
-                        mEditorPane.append("scene_@@ SceneName:\n" + "character: Text.\n\n");
+                        mEditorPane.append(buildNewSceneText());
                         mEditorPane.requestFocusInWindow();
                     }
 
@@ -291,6 +293,18 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         }
 
         tabCounter++;
+    }
+
+    private String buildNewSceneText() {
+        String lineBreakers = getPrefixedLineBreakers();
+        return lineBreakers + "scene @@ SceneName\n" + "character: Text.\n\n";
+    }
+
+    private String getPrefixedLineBreakers() {
+        String text = mEditorPane.getText();
+        String lastTwoCharacters = text.substring(Math.max(text.length() - 2, 0));
+        int countLineBreakers = Math.min(StringUtils.countMatches(lastTwoCharacters, "\n"), 2);
+        return StringUtils.repeat("\n","", MAX_LINE_BREAKERS_ALLOWED - countLineBreakers);
     }
 
     // Get the pin pricked flag
