@@ -13,6 +13,7 @@ import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
 import de.dfki.vsm.editor.dialog.TypeDefDialog;
 import de.dfki.vsm.editor.dialog.VarDefDialog;
+import de.dfki.vsm.editor.event.CEdgeDialogModifiedEvent;
 import de.dfki.vsm.editor.event.EdgeSelectedEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
@@ -399,6 +400,9 @@ class ConditionEditor extends JPanel implements EventListener {
             if (event instanceof EdgeSelectedEvent) {
                 if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.GuardedEdge)) {
                     mDataCEdge = (GuargedEdge) ((EdgeSelectedEvent) event).getEdge();
+                    if(mCEdgeDialog != null){
+                        mCEdgeDialog.removeListener();
+                    }
                     mCEdgeDialog = new ModifyCEdgeDialog(mDataCEdge);
                     removeAll();
                     mCEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));
@@ -422,7 +426,9 @@ class ConditionEditor extends JPanel implements EventListener {
             }
         } else {
 
-            // Do nothing
+          if(!(event instanceof CEdgeDialogModifiedEvent)){
+              int a = 0;
+          }
         }
     }
 
@@ -702,6 +708,9 @@ class InterruptEditor extends JPanel implements EventListener {
             if (event instanceof EdgeSelectedEvent) {
                 if (((EdgeSelectedEvent) event).getEdge().getEdgeType().equals(EdgeType.InterruptEdge)) {
                     mDataIEdge = (InterruptEdge) ((EdgeSelectedEvent) event).getEdge();
+                    if(mIEdgeDialog != null){
+                        mIEdgeDialog.removeListener();
+                    }
                     mIEdgeDialog = new ModifyIEdgeDialog(mDataIEdge);
                     removeAll();
                     mIEdgeDialog.getInputPanel().setMinimumSize(new Dimension(200, 40));

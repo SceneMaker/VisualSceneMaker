@@ -26,6 +26,8 @@ import java.awt.Color;
 
 import java.awt.Dimension;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -276,13 +278,19 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
         }
         else{
             mInputTextField.setForeground(Color.red);
-            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");  
+            EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");
         }
+        removeListener();
+    }
+
+    public void removeListener() {
+        mEventCaster.remove(this);
     }
 
     @Override
     protected void cancelActionPerformed() {
         dispose(Dialog.Button.CANCEL);
+        removeListener();
     }
 
     private boolean process() {
@@ -415,6 +423,8 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
             mInputTextField.getDocument().addDocumentListener(docListener); //Add the listener again
         }
     }
+
+
 
     private class MyDocumentListener implements DocumentListener {
         @Override
