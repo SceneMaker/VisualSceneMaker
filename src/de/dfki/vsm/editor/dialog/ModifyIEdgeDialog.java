@@ -8,6 +8,8 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.Dialog.Button;
+import de.dfki.vsm.editor.event.CEdgeDialogModifiedEvent;
+import de.dfki.vsm.editor.event.IEdgeDialogModifiedEvent;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
@@ -15,6 +17,9 @@ import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.evt.EventListener;
+import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,26 +28,21 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import java.util.Iterator;
 import java.util.Map;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
  * @author Gregor Mehlmann
  */
-public class ModifyIEdgeDialog extends Dialog {
+public class ModifyIEdgeDialog extends Dialog implements EventListener {
 
     // The edge that we want to modify
     private final InterruptEdge mIEdge;
     // GUI-Components
     private final AltStartNodeManager mAltStartNodeManager;
+    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     // GUI-Components
     private JPanel mInputPanel;
     private JLabel mInputLabel;
@@ -60,6 +60,7 @@ public class ModifyIEdgeDialog extends Dialog {
     private Dimension labelSize = new Dimension(200, 30);
     private Dimension textFielSize = new Dimension(230, 30);
     private JLabel errorMsg;
+    private DocumentListener docListener;
 
     public ModifyIEdgeDialog(InterruptEdge iedge) {
         super(EditorInstance.getInstance(), "Modify Interruptive Edge", true);
@@ -70,6 +71,7 @@ public class ModifyIEdgeDialog extends Dialog {
         initComponents();
         mInputTextField.setText(mIEdge.getCondition().getConcreteSyntax());
         loadAltStartNodeMap();
+        initEvents();
     }
 
     public ModifyIEdgeDialog(BasicNode sourceNode, BasicNode targetNode) {
@@ -83,6 +85,17 @@ public class ModifyIEdgeDialog extends Dialog {
         mAltStartNodeManager = new AltStartNodeManager(mIEdge);
         // Init the GUI-Components
         initComponents();
+        initEvents();
+    }
+
+    private void initEvents(){
+        initDocListener();
+        mEventCaster.register(this);
+    }
+
+    private void initDocListener() {
+        docListener = new ModifyIEdgeDialog.MyDocumentListener();
+        mInputTextField.getDocument().addDocumentListener( docListener);
     }
 
     private void initComponents() {
@@ -106,7 +119,6 @@ public class ModifyIEdgeDialog extends Dialog {
                 //boolean keyHandled = false;
                 if (ke.getID() == KeyEvent.KEY_PRESSED) {
                     if (!mInputTextField.hasFocus()) {
-                        mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
                         mInputTextField.requestFocus();
                     }
                 }
@@ -251,11 +263,17 @@ public class ModifyIEdgeDialog extends Dialog {
             mInputTextField.setForeground(Color.red);
             EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText("Remember to wrap condition in parenthesis");
         }
+        removeListener();
+    }
+
+    public void removeListener() {
+        mEventCaster.remove(this);
     }
 
     @Override
     protected void cancelActionPerformed() {
         dispose(Button.CANCEL);
+        removeListener();
     }
 
     private boolean process() {
@@ -362,4 +380,49 @@ public class ModifyIEdgeDialog extends Dialog {
     public HintTextField getInputTextField() {
         return mInputTextField;
     }
+
+    @Override
+    public void update(EventObject event) {
+        if(event instanceof IEdgeDialogModifiedEvent && event.getSource() != this){
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    changeDuplicatedInputFieldText((IEdgeDialogModifiedEvent) event);
+                }
+            });
+
+        }
+    }
+
+    private void changeDuplicatedInputFieldText(IEdgeDialogModifiedEvent event) {
+        String text = event.getText();
+        if(!text.equals(mInputTextField.getText())){
+            mInputTextField.getDocument().removeDocumentListener(docListener); //Remove it first, so its not fired again creating an infinite loop
+            mInputTextField.setText(text);
+            mInputTextField.getDocument().addDocumentListener(docListener); //Add the listener again
+        }
+    }
+
+    private class MyDocumentListener implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            fireEvent();
+        }
+
+        private void fireEvent() {
+            mEventCaster.convey(new IEdgeDialogModifiedEvent(this, mInputTextField.getText()));
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            fireEvent();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            fireEvent();
+        }
+    }
 }
+
+
