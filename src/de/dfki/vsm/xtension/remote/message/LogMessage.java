@@ -50,6 +50,7 @@ public class LogMessage {
         mState = state;
     }
     
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         

@@ -25,9 +25,9 @@ import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistorySetDepth;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearFlat;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearDeep;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActionActivity;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneGroup;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneScript;
 // Different Expressions
@@ -61,8 +61,8 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.PrologQuer
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutQuery;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.RandomQuery;
 // Enumeration Imports
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity.PlayMode;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActivity.StopMode;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity.PlayMode;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActionActivity.StopMode;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.UnaryOp;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.BinaryOp;
 
@@ -112,7 +112,7 @@ parser code {:
 // Terminal Definitions ////////////////////////////////////////////////////////
 // Reserved Function Identifiers
 terminal String
-    PlayActivity, StopActivity, PlayDialogAct, PlaySceneGroup, InState, Random, 
+    PlayAction, StopAction, PlayDialogAct, PlayScene, InState, Random, 
     UnblockSceneGroup, UnblockSceneScript, HistoryClearFlat, HistoryClearDeep, 
     HistoryContains, HistoryValueOf, HistorySetDepth, HistoryRunTimeOf, Timeout;
 // Operators And Reserved Words
@@ -308,43 +308,43 @@ assignment_list ::=
 invocation ::=
   NOTEQUAL expression:x DOT                                           
     {: 
-        RESULT = new PlayActivity(x, PlayMode.Concurrent);  
+        RESULT = new PlayActionActivity(x, PlayMode.Concurrent);  
     :}
 | NOTEQUAL expression:x COMMA expression_list:y DOT                   
     {:
-        RESULT = new PlayActivity(x,y, PlayMode.Concurrent);  
+        RESULT = new PlayActionActivity(x,y, PlayMode.Concurrent);  
     :}
 | NOTMINUS expression:x DOT                                           
     {: 
-        RESULT = new PlayActivity(x, PlayMode.Sequential); 
+        RESULT = new PlayActionActivity(x, PlayMode.Sequential); 
     :}
 | NOTMINUS expression:x COMMA expression_list:y DOT                  
     {: 
-        RESULT = new PlayActivity(x, y, PlayMode.Sequential); 
+        RESULT = new PlayActionActivity(x, y, PlayMode.Sequential); 
     :}
-| PlayActivity LPAREN expression:x RPAREN                                       
+| PlayAction LPAREN expression:x RPAREN                                       
     {: 
-        RESULT = new PlayActivity(x, PlayMode.Default);  
+        RESULT = new PlayActionActivity(x, PlayMode.Default);  
     :}
-| PlayActivity LPAREN expression:x COMMA expression_list:y RPAREN               
+| PlayAction LPAREN expression:x COMMA expression_list:y RPAREN               
     {: 
-        RESULT = new PlayActivity(x, y, PlayMode.Default);  
+        RESULT = new PlayActionActivity(x, y, PlayMode.Default);  
     :}
 | NOTTILDE expression:x DOT                                           
     {: 
-        RESULT = new StopActivity(x, StopMode.Operator); 
+        RESULT = new StopActionActivity(x, StopMode.Operator); 
     :}
 | NOTTILDE expression:x COMMA expression_list:y DOT                  
     {: 
-        RESULT = new StopActivity(x, y, StopMode.Operator); 
+        RESULT = new StopActionActivity(x, y, StopMode.Operator); 
     :}
-| StopActivity LPAREN expression:x RPAREN                                       
+| StopAction LPAREN expression:x RPAREN                                       
     {: 
-        RESULT = new StopActivity(x, StopMode.Default);  
+        RESULT = new StopActionActivity(x, StopMode.Default);  
     :}
-| StopActivity LPAREN expression:x COMMA expression_list:y RPAREN               
+| StopAction LPAREN expression:x COMMA expression_list:y RPAREN               
     {: 
-        RESULT = new StopActivity(x, y, StopMode.Default);  
+        RESULT = new StopActionActivity(x, y, StopMode.Default);  
     :}
 | PlayDialogAct LPAREN expression:x RPAREN                                      
     {: 
@@ -354,13 +354,13 @@ invocation ::=
     {: 
         RESULT = new PlayDialogAction(x,y);  
     :}
-| PlaySceneGroup LPAREN expression:x RPAREN                                     
+| PlayScene LPAREN expression:x RPAREN                                     
     {: 
-        RESULT = new PlaySceneGroup(x);  
+        RESULT = new PlayScenesActivity(x);  
     :}
-| PlaySceneGroup LPAREN expression:x COMMA expression_list:y RPAREN             
+| PlayScene LPAREN expression:x COMMA expression_list:y RPAREN             
     {: 
-        RESULT = new PlaySceneGroup(x,y);  
+        RESULT = new PlayScenesActivity(x,y);  
     :}
 | UnblockSceneGroup LPAREN expression:x RPAREN                                  
     {: 

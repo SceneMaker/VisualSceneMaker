@@ -29,79 +29,77 @@ import java.util.LinkedList;
  */
 public class SenderExecutor extends ActivityExecutor {
 
-	private int mPort;
-	private String mSceneflowVar;
+    private int mPort;
+    private String mSceneflowVar;
 
-	// The message, format "VSMMessage#<string without space>#<timestamp>"
-	
-        public static final String sMSG_SEPARATOR = "#";
-	public static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
-        
-        
-	private String mMessage = "";
-	private String mMessageTimeInfo = "";
-	private String mMessageRequestVar;
-	private String mMessageRequestValues;
+    // The message, format "VSMMessage#<string without space>#<timestamp>"
+    public static final String sMSG_SEPARATOR = "#";
+    public static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
 
-	// The singelton logger instance
-	private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private String mMessage = "";
+    private String mMessageTimeInfo = "";
+    private String mMessageRequestVar;
+    private String mMessageRequestValues;
 
-	public SenderExecutor(PluginConfig config, RunTimeProject project) {
-		super(config, project);
-	}
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-	@Override
-	public synchronized String marker(long id) {
-		return "$(" + id + ")";
-	}
+    public SenderExecutor(PluginConfig config, RunTimeProject project) {
+        super(config, project);
+    }
 
-	@Override
-	public void execute(AbstractActivity activity) {
+    @Override
+    public synchronized String marker(long id) {
+        return "$(" + id + ")";
+    }
 
-		if (activity instanceof SpeechActivity) {
-			SpeechActivity sa = (SpeechActivity) activity;
-			String text = sa.getTextOnly("$(").trim();
-			LinkedList<String> timemarks = sa.getTimeMarks("$(");
+    @Override
+    public void execute(AbstractActivity activity) {
 
-			// If text is empty - assume activity has empty text but has marker activities registered
-			if (text.isEmpty()) {
-				for (String tm : timemarks) {
-					mLogger.warning("Directly executing activity at timemark " + tm);
-					mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
-				}
-			}
-		} else {
-			final LinkedList<ActionFeature> features = activity.getFeatures();
+        if (activity instanceof SpeechActivity) {
+            SpeechActivity sa = (SpeechActivity) activity;
+            String text = sa.getTextOnly("$(").trim();
+            LinkedList<String> timemarks = sa.getTimeMarks("$(");
 
-			mMessage = activity.getName();
+            // If text is empty - assume activity has empty text but has marker activities registered
+            if (text.isEmpty()) {
+                for (String tm : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
+            }
+        } else {
+            final LinkedList<ActionFeature> features = activity.getFeatures();
 
-			mMessageTimeInfo = getActionFeatureValue("time", features);
+            mMessage = activity.getName();
 
-			mMessageRequestVar = getActionFeatureValue("var", features);
+            mMessageTimeInfo = getActionFeatureValue("time", features);
 
-			mMessageRequestValues = getActionFeatureValue("values", features);
+            mMessageRequestVar = getActionFeatureValue("var", features);
 
-			send();
-		}
-	}
+            mMessageRequestValues = getActionFeatureValue("values", features);
 
-	private void send() {
-		DatagramSocket c;
-		// Find the server using UDP broadcast
-		try {
-			//Open a random port to send the package
-			c = new DatagramSocket();
-			c.setBroadcast(true);
+            send();
+        }
+    }
 
-			long timestamp = System.currentTimeMillis();
+    private void send() {
+        DatagramSocket c;
+        // Find the server using UDP broadcast
+        try {
+            //Open a random port to send the package
+            c = new DatagramSocket();
+            c.setBroadcast(true);
 
-			byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes("UTF8");
-			
-			if (!mMessage.equalsIgnoreCase("REQUEST")) {
-				sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes("UTF8");
-			} else if (mMessage.equalsIgnoreCase("REQUEST") && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-				sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues).getBytes("UTF8");
-			}
+            long timestamp = System.currentTimeMillis();
+
+            byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes("UTF8");
+
+            if (!mMessage.equalsIgnoreCase("REQUEST")) {
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes("UTF8");
+            } else if (mMessage.equalsIgnoreCase("REQUEST") && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues).getBytes("UTF8");
+            }
 
 //            //Try the 255.255.255.255 first
 //            try {
@@ -110,40 +108,40 @@ public class SenderExecutor extends ActivityExecutor {
 //               // mLogger.message(">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
 //            } catch (Exception e) {
 //            }
-			// Broadcast the message over all the network interfaces
-			String hosts = "";
+            // Broadcast the message over all the network interfaces
+            String hosts = "";
 
-			Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-			while (interfaces.hasMoreElements()) {
-				NetworkInterface networkInterface = interfaces.nextElement();
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
 
-				if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-					continue; // Don't want to broadcast to the loopback interface
-				}
+                if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                    continue; // Don't want to broadcast to the loopback interface
+                }
 
-				for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-					InetAddress broadcast = interfaceAddress.getBroadcast();
-					if (broadcast == null) {
-						continue;
-					}
+                for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                    InetAddress broadcast = interfaceAddress.getBroadcast();
+                    if (broadcast == null) {
+                        continue;
+                    }
 
-					// Send the broadcast package
-					boolean packetSend = false;
-					try {
-						DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, mPort);
-						c.send(sendPacket);
-						hosts = hosts + broadcast.getHostAddress() + ", ";
-						mLogger.message(mMessage + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
-						packetSend = true;
-					} catch (Exception e) {
-						packetSend = false;
-					}
+                    // Send the broadcast package
+                    boolean packetSend = false;
+                    try {
+                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, mPort);
+                        c.send(sendPacket);
+                        hosts = hosts + broadcast.getHostAddress() + ", ";
+                        mLogger.message(mMessage + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
+                        packetSend = true;
+                    } catch (Exception e) {
+                        packetSend = false;
+                    }
 
-					if (packetSend) {
-						mProject.setVariable(mSceneflowVar, new StringValue("Message successfully send"));
-					}
-				}
-			}
+                    if (packetSend) {
+                        mProject.setVariable(mSceneflowVar, new StringValue("Message successfully send"));
+                    }
+                }
+            }
 
 //            mLogger.message("Waiting for a reply ...");
 //
@@ -157,37 +155,37 @@ public class SenderExecutor extends ActivityExecutor {
 //            if (message.equals("VSMMessage#Received")) {
 //                mProject.setVariable(mSceneflowVar, new StringValue("Message successfully delivered"));
 //            }
-			//Close the port!
-			c.close();
-		} catch (IOException ex) {
-			mLogger.message(ex.toString());
-		}
-	}
+            //Close the port!
+            c.close();
+        } catch (IOException ex) {
+            mLogger.message(ex.toString());
+        }
+    }
 
-	@Override
-	public void launch() {
-		mLogger.message("Loading Message Sender");
+    @Override
+    public void launch() {
+        mLogger.message("Loading Message Sender");
 
-		mPort = Integer.parseInt(mConfig.getProperty("port"));
-		mSceneflowVar = mConfig.getProperty("sceneflow_variable");
+        mPort = Integer.parseInt(mConfig.getProperty("port"));
+        mSceneflowVar = mConfig.getProperty("sceneflow_variable");
 
-		mMessage = "VSM UPD Sender Started";
-		send();
-	}
+        mMessage = "VSM UPD Sender Started";
+        send();
+    }
 
-	@Override
-	public void unload() {
+    @Override
+    public void unload() {
 
-	}
+    }
 
-	// get the value of a feature (added PG) - quick and dirty
-	private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
-		for (ActionFeature af : features) {
-			if (af.getKey().equalsIgnoreCase(name)) {
-				return af.getVal();
-			}
-		}
-		return "";
-	}
+    // get the value of a feature (added PG) - quick and dirty
+    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+        for (ActionFeature af : features) {
+            if (af.getKey().equalsIgnoreCase(name)) {
+                return af.getVal();
+            }
+        }
+        return "";
+    }
 
 }

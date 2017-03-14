@@ -3,7 +3,7 @@ package de.dfki.vsm.xtesting;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
-import de.dfki.vsm.xtension.tworld.TWorldSSIData;
+import de.dfki.vsm.xtension.tricatworld.TriCatWorldSSIData;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
@@ -122,7 +122,7 @@ public class TestSSIPlugin {
             exc.printStackTrace();
         }
 
-        final TWorldSSIData mSSIData = new TWorldSSIData(
+        final TriCatWorldSSIData mSSIData = new TriCatWorldSSIData(
                 ((SSIStringData) array.getEventList().get(0).getData()).toString());
 
         System.out.println(mSSIData.get("voice.activity"));

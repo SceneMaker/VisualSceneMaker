@@ -24,7 +24,7 @@ public class LogMessageReceiverThread extends Thread {
 
     private int mPort;
 
-    private SSILogMessageService mExecutor;
+    private SSIEventLogExecutor mExecutor;
 
     private boolean mRunning = true;
 
@@ -36,7 +36,7 @@ public class LogMessageReceiverThread extends Thread {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public LogMessageReceiverThread(SSILogMessageService executor, int port) {
+    public LogMessageReceiverThread(SSIEventLogExecutor executor, int port) {
         mExecutor = executor;
         mPort = port;
     }
