@@ -60,10 +60,10 @@ object      = (null)
 %%
 
 // Token Definitions ///////////////////////////////////////////////////////////
-"StopActivity"          { return new Symbol(GlueFields.StopActivity); }
-"PlayActivity"          { return new Symbol(GlueFields.PlayActivity); }
+"PlayScene"             { return new Symbol(GlueFields.PlayScene); }
+"StopAction"            { return new Symbol(GlueFields.StopAction); }
+"PlayAction"            { return new Symbol(GlueFields.PlayAction); }
 "PlayDialogAct"         { return new Symbol(GlueFields.PlayDialogAct); }
-"PlaySceneGroup"        { return new Symbol(GlueFields.PlaySceneGroup); }
 "UnblockSceneGroup"     { return new Symbol(GlueFields.UnblockSceneGroup); }
 "UnblockSceneScript"    { return new Symbol(GlueFields.UnblockSceneScript); }
 "HistoryClearFlat"      { return new Symbol(GlueFields.HistoryClearFlat); }

@@ -52,7 +52,7 @@ import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
@@ -684,7 +684,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
      *
      */
     public void createPSG(Node node, String name) {
-        PlaySceneGroup psgCmd = new PlaySceneGroup();
+        PlayScenesActivity psgCmd = new PlayScenesActivity();
 
         psgCmd.setArgument(new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral(name));
         node.getDataNode().addCmd(psgCmd);

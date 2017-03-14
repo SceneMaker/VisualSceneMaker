@@ -3,7 +3,7 @@ package de.dfki.vsm.runtime.interpreter;
 import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneGroup;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.TernaryExpression;
@@ -105,10 +105,10 @@ public class TimeoutManager {
     }
 
     public void startTimeoutHandler(Command cmd, Environment env) throws InterpreterError {
-        if (cmd instanceof PlaySceneGroup) {
-            startTimeoutHandler(((PlaySceneGroup) cmd).getArgument(), env);
+        if (cmd instanceof PlayScenesActivity) {
+            startTimeoutHandler(((PlayScenesActivity) cmd).getArgument(), env);
 
-            for (Expression arg : ((PlaySceneGroup) cmd).getArgList()) {
+            for (Expression arg : ((PlayScenesActivity) cmd).getArgList()) {
                 startTimeoutHandler(arg, env);
             }
         } else if (cmd instanceof PlayDialogAction) {

@@ -5,8 +5,8 @@ import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearFlat;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearDeep;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistorySetDepth;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneScript;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneGroup;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
@@ -118,8 +118,8 @@ public class Evaluator {
             mInterpreter.getSystemHistory().setDepth(
                     ((HistorySetDepth) cmd).getState(),
                     ((HistorySetDepth) cmd).getDepth());
-        } else if (cmd instanceof PlayActivity) {
-            final PlayActivity command = (PlayActivity) cmd;
+        } else if (cmd instanceof PlayActionActivity) {
+            final PlayActionActivity command = (PlayActionActivity) cmd;
             final AbstractValue value = evaluate(command.getCommand(), env);
             final LinkedList list = evaluateExpList(command.getArgList(), env);
             // Check the type of the command
@@ -136,8 +136,8 @@ public class Evaluator {
             } else {
                 throw new InterpreterError(cmd, "Interpreter Error: '" + cmd.getConcreteSyntax() + "' cannot be executed");
             }
-        } else if (cmd instanceof PlaySceneGroup) {
-            final PlaySceneGroup command = (PlaySceneGroup) cmd;
+        } else if (cmd instanceof PlayScenesActivity) {
+            final PlayScenesActivity command = (PlayScenesActivity) cmd;
             final AbstractValue value = evaluate(command.getArgument(), env);
             final LinkedList list = evaluateExpList(command.getArgList(), env);
             // Check the type of the command
