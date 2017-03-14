@@ -18,8 +18,8 @@ import java.util.LinkedList;
  */
 public class ActionLoader {
 
-    private final static String sTWORLDCMDPATH = "de.dfki.vsm.xtension.tworld.xml.command.object.action";
-    private final static String sTWORLDCHARAMELCMDPATH = "de.dfki.vsm.xtension.tworld.xml.command.object.action.charamel";
+    private final static String sTWORLDCMDPATH = "de.dfki.vsm.xtension.tricatworld.xml.command.object.action";
+    private final static String sTWORLDCHARAMELCMDPATH = "de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel";
     private static ActionLoader sInstance = null;
     private volatile static long sID = 0;
     // The singelton logger instance

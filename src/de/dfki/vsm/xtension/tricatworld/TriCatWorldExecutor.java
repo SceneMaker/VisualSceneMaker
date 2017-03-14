@@ -226,6 +226,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
             }
         } else {
+            System.err.println("Activity Name: '" + activity_name + "'");
             // Get the unique actor id
             final String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
             // Check the activity name

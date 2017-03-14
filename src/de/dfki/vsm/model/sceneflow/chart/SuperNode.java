@@ -398,7 +398,6 @@ public class SuperNode extends BasicNode {
                     XMLParseAction.processChildNodes(element, new XMLParseAction() {
                         public void run(Element element) throws XMLParseError {
                             VariableDefinition def = new VariableDefinition();
-
                             def.parseXML(element);
                             mVarDefList.add(def);
                         }

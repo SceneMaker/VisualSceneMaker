@@ -162,7 +162,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         final String task = process.getName() + ":" + name + "@";
         // TODO: Append VSM framework time to name
         // Print some information
-        mLogger.message("Playing Scenegroup '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
+        mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
         // Translate the arguments
         final HashMap map = new HashMap();
         if (args != null && !args.isEmpty()) {
@@ -182,12 +182,13 @@ public final class ReactivePlayer extends RunTimePlayer {
         }
         final SceneGroup group = script.getSceneGroup(slang, name);
         final SceneObject scene = group.select();
+
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
 
             @Override
             public void run() {
-                for (SceneTurn turn : scene.getTurnList()) {
+                for (SceneTurn turn : scene.getTurnList()) {                    
                     // Get executor for this turn
                     final ActivityExecutor turnActorExecutor = mProject.getAgentDevice(turn.getSpeaker());
                     // Serially play the utterances
@@ -238,6 +239,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         }
                         // 
                         final String punctuation = uttr.getPunctuationMark();
+                        // mLogger.message("Scheduling Speech Activity:\n" + textBuilder + "");
                         // Schedule the activity
                         mScheduler.schedule(
                                 0, // Schedule without delay

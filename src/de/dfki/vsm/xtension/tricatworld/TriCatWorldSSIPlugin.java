@@ -180,7 +180,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                         if (mUseJPL) {
                             // TODO 
                         } else {
-                            // Set speaking variable
+                            // Set variable
                             mProject.setVariable("UserSmileShore", false);
                         }
                     } else if (event.getState().equalsIgnoreCase("continued")) {
@@ -189,7 +189,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                         if (mUseJPL) {
                             // TODO 
                         } else {
-                            // Set speaking variable
+                            // Set variable
                             mProject.setVariable("UserSmileShore", true);
                         }
                     }
@@ -215,7 +215,8 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                             mProject.setVariable("UserSmileKinect", true);
                         }
                     }
-                } else if (event.getSender().equalsIgnoreCase("audio") && event.getEvent().equalsIgnoreCase("vad")) {
+                } else if (event.getSender().equalsIgnoreCase("audio")
+                        && event.getEvent().equalsIgnoreCase("vad")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
                         // User stopped speaking
                         mLogger.success("User stopped speaking");
@@ -278,32 +279,10 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                         // Set keyword variable
                         mProject.setVariable("UserSaidKeyword", keyword);
                     }
-                    // This condetion is used to receive structure sent by SSI
-                } else if (event.getSender().equalsIgnoreCase("audio")
-                        && event.getEvent().equalsIgnoreCase("speech")) {
-                    final String structure = ((SSIStringData) obj).toString().trim();
-                    // User started speaking
-                    mLogger.success("User said '" + structure + "'");
-                    if (mUseJPL) {
-                        JPLEngine.query("now(Time), "
-                                + "jdd(["
-                                + "type:" + "event" + ","
-                                + "mode:" + "speech" + ","
-                                + "name:" + "user" + ","
-                                + "time:" + "Time" + ","
-                                + "from:" + event.getFrom() + ","
-                                + "life:" + event.getDur() + ","
-                                + "conf:" + event.getProb() + ","
-                                + "data:" + structure
-                                + "]).");
-                    } else {
-                        // Set keyword variable
-                        mProject.setVariable("UserSaidStructure", structure);
-                    }
+                    // This condition is used to receive structure sent by SSI
                 } else {
-                    // Should not happen
+                    // This should not happen
                 }
-
             } else if (obj instanceof SSIStringData) {
                 final TriCatWorldSSIData mSSIData = new TriCatWorldSSIData(
                         ((SSIStringData) array.getEventList().get(0).getData()).toString());
@@ -364,13 +343,12 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                 //mProject.setVariable("usercues", new StructValue(values));
                 for (final Entry<String, AbstractValue> value : values.entrySet()) {
                     if (mProject.hasVariable(value.getKey())) {
-
                         mProject.setVariable(value.getKey(), value.getValue());
                         //mLogger.success("Setting Variable " + value.getKey() + " to " + value.getValue().getConcreteSyntax());
                     } else {
                         //mLogger.warning("Variable " + value.getKey() + " not defined!");
                     }
-                }                
+                }
             }
         }
     }
