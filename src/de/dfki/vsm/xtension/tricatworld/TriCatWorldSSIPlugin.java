@@ -27,6 +27,8 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
             = new HashMap();
     // The flag if we use the JPL
     private final boolean mUseJPL;
+    // The flag for executables
+    private final boolean mUseExe;
     // The flag if we use SSI superevents 
     private final boolean mUseSuperEvent;
 
@@ -38,6 +40,9 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
         // Get the JPL flag value
         mUseJPL = Boolean.parseBoolean(
                 mConfig.getProperty("usejpl"));
+        // Get the executable flag value
+        mUseExe = Boolean.parseBoolean(
+                mConfig.getProperty("useexe"));
         // Get the super event value
         mUseSuperEvent = Boolean.parseBoolean(
                 mConfig.getProperty("usesuperevent"));
@@ -52,10 +57,8 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
         final String ssidir = mConfig.getProperty("ssidir");
         final String ssibat = mConfig.getProperty("ssibat");
 
-        final Boolean autoloadssi = Boolean.parseBoolean(mConfig.getProperty("autoloadssi"));
-
         // Added PG - 10.1.2016 for our convenience
-        if (autoloadssi) {
+        if (mUseExe) {
             // Create the plugin's processes
             try {
                 mProcessMap.put(ssibat, Runtime.getRuntime().exec(
@@ -79,11 +82,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
             final Process process = entry.getValue();
             try {
                 // Kill the processes
-                //final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
-
-                final Boolean autokillssi = Boolean.parseBoolean(mConfig.getProperty("autokillssi"));
-                // Added PG - 10.1.2017 due to convenience reasons
-                if (autokillssi) {
+                if (mUseExe) {
                     final Process killer = Runtime.getRuntime().exec("taskkill /F /FI \"IMAGENAME eq xmlpipe.exe\"");
                     // Wait for the killer
                     killer.waitFor();

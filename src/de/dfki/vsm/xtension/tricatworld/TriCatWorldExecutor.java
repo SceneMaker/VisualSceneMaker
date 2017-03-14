@@ -62,8 +62,10 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
     private final ActionLoader mActionLoader = ActionLoader.getInstance();
     // The word mapping properties
     private final Properties mWordMapping = new Properties();
-    // The flag if we user the JPL
+    // The flag if we use the JPL
     private final boolean mUseJPL;
+    // The flag for executables
+    private final boolean mUseExe;
 
     // Construct the executor
     public TriCatWorldExecutor(
@@ -74,6 +76,10 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
         // Get the JPL flag value
         mUseJPL = Boolean.parseBoolean(
                 mConfig.getProperty("usejpl"));
+        // Get the executable flag value
+        mUseExe = Boolean.parseBoolean(
+                mConfig.getProperty("useexe"));
+
     }
 
     // Launch the executor 
@@ -88,21 +94,24 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
         final String cactorcmd = mConfig.getProperty("cactorcmd");
         // Get the working directory
         final String workindir = new File(".").getAbsolutePath();
-        // Check the executable files
-        if (!exists(cactordir)) {
-            dialog("Missing '" + cactordir + "' in '" + workindir + "'");
-        }
-        if (!exists(tworlddir)) {
-            dialog("Missing '" + tworlddir + "' in '" + workindir + "'");
-        }
-        // Create the plugin's processes
-        try {
-            mProcessMap.put(cactorexe, Runtime.getRuntime().exec(
-                    "cmd /c start /min " + cactorexe + " " + cactorcmd, null, new File(cactordir)));
-            mProcessMap.put(tworldexe, Runtime.getRuntime().exec(
-                    "cmd /c start " + tworldexe + " " + tworldcmd, null, new File(tworlddir)));
-        } catch (final IOException exc) {
-            mLogger.failure(exc.toString());
+        //
+        if (mUseExe) {
+            // Check the executable files
+            if (!exists(cactordir)) {
+                dialog("Missing '" + cactordir + "' in '" + workindir + "'");
+            }
+            if (!exists(tworlddir)) {
+                dialog("Missing '" + tworlddir + "' in '" + workindir + "'");
+            }
+            // Create the plugin's processes
+            try {
+                mProcessMap.put(cactorexe, Runtime.getRuntime().exec(
+                        "cmd /c start /min " + cactorexe + " " + cactorcmd, null, new File(cactordir)));
+                mProcessMap.put(tworldexe, Runtime.getRuntime().exec(
+                        "cmd /c start " + tworldexe + " " + tworldcmd, null, new File(tworlddir)));
+            } catch (final IOException exc) {
+                mLogger.failure(exc.toString());
+            }
         }
         // Create the connection
         mListener = new TriCatWorldListener(8000, this);
@@ -149,29 +158,30 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
             mLogger.failure(exc.toString());
         }
 
-        // Wait for pawned processes
-        for (final Entry<String, Process> entry : mProcessMap.entrySet()) {
-            // Get the process entry
-            final String name = entry.getKey();
-            final Process process = entry.getValue();
-            try {
-                // Kill the processes
-                final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
-                // Wait for the killer
-                killer.waitFor();
-                // Print some information 
-                mLogger.message("Joining killer " + name + "");
-                // Wait for the process
-                process.waitFor();
-                // Print some information 
-                mLogger.message("Joining process " + name + "");
-            } catch (final IOException | InterruptedException exc) {
-                mLogger.failure(exc.toString());
+        if (mUseExe) {
+            // Wait for pawned processes
+            for (final Entry<String, Process> entry : mProcessMap.entrySet()) {
+                // Get the process entry
+                final String name = entry.getKey();
+                final Process process = entry.getValue();
+                try {
+                    // Kill the processes
+                    final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
+                    // Wait for the killer
+                    killer.waitFor();
+                    // Print some information 
+                    mLogger.message("Joining killer " + name + "");
+                    // Wait for the process
+                    process.waitFor();
+                    // Print some information 
+                    mLogger.message("Joining process " + name + "");
+                } catch (final IOException | InterruptedException exc) {
+                    mLogger.failure(exc.toString());
+                }
             }
+            // Clear the map of processes 
+            mProcessMap.clear();
         }
-
-        // Clear the map of processes 
-        mProcessMap.clear();
     }
 
     @Override
