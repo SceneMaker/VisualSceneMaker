@@ -561,7 +561,7 @@ public class BasicNode implements ModelObject {
         out.println("<Declare>").push();
 
         for (i = 0; i < mVarDefList.size(); i++) {
-            mVarDefList.get(i).writeXML(out);
+            mVarDefList.get(i).writeXML(out);            
         }
 
         out.pop().println("</Declare>");
@@ -625,6 +625,7 @@ public class BasicNode implements ModelObject {
 
                             def.parseXML(element);
                             mVarDefList.add(def);
+                            
                         }
                     });
                 } else if (tag.equals("Commands")) {
