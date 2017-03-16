@@ -20,9 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- *
  * @author Patrick Gebhard
- *
  */
 public class SSIEventLogExecutor extends ActivityExecutor {
 
@@ -88,12 +86,9 @@ public class SSIEventLogExecutor extends ActivityExecutor {
             }
 
             LogMessage logMessage = new LogMessage();
-
             logMessage.setTimeStamp(System.currentTimeMillis());
             logMessage.setDuration(duration);
-
             logMessage.setClass(messageClass);
-
             // set state, if unknown set state COMPLETED
             final String state = getActionFeatureValue("state", features).toUpperCase().trim().replace("'", "");
             try {

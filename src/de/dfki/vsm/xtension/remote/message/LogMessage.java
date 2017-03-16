@@ -1,14 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.remote.message;
 
 /**
- *
  * @author Patrick
- * 
  */
 public class LogMessage {
     public static enum Class {ACT, MESSAGE, SCENE, STATE, VARASSIGN, VARREQUEST};

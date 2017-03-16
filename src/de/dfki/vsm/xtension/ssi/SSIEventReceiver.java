@@ -82,18 +82,9 @@ final class SSIEventReceiver extends Thread {
     public final void run() {
         // Receive while not done ...
         while (!mDone) {
-            //long currentTime = System.nanoTime();
-            //int processingTime = new Long(((currentTime - mTimeCounter) / 1000000)).intValue();
-
-            //if (mHandler.mProject.hasVariable("event_processing_time")) {
-            //    mHandler.mProject.setVariable("event_processing_time", new IntValue(processingTime));
-            //}
-
-            //mLogger.success("Awaiting SSI events ...processing took ... " + processingTime + "ms");
-            
             // Receive a new message
             final String message = recvString();
-             mLogger.warning(message);
+            //mLogger.failure(message);
             // Check message content
             if (message != null) {
                 // Start time measure
@@ -107,7 +98,7 @@ final class SSIEventReceiver extends Thread {
                         // Delegate sequence handling            
                         mHandler.handle(sequence);
                     } else {
-                        mLogger.message("ERROR: Cannot parse the SSI events ...");
+                        mLogger.message("Cannot parse the SSI events ...");
                     }
                 } catch (final UnsupportedEncodingException exc) {
                     mLogger.failure(exc.toString());

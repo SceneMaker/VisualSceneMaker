@@ -35,7 +35,7 @@ public final class SSIEventArray extends SSIEventObject {
     @Override
     public final void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
         writer.println("<events ssi-v=\"" + mVersion + "\">").push();
-        for (SSIEventEntry event : mList) {
+        for (final SSIEventEntry event : mList) {
             event.writeXML(writer);
         }
         writer.pop().println("</events>");
