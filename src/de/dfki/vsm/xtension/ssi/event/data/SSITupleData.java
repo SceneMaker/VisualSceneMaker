@@ -22,8 +22,13 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
     // The tuple data
-    final HashMap<String, String> mTupleMap
+    private final HashMap<String, String> mTupleMap
             = new HashMap();
+
+    //
+    public String get(final String key) {
+        return mTupleMap.get(key);
+    }
 
     // Construct the tuple data
     public SSITupleData() {

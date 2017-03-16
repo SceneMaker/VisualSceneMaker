@@ -79,7 +79,6 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
         // Get the executable flag value
         mUseExe = Boolean.parseBoolean(
                 mConfig.getProperty("useexe"));
-
     }
 
     // Launch the executor 
@@ -215,7 +214,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                 // If speech_text is empty we assume that the activity has 
                 // empty speech text but has marker activities registered
                 for (final String tm : time_marks) {
-                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    //mLogger.message("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                     return;
                 }
@@ -441,7 +440,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                 replace("   ", " ").
                 replace("  ", " ");
 
-        mLogger.message("Executing command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message));
+        mLogger.message("\033[1;35mExecuting command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message)+ "\033[0m");
 
         // Send activity_name to tworld 
         synchronized (mActivityWorkerMap) {
@@ -453,7 +452,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
 
             if (activity.getType() == activity_type.blocking) { // Wait only if activity is blocking
                 // wait until we got feedback
-                mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " waiting ...");
+                //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " waiting ...");
 
                 while (mActivityWorkerMap.containsValue(cAW)) {
                     try {
@@ -471,9 +470,9 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                     }
 
                     sb.delete(sb.length() - 2, sb.length());
-                    mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " done, ActivityWorker (" + sb.toString() + ") stil active ...");
+                    //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " done, ActivityWorker (" + sb.toString() + ") stil active ...");
                 } else {
-                    mLogger.success("ActivityWorker " + tworld_cmd_action.getId() + " done ...");
+                    //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " done ...");
                 }
             }
         }
@@ -489,7 +488,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
         // Start the client thread
         client.start();
         // Print some information
-        mLogger.success("Accepting " + client.getName() + "");
+        //mLogger.message("Accepting " + client.getName() + "");
     }
 
     // Handle some message
@@ -499,7 +498,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
         // Sanitize the message
         final String message = input.replaceAll("..xml\\s+version........", "");
         // Print some information
-        mLogger.message("Handling new message:\n" + prettyPrint(message) + "");
+        mLogger.message("\033[1;35mHandling new message:\n" + prettyPrint(message) + "\033[0m");
         // Notify the relevant threads
         synchronized (mActivityWorkerMap) {
             final TriCatWorldFeedback tworld_final_feedback = new TriCatWorldFeedback();
@@ -525,7 +524,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                             if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
                                 // TODO - get id - for now there is none
                                 // Set character voice activity variable                               
-                                //mLogger.warning("Agent starts speaking");
+                                mLogger.message("\033[1;35mAgent starts speaking"+ "\033[0m");
                                 if (mUseJPL) {
                                     JPLEngine.query("now(Time), "
                                             + "jdd(["
@@ -544,7 +543,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                                 }
                             }
                             if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
-                                mLogger.success("Handling Charamel Marker " + tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
+                                //mLogger.message("Handling Charamel Marker " + tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
                                 mProject.getRunTimePlayer().getActivityScheduler().handle(tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
                             }
                             if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
@@ -552,7 +551,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable
                                 //mProject.setVariable("susanne_voice_activity", new StringValue(""));
                                 //mProject.setVariable("tom_voice_activity", new StringValue(""));
-                                //mLogger.warning("Agent finishes speaking");
+                                mLogger.message("\033[1;35mAgent finishes speaking"+ "\033[0m");
                                 if (mUseJPL) {
                                     JPLEngine.query("now(Time), "
                                             + "jdd(["
@@ -586,7 +585,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                         if (mActivityWorkerMap.containsKey(id)) {
                             mActivityWorkerMap.remove(id);
                         } else {
-                            mLogger.warning("Activityworker for " + id + " has been stopped before (cmd end notification is received after TTS end speak notification)");
+                            //mLogger.message("Activityworker for " + id + " has been stopped before (cmd end notification is received after TTS end speak notification)");
                         }
                         // wake me up ..
                         mActivityWorkerMap.notifyAll();

@@ -7,6 +7,7 @@ import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
@@ -15,6 +16,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * @author Gregor Mehlmann
@@ -103,122 +107,126 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
 
     // Handle SSI event array
     @Override
-    public void handle(final SSIEventArray array
-    ) {
+    public void handle(final SSIEventArray array) {
         // Print some information 
-        mLogger.message("Handling SSI event array:\n " + array.toString());
-
+        //mLogger.message("Handling SSI event array:\n " + array.toString());
         for (final SSIEventEntry event : array.getEventList()) {
-            final SSIEventData obj = event.getData();
-
+            final SSIEventData data = event.getData();
             if (!mUseSuperEvent) {
-                // Added by PG - LEARNTEC demo - fubi events
                 if (event.getSender().equalsIgnoreCase("fubi")) {
-                    String eventName = event.getEvent(); //Valid event names (and SceneMaker variables) are ArmsOpen, ArmsCrossed, RightHandHeadTouch, LeftHandHeadTouch, LookLeft, LookRight, Waving
-
-                    // sanitize event names ;-) 
-                    String vsmEventName = "";
-
-                    switch (eventName.toLowerCase()) {
+                    final String name = event.getEvent().toLowerCase();
+                    String variable = null;
+                    switch (name) {
                         case "armsopen":
-                            vsmEventName = "ArmsOpen";
+                            variable = "UserArmsAreOpened";
                             break;
                         case "armscrossed":
-                            vsmEventName = "ArmsCrossed";
+                            variable = "UserArmsAreCrossed";
                             break;
                         case "righthandheadtouch":
-                            vsmEventName = "RightHandHeadTouch";
+                            variable = "UserRightHandAtHead";
                             break;
                         case "lefthandheadtouch":
-                            vsmEventName = "LeftHandHeadTouch";
+                            variable = "UserLeftHandAtHead";
                             break;
                         case "lookleft":
-                            vsmEventName = "LookLeft";
+                            variable = "UserIsLookingLeft";
                             break;
                         case "lookright":
-                            vsmEventName = "LookRight";
+                            variable = "UserIsLookingRight";
                             break;
                         case "waving":
-                            vsmEventName = "Waving";
+                            variable = "UserIsWaving";
                             break;
                         default:
                             // nothing
                             break;
                     }
-
-                    if (event.getState().equalsIgnoreCase("completed")) {
-                        mLogger.success("User stopped " + vsmEventName);
-
-                        if (mUseJPL) {
-                            // TODO 
-                        } else {
-                            // Set variable
-                            // Special case (waving is unary)
-                            if (vsmEventName.equalsIgnoreCase("waving")) {
-                                mProject.setVariable(vsmEventName, true);
+                    if (variable != null) {
+                        if (event.getState().equalsIgnoreCase("completed")) {
+                            mLogger.message("User stopped " + variable);
+                            if (mUseJPL) {
+                                // TODO 
                             } else {
-                                mProject.setVariable(vsmEventName, false);
+                                if (variable.equalsIgnoreCase("UserIsWaving")) {
+                                    mProject.setVariable(variable, true);
+                                } else {
+                                    mProject.setVariable(variable, false);
+                                }
                             }
-                        }
-                    } else if (event.getState().equalsIgnoreCase("continued")) {
-                        mLogger.success("User started " + vsmEventName);
-
-                        if (mUseJPL) {
-                            // TODO 
+                        } else if (event.getState().equalsIgnoreCase("continued")) {
+                            mLogger.message("User started " + variable);
+                            if (mUseJPL) {
+                                // TODO 
+                            } else {
+                                // Set variable
+                                mProject.setVariable(variable, true);
+                            }
                         } else {
-                            // Set variable
-                            mProject.setVariable(vsmEventName, true);
+                            //
                         }
                     }
-                    // Added by PG - LEARNTEC demo - shore events
-                } else if (event.getSender().equalsIgnoreCase("facialexpression")) {
-                    String eventName = event.getEvent(); //Valid event name is smile - note that SceneMaker variable is not smile. it is UserSmileShore
-                    if (event.getState().equalsIgnoreCase("completed")) {
-                        mLogger.success("User stopped smiling (Shore)");
-
-                        if (mUseJPL) {
-                            // TODO 
-                        } else {
-                            // Set variable
-                            mProject.setVariable("UserSmileShore", false);
-                        }
-                    } else if (event.getState().equalsIgnoreCase("continued")) {
-                        mLogger.success("User started smiling (Shore)");
-
-                        if (mUseJPL) {
-                            // TODO 
-                        } else {
-                            // Set variable
-                            mProject.setVariable("UserSmileShore", true);
+                } else if (event.getSender().equalsIgnoreCase("shore")
+                        && event.getEvent().equalsIgnoreCase("head")) {
+                    final String content = ((SSIStringData) data).toString();
+                    final Document element = XMLUtilities.xmlStringToDocument(content);
+                    final NodeList childs = element.getElementsByTagName("head");
+                    for (int i = 0; i < childs.getLength(); i++) {
+                        // Get the nex tuple element
+                        final Element head = ((Element) childs.item(i));
+                        try {
+                            mProject.setVariable("UserHeadPositionX",
+                                    Float.parseFloat(head.getAttribute("x")));
+                            mProject.setVariable("UserHeadPositionY",
+                                    Float.parseFloat(head.getAttribute("y")));
+                        } catch (final NumberFormatException exc) {
+                            // Do nothing
                         }
                     }
-                    // Added by PG - LEARNTEC demo - fubi events
-                } else if (event.getSender().equalsIgnoreCase("kinect")) {
-                    String eventName = event.getEvent(); //Valid event name is smile - note that SceneMaker variable is not smile. it is UserSmileKinect
+                } else if (event.getSender().equalsIgnoreCase("shore")
+                        && event.getEvent().equalsIgnoreCase("smile")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
-                        mLogger.success("User stopped smiling (Kinect)");
+                        mLogger.message("User stopped smiling (Shore)");
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set variable
+                            mProject.setVariable("UserSmilingShore", false);
+                        }
+                    } else if (event.getState().equalsIgnoreCase("continued")) {
+                        mLogger.message("User started smiling (Shore)");
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set variable
+                            mProject.setVariable("UserSmilingShore", true);
+                        }
+                    }
+                } else if (event.getSender().equalsIgnoreCase("kinect")
+                        && event.getEvent().equalsIgnoreCase("smile")) {
+                    if (event.getState().equalsIgnoreCase("completed")) {
+                        mLogger.message("User stopped smiling (Kinect)");
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set speaking variable
+                            mProject.setVariable("UserSmilingKinect", false);
+                        }
+                    } else if (event.getState().equalsIgnoreCase("continued")) {
+                        mLogger.message("User started smiling (Kinect)");
 
                         if (mUseJPL) {
                             // TODO 
                         } else {
                             // Set speaking variable
-                            mProject.setVariable("UserSmileKinect", false);
-                        }
-                    } else if (event.getState().equalsIgnoreCase("continued")) {
-                        mLogger.success("User started smiling (Kinect)");
-
-                        if (mUseJPL) {
-                            // TODO 
-                        } else {
-                            // Set speaking variable
-                            mProject.setVariable("UserSmileKinect", true);
+                            mProject.setVariable("UserSmilingKinect", true);
                         }
                     }
                 } else if (event.getSender().equalsIgnoreCase("audio")
                         && event.getEvent().equalsIgnoreCase("vad")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
                         // User stopped speaking
-                        mLogger.success("User stopped speaking");
+                        mLogger.message("User stopped speaking");
                         if (mUseJPL) {
                             JPLEngine.query("now(Time), "
                                     + "jdd(["
@@ -237,7 +245,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                         }
                     } else if (event.getState().equalsIgnoreCase("continued")) {
                         // User started speaking
-                        mLogger.success("User started speaking");
+                        mLogger.message("User started speaking");
                         if (mUseJPL) {
                             JPLEngine.query("now(Time), "
                                     + "jdd(["
@@ -259,9 +267,9 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                     }
                 } else if (event.getSender().equalsIgnoreCase("speech")
                         && event.getEvent().equalsIgnoreCase("act")) {
-                    final String keyword = ((SSIStringData) obj).toString().trim();
+                    final String keyword = ((SSIStringData) data).toString().trim();
                     // User started speaking
-                    mLogger.success("User said '" + keyword + "'");
+                    mLogger.message("User said '" + keyword + "'");
                     if (mUseJPL) {
                         JPLEngine.query("now(Time), "
                                 + "jdd(["
@@ -282,7 +290,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                 } else {
                     // This should not happen
                 }
-            } else if (obj instanceof SSIStringData) {
+            } else if (data instanceof SSIStringData) {
                 final TriCatWorldSSIData mSSIData = new TriCatWorldSSIData(
                         ((SSIStringData) array.getEventList().get(0).getData()).toString());
 
@@ -343,7 +351,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                 for (final Entry<String, AbstractValue> value : values.entrySet()) {
                     if (mProject.hasVariable(value.getKey())) {
                         mProject.setVariable(value.getKey(), value.getValue());
-                        //mLogger.success("Setting Variable " + value.getKey() + " to " + value.getValue().getConcreteSyntax());
+                        //mLogger.message("Setting Variable " + value.getKey() + " to " + value.getValue().getConcreteSyntax());
                     } else {
                         //mLogger.warning("Variable " + value.getKey() + " not defined!");
                     }

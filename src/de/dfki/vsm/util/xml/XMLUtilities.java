@@ -11,12 +11,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -213,6 +221,44 @@ public final class XMLUtilities {
             sLogger.failure(exc.toString());
             // Return false if writing to XML failed
             return false;
+        }
+    }
+
+    public final static Document xmlStringToDocument(final String string) {
+        try {
+            final ByteArrayInputStream stream = new ByteArrayInputStream(
+                    string.getBytes("UTF-8"));
+            // Construct the XML document parser
+            final DocumentBuilder parser
+                    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            // Parse the XML document from the stream
+            final Document document = parser.parse(stream);
+            // Finally close the stream and the URL
+            stream.close();
+            //
+            return document;
+        } catch (final ParserConfigurationException | SAXException | IOException exc) {
+            // Print some error message in this case
+            sLogger.failure(exc.toString());
+            // Return null if parsing to XML failed
+            return null;
+        }
+    }
+
+    public final static String xmlElementToString(final Element element) {
+        try {
+            final Transformer transformer
+                    = TransformerFactory.newInstance().newTransformer();
+            final StreamResult result
+                    = new StreamResult(new StringWriter());
+            final DOMSource source = new DOMSource(element);
+            transformer.transform(source, result);
+            return result.getWriter().toString();
+        } catch (final TransformerException | TransformerFactoryConfigurationError exc) {
+            // Print some error message in this case
+            sLogger.failure(exc.toString());
+            // Return null if parsing to XML failed
+            return null;
         }
     }
 }

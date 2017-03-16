@@ -1,0 +1,646 @@
+%------------------------------------------------------------------------------%
+%                  General Quantification Meta-Predicates
+%------------------------------------------------------------------------------%
+/**
+ * forsome(:Generator, :Condition)
+ *
+ * This predicate tests whether there exists some binding of =|Generator|= for
+ * which the condition =|Condition|= becomes true. If there does not exist any
+ * binding for =|Generator|= then the predicate fails. The predicate does not
+ * tell which binding yields success if one binding proves true.
+ */
+forsome(Generator, Condition) :-
+    \+ foreach(Generator, \+ Condition).
+
+/**
+ * forsome(:Generator, :Condition, -Result)
+ *
+ * This predicate tests whether there exists some binding of =|Generator|=
+ * for which the condition =|Condition|= becomes true. The predicate always
+ * succeeds however the return value =|Result|= is bound to =|success|= if
+ * there exists a binding whereas it is bound to =|failure|= if there does
+ * not exist such a binding.
+ */
+forsome(Generator, Condition, Result) :-
+    forsome(Generator, Condition)
+        -> Result = success
+         ; Result = failure.
+
+/**
+ * fornone(:Generator, :Condition)
+ *
+ * This predicate tests if for all alternative bindings of =|Generator|=
+ * condition =|Condition|= becomes false as well. If there does not exist
+ * any binding for =|Generator|= then the predicate fails. The predicate
+ * does not tell which binding is wrong if one binding proves wrong.
+ */
+fornone(Generator, Condition) :-
+    \+ forsome(Generator, Condition).
+
+/**
+ * fornone(:Generator, :Condition, -Result)
+ *
+ * This predicate tests if for all alternative bindings of =|Generator|=
+ * condition =|Condition|= becomes false as well. The predicate always
+ * succeeds however the return value =|Result|= is bound to =|success|= if
+ * =|Condition|= is true for all bindings whereas it is bound to =|failure|=
+ * if there exists a binding for which =|Condition|= fails.
+ */
+fornone(Generator, Condition, Result) :-
+    fornone(Generator, Condition)
+        -> Result = success
+         ; Result = failure.
+
+/**
+ * foreach(:Generator, :Condition)
+ *
+ * This predicate tests if for all alternative bindings of =|Generator|=
+ * condition =|Condition|= becomes true as well. If there does not exist
+ * any binding for =|Generator|= then the predicate succeeds. The predicate
+ * does not tell which binding is wrong if one binding proves wrong.
+ */
+foreach(Generator, Condition) :-
+    \+ (Generator, \+ Condition).
+         
+/**
+ * foreach(:Generator, :Condition, -Result)
+ *
+ * This predicate tests if for all alternative bindings of =|Generator|=
+ * condition =|Condition|= becomes true as well. The predicate always
+ * succeeds however the return value =|Result|= is bound to =|success|= if
+ * =|Condition|= is true for all bindings whereas it is bound to =|failure|=
+ * if there exists a binding for which =|Condition|= fails.
+ */
+foreach(Generator, Condition, Result) :-
+    foreach(Generator, Condition)
+        -> Result = success
+         ; Result = failure.
+
+%------------------------------------------------------------------------------%
+%                 Generalised Quantification Meta-Predicates
+%------------------------------------------------------------------------------%
+collect(Pattern, Result, Quantor, Model, Range, Scope) :-
+  findall(Pattern, call(Quantor, Model, Range, Scope), Result).
+
+collect(Pattern, Result, Quantor, Value, Model, Range, Scope) :-
+  findall(Pattern, call(Quantor, Value, Model, Range, Scope), Result).
+  
+
+/**
+ * forallof(+Template, :Restriction :Condition)
+ *
+ */
+forevery(Model, Range, Scope) :-
+    bagof(Model, Range, RangeSet), write('Range :'), write(RangeSet), nl,
+    bagof(Model, (Range,Scope), InterSet), write('Range,Scope :'), write(InterSet), nl,
+    RangeSet == InterSet.
+
+/**
+ * forexact(-Number, +Template, :Condition)
+ *
+ */
+forexact(Count, Model, Scope) :-
+    bagof(Model, Scope, ScopeSet)
+        *-> (length(ScopeSet, ScopeSize),
+             Count = ScopeSize)
+          ; Count = 0.
+
+/**
+ * forexactlyof(-Value, +Template, :Restriction :Condition)
+ *
+ */
+forexactof(Portion, Template, Restriction, Condition) :-
+     bagof(Template, Restriction, Bindings)
+     *-> ( bagof(Template, (Restriction,Condition), Solutions)
+           *->( length(Bindings, N), %write(N), nl,
+                length(Solutions, M), %write(M), nl,
+                Fraction is M/N, Portion = Fraction )
+           ; Value = 0.0 )
+     ; Value = 1.0.
+          
+/**
+ * forexactlyof(-Number, +Template, :Restriction :Condition, -Result)
+ *
+ */
+forexactof(Value, Template, Restriction, Condition, Result) :-
+     forexactof(Value, Template, Restriction, Condition)
+        *-> Result = success
+          ; Result = failure.
+
+
+
+formajor(Template, Generator, Condition) :-
+    bagof(Template, Generator, Range),
+    bagof(Template,(Generator, Condition), Scope),
+    length(Range, R), length(Scope, S), S/R > 0.5.
+
+forabsmajorof(Template, Restriction, Condition, Result) :-
+   formajorityof(Template, Restriction, Condition)
+        *-> Result = success
+          ; Result = failure.
+
+formost(Model, Range, Scope) :-
+    bagof(Model, Range, RangeSet), write('Within The Range :'), write(RangeSet), nl,
+    findall(X, bagof(Model, (Range, Scope), X), List), write('All Possible Scopes Within This Range '), write(List), nl, nl,
+    setof(X, max_size_list(List, X), Most),  write('Maximal Size Scope List:'), write(Most), nl, nl,
+    bagof(Model, (Range, Scope), Some), write('Consider Scope '), write(Some), nl,
+    member(Some,Most).
+
+
+
+%----------------------------------------------------------------------
+compare_list(Delta, Left, Right) :-
+    %length(Left, LeftL), length(Right, RightL),
+    compare(Delta, length(Left), length(Right)).
+    
+max_size_list([List], List).
+max_size_list([Head|Tail], List) :-
+      max_size_list(Tail, Some),
+      length(Some, SomeL),
+      length(Head, HeadL),
+      ((SomeL  >  HeadL, List = Some);
+      (SomeL  <  HeadL, List = Head);
+      (SomeL == HeadL, Some \== Head, (List = Head ; List = Some))).
+
+
+%----------------------------------------------------------------------
+
+
+% Fuzzy Values
+%forevery() % Für alle
+%formost()  % Für die meisten
+%formany()  % Für viele
+%foreinige  % Für einige
+%forfew()   % Für wenige
+%forleast() % Für die wenigsten
+%fornone()  % Für keine
+%foralmost()   % für die ungefähr anzahl von
+%foralmostof() % für den ungefähr anteil von
+
+
+%------------------------------------------------------------------------------%
+%                     Temporal Interval Predicates
+%------------------------------------------------------------------------------%
+%
+% Let A and B be two time intervals with A = [a+, a-] and B = [b+, b-] then we
+% define the following temporal interval relations between those two intervals
+% concurrent(A, B) := a- = b- and a+ = b+
+% before(A, B)     := a+ < b-
+% after(A, B)      := b+ < a-
+% during(A, B)     := b- < a- and a+ < b+
+% contains(A, B)   := a- < b- and b+ < a+
+% overlaps(A, B)   := a- < b- and b- < a+ and a+ < b+
+% overlaped(A, B)  := b- < a- and a- < b+ and b+ < a+
+% meets(A, B)      := a+ = b-
+% met(A, B)        := b+ = a-
+% starts(A, B)     := a- = b- and a+ < b+
+% started(A, B)    := b- = a- and b+ < a+
+% finishes(A, B)   := a+ = b+ and b- < a-
+% finished(A, B)   := b+ = a+ and a- < b-
+%
+%------------------------------------------------------------------------------%
+/**
+ * concurrent(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base that occur concurrently or,
+ * respectively, generates the set of possible bindings of =|N1|= and
+ * =|N2|= to identifiers of different events in the knowledge base so
+ * that both events occur concurrently.
+ */
+concurrent(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    S1 == S2,
+    E1 == E2.
+
+/**
+ * during(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event occurs
+ * during the second event or, respectively, generates the set of possible
+ * bindings of =|N1|= and =|N2|= to identifiers of different events in the
+ * knowledge base so that the first event occurs during the second event.
+ */
+during(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    S2 < S1,
+    E1 < E2.
+
+/**
+ * contains(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event contains
+ * the second event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the first event contains the second event.
+ */
+contains(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    S1 < S2,
+    E2 < E1.
+    
+    
+/**
+ * before(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event occurs
+ * before the second event or, respectively, generates the set of possible
+ * bindings of =|N1|= and =|N2|= to identifiers of different events within
+ * the knowledge base so that the first event occurs before the second event.
+ */
+before(N1, N2) :-
+    event(N1, _, _, E1, _, _, _),
+    event(N2, _, S2, _, _, _, _),
+    N1 \== N2,
+    E1 < S2.
+    
+/**
+ * after(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event occurs
+ * after the second event or, respectively, generates the set of possible
+ * bindings of =|N1|= and =|N2|= to identifiers of different events within
+ * the knowledge base so that the first event occurs before the second event.
+ */
+after(N1, N2) :-
+    event(N1, _, S1, _, _, _, _),
+    event(N2, _, _, E2, _, _, _),
+    N1 \== N2,
+    E2 < S1.
+
+/**
+ * overlaps(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event overlaps
+ * the second event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the first event overlaps the second event.
+ */
+overlaps(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    S1 < S2,
+    S2 < E1,
+    E1 < E2.
+
+/**
+ * overlaped(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the second event overlaps
+ * the first event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the second event overlaps the first event.
+ */
+overlaped(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    S2 < S1,
+    S1 < E2,
+    E2 < E1.
+    
+/**
+ * meets(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event meets
+ * the second event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the first event meets the second event.
+ */
+meets(N1, N2) :-
+    event(N1, _, _, E1, _, _, _),
+    event(N2, _, S2, _, _, _, _),
+    N1 \== N2,
+    E1 == S2.
+    
+/**
+ * met(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the second event meets
+ * the first event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the second event meets the first event.
+ */
+met(N1, N2) :-
+    event(N1, _, S1, _, _, _, _),
+    event(N2, _, _, E2, _, _, _),
+    N1 \== N2,
+    E2 == S1.
+    
+/**
+ * starts(-One:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event starts
+ * the second event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the first event starts the second event.
+ */
+starts(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    S1 == S2,
+    E1 < E2.
+    
+/**
+ * started(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the second event starts
+ * the first event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the second event starts the first event.
+ */
+started(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    S2 == S1,
+    E2 < E1.
+
+/**
+ * finishes(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the first event finishes
+ * the second event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the first event finishes the second event.
+ */
+finishes(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    E1 == E2,
+    S2 < S1.
+    
+/**
+ * finished(-N1:name, -N2:name)
+ *
+ * This predicate tests whether =|N1|= and =|N2|= are identifiers of two
+ * different events within the knowledge base and if the second event finishes
+ * the first event or, respectively, generates the set of possible bindings
+ * of =|N1|= and =|N2|= to identifiers of different events within the
+ * knowledge base so that the second event finishes the first event.
+ */
+finished(N1, N2) :-
+    event(N1, _, S1, E1, _, _, _),
+    event(N2, _, S2, E2, _, _, _),
+    N1 \== N2,
+    E1 == E2,
+    S2 < S1.
+
+%------------------------------------------------------------------------------%
+%                      Latest And Oldest Events
+%------------------------------------------------------------------------------%
+/**
+ * latest_of_list(-N:name, -L:list)
+ *
+ * This predicate tests whether =|N|= is the identifiers of the latest event
+ * within the event list =|L|= or, respectively, generates the set of possible
+ * bindings of =|N|= to the identifier of an event within the knowledge base
+ * and of =|L|= to a list of events of the knowledge base whose latest event
+ * is the event =|N|=.
+ */
+latest_of_list(N, [N]).
+latest_of_list(N, [H|T]) :-
+    % Let H be the head element of the event list [H|T]
+    % and let L be the latest event of the tail list T
+    latest_of_list(L, T),
+    (   % If L is before H then H is also the latest
+        % event of the event list [H|T] including H
+        before(L, H), N = H
+    ;   % If H is before L then L is also the latest
+        % event of the event list [H|T] including H
+        before(H, L), N = L
+    ).  % All other cases where neither L is before H
+        % nor H is before L can not be computed since
+        % the predicate requires a total order of the
+        % events in the given event list. The predicate
+        % will fail in those cases and return false.
+        % TODO: Maybe we should better
+        % throw an exception whenever
+        % the list isn't well ordered?
+
+/**
+ * oldest_of_list(-N:name, -L:list)
+ *
+ * This predicate tests whether =|N|= is the identifiers of the oldest event
+ * within the event list =|L|= or, respectively, generates the set of possible
+ * bindings of =|N|= to the identifier of an event within the knowledge base
+ * and of =|L|= to a list of events of the knowledge base whose oldest event
+ * is the event =|N|=.
+ */
+oldest_of_list(N, [N]).
+oldest_of_list(N, [H|T]) :-
+    % Let H be the head element of the event list [H|T]
+    % and let O be the oldest event of the tail list T
+    oldest_of_list(O, T),
+    (   % If O is before H then O is also the oldest
+        % event of the event list [H|T] including H
+        before(O, H), N = O
+    ;   % If H is before O then H is also the oldest
+        % event of the event list [H|T] including H
+        before(H, O), N = H
+    ).  % All other cases where neither L is before H
+        % nor H is before L can not be computed since
+        % the predicate requires a total order of the
+        % events in the given event list. The predicate
+        % will fail in those cases and return false.
+
+/**
+ * latest_of_mode(-N:name, -M:mode)
+ *
+ * This predicate tests whether =|N|= is the identifiers of the latest event
+ * of mode =|M|= within the knowledge base or, respectively, generates the
+ * bindings of =|N|= to the identifier of the latest event of mode =|M|=
+ * within the knowledge base.
+ */
+ latest_of_mode(N, M) :-
+     bagof(T, mode(T, M), L),
+     latest_of_list(N, L).
+    
+ /**
+ * oldest_of_mode(-N:name, -M:mode)
+ *
+ * This predicate tests whether =|N|= is the identifiers of the oldest event
+ * of mode =|M|= within the knowledge base or, respectively, generates the
+ * bindings of =|N|= to the identifier of the oldest event of mode =|M|=
+ * within the knowledge base.
+ */
+oldest_of_mode(N, M) :-
+     bagof(T, mode(T, M), L),
+     oldest_of_list(N, L).
+     
+/**
+ * latest_with(+T:temp, C:cond, -N:name)
+ *
+ * This predicate tests whether =|N|= is the identifier of the latest event
+ * of a list of events that are satisfying the condition =|C|= within the knowledge base or, respectively, generates the
+ * bindings of =|N|= to the identifier of the latest event of mode =|M|=
+ * within the knowledge base.
+ */
+latest(T, C, N) :-
+    bagof(T, C, L),
+    latest_of_list(N, L).
+    
+latestofall(T, C, N) :-
+    findall(T, C, L),
+    latest_of_list(N, L).
+
+oldest(T, C, N) :-
+    bagof(T, C, L),
+    oldest_of_list(N, L).
+
+
+
+
+
+%------------------------------------------------------------------------------%
+%                     Temporal Helper Predicates
+%------------------------------------------------------------------------------%
+distexactly(N1, N2, Time) :-
+    event(N1, _, _, E1, _, _, _),
+    event(N2, _, S2, _, _, _, _),
+    N1 \== N2,
+    E1 < S2,
+    Dist is S2 - E1,
+    Time = Dist.
+
+distlessthan(N1, N2, Time) :-
+    event(N1, _, _, E1, _, _, _),
+    event(N2, _, S2, _, _, _, _),
+    N1 \== N2,
+    E1 < S2,
+    Dist is S2 - E1,
+    Time > Dist.
+    
+distmorethan(N1, N2, Time) :-
+    event(N1, _, _, E1, _, _, _),
+    event(N2, _, S2, _, _, _, _),
+    N1 \== N2,
+    E1 < S2,
+    Dist is S2 - E1,
+    Time < Dist.
+
+%------------------------------------------------------------------------------%
+%                     Modality Ordering Constraints
+%------------------------------------------------------------------------------%
+follows(N1, N2) :-
+    equal_mode(N1, N2),
+    after(N1, N2).
+
+followed(N1, N2) :-
+    equal_mode(N1, N2),
+    before(N1, N2).
+
+between(NTmp, N1, N2) :-
+    follows(NTmp, N1),
+    followed(NTmp, N2).
+
+followers(Name, List) :-
+    bagof(Temp, follows(Temp, Name), List).
+
+ancestors(Name, List) :-
+    bagof(Temp, followed(Temp, Name), List).
+
+interims(N1, N2, List) :-
+    bagof(Temp, between(Temp, N1, N2), List).
+    
+nextto(N1, N2) :-
+    followers(N2, List),
+    oldest_of_list(N1, List).
+      
+prevto(N1, N2) :-
+    ancestors(N2, List),
+    latest_of_list(N1, List).
+
+framed(NTmp, N1, N2) :-
+    nextto(NTmp, N1),
+    prevto(NTmp, N2).
+
+isAlignedGestureLocRef(B, L) :-
+    business(B),       % The First Event Must Be A Business Referent In The Fact Base
+    mode(B, voice),    % The First Event Must Be An Event Of Modality Voice
+    type(B, business), % The First Event Must Be An Event Of Type Business
+    location(L),       % The Second Event Must Be A Location Referent In The Fact Base
+    mode(L, gesture),  % The Second Event Must Be An Event Of Modality Gesture
+    (                  % The Second Event Must Have A Valid Type
+        type(L, area);
+        type(L, line);
+        type(L, point)
+    ),
+    (
+       (after(L, B), distlessthan(B, L, 1500))
+    ;
+       (before(L, B), distlessthan(L, B, 1500))
+    ;
+       during(L, B)
+    ;
+       contains(L, B)
+    ;
+       overlaps(L, B)
+    ;
+       overlaped(L, B)
+    ).
+
+
+isAlignedVoiceLocRef(B, L) :-
+    business(B),       % The First Event Must Be A Business Referent In The Fact Base
+    mode(B, voice),    % The First Event Must Be An Event Of Modality Voice
+    type(B, business), % The First Event Must Be An Event Of Type Business
+    location(L),       % The Second Event Must Be A Location Referent In The Fact Base
+    mode(L, voice),    % The Second Event Must Be An Event Of Modality Voice
+    type(L, location),
+    (
+       (after(L, B), distlessthan(B, L, 3000))
+    ).
+
+isAlignedScrollLocRef(B, L) :-
+    business(B),       % The First Event Must Be A Business Referent In The Fact Base
+    mode(B, voice),    % The First Event Must Be An Event Of Modality Voice
+    type(B, business), % The First Event Must Be An Event Of Type Business
+    location(L),       % The Second Event Must Be A Location Referent In The Fact Base
+    mode(L, control),  % The Second Event Must Be An Event Of Modality Voice
+    type(L, scroll),
+    distlessthan(L, B, 6000).
+
+        
+        
+        
+        
+        
+        forlargest(Template, Generator, Condition, Scope) :-
+    collect(Template, Generator, Range), write('Range: '), out(Range), nl, length(Range, R), write('Range Size: '), out(R), nl,
+    findall(X, bagof(Template, (Generator, Condition), X), Scopes), write('Scopes: '), nl, out(Scopes), nl,
+    findall(X, max_size_list(Scopes, X), Candidates),
+    sort(Candidates, SortedCandidates) ,   write('Sorted Candidates: '), out(SortedCandidates), nl,
+    collect(Template, (Generator, Condition), Scope), write('Scope: '), out(Scope), nl,
+    member(Scope, SortedCandidates).
+    %Scope == MaxList .
+    
+        
+/*
+reset :-
+  add([type:entity,sort:piece,name:p1,data:[type:marker, size:small, color:yellow, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large yellow square']),
+  add([type:entity,sort:piece,name:p2,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the small green triangle']),
+  add([type:entity,sort:piece,name:p3,data:[type:marker, size:small, color:yellow, shape:square, pos:[x:0, y:0], state:absent],desc:'the large red star']),
+  add([type:entity,sort:piece,name:p4,data:[type:marker, size:small, color:green, shape:triangle, pos:[x:0, y:0], state:absent],desc:'the large red star']).
+*/
+
