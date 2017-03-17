@@ -13,7 +13,7 @@ import java.util.Arrays;
 /**
  * @author Gregor Mehlmann
  */
-final class SSIEventSender extends Thread {
+public final class SSIEventSender extends Thread {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
@@ -45,8 +45,8 @@ final class SSIEventSender extends Thread {
         mLAddr = new InetSocketAddress(mLHost, mLPort);
         mRAddr = new InetSocketAddress(mRHost, mRPort);
         // Print some information
-        mLogger.message("Creating SSI event handler local address " + mLAddr);
-        mLogger.message("Creating SSI event handler remote address " + mRAddr);
+        mLogger.message("Creating SSI event sender local address " + mLAddr);
+        mLogger.message("Creating SSI event sender remote address " + mRAddr);
     }
 
     // Execute the server thread
@@ -58,7 +58,7 @@ final class SSIEventSender extends Thread {
             // Connect the server socket
             mSocket.connect(mRAddr);
             // Print some information
-            mLogger.message("Connecting SSI event handler:\n"
+            mLogger.message("Connecting SSI event sender:\n"
                     + " Local Address " + mLHost + ":" + mLPort + "\n"
                     + " Remote Address " + mRHost + ":" + mRPort);
             // Start the server thread
@@ -136,7 +136,7 @@ final class SSIEventSender extends Thread {
             // And send the UDP packet
             mSocket.send(packet);
             // Print some information
-            //mLogger.message("SSI event handler sending '" + string + "'");
+            mLogger.message("SSI event sender sending '" + string + "'");
             // Return true at success
             return true;
         } catch (final IOException exc) {
