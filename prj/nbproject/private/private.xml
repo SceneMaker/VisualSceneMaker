@@ -2,12 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/Master/src/de/dfki/vsm/xtension/tricatworld/TriCatWorldSSIPlugin.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/Master/src/de/dfki/vsm/xtension/remote/message/LogMessage.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/Master/src/de/dfki/vsm/xtension/ssi/event/data/SSITupleData.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/Master/src/de/dfki/vsm/xtension/remote/SSIEventLogExecutor.java</file>
-            <file>file:/D:/GitHubOrg/VisualSceneMaker/Master/src/de/dfki/vsm/xtension/ssi/event/data/SSIEventData.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
