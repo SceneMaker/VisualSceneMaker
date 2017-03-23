@@ -195,22 +195,6 @@
         </java>
     </target>
     
-    <!-- Execute Project -->
-    <!--    <target name="exec">
-            <java classname="de.dfki.vsm.ProjectEditor" fork="true">
-                    <classpath refid="clspath"/>
-                    <arg line="res/prj/hcm/vsm/config.xml"/>
-            </java>
-    </target>-->
-    <!-- Execute Project -->
-    <!--
-    <target name="test">
-        <java classname="de.dfki.vsm.test.TestVSMAPI" fork="true">
-            <arg line="res/prj/test"/>
-            <classpath refid="clspath"/>
-        </java>
-    </target>   
-    -->
     <!-- Scanner Generation -->
     <target name="-lexxer">
         <!-- <echo message="Generating '${scnscnfile}' ${line.separator}      from '${scnlexfile}'"/> -->
@@ -223,7 +207,8 @@
             <arg file="${sfllexfile}"/>
             <classpath refid="clspath"/>
         </java>
-    </target>    
+    </target> 
+	
     <!-- Parser Generation -->
     <target name="-parser">
         <!-- <echo message="Generating '${scnprsfile}' ${line.separator}      from '${scncupfile}'"/> -->
@@ -239,6 +224,7 @@
             <classpath refid="clspath"/>
         </java>
     </target>  
+	
     <!-- Scanner Generation -->
     <target name="generate" depends="clean,-lexxer,-parser">  
     </target>
@@ -251,6 +237,7 @@
             <entry key="build.date" type="date" value="now" pattern="dd.MM.yyyy"/>
         </propertyfile>
     </target>
+	
     <!-- Clean Project -->
     <target name="clean">
         <echo message="Cleaning '${tmpdir}'"/>
