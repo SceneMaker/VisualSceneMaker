@@ -343,9 +343,9 @@ public class Evaluator {
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
         } else if (exp instanceof UnaryExpression) {
-            final UnaryExpression un = (UnaryExpression) exp;
-            final AbstractValue value = evaluate(un.getExp(), env);
-            final UnaryExpression.UnaryOp operator = un.getOperator();
+            final UnaryExpression unary = (UnaryExpression) exp;
+            final AbstractValue value = evaluate(unary.getExp(), env);
+            final UnaryExpression.UnaryOp operator = unary.getOperator();
             if (operator == UnaryExpression.UnaryOp.Neg) {
                 if (value instanceof IntValue) {
                     return new IntValue(-((IntValue) value).getValue());
@@ -361,19 +361,52 @@ public class Evaluator {
                     throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
                 }
             } else if (operator == UnaryExpression.UnaryOp.Lnot) {
-                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                if (value instanceof IntValue) {
+                    return new IntValue(~((IntValue) value).getValue());
+                } else {
+                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                }
             } else if (operator == UnaryExpression.UnaryOp.Inc) {
-                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                AbstractValue result;
+                if (value instanceof IntValue) {
+                    result = new IntValue(((IntValue) value).getValue() + 1);
+                } else if (value instanceof FloatValue) {
+                    result = new FloatValue(((FloatValue) value).floatValue() + 1.0f);
+                } else {
+                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                }
+                //
+                if (unary.getExp() instanceof VariableExpression) {
+                    final VariableExpression var = (VariableExpression) unary.getExp();
+                    if (var instanceof SimpleVariable) {
+                        env.write(((SimpleVariable) var).getName(), result);
+                    } else if (var instanceof ArrayVariable) {
+                        // TODO
+                        throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                    } else if (var instanceof MemberVariable) {
+                        // TODO
+                        throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                    } else {
+                        throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                    }
+                }
+                //
+                return result;
             } else if (operator == UnaryExpression.UnaryOp.Dec) {
-                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                if (value instanceof IntValue) {
+                    return new IntValue(((IntValue) value).getValue() - 1);
+                } else if (value instanceof FloatValue) {
+                    return new FloatValue(((FloatValue) value).floatValue() - 1.0f);
+                } else {
+                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+                }
             } else {
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
         } else if (exp instanceof TernaryExpression) {
-            AbstractValue condition = evaluate(((TernaryExpression) exp).getCondition(), env);
-            AbstractValue thenValue = evaluate(((TernaryExpression) exp).getThenExp(), env);
-            AbstractValue elseValue = evaluate(((TernaryExpression) exp).getElseExp(), env);
-
+            final AbstractValue condition = evaluate(((TernaryExpression) exp).getCondition(), env);
+            final AbstractValue thenValue = evaluate(((TernaryExpression) exp).getThenExp(), env);
+            final AbstractValue elseValue = evaluate(((TernaryExpression) exp).getElseExp(), env);
             if (condition instanceof BooleanValue) {
                 if (((BooleanValue) condition).getValue()) {
                     return thenValue;
@@ -617,7 +650,7 @@ public class Evaluator {
                 mLogger.warning("Calling Member Method = " + method);
                 // Invoke The Method
                 final Object result = method.invoke(memberFieldObject, argInstList);
-               //
+                //
                 mLogger.warning("Member Method Result = " + result);
                 //
                 return result;

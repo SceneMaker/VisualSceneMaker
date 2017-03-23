@@ -457,11 +457,11 @@ unary_expression ::=
     {: 
         RESULT = new UnaryExpression(x, UnaryOp.Lnot); 
     :}
-| INC expression:x                                                              
+| INC variable_expression:x//expression:x                                                              
     {: 
         RESULT = new UnaryExpression(x, UnaryOp.Inc); 
     :}
-| DEC expression:x                                                              
+| DEC variable_expression:x//expression:x                                                              
     {: 
         RESULT = new UnaryExpression(x, UnaryOp.Dec); 
     :}
