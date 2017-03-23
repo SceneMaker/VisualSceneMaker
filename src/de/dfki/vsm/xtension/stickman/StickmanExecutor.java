@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.stickman;
 
 import de.dfki.action.sequence.TimeMark;
@@ -102,8 +97,8 @@ public class StickmanExecutor extends ActivityExecutor {
             }
 
             // schedule Mouth_open and Mouth closed activities
-            mScheduler.schedule(20, null, new ActionActivity(actor, /*"face",*/ "Mouth_O", null, null), mProject.getAgentDevice(actor));
-            mScheduler.schedule(200, null, new ActionActivity(actor, /*"face",*/ "Mouth_Default", null, null), mProject.getAgentDevice(actor));
+            mScheduler.schedule(20, null, new ActionActivity(actor, /*"face",*/ "Mouth_O", null, null, null), mProject.getAgentDevice(actor));
+            mScheduler.schedule(200, null, new ActionActivity(actor, /*"face",*/ "Mouth_Default", null, null, null), mProject.getAgentDevice(actor));
             stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
             stickmanAnimation.setParameter(wts);
             executeAnimationAndWait(activity, stickmanAnimation);

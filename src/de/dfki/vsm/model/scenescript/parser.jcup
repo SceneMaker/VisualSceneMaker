@@ -183,6 +183,8 @@ non terminal SceneAbbrev utterance_abbreviation;
 non terminal ActionObject nested_action;
 non terminal ActionObject action_definition;
 non terminal ActionFeature action_feature;
+non terminal ActionFeature simple_feature;
+non terminal ActionParam action_param;
 //
 non terminal SyntaxDocToken action_name;
 non terminal SyntaxDocToken action_actor;
@@ -474,14 +476,40 @@ feature_list ::=
         RESULT.add(x);
     :}
 ;
-// Action Features 
+
 action_feature ::=
+    simple_feature:x
+    {:
+        RESULT = x;
+    :}
+  | action_param:x
+    {:
+        RESULT = x;
+    :}
+;
+
+action_param ::=
+    feature_name:x ASSIGNMENT PLACEHOLDER VARIABLE:y
+    {:
+        RESULT = new ActionParam(
+            x.getLower(), y.getUpper(), 
+            x.getValue(), y.getValue());
+    :}
+;
+
+simple_feature ::=
     feature_name:x ASSIGNMENT feature_value:y
     {:
         RESULT = new ActionFeature(
             x.getLower(), y.getUpper(), 
             x.getValue(), y.getValue());
     :}
+//    feature_name:x ASSIGNMENT IDENTIFIER:y
+//    {:
+//        RESULT = new ActionParam(
+//            x.getLower(), y.getUpper(), 
+//            x.getValue(), y.getValue());
+//    :}
 ;
 // Feature Name
 feature_name ::= 
@@ -492,11 +520,7 @@ feature_name ::=
 ;
 // Feature Value 
 feature_value ::= 
-    parameter:x
-    {:
-        RESULT = x;
-    :}
-  | identifier:x
+    identifier:x
     {:
         RESULT = x;
     :}
@@ -525,12 +549,12 @@ identifier ::=
     :}
 ;
 // Parameter
-parameter ::= 
-    PLACEHOLDER VARIABLE:x 
-    {:
-        RESULT = x;
-    :}
-;
+//parameter ::= 
+//    PLACEHOLDER VARIABLE:x 
+//    {:
+//        RESULT = x;
+//    :}
+//;
 // Boolean Value
 boolean ::= 
     BOOLEAN:x 

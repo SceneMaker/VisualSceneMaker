@@ -110,7 +110,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
     public void handle(final SSIEventArray array) {
         // Print some information 
         //mLogger.message("Handling SSI event array:\n " + array.toString());
-        for (final SSIEventEntry event : array.getEventList()) {
+        for (final SSIEventEntry event : array.list()) {
             final SSIEventData data = event.getData();
             if (!mUseSuperEvent) {
                 if (event.getSender().equalsIgnoreCase("fubi")) {
@@ -292,7 +292,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                 }
             } else if (data instanceof SSIStringData) {
                 final TriCatWorldSSIData mSSIData = new TriCatWorldSSIData(
-                        ((SSIStringData) array.getEventList().get(0).getData()).toString());
+                        ((SSIStringData) array.list().get(0).getData()).toString());
 
                 //mLogger.message("Handling SSI data " + mSSIData);
                 final HashMap<String, AbstractValue> values = new HashMap<>();

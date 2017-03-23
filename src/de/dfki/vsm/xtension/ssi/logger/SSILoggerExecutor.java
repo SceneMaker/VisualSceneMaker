@@ -1,7 +1,8 @@
-package de.dfki.vsm.xtension.ssi.log;
+package de.dfki.vsm.xtension.ssi.logger;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
+import de.dfki.vsm.model.scenescript.ActionParam;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -13,7 +14,7 @@ import java.util.LinkedList;
  * @author Patrick Gebhard
  * @author Gregor Mehlmann
  */
-public final class SSIEventLogExecutor extends ActivityExecutor {
+public final class SSILoggerExecutor extends ActivityExecutor {
 
     // The SSI receiver data
     private final String mLHost;
@@ -26,7 +27,7 @@ public final class SSIEventLogExecutor extends ActivityExecutor {
     private SSIEventSender mSender;
 
     // Construct executor
-    public SSIEventLogExecutor(
+    public SSILoggerExecutor(
             final PluginConfig config,
             final RunTimeProject project) {
         super(config, project);
@@ -64,15 +65,14 @@ public final class SSIEventLogExecutor extends ActivityExecutor {
     public void execute(final AbstractActivity activity) {
 
         if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-            String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
-
+            final SpeechActivity speechActivity = (SpeechActivity) activity;
+            final String text = speechActivity.getTextOnly("$(").trim();
+            final LinkedList<String> timemarks = speechActivity.getTimeMarks("$(");
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
-                for (String tm : timemarks) {
-                    mLogger.warning("Directly executing activity at timemark " + tm);
-                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                for (final String mark : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + mark);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(mark);
                 }
             }
         } else {
@@ -87,17 +87,16 @@ public final class SSIEventLogExecutor extends ActivityExecutor {
             final String time = get("time", features);
             final String content = get("content", features);
             final String duration = get("duration", features);
-
-            // Create final log message
-            final SSIEventLogMessage message = new SSIEventLogMessage();
-            message.setName(name);
-            message.setSender((sender == null ? "default" : sender));
-            message.setEvent((event == null ? "default" : event));
-            message.setState((state == null ? "completed" : state));
-            message.setContent((content == null ? " " : content));
-            message.setTime((time == null ? "0" : time));
-            message.setDuration((duration == null ? "1" : duration));
-            //
+            // Create final event message
+            final SSILoggerMessage message
+                    = new SSILoggerMessage(name,
+                            (sender == null ? "default" : sender),
+                            (event == null ? "default" : event),
+                            (state == null ? "completed" : state),
+                            (time == null ? "0" : systime),
+                            (duration == null ? "1" : duration),
+                            (content == null ? " " : content));
+            // Send the event message
             mSender.sendString(message.toString());
         }
     }
@@ -168,7 +167,10 @@ public final class SSIEventLogExecutor extends ActivityExecutor {
     // Get value of action feature
     private String get(final String name, final LinkedList<ActionFeature> features) {
         for (final ActionFeature feature : features) {
-            if (feature.getKey().equalsIgnoreCase(name)) {
+            if(feature instanceof ActionParam) {
+                final String val = feature.getVal();
+                
+            } else if (feature.getKey().equalsIgnoreCase(name)) {
                 return feature.getVal();
             }
         }

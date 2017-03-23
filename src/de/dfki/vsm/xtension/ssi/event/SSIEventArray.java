@@ -6,6 +6,7 @@ import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import org.w3c.dom.Element;
 
 /**
@@ -26,9 +27,53 @@ public final class SSIEventArray extends SSIEventObject {
         // Do nothing here
     }
 
+    // Create a new event array
+    public SSIEventArray(final String version) {
+        mVersion = version;
+    }
+
+    public final int size() {
+        return mList.size();
+    }
+
+    public final void clear() {
+        mList.clear();
+    }
+
     // Get event object sequence
-    public final ArrayList<SSIEventEntry> getEventList() {
+    public final SSIEventEntry get(final int index) {
+        return mList.get(index);
+    }
+
+    // Get event object sequence
+    public final ArrayList<SSIEventEntry> list() {
         return mList;
+    }
+
+    // Get event object sequence
+    public final boolean add(final SSIEventEntry entry) {
+        return mList.add(entry);
+    }
+
+    public static SSIEventArray merge(
+            final SSIEventArray first,
+            final SSIEventArray second) {
+        int index = 0;
+        final SSIEventArray merged = new SSIEventArray("vsm");
+        for (final SSIEventEntry secondEvent : first.list()) {
+            while (index < second.size()) {
+                final SSIEventEntry firstEvent = second.get(index);
+                if (Integer.parseInt(firstEvent.getFrom())
+                        < Integer.parseInt(secondEvent.getFrom())) {
+                    merged.add(firstEvent);
+                    index++;
+                } else {
+                    break;
+                }
+            }
+            merged.add(secondEvent);
+        }
+        return merged;
     }
 
     // Write the event sequence
@@ -49,18 +94,15 @@ public final class SSIEventArray extends SSIEventObject {
             // Parse the version name
             mVersion = element.getAttribute("ssi-v");
             // Parse the event sequence
-            XMLParseAction.processChildNodes(element, new XMLParseAction() {
+            XMLParseAction.processChildNodes(element, "event", new XMLParseAction() {
                 @Override
                 public void run(final Element element) throws XMLParseError {
-                    // Check the element name
-                    if (element.getTagName().equals("event")) {
-                        // Construct an event
-                        final SSIEventEntry event = new SSIEventEntry();
-                        // Parse the new event
-                        event.parseXML(element);
-                        // Append the new event
-                        mList.add(event);
-                    }
+                    // Construct an event
+                    final SSIEventEntry event = new SSIEventEntry();
+                    // Parse the new event
+                    event.parseXML(element);
+                    // Append the new event
+                    mList.add(event);
                 }
             });
         }

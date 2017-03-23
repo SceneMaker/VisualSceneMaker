@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.activity;
 
 import de.dfki.vsm.model.scenescript.ActionFeature;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -11,7 +12,7 @@ public final class ActionActivity extends AbstractActivity {
     // The context type
     public enum Context {
 
-        // The calling task has to wait for temrination
+        // The calling task has to wait for termination
         nested,
         // The calling task doesn't need to join this
         single
@@ -31,7 +32,8 @@ public final class ActionActivity extends AbstractActivity {
             //final String mode,
             final String name,
             final String text,
-            final LinkedList<ActionFeature> featureList) {
+            final LinkedList<ActionFeature> featureList,
+            final HashMap<String, String> substitutions            ) {
         super(Type.parallel, actor,/* mode,*/ name, featureList);
         // Initialize the text
         mText = text;
