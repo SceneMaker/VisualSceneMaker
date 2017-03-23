@@ -77,24 +77,25 @@ public final class ReactivePlayer extends RunTimePlayer {
 
     // Call the play action activity method
     @Override
-    public final void playAction(final String action, final LinkedList args) {
+    public final void playAction(final String text, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
-        final String task = process.getName() + ":" + action + "@";
+        final String task = process.getName() + ":" + text + "@";
         // Translate the arguments
         final HashMap substitutions = getSubstitutions(args);
         // Print some information
-        mLogger.message("Playing Action '" + action + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
+        mLogger.message("Playing Action '" + text + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
         // Create playback task
-        final PlayerWorker worker = new PlayerWorker(task) {
+        final PlayerWorker worker;
+        worker = new PlayerWorker(task) {
             @Override
             public void run() {
                 // Parsing command string
                 // TODO: Better use our parser for that!!!
-                final String syntax = action.trim();
+                final String syntax = text.trim();
                 String actor = "";
-                String action = "";
+                String name = "";
                 final LinkedList<ActionFeature> features = new LinkedList<>();
 
                 int cnt = 0;
@@ -103,28 +104,25 @@ public final class ReactivePlayer extends RunTimePlayer {
                     // PG: changed action and action feature parser to be more powerful
                     // matching something like: agent Action x=2.5 y=0.0 z=-13.0 text='Someone wants a beer!' other=bad some='things' state='Da=fuck.continued and others']
                     final Pattern pattern = Pattern.compile("^\\w+|\\w+\\s|\\w+]|[a-zA-Z-_]+=[a-zA-Z]{1}[a-zA-Z-_]+|\\w+\\=-?[0-9\\.]+|\\w+='[\\wäöüßÄÖÜ\\s:\\.,!?=]+'");
-                    Matcher m = pattern.matcher(syntax);
-
-                    while (m.find()) {
-                        String mStr = m.group().trim();
-
+                    final Matcher matcher = pattern.matcher(syntax);
+                    while (matcher.find()) {
+                        final String token = matcher.group().trim();
                         if (cnt == 0) {
-                            actor = mStr;
+                            actor = token;
                         } else if (cnt == 1) {
-                            action = mStr;
-                            action = (action.contains("]")) ? action.replace("]", "") : action;
-                        } else if (mStr.contains("=")) {
-                            String[] pair = mStr.split("=");
-                            features.add(new ActionFeature(/*ActionFeature.Type.STRING,*/0, pair[0].length(), pair[0], pair[1]));
+                            name = token;
+                            name = (name.contains("]")) ? name.replace("]", "") : name;
+                        } else if (token.contains("=")) {
+                            String[] pair = token.split("=");
+                            features.add(new ActionFeature(0, pair[0].length(), pair[0], pair[1]));
                         }
                         cnt++;
                     }
                 }
-
                 // Schedule the activity without delay but blocking
-                ActionActivity aa = new ActionActivity(actor, /*"cmd",*/ action, action, features, substitutions);
-                aa.setType(AbstractActivity.Type.blocking);
-                mScheduler.schedule(0, null, aa, mProject.getAgentDevice(actor));
+                final ActionActivity activity = new ActionActivity(actor, name, text, features, substitutions);
+                activity.setType(AbstractActivity.Type.blocking);
+                mScheduler.schedule(0, null, activity, mProject.getAgentDevice(actor));
             }
         };
         // Start the playback task
@@ -133,8 +131,6 @@ public final class ReactivePlayer extends RunTimePlayer {
         boolean finished = false;
         while (!finished) {
             try {
-                // Print some information
-                //mLogger.message("Awaiting player worker '" + worker + "'");
                 // Join the playback task
                 worker.join();
                 // Continue after joining
@@ -208,7 +204,6 @@ public final class ReactivePlayer extends RunTimePlayer {
                                 final String marker = turnActorExecutor.marker(newId());
                                 // Append the marker to the activity
                                 textBuilder.add(marker);
-                                System.err.println("ACTION TEXT IS " + action.getText(substitutions));
                                 // Register the activity with marker
                                 observedWorkerList.add(mScheduler.register(marker, // Execute at this marker
                                         new ActionActivity(

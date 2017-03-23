@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.activity;
 
 import de.dfki.vsm.model.scenescript.ActionFeature;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -23,36 +24,35 @@ public abstract class AbstractActivity {
     protected final String mActor;
     // The activity name
     protected final String mName;
-    // The activity mode
-   // protected final String mMode;
-    // The related action features
+    // The action features
     protected final LinkedList<ActionFeature> mFeatures;
+    // The substitutions
+    protected final HashMap<String, String> mSubstitutions;
 
     // Construct the activity
     public AbstractActivity(
             final Type type,
             final String actor,
-           // final String mode,
             final String name) {
         mType = type;
         mActor = actor;
-      //  mMode = mode;
         mName = name;
         mFeatures = null;
+        mSubstitutions = null;
     }
 
-    // Construct the activity (added PG)
+    // Construct the activity
     public AbstractActivity(
             final Type type,
             final String actor,
-           // final String mode,
             final String name,
-            final LinkedList<ActionFeature> featureList) {
+            final LinkedList<ActionFeature> featureList,
+            final HashMap<String, String> substitutions) {
         mType = type;
         mActor = actor;
-       // mMode = mode;
         mName = name;
         mFeatures = featureList;
+        mSubstitutions = substitutions;
     }
 
     // Get the scheduling type
@@ -60,7 +60,7 @@ public abstract class AbstractActivity {
         return mType;
     }
 
-    // added PG  - 21.4.2016 (play action activities with sceneflow play cmd)
+    // Set the scheduling type
     public final void setType(final Type type) {
         mType = type;
     }
@@ -70,19 +70,19 @@ public abstract class AbstractActivity {
         return mActor;
     }
 
-    // Get the activity mode (added PG)
-  //  public final String getMode() {
-   //     return mMode;
-   // }
-
-    // Get the activity name (added PG)
+    // Get the activity name
     public final String getName() {
         return mName;
     }
 
-    // Get the activity name (added PG)
+    // Get the features
     public final LinkedList<ActionFeature> getFeatures() {
         return mFeatures;
+    }
+
+    // Get the sunstitutions
+    public final HashMap<String, String> getSubstitutions() {
+        return mSubstitutions;
     }
 
     // Get the value of a feature

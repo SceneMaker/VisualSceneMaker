@@ -2,12 +2,12 @@ package de.dfki.vsm.xtension.ssi.logger;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
-import de.dfki.vsm.model.scenescript.ActionParam;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.SSIEventSender;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -78,15 +78,16 @@ public final class SSILoggerExecutor extends ActivityExecutor {
         } else {
             activity.setType(AbstractActivity.Type.parallel);
             final LinkedList<ActionFeature> features = activity.getFeatures();
+            final HashMap<String, String> map = activity.getSubstitutions();
             final String systime = Long.toString(System.currentTimeMillis());
             // Get log message features
             final String name = activity.getName();
-            final String sender = get("sender", features);
-            final String event = get("event", features);
-            final String state = get("state", features);
-            final String time = get("time", features);
-            final String content = get("content", features);
-            final String duration = get("duration", features);
+            final String sender = get("sender", features, map);
+            final String event = get("event", features, map);
+            final String state = get("state", features, map);
+            final String time = get("time", features, map);
+            final String content = get("content", features, map);
+            final String duration = get("duration", features, map);
             // Create final event message
             final SSILoggerMessage message
                     = new SSILoggerMessage(name,
@@ -96,6 +97,8 @@ public final class SSILoggerExecutor extends ActivityExecutor {
                             (time == null ? "0" : systime),
                             (duration == null ? "1" : duration),
                             (content == null ? " " : content));
+            //
+            mProject.setVariable(mVar, message.toString());
             // Send the event message
             mSender.sendString(message.toString());
         }
@@ -165,13 +168,12 @@ public final class SSILoggerExecutor extends ActivityExecutor {
         }
     }*/
     // Get value of action feature
-    private String get(final String name, final LinkedList<ActionFeature> features) {
+    private String get(final String name,
+            final LinkedList<ActionFeature> features,
+            final HashMap<String, String> substitutions) {
         for (final ActionFeature feature : features) {
-            if(feature instanceof ActionParam) {
-                final String val = feature.getVal();
-                
-            } else if (feature.getKey().equalsIgnoreCase(name)) {
-                return feature.getVal();
+            if (feature.getKey().equalsIgnoreCase(name)) {
+                return feature.getVal(substitutions);
             }
         }
         return null;

@@ -13,15 +13,15 @@ public final class ActionActivity extends AbstractActivity {
     public enum Context {
 
         // The calling task has to wait for termination
-        nested,
+        NESTED,
         // The calling task doesn't need to join this
-        single
+        SINGLE
     }
 
     // TODO: The context of the activity is either nested or standalone
     // If nested, then the actor is optional and otherwise mandatory, so
     // maybe we need another enumeration with the type of the context
-    private final Context mContext = Context.nested;
+    private final Context mContext = Context.NESTED;
 
     // The textual representation
     protected final String mText;
@@ -29,12 +29,11 @@ public final class ActionActivity extends AbstractActivity {
     // Construct the activity
     public ActionActivity( // (added PG)
             final String actor,
-            //final String mode,
             final String name,
             final String text,
             final LinkedList<ActionFeature> featureList,
-            final HashMap<String, String> substitutions            ) {
-        super(Type.parallel, actor,/* mode,*/ name, featureList);
+            final HashMap<String, String> substitutions) {
+        super(Type.parallel, actor, name, featureList, substitutions);
         // Initialize the text
         mText = text;
     }
