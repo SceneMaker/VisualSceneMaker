@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-            <name>VisualSceneMaker-Master</name>
+            <name>VisualSceneMaker3</name>
         </general-data>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <!-- Do not use Project Properties customizer when editing this file manually. 
@@ -12,16 +12,12 @@ auxiliary.show.customizer=false
 property there. Adding 
 auxiliary.show.customizer.message=<message>
  will show your customized message when someone attempts to open the customizer.  -->
-            <name>VisualSceneMaker-Master</name>
-            <properties/>
+            <name>VisualSceneMaker3</name>
+            <properties>
+                <property name="ant.script">../prj/build.xml</property>
+            </properties>
             <folders>
                 <source-folder>
-                    <label>..\res</label>
-                    <type>java</type>
-                    <location>../res</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
-                <source-folder>
                     <label>..\src</label>
                     <type>java</type>
                     <location>../src</location>
@@ -32,32 +28,34 @@ auxiliary.show.customizer.message=<message>
                     <location>../src</location>
                 </source-folder>
                 <source-folder>
-                    <label>..\res</label>
-                    <location>../res</location>
-                </source-folder>
-                <source-folder>
-                    <label>VisualSceneMaker-Master</label>
+                    <label>VisualSceneMaker3</label>
                     <location>.</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
+                    <script>${ant.script}</script>
                     <target>build</target>
                 </action>
                 <action name="clean">
+                    <script>${ant.script}</script>
                     <target>clean</target>
                 </action>
                 <action name="javadoc">
+                    <script>${ant.script}</script>
                     <target>jdocs</target>
                 </action>
                 <action name="run">
+                    <script>${ant.script}</script>
                     <target>exec</target>
                 </action>
                 <action name="test">
+                    <script>${ant.script}</script>
                     <target>infos</target>
                 </action>
                 <action name="rebuild">
+                    <script>${ant.script}</script>
                     <target>clean</target>
                     <target>build</target>
                 </action>
@@ -65,15 +63,11 @@ auxiliary.show.customizer.message=<message>
             <view>
                 <items>
                     <source-folder style="packages">
-                        <label>..\res</label>
-                        <location>../res</location>
-                    </source-folder>
-                    <source-folder style="packages">
                         <label>..\src</label>
                         <location>../src</location>
                     </source-folder>
                     <source-file>
-                        <location>build.xml</location>
+                        <location>${ant.script}</location>
                     </source-file>
                 </items>
                 <context-menu>
@@ -88,9 +82,8 @@ auxiliary.show.customizer.message=<message>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/4">
             <compilation-unit>
-                <package-root>../res</package-root>
                 <package-root>../src</package-root>
-                <classpath mode="compile">../lib/Charamelapi-1.0.jar;../lib/JCup.jar;../lib/JFlex.jar;../lib/JPL3.jar;../lib/RobotEngineApplication.jar;../lib/Stickman.jar;../lib/affect.jar;../lib/cerevoice_eng.jar;../lib/javaGeom-0.11.1.jar;../lib/jna-4.2.2.jar;../lib/jna-platform-4.2.2.jar;../lib/marytts-client-5.1.2-jar-with-dependencies.jar;../lib/ujmp-complete-0.2.5.jar</classpath>
+                <classpath mode="compile">../lib/Charamelapi-1.0.jar;../lib/JCup.jar;../lib/JFlex.jar;../lib/JPL3.jar;../lib/RobotEngineApplication.jar;../lib/Stickman.jar;../lib/TIDIGITS_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;../lib/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar;../lib/affect.jar;../lib/cerevoice_eng.jar;../lib/javaGeom-0.11.1.jar;../lib/jna-4.2.2.jar;../lib/jna-platform-4.2.2.jar;../lib/jnativehook-2.0.3.jar;../lib/jsapi.jar;../lib/marytts-client-5.1.2-jar-with-dependencies.jar;../lib/sphinx4.jar;../lib/ujmp-complete-0.2.5.jar</classpath>
                 <source-level>1.8</source-level>
             </compilation-unit>
         </java-data>
