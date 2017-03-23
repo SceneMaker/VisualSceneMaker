@@ -16,12 +16,14 @@ import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
+import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
+import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,31 +77,33 @@ public final class ReactivePlayer extends RunTimePlayer {
 
     // Call the play action activity method
     @Override
-    public final void playAction(final String name, final LinkedList args) {
+    public final void playAction(final String action, final LinkedList args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
-        final String task = process.getName() + ":" + name + "@";
+        final String task = process.getName() + ":" + action + "@";
+        // Translate the arguments
+        final HashMap substitutions = getSubstitutions(args);
         // Print some information
-        mLogger.message("Playing Action '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
-
+        mLogger.message("Playing Action '" + action + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
             @Override
             public void run() {
-                // parsing actor, action, and features
-                String cmdString = name.trim();
+                // Parsing command string
+                // TODO: Better use our parser for that!!!
+                final String syntax = action.trim();
                 String actor = "";
                 String action = "";
-                LinkedList<ActionFeature> features = new LinkedList<>();
+                final LinkedList<ActionFeature> features = new LinkedList<>();
 
                 int cnt = 0;
 
-                if (cmdString.startsWith("[") && cmdString.endsWith("]")) {
+                if (syntax.startsWith("[") && syntax.endsWith("]")) {
                     // PG: changed action and action feature parser to be more powerful
                     // matching something like: agent Action x=2.5 y=0.0 z=-13.0 text='Someone wants a beer!' other=bad some='things' state='Da=fuck.continued and others']
-                    Pattern p = Pattern.compile("^\\w+|\\w+\\s|\\w+]|[a-zA-Z-_]+=[a-zA-Z]{1}[a-zA-Z-_]+|\\w+\\=-?[0-9\\.]+|\\w+='[\\wäöüßÄÖÜ\\s:\\.,!?=]+'");
-                    Matcher m = p.matcher(cmdString);
+                    final Pattern pattern = Pattern.compile("^\\w+|\\w+\\s|\\w+]|[a-zA-Z-_]+=[a-zA-Z]{1}[a-zA-Z-_]+|\\w+\\=-?[0-9\\.]+|\\w+='[\\wäöüßÄÖÜ\\s:\\.,!?=]+'");
+                    Matcher m = pattern.matcher(syntax);
 
                     while (m.find()) {
                         String mStr = m.group().trim();
@@ -118,13 +122,9 @@ public final class ReactivePlayer extends RunTimePlayer {
                 }
 
                 // Schedule the activity without delay but blocking
-                ActionActivity aa = new ActionActivity(actor, /*"cmd",*/ action, name, features);
+                ActionActivity aa = new ActionActivity(actor, /*"cmd",*/ action, action, features, substitutions);
                 aa.setType(AbstractActivity.Type.blocking);
                 mScheduler.schedule(0, null, aa, mProject.getAgentDevice(actor));
-                // Check for interruption
-                if (isDone()) {
-                    return;
-                }
             }
         };
         // Start the playback task
@@ -160,16 +160,11 @@ public final class ReactivePlayer extends RunTimePlayer {
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
         final String task = process.getName() + ":" + name + "@";
-        // TODO: Append VSM framework time to name
-        // Print some information
-        mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "'");
         // Translate the arguments
-        final HashMap map = new HashMap();
-        if (args != null && !args.isEmpty()) {
-            for (final Object object : args) {
-                final AbstractValue value = (AbstractValue) object;
-            }
-        }
+        final HashMap substitutions = getSubstitutions(args);
+        // Print some information
+        mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
+
         // Get the scene object
         final SceneScript script = mProject.getSceneScript();
         String slang = null;
@@ -188,7 +183,7 @@ public final class ReactivePlayer extends RunTimePlayer {
 
             @Override
             public void run() {
-                for (SceneTurn turn : scene.getTurnList()) {                    
+                for (SceneTurn turn : scene.getTurnList()) {
                     // Get executor for this turn
                     final ActivityExecutor turnActorExecutor = mProject.getAgentDevice(turn.getSpeaker());
                     // Serially play the utterances
@@ -213,28 +208,31 @@ public final class ReactivePlayer extends RunTimePlayer {
                                 final String marker = turnActorExecutor.marker(newId());
                                 // Append the marker to the activity
                                 textBuilder.add(marker);
+                                System.err.println("ACTION TEXT IS " + action.getText(substitutions));
                                 // Register the activity with marker
-                                observedWorkerList.add(
-                                        mScheduler.register(
-                                                marker, // Execute at this marker
-                                                new ActionActivity(
-                                                        (action.getActor() == null) ? turn.getSpeaker() : action.getActor(), // added PG 5.4.2016
-                                                        //action.getMode(),
-                                                        action.getName(),
-                                                        action.getText(map),
-                                                        action.getFeatureList()),
-                                                actionActorExecutor));
-                            } else if (element instanceof SceneParam) {
-                                // append value of variables
-                                String var = ((SceneParam) element).getName();
-                                String val = "";
-                                if (mProject.hasVariable(var)) {
-                                    val = ((StringValue) mProject.getValueOf(var)).getValue();
-                                    textBuilder.add(val);
-                                }
-                            } else {
+                                observedWorkerList.add(mScheduler.register(marker, // Execute at this marker
+                                        new ActionActivity(
+                                                (action.getActor() == null) ? turn.getSpeaker() : action.getActor(), // added PG 5.4.2016
+                                                //action.getMode(),
+                                                action.getName(),
+                                                action.getText(substitutions),
+                                                action.getFeatureList(),
+                                                substitutions),
+                                        actionActorExecutor));
+                            } //else if (element instanceof SceneParam) {
+                            //TODO: Get parameter from list
+                            // append value of variables
+                            //String var = ((SceneParam) element).getName();
+                            //String val = "";
+                            //try {
+                            //    textBuilder.add(process.getEnvironment().read(var).getValue().toString());
+                            //} catch (final InterpreterError exc) {
+                            //    exc.printStackTrace();
+                            //}
+                            //    } 
+                            else {
                                 // Append the text to the activity
-                                textBuilder.add(element.getText(map));
+                                textBuilder.add(element.getText(substitutions));
                             }
                         }
                         // 
@@ -282,5 +280,25 @@ public final class ReactivePlayer extends RunTimePlayer {
 
         // Print some information
         //mLogger.message("Continuing '" + process + "'");
+    }
+
+    // Translate the arguments
+    private HashMap getSubstitutions(final LinkedList args) {
+        final HashMap substitutions = new HashMap();
+        if (args != null && !args.isEmpty()) {
+            for (final Object object : args) {
+                if (object instanceof AbstractValue) {
+                    final AbstractValue value = (AbstractValue) object;
+                    if (value instanceof StructValue) {
+                        final StructValue struct = (StructValue) value;
+                        for (Entry<String, AbstractValue> entry : struct.getValueMap().entrySet()) {
+                            substitutions.put(entry.getKey(), entry.getValue().getValue().toString());
+                            System.err.println("SUBSITUTION " + entry.getKey() + "->" + entry.getValue().getValue().toString());
+                        }
+                    }
+                }
+            }
+        }
+        return substitutions;
     }
 }

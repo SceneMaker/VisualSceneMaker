@@ -82,7 +82,7 @@ public final class SSIEventEntry extends SSIEventObject {
     // Write the event
     @Override
     public final void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
-        writer.println("<event "
+        writer.print("<event "
                 + "sender=\"" + mSender + "\" "
                 + "event=\"" + mEvent + "\" "
                 + "from=\"" + mFrom + "\" "

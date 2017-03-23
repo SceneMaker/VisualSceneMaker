@@ -43,7 +43,7 @@ public final class XMLUtilities {
             //
             return parseFromXMLStream(parsable, stream);
         } catch (final UnsupportedEncodingException exc) {
-            exc.printStackTrace();
+            //sLogger.failure(exc.toString());
         }
         //
         return false;

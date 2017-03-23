@@ -433,7 +433,6 @@ public class Evaluator {
             try {
                 result = executeUsrCmd((CallingExpression) exp, env);
             } catch (final Exception exc) {
-                //e.printStackTrace();
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
             }
             if (result instanceof Boolean) {
@@ -492,35 +491,24 @@ public class Evaluator {
             final Environment env) throws InterpreterError, Exception {
 
         // Get the name of the command
-        java.lang.String cmdName = ((CallingExpression) cmd).getName();
-
-        // Evaluate the argument list of the command
-        LinkedList<AbstractValue> list = evaluateExpList(((CallingExpression) cmd).getArgList(), env);
-
-        // Get the user command definition of this command
-        FunctionDefinition cmdDef = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(cmdName);
-
-        if (cmdDef == null) {
-            java.lang.String errorMsg = "An error occured while executing thread " + Process.currentThread().toString()
-                    + " : " + "The user command call '" + cmd.getConcreteSyntax()
-                    + "' referes to the user command '" + cmdName + "' which is not defined.";
-
-            throw new InterpreterError(this, errorMsg);
+        final String command = ((CallingExpression) cmd).getName();
+        // Evaluate the argument list
+        final LinkedList<AbstractValue> list = evaluateExpList(((CallingExpression) cmd).getArgList(), env);
+        // Get the user command definition 
+        final FunctionDefinition definition = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(command);
+        // Check if definition does exist
+        if (definition == null) {
+            throw new InterpreterError(cmd, "'" + cmd.getConcreteSyntax() + "' is not defined");
         }
-
-        java.lang.String cmdClassName = cmdDef.getClassName();
-        java.lang.String cmdMethodName = cmdDef.getMethod();
-
-        // Construct the parameter list of the command
-        Class[] paramClassList = new Class[cmdDef.getParamList().size()];
-
-        for (int i = 0; i < cmdDef.getParamList().size(); i++) {
-            ArgumentDefinition paramDef = cmdDef.getParamList().get(i);
-
-            // mLogger.message(paramDef.getConcreteSyntax());
-            java.lang.String paramType = paramDef.getType();
+        // Get class and method name
+        final String cmdClassName = definition.getClassName();
+        final String cmdMethodName = definition.getMethod();
+        // Get parameter class list
+        final Class[] paramClassList = new Class[definition.getParamList().size()];
+        for (int i = 0; i < definition.getParamList().size(); i++) {
+            final ArgumentDefinition argument = definition.getParamList().get(i);
+            final String paramType = argument.getType();
             Class paramClass = null;
-
             if (paramType.equals("boolean")) {
                 paramClass = boolean.class;
             } else if (paramType.equals("char")) {
@@ -540,44 +528,26 @@ public class Evaluator {
             } else {
                 try {
                     paramClass = Class.forName(paramType);
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-
-                    // System.err.println(e.toString());
+                } catch (final ClassNotFoundException exc) {
+                    exc.printStackTrace();
                 }
             }
-
             paramClassList[i] = paramClass;
-
-            // System.err.println("Parameter is " + paramClassList[i]);
         }
 
-        //
-        java.lang.String[] argDscrList = new java.lang.String[list.size()];
-        java.lang.Object[] argInstList = new java.lang.Object[list.size()];
-
+        // Get argument list
+        final String[] argDscrList = new String[list.size()];
+        final Object[] argInstList = new Object[list.size()];
         for (int i = 0; i < list.size(); i++) {
-
-            // System.err.println("Interpreter Value [" + i + "] Is " + valueList.get(i).getClass());
-            // Get the java object of the interpreter value
+            // Get the java object value
             argInstList[i] = list.get(i).getValue();
-
-            //
-            // System.err.println("Java Argument Object [" + i + "] Is " + argInstList[i].getClass());
-            //
             if (argInstList[i] != null) {
                 argDscrList[i] = argInstList[i].toString();
             } else {
-
-                // System.err.println("ATTENTION WE HAVE NULL");
                 argDscrList[i] = "NULL";
             }
-
-            // System.err.println("Argument is " + argInstList[i] + "(" + argDscrList[i]+")");
         }
-
-        // System.err.println("Argument ListRecord is " + argList);
-        // / Do the right array conversion
+        // Do the right array conversion
         for (int i = 0; i < paramClassList.length; i++) {
             if (paramClassList[i].isArray()) {
 
@@ -602,99 +572,73 @@ public class Evaluator {
             }
         }
 
-        // DEBUG
-        java.lang.String argListStr = "( ";
-
-        for (int k = 0; k < argDscrList.length; k++) {
-            argListStr += argDscrList[k] + " ";
-        }
-
-        argListStr += ")";
-
-        boolean isObject = false;
-
         try {
-            Class myClass = Class.forName(cmdClassName);
-
-            // Invoke the method
-            Method mthd = myClass.getMethod(cmdMethodName, paramClassList);
-
-            // mLogger.message("Evaluator: Executing static Java method '" + mthd + argListStr + "'");
+            final Class clazz = Class.forName(cmdClassName);
+            final Method method = clazz.getMethod(cmdMethodName, paramClassList);
             try {
-
                 // Release The Lock
                 mInterpreter.unlock();
-
                 // Invoke The Method
-                return mthd.invoke(null, argInstList);
+                final Object result = method.invoke(null, argInstList);
+                //
+                mLogger.warning("Class Method Result = " + result);
+                //
+                return result;
             } finally {
-
                 // Aquire The Lock
                 mInterpreter.lock();
             }
-        } catch (SecurityException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (ClassNotFoundException e) {
-
-            // e.printStackTrace();
-            // System.err.println(e.toString());
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-
-            // System.err.println(e.toString());
+        } catch (final SecurityException
+                | ClassNotFoundException
+                | NoSuchMethodException
+                | IllegalAccessException
+                | InvocationTargetException exc) {
+            // Print stack trace
+            mLogger.warning(exc.toString());
         }
 
         // We have an object
         try {
             int dotIndex = cmdClassName.lastIndexOf('.');
-            java.lang.String parentClassName = cmdClassName.substring(0, dotIndex);
-            java.lang.String memberFieldName = cmdClassName.substring(dotIndex + 1);
+            final String parentClassName = cmdClassName.substring(0, dotIndex);
+            final String memberFieldName = cmdClassName.substring(dotIndex + 1);
 
-            //
-            Class parentClass = Class.forName(parentClassName);
+            final Class parentClass = Class.forName(parentClassName);
 
-            // mLogger.message("Evaluator: Parent Class Is " + parentClass);
-            Field memberField = parentClass.getField(memberFieldName);
-
-            // mLogger.message("Evaluator: Member Field Is " + memberField);
-            Class memberFieldClass = memberField.getType();
-
-            // mLogger.message("Evaluator: Member Field  Type Is " + memberFieldClass);
-            java.lang.Object memberFieldObject = memberField.get(null);
-
-            // mLogger.message("Evaluator: Member Field Object Is " + memberFieldObject);
+            final Field memberField = parentClass.getField(memberFieldName);
+            final Class memberFieldClass = memberField.getType();
+            final Object memberFieldObject = memberField.get(null);
             // Invoke the method
-            Method method = memberFieldClass.getMethod(cmdMethodName, paramClassList);
+            final Method method = memberFieldClass.getMethod(cmdMethodName, paramClassList);
 
-            // DEBUG
-            // ATTENTION: This Lock was not released before
-            // mLogger.message("Evaluator: Executing Java method '" + method + argListStr + "' on static object " + memberFieldObject);
             try {
-
                 // Release The Lock
                 mInterpreter.unlock();
-
+                mLogger.warning("Calling Member Method = " + method);
                 // Invoke The Method
-                return method.invoke(memberFieldObject, argInstList);
+                final Object result = method.invoke(memberFieldObject, argInstList);
+               //
+                mLogger.warning("Member Method Result = " + result);
+                //
+                return result;
             } finally {
-
                 // Aquire The Lock
                 mInterpreter.lock();
             }
-        } catch (Exception e) {
-            throw e;
+        } catch (final ClassNotFoundException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | NoSuchFieldException
+                | NoSuchMethodException
+                | SecurityException
+                | InvocationTargetException exc) {
+            // Print stack trace
+            //exc.printStackTrace();
+            mLogger.failure(exc.toString());
+            // Propagate exception
+            throw exc;
+            //return null;
         }
-        //return null;
     }
 
     public final boolean executeQuery(final String querystr, final Environment env) {
@@ -725,7 +669,7 @@ public class Evaluator {
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(variable, new StringValue(binding));
 
-                } catch (Exception exc) {
+                } catch (final InterpreterError exc) {
 
                     // Print Debug Information
                     mLogger.failure(exc.toString());

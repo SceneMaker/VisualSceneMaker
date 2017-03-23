@@ -1,10 +1,10 @@
-package de.dfki.vsm.xtension.ssi.log;
+package de.dfki.vsm.xtension.ssi.logger;
 
 /**
  * @author Patrick
  * @author Gregor Mehlmann
  */
-public final class SSIEventLogMessage {
+public final class SSILoggerMessage {
 
     /*public static enum Type {
         ACT,
@@ -25,15 +25,31 @@ public final class SSIEventLogMessage {
     //
     public static final String DEFAULT_SENDER_ID = "vsm";
     public static final String DEFAULT_SEPERATOR = "#";
-
     //
     public String mName;
-    public String mEvent;
     public String mSender;
+    public String mEvent;
     public String mState;
     public String mTime;
     public String mDuration;
     public String mContent;
+
+    public SSILoggerMessage(
+            final String name,
+            final String sender,
+            final String event,
+            final String state,
+            final String time,
+            final String duration,
+            final String content) {
+        mName = name;
+                mSender = sender;
+        mEvent = event;
+        mState = state;
+        mTime = time;
+        mDuration = duration;
+        mContent = content;
+    }
 
     public final void setName(final String name) {
         mName = name;
@@ -55,12 +71,13 @@ public final class SSIEventLogMessage {
         mTime = time;
     }
 
-    public final void setContent(final String content) {
-        mContent = content;
-    }
+   
 
     public final void setDuration(final String duration) {
         mDuration = duration;
+    }
+     public final void setContent(final String content) {
+        mContent = content;
     }
 
     @Override
