@@ -353,6 +353,14 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                                 activity_actor).getProperty(activity.getValueOf("value"));
                 url = url.replace("\\", "/");
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
+            } else if (activity_name.equalsIgnoreCase("PlayStream")) { // added pg 23.3.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
+                    mLogger.warning("Action PlayStream not processed - agent(name) is not DebriefingScreen");
+                    return;
+                }
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.getValueOf("file"), activity.getValueOf("start"), activity.getValueOf("end"));
             } else if (activity_name.equalsIgnoreCase("PlayAudio")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
@@ -440,7 +448,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                 replace("   ", " ").
                 replace("  ", " ");
 
-        mLogger.message("\033[1;35mExecuting command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message)+ "\033[0m");
+        mLogger.message("\033[1;35mExecuting command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message) + "\033[0m");
 
         // Send activity_name to tworld 
         synchronized (mActivityWorkerMap) {
@@ -478,8 +486,8 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
         }
         // Return when terminated
     }
-
     // Accept some connection
+
     public final void accept(final Socket socket) {
         // Make new client thread 
         final TriCatWorldHandler client = new TriCatWorldHandler(socket, this);
@@ -524,7 +532,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                             if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
                                 // TODO - get id - for now there is none
                                 // Set character voice activity variable                               
-                                mLogger.message("\033[1;35mAgent starts speaking"+ "\033[0m");
+                                mLogger.message("\033[1;35mAgent starts speaking" + "\033[0m");
                                 if (mUseJPL) {
                                     JPLEngine.query("now(Time), "
                                             + "jdd(["
@@ -551,7 +559,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                                 // Set character voice activity variable
                                 //mProject.setVariable("susanne_voice_activity", new StringValue(""));
                                 //mProject.setVariable("tom_voice_activity", new StringValue(""));
-                                mLogger.message("\033[1;35mAgent finishes speaking"+ "\033[0m");
+                                mLogger.message("\033[1;35mAgent finishes speaking" + "\033[0m");
                                 if (mUseJPL) {
                                     JPLEngine.query("now(Time), "
                                             + "jdd(["
