@@ -287,34 +287,34 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Angry")) {
-                String intensity = activity.getValueOf("intensity");
+                String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Demanding")) {
-                String intensity = activity.getValueOf("intensity");
+                String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Disgust")) {
-                String intensity = activity.getValueOf("intensity");
+                String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Neutral")) {
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
             } else if (activity_name.equalsIgnoreCase("Sad")) {
-                String intensity = activity.getValueOf("intensity");
+                String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Smile")) {
-                String intensity = activity.getValueOf("intensity");
+                String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Happy")) {
-                String intensity = activity.getValueOf("intensity");
+                String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
@@ -329,17 +329,17 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
             } else if (activity_name.equalsIgnoreCase("ReleaseLookAt")) {
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("AmbientLight")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("value"));
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
             } else if (activity_name.equalsIgnoreCase("AmbientSound")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("value"));
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
             } else if (activity_name.equalsIgnoreCase("Load")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
-                                activity_actor).getProperty(activity.getValueOf("value"));
+                                activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("LookAt")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("viewtarget"));
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
@@ -350,7 +350,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
             } else if (activity_name.equalsIgnoreCase("Say")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
-                                activity_actor).getProperty(activity.getValueOf("value"));
+                                activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("PlayStream")) { // added pg 23.3.2017
@@ -360,64 +360,64 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                     return;
                 }
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
-                        activity.getValueOf("file"), activity.getValueOf("start"), activity.getValueOf("end"));
+                        activity.get("file"), activity.get("start"), activity.get("end"));
             } else if (activity_name.equalsIgnoreCase("PlayAudio")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
-                                activity_actor).getProperty(activity.getValueOf("value"));
+                                activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("Color")) {
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
-                        activity.getValueOf("r"), activity.getValueOf("g"), activity.getValueOf("b"));
+                        activity.get("r"), activity.get("g"), activity.get("b"));
             } else if (activity_name.equalsIgnoreCase("SitDown")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("chairname"));
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("chairname"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Stop")) {
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Warp")) {
-                String target = activity.getValueOf("viewtarget");
+                String target = activity.get("viewtarget");
                 if (target != null) {
-                    tworld_cmd_action = mActionLoader.loadAnimation(activity_name, activity.getValueOf("location"), target);
+                    tworld_cmd_action = mActionLoader.loadAnimation(activity_name, activity.get("location"), target);
                 } else {
-                    tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("location"));
+                    tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("location"));
                 }
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("WorldPosition")) {
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
-                        activity.getValueOf("x"), activity.getValueOf("y"), activity.getValueOf("z"));
+                        activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Camera") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
-                        activity.getValueOf("x"), activity.getValueOf("y"));
+                        activity.get("x"), activity.get("y"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("FocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
-                        activity.getValueOf("value"), activity.getValueOf("time"));
+                        activity.get("value"), activity.get("time"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("DefaultFocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("viewtarget"));
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("CameraOffset") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
-                        activity.getValueOf("x"), activity.getValueOf("y"), activity.getValueOf("z"));
+                        activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Scale") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("value"));
+                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
