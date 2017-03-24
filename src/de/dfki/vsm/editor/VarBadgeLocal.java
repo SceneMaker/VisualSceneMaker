@@ -60,19 +60,19 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
         // Initialize the entry list
         SuperNode parentNode = mSuperNode;
-        mEntryList.clear();
+        synchronized (mEntryList) {
+            mEntryList.clear();
 
-        ArrayList<VariableDefinition> varDefList = parentNode.getVarDefList();
+            ArrayList<VariableDefinition> varDefList = parentNode.getVarDefList();
 
-        for (VariableDefinition varDef : varDefList) {
-            mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                    TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+            for (VariableDefinition varDef : varDefList) {
+                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                        TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+            }
         }
-
         // Initialize size and location
         setSize(new Dimension(1, 1));
-        setLocation(superNode.getLocalVariableBadge().getPosition().getXPos(),
-                superNode.getLocalVariableBadge().getPosition().getYPos() + 50);
+        setLocation(superNode.getLocalVariableBadge().getPosition().getXPos(), superNode.getLocalVariableBadge().getPosition().getYPos());
         mIsHidden = hidden;
         mHideBadgeMenuItem = new JMenuItem("Hide");
         mHideBadgeMenuItem.addActionListener(this);
@@ -81,20 +81,21 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     }
 
     private Dimension computeTextRectSize(Graphics2D graphics) {
-        int width = 0,
-                height = 0;
+        int width = 0, height = 0;
 
-        for (VariableEntry entry : mEntryList) {
-            TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
-            int advance = (int) textLayout.getVisibleAdvance();
+        synchronized (mEntryList) {
+            for (VariableEntry entry : mEntryList) {
+                TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
+                int advance = (int) textLayout.getVisibleAdvance();
 
-            if (advance > width) {
-                width = advance;
+                if (advance > width) {
+                    width = advance;
+                }
+
+                int currentAll = (int) (textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading());
+
+                height = height + currentAll;
             }
-
-            int currentAll = (int) (textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading());
-
-            height = height + currentAll;
         }
 
         return new Dimension(width + 2 * mPositionOffset, height + 2 * mPositionOffset);
@@ -123,8 +124,8 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
     private void paintDetailedVariables(Graphics2D g) {
         // Enable antialiasing
-        Graphics2D graphics2 = g;
-        Dimension dimension = computeTextRectSize(graphics2);
+        Dimension dimension = computeTextRectSize(g);
+
         if (useCachedImage == false) {
 
             bufferedImage = new BufferedImage((int) dimension.getWidth(), (int) dimension.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
@@ -158,14 +159,11 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                         + textLayout.getDescent());
 
             }
-            paintFromImage(graphics2);
+            paintFromImage(g);
 
             useCachedImage = true;
-
         } else {
-
-            paintFromImage(graphics2);
-
+            paintFromImage(g);
         }
     }
 
@@ -241,10 +239,8 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     }
 
     public void updateLocation(Point vector) {
-
         // Set new location
         setLocation(new Point(getLocation().x + vector.x, getLocation().y + vector.y));
-
         // Set the location on data model
         mSuperNode.getLocalVariableBadge().setPosition(new NodePosition(getLocation().x, getLocation().y));
     }
@@ -276,21 +272,22 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
         // mLogger.message("VarBadge.update(" + obj + ")");
         // Clear the entry list
-        mEntryList.clear();
-        useCachedImage = false;
-        // Recompute the entry list
-        SuperNode parentNode = mSuperNode;
+        synchronized (mEntryList) {
+            mEntryList.clear();
+            useCachedImage = false;
+            // Recompute the entry list
+            SuperNode parentNode = mSuperNode;
 
-        for (VariableDefinition varDef : parentNode.getVarDefList()) {
+            for (VariableDefinition varDef : parentNode.getVarDefList()) {
 //          String varName = varDef.getName();
-            mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                    TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                        TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+            }
         }
     }
 
     @Override
     public synchronized void update(EventObject event) {
-        synchronized (mEntryList) {
             if (event instanceof VariableChangedEvent) {
                 updateVariable(((VariableChangedEvent) event).getVarValue());
                 useCachedImage = false;
@@ -298,11 +295,9 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                 revalidate();
                 repaint();
             }
-        }
     }
 
     private void updateVariable(TPLTuple<String, String> varVal) {
-
         synchronized (mEntryList) {
             for (VariableEntry entry : mEntryList) {
                 String var = entry.getVarName();    // the name of the current variable
@@ -314,7 +309,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                     entry.setFormatted(formatedPair.getFirst());
                     entry.setAttributed(formatedPair.getSecond());
                     entry.setHasChanged(true);
-
                 }
             }
         }
