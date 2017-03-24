@@ -588,7 +588,8 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
 
                             // TODO marker!
                         }
-                    } else { // there is no cai_event - hence no tts notification.
+                    } else { 
+                        // there is no cai_event - hence no tts notification.
                         // remove the activity in any case
                         if (mActivityWorkerMap.containsKey(id)) {
                             mActivityWorkerMap.remove(id);

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.tricatworld.xml.feedback;
 
 import de.dfki.vsm.xtension.tricatworld.xml.feedback.object.Object;
@@ -17,11 +12,9 @@ import de.dfki.vsm.util.xml.XMLWriteable;
 import org.w3c.dom.Element;
 
 /**
- *
  * @author Patrick Gebhard
- *
  */
-public class TriCatWorldFeedback implements XMLParseable, XMLWriteable {
+public final class TriCatWorldFeedback implements XMLParseable, XMLWriteable {
 
     public Action mFeedbackAction = null;
     public Object mFeedbackObject = null;
