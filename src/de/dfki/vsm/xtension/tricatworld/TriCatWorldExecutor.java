@@ -393,30 +393,30 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            } else if (activity_name.equalsIgnoreCase("Camera") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+            } else if (activity_name.equalsIgnoreCase("Camera") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
                         activity.getValueOf("x"), activity.getValueOf("y"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            } else if (activity_name.equalsIgnoreCase("FocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+            } else if (activity_name.equalsIgnoreCase("FocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
                         activity.getValueOf("value"), activity.getValueOf("time"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            } else if (activity_name.equalsIgnoreCase("DefaultFocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+            } else if (activity_name.equalsIgnoreCase("DefaultFocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            } else if (activity_name.equalsIgnoreCase("CameraOffset") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+            } else if (activity_name.equalsIgnoreCase("CameraOffset") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
                         activity.getValueOf("x"), activity.getValueOf("y"), activity.getValueOf("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
                 }
-            } else if (activity_name.equalsIgnoreCase("Scale") && activity_actor.equalsIgnoreCase("player")) { // this is a player only activity_name
+            } else if (activity_name.equalsIgnoreCase("Scale") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.getValueOf("value"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
@@ -500,14 +500,13 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
     }
 
     // Handle some message
-    public final void handle(
-            final String input,
-            final TriCatWorldHandler client) {
+    public final void handle(final String input, final TriCatWorldHandler client) {
         // Sanitize the message
         final String message = input.replaceAll("..xml\\s+version........", "");
         // Print some information
         mLogger.message("\033[1;35mHandling new message:\n" + prettyPrint(message) + "\033[0m");
-        // Notify the relevant threads
+        
+        // Check and notify the relevant threads
         synchronized (mActivityWorkerMap) {
             final TriCatWorldFeedback tworld_final_feedback = new TriCatWorldFeedback();
             try {
@@ -517,104 +516,96 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
                 mLogger.failure(exc.toString());
                 return;
             }
-            //
+            
+            // Handle action feedback
             if (tworld_final_feedback.hasActionFeedback()) {
-                final String actionType = tworld_final_feedback.mFeedbackAction.mName;
-                String id = tworld_final_feedback.mFeedbackAction.mId;
-                String actionStatusType = tworld_final_feedback.mFeedbackAction.mActionFeedback.mName;
-                String actionStatusValue = tworld_final_feedback.mFeedbackAction.mActionFeedback.mValue;
-
-                // handling every /*ambient_setup*/ feedback
-                if (actionStatusType.equalsIgnoreCase("action_finished")) {
-                    // check if the acitivy action feedback was speech feedback
-                    if (tworld_final_feedback.mFeedbackAction.mActionFeedback.hasCaiEvent()) {
-                        if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.hasTTSStatus()) {
-                            if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
-                                // TODO - get id - for now there is none
-                                // Set character voice activity variable                               
-                                mLogger.message("\033[1;35mAgent starts speaking" + "\033[0m");
-                                if (mUseJPL) {
-                                    JPLEngine.query("now(Time), "
-                                            + "jdd(["
-                                            + "type:" + "event" + ","
-                                            + "name:" + "agent" + ","
-                                            + "mode:" + "voice" + ","
-                                            + "data:" + "start" + ","
-                                            + "time:" + "Time" + ","
-                                            + "from:" + "0" + ","
-                                            + "life:" + "0" + ","
-                                            + "conf:" + "1.0"
-                                            + "]).");
-                                } else {
-                                    // Set speaking variable
-                                    mProject.setVariable("AgentIsSpeaking", true);
+                // added pg 24.3.2017 - process multiple actions in feedback 
+                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.action.Action action : tworld_final_feedback.mFeedbackActions) {
+                    // handling every /*ambient_setup*/ feedback
+                    if (action.mActionFeedback.mName.equalsIgnoreCase("action_finished")) {
+                        // check if the acitivy action feedback was speech feedback
+                        if (action.mActionFeedback.hasCaiEvent()) {
+                            if (action.mActionFeedback.mCaiEvent.hasTTSStatus()) {
+                                if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
+                                    // TODO - get id - for now there is none                          
+                                    mLogger.message("\033[1;35mAgent starts speaking" + "\033[0m");
+                                     // Set character voice activity variable
+                                    if (mUseJPL) {
+                                        JPLEngine.query("now(Time), "
+                                                + "jdd(["
+                                                + "type:" + "event" + ","
+                                                + "name:" + "agent" + ","
+                                                + "mode:" + "voice" + ","
+                                                + "data:" + "start" + ","
+                                                + "time:" + "Time" + ","
+                                                + "from:" + "0" + ","
+                                                + "life:" + "0" + ","
+                                                + "conf:" + "1.0"
+                                                + "]).");
+                                    } else {
+                                        mProject.setVariable("AgentIsSpeaking", true);
+                                    }
                                 }
-                            }
-                            if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
-                                //mLogger.message("Handling Charamel Marker " + tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
-                                mProject.getRunTimePlayer().getActivityScheduler().handle(tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
-                            }
-                            if (tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
-                                // TODO - get id - for now there is none
-                                // Set character voice activity variable
-                                //mProject.setVariable("susanne_voice_activity", new StringValue(""));
-                                //mProject.setVariable("tom_voice_activity", new StringValue(""));
-                                mLogger.message("\033[1;35mAgent finishes speaking" + "\033[0m");
-                                if (mUseJPL) {
-                                    JPLEngine.query("now(Time), "
-                                            + "jdd(["
-                                            + "type:" + "event" + ","
-                                            + "name:" + "agent" + ","
-                                            + "mode:" + "voice" + ","
-                                            + "data:" + "stop" + ","
-                                            + "time:" + "Time" + ","
-                                            + "from:" + "0" + ","
-                                            + "life:" + "0" + ","
-                                            + "conf:" + "1.0"
-                                            + "]).");
-                                } else {
-                                    // Set speaking variable
-                                    mProject.setVariable("AgentIsSpeaking", false);
+                                if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
+                                    //mLogger.message("Handling Charamel Marker " + tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
+                                    mProject.getRunTimePlayer().getActivityScheduler().handle(action.mActionFeedback.mCaiEvent.mTts.mMarker);
                                 }
-//                                // remove the activity
-//                                if (mActivityWorkerMap.containsKey(id)) {
-//                                    mActivityWorkerMap.remove(id);
-//                                } else {
-//                                    mLogger.warning("Activityworker for " + id + " has been stopped before (TTS end speak notification is received after cmd end notification)");
-//                                }
-                                // wake me up ..
-                                mActivityWorkerMap.notifyAll();
+                                if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
+                                    // TODO - get id - for now there is none
+                                    // Set character voice activity variable
+                                    mLogger.message("\033[1;35mAgent finishes speaking" + "\033[0m");
+                                    if (mUseJPL) {
+                                        JPLEngine.query("now(Time), "
+                                                + "jdd(["
+                                                + "type:" + "event" + ","
+                                                + "name:" + "agent" + ","
+                                                + "mode:" + "voice" + ","
+                                                + "data:" + "stop" + ","
+                                                + "time:" + "Time" + ","
+                                                + "from:" + "0" + ","
+                                                + "life:" + "0" + ","
+                                                + "conf:" + "1.0"
+                                                + "]).");
+                                    } else {
+                                        mProject.setVariable("AgentIsSpeaking", false);
+                                    }
+                                    // wake me up ..
+                                    mActivityWorkerMap.notifyAll();
+                                }
+                                // TODO marker!
                             }
-
-                            // TODO marker!
-                        }
-                    } else { 
-                        // there is no cai_event - hence no tts notification.
-                        // remove the activity in any case
-                        if (mActivityWorkerMap.containsKey(id)) {
-                            mActivityWorkerMap.remove(id);
                         } else {
-                            //mLogger.message("Activityworker for " + id + " has been stopped before (cmd end notification is received after TTS end speak notification)");
+                            // there is no cai_event - hence no tts notification.
+                            // since it is an action_finished message, remove the activity in any case
+                            if (mActivityWorkerMap.containsKey(action.mId)) {
+                                mActivityWorkerMap.remove(action.mId);
+                            } else {
+                                mLogger.failure("Activityworker for " + action.mId + " has been stopped before ...");
+                            }
+                            // wake me up ..
+                            mActivityWorkerMap.notifyAll();
                         }
-                        // wake me up ..
-                        mActivityWorkerMap.notifyAll();
                     }
                 }
             }
 
+            // Handle action feedback
             if (tworld_final_feedback.hasObjectFeedback()) {
-                HashMap<String, AbstractValue> values = new HashMap<>();
-                values.put("type", new StringValue(tworld_final_feedback.mFeedbackObject.mObjectFeedback.mName));
-                values.put("elicitor", new StringValue(tworld_final_feedback.mFeedbackObject.mObjectFeedback.mTriggerObject));
-                values.put("name", new StringValue(tworld_final_feedback.mFeedbackObject.mName));
+                // added pg 24.3.2017 - process multiple objects in feedback 
+                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.object.Object object : tworld_final_feedback.mFeedbackObjects) {
+                    HashMap<String, AbstractValue> values = new HashMap<>();
+                    values.put("type", new StringValue(object.mObjectFeedback.mName));
+                    values.put("elicitor", new StringValue(object.mObjectFeedback.mTriggerObject));
+                    values.put("name", new StringValue(object.mName));
 
-                try {
-                    //RunTimeInstance runTime = RunTimeInstance.getInstance();
-                    StructValue struct = new StructValue(values);
-                    //runTime.setVariable(mProject, "feedback", struct);
-                    mProject.setVariable("feedback", struct);//GM
-                } catch (Exception e) {
-                    // System.out.println("not running");
+                    try {
+                        //RunTimeInstance runTime = RunTimeInstance.getInstance();
+                        StructValue struct = new StructValue(values);
+                        //runTime.setVariable(mProject, "feedback", struct);
+                        mProject.setVariable("feedback", struct);//GM
+                    } catch (Exception e) {
+                        // System.out.println("not running");
+                    }
                 }
             }
         }
@@ -627,14 +618,14 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
         }
     }
 
-    // Show a waiting dialog
+    // Show action waiting dialog
     private void dialog(final String message) {
         WaitingDialog InfoDialog = new WaitingDialog(message);
         InfoDialog.setModal(true);
         InfoDialog.setVisible(true);
     }
 
-    // Check if a file exists
+    // Check if action file exists
     private boolean exists(final String path) {
         final File file = new File(path);
         if (file.exists() && file.isDirectory()) {
