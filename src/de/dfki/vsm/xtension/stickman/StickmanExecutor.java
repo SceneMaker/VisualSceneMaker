@@ -168,17 +168,16 @@ public class StickmanExecutor extends ActivityExecutor {
         stickmanStageC = stickmanFactory.createStickman();
         // Get Stickman agents configuration
         for (String name : mProject.getAgentNames()) {
-            AgentConfig ac = mProject.getAgentConfig(name);
-
-            if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
+//            AgentConfig ac = mProject.getAgentConfig(name);
+//            if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
                 stickmanStageC.addStickman(name);
-            }
+//            }
         }
         
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
-                    stickmanStageC.launchStickmanStage(true, mProject.getProjectPath());
+                    stickmanStageC.launchStage(true, mProject.getProjectPath());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
