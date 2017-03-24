@@ -77,17 +77,17 @@ public final class SSILoggerExecutor extends ActivityExecutor {
             }
         } else {
             activity.setType(AbstractActivity.Type.parallel);
-            final LinkedList<ActionFeature> features = activity.getFeatures();
-            final HashMap<String, String> map = activity.getSubstitutions();
+            //final LinkedList<ActionFeature> features = activity.getFeatures();
+            //final HashMap<String, String> map = activity.getSubstitutions();
             final String systime = Long.toString(System.currentTimeMillis());
             // Get log message features
             final String name = activity.getName();
-            final String sender = get("sender", features, map);
-            final String event = get("event", features, map);
-            final String state = get("state", features, map);
-            final String time = get("time", features, map);
-            final String content = get("content", features, map);
-            final String duration = get("duration", features, map);
+            final String sender = activity.get("sender");//, features, map);
+            final String event = activity.get("event");//, features, map);
+            final String state = activity.get("state");//, features, map);
+            final String time = activity.get("time");//, features, map);
+            final String content = activity.get("content");//, features, map);
+            final String duration = activity.get("duration");//, features, map);
             // Create final event message
             final SSILoggerMessage message
                     = new SSILoggerMessage(name,
