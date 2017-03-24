@@ -63,21 +63,23 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         // Initialize the entry list
         SuperNode parentNode = mSuperNode.getParentNode();
 
-        mEntryList.clear();
+        synchronized (mEntryList) {
+            mEntryList.clear();
 
-        while (parentNode != null) {
-            ArrayList<VariableDefinition> varDefList = parentNode.getVarDefList();
+            while (parentNode != null) {
+                ArrayList<VariableDefinition> varDefList = parentNode.getVarDefList();
 
-            for (VariableDefinition varDef : varDefList) {
-                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                        TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                for (VariableDefinition varDef : varDefList) {
+                    mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                            TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                }
+
+                parentNode = parentNode.getParentNode();
             }
-
-            parentNode = parentNode.getParentNode();
         }
 
         // Initialize size and location
-        setSize(new Dimension(1, 1));
+        setSize(new Dimension(1, 1));     
         setLocation(superNode.getGlobalVariableBadge().getPosition().getXPos(),
                 superNode.getGlobalVariableBadge().getPosition().getYPos());
         mIsHidden = hidden;
@@ -88,20 +90,21 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     private Dimension computeTextRectSize(Graphics2D graphics) {
-        int width = 0,
-                height = 0;
+        int width = 0, height = 0;
 
-        for (VariableEntry entry : mEntryList) {
-            TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
-            int advance = (int) textLayout.getVisibleAdvance();
+        synchronized (mEntryList) {
+            for (VariableEntry entry : mEntryList) {
+                TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
+                int advance = (int) textLayout.getVisibleAdvance();
 
-            if (advance > width) {
-                width = advance;
+                if (advance > width) {
+                    width = advance;
+                }
+
+                int currentAll = (int) (textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading());
+
+                height = height + currentAll;
             }
-
-            int currentAll = (int) (textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading());
-
-            height = height + currentAll;
         }
 
         return new Dimension(width + 2 * mPositionOffset, height + 2 * mPositionOffset);
@@ -172,9 +175,11 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     private boolean containsEntryFor(String varName) {
-        for (VariableEntry entry : mEntryList) {
-            if (entry.getVarName().equals(varName)) {
-                return true;
+        synchronized (mEntryList) {
+            for (VariableEntry entry : mEntryList) {
+                if (entry.getVarName().equals(varName)) {
+                    return true;
+                }
             }
         }
 
@@ -238,10 +243,8 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     public void updateLocation(Point vector) {
-
         // Set new location
         setLocation(new Point(getLocation().x + vector.x, getLocation().y + vector.y));
-
         // Set the location on data model
         mSuperNode.getGlobalVariableBadge().setPosition(new NodePosition(getLocation().x, getLocation().y));
     }
@@ -249,44 +252,42 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     @Override
     public void update(Observable o, Object obj) {
 
-        // mLogger.message("VarBadge.update(" + obj + ")");
-        // Clear the entry list
-        mEntryList.clear();
+        synchronized (mEntryList) {
+            // mLogger.message("VarBadge.update(" + obj + ")");
+            // Clear the entry list
+            mEntryList.clear();
 
-        // Recompute the entry list
-        SuperNode parentNode = mSuperNode.getParentNode();
+            // Recompute the entry list
+            SuperNode parentNode = mSuperNode.getParentNode();
 
-        while (parentNode != null) {
-            for (VariableDefinition varDef : parentNode.getVarDefList()) {
-                String varName = varDef.getName();
+            while (parentNode != null) {
+                for (VariableDefinition varDef : parentNode.getVarDefList()) {
+                    String varName = varDef.getName();
 
-                // if (!containsEntryFor(varName)) {
-                mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                        TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                    // if (!containsEntryFor(varName)) {
+                    mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
+                            TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
 
-                // }
+                    // }
+                }
+
+                parentNode = parentNode.getParentNode();
             }
-
-            parentNode = parentNode.getParentNode();
         }
     }
 
     @Override
     public synchronized void update(EventObject event) {
-
         if (event instanceof VariableChangedEvent) {
-            synchronized (mEntryList) {
-                updateVariable(((VariableChangedEvent) event).getVarValue());
+            updateVariable(((VariableChangedEvent) event).getVarValue());
 
-                // Editor.getInstance().update();
-                revalidate();
-                repaint();
-            }
+            // Editor.getInstance().update();
+            revalidate();
+            repaint();
         }
     }
 
     private void updateVariable(TPLTuple<String, String> varVal) {
-
         synchronized (mEntryList) {
             // System.err.println("updateVariable");
             for (VariableEntry entry : mEntryList) {
