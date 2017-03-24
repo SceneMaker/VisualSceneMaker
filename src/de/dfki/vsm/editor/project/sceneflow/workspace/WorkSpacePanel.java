@@ -2287,10 +2287,6 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         if (mSelectedLocalVariableBadge != null) {
             Point currentMousePosition = event.getPoint();
 
-            // mLocalVarDisplay.setPosition(new Point(event.getXOnScreen(), event.getYOnScreen()));
-            getSceneFlowManager().getCurrentActiveSuperNode().getLocalVariableBadge().setPosition(
-                    new NodePosition(event.getX(), event.getY()));
-
             if (mSelectedLocalVariableBadge.mSelected) {
 
                 // compute movement trajectory vectors
@@ -2312,9 +2308,6 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         // if there is a specific selected comment use it
         if (mSelectedGlobalVariableBadge != null) {
             Point currentMousePosition = event.getPoint();
-
-            getSceneFlowManager().getCurrentActiveSuperNode().getGlobalVariableBadge().setPosition(
-                    new NodePosition(event.getX(), event.getY()));
 
             if (mSelectedGlobalVariableBadge.mSelected) {
 
