@@ -9,28 +9,33 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 /**
+ *
  * @author Patrick Gebhard
+ *
  */
-public final class TriCatWorldFeedback implements XMLParseable, XMLWriteable {
+public class TriCatWorldFeedback implements XMLParseable, XMLWriteable {
 
-    public Action mFeedbackAction = null;
-    public Object mFeedbackObject = null;
+    public ArrayList<Action> mFeedbackActions = null;
+    public ArrayList<Object> mFeedbackObjects = null;
 
     // Logger
     static final LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     public TriCatWorldFeedback() {
+        mFeedbackActions = new ArrayList<>();
+        mFeedbackObjects = new ArrayList<>();
     }
 
     public boolean hasActionFeedback() {
-        return (mFeedbackAction != null);
+        return (mFeedbackActions != null) && !mFeedbackActions.isEmpty();
     }
 
     public boolean hasObjectFeedback() {
-        return (mFeedbackObject != null);
+        return (mFeedbackObjects != null) && !mFeedbackObjects.isEmpty();
     }
 
     @Override
@@ -61,14 +66,14 @@ public final class TriCatWorldFeedback implements XMLParseable, XMLWriteable {
                     Action fa = new Action();
 
                     fa.parseXML(element);
-                    mFeedbackAction = fa;
+                    mFeedbackActions.add(fa);
                 }
 
                 if (name.equalsIgnoreCase("object")) {
                     Object fo = new Object();
 
                     fo.parseXML(element);
-                    mFeedbackObject = fo;
+                    mFeedbackObjects.add(fo);
                 }
             }
         });
