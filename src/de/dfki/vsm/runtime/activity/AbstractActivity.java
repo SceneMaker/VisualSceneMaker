@@ -86,10 +86,10 @@ public abstract class AbstractActivity {
     }
 
     // Get the value of a feature
-    public final String getValueOf(final String key) {
+    public final String get(final String key) {
         for (final ActionFeature feature : mFeatures) {
             if (feature.getKey().equals(key)) {
-                return feature.getVal();
+                return feature.getVal(mSubstitutions);
             }
         }
         return null;
