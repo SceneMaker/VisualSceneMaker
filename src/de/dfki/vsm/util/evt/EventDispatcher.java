@@ -38,22 +38,26 @@ public class EventDispatcher {
     }
 
     // Cancel The Timer Thread
-    public final /*synchronized*/ void cancel() {
+    public final synchronized void cancel() {
         mTimer.cancel();
     }
 
     // Add An Event Listener
-    public final /*synchronized*/ void register(final EventListener listener) {
+    public final synchronized void register(final EventListener listener) {
         //mLogger.message("Registering '" + listener + "'");
         mListenerList.add(listener);
     }
 
-    public final /*synchronized*/ void remove(final EventListener listener) {
+    public final synchronized void remove(final EventListener listener) {
         //mLogger.message("Remove '" + listener + "'");
         mListenerList.remove(listener);
     }
 
-    public final /*synchronized*/ void convey(final EventObject event) {
+    public final synchronized void convey(final EventObject event) {
+        schedule(event, 1);
+    }
+
+    public final /*synchronized*/ void dispatch(final EventObject event) {
 
         for (final EventListener listener : mListenerList) {
             //mLogger.message("Conveying '" + event + "' To '" + listener + "'");
@@ -62,17 +66,21 @@ public class EventDispatcher {
 
     }
 
-    public final /*synchronized*/ void schedule(final EventObject event, final long timeout) {
+    public final synchronized void schedule(final EventObject event, final long timeout) {
 
         // Create The Timer Task
         final TimerTask timer = new TimerTask() {
             @Override
             public void run() {
-                convey(event);
+                dispatch(event);
             }
         };
-
+        
+        try{
         // Schedule The Event
         mTimer.schedule(timer, timeout);
+        } catch(final IllegalStateException exc) {
+            mLogger.warning(exc.toString());
+        }
     }
 }
