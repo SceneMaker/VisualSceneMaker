@@ -1,7 +1,6 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.badge.VariableEntry;
@@ -14,7 +13,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,22 +35,23 @@ import javax.swing.JPopupMenu;
  * @author Patrick Gebhard
  */
 public class VarBadgeLocal extends JComponent implements EventListener, ActionListener, Observer {
+
     public static final int FONT_SIZE = 11;
     public static final int PADDING_BETWEEN_LINE = 3;
     private final ArrayList<VariableEntry> mEntryList = new ArrayList<VariableEntry>();
 
     // TODO: Make format of variable badge as global preferences
-    private final int              mPositionOffset = 10;
-    private final LOGDefaultLogger mLogger         = LOGDefaultLogger.getInstance();
-    private final SuperNode        mSuperNode;
+    private final int mPositionOffset = 10;
+    private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
+    private final SuperNode mSuperNode;
 
     // interaction flags
     // TODO: Make private
-    public boolean          mSelected;
-    public boolean          mDragged;
+    public boolean mSelected;
+    public boolean mDragged;
     private final JMenuItem mHideBadgeMenuItem;
     private final JMenuItem mShowBadgeMenuItem;
-    private boolean         mIsHidden;
+    private boolean mIsHidden;
     private boolean useCachedImage = false;
     private BufferedImage bufferedImage;
 
@@ -74,7 +73,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         setSize(new Dimension(1, 1));
         setLocation(superNode.getLocalVariableBadge().getPosition().getXPos(),
                 superNode.getLocalVariableBadge().getPosition().getYPos() + 50);
-        mIsHidden          = hidden;
+        mIsHidden = hidden;
         mHideBadgeMenuItem = new JMenuItem("Hide");
         mHideBadgeMenuItem.addActionListener(this);
         mShowBadgeMenuItem = new JMenuItem("Show");
@@ -82,12 +81,12 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     }
 
     private Dimension computeTextRectSize(Graphics2D graphics) {
-        int width  = 0,
+        int width = 0,
                 height = 0;
 
         for (VariableEntry entry : mEntryList) {
             TextLayout textLayout = new TextLayout(entry.getAttributed().getIterator(), graphics.getFontRenderContext());
-            int        advance    = (int) textLayout.getVisibleAdvance();
+            int advance = (int) textLayout.getVisibleAdvance();
 
             if (advance > width) {
                 width = advance;
@@ -110,7 +109,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
         super.paintComponent(g);
 
-        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE &&!mEntryList.isEmpty()) {
+        if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE && !mEntryList.isEmpty()) {
 
             if (mIsHidden) {
                 paintMinimized((Graphics2D) g);
@@ -126,15 +125,13 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         // Enable antialiasing
         Graphics2D graphics2 = g;
         Dimension dimension = computeTextRectSize(graphics2);
-        if(useCachedImage == false){
+        if (useCachedImage == false) {
 
-            bufferedImage = new BufferedImage((int)dimension.getWidth(),(int)dimension.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+            bufferedImage = new BufferedImage((int) dimension.getWidth(), (int) dimension.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
             Graphics2D graphics = bufferedImage.createGraphics();
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             // Compute the size of the variable badge
-
-
             setSize(dimension);
 
             // draw background
@@ -147,25 +144,25 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
             // Draw Type Definitions and Variable Definition
             int currentDrawingOffset = 0;
-            int y =12;
+            int y = 12;
             for (VariableEntry entry : mEntryList) {
                 AttributedString attributedString = entry.getAttributed();
-                TextLayout textLayout       = new TextLayout(attributedString.getIterator(),
-                                                        graphics.getFontRenderContext());
+                TextLayout textLayout = new TextLayout(attributedString.getIterator(),
+                        graphics.getFontRenderContext());
 
-                currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
+                currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
                 graphics.drawString(attributedString.getIterator(), mPositionOffset,
                         mPositionOffset + currentDrawingOffset);
-                y+= FONT_SIZE + PADDING_BETWEEN_LINE;
-                currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
-                                       + (int) textLayout.getDescent();
+                y += FONT_SIZE + PADDING_BETWEEN_LINE;
+                currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading()
+                        + textLayout.getDescent());
 
             }
             paintFromImage(graphics2);
 
             useCachedImage = true;
 
-        }else{
+        } else {
 
             paintFromImage(graphics2);
 
@@ -173,7 +170,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     }
 
     private void paintFromImage(Graphics2D graphics2) {
-        graphics2.drawImage(bufferedImage,0,0,null);
+        graphics2.drawImage(bufferedImage, 0, 0, null);
     }
 
     private void paintMinimized(Graphics2D g) {
@@ -181,7 +178,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         Graphics2D graphics = g;
 
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
 
         // Compute the size of the variable badge
         Dimension dimension = new Dimension(128, 15);
@@ -241,7 +237,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     // TODO: do we need this?
     public void deSelect() {
         mSelected = false;
-        mDragged  = false;
+        mDragged = false;
     }
 
     public void updateLocation(Point vector) {
@@ -294,20 +290,20 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
     @Override
     public synchronized void update(EventObject event) {
-        if (event instanceof VariableChangedEvent) {
-            updateVariable(((VariableChangedEvent) event).getVarValue());
-            useCachedImage = false;
-            // Editor.getInstance().update();
-            revalidate();
-            repaint();
+        synchronized (mEntryList) {
+            if (event instanceof VariableChangedEvent) {
+                updateVariable(((VariableChangedEvent) event).getVarValue());
+                useCachedImage = false;
+                // Editor.getInstance().update();
+                revalidate();
+                repaint();
+            }
         }
     }
 
-    private  void updateVariable(TPLTuple<String, String> varVal) {
+    private void updateVariable(TPLTuple<String, String> varVal) {
 
-
-
-        synchronized(mEntryList) {
+        synchronized (mEntryList) {
             for (VariableEntry entry : mEntryList) {
                 String var = entry.getVarName();    // the name of the current variable
                 String typ = entry.getVarType();
