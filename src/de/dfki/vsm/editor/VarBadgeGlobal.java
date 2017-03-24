@@ -162,11 +162,10 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                     TextLayout textLayout = new TextLayout(attributedString.getIterator(),
                             graphics.getFontRenderContext());
 
-                    currentDrawingOffset = currentDrawingOffset + (int) textLayout.getAscent();
+                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
                     graphics.drawString(attributedString.getIterator(), mPositionOffset,
                             mPositionOffset + currentDrawingOffset);
-                    currentDrawingOffset = currentDrawingOffset + (int) textLayout.getLeading()
-                            + (int) textLayout.getDescent();
+                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading() + textLayout.getDescent());
                 }
             }
         }
@@ -274,19 +273,21 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
     @Override
     public synchronized void update(EventObject event) {
-        if (event instanceof VariableChangedEvent) {
-            updateVariable(((VariableChangedEvent) event).getVarValue());
 
-            // Editor.getInstance().update();
-            revalidate();
-            repaint();
+        if (event instanceof VariableChangedEvent) {
+            synchronized (mEntryList) {
+                updateVariable(((VariableChangedEvent) event).getVarValue());
+
+                // Editor.getInstance().update();
+                revalidate();
+                repaint();
+            }
         }
     }
 
     private void updateVariable(TPLTuple<String, String> varVal) {
 
         synchronized (mEntryList) {
-
             // System.err.println("updateVariable");
             for (VariableEntry entry : mEntryList) {
                 String var = entry.getVarName();    // the name of the current variable
