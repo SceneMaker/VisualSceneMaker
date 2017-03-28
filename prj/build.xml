@@ -149,7 +149,7 @@
         </java>
     </target>
 
-   <target name="debug">
+    <target name="debug">
 
         <java classname="de.dfki.vsm.SceneMaker3" fork="true">
             <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" />
@@ -157,7 +157,7 @@
         </java>
     </target>
     
-     <!-- Execute to Welcome Screen -->
+    <!-- Execute to Welcome Screen -->
     <target name="test-ssi-plugin">
         <java classname="de.dfki.vsm.xtesting.TestSSIPlugin" fork="true">
             <!-- <arg line="runtime res/prj/test"/> -->
@@ -165,27 +165,32 @@
             <classpath refid="clspath"/>
         </java>
     </target>
-     <target name="test-parser">
+    <target name="test-parser">
         <java classname="de.dfki.vsm.xtesting.TestParser" fork="true">
             <classpath refid="clspath"/>
         </java>
     </target>
     
     
-     <target name="test-swi-bfql">
+    <target name="test-swi-bfql">
         <java classname="de.dfki.vsm.xtesting.jpl.JPLTestSuite" fork="true">
             <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.test.pl"/>
             <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.logs.pl"/>
             <classpath refid="clspath"/>
         </java>
     </target>
-     <target name="test-wizard">
+    <target name="test-wizard">
         <java classname="de.dfki.vsm.SceneMaker3" fork="true">
             <arg line="editor res\tutorials\11-WizardTestSuite"/>
             <classpath refid="clspath"/>
         </java>
     </target>
-         <!-- Execute Property Manager-->
+    <target name="test-email">
+        <java classname="de.dfki.vsm.xtesting.TestEmailSender" fork="true">
+            <classpath refid="clspath"/>
+        </java>
+    </target>
+    <!-- Execute Property Manager-->
     <target name="testPropertyManager">
         <java classname="de.dfki.vsm.xtesting.TestFXGui" fork="true">
             <!-- <arg line="runtime res/prj/test"/> -->

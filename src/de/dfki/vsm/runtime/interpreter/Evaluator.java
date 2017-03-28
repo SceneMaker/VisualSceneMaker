@@ -34,6 +34,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutQue
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -169,7 +170,9 @@ public class Evaluator {
     public final AbstractValue evaluate(
             final Expression exp,
             final Environment env) throws InterpreterError {
-        if (exp instanceof BoolLiteral) {
+        if (exp instanceof ParenExpression) {
+            return evaluate(((ParenExpression) exp).getExp(), env);
+        } else if (exp instanceof BoolLiteral) {
             return new BooleanValue(((BoolLiteral) exp).getValue());
         } else if (exp instanceof IntLiteral) {
             return new IntValue(((IntLiteral) exp).getValue());
