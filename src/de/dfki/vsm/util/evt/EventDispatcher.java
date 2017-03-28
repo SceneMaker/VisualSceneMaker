@@ -33,7 +33,7 @@ public class EventDispatcher {
         if (sInstance == null) {
             sInstance = new EventDispatcher();
         }
-
+        
         return sInstance;
     }
 
@@ -47,25 +47,25 @@ public class EventDispatcher {
         //mLogger.message("Registering '" + listener + "'");
         mListenerList.add(listener);
     }
-
+    
     public final synchronized void remove(final EventListener listener) {
         //mLogger.message("Remove '" + listener + "'");
         mListenerList.remove(listener);
     }
-
+    
     public final synchronized void convey(final EventObject event) {
         schedule(event, 1);
     }
-
+    
     public final /*synchronized*/ void dispatch(final EventObject event) {
-
+        
         for (final EventListener listener : mListenerList) {
             //mLogger.message("Conveying '" + event + "' To '" + listener + "'");
             listener.update(event);
         }
-
+        
     }
-
+    
     public final synchronized void schedule(final EventObject event, final long timeout) {
 
         // Create The Timer Task
@@ -76,10 +76,10 @@ public class EventDispatcher {
             }
         };
         
-        try{
-        // Schedule The Event
-        mTimer.schedule(timer, timeout);
-        } catch(final IllegalStateException exc) {
+        try {
+            // Schedule The Event
+            mTimer.schedule(timer, timeout);
+        } catch (final IllegalStateException exc) {
             mLogger.warning(exc.toString());
         }
     }
