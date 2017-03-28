@@ -113,7 +113,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
                     stickmanStage.addStickman(ac.getAgentName());
                 }
             }
-            stickmanStage.launchStickmanConfiguration(filepath);
+            stickmanStage.launchConfiguration(filepath);
             
         } else {
             StageRoom stickmanStage = new StageRoomFX(0, 0, false);
@@ -123,7 +123,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
                     stickmanStage.addStickman(ac.getAgentName());
                 }
             }
-            stickmanStage.launchStickmanConfiguration(filepath);
+            stickmanStage.launchConfiguration(filepath);
         }
 
 //        for (EntryAgent agent: plugin.getAgents()) {
