@@ -13,8 +13,11 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 public final class Interruptor {
 
     // The logger instance
-    private final LOGDefaultLogger mLogger = 
-            LOGDefaultLogger.getInstance();
+    private final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
+    //
+    private final EventDispatcher mDispatcher
+            = EventDispatcher.getInstance();
     // The interpreter instance
     private final Interpreter mInterpreter;
 
@@ -54,7 +57,8 @@ public final class Interruptor {
                     }
                 } catch (final InterpreterError exc) {
                     mLogger.warning("detecting abort in observer");
-                    EventDispatcher.getInstance().convey(new TerminationEvent(this, exc));
+                    
+                    mDispatcher.convey(new TerminationEvent(this, exc));
                     mInterpreter.abort();
                     mLogger.warning("returnning from observer after runtimeexception");
 
@@ -70,7 +74,7 @@ public final class Interruptor {
                             + "' could not be evaluated to a boolean value.";
                     InterpreterError exception = new InterpreterError(this, errorMsg);
 
-                    EventDispatcher.getInstance().convey(new TerminationEvent(this, exception));
+                    mDispatcher.convey(new TerminationEvent(this, exception));
                     mInterpreter.abort();
 
                     return;
