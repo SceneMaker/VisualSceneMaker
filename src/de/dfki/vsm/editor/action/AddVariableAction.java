@@ -1,28 +1,26 @@
 package de.dfki.vsm.editor.action;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.dialog.VarDefDialog;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
-import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;
-
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Sergio Soto
  */
 public class AddVariableAction extends EditorAction {
+     //
+    private final EventDispatcher mDispatcher
+            = EventDispatcher.getInstance();
+    
     private LinkedList<VariableDefinition> varDefsList;
     private UndoManager mUndoManager = null;
     private final BasicNode mCurrentSuperNode;
@@ -46,7 +44,7 @@ public class AddVariableAction extends EditorAction {
             mCurrentSuperNode.addVarDef(varDef);
             //varDefsList.add(varDef);
             // launch event to update element editor
-            EventDispatcher.getInstance().convey(new NodeSelectedEvent(this,mCurrentSuperNode));
+            mDispatcher.convey(new NodeSelectedEvent(this,mCurrentSuperNode));
             // update workspace
             EditorInstance.getInstance().refresh();
         }
@@ -62,7 +60,7 @@ public class AddVariableAction extends EditorAction {
                 mWorkSpace.revalidate();
                 mWorkSpace.repaint();
                 mWorkSpace.refresh();
-                EventDispatcher.getInstance().convey(new NodeSelectedEvent(this, mCurrentSuperNode));
+                mDispatcher.convey(new NodeSelectedEvent(this, mCurrentSuperNode));
             }
         }
 
@@ -74,7 +72,7 @@ public class AddVariableAction extends EditorAction {
             mWorkSpace.revalidate();
             mWorkSpace.repaint();
             mWorkSpace.refresh();
-            EventDispatcher.getInstance().convey(new NodeSelectedEvent(this,mCurrentSuperNode));
+            mDispatcher.convey(new NodeSelectedEvent(this,mCurrentSuperNode));
         }
 
         @Override

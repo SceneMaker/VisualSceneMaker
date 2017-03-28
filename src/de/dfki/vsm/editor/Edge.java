@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor;
 
-//~--- non-JDK imports --------------------------------------------------------
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.action.ModifyEdgeAction;
 import de.dfki.vsm.editor.event.EdgeEditEvent;
@@ -21,7 +20,6 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-
 import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sEEDGE_COLOR;
 import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
@@ -31,8 +29,6 @@ import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
-
-//~--- JDK imports ------------------------------------------------------------
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,13 +46,11 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
-
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Timer;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -81,6 +75,9 @@ import javax.swing.undo.UndoManager;
  */
 public class Edge extends JComponent implements EventListener, Observer, MouseListener {
 
+    private final EventDispatcher mDispatcher
+            = EventDispatcher.getInstance();
+    
     // The actual type
     private TYPE mType = null;
 
@@ -117,7 +114,6 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     // Activity monitor
     private VisualisationTask mVisualisationTask = null;
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventDispatcher mEventMulticaster = EventDispatcher.getInstance();
 
     // edit panel
     private JPanel mTextPanel = null;
@@ -471,7 +467,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 NodeSelectedEvent evt = new NodeSelectedEvent(mWorkSpace,
                         mWorkSpace.getSceneFlowManager().getCurrentActiveSuperNode());
 
-                EventDispatcher.getInstance().convey(evt);
+                mDispatcher.convey(evt);
                 updateFromTextEditor();
 
                 if (!validate(mValueEditor.getText())) {
@@ -566,9 +562,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     @Override
     public void mouseClicked(java.awt.event.MouseEvent event) {
 
-        //////////!!!!!!!!!!!!!!!!!!!!
-        // PG: 25.2.11 DISABELD: System.err.println("Sending node selected event");
-        EventDispatcher.getInstance().convey(new EdgeSelectedEvent(this, this.getDataEdge()));
+        mDispatcher.convey(new EdgeSelectedEvent(this, this.getDataEdge()));
         mIsSelected = true;
 
         if (mEg.controlPoint1HandlerContainsPoint(event.getPoint(), 10)) {
@@ -631,7 +625,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 // mValueEditor.setText(getDescription());
                 mValueEditor.requestFocus();
                 mEditMode = true;
-                EventDispatcher.getInstance().convey(new EdgeEditEvent(this, this.getDataEdge()));
+                mDispatcher.convey(new EdgeEditEvent(this, this.getDataEdge()));
                 add(mTextPanel);
 
                 mValueEditor.setText(mValueEditor.getText()); // hack to make mValueEditor visible

@@ -45,7 +45,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     //
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
+    private final EventDispatcher mDispatcher = EventDispatcher.getInstance();
 
     // edit
     private boolean mEditMode = false;
@@ -180,7 +180,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
         for (JTextArea editor : mCmdEditors) {
             add(editor, BorderLayout.CENTER);
         }
-        mEventCaster.convey(new NodeSelectedEvent(this, mNode.getDataNode()));
+        mDispatcher.convey(new NodeSelectedEvent(this, mNode.getDataNode()));
         mCmdEditors.get(0).requestFocusInWindow();
     }
 
@@ -219,8 +219,8 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
             mCmdEditors.removeAll(mCmdEditors);
             mNode.getDataNode().setCmdList(copyOfCmdList);
-            mEventCaster.convey(new ProjectChangedEvent(this));
-            mEventCaster.convey(new NodeSelectedEvent(this, mNode.getDataNode()));
+            mDispatcher.convey(new ProjectChangedEvent(this));
+            mDispatcher.convey(new NodeSelectedEvent(this, mNode.getDataNode()));
             mEditMode = false;
 
         }

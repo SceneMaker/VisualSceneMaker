@@ -1,23 +1,15 @@
 package de.dfki.vsm.runtime.interpreter;
 
-import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
-import de.dfki.vsm.runtime.interpreter.Configuration.State;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
-import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.interpreter.symbol.SymbolTable;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.tpl.TPLTriple;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -27,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Interpreter {
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventDispatcher mEventMulticaster = EventDispatcher.getInstance();
+    private final EventDispatcher mDispatcher = EventDispatcher.getInstance();
     private final SceneFlow mSceneFlow;
     private final Interruptor mEventObserver;
     private final Configuration mConfiguration;
@@ -177,6 +169,8 @@ public class Interpreter {
         // alive is not the right condition
         // PathLogger.startLogging();
         if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
+            
+            //mDispatcher.reset();
 
             // Print some information 
             //mLogger.message("Starting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
@@ -192,7 +186,7 @@ public class Interpreter {
                     mSceneFlowThread.handleStart();
                     mEventObserver.update();
                 } catch (InterpreterError e) {
-                    mEventMulticaster.convey(new TerminationEvent(this, e));
+                    mDispatcher.convey(new TerminationEvent(this, e));
                     mSceneFlowThread.requestTermination();
 
                     // Wait here until terminated and clear data structures
@@ -231,8 +225,8 @@ public class Interpreter {
         }
 
         // mLogger.message("Stopping EventCaster and TimeoutManager");
-        mTimeoutManager.cancel();
-        mEventMulticaster.cancel();
+        mTimeoutManager.abort();
+        //mDispatcher.abort();
 
         return true;
         // PathLogger.stopLogging();

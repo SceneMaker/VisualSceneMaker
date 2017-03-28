@@ -44,7 +44,7 @@ public class TimeoutManager {
         return mTimeoutCondList.containsKey(cond);
     }
 
-    public synchronized void cancel() {
+    public synchronized void abort() {
         mTimer.cancel();
     }
 
