@@ -12,7 +12,7 @@ public abstract class AbstractActivity {
     // The activity type
     public enum Type {
 
-        // The calling task has to wait for temrination
+        // The calling task has to wait for termination
         blocking,
         // The calling task doesn't need to join this
         parallel

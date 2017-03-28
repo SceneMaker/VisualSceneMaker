@@ -1,13 +1,11 @@
 package de.dfki.vsm.xtension.ssi.logger;
 
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.SSIEventSender;
-import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -65,6 +63,7 @@ public final class SSILoggerExecutor extends ActivityExecutor {
     public void execute(final AbstractActivity activity) {
 
         if (activity instanceof SpeechActivity) {
+            // ???? PLEASE EXPLAIN THIS
             final SpeechActivity speechActivity = (SpeechActivity) activity;
             final String text = speechActivity.getTextOnly("$(").trim();
             final LinkedList<String> timemarks = speechActivity.getTimeMarks("$(");
@@ -76,7 +75,7 @@ public final class SSILoggerExecutor extends ActivityExecutor {
                 }
             }
         } else {
-            activity.setType(AbstractActivity.Type.parallel);
+            //activity.setType(AbstractActivity.Type.parallel);
             //final LinkedList<ActionFeature> features = activity.getFeatures();
             //final HashMap<String, String> map = activity.getSubstitutions();
             final String systime = Long.toString(System.currentTimeMillis());
@@ -102,80 +101,5 @@ public final class SSILoggerExecutor extends ActivityExecutor {
             // Send the event message
             mSender.sendString(message.toString());
         }
-    }
-
-
-    /*
-    private void send(String message) {
-
-        mLogger.message("Sending log message: " + message);
-
-        DatagramSocket c;
-        // Find the server using UDP broadcast
-        try {
-            //Open a random port to send the package
-            c = new DatagramSocket();
-            c.setBroadcast(true);
-
-            byte[] sendData = (message).getBytes("UTF8");
-
-//            //Try the 255.255.255.255 first
-//            try {
-//                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), mPort);
-//                c.send(sendPacket);
-//               // mLogger.message(">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
-//            } catch (Exception e) {
-//            }
-            // Broadcast the message over all the network interfaces
-            String hosts = "";
-
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = interfaces.nextElement();
-
-                if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                    continue; // Don't want to broadcast to the loopback interface
-                }
-
-                for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-                    InetAddress broadcast = interfaceAddress.getBroadcast();
-                    if (broadcast == null) {
-                        continue;
-                    }
-
-                    // Send the broadcast package
-                    boolean packetSend = false;
-                    try {
-                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, mPort);
-                        c.send(sendPacket);
-                        hosts = hosts + broadcast.getHostAddress() + ", ";
-                        mLogger.message("Message sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
-                        packetSend = true;
-                    } catch (Exception e) {
-                        packetSend = false;
-                    }
-
-                    if (packetSend) {
-                        mProject.setVariable(mVar, new StringValue("Message successfully send"));
-                    }
-                }
-            }
-
-            // Close the socket
-            c.close();
-        } catch (IOException ex) {
-            mLogger.message(ex.toString());
-        }
-    }*/
-    // Get value of action feature
-    private String get(final String name,
-            final LinkedList<ActionFeature> features,
-            final HashMap<String, String> substitutions) {
-        for (final ActionFeature feature : features) {
-            if (feature.getKey().equalsIgnoreCase(name)) {
-                return feature.getVal(substitutions);
-            }
-        }
-        return null;
     }
 }
