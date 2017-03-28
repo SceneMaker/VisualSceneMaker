@@ -22,7 +22,8 @@ public class EventDispatcher {
     private final List<EventListener> mListenerList = new CopyOnWriteArrayList<EventListener>();
 
     // The Timer Thread
-    private final Timer mTimer = new Timer("EventCasterTimer");
+
+    private static Timer mTimer;
 
     // Construct The Instance
     private EventDispatcher() {
@@ -33,6 +34,9 @@ public class EventDispatcher {
         if (sInstance == null) {
             sInstance = new EventDispatcher();
         }
+        
+        //added pg 24.3.17 canceling Timer Thread requires a new instance
+        mTimer = new Timer("EventCasterTimer");
         
         return sInstance;
     }
@@ -76,6 +80,7 @@ public class EventDispatcher {
             }
         };
         
+       
         try {
             // Schedule The Event
             mTimer.schedule(timer, timeout);
