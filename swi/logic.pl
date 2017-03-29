@@ -1,7 +1,7 @@
 ﻿:- module('logic',
    [ signal/2, signal/3, detect/2, detect/3, update/3, disambiguate/2,
-     state/2, voice/2, gaze/2, touch/4, speech/3, action/1, face/1, head/1,
-     reset/0, clean/0, clean/2, now/1, timeout/2, stop/1, init/2 ]).
+     state/2, voice/2, gaze/2, touch/4, speech/3, move/1, face/1, head/1,
+     reset/0, clean/0, clean/2, now/1, timeout/2, stop/1, init/2, data/2, mode/2, set/2 ]).
 :- reexport('facts').
 :- reexport('print').
 :- reexport('terms').
@@ -10,7 +10,19 @@
 :- reexport('timer').
 :- reexport('clean').
 
-reset.
+
+data(E, D) :- fsr(E), val(data, D, E).
+mode(E, M) :- fsr(E), val(mode, M, E).
+
+%nextto(That, " + Put + "),
+
+reset :-
+add([type:event, mode:speech, data:put, time:965,dist:0,life:1047]),
+add([type:event, mode:gesture, data:object1, time:3511,dist:0,life:100]), add([type:event, mode:gesture, data:object2, time:3745,dist:0,life:100]), add([type:event, mode:gesture, data:object2, time:3924,dist:0,life:100]), add([type:event, mode:speech, data:that, time:2230,dist:0,life:1892]),
+add([type:event, mode:gesture, data:target1, time:4537,dist:0,life:100]), add([type:event, mode:gesture, data:target1, time:5123,dist:0,life:100]), add([type:event, mode:gesture, data:target1, time:5692,dist:0,life:100]), add([type:event, mode:speech, data:there, time:4923,dist:0,life:2317]).
+
+set(Var, Val) :-
+  var(Var), nonvar(Val), Var = Val.
 
 /* Signal Production and Consumption */
 signal(Mode, Name) :-

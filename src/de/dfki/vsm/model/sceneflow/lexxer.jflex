@@ -79,7 +79,7 @@ string  = (\"({alpha}|{digit}|{special}|{white})*\")
 "RemoveFirst" { return new Symbol(ChartFields.REMOVEFIRST); }
 "RemoveLast" { return new Symbol(ChartFields.REMOVELAST); }
 "First" { return new Symbol(ChartFields.FIRST); }
-"Last" { return new Symbol(ChartFields.LAST); }
+//"Last" { return new Symbol(ChartFields.LAST); }
 "Clear" { return new Symbol(ChartFields.CLEAR); }
 "Size" { return new Symbol(ChartFields.SIZE); }
 "Contains" { return new Symbol(ChartFields.CONTAINS); }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="Behavior Flow Model" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 9 Feb 2017 16:10:39" start="N651;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="Behavior Flow Model" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 29 Mär 2017 15:05:29" start="N159;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -84,6 +84,9 @@
     <Variable type="Bool" name ="MutualGaze">
       <Bool value="false"/>
     </Variable>
+    <Variable type="String" name ="Last">
+      <String><![CDATA[]]></String>
+    </Variable>
   </Declare>
   <Commands>
   </Commands>
@@ -106,8 +109,8 @@
     <EEdge target="S56" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="346" yPos="66" ctrlXPos="406" ctrlYPos="66"/>
-        <ControlPoint xPos="426" yPos="66" ctrlXPos="366" ctrlYPos="66"/>
+        <ControlPoint xPos="346" yPos="66" ctrlXPos="366" ctrlYPos="66"/>
+        <ControlPoint xPos="426" yPos="66" ctrlXPos="406" ctrlYPos="66"/>
       </Connection>
     </Graphics>
     </EEdge>
@@ -135,6 +138,28 @@
     </EEdge>
     <Graphics>
       <Position xPos="266" yPos="186"/>
+    </Graphics>
+  </Node>
+  <Node id="N159" name="Cleanup;Fact Base" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PrologQuery>
+      <String><![CDATA[clean.]]></String>
+      </PrologQuery>
+    </Commands>
+    <EEdge target="S3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="666" yPos="386" ctrlXPos="686" ctrlYPos="386"/>
+        <ControlPoint xPos="746" yPos="386" ctrlXPos="726" ctrlYPos="386"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="586" yPos="346"/>
     </Graphics>
   </Node>
   <SuperNode id="S56" name="Interaction;Behavior;Model" comment="" hideLocalVar="false" hideGlobalVar="false" start="S20;S26;S48;S40;">
@@ -11500,6 +11525,547 @@
         </EEdge>
         <Graphics>
           <Position xPos="266" yPos="186"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+  </SuperNode>
+  <SuperNode id="S3" name="Put-That-;There-;Example" comment="" hideLocalVar="false" hideGlobalVar="false" start="N156;N325;">
+    <Define>
+    </Define>
+    <Declare>
+      <Variable type="String" name ="Put">
+        <String><![CDATA[]]></String>
+      </Variable>
+      <Variable type="String" name ="That">
+        <String><![CDATA[]]></String>
+      </Variable>
+      <Variable type="String" name ="There">
+        <String><![CDATA[]]></String>
+      </Variable>
+      <Variable type="String" name ="Object">
+        <String><![CDATA[]]></String>
+      </Variable>
+      <Variable type="String" name ="Target">
+        <String><![CDATA[]]></String>
+      </Variable>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="S3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="786" yPos="346" ctrlXPos="786" ctrlYPos="266"/>
+        <ControlPoint xPos="826" yPos="386" ctrlXPos="906" ctrlYPos="386"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="746" yPos="346"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="248" yPos="618"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="850" yPos="22" width="198" height="244"/>
+      </Graphics>
+      <Text style="color:blue">
+        The generalized quantifiers check if all or most of the pointing gestures during the `that´ or `there´ refer to the same object and at the same time extract the semantic content of these objects to the variable `Object´ or `Target´, respectively. The temporal windows can easily be adapted, for example, it could be chosen to be a time interval of about two seconds centered around 600-800 ms before the deictic referring expressions.
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="216" yPos="273" width="208" height="56"/>
+      </Graphics>
+      <Text style="color:blue">
+        The `that´ has to immediately follow the `put´ in the utterance and then becomes the last spoken word.
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="645" yPos="425" width="209" height="64"/>
+      </Graphics>
+      <Text style="color:blue">
+        The `there´ has to immediately follow the `that´ in the utterance and then becomes the last spoken word.
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="285" yPos="505" width="187" height="58"/>
+      </Graphics>
+      <Text style="color:blue">
+        We finally add a new feature structure representing the move command to the fact base.
+      </Text>
+    </Comment>
+    <Node id="N2" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="746" yPos="506"/>
+      </Graphics>
+    </Node>
+    <Node id="N156" name="Check If; Last Word;Exists" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <CEdge target="S94" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="581" yPos="46" ctrlXPos="633" ctrlYPos="16"/>
+            <ControlPoint xPos="746" yPos="43" ctrlXPos="686" ctrlYPos="15"/>
+          </Connection>
+        </Graphics>
+        <Neq>
+          <Variable name="Last"/>
+          <String><![CDATA[]]></String>
+        </Neq>
+      </CEdge>
+      <EEdge target="S96" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="511" yPos="46" ctrlXPos="458" ctrlYPos="16"/>
+          <ControlPoint xPos="346" yPos="43" ctrlXPos="406" ctrlYPos="15"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="506" yPos="26"/>
+      </Graphics>
+    </Node>
+    <Node id="N318" name="Check;Gesture;Target" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <CEdge target="S99" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="786" yPos="266" ctrlXPos="786" ctrlYPos="286"/>
+            <ControlPoint xPos="786" yPos="346" ctrlXPos="786" ctrlYPos="326"/>
+          </Connection>
+        </Graphics>
+        <PrologQuery>
+        <Add>
+          <Add>
+            <String><![CDATA[formost(E, (mode(E, gesture), during(E, ]]></String>
+            <Variable name="That"/>
+          </Add>
+          <String><![CDATA[)), data(E, Object)).]]></String>
+        </Add>
+        </PrologQuery>
+      </CEdge>
+      <Graphics>
+        <Position xPos="746" yPos="186"/>
+      </Graphics>
+    </Node>
+    <Node id="N319" name="Check;Gesture;Target" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <CEdge target="N321" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="306" yPos="426" ctrlXPos="306" ctrlYPos="510"/>
+            <ControlPoint xPos="546" yPos="506" ctrlXPos="546" ctrlYPos="421"/>
+          </Connection>
+        </Graphics>
+        <PrologQuery>
+        <Add>
+          <Add>
+            <String><![CDATA[forevery(E, (mode(E, gesture), during(E, ]]></String>
+            <Variable name="There"/>
+          </Add>
+          <String><![CDATA[)), data(E, Target)).]]></String>
+        </Add>
+        </PrologQuery>
+      </CEdge>
+      <Graphics>
+        <Position xPos="266" yPos="346"/>
+      </Graphics>
+    </Node>
+    <Node id="N321" name="Add TFS;For Move;Command" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PrologQuery>
+        <Add>
+          <Add>
+            <Add>
+              <Add>
+                <String><![CDATA[add([type:cmd, name:move, object:]]></String>
+                <Variable name="Object"/>
+              </Add>
+              <String><![CDATA[, target:]]></String>
+            </Add>
+            <Variable name="Target"/>
+          </Add>
+          <String><![CDATA[]).]]></String>
+        </Add>
+        </PrologQuery>
+      </Commands>
+      <Graphics>
+        <Position xPos="506" yPos="506"/>
+      </Graphics>
+    </Node>
+    <Node id="N325" name="Wait Some;Time" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N326" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="1266" yPos="106" ctrlXPos="1266" ctrlYPos="126"/>
+          <ControlPoint xPos="1266" yPos="186" ctrlXPos="1266" ctrlYPos="166"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="1226" yPos="26"/>
+      </Graphics>
+    </Node>
+    <Node id="N326" name="Add;Put" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:speech, data:put, time:965,dist:0,life:1047]).]]></String>
+        </PrologQuery>
+      </Commands>
+      <TEdge target="N327" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="1266" yPos="266" ctrlXPos="1266" ctrlYPos="286"/>
+          <ControlPoint xPos="1266" yPos="346" ctrlXPos="1266" ctrlYPos="326"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="1226" yPos="186"/>
+      </Graphics>
+    </Node>
+    <Node id="N327" name="Add That;And;Gestures" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:gesture, data:object1, time:3511,dist:0,life:100]).]]></String>
+        </PrologQuery>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:gesture, data:object2, time:3745,dist:0,life:100]).]]></String>
+        </PrologQuery>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:gesture, data:object2, time:3924,dist:0,life:100]).]]></String>
+        </PrologQuery>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:speech, data:that, time:2230,dist:0,life:1892]).]]></String>
+        </PrologQuery>
+      </Commands>
+      <TEdge target="N328" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="1266" yPos="426" ctrlXPos="1266" ctrlYPos="486"/>
+          <ControlPoint xPos="1266" yPos="586" ctrlXPos="1266" ctrlYPos="526"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="1226" yPos="346"/>
+      </Graphics>
+    </Node>
+    <Node id="N328" name="Add There;And;Gestures" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:gesture, data:target1, time:4537,dist:0,life:100]).]]></String>
+        </PrologQuery>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:gesture, data:target1, time:5123,dist:0,life:100]).]]></String>
+        </PrologQuery>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:gesture, data:target1, time:5692,dist:0,life:100]).]]></String>
+        </PrologQuery>
+        <PrologQuery>
+        <String><![CDATA[add([type:event, mode:speech, data:there, time:4923,dist:0,life:2317]).]]></String>
+        </PrologQuery>
+      </Commands>
+      <Graphics>
+        <Position xPos="1226" yPos="586"/>
+      </Graphics>
+    </Node>
+    <SuperNode id="S94" name="Await Next;`Put´ After;Last Word" comment="" hideLocalVar="false" hideGlobalVar="false" start="N323;">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <IEdge target="S95" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="786" yPos="106" ctrlXPos="764" ctrlYPos="258"/>
+            <ControlPoint xPos="346" yPos="203" ctrlXPos="538" ctrlYPos="92"/>
+          </Connection>
+        </Graphics>
+        <PrologQuery>
+        <Add>
+          <Add>
+            <String><![CDATA[oldest(E, (mode(E,speech), data(E, put), after(E, ]]></String>
+            <Variable name="Last"/>
+          </Add>
+          <String><![CDATA[)), Put).]]></String>
+        </Add>
+        </PrologQuery>
+      </IEdge>
+      <Graphics>
+        <Position xPos="746" yPos="26"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N161" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="266" yPos="26"/>
+        </Graphics>
+      </Node>
+      <Node id="N323" name="Wait" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="N323" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+            <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="266" yPos="106"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+    <SuperNode id="S95" name="Await Next;`That´-Word;In Speech" comment="" hideLocalVar="false" hideGlobalVar="false" start="N320;">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <IEdge target="N318" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="346" yPos="226" ctrlXPos="526" ctrlYPos="226"/>
+            <ControlPoint xPos="746" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
+          </Connection>
+        </Graphics>
+        <PrologQuery>
+        <Add>
+          <Add>
+            <String><![CDATA[data(That, that), nextto(That, ]]></String>
+            <Variable name="Put"/>
+          </Add>
+          <String><![CDATA[), set(Last,That).]]></String>
+        </Add>
+        </PrologQuery>
+      </IEdge>
+      <Graphics>
+        <Position xPos="266" yPos="186"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N162" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="266" yPos="26"/>
+        </Graphics>
+      </Node>
+      <Node id="N320" name="Wait" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="N320" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+            <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="266" yPos="106"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+    <SuperNode id="S96" name="Await Next;`Put´-Word;In Speech" comment="" hideLocalVar="false" hideGlobalVar="false" start="N322;">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <IEdge target="S95" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="306" yPos="106" ctrlXPos="306" ctrlYPos="126"/>
+            <ControlPoint xPos="306" yPos="186" ctrlXPos="306" ctrlYPos="166"/>
+          </Connection>
+        </Graphics>
+        <PrologQuery>
+        <String><![CDATA[oldest(E, (mode(E,speech), data(E, put)), Put).]]></String>
+        </PrologQuery>
+      </IEdge>
+      <Graphics>
+        <Position xPos="266" yPos="26"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N160" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="266" yPos="26"/>
+        </Graphics>
+      </Node>
+      <Node id="N322" name="Wait" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="N322" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+            <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="266" yPos="106"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+    <SuperNode id="S99" name="Await Next;`There´-Word;In Speech" comment="" hideLocalVar="false" hideGlobalVar="false" start="N324;">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <IEdge target="N319" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="746" yPos="386" ctrlXPos="566" ctrlYPos="386"/>
+            <ControlPoint xPos="346" yPos="386" ctrlXPos="526" ctrlYPos="386"/>
+          </Connection>
+        </Graphics>
+        <PrologQuery>
+        <Add>
+          <Add>
+            <String><![CDATA[data(There, there), nextto(There, ]]></String>
+            <Variable name="That"/>
+          </Add>
+          <String><![CDATA[), set(Last, There).]]></String>
+        </Add>
+        </PrologQuery>
+      </IEdge>
+      <Graphics>
+        <Position xPos="746" yPos="346"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N300" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="266" yPos="26"/>
+        </Graphics>
+      </Node>
+      <Node id="N324" name="Wait" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <EEdge target="N324" start ="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="316" yPos="107" ctrlXPos="336" ctrlYPos="29"/>
+            <ControlPoint xPos="341" yPos="126" ctrlXPos="411" ctrlYPos="86"/>
+          </Connection>
+        </Graphics>
+        </EEdge>
+        <Graphics>
+          <Position xPos="266" yPos="106"/>
         </Graphics>
       </Node>
     </SuperNode>

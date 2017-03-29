@@ -98,14 +98,12 @@ framed(E, A, B) :-
 newest_of_list(R, [R]):- !.
 newest_of_list(R, [H|T]) :-
   newest_of_list(L, T),
-    ( after(L, H), !, R = L
-    ; after(H, L), !, R = H ).
+  ( after(L, H), !, R = L ; after(H, L), !, R = H ).
 
 oldest_of_list(R, [R]):- !.
 oldest_of_list(R, [H|T]) :-
   oldest_of_list(L, T),
-    ( before(L, H), !, R = L
-    ; before(H, L), !, R = H ).
+  ( before(L, H), !, R = L ; before(H, L), !, R = H ).
 
 oldest(T, C, N) :-
   bagof(T, C, L), oldest_of_list(N, L).

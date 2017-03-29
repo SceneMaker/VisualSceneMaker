@@ -30,7 +30,9 @@
 :- module(tests,
     [
       fact_base/0,
-      reset/0
+      tests/0,
+      data/2,
+      mode/2
     ]).
 
 :- reexport('facts').
@@ -43,7 +45,7 @@
 /*----------------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------------*/
- 
+
 
 
 
@@ -112,20 +114,13 @@ add([type:event,name:agent,mode:speech, id:3,
 
 
 
+data(E, D) :- fsr(E), val(data, D, E).
+mode(E, M) :- fsr(E), val(mode, M, E).
 
-
-test :-
-add([mode:1, time:1000,dist:100,life:100]),
-add([mode:2, time:2000,dist:100,life:100]),
-add([mode:1, time:3000,dist:100,life:100]),
-add([mode:1, time:4000,dist:100,life:100]),
-add([mode:2, time:5000,dist:100,life:100]),
-add([mode:3, time:6000,dist:100,life:100]),
-add([mode:1, time:7000,dist:100,life:100]),
-add([mode:2, time:8000,dist:100,life:100]),
-add([mode:1, time:9000,dist:100,life:100]),
-followers([mode:1, time:3000,dist:100,life:100], L1), out(L1),
-ancestors([mode:2, time:8000,dist:100,life:100], L2), out(L2),
-interims([mode:2, time:8000,dist:100,life:100], [mode:2, time:2000,dist:100,life:100], L3), out(L3).
-
+tests :-
+add([type:event, mode:speech, data:put, time:965,dist:0,life:2047]),
+add([type:event, mode:speech, data:that, time:2230,dist:0,life:1892]),
+add([type:event, mode:speech, data:there, time:4923,dist:0,life:2317]),
+add([type:event, mode:gesture, data:object, time:3511,dist:0,life:100]),
+add([type:event, mode:gesture, data:target, time:6209,dist:0,life:100]).
 

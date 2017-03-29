@@ -1,5 +1,5 @@
 ﻿:- module('quant',
-   [ collect/3, arrange/3, template/4, forevery/4, forsome/4, fornone/4,
+   [ collect/3, arrange/3, template/4, forevery/3, forevery/4, forsome/4, fornone/4,
      formost/3, formost/4, forfraction/3, forfraction/4, forfraction/5,
      forlessthan/4, formorethan/4, forlargest/2, forlargest/3, forlargest/4 ]).
 :- reexport('terms').
@@ -23,6 +23,11 @@ template(Generator, Condition, Functor, Template) :-
     Template =.. [Functor|SharedVars].
 
 /* For Every Quantifier */
+forevery(Template, Generator, Condition) :-
+    collect(Template, Generator, Range),
+    collect(Template, (Generator, Condition), Scope),
+    length(Range, R), length(Scope, S), R is S.
+
 forevery(Variables, Template, Generator, Condition) :-
     collect(Template, Variables^Generator, Range),
     collect(Template, Variables^(Generator, Condition), Scope),
@@ -94,8 +99,7 @@ forlargest(Template, Generator, Condition, Scope) :-
 max_size_list([List], List).
 max_size_list([Head|Tail], List) :-
       max_size_list(Tail, Some),
-      length(Some, SomeL),
-      length(Head, HeadL),
+      length(Some, SomeL), length(Head, HeadL),
       ((SomeL  >  HeadL, List = Some);
        (SomeL  <  HeadL, List = Head);
        (SomeL == HeadL, Some \== Head,
