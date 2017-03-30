@@ -1,7 +1,7 @@
 ﻿:- module('logic',
    [ signal/2, signal/3, detect/2, detect/3, update/3, disambiguate/2,
      state/2, voice/2, gaze/2, touch/4, speech/3, move/1, face/1, head/1,
-     reset/0, clean/0, clean/2, now/1, timeout/2, stop/1, init/2, data/2, mode/2, set/2 ]).
+     reset/0, clean/0, clean/2, now/1, timeout/2, stop/1, init/2, data/2, mode/2, set/2, notdata/2 ]).
 :- reexport('facts').
 :- reexport('print').
 :- reexport('terms').
@@ -11,6 +11,7 @@
 :- reexport('clean').
 
 
+notdata(E, N) :- fsr(E), val(data, D, E), D \== N.
 data(E, D) :- fsr(E), val(data, D, E).
 mode(E, M) :- fsr(E), val(mode, M, E).
 
