@@ -94,8 +94,10 @@ public final class SSILoggerExecutor extends ActivityExecutor {
                             (event == null ? "default" : event),
                             (state == null ? "completed" : state),
                             (time == null ? "0" : systime),
-                            (duration == null ? "1" : duration),
+                            (duration == null ? "0" : duration),
                             (content == null ? " " : content));
+            // TODO: duration is zero when continued
+            // send duration when completed event
             //
             mProject.setVariable(mVar, message.toString());
             // Send the event message

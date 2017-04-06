@@ -1,22 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 28 Mär 2017 12:11:53" start="N1;N11;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 6 Apr 2017 15:41:29" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
-    <VariableDefinition type="Bool" name ="BoolVariable">
+    <VariableDefinition type="Bool" name ="EventRecordLoaded">
       <BoolLiteral value="false"/>
     </VariableDefinition>
-    <VariableDefinition type="Int" name ="IntVariable">
-      <IntLiteral value="12345"/>
+    <VariableDefinition type="Int" name ="NumberOfHeadNodsInTopicOne">
+      <IntLiteral value="0"/>
     </VariableDefinition>
-    <VariableDefinition type="Float" name ="FloatVariable">
-      <FloatLiteral value="12.87"/>
+    <VariableDefinition type="Int" name ="DurationOfHeadNodsInTopicOne">
+      <IntLiteral value="0"/>
     </VariableDefinition>
-    <VariableDefinition type="String" name ="StringVariable">
-      <StringLiteral><![CDATA[Hello World!]]></StringLiteral>
+    <VariableDefinition type="Int" name ="NumberOfHeadShakesInTopicOne">
+      <IntLiteral value="0"/>
     </VariableDefinition>
-    <VariableDefinition type="Bool" name ="WrongVariable">
-      <StringLiteral><![CDATA[A String]]></StringLiteral>
+    <VariableDefinition type="Int" name ="DurationOfHeadShakesInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfVoiceInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfVoiceInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfHeadNodsInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfHeadNodsInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfHeadShakesInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfHeadShakesInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfVoiceInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfVoiceInTopicTwo">
+      <IntLiteral value="0"/>
     </VariableDefinition>
   </Declare>
   <Commands>
@@ -27,75 +51,178 @@
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
-  <Node id="N9" name="Action;Activity" history="false">
+  <Node id="N1" name="Load" history="false">
     <Define>
     </Define>
     <Declare>
     </Declare>
     <Commands>
-      <PlayAction mode="Sequential">
-        <StringLiteral><![CDATA[actor: name key=value]]></StringLiteral>
-      </PlayAction>
+      <Assignment>
+        <SimpleVariable name="EventRecordLoaded"/>
+        <Expression>
+          <CallingExpression name="load">
+            <StringLiteral><![CDATA[./debriefing.events]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
     </Commands>
-    <Graphics>
-      <Position xPos="93" yPos="163"/>
-    </Graphics>
-  </Node>
-  <Node id="N10" name="Utterance;Activity" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-      <PlayAction mode="Sequential">
-        <StringLiteral><![CDATA[actor: \" Hi how are you today?\"]]></StringLiteral>
-      </PlayAction>
-    </Commands>
-    <Graphics>
-      <Position xPos="93" yPos="303"/>
-    </Graphics>
-  </Node>
-  <Node id="N11" name="N11" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <EEdge target="N11" start ="">
+    <EEdge target="N2" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="697" yPos="164" ctrlXPos="715" ctrlYPos="96"/>
-        <ControlPoint xPos="718" yPos="180" ctrlXPos="778" ctrlYPos="144"/>
+        <ControlPoint xPos="373" yPos="268" ctrlXPos="425" ctrlYPos="268"/>
+        <ControlPoint xPos="653" yPos="268" ctrlXPos="600" ctrlYPos="268"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="653" yPos="163"/>
+      <Position xPos="303" yPos="233"/>
     </Graphics>
   </Node>
-  <Node id="N1" name="N1" history="false">
+  <Node id="N2" name="Get Data" history="false">
     <Define>
     </Define>
     <Declare>
     </Declare>
     <Commands>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadNodsInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getNumberOf">
+            <StringLiteral><![CDATA[1]]></StringLiteral>
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadNodsInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOf">
+            <StringLiteral><![CDATA[1]]></StringLiteral>
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadShakesInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getNumberOf">
+            <StringLiteral><![CDATA[1]]></StringLiteral>
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadShakesInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOf">
+            <StringLiteral><![CDATA[1]]></StringLiteral>
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadNodsInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getNumberOf">
+            <StringLiteral><![CDATA[2]]></StringLiteral>
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadNodsInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOf">
+            <StringLiteral><![CDATA[2]]></StringLiteral>
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadShakesInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getNumberOf">
+            <StringLiteral><![CDATA[2]]></StringLiteral>
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadShakesInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOf">
+            <StringLiteral><![CDATA[2]]></StringLiteral>
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfVoiceInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getNumberOf">
+            <StringLiteral><![CDATA[1]]></StringLiteral>
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfVoiceInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOf">
+            <StringLiteral><![CDATA[1]]></StringLiteral>
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfVoiceInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getNumberOf">
+            <StringLiteral><![CDATA[2]]></StringLiteral>
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfVoiceInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOf">
+            <StringLiteral><![CDATA[2]]></StringLiteral>
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
     </Commands>
-    <EEdge target="N1" start ="">
+    <TEdge target="N1" start="" timeout="100000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="837" yPos="164" ctrlXPos="855" ctrlYPos="96"/>
-        <ControlPoint xPos="858" yPos="180" ctrlXPos="918" ctrlYPos="144"/>
+        <ControlPoint xPos="654" yPos="277" ctrlXPos="603" ctrlYPos="290"/>
+        <ControlPoint xPos="372" yPos="277" ctrlXPos="423" ctrlYPos="290"/>
       </Connection>
     </Graphics>
-    </EEdge>
+    </TEdge>
     <Graphics>
-      <Position xPos="793" yPos="163"/>
+      <Position xPos="653" yPos="233"/>
     </Graphics>
   </Node>
   <UserCommands>
-    <UserCommand name="printString" classname ="java.lang.System.out" method="println">
+    <UserCommand name="init" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerTimer" method="init">
+    </UserCommand>
+    <UserCommand name="print" classname ="java.lang.System.out" method="println">
+      <ArgumentDefinition name="text" type="java.lang.String"/>
+    </UserCommand>
+    <UserCommand name="load" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="load">
       <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+    </UserCommand>
+    <UserCommand name="getDurationOf" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="getDurationOf">
+      <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg1" type="java.lang.String"/>
+    </UserCommand>
+    <UserCommand name="time" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerTimer" method="time">
+    </UserCommand>
+    <UserCommand name="getNumberOf" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="getNumberOf">
+      <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg1" type="java.lang.String"/>
     </UserCommand>
   </UserCommands>
   <ClassPath>

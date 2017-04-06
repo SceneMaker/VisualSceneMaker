@@ -6,7 +6,7 @@ import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.TreeSet;
 import org.w3c.dom.Element;
 
 /**
@@ -31,11 +31,11 @@ public final class SSIEventArray extends SSIEventObject {
     public SSIEventArray(final String version) {
         mVersion = version;
     }
-
+    
     public final int size() {
         return mList.size();
     }
-
+    
     public final void clear() {
         mList.clear();
     }
@@ -50,11 +50,21 @@ public final class SSIEventArray extends SSIEventObject {
         return mList;
     }
 
+    // Get ordered event sequence
+    public final TreeSet<SSIEventEntry> getTreeSet() {
+        final TreeSet<SSIEventEntry> set = new TreeSet();
+        for (final SSIEventEntry entry : mList) {
+            set.add(entry);
+        }
+        mLogger.warning("Tree set size is '" + set.size() + "' while list size is '" + mList.size() + "'");
+        return set;
+    }
+
     // Get event object sequence
     public final boolean add(final SSIEventEntry entry) {
         return mList.add(entry);
     }
-
+    
     public static SSIEventArray merge(
             final SSIEventArray first,
             final SSIEventArray second) {
