@@ -1,0 +1,416 @@
+<?xml version="1.0" ?>
+<events ssi-v="2">
+    <event sender="context" event="topic" from="29199" dur="1" prob="1.000000" type="STRING" state="CONTINUED" glue="0">1</event>
+    <event sender="attitude" event="engagement" from="30096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="30096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="31095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="31095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="question" from="31203" dur="1" prob="1.000000" type="STRING" state="CONTINUED" glue="0">1</event>
+    <event sender="attitude" event="engagement" from="32094" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="32094" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="33095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="33095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="34095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="34095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="35094" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="35094" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="36095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="36095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="question" from="36200" dur="1" prob="1.000000" type="STRING" state="COMPLETED" glue="0">1</event>
+    <event sender="audio" event="vad" from="36150" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="3" />
+    <event sender="audio" event="vad" from="36150" dur="510" prob="1.000000" type="EMPTY" state="COMPLETED" glue="3" />
+    <event sender="attitude" event="engagement" from="37095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="37095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="38095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="38095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="answer" from="38201" dur="1" prob="1.000000" type="STRING" state="CONTINUED" glue="0">1</event>
+    <event sender="audio" event="vad" from="38850" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="4" />
+    <event sender="gesture" event="shake" from="38000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="5" />
+    <event sender="gesture" event="armscrossed" from="38000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="6" />
+    <event sender="attitude" event="engagement" from="39095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="39095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="audio" event="vad" from="38850" dur="360" prob="1.000000" type="EMPTY" state="COMPLETED" glue="4" />
+    <event sender="speech" event="act" from="38790" dur="720" prob="0.880455" type="STRING" state="COMPLETED" glue="0">affirmation</event>
+    <event sender="attitude" event="engagement" from="40095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="40096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="shake" from="38000" dur="2000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="5" />
+    <event sender="gesture" event="armscrossed" from="38000" dur="2000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="6" />
+    <event sender="attitude" event="engagement" from="41095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="41095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="42095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="42095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="nod" from="42000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="7" />
+    <event sender="attitude" event="engagement" from="43095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="43095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="answer" from="43395" dur="1" prob="1.000000" type="STRING" state="COMPLETED" glue="0">1</event>
+    <event sender="gesture" event="headtouch" from="41000" dur="2000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="2" />
+    <event sender="attitude" event="engagement" from="44095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="44095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="45095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="45095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="topic" from="45199" dur="1" prob="1.000000" type="STRING" state="COMPLETED" glue="0">1</event>
+    <event sender="gesture" event="nod" from="42000" dur="3000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="7" />
+    <event sender="attitude" event="engagement" from="46095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="46095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="1.000000" />
+        <tuple string="Withdrawal" value="0.000000" />
+        <tuple string="Avoidance" value="0.000000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="shake" from="46000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="8" />
+    <event sender="attitude" event="engagement" from="47095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="47095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="1.000000" />
+        <tuple string="Withdrawal" value="0.000000" />
+        <tuple string="Avoidance" value="0.000000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="48095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="48095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="1.000000" />
+        <tuple string="Withdrawal" value="0.000000" />
+        <tuple string="Avoidance" value="0.000000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="49095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="49095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="1.000000" />
+        <tuple string="Withdrawal" value="0.000000" />
+        <tuple string="Avoidance" value="0.000000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="shake" from="46000" dur="3000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="8" />
+    <event sender="gesture" event="nod" from="49000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="9" />
+    <event sender="attitude" event="engagement" from="50095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="50095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="1.000000" />
+        <tuple string="Withdrawal" value="0.000000" />
+        <tuple string="Avoidance" value="0.000000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="topic" from="50396" dur="1" prob="1.000000" type="STRING" state="CONTINUED" glue="0">2</event>
+    <event sender="gesture" event="nod" from="49000" dur="1000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="9" />
+    <event sender="attitude" event="engagement" from="51095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="51096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="nod" from="51000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="10" />
+    <event sender="attitude" event="engagement" from="52095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="52095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="question" from="52203" dur="1" prob="1.000000" type="STRING" state="CONTINUED" glue="0">2</event>
+    <event sender="attitude" event="engagement" from="53095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="53095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="nod" from="51000" dur="2000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="10" />
+    <event sender="attitude" event="engagement" from="54096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="54096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="nod" from="54000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="11" />
+    <event sender="attitude" event="engagement" from="55095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="55095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="nod" from="54000" dur="1000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="11" />
+    <event sender="attitude" event="engagement" from="56095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="56095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="nod" from="56000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="12" />
+    <event sender="attitude" event="engagement" from="57095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="57095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="question" from="57294" dur="1" prob="1.000000" type="STRING" state="COMPLETED" glue="0">2</event>
+    <event sender="attitude" event="engagement" from="58095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="58095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="nod" from="56000" dur="2000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="12" />
+    <event sender="attitude" event="engagement" from="59095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="59095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="answer" from="59298" dur="1" prob="1.000000" type="STRING" state="CONTINUED" glue="0">2</event>
+    <event sender="gesture" event="nod" from="59000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="13" />
+    <event sender="attitude" event="engagement" from="60095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="60095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="61096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="61096" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="gesture" event="shake" from="61000" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="14" />
+    <event sender="gesture" event="nod" from="59000" dur="2000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="13" />
+    <event sender="attitude" event="engagement" from="62095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="62095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="attitude" event="engagement" from="63095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="63095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="audio" event="vad" from="63840" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="15" />
+    <event sender="attitude" event="engagement" from="64095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="64095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="answer" from="64205" dur="1" prob="1.000000" type="STRING" state="COMPLETED" glue="0">2</event>
+    <event sender="audio" event="vad" from="63840" dur="630" prob="1.000000" type="EMPTY" state="COMPLETED" glue="15" />
+    <event sender="speech" event="act" from="63780" dur="490" prob="0.751798" type="STRING" state="COMPLETED" glue="0">affirmation</event>
+    <event sender="gesture" event="shake" from="61000" dur="3000" prob="1.000000" type="EMPTY" state="COMPLETED" glue="14" />
+    <event sender="attitude" event="engagement" from="65095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="65095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="audio" event="vad" from="65070" dur="0" prob="1.000000" type="EMPTY" state="CONTINUED" glue="16" />
+    <event sender="audio" event="vad" from="65070" dur="480" prob="1.000000" type="EMPTY" state="COMPLETED" glue="16" />
+    <event sender="attitude" event="engagement" from="66095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="Present" value="0.295050" />
+        <tuple string="Absent" value="0.704950" />
+    </event>
+    <event sender="emotion" event="regulation" from="66095" dur="0" prob="1.000000" type="MAP" state="COMPLETED" glue="0">
+        <tuple string="None" value="0.000000" />
+        <tuple string="Withdrawal" value="0.125000" />
+        <tuple string="Avoidance" value="0.875000" />
+        <tuple string="Attack_Other" value="0.000000" />
+    </event>
+    <event sender="context" event="topic" from="66295" dur="1" prob="1.000000" type="STRING" state="COMPLETED" glue="0">2</event>
+</events>

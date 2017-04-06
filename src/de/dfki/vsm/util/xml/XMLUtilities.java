@@ -52,6 +52,7 @@ public final class XMLUtilities {
     // Parse a parseable object from a stream
     public final static boolean parseFromXMLStream(final XMLParseable parsable, final InputStream stream) {
         try {
+            sLogger.message("Parsing '" + parsable + "' from XML stream '" + stream + "'");
             // Construct the XML document parser
             final DocumentBuilder parser
                     = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -66,6 +67,7 @@ public final class XMLUtilities {
         } catch (final XMLParseError | IOException | ParserConfigurationException | SAXException exc) {
             // Print an error message in this case
             sLogger.failure(exc.toString());
+            exc.printStackTrace();
             // Return failure if the parsing failed
             return false;
         }
@@ -223,7 +225,7 @@ public final class XMLUtilities {
             return false;
         }
     }
-
+    
     public final static Document xmlStringToDocument(final String string) {
         try {
             final ByteArrayInputStream stream = new ByteArrayInputStream(
@@ -244,7 +246,7 @@ public final class XMLUtilities {
             return null;
         }
     }
-
+    
     public final static String xmlElementToString(final Element element) {
         try {
             final Transformer transformer

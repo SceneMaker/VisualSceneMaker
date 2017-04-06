@@ -43,7 +43,7 @@ public final class SSILoggerMessage {
             final String duration,
             final String content) {
         mName = name;
-                mSender = sender;
+        mSender = sender;
         mEvent = event;
         mState = state;
         mTime = time;
@@ -71,12 +71,11 @@ public final class SSILoggerMessage {
         mTime = time;
     }
 
-   
-
     public final void setDuration(final String duration) {
         mDuration = duration;
     }
-     public final void setContent(final String content) {
+
+    public final void setContent(final String content) {
         mContent = content;
     }
 

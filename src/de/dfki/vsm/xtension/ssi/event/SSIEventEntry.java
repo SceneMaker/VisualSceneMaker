@@ -3,21 +3,48 @@ package de.dfki.vsm.xtension.ssi.event;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
-import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Locale;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann
  */
-public final class SSIEventEntry extends SSIEventObject {
+public final class SSIEventEntry extends SSIEventObject implements Comparable<SSIEventEntry> {
+
+    @Override
+    public int compareTo(final SSIEventEntry other) {
+
+        // Compare from + dur if completed
+        if (this == other) {
+            return 0;
+        } else {
+            int one = Integer.parseInt(mFrom);
+            int two = Integer.parseInt(other.mFrom);
+            if (mState.equalsIgnoreCase("completed")) {
+                one = one + Integer.parseInt(mDur);
+            }
+            if (other.mState.equalsIgnoreCase("completed")) {
+                two = two + Integer.parseInt(other.mDur);
+            }
+            if (two > one) {
+                return -1;
+            } else if (two < one) {
+                return 1;
+            } else {
+                if (other.mState.equalsIgnoreCase("completed")
+                        && mState.equalsIgnoreCase("continued")) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+
+            }
+        }
+    }
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
@@ -121,14 +148,15 @@ public final class SSIEventEntry extends SSIEventObject {
             } else if (mType.equalsIgnoreCase("ntuple")
                     || mType.equalsIgnoreCase("map")) {
                 final SSITupleData data = new SSITupleData();
-                try {
-                    final byte[] xml = element.getTextContent().getBytes("UTF-8");
-                    final ByteArrayInputStream stream = new ByteArrayInputStream(xml);
-                    // Parse the data
-                    XMLUtilities.parseFromXMLStream(data, stream);
-                } catch (final DOMException | UnsupportedEncodingException exc) {
-                    mLogger.failure(exc.toString());
-                }
+                data.parseXML(element);
+//                try {
+//                    final byte[] xml = element.getTextContent().getBytes("UTF-8");
+//                    final ByteArrayInputStream stream = new ByteArrayInputStream(xml);
+//                    // Parse the data
+//                    XMLUtilities.parseFromXMLStream(data, stream);
+//                } catch (final DOMException | UnsupportedEncodingException exc) {
+//                    mLogger.failure(exc.toString());
+//                }
                 // Set the new data
                 mData = data;
             } else {

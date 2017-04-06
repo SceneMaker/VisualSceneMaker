@@ -631,6 +631,7 @@ public class Evaluator {
                 | InvocationTargetException exc) {
             // Print stack trace
             mLogger.warning(exc.toString());
+            exc.printStackTrace();
         }
 
         // We have an object
