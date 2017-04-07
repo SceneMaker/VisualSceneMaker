@@ -17,7 +17,7 @@ public final class SSILoggerScanner {
     private final static LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
     //
     private final static SSIEventArray sEventArray = new SSIEventArray();
-    
+
     public static boolean load(final String file) {
         //
         sLogger.message("Loading SSI event record file '" + file + "'");
@@ -33,19 +33,16 @@ public final class SSILoggerScanner {
         return false;
     }
 
-    public static int getNumberOf(final String topic, final String event) {
-        // Get all events during that topic
-        final NavigableSet<SSIEventEntry> set = getRange("topic", topic);
-        //
+    public static int getNumberOf(final String event, final String context, final int id) {
+        // Get all relevant the events 
+        final NavigableSet<SSIEventEntry> set = getContext(context, String.valueOf(id));
+        // Count the number of events
         int number = 0;
-        //
         if (set != null) {
-            sLogger.message("Inspecting topic set \n'" + set.toString() + "'");
             // Increment the number of head nod events
             for (final SSIEventEntry entry : set) {
                 if (entry.getEvent().equalsIgnoreCase(event)
                         && entry.getState().equalsIgnoreCase("continued")) {
-                    sLogger.success("Found \n'" + entry.toString() + "'");
                     number++;
                 }
             }
@@ -53,23 +50,25 @@ public final class SSILoggerScanner {
         return number;
     }
 
-    public static int getDurationOf(final String topic, final String event) {
-        // Get all events during that topic
-        final NavigableSet<SSIEventEntry> set = getRange("topic", topic);
-        //
+    public static int getDurationOf(final String event, final String context, final int id) {
+        // Get all relevant the events 
+        final NavigableSet<SSIEventEntry> set = getContext(context, String.valueOf(id));
+        // Count the number of events
         int duration = 0;
-        //
         if (set != null) {
-            // Accumulate the durations of head nod events
             for (final SSIEventEntry entry : set) {
                 if (entry.getEvent().equalsIgnoreCase(event)
                         && entry.getState().equalsIgnoreCase("completed")) {
-                    sLogger.success("Found \n'" + entry.toString() + "'");
                     duration += Integer.parseInt(entry.getDur());
                 }
             }
         }
         return duration;
+    }
+
+    public static int getDurationOf(final String context, final int id) {
+        final SSIEventEntry higher = getEvent(context, "completed", String.valueOf(id));
+        return Integer.parseInt(higher.getDur());
     }
 
     // Get a single event entry
@@ -90,13 +89,11 @@ public final class SSILoggerScanner {
     }
 
     // Get a range of event entries
-    private static NavigableSet<SSIEventEntry> getRange(
+    private static NavigableSet<SSIEventEntry> getContext(
             final String event,
-            final String topic) {
-        final SSIEventEntry lower = getEvent(event, "continued", topic);
-        final SSIEventEntry higher = getEvent(event, "completed", topic);
-        sLogger.message("Lower bound of range is '" + lower.toString() + "'");
-        sLogger.message("Higher bound of range is '" + higher.toString() + "'");
+            final String context) {
+        final SSIEventEntry lower = getEvent(event, "continued", context);
+        final SSIEventEntry higher = getEvent(event, "completed", context);
         if (lower != null && higher != null) {
             return sEventArray.getTreeSet().subSet(lower, true, higher, true);
         }
