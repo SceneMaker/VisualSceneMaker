@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="TestSuite">
   <Plugins>
-    <Plugin type="default" name="keyhook" class="de.dfki.vsm.xtension.keyhook.KeyRunTimePlugin" load="false">
+    <Plugin type="device" name="SSIMessageExecutor" class="de.dfki.vsm.xtension.ssi.SSIMessageExecutor" load="true">
+      <Feature key="loghost" val="127.0.0.1"/>
+      <Feature key="logport" val="8989"/>
+      <Feature key="logvar" val="LoggerMessage"/>
+      <Feature key="pipes" val="interview:127.0.0.1:1111,debriefing:127.0.0.1:2222"/>
     </Plugin>
   </Plugins>
   <Agents>
+    <Agent name="ssi" device="SSIMessageExecutor">
+    </Agent>
   </Agents>
   <Player>
   </Player>
