@@ -51,7 +51,8 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
             // Get The Attributes
             final String string = tuple.getAttribute("string").toLowerCase();
             final String value = String.format(Locale.US, "%.6f",
-                    Double.valueOf(tuple.getAttribute("value").toLowerCase()));
+                    Float.valueOf(tuple.getAttribute("value").toLowerCase()));
+            System.err.println(string +"->"+value);
             // Append The Tuple
             mTupleMap.put(string, value);
         }
