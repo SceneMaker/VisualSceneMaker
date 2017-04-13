@@ -37,6 +37,9 @@ public final class ReetiExecutor extends ActivityExecutor {
     // //language settings
     private String sLanguage = null;
     private String sVoice = null;
+    
+    // SSIUtility to handle message with SSI
+    private SSIUtility mSSIUtility;
 
     // Construct the executor
     public ReetiExecutor(
@@ -59,11 +62,25 @@ public final class ReetiExecutor extends ActivityExecutor {
         final String rhost = mConfig.getProperty("rhost");
         final int lport = Integer.parseInt(mConfig.getProperty("lport"));
         final int rport = Integer.parseInt(mConfig.getProperty("rport"));
-        
+      
         // Start the connection handler
         mHandler = new ReetiHandler(
                 this, lhost, lport, rhost, rport);
         mHandler.start();
+        
+        launchSSI();
+    }
+    
+    private void launchSSI(){
+        final boolean mUseSSI;
+        if(mConfig.getProperty("useSSI") != null){
+            mUseSSI = Boolean.parseBoolean(mConfig.getProperty("useSSI"));           
+        }else{
+            mUseSSI = false;
+        }
+        
+        mSSIUtility = new SSIUtility(mConfig, mProject, mUseSSI);
+        mSSIUtility.launch();
     }
 
     // Unload the executor 
@@ -77,6 +94,7 @@ public final class ReetiExecutor extends ActivityExecutor {
         } catch (final InterruptedException exc) {
             mLogger.failure(exc.toString());
         }
+        mSSIUtility.unload();
     }
 
     @Override
