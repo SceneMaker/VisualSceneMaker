@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="34" language="en" identifier="Hello">
+    <SceneTurn lower="15" upper="34" speaker="reeti">
+      <SceneUttr lower="22" upper="34" punct=".">
+        <SceneWord lower="22" upper="27" text="Hallo"/>
+        <SceneWord lower="28" upper="33" text="World"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
