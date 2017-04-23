@@ -25,7 +25,9 @@ public abstract class ActivityExecutor extends RunTimePlugin {
         // Initialize runtime player
         mPlayer = mProject.getRunTimePlayer();
         // Initialize activity scheduler
-        mScheduler = mPlayer.getActivityScheduler();
+        if(mPlayer != null)
+            mScheduler = mPlayer.getActivityScheduler();
+        else mScheduler = new ActivityScheduler();
 
     }
 

@@ -18,6 +18,9 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.extensions.ExportableProperties;
+import de.dfki.vsm.util.extensions.ProjectProperty;
+import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.stickman.StickmanRepository;
 
@@ -25,13 +28,15 @@ import java.io.ByteArrayOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+
+import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
 import javafx.scene.paint.Color;
 
 /**
  *
  * @author Patrick Gebhard
  */
-public class StickmanExecutor extends ActivityExecutor {
+public class StickmanExecutor extends ActivityExecutor implements ExportableProperties {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -45,6 +50,8 @@ public class StickmanExecutor extends ActivityExecutor {
     private StageRoom stickmanStageC;
     private StickmanRepository stickmanFactory;
     public static HashMap<String, Stickman3D> stickmanContainer = new HashMap<>();
+    private ExportableProperties exportableProperties = new StickmanTTSProjectProperty();
+
 
     // Construct the executor
     public StickmanExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -261,5 +268,15 @@ public class StickmanExecutor extends ActivityExecutor {
         for (final StickmanHandler client : mClientMap.values()) {
             client.send(message);
         }
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+        return exportableProperties.getExportableProperties();
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+        return exportableProperties.getExportableAgentProperties();
     }
 }

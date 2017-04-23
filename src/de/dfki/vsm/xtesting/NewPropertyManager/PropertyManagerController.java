@@ -2,27 +2,38 @@ package de.dfki.vsm.xtesting.NewPropertyManager;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.extensions.ExportableProperties;
+import de.dfki.vsm.util.extensions.ProjectProperty;
+import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
+import de.dfki.vsm.util.extensions.value.ValueRenderable;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.*;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.AgentTableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.PluginTableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.TableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.*;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +61,9 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML private Pane addDevice;
     @FXML private AnchorPane editDevice;
     @FXML private VBox InfoVBox;
+    @FXML private ChoiceBox propertiesChooser;
+    @FXML private HBox advanceBar;
+    @FXML private Button btnAddAdvanced;
     private  ArrayList <String> activityClassesShortNames;
     private  ArrayList <String> activityClassesLongNames;
     private TreeItem<AbstractTreeEntry> devices;
@@ -57,6 +71,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private EntryDevice entryDevice;
     private ObservableList<TableConfig> data = FXCollections.observableArrayList();
     private ProjectConfigWrapper projectConfigWrapper;
+    private HashMap<ProjectProperty, ProjectValueProperty> exportableProperties;
 
 
     public PropertyManagerController(RunTimeProject project){
@@ -95,6 +110,43 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 return treeCell;
             }
         });
+
+        btnAddAdvanced.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                ProjectProperty property = (ProjectProperty) propertiesChooser.getSelectionModel().getSelectedItem();
+                if(!hasProperty(property)){
+                    return;
+                }
+                ProjectValueProperty value = exportableProperties.get(property);
+                addNewItemToTable(property.getName(), value.getValue());
+            }
+        });
+
+        propertiesChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                ProjectProperty property = (ProjectProperty) newValue;
+                if(!hasProperty(property)){
+                    return;
+                }
+
+                ProjectValueProperty value = exportableProperties.get(property);
+                value.render();
+                ValueRenderable renderer = value.getRenderer();
+                Node control = renderer.getRenderer();
+                if(advanceBar.getChildren().size() == 3){
+                    advanceBar.getChildren().remove(1);
+                }
+                advanceBar.getChildren().add(1, control);
+                advanceBar.setSpacing(10);
+
+            }
+        });
+    }
+
+    private boolean hasProperty(ProjectProperty property) {
+        return exportableProperties != null && exportableProperties.containsKey(property);
     }
 
     private void setColumnsSameWidth(){
@@ -154,7 +206,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML
     public void addNewItemToTableEvent(ActionEvent event){
         if(!txtKey.getText().equals("") && !txtValue.getText().equals("")) {
-            addNewItemToTable();
+            addNewItemToTable(txtKey.getText(), txtValue.getText());
         }
     }
 
@@ -201,35 +253,35 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         devices.getChildren().add(pluginNode);
     }
 
-    private void addNewItemToTable(){
+    private void addNewItemToTable(String key, String value){
         try {
-            addTableConfigItem();
+            addTableConfigItem(key, value);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private  void addTableConfigItem() throws Exception {
+    private  void addTableConfigItem(String key, String value) throws Exception {
         AbstractTreeEntry selectedItem = getSelectedTreeItem(false);
         if(selectedItem instanceof EntryAgent){
             EntryAgent agent = (EntryAgent) selectedItem;
-            addNewAgentToObservableTableAndSave(agent);
+            addNewAgentToObservableTableAndSave(agent, key, value);
         }
         if(selectedItem instanceof EntryPlugin){
             EntryPlugin plugin = (EntryPlugin) selectedItem;
-            addNewDeviceToObservableTableAndSave(plugin);
+            addNewDeviceToObservableTableAndSave(plugin, key, value);
         }
     }
 
-    private void addNewAgentToObservableTableAndSave(EntryAgent agent){
-        AgentTableConfig dC = new AgentTableConfig(txtKey.getText(), txtValue.getText(), agent.getAgentConfig());
+    private void addNewAgentToObservableTableAndSave(EntryAgent agent, String key, String value){
+        AgentTableConfig dC = new AgentTableConfig(key, value, agent.getAgentConfig());
         data.add(dC);
         dC.saveEntry();
         saveConfig();
     }
 
-    private void addNewDeviceToObservableTableAndSave(EntryPlugin plugin){
-        PluginTableConfig dC = new PluginTableConfig(txtKey.getText(), txtValue.getText(), plugin.getPluginConfig());
+    private void addNewDeviceToObservableTableAndSave(EntryPlugin plugin, String key, String value){
+        PluginTableConfig dC = new PluginTableConfig(key, value, plugin.getPluginConfig());
         data.add(dC);
         dC.saveEntry();
         saveConfig();
@@ -281,6 +333,22 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             showPluginDatainTable(entryPlugin);
             setLoadPluginCheckbox(entryPlugin.getPluginConfig());
             hideAddDevice();
+
+
+
+            String className = entryPlugin.getPluginConfig().getClassName();
+            Class clazz  = Class.forName(className);
+            Constructor constructor = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
+            RunTimePlugin runTimePlugin = (RunTimePlugin) constructor.newInstance(entryPlugin.getPluginConfig(), mProject);
+            exportableProperties = ((ExportableProperties)runTimePlugin).getExportableProperties();
+            ArrayList<ProjectProperty> propertyNames = new ArrayList<>(exportableProperties.keySet());
+            ObservableList obList = FXCollections.observableList(propertyNames);
+            propertiesChooser.getItems().clear();
+            propertiesChooser.setItems(obList);
+
+
+
+
         }
         if(itemEntry instanceof EntryAgent){
             EntryAgent entryAgent= (EntryAgent) itemEntry;
