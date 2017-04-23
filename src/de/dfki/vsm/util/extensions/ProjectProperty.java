@@ -36,6 +36,9 @@ public class ProjectProperty {
     }
 
     public String toString(){
-        return this.getName();
+        String requireText = "";
+        if(required)
+            requireText = " (required)";
+        return this.getName() + requireText;
     }
 }
