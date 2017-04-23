@@ -46,12 +46,19 @@ public class StickmanTTSProjectProperty implements ExportableProperties {
         ProjectValueProperty stickTTsVP = new ProjectValueProperty(ValueTYPE.LIST,
                 "marytts", new SelectableRenderer(), false,
                 new ArrayList<>(Arrays.asList("marytts", "cereproc")));
+
+        ProjectProperty character = new ProjectProperty("stickman");
+        ProjectValueProperty characterVP = new ProjectValueProperty(ValueTYPE.LIST,
+                "Stickman2D", new SelectableRenderer(), false,
+                new ArrayList<>(Arrays.asList("StickmanLegacy", "Stickman2D", "Pinocchio", "Reeti")));
+
         exportableProperties.put(smhost, smhostVP);
         exportableProperties.put(smport, smportVP);
         exportableProperties.put(showstickmanname, showStickmanNameVP);
         exportableProperties.put(maryBase, maryBaseVP);
         exportableProperties.put(fullscreen, fullscreeVP);
         exportableProperties.put(sticktts, stickTTsVP);
+        exportableProperties.put(character, characterVP);
 
     }
 
