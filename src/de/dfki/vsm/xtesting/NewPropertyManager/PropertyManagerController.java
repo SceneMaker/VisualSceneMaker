@@ -63,6 +63,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML private VBox InfoVBox;
     @FXML private ChoiceBox propertiesChooser;
     @FXML private HBox advanceBar;
+    @FXML private HBox basicBar;
     @FXML private Button btnAddAdvanced;   
     @FXML private Button advancedButton;
     @FXML private Label descriptionLabel;
@@ -75,6 +76,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private ObservableList<TableConfig> data = FXCollections.observableArrayList();
     private ProjectConfigWrapper projectConfigWrapper;
     private HashMap<ProjectProperty, ProjectValueProperty> exportableProperties;
+    private Boolean advancedBottonMark =  false;
 
 
     public PropertyManagerController(RunTimeProject project){
@@ -105,12 +107,32 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         setColumnsSameWidth();
         final PropertyManagerController controller = this;
         fillComboWithActivityExecutors();
+        advanceBar.setVisible(false);
+        
         treeView.setCellFactory(new Callback<TreeView<AbstractTreeEntry>,TreeCell<AbstractTreeEntry>>(){
             @Override
             public TreeCell<AbstractTreeEntry> call(TreeView<AbstractTreeEntry> param) {
                 TreeCellImpl treeCell = new TreeCellImpl();
                 treeCell.registerObserver(controller);
                 return treeCell;
+            }
+        });
+        
+        advancedButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                if(!advancedBottonMark){
+                    advancedBottonMark = true;
+                    advancedButton.setText("Basic");
+                    advanceBar.setVisible(true);
+                    basicBar.setVisible(false);
+                    
+                }else{
+                    advancedBottonMark = false;
+                    advancedButton.setText("Advanced");
+                    advanceBar.setVisible(false);
+                    basicBar.setVisible(true);
+                }
             }
         });
 
@@ -138,11 +160,11 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 value.render();
                 ValueRenderable renderer = value.getRenderer();
                 Node control = renderer.getRenderer();
-                if(advanceBar.getChildren().size() == 3){
-                    advanceBar.getChildren().remove(1);
+                if(basicBar.getChildren().size() == 3){
+                    basicBar.getChildren().remove(1);
                 }
-                advanceBar.getChildren().add(1, control);
-                advanceBar.setSpacing(10);
+                basicBar.getChildren().add(1, control);
+                basicBar.setSpacing(10);
 
             }
         });
