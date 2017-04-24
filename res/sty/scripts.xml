@@ -15,6 +15,8 @@
     <TokenStyle name="COLONMARK" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
     <TokenStyle name="ACTIONHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
     <TokenStyle name="ACTIONFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="SPEECHTAGHEAD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
+    <TokenStyle name="SPEECHTAGFOOT" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
     <!-- -->
     <TokenStyle name="SIMPLEWORD" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
     <TokenStyle name="ABBREVIATION" fcol="#000000" bcol="#ffffff" bold="false" emph="false" undl="false"/>
