@@ -63,7 +63,10 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     @FXML private VBox InfoVBox;
     @FXML private ChoiceBox propertiesChooser;
     @FXML private HBox advanceBar;
-    @FXML private Button btnAddAdvanced;
+    @FXML private Button btnAddAdvanced;   
+    @FXML private Button advancedButton;
+    @FXML private Label descriptionLabel;
+    
     private  ArrayList <String> activityClassesShortNames;
     private  ArrayList <String> activityClassesLongNames;
     private TreeItem<AbstractTreeEntry> devices;
