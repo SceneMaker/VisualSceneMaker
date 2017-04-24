@@ -9,7 +9,11 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.extensions.ExportableProperties;
+import de.dfki.vsm.util.extensions.ProjectProperty;
+import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.xtension.reeti.util.property.ReetiProjectProperty;
 import de.hcm.robots.messaging.CommandMessage;
 import de.hcm.robots.messaging.StatusMessage;
 import java.util.HashMap;
@@ -18,7 +22,7 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public final class ReetiExecutor extends ActivityExecutor {
+public final class ReetiExecutor extends ActivityExecutor implements ExportableProperties {
 
     // The unique command id counter
     private volatile long mCmdId = 0;
@@ -40,6 +44,8 @@ public final class ReetiExecutor extends ActivityExecutor {
     
     // SSIUtility to handle message with SSI
     private SSIUtility mSSIUtility;
+
+    private ReetiProjectProperty reetiProjectProperty = new ReetiProjectProperty();
 
     // Construct the executor
     public ReetiExecutor(
@@ -237,5 +243,15 @@ public final class ReetiExecutor extends ActivityExecutor {
     
     public static int getCurrentPosition(){
         return iPosition;
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+        return reetiProjectProperty.getExportableProperties();
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+        return reetiProjectProperty.getExportableAgentProperties();
     }
 }
