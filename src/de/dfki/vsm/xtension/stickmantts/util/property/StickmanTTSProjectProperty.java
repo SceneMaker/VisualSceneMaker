@@ -52,6 +52,13 @@ public class StickmanTTSProjectProperty implements ExportableProperties {
                 "Stickman2D", new SelectableRenderer(), false,
                 new ArrayList<>(Arrays.asList("StickmanLegacy", "Stickman2D", "Pinocchio", "Reeti")));
 
+        ProjectProperty xStage = new ProjectProperty("xStage");
+        ProjectValueProperty xStageVP = new ProjectValueProperty(ValueTYPE.NUMERIC, 0, new IntegerRenderer());
+
+        ProjectProperty yStage = new ProjectProperty("yStage");
+        ProjectValueProperty yStageVP = new ProjectValueProperty(ValueTYPE.NUMERIC, 0, new IntegerRenderer());
+
+
         exportableProperties.put(smhost, smhostVP);
         exportableProperties.put(smport, smportVP);
         exportableProperties.put(showstickmanname, showStickmanNameVP);
@@ -59,6 +66,9 @@ public class StickmanTTSProjectProperty implements ExportableProperties {
         exportableProperties.put(fullscreen, fullscreeVP);
         exportableProperties.put(sticktts, stickTTsVP);
         exportableProperties.put(character, characterVP);
+        exportableProperties.put(xStage, xStageVP);
+        exportableProperties.put(yStage, yStageVP);
+
 
     }
 

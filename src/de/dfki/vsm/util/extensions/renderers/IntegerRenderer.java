@@ -14,17 +14,27 @@ public class IntegerRenderer extends ValueRender {
     @Override
     public void render() {
         value = new BigDecimal(0);
+        setDefaultValue();
+        control = new NumberSpinner(value, new BigDecimal(STEP));
+
+    }
+
+    private void setDefaultValue() {
         if(valueProperty.hasDefaultValue()){
             Integer defaultValue = (Integer) valueProperty.getDefaultValue();
             value = new BigDecimal(defaultValue);
         }
-        control = new NumberSpinner(value, new BigDecimal(STEP));
 
     }
 
     @Override
     public String getValue() {
+        value = getNumberSpinner().getNumber();
         return String.valueOf(value.intValue());
+    }
+
+    private NumberSpinner getNumberSpinner() {
+        return (NumberSpinner)control;
     }
 
 

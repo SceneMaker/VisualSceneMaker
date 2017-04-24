@@ -13,12 +13,16 @@ public class StringRender extends ValueRender {
     @Override
     public void render() {
         value = "";
-        if(valueProperty.hasDefaultValue()){
-            value = (String) valueProperty.getDefaultValue();
-        }
+        setDefaultValue();
         control = new TextField(value);
         setStyle();
 
+    }
+
+    private void setDefaultValue() {
+        if(valueProperty.hasDefaultValue()){
+            value = (String) valueProperty.getDefaultValue();
+        }
     }
 
     @Override

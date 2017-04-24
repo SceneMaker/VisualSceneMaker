@@ -13,12 +13,16 @@ public class BooleanRenderer extends ValueRender {
     @Override
     public void render() {
         value = false;
-        if(valueProperty.hasDefaultValue()){
-            value = (Boolean) valueProperty.getDefaultValue();
-        }
+        setDefault();
         control = new CheckBox();
         getCheckbox().setSelected(value);
         setStyle();
+    }
+
+    private void setDefault() {
+        if(valueProperty.hasDefaultValue()){
+            value = (Boolean) valueProperty.getDefaultValue();
+        }
     }
 
     private CheckBox getCheckbox() {

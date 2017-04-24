@@ -20,14 +20,17 @@ public class SelectableRenderer extends ValueRender {
     public void render() {
         found = false;
         values = valueProperty.getOptions();
-        ObservableList<String> options =
-                FXCollections.observableArrayList(values);
+        ObservableList<String> options = FXCollections.observableArrayList(values);
         findDefaultValue();
         control = new ComboBox(options);
+        selectItem();
+        found = false;
+    }
+
+    private void selectItem() {
         if(found){
             getComboBox().getSelectionModel().select(index);
         }
-        found = false;
     }
 
     private ComboBox getComboBox() {
