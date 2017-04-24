@@ -3,9 +3,15 @@
   <Plugins>
     <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
       <Feature key="smhost" val="127.0.0.1"/>
-      <Feature key="smport" val="8000"/>
-      <Feature key="showstickmanname" val="false"/>
-      <Feature key="stickman" val="StickmanFX"/>
+      <Feature key="smport" val="8009"/>
+      <Feature key="showstickmanname" val="true"/>
+      <Feature key="stickman" val="Pinocchio"/>
+      <Feature key="test" val="test"/>
+      <Feature key="mary.base" val="/home/alvaro/Documents/WorkHiwi/VSM_Master/VisualSceneMaker/doc"/>
+      <Feature key="tts" val="cereproc"/>
+      <Feature key="fullscreen" val="true"/>
+      <Feature key="yStage" val="3"/>
+      <Feature key="xStage" val="3"/>
     </Plugin>
   </Plugins>
   <Agents>

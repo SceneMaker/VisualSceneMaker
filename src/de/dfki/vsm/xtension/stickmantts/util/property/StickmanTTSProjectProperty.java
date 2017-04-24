@@ -58,6 +58,23 @@ public class StickmanTTSProjectProperty implements ExportableProperties {
         ProjectProperty yStage = new ProjectProperty("yStage");
         ProjectValueProperty yStageVP = new ProjectValueProperty(ValueTYPE.NUMERIC, 0, new IntegerRenderer());
 
+        ProjectProperty cereprocLicense = new ProjectProperty("license");
+        ProjectValueProperty cereprocLicenseVP = new ProjectValueProperty(ValueTYPE.FILEPATH,
+                "",
+                new FilePathRenderer());
+
+        ProjectProperty audioDevice = new ProjectProperty("audio_device");
+        ProjectValueProperty audioDeviceVP = new ProjectValueProperty(ValueTYPE.FILEPATH,
+                "Default",
+                new StringRender());
+
+        ProjectProperty cereprocLibPath = new ProjectProperty("cereproc_library_path");
+        ProjectValueProperty cereprocLibPathVP = new ProjectValueProperty(ValueTYPE.FILEPATH,
+                "",
+                new FilePathRenderer());
+
+
+
 
         exportableProperties.put(smhost, smhostVP);
         exportableProperties.put(smport, smportVP);
@@ -68,6 +85,9 @@ public class StickmanTTSProjectProperty implements ExportableProperties {
         exportableProperties.put(character, characterVP);
         exportableProperties.put(xStage, xStageVP);
         exportableProperties.put(yStage, yStageVP);
+        exportableProperties.put(cereprocLicense, cereprocLicenseVP);
+        exportableProperties.put(audioDevice, audioDeviceVP);
+        exportableProperties.put(cereprocLibPath, cereprocLibPathVP);
 
 
     }
