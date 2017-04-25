@@ -160,11 +160,12 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 value.render();
                 ValueRenderable renderer = value.getRenderer();
                 Node control = renderer.getRenderer();
-                if(basicBar.getChildren().size() == 3){
+                if(basicBar.getChildren().size() == 4){
                     basicBar.getChildren().remove(1);
                 }
                 basicBar.getChildren().add(1, control);
                 basicBar.setSpacing(10);
+                descriptionLabel.setText(property.getDescription());
 
             }
         });

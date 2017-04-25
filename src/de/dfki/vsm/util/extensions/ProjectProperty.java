@@ -6,17 +6,32 @@ package de.dfki.vsm.util.extensions;
 public class ProjectProperty {
 
 
+    private final String description;
     String name;
     boolean required;
 
     public ProjectProperty(String name, boolean required){
         this.name = name;
         this.required = required;
+        this.description = "";
     }
 
     public ProjectProperty(String name ){
         this.name = name;
         this.required = false;
+        this.description = "";
+    }
+
+    public ProjectProperty(String name, String description){
+        this.name = name;
+        this.description = description;
+        this.required = false;
+    }
+
+    public ProjectProperty(String name, boolean required, String description){
+        this.name = name;
+        this.description = description;
+        this.required = required;
     }
 
     public String getName() {
@@ -33,6 +48,10 @@ public class ProjectProperty {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public String getDescription(){
+        return description;
     }
 
     public String toString(){
