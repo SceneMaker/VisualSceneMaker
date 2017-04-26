@@ -159,20 +159,23 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 if(!hasProperty(property)){
                     return;
                 }
-
-                ProjectValueProperty value = exportableProperties.get(property);
-                value.render();
-                ValueRenderable renderer = value.getRenderer();
-                Node control = renderer.getRenderer();
-                if(basicBar.getChildren().size() == TOTAL_CONTROLS_IN_BASIC_BAR){
-                    basicBar.getChildren().remove(DYNAMIC_CONTROL_POSITION);
-                }
-                basicBar.getChildren().add(DYNAMIC_CONTROL_POSITION, control);
-                basicBar.setSpacing(10);
-                descriptionLabel.setText(property.getDescription());
+                replaceControlInBasicBar(property);
 
             }
         });
+    }
+
+    private void replaceControlInBasicBar(ProjectProperty property) {
+        ProjectValueProperty value = exportableProperties.get(property);
+        value.render();
+        ValueRenderable renderer = value.getRenderer();
+        Node control = renderer.getRenderer();
+        if(basicBar.getChildren().size() == TOTAL_CONTROLS_IN_BASIC_BAR){
+            basicBar.getChildren().remove(DYNAMIC_CONTROL_POSITION);
+        }
+        basicBar.getChildren().add(DYNAMIC_CONTROL_POSITION, control);
+        basicBar.setSpacing(10);
+        descriptionLabel.setText(property.getDescription());
     }
 
     private boolean hasProperty(ProjectProperty property) {
@@ -372,6 +375,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             String pluginName = entryAgent.getPluginName();
             setLoadPluginCheckbox(mProject.getPluginConfig(pluginName));
             hideAddDevice();
+            disableBasicBar();
         }
     }
 
