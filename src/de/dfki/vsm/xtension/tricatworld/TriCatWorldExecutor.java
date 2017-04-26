@@ -11,9 +11,14 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.extensions.ExportableProperties;
+import de.dfki.vsm.util.extensions.ProjectProperty;
+import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
+import de.dfki.vsm.xtension.tricatworld.util.property.EmpatProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.Object;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.Action;
@@ -48,7 +53,7 @@ import org.xml.sax.SAXException;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public final class TriCatWorldExecutor extends ActivityExecutor {
+public final class TriCatWorldExecutor extends ActivityExecutor implements ExportableProperties {
 
     // The tworld listener
     private TriCatWorldListener mListener;
@@ -66,6 +71,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
     private final boolean mUseJPL;
     // The flag for executables
     private final boolean mUseExe;
+    private ExportableProperties exportableProperties = new EmpatProjectProperty();
 
     // Construct the executor
     public TriCatWorldExecutor(
@@ -661,5 +667,15 @@ public final class TriCatWorldExecutor extends ActivityExecutor {
             // Return failure if the parsing failed
             return null;
         }
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+        return exportableProperties.getExportableProperties();
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+        return null;
     }
 }
