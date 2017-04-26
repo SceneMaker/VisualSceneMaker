@@ -2,12 +2,11 @@ package de.dfki.vsm.xtesting.NewPropertyManager;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.extensions.value.ValueRenderable;
+import de.dfki.vsm.xtesting.NewPropertyManager.exceptions.NotExportableInterface;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.*;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.AgentTableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.PluginTableConfig;
@@ -33,7 +32,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 
-import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,6 +43,7 @@ import java.util.stream.Collectors;
 public class PropertyManagerController implements Initializable, TreeObserver {
 
     public static final String FX_TEXT_BOX_BORDER_RED = "-fx-text-box-border: red";
+    private ExportableClassInitializer exportableClassInitializer ;
     private RunTimeProject mProject = null;
     @FXML
     TreeView<AbstractTreeEntry> treeView;
@@ -90,6 +90,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             PluginConfig p = (PluginConfig) it.next();
             plugins.put(p.getPluginName(), p);
         }
+
+
     }
 
     @Override
@@ -359,21 +361,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             showPluginDatainTable(entryPlugin);
             setLoadPluginCheckbox(entryPlugin.getPluginConfig());
             hideAddDevice();
-
-
-
-            String className = entryPlugin.getPluginConfig().getClassName();
-            Class clazz  = Class.forName(className);
-            Constructor constructor = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
-            RunTimePlugin runTimePlugin = (RunTimePlugin) constructor.newInstance(entryPlugin.getPluginConfig(), mProject);
-            exportableProperties = ((ExportableProperties)runTimePlugin).getExportableProperties();
-            ArrayList<ProjectProperty> propertyNames = new ArrayList<>(exportableProperties.keySet());
-            ObservableList obList = FXCollections.observableList(propertyNames);
-            propertiesChooser.getItems().clear();
-            propertiesChooser.setItems(obList);
-
-
-
+            buildBasicPropertyBar(entryPlugin);
 
         }
         if(itemEntry instanceof EntryAgent){
@@ -384,6 +372,38 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             hideAddDevice();
         }
     }
+
+    private void buildBasicPropertyBar(EntryPlugin entryPlugin) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, NotExportableInterface {
+        exportableClassInitializer = new ExportableClassInitializer(mProject, entryPlugin.getPluginConfig());
+        enableBasicBar();
+        try{
+            exportableClassInitializer.initializeClass();
+            exportableProperties = exportableClassInitializer.getAsExportablePropertyClass().getExportableProperties();
+            addExportableItemsToBasicBar();
+        }catch (NotExportableInterface exception){
+            disableBasicBar();
+        }
+    }
+
+    private void disableBasicBar() {
+        basicBar.setVisible(false);
+        advanceBar.setVisible(true);
+        advancedButton.setDisable(true);
+    }
+
+    private void enableBasicBar() {
+        basicBar.setVisible(true);
+        advanceBar.setVisible(false);
+        advancedButton.setDisable(false);
+    }
+
+    private void addExportableItemsToBasicBar() {
+        ArrayList<ProjectProperty> propertyNames = new ArrayList<ProjectProperty>(exportableProperties.keySet());
+        ObservableList obList = FXCollections.observableList(propertyNames);
+        propertiesChooser.getItems().clear();
+        propertiesChooser.setItems(obList);
+    }
+
 
     private void setLoadPluginCheckbox(PluginConfig plugin){
         chkLoadPlugin.setSelected(plugin.isMarkedtoLoad());
