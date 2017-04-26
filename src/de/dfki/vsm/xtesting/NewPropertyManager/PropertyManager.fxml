@@ -76,7 +76,7 @@
                               <TableColumn fx:id="valueColumn" maxWidth="1.7976931348623157E308" prefWidth="265.0" text="Value" />
                            </columns>
                         </TableView>
-                        <HBox fx:id="basicBar" layoutX="10.0" layoutY="575.0" AnchorPane.bottomAnchor="40.0">
+                        <HBox fx:id="basicBar" layoutX="10.0" layoutY="575.0" prefHeight="62.0" AnchorPane.bottomAnchor="5.0">
                            <children>
                               <ChoiceBox fx:id="propertiesChooser" prefWidth="150.0" />
                               <Button fx:id="btnAddAdvanced" mnemonicParsing="false" onAction="#addNewItemToTableEvent" text="Add">
