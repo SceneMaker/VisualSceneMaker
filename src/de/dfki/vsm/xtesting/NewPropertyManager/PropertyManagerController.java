@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 public class PropertyManagerController implements Initializable, TreeObserver {
 
     public static final String FX_TEXT_BOX_BORDER_RED = "-fx-text-box-border: red";
+    public static final int DYNAMIC_CONTROL_POSITION = 1;
+    public static final int TOTAL_CONTROLS_IN_BASIC_BAR = 4;
     private ExportableClassInitializer exportableClassInitializer ;
     private RunTimeProject mProject = null;
     @FXML
@@ -162,10 +164,10 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 value.render();
                 ValueRenderable renderer = value.getRenderer();
                 Node control = renderer.getRenderer();
-                if(basicBar.getChildren().size() == 4){
-                    basicBar.getChildren().remove(1);
+                if(basicBar.getChildren().size() == TOTAL_CONTROLS_IN_BASIC_BAR){
+                    basicBar.getChildren().remove(DYNAMIC_CONTROL_POSITION);
                 }
-                basicBar.getChildren().add(1, control);
+                basicBar.getChildren().add(DYNAMIC_CONTROL_POSITION, control);
                 basicBar.setSpacing(10);
                 descriptionLabel.setText(property.getDescription());
 
