@@ -17,30 +17,30 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class PlayStream extends Action implements XMLParseable, XMLWriteable {
+public class PlayTopic extends Action implements XMLParseable, XMLWriteable {
 
-    private String mPath = "";
-    private String mStarttime = "";
-    private String mEndtime = "";
+    private String mTopicId = "";
+    private String mPlayQuestion = "";
+    private String mPlayAnswer = "";
 
-    public PlayStream(String path, String starttime, String endtime) {
-        mName = "playstream";
-        mPath = path;
-        mStarttime = starttime;
-        mEndtime = endtime;
+    public PlayTopic(String topicId, boolean playQuestion, boolean playAnswer) {
+        mName = "playtopic";
+        mTopicId = topicId;
+        mPlayQuestion = (playQuestion) ? "1" : "0";
+        mPlayAnswer = (playAnswer) ? "1" : "0";
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" path=\"" + mPath + "\" starttime=\"" + mStarttime + "\" endtime=\"" + mEndtime + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" topicid=\"" + mTopicId + "\" playquestion=\"" + mPlayQuestion + "\" playanswer=\"" + mPlayAnswer + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mId = element.getAttribute("id");
-        mPath = element.getAttribute("path");
-        mStarttime = element.getAttribute("starttime");
-        mEndtime = element.getAttribute("endtime");
+        mTopicId = element.getAttribute("topicid");
+        mPlayQuestion = element.getAttribute("playquestion");
+        mPlayAnswer = element.getAttribute("playanswer");
     }
 }

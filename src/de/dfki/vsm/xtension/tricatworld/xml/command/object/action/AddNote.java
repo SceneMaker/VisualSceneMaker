@@ -17,30 +17,30 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class PlayStream extends Action implements XMLParseable, XMLWriteable {
+public class AddNote extends Action implements XMLParseable, XMLWriteable {
 
-    private String mPath = "";
-    private String mStarttime = "";
-    private String mEndtime = "";
+    private String mText = "";
+    private String mXPos = "";
+    private String mYPos = "";
 
-    public PlayStream(String path, String starttime, String endtime) {
-        mName = "playstream";
-        mPath = path;
-        mStarttime = starttime;
-        mEndtime = endtime;
+    public AddNote(String text, String xpos, String ypos) {
+        mName = "addnote";
+        mText = text;
+        mXPos = xpos;
+        mYPos = ypos;
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" path=\"" + mPath + "\" starttime=\"" + mStarttime + "\" endtime=\"" + mEndtime + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" text=\"" + mText + "\" anchorx=\"" + mXPos + "\" anchory=\"" + mYPos + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mId = element.getAttribute("id");
-        mPath = element.getAttribute("path");
-        mStarttime = element.getAttribute("starttime");
-        mEndtime = element.getAttribute("endtime");
+        mText = element.getAttribute("text");
+        mXPos = element.getAttribute("anchorx");
+        mYPos = element.getAttribute("anchory");
     }
 }
