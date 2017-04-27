@@ -17,30 +17,30 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class PlayStream extends Action implements XMLParseable, XMLWriteable {
+public class LoadDebriefing extends Action implements XMLParseable, XMLWriteable {
 
-    private String mPath = "";
-    private String mStarttime = "";
-    private String mEndtime = "";
+    private String mEventLog = "";
+    private String mScreenVideo = "";
+    private String mCameraVideo = "";
 
-    public PlayStream(String path, String starttime, String endtime) {
-        mName = "playstream";
-        mPath = path;
-        mStarttime = starttime;
-        mEndtime = endtime;
+    public LoadDebriefing(String eventlog, String screenvideo, String cameravideo) {
+        mName = "load";
+        mEventLog = eventlog;
+        mScreenVideo = screenvideo;
+        mCameraVideo = cameravideo;
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" path=\"" + mPath + "\" starttime=\"" + mStarttime + "\" endtime=\"" + mEndtime + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" eventlog=\"" + mEventLog + "\" screenvideo=\"" + mScreenVideo + "\" cameravideo=\"" + mCameraVideo + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mId = element.getAttribute("id");
-        mPath = element.getAttribute("path");
-        mStarttime = element.getAttribute("starttime");
-        mEndtime = element.getAttribute("endtime");
+        mEventLog = element.getAttribute("eventlog");
+        mScreenVideo = element.getAttribute("screenvideo");
+        mCameraVideo = element.getAttribute("cameravideo");
     }
 }
