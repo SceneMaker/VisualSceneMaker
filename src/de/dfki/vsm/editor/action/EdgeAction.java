@@ -157,7 +157,7 @@ public abstract class EdgeAction extends EditorAction {
         EditorInstance.getInstance().refresh();
         mWorkSpace.add(mGUIEdge);
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
 
 //      recalculateWeight();
 //      setEdgePath();
@@ -287,13 +287,13 @@ public abstract class EdgeAction extends EditorAction {
             // setGridWeight();
             mWorkSpace.add(mGUIEdge);
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         } else {
 
             // setGridWeight();
             mWorkSpace.add(mGUIEdge);
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
     }
 
@@ -481,6 +481,6 @@ public abstract class EdgeAction extends EditorAction {
         EditorInstance.getInstance().refresh();
         mWorkSpace.remove(mGUIEdge);
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
     }
 }

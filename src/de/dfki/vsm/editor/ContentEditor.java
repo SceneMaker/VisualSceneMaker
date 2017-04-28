@@ -96,7 +96,7 @@ package de.dfki.vsm.editor;
 //        mSceneDocumentEditor.redraw(layout);
 //        //mGesticonEditor.redraw(layout);
 //        //
-//        repaint();
+//        repaint(100);
 //        revalidate();
 //    }
 //}

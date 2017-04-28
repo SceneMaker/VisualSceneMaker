@@ -4,6 +4,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.SwingUtilities;
 
 /**
  * @author Gregor Mehlmann
@@ -58,7 +59,8 @@ public final class EventDispatcher {
 
     // Immediately schedule an event
     public final void convey(final EventObject event) {
-        schedule(event, 1);
+        //schedule(event, 1);
+        dispatch(event);
     }
 
     // Schedule dispatching of event
@@ -68,7 +70,6 @@ public final class EventDispatcher {
         final TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                // that dipatches the event
                 dispatch(event);
             }
         };
@@ -85,8 +86,8 @@ public final class EventDispatcher {
     public final synchronized void abort() {
         mTimer.cancel();
     }
-    
-     // Reset the timer thread
+
+    // Reset the timer thread
     public final synchronized void reset() {
         mTimer = new Timer();
     }

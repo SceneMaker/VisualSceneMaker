@@ -47,7 +47,7 @@ public class ModifyIEdgeAction extends ModifyEdgeAction {
             ((InterruptEdge) mDataEdge).setCondition(mOldCondition);
 
             // mGUIEdge.update();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
         }
 
         @Override
@@ -55,7 +55,7 @@ public class ModifyIEdgeAction extends ModifyEdgeAction {
             ((InterruptEdge) mDataEdge).setCondition(mNewCondition);
 
             // mGUIEdge.update();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
         }
 
         @Override

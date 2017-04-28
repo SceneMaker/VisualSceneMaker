@@ -556,7 +556,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mCEPSelected = false;
         mEditMode = false;
         remove(mTextPanel);
-        repaint();
+        repaint(100);
     }
 
     @Override
@@ -595,7 +595,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
 
         // showActivity();
         // revalidate();
-        repaint();
+        repaint(100);
 
         // show contect menu
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {
@@ -671,7 +671,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         }
 
         // revalidate();
-        repaint();
+        repaint(100);
     }
 
     @Override
@@ -709,7 +709,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mCSPSelected = false;
 
         // revalidate();
-        repaint();
+        repaint(100);
     }
 
     public void mouseDragged(java.awt.event.MouseEvent e) {
@@ -756,7 +756,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             mEg.mAbsoluteStartPos.setLocation(p);
         }
         // revalidate();
-        repaint();
+        repaint(100);
     }
 
     @Override
@@ -1000,7 +1000,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
     public synchronized void update(EventObject event) {
         if (event instanceof SceneStoppedEvent) {
             mVisualisationTask = null;
-            repaint();
+            repaint(100);
         }
 
         if (mEditorConfig.sVISUALISATION) {
@@ -1045,14 +1045,14 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
             currentCP2 = mEg.mCCrtl2.getLocation();
             mEg.mCCrtl1.setLocation(oldCP1);
             mEg.mCCrtl2.setLocation(oldCP2);
-            repaint();
+            repaint(100);
         }
 
         @Override
         public void redo() throws CannotRedoException {
             mEg.mCCrtl1.setLocation(currentCP1);
             mEg.mCCrtl2.setLocation(currentCP2);
-            repaint();
+            repaint(100);
         }
 
         @Override
