@@ -283,7 +283,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
             // Editor.getInstance().update();
             revalidate();
-            repaint();
+            repaint(100);
         }
     }
 

@@ -41,14 +41,10 @@ public final class SSICmdExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
-        //mSSILog = new SSIEventSender("127.0.0.1", 8888,
-        //        mLogHost, Integer.valueOf(mLogPort));
-        //mSSILog.start();
     }
 
     @Override
     public void unload() {
-        //mSSILog.abort();
     }
 
     // Execute activity

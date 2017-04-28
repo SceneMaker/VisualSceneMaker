@@ -58,7 +58,7 @@ public class AddVariableAction extends EditorAction {
                 varDefsList.add(varDef);
                 mCurrentSuperNode.removeVarDefAt(mCurrentSuperNode.getVarDefList().size() - 1);
                 mWorkSpace.revalidate();
-                mWorkSpace.repaint();
+                mWorkSpace.repaint(100);
                 mWorkSpace.refresh();
                 mDispatcher.convey(new NodeSelectedEvent(this, mCurrentSuperNode));
             }
@@ -70,7 +70,7 @@ public class AddVariableAction extends EditorAction {
             mCurrentSuperNode.addVarDef(varDef);
             varDefsList.add(varDef);
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
             mWorkSpace.refresh();
             mDispatcher.convey(new NodeSelectedEvent(this,mCurrentSuperNode));
         }

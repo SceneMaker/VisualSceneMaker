@@ -120,7 +120,7 @@ public abstract class NodeAction extends EditorAction {
         // Doesnt work
         // mDataNode.setParentNode(null);
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
     }
 
     public void create() {
@@ -152,6 +152,6 @@ public abstract class NodeAction extends EditorAction {
 
         //
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
     }
 }

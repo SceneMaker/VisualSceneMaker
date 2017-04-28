@@ -616,7 +616,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
                     : 0;
             mOpacyVal -= mOpacyStep;
             mLabel.setForeground(new Color(mRedVal, mGreenVal, mBlueVal, mOpacyVal));
-            mLabel.repaint();
+            mLabel.repaint(100);
 
             if (mSteps == 0)
             {

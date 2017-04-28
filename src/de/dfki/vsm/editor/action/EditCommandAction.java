@@ -26,6 +26,6 @@ public class EditCommandAction extends EditorAction {
         mDispatcher.convey(new NodeSelectedEvent(this, mCmdBadge.getNode().getDataNode()));
         mCmdBadge.setEditMode();
         mCmdBadge.revalidate();
-        mCmdBadge.repaint();
+        mCmdBadge.repaint(100);
     }
 }

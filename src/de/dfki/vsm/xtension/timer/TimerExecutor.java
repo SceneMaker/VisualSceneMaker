@@ -28,11 +28,11 @@ public final class TimerExecutor extends ActivityExecutor {
     }
 
     @Override
-    public void launch() {
+    public final void launch() {
     }
 
     @Override
-    public void unload() {
+    public final void unload() {
     }
 
     @Override
@@ -59,7 +59,8 @@ public final class TimerExecutor extends ActivityExecutor {
 
     private void time(final String id, final String var) {
         if (mTimerMap.containsKey(id) && mProject.hasVariable(var)) {
-            mProject.setVariable(var, Math.toIntExact(System.currentTimeMillis() - mTimerMap.get(id)));
+            mProject.setVariable(var, Math.toIntExact(
+                    System.currentTimeMillis() - mTimerMap.get(id)));
         }
     }
 }

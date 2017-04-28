@@ -149,7 +149,7 @@ public class DeflectEdgeAction extends EdgeAction {
 
         // repaint
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
     }
 
     public void run() {

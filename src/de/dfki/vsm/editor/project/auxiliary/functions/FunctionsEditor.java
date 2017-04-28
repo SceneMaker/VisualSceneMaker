@@ -88,7 +88,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         // Inititalize panel
         mFunctionContainerList.clear();
         mFunctionsContainerPanel.removeAll();
-        repaint();
+        repaint(100);
 
         // Iterate through all existing functions in the sceneflow
         for (FunctionDefinition i : mSceneFlow.getUsrCmdDefMap().values())
@@ -107,7 +107,7 @@ public class FunctionsEditor extends JPanel implements EventListener
 
         mFunctionsContainerPanel.add(Box.createRigidArea(new Dimension(5, 5)));
 
-        repaint();
+        repaint(100);
     }
 
     private boolean containsFunction(String name)
@@ -339,7 +339,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         private void setFunDef()
         {
             redoAddFunction(funDef);
-//            mMainScrollPanel.repaint();
+//            mMainScrollPanel.repaint(100);
 
         }
 
