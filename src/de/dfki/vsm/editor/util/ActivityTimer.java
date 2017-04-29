@@ -34,11 +34,11 @@ public class ActivityTimer implements ActionListener {
 
             ////System.out.println("activity");
             mActivityTime--;
-            mComponent.repaint();
+            mComponent.repaint(100);
         } else {
 
             ////System.out.println("no activity");
-            mComponent.repaint();
+            mComponent.repaint(100);
         }
     }
 }

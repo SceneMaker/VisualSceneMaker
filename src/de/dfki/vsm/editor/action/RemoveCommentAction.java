@@ -57,7 +57,7 @@ public class RemoveCommentAction extends EditorAction {
     public void run() {
         delete();
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
         mUndoManager.addEdit(new Edit());
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
@@ -68,14 +68,14 @@ public class RemoveCommentAction extends EditorAction {
         public void undo() throws CannotUndoException {
             create();
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
 
         @Override
         public void redo() throws CannotRedoException {
             delete();
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
 
         @Override

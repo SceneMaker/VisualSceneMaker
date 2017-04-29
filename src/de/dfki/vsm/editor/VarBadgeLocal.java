@@ -293,7 +293,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                 useCachedImage = false;
                 // Editor.getInstance().update();
                 revalidate();
-                repaint();
+                repaint(100);
             }
     }
 

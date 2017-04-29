@@ -150,7 +150,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mDataComment.setHTMLText(mTextEditor.getText());
         mTextEditor.setText(mDataComment.getHTMLText());
         mTextLabel.setText(formatLabelText(mTextEditor.getText()));
-        repaint();
+        repaint(100);
     }
 
     public String getDescription() {
@@ -277,7 +277,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         }
 
         revalidate();
-        repaint();
+        repaint(100);
     }
 
     @Override
@@ -303,7 +303,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mPressed           = false;
         mDragged           = false;
         mLastMousePosition = new Point(0, 0);
-        repaint();
+        repaint(100);
     }
 
     @Override
@@ -341,7 +341,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
         mPressed  = false;
         mDragged  = false;
         mResizing = false;
-        repaint();
+        repaint(100);
         update();
     }
 

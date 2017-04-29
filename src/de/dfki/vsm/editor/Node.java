@@ -359,7 +359,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                 if (mVisualisationTask != null) {
                     mVisualisationTask.cancel();
                 }
-                repaint();
+                repaint(100);
             } else if (event instanceof NodeStartedEvent) {
                 if ((((NodeStartedEvent) event).getNode().equals(mDataNode))
                         || ((NodeStartedEvent) event).getNode().isSubNodeOf(mDataNode)) {
@@ -372,7 +372,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                     mIsActive = true;
 
                     // TODO: necessary?
-                    repaint();
+                    repaint(100);
                 }
             } else if (event instanceof NodeExecutedEvent) {
                 if ((((NodeExecutedEvent) event).getNode().equals(mDataNode))
@@ -386,7 +386,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                     //mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
                     //mVisuTimer = new Timer("BasicNode(" + mDataNode.getId() + ")-Visualization-Timer");
                     //mVisuTimer.schedule(mVisualisationTask, 0, 15);
-                    repaint();
+                    repaint(100);
                 }
             } else if (event instanceof NodeTerminatedEvent) {
                 mIsActive = false;
@@ -400,7 +400,7 @@ public final class Node extends JComponent implements EventListener, Observer {
                     //mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this,
                     //        new Color(0, 0, 0, 100));
                     //mVisuTimer.schedule(mVisualisationTask, 0, 15);
-                    repaint();
+                    repaint(100);
                 }
             }
         }
@@ -739,7 +739,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         mSelected = false;
         mPressed = false;
         mDragged = false;
-        repaint();
+        repaint(100);
     }
 
     public void mouseClicked(MouseEvent event) {
@@ -752,7 +752,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         // mLastMousePosition = new Point(clickLoc);
         // save click location relavitvely to node postion
         // mClickPosition.setLocation(clickLoc.x - loc.x, clickLoc.y - loc.y);
-        repaint();
+        repaint(100);
 
 //      enter supernode, if it has been double clicked
         // TODO: move to workspace
@@ -783,7 +783,7 @@ public final class Node extends JComponent implements EventListener, Observer {
         // mLastMousePosition =                new Point(clickLoc);
         // save click location relavitvely to node postion
         // mClickPosition.setLocation(clickLoc.x - loc.x, clickLoc.y - loc.y);
-        repaint();
+        repaint(100);
 
 //      enter supernode, if it has been double clicked
         // TODO: move to workspace
@@ -802,7 +802,7 @@ public final class Node extends JComponent implements EventListener, Observer {
     public void mouseReleased(MouseEvent e) {
         mPressed = false;
         mDragged = false;
-        repaint();
+        repaint(100);
     }
 
     public void stopVisualisation() {

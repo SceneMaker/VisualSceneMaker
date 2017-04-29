@@ -462,9 +462,8 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             // changes of the user interface in
             // various editor subcomponents
             EditorInstance.getInstance().refresh();
-            // Print some information
-            mLogger.message("Updating editor after parsing the scene script");
             
+            // Update
             if(!result) {
                 mEditorPane.setBackground(Color.YELLOW.brighter());
             } else {

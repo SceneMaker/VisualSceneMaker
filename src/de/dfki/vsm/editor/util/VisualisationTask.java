@@ -84,7 +84,7 @@ public class VisualisationTask extends TimerTask {
         if (mCurrentStep == 0) {
             cancel();
         } else {
-            mC.repaint();
+            mC.repaint(100);
         }
     }
 }

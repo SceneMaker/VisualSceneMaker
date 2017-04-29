@@ -71,7 +71,7 @@ public class QuestionnaireGUI {
         mController.ageslider.requestFocus();
         mController.agefield.setText("20");
         mController.nextbutton.setDisable(false);
-        mFrame.repaint();
+        mFrame.repaint(100);
     }
 
     // interface for age
@@ -81,7 +81,7 @@ public class QuestionnaireGUI {
         mController.ageslider.setValue(Double.parseDouble(age) - 20);
         mController.agefield.setText(age);
         mController.sexfemale.requestFocus();
-        mFrame.repaint();
+        mFrame.repaint(100);
     }
 
     // interface for sex
@@ -95,7 +95,7 @@ public class QuestionnaireGUI {
         }
         mController.jobinterviewslider.requestFocus();
         mController.jobvinterviewfield.setText("keine");
-        mFrame.repaint();
+        mFrame.repaint(100);
     }
 
     // interface for job interviews
@@ -105,7 +105,7 @@ public class QuestionnaireGUI {
         mController.jobinterviewslider.setValue(Double.parseDouble(interviews));
         mController.jobvinterviewfield.setText((interviews.equalsIgnoreCase("none")) ? "keine" : (Integer.parseInt(interviews) > 8) ? ">8" : interviews);
         mController.strengthregion.requestFocus();
-        mFrame.repaint();
+        mFrame.repaint(100);
     }
 
     // interface for strength
@@ -136,7 +136,7 @@ public class QuestionnaireGUI {
             mController.checkSelectedStrength(mController.strength6);
             mController.strength6.setSelected(true);
         }
-        mFrame.repaint();
+        mFrame.repaint(100);
     }
 
     // interface for weakness
@@ -166,7 +166,7 @@ public class QuestionnaireGUI {
             mController.checkSelectedWeakness(mController.weakness6);
             mController.weakness6.setSelected(true);
         }
-        mFrame.repaint();
+        mFrame.repaint(100);
     }
 
     //interface for next

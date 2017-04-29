@@ -225,7 +225,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
         }
 
-        repaint();
+        repaint(100);
         update();
     }
 

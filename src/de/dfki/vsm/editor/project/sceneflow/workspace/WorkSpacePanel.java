@@ -224,7 +224,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         }
 
         revalidate();
-        repaint();
+        repaint(100);
     }
 
     /**
@@ -404,21 +404,21 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                         createNode(dtde.getLocation(), (Node.Type) data);
 
                         // revalidate();
-                        // repaint();
+                        // repaint(100);
                         dtde.acceptDrop(mAcceptableActions);
                         dtde.getDropTargetContext().dropComplete(true);
                     } else if (data instanceof Edge) {
                         createNewEdgeSelectSourceNode((Edge) data, dtde.getLocation().x, dtde.getLocation().y);
 
                         // revalidate();
-                        // repaint();
+                        // repaint(100);
                         dtde.acceptDrop(mAcceptableActions);
                         dtde.getDropTargetContext().dropComplete(true);
                     } else if (data instanceof Comment) {
                         createComment(dtde.getLocation());
 
                         // revalidate();
-                        // repaint();
+                        // repaint(100);
                         dtde.acceptDrop(mAcceptableActions);
                         dtde.getDropTargetContext().dropComplete(true);
                     } else if (data instanceof SceneGroup) {
@@ -545,7 +545,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         // add/remove to/from stack
         // VarBadgeStack.a(mVarDisplay);
-        // repaint();
+        // repaint(100);
     }
 
     /**
@@ -646,7 +646,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         }
         mSelectedNode = null;
 
-        repaint();
+        repaint(100);
     }
 
     /**
@@ -743,7 +743,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         mEdgeSourceNode = sourceNode;
         mSelectTargetNodeMode = true;
 
-        // repaint();
+        // repaint(100);
         //
         mSceneFlowEditor.setMessageLabelText("Select target node or click on workspace to abort");
     }
@@ -755,7 +755,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     public void createNewEdgeSelectTargetNode(int x, int y) {
         mSelectTargetNodeMode = false;
 
-        // repaint();
+        // repaint(100);
         mSceneFlowEditor.setMessageLabelText("");
 
         // Try to find the c on which the mouse was clicked. If we do not find
@@ -957,7 +957,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             edge.straightenEdge();
         }
 
-        repaint();
+        repaint(100);
     }
 
     public void straightenAllOutOfBoundEdges() {
@@ -978,7 +978,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             edge.rebuildEdgeNicely();
         }
 
-        repaint();
+        repaint(100);
     }
 
     /**
@@ -1353,7 +1353,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         // Create a new Gridmanager for the workspace
         mGridManager.update();
         revalidate();
-        repaint();
+        repaint(100);
         // TODO: Refresh here!
     }
 
@@ -1367,7 +1367,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         showEdgesOnWorkSpace();
         showVariableBadges();
         revalidate();
-        repaint();
+        repaint(100);
     }
 
     /**
@@ -2012,7 +2012,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         if (mDoAreaSelection) {
             mDoAreaSelection = false;
-            repaint();
+            repaint(100);
 
             return;
         }
@@ -2039,7 +2039,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 // update workspace area - if dragged beyond current borders
                 // sWorkSpaceDrawArea = getSize();
                 node.mouseReleased(event);
-                repaint();
+                repaint(100);
             }
 
             // mGridManager.normalizeGridWeight();
@@ -2089,7 +2089,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             mSelectedNode.mouseReleased(event);
             refresh();
             revalidate();
-            repaint();
+            repaint(100);
 
 //            if (mSelectedNode.containsPoint(event.getX(), event.getY())) {
 //
@@ -2110,7 +2110,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 //
 //                mSelectedNode.mouseReleased(event);
 //                revalidate();
-//                repaint();
+//                repaint(100);
 //
 //                // mGridManager.normalizeGridWeight();
 //                return;
@@ -2129,7 +2129,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             if (mSelectedComment.containsPoint(event.getPoint())) {
                 mSelectedComment.mouseReleased(event);
                 revalidate();
-                repaint();
+                repaint(100);
 
                 return;
             } else {
@@ -2140,7 +2140,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
 
             // finally do a repaint
-            repaint();
+            repaint(100);
         }
     }
 
@@ -2206,7 +2206,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                 mSelectedEdge.mouseDragged(event);
                 revalidate();
-                repaint();
+                repaint(100);
                 checkChangesOnWorkspace();
 
                 return;
@@ -2332,7 +2332,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         mAreaSelection.width = event.getX() - mAreaSelection.x;
         mAreaSelection.height = event.getY() - mAreaSelection.y;
         selectNodesInArea();    // comment this to avoid bug but eliminate selection
-        repaint();
+        repaint(100);
     }
 
     /**
@@ -2368,7 +2368,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                 }
             }
 
-            repaint();
+            repaint(100);
 
             return;
         }
@@ -2381,7 +2381,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
                     }
 
                     showNodeVariables(node);
-                    repaint();
+                    repaint(100);
 
                     return;
                 }
@@ -2389,7 +2389,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         } else if (mNodeVariableDisplay != null) {
             remove(mNodeVariableDisplay);
             mNodeVariableDisplay = null;
-            repaint();
+            repaint(100);
         }
     }
 
@@ -2420,7 +2420,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
             // sWorkSpaceDrawArea = getSize();
             revalidate();
-            repaint();
+            repaint(100);
         }
     }
 
@@ -2446,7 +2446,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
 
             revalidate();
-            repaint();
+            repaint(100);
         }
     }
 
@@ -2472,7 +2472,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
 
             revalidate();
-            repaint();
+            repaint(100);
         }
     }
 
@@ -2498,7 +2498,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
             }
 
             revalidate();
-            repaint();
+            repaint(100);
         }
     }
 
@@ -2516,7 +2516,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         }
 
         revalidate();
-        repaint();
+        repaint(100);
     }
 
     /**
@@ -2552,7 +2552,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
                 // sWorkSpaceDrawArea = getSize();
                 revalidate();
-                repaint();
+                repaint(100);
             }
         }
     }
