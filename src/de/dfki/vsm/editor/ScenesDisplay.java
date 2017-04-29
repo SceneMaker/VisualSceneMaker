@@ -128,7 +128,7 @@
 ////                  add(Box.createVerticalBox());
 ////              }
 //                revalidate();
-//                repaint();
+//                repaint(100);
 //            }
 //        }
 //    }

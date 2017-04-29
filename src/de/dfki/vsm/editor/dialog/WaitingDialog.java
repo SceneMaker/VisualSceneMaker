@@ -49,7 +49,7 @@ public class WaitingDialog extends JDialog implements Observer{
             }else{
                 setMessageText(message);
                 pack();
-                repaint();
+                repaint(100);
                 revalidate();
             }
         }

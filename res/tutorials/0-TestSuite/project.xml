@@ -17,5 +17,6 @@
     </Agent>
   </Agents>
   <Player>
+    <Feature key="usejpl" val="true"/>
   </Player>
 </Project>

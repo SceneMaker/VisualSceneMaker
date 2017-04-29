@@ -367,6 +367,32 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 }
                 tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
                         activity.get("file"), activity.get("start"), activity.get("end"));
+            } else if (activity_name.equalsIgnoreCase("PlayTopic")) { // added pg 27.4.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
+                    mLogger.warning("Action PlayTopic not processed - agent(name) is not DebriefingScreen");
+                    return;
+                }
+                String playquestion = (activity.get("playquestion") != null) ?activity.get("playquestion") : "0";
+                String playanswer = (activity.get("playanswer") != null) ? activity.get("playanswer") : "0";
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.get("topicid"), playquestion, playanswer);
+            } else if (activity_name.equalsIgnoreCase("LoadDebriefing")) { // added pg 27.43.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
+                    mLogger.warning("Action LoadDebriefing not processed - agent(name) is not DebriefingScreen");
+                    return;
+                }
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.get("eventlog"), activity.get("screenvideo"), activity.get("cameravideo"));
+            } else if (activity_name.equalsIgnoreCase("AddNote")) { // added pg 27.43.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
+                    mLogger.warning("Action LoadDebriefing not processed - agent(name) is not DebriefingScreen");
+                    return;
+                }
+                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                        activity.get("text"), activity.get("x"), activity.get("y"));
             } else if (activity_name.equalsIgnoreCase("PlayAudio")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(

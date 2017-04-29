@@ -50,7 +50,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Initialize the player
         super(config, project);
         // Print some information
-        mLogger.message("Creating reactive player '" + this + "' for project '" + project + "'");
+        //mLogger.message("Creating reactive player '" + this + "' for project '" + project + "'");
         // Get the JPL flag value
         mUseJPL = Boolean.parseBoolean(mConfig.getProperty("usejpl"));
     }

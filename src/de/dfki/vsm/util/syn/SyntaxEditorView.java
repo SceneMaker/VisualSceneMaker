@@ -134,6 +134,6 @@ public class SyntaxEditorView extends PlainView {
     @Override
     protected void updateDamage(final DocumentEvent changes, final Shape shape, final ViewFactory factory) {
         super.updateDamage(changes, shape, factory);
-        getContainer().repaint();
+        getContainer().repaint(100);
     }
 }

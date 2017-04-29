@@ -50,7 +50,7 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
             ((TimeoutEdge) mDataEdge).setTimeout(mOldTimeout);
 
             // mGUIEdge.update();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
         }
 
         @Override
@@ -58,7 +58,7 @@ public class ModifyTEdgeAction extends ModifyEdgeAction {
             ((TimeoutEdge) mDataEdge).setTimeout(mNewTimeout);
 
             // mGUIEdge.update();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
         }
 
         @Override
