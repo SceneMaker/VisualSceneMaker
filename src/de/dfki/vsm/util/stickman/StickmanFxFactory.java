@@ -1,6 +1,5 @@
 package de.dfki.vsm.util.stickman;
 
-
 import de.dfki.common.decorators.StageRoomFullScreenDecorator;
 import de.dfki.common.interfaces.Animation;
 import de.dfki.common.interfaces.StageRoom;
@@ -11,6 +10,7 @@ import de.dfki.stickmanFX.stage.StageRoomFX;
 import de.dfki.vsm.model.project.PluginConfig;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by alvaro on 9/19/16.
@@ -31,8 +31,8 @@ public class StickmanFxFactory extends StickmanAbstractFactory {
         if (config.containsKey("fullscreen") && config.getProperty("fullscreen").equalsIgnoreCase(Boolean.TRUE.toString())) {
             stickmanStageC = new StageRoomFullScreenDecorator(stickmanStageC);
         }
-        if(host !=null && port !=null && !host.equals("") && !port.equals("")){
-            stickmanStageC =  new StageRoomNetworkFXDecorator(stickmanStageC, host, Integer.parseInt(port)) ;
+        if (host != null && port != null && !host.equals("") && !port.equals("")) {
+            stickmanStageC = new StageRoomNetworkFXDecorator(stickmanStageC, host, Integer.parseInt(port));
         }
         return stickmanStageC;
     }
@@ -41,14 +41,14 @@ public class StickmanFxFactory extends StickmanAbstractFactory {
         final String xPos = config.getProperty("xStage");
         final String yPos = config.getProperty("yStage");
 
-        if (xPos !=null && yPos !=null) {
+        if (xPos != null && yPos != null) {
             try {
                 stickmanStageC = new StageRoomFX(Integer.parseInt(xPos), Integer.parseInt(yPos));
-            }catch (Exception e){
+            } catch (Exception e) {
                 stickmanStageC = new StageRoomFX();
             }
 
-        }else{
+        } else {
             stickmanStageC = new StageRoomFX();
         }
     }
@@ -70,6 +70,12 @@ public class StickmanFxFactory extends StickmanAbstractFactory {
 
     @Override
     public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
-        return null;
+        Animation a = AnimationLoaderFX.getInstance().loadAnimation(sm, name, duration, false);
+        String paranater="";
+        for (Map.Entry<String, String> entry : extraParams.entrySet()) {
+            paranater = entry.getValue();
+        }
+        a.setParameter(paranater);
+        return a;
     }
 }

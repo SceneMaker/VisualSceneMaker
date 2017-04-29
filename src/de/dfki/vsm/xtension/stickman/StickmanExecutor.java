@@ -52,7 +52,6 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
     public static HashMap<String, Stickman3D> stickmanContainer = new HashMap<>();
     private ExportableProperties exportableProperties = new StickmanTTSProjectProperty();
 
-
     // Construct the executor
     public StickmanExecutor(final PluginConfig config, final RunTimeProject project) {
         // Initialize the plugin
@@ -91,24 +90,33 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
-            // create a new word time mark sequence based on the current utterance blocks
-            WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
 
-            LinkedList blocks = sa.getBlocks();
-            for (final Object item : blocks) {
-                if (!item.toString().contains("$")) {
-                    wts.add(new Word(item.toString()));
-                } else {
-                    wts.add(new TimeMark(item.toString()));
+            String activityText = sa.getTextOnly("$").trim();
+            if (activityText.isEmpty()) {
+                LinkedList<String> timemarks = sa.getTimeMarks("$");
+                for (String tm : timemarks) {
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
-            }
+            } else {
+                // create a new word time mark sequence based on the current utterance blocks
+                WordTimeMarkSequence wts = new WordTimeMarkSequence(sa.getTextOnly("$"));
 
-            // schedule Mouth_open and Mouth closed activities
-            mScheduler.schedule(20, null, new ActionActivity(actor, /*"face",*/ "Mouth_O", null, null, null), mProject.getAgentDevice(actor));
-            mScheduler.schedule(200, null, new ActionActivity(actor, /*"face",*/ "Mouth_Default", null, null, null), mProject.getAgentDevice(actor));
-            stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
-            stickmanAnimation.setParameter(wts);
-            executeAnimationAndWait(activity, stickmanAnimation);
+                LinkedList blocks = sa.getBlocks();
+                for (final Object item : blocks) {
+                    if (!item.toString().contains("$")) {
+                        wts.add(new Word(item.toString()));
+                    } else {
+                        wts.add(new TimeMark(item.toString()));
+                    }
+                }
+
+                // schedule Mouth_open and Mouth closed activities
+                mScheduler.schedule(20, null, new ActionActivity(actor, /*"face",*/ "Mouth_O", null, null, null), mProject.getAgentDevice(actor));
+                mScheduler.schedule(200, null, new ActionActivity(actor, /*"face",*/ "Mouth_Default", null, null, null), mProject.getAgentDevice(actor));
+                stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
+                stickmanAnimation.setParameter(wts);
+                executeAnimationAndWait(activity, stickmanAnimation);
+            }
         } else if (activity instanceof ActionActivity) {
             stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
@@ -177,10 +185,10 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
         for (String name : mProject.getAgentNames()) {
 //            AgentConfig ac = mProject.getAgentConfig(name);
 //            if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
-                stickmanStageC.addStickman(name);
+            stickmanStageC.addStickman(name);
 //            }
         }
-        
+
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
@@ -258,7 +266,6 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
                 // play the activity
                 //mProject.getRunTimePlayer().getActivityScheduler().handle(new MarkerFeedback(activity, message));
                 mProject.getRunTimePlayer().getActivityScheduler().handle(message);
-
             }
         }
     }
