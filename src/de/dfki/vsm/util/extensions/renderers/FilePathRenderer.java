@@ -8,24 +8,24 @@ import de.dfki.vsm.util.extensions.renderers.customcontrollers.pathchoosers.Path
  */
 public class FilePathRenderer extends ValueRender {
     String value;
-    private CustomPathChooser directoryChooser;
+    private CustomPathChooser pathChooser;
 
     public FilePathRenderer(){
-        directoryChooser = new CustomPathChooser();
+        pathChooser = new CustomPathChooser();
     }
     public FilePathRenderer(PathChooser pathChooser){
-        directoryChooser = new CustomPathChooser(pathChooser);
+        this.pathChooser = new CustomPathChooser(pathChooser);
     }
 
     @Override
     public void render() {
 
-        control = directoryChooser.getControl();
+        control = pathChooser.getControl();
     }
 
     @Override
     public String getValue() {
-        return directoryChooser.getFilePath();
+        return pathChooser.getFilePath();
     }
 
 
