@@ -6,4 +6,5 @@ package de.dfki.vsm.xtension.remotesender.sender;
 public interface DataSendable {
     String buildDataToSent();
     void prepareData();
+    String buildCloseConnectionCommand();
 }
