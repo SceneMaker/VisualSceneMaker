@@ -80,10 +80,17 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
     }
 
     private DataSendable buildSendable(AbstractActivity activity) {
-        String message = activity.get("message").replace("'", "");
-        separator = activity.get("separator").replace("'", "");
-        String senderType = activity.get("type").replace("'", "");
+        String message = clip(activity.get("message"));
+        separator = clip(activity.get("separator"));
+        String senderType = clip(activity.get("type"));
         return senderTypeFactory.buildSendable(senderType, message, separator);
+    }
+
+    private String clip(String message) {
+        if(message != null){
+            return message.replace("'", "");
+        }
+        return "";
     }
 
     private void exectureSpeechActivity(SpeechActivity activity) {

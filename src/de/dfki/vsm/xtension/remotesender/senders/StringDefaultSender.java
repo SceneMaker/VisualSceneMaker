@@ -22,4 +22,9 @@ public class StringDefaultSender implements DataSendable {
     public void prepareData() {
 
     }
+
+    @Override
+    public String buildCloseConnectionCommand() {
+        return null;
+    }
 }
