@@ -169,10 +169,10 @@ public final class XMLUtilities {
     }
 
     // Write a writeable object to a file
-    public final static boolean writeToXMLFile(final XMLWriteable writeable, final File file) {
+    public final static boolean writeToXMLFile(final XMLWriteable writeable, final File file, final String charset) {
         try {
             // Open the file with an indent writer
-            final IOSIndentWriter writer = new IOSIndentWriter(file);
+            final IOSIndentWriter writer = new IOSIndentWriter(file, charset);
             // Write the writeable object to writer
             return writeToXMLWriter(writeable, writer);
         } catch (final IOException exc) {
@@ -227,7 +227,7 @@ public final class XMLUtilities {
     public final static Document xmlStringToDocument(final String string) {
         try {
             final ByteArrayInputStream stream = new ByteArrayInputStream(
-                    string.getBytes("UTF-8"));
+                    string.getBytes(/*"UTF-8"*/));
             // Construct the XML document parser
             final DocumentBuilder parser
                     = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -237,7 +237,7 @@ public final class XMLUtilities {
             stream.close();
             //
             return document;
-        } catch (final ParserConfigurationException | SAXException | IOException exc) {
+        } catch (final Exception/*ParserConfigurationException | SAXException | IOException */exc) {
             // Print some error message in this case
             sLogger.failure(exc.toString());
             // Return null if parsing to XML failed

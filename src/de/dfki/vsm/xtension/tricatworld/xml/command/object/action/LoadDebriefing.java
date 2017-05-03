@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class LoadDebriefing extends Action implements XMLParseable, XMLWriteable {
+public class LoadDebriefing extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     private String mEventLog = "";
     private String mScreenVideo = "";

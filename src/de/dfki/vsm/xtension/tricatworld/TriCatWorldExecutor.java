@@ -14,24 +14,20 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
-import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.util.property.EmpatProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.Object;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.Action;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
 import de.dfki.vsm.xtension.tricatworld.xml.feedback.TriCatWorldFeedback;
 import de.dfki.vsm.xtension.tricatworld.xml.util.ActionLoader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
@@ -204,9 +200,8 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
         //final String activity_mode = activity.getMode();
         final String activity_actor = activity.getActor();
         final List activity_features = activity.getFeatures();
-        // Initialize the command
-        TriCatWorldCommand tworld_final_cmd = null;
-        Action tworld_cmd_action = null;
+        // Initialize the command        
+        TriCatWorldActObject triCatWorldAct = null;
         // set all activities blocking
         activity.setType(activity_type.blocking);
 
@@ -238,7 +233,8 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
                 // build action
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
+
             }
         } else {
             System.err.println("Activity Name: '" + activity_name + "'");
@@ -246,126 +242,126 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             final String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
             // Check the activity name
             if (activity_name.equalsIgnoreCase("StopSpeaking")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("Reject")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Challenge")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("ShowPalms")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("OpenArms")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("LookLeft")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("LookRight")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("No")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("StrongNo")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PointLeft")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PointRight")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PresentLeft")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("PresentRight")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Welcome")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Yes")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("StrongYes")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Angry")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Demanding")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Disgust")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Neutral")) {
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
             } else if (activity_name.equalsIgnoreCase("Sad")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Smile")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Happy")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
-                tworld_cmd_action = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("CancelMoveTo")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Play")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Stop")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Release")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("ReleaseLookAt")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("AmbientLight")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
             } else if (activity_name.equalsIgnoreCase("AmbientSound")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
             } else if (activity_name.equalsIgnoreCase("Load")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
                                 activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("LookAt")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("MoveTo")) {
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Say")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
                                 activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("PlayStream")) { // added pg 23.3.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
                 if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
                     mLogger.warning("Action PlayStream not processed - agent(name) is not DebriefingScreen");
                     return;
                 }
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("file"), activity.get("start"), activity.get("end"));
             } else if (activity_name.equalsIgnoreCase("PlayTopic")) { // added pg 27.4.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
@@ -373,9 +369,9 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     mLogger.warning("Action PlayTopic not processed - agent(name) is not DebriefingScreen");
                     return;
                 }
-                String playquestion = (activity.get("playquestion") != null) ?activity.get("playquestion") : "0";
+                String playquestion = (activity.get("playquestion") != null) ? activity.get("playquestion") : "0";
                 String playanswer = (activity.get("playanswer") != null) ? activity.get("playanswer") : "0";
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("topicid"), playquestion, playanswer);
             } else if (activity_name.equalsIgnoreCase("LoadDebriefing")) { // added pg 27.43.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
@@ -383,7 +379,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     mLogger.warning("Action LoadDebriefing not processed - agent(name) is not DebriefingScreen");
                     return;
                 }
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("eventlog"), activity.get("screenvideo"), activity.get("cameravideo"));
             } else if (activity_name.equalsIgnoreCase("AddNote")) { // added pg 27.43.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
@@ -391,67 +387,67 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     mLogger.warning("Action LoadDebriefing not processed - agent(name) is not DebriefingScreen");
                     return;
                 }
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("text"), activity.get("x"), activity.get("y"));
             } else if (activity_name.equalsIgnoreCase("PlayAudio")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
                                 activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, url);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("Color")) {
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("r"), activity.get("g"), activity.get("b"));
             } else if (activity_name.equalsIgnoreCase("SitDown")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("chairname"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("chairname"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Stop")) {
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name);
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Warp")) {
                 String target = activity.get("viewtarget");
                 if (target != null) {
-                    tworld_cmd_action = mActionLoader.loadAnimation(activity_name, activity.get("location"), target);
+                    triCatWorldAct = mActionLoader.loadAnimation(activity_name, activity.get("location"), target);
                 } else {
-                    tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("location"));
+                    triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("location"));
                 }
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("WorldPosition")) {
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Camera") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("x"), activity.get("y"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("FocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("value"), activity.get("time"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("DefaultFocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("CameraOffset") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                tworld_cmd_action = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Scale") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                tworld_cmd_action = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
                 if (activity_actor.equalsIgnoreCase("player")) {
-                    tworld_cmd_action.resetActionCmd(activity_actor + "_" + tworld_cmd_action.getActionCmd());
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else {
                 // Unknown activity_name
@@ -459,27 +455,35 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
         }
         //mLogger.message("Building command " + activity_name + " for actor " + activity_actor);
         // Finalize build activity_name
-        final Object tworld_cmd_object = new Object(activity_actor, tworld_cmd_action);
-        tworld_final_cmd = new TriCatWorldCommand();
-        tworld_final_cmd.addObject(tworld_cmd_object);
+        //final CommandObject tworld_cmd_object = 
+        final TriCatWorldCommand triCatWorldCmd = new TriCatWorldCommand();
+        triCatWorldCmd.addObject(new TriCatWorldCmdObject(activity_actor, triCatWorldAct));
         // Write the commmand to XML
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final IOSIndentWriter iosw = new IOSIndentWriter(out);
-        XMLUtilities.writeToXMLWriter(tworld_final_cmd, iosw);
+        //final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        //final IOSIndentWriter iosw = new IOSIndentWriter(out);
+        //XMLUtilities.writeToXMLWriter(tworld_final_cmd, iosw);
+
+        final String message = triCatWorldCmd.toString().
+                replaceAll(">\\s*<", "><");
+        //System.err.println(message);
+        //try {
         // GM_: Why is this necessary
         // Fuck German Umlaute and Encoding
-        String message = out.toString().
-                replace("ö", "oe").
-                replace("ä", "ae").
-                replace("ü", "ue").
-                replace("Ö", "Oe").
-                replace("Ä", "Ae").
-                replace("Ü", "Ue").
-                replace("ß", "ss").
-                replace("\n", " ").
-                replace("   ", " ").
-                replace("  ", " ");
-
+        //message = message. // replace("ö", "oe").
+        // replace("ä", "ae").
+        // replace("ü", "ue").
+        // replace("Ö", "Oe").
+        // replace("Ä", "Ae").
+        // replace("Ü", "Ue").
+        // replace("ß", "ss")
+        //replace("\r\n", " ").
+        //replace("\n", " ").
+        //replace("   ", " ").
+        //replace("  ", " ");
+        //System.err.println(message);
+        // } catch (final UnsupportedEncodingException exc) {
+        //     exc.printStackTrace();
+        // }
         mLogger.message("\033[1;35mExecuting command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message) + "\033[0m");
 
         // Send activity_name to tworld 
@@ -488,7 +492,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
 
             // organize wait for feedback if (activity instanceof SpeechActivity) {
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(tworld_cmd_action.getId(), cAW);
+            mActivityWorkerMap.put(triCatWorldAct.getId(), cAW);
 
             if (activity.getType() == activity_type.blocking) { // Wait only if activity is blocking
                 // wait until we got feedback
@@ -534,21 +538,21 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     // Handle some message
     public final void handle(final String input, final TriCatWorldHandler client) {
         // Sanitize the message
-        final String message = input.replaceAll("..xml\\s+version........", "");
+        final String message = input.replaceAll("..xml\\s+version........", "").replaceAll(">\\s*<", "><");
         // Print some information
         mLogger.message("\033[1;35mHandling new message:\n" + prettyPrint(message) + "\033[0m");
-        
+
         // Check and notify the relevant threads
         synchronized (mActivityWorkerMap) {
             final TriCatWorldFeedback tworld_final_feedback = new TriCatWorldFeedback();
             try {
-                final InputStream stream = new ByteArrayInputStream(message.getBytes("UTF-8"));
+                final InputStream stream = new ByteArrayInputStream(message.getBytes(/*"UTF-8"*/));
                 XMLUtilities.parseFromXMLStream(tworld_final_feedback, stream);
-            } catch (final UnsupportedEncodingException exc) {
+            } catch (final Exception exc) {
                 mLogger.failure(exc.toString());
                 return;
             }
-            
+
             // Handle action feedback
             if (tworld_final_feedback.hasActionFeedback()) {
                 // added pg 24.3.2017 - process multiple actions in feedback 
@@ -561,7 +565,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                                 if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
                                     // TODO - get id - for now there is none                          
                                     mLogger.message("\033[1;35mAgent starts speaking" + "\033[0m");
-                                     // Set character voice activity variable
+                                    // Set character voice activity variable
                                     if (mUseJPL) {
                                         JPLEngine.query("now(Time), "
                                                 + "jdd(["
@@ -666,12 +670,13 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
         return false;
     }
 
-    // Pretty print XM event
+    // Pretty print XML event
     public final String prettyPrint(final String string) {
         try {
+            //mLogger.warning("Pretty Printing '" + string + "'");
             // Get the string input stream
             final ByteArrayInputStream stream = new ByteArrayInputStream(
-                    string.getBytes("UTF-8"));
+                    string.getBytes("UTF-8"));//
             // Construct the XML pipeline
             final DocumentBuilder parser
                     = DocumentBuilderFactory.newInstance().newDocumentBuilder();

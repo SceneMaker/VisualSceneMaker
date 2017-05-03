@@ -190,8 +190,8 @@ public final class ProjectConfig implements ModelObject {
      // Get string representation
     @Override
     public final String toString() {
-        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        final IOSIndentWriter writer = new IOSIndentWriter(stream);
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        final IOSIndentWriter writer = new IOSIndentWriter(buffer);
         try {
             writeXML(writer);
         } catch (final XMLWriteError exc) {
@@ -199,11 +199,13 @@ public final class ProjectConfig implements ModelObject {
         }
         writer.flush();
         writer.close();
-        try {
-            return stream.toString("UTF-8");
-        } catch (final UnsupportedEncodingException exc) {
-            mLogger.failure(exc.toString());
-            return stream.toString();
+       try {
+            //return buffer.toString("UTF-8");
+            return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 

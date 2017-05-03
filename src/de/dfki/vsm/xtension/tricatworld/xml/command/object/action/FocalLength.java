@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class FocalLength extends Action implements XMLParseable, XMLWriteable {
+public class FocalLength extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mValue = "";
     String mBlendTime = "";
