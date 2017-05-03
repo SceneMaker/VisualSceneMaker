@@ -26,24 +26,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gregor Mehlmann
@@ -453,40 +440,15 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 // Unknown activity_name
             }
         }
-        //mLogger.message("Building command " + activity_name + " for actor " + activity_actor);
-        // Finalize build activity_name
-        //final CommandObject tworld_cmd_object = 
+
+        // Create command object
         final TriCatWorldCommand triCatWorldCmd = new TriCatWorldCommand();
         triCatWorldCmd.addObject(new TriCatWorldCmdObject(activity_actor, triCatWorldAct));
-        // Write the commmand to XML
-        //final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        //final IOSIndentWriter iosw = new IOSIndentWriter(out);
-        //XMLUtilities.writeToXMLWriter(tworld_final_cmd, iosw);
-
-        final String message = triCatWorldCmd.toString().
-                replaceAll(">\\s*<", "><");
-        //System.err.println(message);
-        //try {
-        // GM_: Why is this necessary
-        // Fuck German Umlaute and Encoding
-        //message = message. // replace("ö", "oe").
-        // replace("ä", "ae").
-        // replace("ü", "ue").
-        // replace("Ö", "Oe").
-        // replace("Ä", "Ae").
-        // replace("Ü", "Ue").
-        // replace("ß", "ss")
-        //replace("\r\n", " ").
-        //replace("\n", " ").
-        //replace("   ", " ").
-        //replace("  ", " ");
-        //System.err.println(message);
-        // } catch (final UnsupportedEncodingException exc) {
-        //     exc.printStackTrace();
-        // }
-        mLogger.message("\033[1;35mExecuting command " + activity_name + " on actor " + activity_actor + ":\n" + prettyPrint(message) + "\033[0m");
-
-        // Send activity_name to tworld 
+        // Write the commmand to XML        
+        final String message = XMLUtilities.xmlStringToPrettyXMLString(triCatWorldCmd.toString());
+        // Print debug message
+        mLogger.message("\033[0;35mExecuting command " + activity_name + " on actor " + activity_actor + ":\n" + message + "\033[0m");
+        // Send command object
         synchronized (mActivityWorkerMap) {
             broadcast(message);
 
@@ -538,25 +500,25 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     // Handle some message
     public final void handle(final String input, final TriCatWorldHandler client) {
         // Sanitize the message
-        final String message = input.replaceAll("..xml\\s+version........", "").replaceAll(">\\s*<", "><");
+        final String message = XMLUtilities.xmlStringToPrettyXMLString(
+                input.replaceAll("..xml\\s+version........", ""));
         // Print some information
-        mLogger.message("\033[1;35mHandling new message:\n" + prettyPrint(message) + "\033[0m");
-
+        mLogger.message("\033[1;35mHandling new message:\n" + message + "\033[0m");
         // Check and notify the relevant threads
         synchronized (mActivityWorkerMap) {
-            final TriCatWorldFeedback tworld_final_feedback = new TriCatWorldFeedback();
+            final TriCatWorldFeedback triCatFeedBack = new TriCatWorldFeedback();
             try {
-                final InputStream stream = new ByteArrayInputStream(message.getBytes(/*"UTF-8"*/));
-                XMLUtilities.parseFromXMLStream(tworld_final_feedback, stream);
+                XMLUtilities.parseFromXMLStream(triCatFeedBack,
+                        new ByteArrayInputStream(message.getBytes("UTF-8")));
             } catch (final Exception exc) {
                 mLogger.failure(exc.toString());
                 return;
             }
 
             // Handle action feedback
-            if (tworld_final_feedback.hasActionFeedback()) {
+            if (triCatFeedBack.hasActionFeedback()) {
                 // added pg 24.3.2017 - process multiple actions in feedback 
-                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.action.Action action : tworld_final_feedback.mFeedbackActions) {
+                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.action.Action action : triCatFeedBack.mFeedbackActions) {
                     // handling every /*ambient_setup*/ feedback
                     if (action.mActionFeedback.mName.equalsIgnoreCase("action_finished")) {
                         // check if the acitivy action feedback was speech feedback
@@ -564,7 +526,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                             if (action.mActionFeedback.mCaiEvent.hasTTSStatus()) {
                                 if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
                                     // TODO - get id - for now there is none                          
-                                    mLogger.message("\033[1;35mAgent starts speaking" + "\033[0m");
+                                    mLogger.message("\033[1;34mAgent starts speaking" + "\033[0m");
                                     // Set character voice activity variable
                                     if (mUseJPL) {
                                         JPLEngine.query("now(Time), "
@@ -589,7 +551,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                                 if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
                                     // TODO - get id - for now there is none
                                     // Set character voice activity variable
-                                    mLogger.message("\033[1;35mAgent finishes speaking" + "\033[0m");
+                                    mLogger.message("\033[1;34mAgent finishes speaking" + "\033[0m");
                                     if (mUseJPL) {
                                         JPLEngine.query("now(Time), "
                                                 + "jdd(["
@@ -626,9 +588,9 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             }
 
             // Handle action feedback
-            if (tworld_final_feedback.hasObjectFeedback()) {
+            if (triCatFeedBack.hasObjectFeedback()) {
                 // added pg 24.3.2017 - process multiple objects in feedback 
-                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.object.Object object : tworld_final_feedback.mFeedbackObjects) {
+                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.object.Object object : triCatFeedBack.mFeedbackObjects) {
                     HashMap<String, AbstractValue> values = new HashMap<>();
                     values.put("type", new StringValue(object.mObjectFeedback.mName));
                     values.put("elicitor", new StringValue(object.mObjectFeedback.mTriggerObject));
@@ -668,36 +630,6 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             return true;
         }
         return false;
-    }
-
-    // Pretty print XML event
-    public final String prettyPrint(final String string) {
-        try {
-            //mLogger.warning("Pretty Printing '" + string + "'");
-            // Get the string input stream
-            final ByteArrayInputStream stream = new ByteArrayInputStream(
-                    string.getBytes("UTF-8"));//
-            // Construct the XML pipeline
-            final DocumentBuilder parser
-                    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            final Transformer transformer
-                    = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            // Parse the XML document
-            final StreamResult result
-                    = new StreamResult(new StringWriter());
-            final Document document = parser.parse(stream);
-            final DOMSource source = new DOMSource(document);
-            // Transform the document
-            transformer.transform(source, result);
-            // Return the representation
-            return result.getWriter().toString();
-        } catch (final ParserConfigurationException | IllegalArgumentException | SAXException | IOException | TransformerException exc) {
-            mLogger.failure(exc.toString());
-            // Return failure if the parsing failed
-            return null;
-        }
     }
 
     @Override

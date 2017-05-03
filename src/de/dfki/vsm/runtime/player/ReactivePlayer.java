@@ -83,7 +83,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Translate the arguments
         final HashMap substitutions = getSubstitutions(args);
         // Print some information
-        mLogger.message("Playing Action '" + text + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
+        //mLogger.message("Playing Action '" + text + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
         // Create playback task
         final PlayerWorker worker;
         worker = new PlayerWorker(task) {
@@ -157,7 +157,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Translate the arguments
         final HashMap substitutions = getSubstitutions(args);
         // Print some information
-        mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
+        //mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
 
         // Get the scene object
         final SceneScript script = mProject.getSceneScript();

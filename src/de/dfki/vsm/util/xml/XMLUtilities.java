@@ -18,6 +18,7 @@ import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -223,7 +224,7 @@ public final class XMLUtilities {
             return false;
         }
     }
-    
+
     public final static Document xmlStringToDocument(final String string) {
         try {
             final ByteArrayInputStream stream = new ByteArrayInputStream(
@@ -237,14 +238,14 @@ public final class XMLUtilities {
             stream.close();
             //
             return document;
-        } catch (final Exception/*ParserConfigurationException | SAXException | IOException */exc) {
+        } catch (final Exception/*ParserConfigurationException | SAXException | IOException */ exc) {
             // Print some error message in this case
             sLogger.failure(exc.toString());
             // Return null if parsing to XML failed
             return null;
         }
     }
-    
+
     public final static String xmlElementToString(final Element element) {
         try {
             final Transformer transformer
@@ -258,6 +259,40 @@ public final class XMLUtilities {
             // Print some error message in this case
             sLogger.failure(exc.toString());
             // Return null if parsing to XML failed
+            return null;
+        }
+    }
+
+    // Pretty print XML event
+    public final static String xmlStringToPrettyXMLString(final String string) {
+        try {
+            //mLogger.warning("Pretty Printing '" + string + "'");
+            // Get the string input stream
+            final ByteArrayInputStream stream = new ByteArrayInputStream(
+                    string.replaceAll(">\\s*<", "><").getBytes("UTF-8"));
+            // Construct the XML pipeline
+            final DocumentBuilder parser
+                    = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            final Transformer transformer
+                    = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            // Parse the XML document
+            final StreamResult result
+                    = new StreamResult(new StringWriter());
+            final Document document = parser.parse(stream);
+            final DOMSource source = new DOMSource(document);
+            // Transform the document
+            transformer.transform(source, result);
+            // Return the representation
+            return result.getWriter().toString();
+        } catch (final ParserConfigurationException
+                | TransformerException
+                | IllegalArgumentException
+                | SAXException
+                | IOException exc) {
+            sLogger.failure(exc.toString());
+            // Return failure if the parsing failed
             return null;
         }
     }
