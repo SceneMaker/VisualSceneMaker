@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class AddNote extends Action implements XMLParseable, XMLWriteable {
+public class AddNote extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     private String mText = "";
     private String mXPos = "";

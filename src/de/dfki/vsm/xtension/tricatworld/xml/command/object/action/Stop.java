@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Stop extends Action implements XMLParseable, XMLWriteable {
+public class Stop extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     public Stop() {
         mName = "stop";

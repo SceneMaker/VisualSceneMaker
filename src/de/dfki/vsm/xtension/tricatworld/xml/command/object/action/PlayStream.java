@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class PlayStream extends Action implements XMLParseable, XMLWriteable {
+public class PlayStream extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     private String mPath = "";
     private String mStarttime = "";

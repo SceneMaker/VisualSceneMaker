@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.tricatworld.xml.command.object.action;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
@@ -16,7 +11,7 @@ import org.w3c.dom.Element;
  *
  * @author Patrick Gebhard
  */
-public class Action implements XMLParseable, XMLWriteable {
+public class TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     protected String mName = "";
     protected String mId = "";

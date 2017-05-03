@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class PlayTopic extends Action implements XMLParseable, XMLWriteable {
+public class PlayTopic extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     private String mTopicId = "";
     private String mPlayQuestion = "";

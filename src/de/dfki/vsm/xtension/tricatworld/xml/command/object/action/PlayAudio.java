@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class PlayAudio extends Action implements XMLParseable, XMLWriteable {
+public class PlayAudio extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mUrl = "";
 

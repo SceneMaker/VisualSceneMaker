@@ -41,29 +41,21 @@ Hintergrundfarbe
 /**
  * @author Gregor Mehlmann
  */
-public class LOGConsoleFormat extends Formatter {
+public final class LOGConsoleFormat extends Formatter {
 
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String format(final LogRecord record) {
 
         // Create The Date Of Logging
         Date date = new Date(record.getMillis());
-
         // Create The Thread Of Logging
         Thread thread = Thread.currentThread();
-
         // Create The Name Of Logger
         String name = record.getLoggerName();
-
         // Create The Stack Trace
         Object[] trace = record.getParameters();
-
         // Create The Method Name
         Object method = trace[2];
-
         String message = "";
         if (record.getLevel() == Level.SEVERE) {
             message += "\033[31m";
@@ -75,20 +67,15 @@ public class LOGConsoleFormat extends Formatter {
             message += "\033[1;32m";
         } else {
             message += "\033[1;37m";
-        }
-        
-        // PG added milliseconds
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        
-        
+        }        
+        //  
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); 
         // Create The String For Logging
         message += record.getLevel() + " to " + "STDERR" + " on " + df.format(date) + " by " + name + " in " + thread
                          + " at " + method;
-
         // Append The User Message
         message += Preferences.sSYSPROPS_LINE_SEPR + record.getMessage()    // The Message
                    + Preferences.sSYSPROPS_LINE_SEPR + Preferences.sSYSPROPS_LINE_SEPR + "\033[0m";
-
         // return The Final Log Message
         return message;
     }

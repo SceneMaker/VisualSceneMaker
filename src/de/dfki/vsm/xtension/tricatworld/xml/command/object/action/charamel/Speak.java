@@ -1,28 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel;
 
-import de.dfki.charactor.v4235.AnimationTrack;
-import de.dfki.charactor.v4235.ComplexAnimationGenerator;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.Action;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
 import java.util.LinkedList;
 import org.w3c.dom.Element;
 
 /**
- *
  * @author Patrick Gebhard
- *
  */
-public class Speak extends Action implements XMLParseable, XMLWriteable {
+public class Speak extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     private LinkedList mTextBlocks;
     private String mPunctuation;
@@ -46,10 +37,10 @@ public class Speak extends Action implements XMLParseable, XMLWriteable {
 
     private String buildUtterance() {
         final StringBuilder builder = new StringBuilder();
-        for (final Object item : mTextBlocks) {
-            String word = item.toString();
 
-            
+        for (final Object item : mTextBlocks) {
+            //String word = item.toString();
+            String word = (String) item;
             builder.append(word);
             if (!item.equals(mTextBlocks.getLast())) {
                 builder.append(' ');
@@ -62,17 +53,33 @@ public class Speak extends Action implements XMLParseable, XMLWriteable {
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
+        out.println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
+        // CDATA STUFF
+        String xml = "<cai_request version=\"1.0\">"
+                + "<cai_command aid=\"" + Integer.parseInt(mCharameAvatarId) + "\" id=\"" + mId + "\">"
+                + "RenderXML"
+                + "<animation_track>"
+                + "<speak_text aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">"
+                + "<![CDATA["
+                + buildUtterance()
+                + "]]>"
+                + "</speak_text>"
+                + "</animation_track>"
+                + "</cai_command>"
+                + "</cai_request>";
+        out.println(xml);
 
-        ComplexAnimationGenerator ca = new ComplexAnimationGenerator();
-        ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
-        ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
-        AnimationTrack track1 = ca.addTrack();
-        track1.addSpeakText(Integer.parseInt(mCharameAvatarId), buildUtterance());
-        out.push().println(ca.getCaiXML());
-        out.pop().pop().println("</Action>");
+        /*API STUFF
+        final ComplexAnimationGenerator generator = new ComplexAnimationGenerator();
+        generator.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
+        generator.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
+        final AnimationTrack track = generator.addTrack();
+        track.addSpeakText(Integer.parseInt(mCharameAvatarId), buildUtterance());
+        out.push().println(generator.getCaiXML());
+         */
+        out.pop().println("</Action>");
+
     }
-
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {

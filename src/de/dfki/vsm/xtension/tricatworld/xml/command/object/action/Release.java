@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Release extends Action implements XMLParseable, XMLWriteable {
+public class Release extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     public Release() {
         mName = "release";

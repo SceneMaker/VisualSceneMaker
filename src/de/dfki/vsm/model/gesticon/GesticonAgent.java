@@ -1,7 +1,6 @@
 package de.dfki.vsm.model.gesticon;
 
 //~--- non-JDK imports --------------------------------------------------------
-
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -11,7 +10,6 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 
 //~--- JDK imports ------------------------------------------------------------
-
 import java.io.ByteArrayOutputStream;
 
 import java.util.ArrayList;
@@ -32,8 +30,8 @@ public class GesticonAgent implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public GesticonAgent() {
-        mAgentName   = null;
-        mAgentIcon   = null;
+        mAgentName = null;
+        mAgentIcon = null;
         mGestureList = new ArrayList<>();
     }
 
@@ -41,8 +39,8 @@ public class GesticonAgent implements ModelObject {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     public GesticonAgent(final String name, final String icon, final ArrayList<GesticonGesture> list) {
-        mAgentName   = name;
-        mAgentIcon   = icon;
+        mAgentName = name;
+        mAgentIcon = icon;
         mGestureList = list;
     }
 
@@ -157,28 +155,26 @@ public class GesticonAgent implements ModelObject {
 
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
         // Initialize The Indent Writer
         final IOSIndentWriter stream = new IOSIndentWriter(buffer);
-
         try {
-
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {
 
             // mLogger.failure(exc.toString());
         }
-
         // Cleanup Stream and Writer
         stream.flush();
         stream.close();
-
         // Return String Representation
         try {
-            return buffer.toString("UTF-8");
-        } catch (Exception exc) {
+            //return buffer.toString("UTF-8");
             return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 
