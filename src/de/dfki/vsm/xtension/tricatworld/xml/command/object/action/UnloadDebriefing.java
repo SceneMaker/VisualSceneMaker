@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
  */
 public class UnloadDebriefing extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    public UnloadDebriefing(String eventlog) {
+    public UnloadDebriefing() {
         mName = "unload";
     }
 

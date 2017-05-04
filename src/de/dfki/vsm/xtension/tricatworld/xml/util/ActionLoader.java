@@ -71,7 +71,6 @@ public class ActionLoader {
     }
 
     public TriCatWorldActObject loadTWorldAnimation(String cmd) {
-        mLogger.message("Loading Class for TWorld Action " + cmd);
         TriCatWorldActObject a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
