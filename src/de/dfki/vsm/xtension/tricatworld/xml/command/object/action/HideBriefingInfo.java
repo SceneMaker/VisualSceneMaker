@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
  */
 public class HideBriefingInfo extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    public HideBriefingInfo(String text, String xpos, String ypos) {
+    public HideBriefingInfo() {
         mName = "hidedebriefingpanels";
     }
 

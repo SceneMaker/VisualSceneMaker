@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
  */
 public class DiscardAllNotes extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    public DiscardAllNotes(String text, String xpos, String ypos) {
+    public DiscardAllNotes() {
         mName = "DiscardAllNotes";
     }
 
