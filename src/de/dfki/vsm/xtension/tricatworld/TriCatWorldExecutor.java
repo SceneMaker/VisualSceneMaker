@@ -344,38 +344,72 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("PlayStream")) { // added pg 23.3.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
-                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
-                    mLogger.warning("Action PlayStream not processed - agent(name) is not DebriefingScreen");
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action PlayStream not processed - agent(name) is not debriefing");
                     return;
                 }
                 triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("file"), activity.get("start"), activity.get("end"));
             } else if (activity_name.equalsIgnoreCase("PlayTopic")) { // added pg 27.4.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
-                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
-                    mLogger.warning("Action PlayTopic not processed - agent(name) is not DebriefingScreen");
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action PlayTopic not processed - agent(name) is not debriefing");
                     return;
                 }
                 String playquestion = (activity.get("playquestion") != null) ? activity.get("playquestion") : "0";
                 String playanswer = (activity.get("playanswer") != null) ? activity.get("playanswer") : "0";
                 triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("topicid"), playquestion, playanswer);
-            } else if (activity_name.equalsIgnoreCase("LoadDebriefing")) { // added pg 27.43.2017
+            } else if (activity_name.equalsIgnoreCase("LoadDebriefing")) { // added pg 27.4.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
-                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
-                    mLogger.warning("Action LoadDebriefing not processed - agent(name) is not DebriefingScreen");
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action LoadDebriefing not processed - agent(name) is not debriefing");
                     return;
                 }
                 triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("eventlog"), activity.get("screenvideo"), activity.get("cameravideo"));
-            } else if (activity_name.equalsIgnoreCase("AddNote")) { // added pg 27.43.2017
-                // Ugly: activity_actor has to be: DebriefingScreen
-                if (!activity_actor.equalsIgnoreCase("DebriefingScreen")) {
-                    mLogger.warning("Action LoadDebriefing not processed - agent(name) is not DebriefingScreen");
+            } else if (activity_name.equalsIgnoreCase("HideBriefingInfo")) { // added pg 4.5.2017
+                // Ugly: activity_actor has to be: debriefing
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action HideBriefingInfo not processed - agent(name) is not debriefing");
                     return;
                 }
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
-                        activity.get("text"), activity.get("x"), activity.get("y"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("UnloadDebriefing")) { // added pg 4.5.2017
+                // Ugly: activity_actor has to be: debriefing
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action UnloadDebriefing not processed - agent(name) is not debriefing");
+                    return;
+                }
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("ShowNote")) { // added pg 27.4.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action ShowNote not processed - agent(name) is not debriefing");
+                    return;
+                }
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("text"));
+            } else if (activity_name.equalsIgnoreCase("PinNote")) { // added pg 4.5.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action ShowNote not processed - agent(name) is not debriefing");
+                    return;
+                }
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("DiscardNote")) { // added pg 4.5.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action ShowNote not processed - agent(name) is not debriefing");
+                    return;
+                }
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("DiscardAllNotes")) { // added pg 4.5.2017
+                // Ugly: activity_actor has to be: DebriefingScreen
+                if (!activity_actor.equalsIgnoreCase("debriefing")) {
+                    mLogger.warning("Action ShowNote not processed - agent(name) is not debriefing");
+                    return;
+                }
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("PlayAudio")) {
                 String url = "file:///" + mProject.getProjectPath()
                         + File.separator + mProject.getAgentConfig(
