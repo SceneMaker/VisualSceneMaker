@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
  */
 public class PinNote extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    public PinNote(String text, String xpos, String ypos) {
+    public PinNote(String text) {
         mName = "PinNote";
     }
 
