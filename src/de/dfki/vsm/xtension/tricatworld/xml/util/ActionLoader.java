@@ -71,6 +71,7 @@ public class ActionLoader {
     }
 
     public TriCatWorldActObject loadTWorldAnimation(String cmd) {
+        mLogger.message("Loading Class for TWorld Action " + cmd);
         TriCatWorldActObject a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
@@ -82,9 +83,7 @@ public class ActionLoader {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 0) {
                     a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance();
-
                 }
-
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             mLogger.failure("No Class for TWorld Action " + cmd);
@@ -93,7 +92,6 @@ public class ActionLoader {
         if (a != null) {
             a.setId(getNextID());
         }
-
         return a;
     }
 

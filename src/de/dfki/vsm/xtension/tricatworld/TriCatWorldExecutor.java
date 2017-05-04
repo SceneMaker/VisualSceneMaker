@@ -390,9 +390,10 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 }
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("text"));
             } else if (activity_name.equalsIgnoreCase("PinNote")) { // added pg 4.5.2017
+                mLogger.message("\033[1;35mProcessing Activity:\n" + activity_name + "\033[0m");
                 // Ugly: activity_actor has to be: DebriefingScreen
                 if (!activity_actor.equalsIgnoreCase("debriefing")) {
-                    mLogger.warning("Action ShowNote not processed - agent(name) is not debriefing");
+                    mLogger.warning("Action PinNote not processed - agent(name) is not debriefing");
                     return;
                 }
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
