@@ -17,30 +17,20 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class AddNote extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
+public class PinNote extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    private String mText = "";
-    private String mXPos = "";
-    private String mYPos = "";
-
-    public AddNote(String text, String xpos, String ypos) {
-        mName = "addnote";
-        mText = text;
-        mXPos = xpos;
-        mYPos = ypos;
+    public PinNote(String text, String xpos, String ypos) {
+        mName = "PinNote";
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" text=\"" + mText + "\" anchorx=\"" + mXPos + "\" anchory=\"" + mYPos + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId  + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mId = element.getAttribute("id");
-        mText = element.getAttribute("text");
-        mXPos = element.getAttribute("anchorx");
-        mYPos = element.getAttribute("anchory");
     }
 }
