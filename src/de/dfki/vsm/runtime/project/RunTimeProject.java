@@ -561,7 +561,7 @@ public class RunTimeProject {
         }
 
         // Print an information message in this case
-        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
+        //mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
         //mLogger.message("Loaded scenescript configuration file in path'" + path + "'");
 
         // Return success if the project was loaded

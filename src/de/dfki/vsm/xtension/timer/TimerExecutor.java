@@ -37,6 +37,8 @@ public final class TimerExecutor extends ActivityExecutor {
 
     @Override
     public void execute(final AbstractActivity activity) {
+        
+        //activity.setType(AbstractActivity.Type.blocking);
 
         // Get log message features
         final String name = activity.getName();
