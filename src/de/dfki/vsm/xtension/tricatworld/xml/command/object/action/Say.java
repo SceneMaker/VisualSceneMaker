@@ -23,7 +23,7 @@ public class Say extends TriCatWorldActObject implements XMLParseable, XMLWritea
 
     public Say(String url) {
         mName = "say";
-        mUrl = url;
+        mUrl = url.replaceAll("\\'", "");
     }
 
     public Say() {
