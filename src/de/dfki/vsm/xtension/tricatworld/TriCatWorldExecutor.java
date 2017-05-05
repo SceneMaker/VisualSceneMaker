@@ -444,6 +444,12 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
+            } else if (activity_name.equalsIgnoreCase("MoveToWorldPosition")) { // added pg 5.5.2017
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                        activity.get("x"), activity.get("y"), activity.get("z"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
+                }
             } else if (activity_name.equalsIgnoreCase("Camera") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("x"), activity.get("y"));
