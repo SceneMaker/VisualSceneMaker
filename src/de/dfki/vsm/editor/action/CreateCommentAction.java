@@ -63,7 +63,7 @@ public class CreateCommentAction extends EditorAction {
         UndoAction.getInstance().refreshUndoState();
         RedoAction.getInstance().refreshRedoState();
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
     }
 
     private class Edit extends AbstractUndoableEdit {
@@ -71,14 +71,14 @@ public class CreateCommentAction extends EditorAction {
         public void undo() throws CannotUndoException {
             delete();
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
 
         @Override
         public void redo() throws CannotRedoException {
             create();
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
 
         @Override

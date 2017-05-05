@@ -74,7 +74,7 @@ public class TriCatWorldHandler extends Thread {
             // Receive The Next Line
             final String message = mInStream.readLine();
             // Debug Some Information
-            //mLogger.warning("Receiving '" + message + "'");
+            //mLogger.success("Receiving '" + message + "'");
             // Return Received Data
             return message;
         } catch (final IOException exc) {
@@ -93,7 +93,7 @@ public class TriCatWorldHandler extends Thread {
             mOutStream.newLine();
             mOutStream.flush();
             // Print some information
-            //mLogger.message("Sending '" + string + "'");
+            //mLogger.success("Sending '" + string + "'");
             // Return true at success
             return true;
         } catch (final IOException exc) {

@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Scale extends Action implements XMLParseable, XMLWriteable {
+public class Scale extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mScale = "";
 

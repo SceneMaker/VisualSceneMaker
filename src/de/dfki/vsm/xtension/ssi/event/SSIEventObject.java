@@ -20,8 +20,8 @@ public abstract class SSIEventObject implements XMLParseable, XMLWriteable {
     // Get string representation
     @Override
     public final String toString() {
-        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        final IOSIndentWriter writer = new IOSIndentWriter(stream);
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        final IOSIndentWriter writer = new IOSIndentWriter(buffer);
         try {
             writeXML(writer);
         } catch (final XMLWriteError exc) {
@@ -30,10 +30,12 @@ public abstract class SSIEventObject implements XMLParseable, XMLWriteable {
         writer.flush();
         writer.close();
         try {
-            return stream.toString("UTF-8");
-        } catch (final UnsupportedEncodingException exc) {
-            mLogger.failure(exc.toString());
-            return stream.toString();
+            //return buffer.toString("UTF-8");
+            return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 }

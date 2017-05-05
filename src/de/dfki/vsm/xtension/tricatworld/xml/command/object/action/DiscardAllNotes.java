@@ -15,33 +15,22 @@ import org.w3c.dom.Element;
 /**
  *
  * @author Patrick Gebhard
+ *
  */
-public class Action implements XMLParseable, XMLWriteable {
+public class DiscardAllNotes extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    protected String mName = "";
-    protected String mId = "";
-
-    public void setId(String id) {
-        mId = id;
-    }
-
-    public String getId() {
-        return mId;
-    }
-
-    public String getActionCmd() {
-        return mName;
-    }
-
-    public void resetActionCmd(String newcmdname) {
-        mName = newcmdname;
+    public DiscardAllNotes() {
+        mName = "DiscardAllNotes";
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId  + "\"/>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
+        mName = element.getAttribute("name");
+        mId = element.getAttribute("id");
     }
 }

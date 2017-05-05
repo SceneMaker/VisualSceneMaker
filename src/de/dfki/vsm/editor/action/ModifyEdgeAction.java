@@ -38,6 +38,6 @@ public class ModifyEdgeAction extends EdgeAction {
         // Repaint the GUI to show the changes
         mGUIEdge.update();
         mWorkSpace.revalidate();
-        mWorkSpace.repaint();
+        mWorkSpace.repaint(100);
     }
 }

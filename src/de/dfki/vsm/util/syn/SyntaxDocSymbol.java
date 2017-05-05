@@ -95,10 +95,13 @@ public class SyntaxDocSymbol extends Symbol implements ModelObject {
         stream.close();
 
         // Return String Representation
-        try {
-            return buffer.toString("UTF-8");
-        } catch (Exception exc) {
+       try {
+            //return buffer.toString("UTF-8");
             return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 }

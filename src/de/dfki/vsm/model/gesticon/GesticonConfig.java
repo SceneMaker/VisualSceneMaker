@@ -99,28 +99,26 @@ public class GesticonConfig implements ModelObject {
 
         // Create A Byte Array Stream
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
         // Initialize The Indent Writer
         final IOSIndentWriter stream = new IOSIndentWriter(buffer);
 
         try {
-
             // Write Object
             writeXML(stream);
         } catch (XMLWriteError exc) {
-
             // mLogger.failure(exc.toString());
         }
-
         // Cleanup Stream and Writer
         stream.flush();
         stream.close();
-
         // Return String Representation
-        try {
-            return buffer.toString("UTF-8");
-        } catch (Exception exc) {
+       try {
+            //return buffer.toString("UTF-8");
             return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 

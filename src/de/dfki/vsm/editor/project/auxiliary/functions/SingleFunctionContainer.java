@@ -10,6 +10,7 @@ import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
 import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.Color;
@@ -23,7 +24,6 @@ import java.awt.event.MouseEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
@@ -60,6 +60,10 @@ import javax.swing.text.PlainDocument;
  * Current status: BETA
  */
 public class SingleFunctionContainer extends JPanel {
+    // The singelton logger instance
+
+    protected final LOGDefaultLogger mLogger
+            = LOGDefaultLogger.getInstance();
 
     private final Vector<String> mArgNameList = new Vector<>();
     private final HashMap<String, String> mNameMap = new HashMap<>();
@@ -152,8 +156,8 @@ public class SingleFunctionContainer extends JPanel {
                 mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString),
                         getTypeMap().get(argString)));
             }
-        } catch (Exception ex) {
-            System.err.println("The function created does not exist in the enviroment \n" + ex.getMessage());
+        } catch (final Exception exc) {
+            mLogger.failure("The function created does not exist in the enviroment: \n" + exc.toString());
         }
         EditorInstance.getInstance().refresh();
     }

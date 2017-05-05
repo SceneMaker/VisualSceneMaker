@@ -111,9 +111,12 @@ public final class ActiconConfig implements ModelObject {
         stream.close();
         // Get String Representation
         try {
-            return buffer.toString("UTF-8");
-        } catch (Exception exc) {
+            //return buffer.toString("UTF-8");
             return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 

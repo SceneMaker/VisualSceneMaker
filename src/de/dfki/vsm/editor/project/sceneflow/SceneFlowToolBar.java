@@ -432,7 +432,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
                         mSceneFlowEditor.getWorkSpace().showVariablesOnWorkspace();
                         updateShowVarsButtons();
                         revalidate();
-                        repaint();
+                        repaint(100);
                     }
                 });
         mShowVarButton.setRolloverIcon(Boolean.valueOf(Preferences.getProperty("showVariables")) ? ICON_VARS_ROLLOVER : ICON_VARS_HIDDEN_ROLLOVER);
@@ -734,6 +734,6 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             mPathDisplay.add(pathElement);
         }
         revalidate();
-        repaint();
+        repaint(100);
     }
 }

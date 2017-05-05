@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class WorldPosition extends Action implements XMLParseable, XMLWriteable {
+public class WorldPosition extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mX = "";
     String mY = "";

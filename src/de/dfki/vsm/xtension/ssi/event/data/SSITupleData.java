@@ -71,8 +71,9 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
         writer.flush();
         writer.close();
         try {
-            return stream.toString("UTF-8");
-        } catch (final UnsupportedEncodingException exc) {
+            //return stream.toString("UTF-8");
+            return stream.toString();
+        } catch (final Exception exc) {
             mLogger.failure(exc.toString());
             return stream.toString();
         }

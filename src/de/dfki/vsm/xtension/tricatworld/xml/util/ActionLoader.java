@@ -6,7 +6,8 @@
 package de.dfki.vsm.xtension.tricatworld.xml.util;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.Action;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel.Speak;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
@@ -69,8 +70,8 @@ public class ActionLoader {
         return classPath;
     }
 
-    public Action loadTWorldAnimation(String cmd) {
-        Action a = null;
+    public TriCatWorldActObject loadTWorldAnimation(String cmd) {
+        TriCatWorldActObject a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
 
@@ -80,10 +81,8 @@ public class ActionLoader {
             for (Constructor con : constructors) {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 0) {
-                    a = (Action) c.getDeclaredConstructor(params).newInstance();
-
+                    a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance();
                 }
-
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             mLogger.failure("No Class for TWorld Action " + cmd);
@@ -92,12 +91,11 @@ public class ActionLoader {
         if (a != null) {
             a.setId(getNextID());
         }
-
         return a;
     }
 
-    public Action loadTWorldAnimation(String cmd, String value) {
-        Action a = null;
+    public TriCatWorldActObject loadTWorldAnimation(String cmd, String value) {
+        TriCatWorldActObject a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
 
@@ -108,7 +106,7 @@ public class ActionLoader {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 1) {
                     if (params[0].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (Action) c.getDeclaredConstructor(params).newInstance(value);
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value);
                     }
                 }
 
@@ -124,8 +122,8 @@ public class ActionLoader {
         return a;
     }
 
-    public Action loadAnimation(String cmd, String value1, String value2) {
-        Action a = null;
+    public TriCatWorldActObject loadAnimation(String cmd, String value1, String value2) {
+        TriCatWorldActObject a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
 
@@ -136,7 +134,7 @@ public class ActionLoader {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 2) {
                     if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1, value2);
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2);
                     }
                 }
 
@@ -152,8 +150,8 @@ public class ActionLoader {
         return a;
     }
 
-    public Action loadCharamelAnimation(String cmd, String value1) {
-        Action a = null;
+    public TriCatWorldActObject loadCharamelAnimation(String cmd, String value1) {
+        TriCatWorldActObject a = null;
 
         String cp = getTWorldCharamelCommandClasspath(cmd);
 
@@ -164,7 +162,7 @@ public class ActionLoader {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 1) {
                     if (params[0].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1);
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1);
                     }
                 }
 
@@ -180,8 +178,8 @@ public class ActionLoader {
         return a;
     }
     
-    public Action loadCharamelAnimation(String cmd, String value1, String value2) {
-        Action a = null;
+    public TriCatWorldActObject loadCharamelAnimation(String cmd, String value1, String value2) {
+        TriCatWorldActObject a = null;
 
         String cp = getTWorldCharamelCommandClasspath(cmd);
 
@@ -192,7 +190,7 @@ public class ActionLoader {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 2) {
                     if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1, value2);
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2);
                     }
                 }
 
@@ -208,8 +206,10 @@ public class ActionLoader {
         return a;
     }
 
-    public Action loadCharamelAnimation(String cmd, LinkedList value1, String value2, String value3) {
-        Action a = null;
+    public TriCatWorldActObject loadCharamelAnimation(String cmd, LinkedList value1, String value2, String value3) {
+        TriCatWorldActObject a = null;
+        
+        
 
         String cp = getTWorldCharamelCommandClasspath(cmd);
 
@@ -220,7 +220,7 @@ public class ActionLoader {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 3) {
                     if (params[0].getSimpleName().equalsIgnoreCase("linkedlist") && params[1].getSimpleName().equalsIgnoreCase("string") && params[2].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1, value2, value3);
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3);
                     }
                 }
 
@@ -236,8 +236,8 @@ public class ActionLoader {
         return a;
     }
 
-    public Action loadAnimation(String cmd, String value1, String value2, String value3) {
-        Action a = null;
+    public TriCatWorldActObject loadAnimation(String cmd, String value1, String value2, String value3) {
+        TriCatWorldActObject a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
 
@@ -248,7 +248,7 @@ public class ActionLoader {
                 Class[] params = con.getParameterTypes();
                 if (params.length == 3) {
                     if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string") && params[2].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (Action) c.getDeclaredConstructor(params).newInstance(value1, value2, value3);
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3);
                     }
                 }
 
