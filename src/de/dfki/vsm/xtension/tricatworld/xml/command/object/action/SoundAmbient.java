@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class SoundAmbient extends Action implements XMLParseable, XMLWriteable {
+public class SoundAmbient extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mValue = "";
 

@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class MoveTo extends Action implements XMLParseable, XMLWriteable {
+public class MoveTo extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mLocation = "";
 

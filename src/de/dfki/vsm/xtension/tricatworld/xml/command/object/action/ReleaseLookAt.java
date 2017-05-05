@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class ReleaseLookAt extends Action implements XMLParseable, XMLWriteable {
+public class ReleaseLookAt extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
 
     public ReleaseLookAt() {

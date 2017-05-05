@@ -59,7 +59,7 @@ public class NormalizeEdgeAction {
                 // mGUIEdge.straightenEdge();
                 // renew graphical representation on work space
                 mWorkSpace.revalidate();
-                mWorkSpace.repaint();
+                mWorkSpace.repaint(100);
             }
         };
     }
@@ -161,14 +161,14 @@ public class NormalizeEdgeAction {
 //          setGridWeight();
 //          mWorkSpace.add(mGUIEdge);
 //          mWorkSpace.revalidate();
-//          mWorkSpace.repaint();
+//          mWorkSpace.repaint(100);
 //      }
 //      
 //      else {
 //          setGridWeight();
 //          mWorkSpace.add(mGUIEdge);
 //          mWorkSpace.revalidate();
-//          mWorkSpace.repaint();
+//          mWorkSpace.repaint(100);
 //      }
 //  }
     public void setEdgePath() {
@@ -314,13 +314,13 @@ public class NormalizeEdgeAction {
 
             mWorkSpace.add(mGUIEdge);
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         } else {
 
             // setGridWeight();
             mWorkSpace.add(mGUIEdge);
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
     }
 

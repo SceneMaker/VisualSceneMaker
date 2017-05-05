@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class PlayStream extends Action implements XMLParseable, XMLWriteable {
+public class PlayStream extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     private String mPath = "";
     private String mStarttime = "";
@@ -25,6 +25,7 @@ public class PlayStream extends Action implements XMLParseable, XMLWriteable {
 
     public PlayStream(String path, String starttime, String endtime) {
         mName = "playstream";
+        mPath = path;
         mStarttime = starttime;
         mEndtime = endtime;
     }
@@ -38,6 +39,7 @@ public class PlayStream extends Action implements XMLParseable, XMLWriteable {
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mId = element.getAttribute("id");
+        mPath = element.getAttribute("path");
         mStarttime = element.getAttribute("starttime");
         mEndtime = element.getAttribute("endtime");
     }

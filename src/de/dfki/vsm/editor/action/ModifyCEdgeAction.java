@@ -67,7 +67,7 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
             ((GuargedEdge) mDataEdge).setCondition(mOldCondition);
 
             // mGUIEdge.update();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
         }
 
         @Override
@@ -75,7 +75,7 @@ public class ModifyCEdgeAction extends ModifyEdgeAction {
             ((GuargedEdge) mDataEdge).setCondition(mNewCondition);
 
             // mGUIEdge.update();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
         }
 
         @Override

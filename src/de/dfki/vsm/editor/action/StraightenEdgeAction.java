@@ -29,7 +29,7 @@ public class StraightenEdgeAction {
 
                 // renew graphical representation on work space
                 mWorkSpace.revalidate();
-                mWorkSpace.repaint();
+                mWorkSpace.repaint(100);
             }
         };
     }

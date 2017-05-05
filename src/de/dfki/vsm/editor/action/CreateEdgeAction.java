@@ -114,7 +114,7 @@ public class CreateEdgeAction extends EdgeAction {
 
             //
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
 
             //
             mUndoManager.addEdit(new Edit());
@@ -127,19 +127,19 @@ public class CreateEdgeAction extends EdgeAction {
         @Override
         public void undo() throws CannotUndoException {
             delete();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
 
 //          mWorkSpace.revalidate();
-//          mWorkSpace.repaint();
+//          mWorkSpace.repaint(100);
         }
 
         @Override
         public void redo() throws CannotRedoException {
             create();
-            mGUIEdge.repaint();
+            mGUIEdge.repaint(100);
 
 //          mWorkSpace.revalidate();
-//          mWorkSpace.repaint();
+//          mWorkSpace.repaint(100);
         }
 
         @Override

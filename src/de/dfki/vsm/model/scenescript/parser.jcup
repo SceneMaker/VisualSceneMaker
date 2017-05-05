@@ -95,7 +95,7 @@ parser code {:
         //
         final String string = (action ? "[" + input + "]" : input);
         //
-        mLogger.message("Parsing Input String '" + string + "'");
+        //mLogger.message("Parsing Input String '" + string + "'");
         try {
             // Create A String Reader
             final StringReader reader = new StringReader(string);
@@ -113,7 +113,7 @@ parser code {:
                     // Return result at success
                     return symbol.value;
                 } else if(!action && symbol.value instanceof SceneScript) {
-                    mLogger.success("Parsing Success: Parsing\n" + symbol.value);  
+                    //mLogger.success("Parsing Success: Parsing\n" + symbol.value);  
                     // Return result at success
                     return symbol.value;
                 } else {

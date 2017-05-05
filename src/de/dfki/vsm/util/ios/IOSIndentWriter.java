@@ -1,7 +1,5 @@
 package de.dfki.vsm.util.ios;
 
-//~--- JDK imports ------------------------------------------------------------
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,25 +15,25 @@ public class IOSIndentWriter {
     private boolean           mNewline = true;
     private final PrintWriter mStream;
 
-    public IOSIndentWriter(File file) throws IOException {
-        mStream = new PrintWriter(file, "UTF-8");
+    public IOSIndentWriter(final File file, final String charset) throws IOException {
+        mStream = new PrintWriter(file, charset);
     }
 
-    public IOSIndentWriter(OutputStream stream) {
+    public IOSIndentWriter(final OutputStream stream) {
         mStream = new PrintWriter(stream);
     }
 
-    public IOSIndentWriter(File file, String indent) throws IOException {
-        mStream = new PrintWriter(file, "UTF-8");
+    public IOSIndentWriter(final File file, final String indent, final String charset) throws IOException {
+        mStream = new PrintWriter(file, charset);
         mIndent = indent;
     }
 
-    public IOSIndentWriter(OutputStream stream, String indent) {
+    public IOSIndentWriter(final OutputStream stream, final String indent) {
         mStream = new PrintWriter(stream);
         mIndent = indent;
     }
 
-    public IOSIndentWriter print(String s) {
+    public IOSIndentWriter print(final String s) {
 
         // split the string into lines
         int start  = 0,

@@ -270,7 +270,6 @@ public class RunTimeProject {
                     mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
                 } catch (final Exception exc) {
                     mLogger.failure(exc.toString());
-                    exc.printStackTrace();
                 }
             } else {
                 mLogger.message("Plugin object '" + name + "' is marked as 'not load' - skipping loading plugin.");
@@ -453,7 +452,7 @@ public class RunTimeProject {
             }
         }
         // Write the project configuration file
-        if (!XMLUtilities.writeToXMLFile(mProjectConfig, file)) {
+        if (!XMLUtilities.writeToXMLFile(mProjectConfig, file, "UTF-8")) {
             // Print an error message in this case
             mLogger.failure("Error: Cannot write project configuration file '" + file + "'");
             // Return failure if it does not exist
@@ -495,7 +494,7 @@ public class RunTimeProject {
         mSceneFlow.establishTargetNodes();
         mSceneFlow.establishAltStartNodes();
         // Print an information message in this case
-        mLogger.message("Loaded sceneflow configuration file in path '" + path + "':\n" + mSceneFlow);
+        //mLogger.message("Loaded sceneflow configuration file in path '" + path + "'");
         // Return success if the project was loaded
         return true;
 
@@ -523,14 +522,14 @@ public class RunTimeProject {
             }
         }
         // Write the sceneflow configuration file
-        if (!XMLUtilities.writeToXMLFile(mSceneFlow, file)) {
+        if (!XMLUtilities.writeToXMLFile(mSceneFlow, file, "UTF-8")) {
             // Print an error message in this case
             mLogger.failure("Error: Cannot write sceneflow configuration file '" + file + "'");
             // Return failure if it does not exist
             return false;
         }
         // Print an information message in this case
-        mLogger.message("Saved sceneflow configuration file '" + file + "':\n" + mSceneFlow);
+        //mLogger.message("Saved sceneflow configuration file '" + file + "':\n" + mSceneFlow);
         // Return success if the project was saved
         return true;
     }
@@ -562,8 +561,8 @@ public class RunTimeProject {
         }
 
         // Print an information message in this case
-//        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
-        mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n");
+        //mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
+        //mLogger.message("Loaded scenescript configuration file in path'" + path + "'");
 
         // Return success if the project was loaded
         return true;
@@ -591,14 +590,14 @@ public class RunTimeProject {
             }
         }
         // Write the scenescript configuration file
-        if (!XMLUtilities.writeToXMLFile(mSceneScript, file)) {
+        if (!XMLUtilities.writeToXMLFile(mSceneScript, file, "UTF-8")) {
             // Print an error message in this case
             mLogger.failure("Error: Cannot write scenescript configuration file '" + file + "'");
             // Return failure if it does not exist
             return false;
         }
         // Print an information message in this case
-        mLogger.message("Saved scenescript configuration file '" + file + "':\n" + mSceneScript);
+        //mLogger.message("Saved scenescript configuration file '" + file + "':\n" + mSceneScript);
         // Return success if the project was saved
         return true;
     }
@@ -633,7 +632,7 @@ public class RunTimeProject {
 
         // Print an information message in this case
 //        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n" + mActiconConfig);
-        mLogger.message("Loaded acticon configuration file in path'" + path + "':\n");
+        //mLogger.message("Loaded acticon configuration file in path'" + path + "'");
         // Return success if the project was loaded
         return true;
     }
@@ -660,14 +659,14 @@ public class RunTimeProject {
             }
         }
         // Write the acticon configuration file
-        if (!XMLUtilities.writeToXMLFile(mActiconConfig, file)) {
+        if (!XMLUtilities.writeToXMLFile(mActiconConfig, file, "UTF-8")) {
             // Print an error message in this case
             mLogger.failure("Error: Cannot write acticon configuration file '" + file + "'");
             // Return failure if it does not exist
             return false;
         }
         // Print an information message in this case
-        mLogger.message("Saved acticon configuration file '" + file + "':\n" + mActiconConfig);
+        //mLogger.message("Saved acticon configuration file '" + file + "':\n" + mActiconConfig);
         // Return success if the project was saved
         return true;
     }
@@ -702,7 +701,7 @@ public class RunTimeProject {
 
         // Print an information message in this case
 //        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n" + mGesticonConfig);
-        mLogger.message("Loaded gesticon configuration file in path'" + path + "':\n");
+        //mLogger.message("Loaded gesticon configuration file in path'" + path + "'");
         // Return success if the project was loaded
         return true;
     }
@@ -729,14 +728,14 @@ public class RunTimeProject {
             }
         }
         // Write the gesticon configuration file
-        if (!XMLUtilities.writeToXMLFile(mGesticonConfig, file)) {
+        if (!XMLUtilities.writeToXMLFile(mGesticonConfig, file, "UTF-8")) {
             // Print an error message in this case
             mLogger.failure("Error: Cannot write gesticon configuration file '" + file + "'");
             // Return failure if it does not exist
             return false;
         }
         // Print an information message in this case
-        mLogger.message("Saved gesticon configuration file '" + file + "':\n" + mGesticonConfig);
+        //mLogger.message("Saved gesticon configuration file '" + file + "':\n" + mGesticonConfig);
         // Return success if the project was saved
         return true;
     }
@@ -768,7 +767,7 @@ public class RunTimeProject {
             return false;
         }
 
-        mLogger.message("Loaded visicon configuration file in path'" + path + "':\n");
+        //mLogger.message("Loaded visicon configuration file in path'" + path + "'");
         // Return success if the project was loaded
         return true;
     }
@@ -795,14 +794,14 @@ public class RunTimeProject {
             }
         }
         // Write the visicon configuration file
-        if (!XMLUtilities.writeToXMLFile(mVisiconConfig, file)) {
+        if (!XMLUtilities.writeToXMLFile(mVisiconConfig, file, "UTF-8")) {
             // Print an error message in this case
             mLogger.failure("Error: Cannot write visicon configuration file '" + file + "'");
             // Return failure if it does not exist
             return false;
         }
         // Print an information message in this case
-        mLogger.message("Saved visicon configuration file '" + file + "':\n" + mVisiconConfig);
+        //mLogger.message("Saved visicon configuration file '" + file + "':\n" + mVisiconConfig);
         // Return success if the project was saved
         return true;
     }

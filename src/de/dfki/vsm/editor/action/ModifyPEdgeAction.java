@@ -58,7 +58,7 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
 
             // mGUIEdge.update();
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
 
         @Override
@@ -69,7 +69,7 @@ public class ModifyPEdgeAction extends ModifyEdgeAction {
 
             // mGUIEdge.update();
             mWorkSpace.revalidate();
-            mWorkSpace.repaint();
+            mWorkSpace.repaint(100);
         }
 
         @Override

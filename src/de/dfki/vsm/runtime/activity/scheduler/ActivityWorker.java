@@ -68,7 +68,7 @@ public final class ActivityWorker extends Thread {
         // Return when aborted
         if (!mDone) {
             // Print some information
-            //mLogger.message("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
+            mLogger.message("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
             // Execute the activity
             mExecutor.execute(mActivity);
         }

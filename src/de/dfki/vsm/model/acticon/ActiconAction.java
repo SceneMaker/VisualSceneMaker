@@ -123,14 +123,31 @@ public final class ActiconAction implements ModelObject {
     @Override
     public final String toString() {
         // Create a new byte array stream buffer
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        //final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         // Try to write the project to the stream
-        XMLUtilities.writeToXMLStream(this, buffer);
+        //XMLUtilities.writeToXMLStream(this, buffer);
+        // Create A Byte Array Stream
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        // Initialize The Indent Writer
+        final IOSIndentWriter stream = new IOSIndentWriter(buffer);
+
+        try {
+            // Write The Acticon Now
+            writeXML(stream);
+        } catch (XMLWriteError exc) {
+            //mLogger.failure(exc.toString());
+        }
+        // Cleanup Stream and Writer
+        stream.flush();
+        stream.close();
         // Return the stream string representation
         try {
-            return buffer.toString("UTF-8");
-        } catch (final UnsupportedEncodingException exc) {
-            return exc.getMessage();
+            //return buffer.toString("UTF-8");
+            return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 

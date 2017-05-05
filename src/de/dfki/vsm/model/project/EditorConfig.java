@@ -279,7 +279,7 @@ public class EditorConfig
         init();
 
         // Print an information message if this case
-        mLogger.message("Saved project configuration file '" + file + "':\n" + sPROPERTIES);
+        //mLogger.message("Saved project configuration file '" + file + "':\n" + sPROPERTIES);
 
         // Return success if the project was saved
         return true;
@@ -496,7 +496,7 @@ public class EditorConfig
         {
             try
             {
-                //                mLogger.message(stream.toString("UTF-8"));
+                // mLogger.message(stream.toString("UTF-8"));
                 mLogger.message("Configuration File Loaded: " +path );
             } catch (Exception exc)
             {
@@ -544,12 +544,13 @@ public class EditorConfig
         XMLUtilities.writeToXMLStream(sPROPERTIES, buffer);
 
         // Return the stream string representation
-        try
-        {
-            return buffer.toString("UTF-8");
-        } catch (Exception exc)
-        {
+       try {
+            //return buffer.toString("UTF-8");
             return buffer.toString();
+        } catch (final Exception exc) {
+            exc.printStackTrace();
+            //
+            return null;
         }
     }
 }

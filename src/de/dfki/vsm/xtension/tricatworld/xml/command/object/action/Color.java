@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Color extends Action implements XMLParseable, XMLWriteable {
+public class Color extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mRed = "";
     String mGreen = "";

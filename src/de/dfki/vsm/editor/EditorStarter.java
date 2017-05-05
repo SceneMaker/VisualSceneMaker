@@ -250,7 +250,7 @@ public class EditorStarter extends JPanel {
 	
 	public final void showWelcomeStickman(boolean show) {
 		mShowStickman = show;
-		repaint();
+		repaint(100);
 	}
 
 	// Draws the image on the background
@@ -280,11 +280,11 @@ public class EditorStarter extends JPanel {
 	public void createRecentAndSamplePrjList() {
 		mLeftProjectBox.removeAll();
 		mLeftProjectBox.revalidate();
-		mLeftProjectBox.repaint();
+		mLeftProjectBox.repaint(100);
 
 		mRightProjectBox.removeAll();
 		mRightProjectBox.revalidate();
-		mRightProjectBox.repaint();
+		mRightProjectBox.repaint(100);
 		createMenuButtons();
 		listOfRecentProjects();
 		listOfTutorials();
@@ -331,13 +331,13 @@ public class EditorStarter extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent me) {
 				me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-				EditorStarter.this.repaint();
+				EditorStarter.this.repaint(100);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent me) {
 				me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-				EditorStarter.this.repaint();
+				EditorStarter.this.repaint(100);
 			}
 		});
 		mLeftProjectBox.add(mNewProjMenu);
@@ -364,12 +364,12 @@ public class EditorStarter extends JPanel {
 
 			public void mouseEntered(MouseEvent me) {
 				me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-				EditorStarter.this.repaint();
+				EditorStarter.this.repaint(100);
 			}
 
 			public void mouseExited(MouseEvent me) {
 				me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-				EditorStarter.this.repaint();
+				EditorStarter.this.repaint(100);
 			}
 		});
 		mLeftProjectBox.add(mOpenProjectMenu);
@@ -449,13 +449,13 @@ public class EditorStarter extends JPanel {
 						@Override
 						public void mouseEntered(MouseEvent me) {
 							me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-							EditorStarter.this.repaint();
+							EditorStarter.this.repaint(100);
 						}
 
 						@Override
 						public void mouseExited(MouseEvent me) {
 							me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-							EditorStarter.this.repaint();
+							EditorStarter.this.repaint(100);
 						}
 					});
 					recentPanel.add(projectList[i]);
@@ -560,13 +560,13 @@ public class EditorStarter extends JPanel {
 					@Override
 					public void mouseEntered(MouseEvent me) {
 						me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-						EditorStarter.this.repaint();
+						EditorStarter.this.repaint(100);
 					}
 
 					@Override
 					public void mouseExited(MouseEvent me) {
 						me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-						EditorStarter.this.repaint();
+						EditorStarter.this.repaint(100);
 					}
 				});
 				tutorialProjPanel.add(newTutorialProj);
@@ -688,13 +688,13 @@ public class EditorStarter extends JPanel {
 				@Override
 				public void mouseEntered(MouseEvent me) {
 					me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-					EditorStarter.this.repaint();
+					EditorStarter.this.repaint(100);
 				}
 
 				@Override
 				public void mouseExited(MouseEvent me) {
 					me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-					EditorStarter.this.repaint();
+					EditorStarter.this.repaint(100);
 				}
 			});
 			sampleProjPanel.add(newSampleProj);
@@ -745,13 +745,13 @@ public class EditorStarter extends JPanel {
 			@Override
 			public void mouseEntered(MouseEvent me) {
 				me.getComponent().setBackground(sHIGHLIGHTCOLOR);
-				EditorStarter.this.repaint();
+				EditorStarter.this.repaint(100);
 			}
 
 			@Override
 			public void mouseExited(MouseEvent me) {
 				me.getComponent().setBackground(sMENUITEMBACKBGROUNDCOLOR);
-				EditorStarter.this.repaint();
+				EditorStarter.this.repaint(100);
 			}
 		});
 
