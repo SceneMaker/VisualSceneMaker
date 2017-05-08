@@ -147,7 +147,7 @@ public class GenericCallback extends TtsEngineCallback {
         }
 
         private void handlePhoneme(float start, float end, String name) {
-            //TODO: Make factory method for Phoneme Class
+            //TODO: Make factories method for Phoneme Class
             wordPhoneme.add(new ScottishPhoneme(name, (long) (start*1000), (long) (end * 1000)));
         }
     }

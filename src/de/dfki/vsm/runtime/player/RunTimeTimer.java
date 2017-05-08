@@ -5,7 +5,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
  * @author Gregor Mehlmann TODO: This should basically be a singelton thread
- * factory in the JPL package
+ * factories in the JPL package
  */
 public final class RunTimeTimer extends Thread {
 
