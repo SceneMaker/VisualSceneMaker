@@ -25,7 +25,6 @@ import java.util.LinkedList;
 public class RemoteSenderExecutor extends ActivityExecutor implements ExportableProperties{
     private Clientable client;
     private ClientsFactory clientsFactory;
-    private String separator;
     private SenderTypeFactory senderTypeFactory;
     private ExportableProperties exportableProperties = new RemoteSenderProjectProperty();
 
@@ -81,7 +80,7 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
 
     private DataSendable buildSendable(AbstractActivity activity) {
         String message = clip(activity.get("message"));
-        separator = clip(activity.get("separator"));
+        String separator = clip(activity.get("separator"));
         String senderType = clip(activity.get("type"));
         return senderTypeFactory.buildSendable(senderType, message, separator);
     }
@@ -94,9 +93,8 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
     }
 
     private void exectureSpeechActivity(SpeechActivity activity) {
-        SpeechActivity sa = activity;
-        String text = sa.getTextOnly("$(").trim();
-        LinkedList<String> timemarks = sa.getTimeMarks("$(");
+        String text = activity.getTextOnly("$(").trim();
+        LinkedList<String> timemarks = activity.getTimeMarks("$(");
         if (text.isEmpty()) {
             ExecuteActivityAtTimeMark(timemarks);
         }
