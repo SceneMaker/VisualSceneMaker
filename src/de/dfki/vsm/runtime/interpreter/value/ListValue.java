@@ -31,6 +31,7 @@ public class ListValue extends AbstractValue {
         return valueListCopy;
     }
 
+    @Override
     public Type getType() {
         return Type.LIST;
     }
