@@ -60,6 +60,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.InStateQue
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.PrologQuery;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutQuery;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.RandomQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.ContainsList;
 // Enumeration Imports
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity.PlayMode;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActionActivity.StopMode;
@@ -112,7 +113,7 @@ parser code {:
 // Terminal Definitions ////////////////////////////////////////////////////////
 // Reserved Function Identifiers
 terminal String
-    PlayAction, StopAction, PlayDialogAct, PlayScene, InState, Random, 
+    PlayAction, StopAction, PlayDialogAct, PlayScene, InState, Random, Contains,
     UnblockSceneGroup, UnblockSceneScript, HistoryClearFlat, HistoryClearDeep, 
     HistoryContains, HistoryValueOf, HistorySetDepth, HistoryRunTimeOf, Timeout;
 // Operators And Reserved Words
@@ -593,6 +594,10 @@ invocation_expression ::=
 | InState LPAREN IDENTIFIER:x RPAREN                                            
     {: 
         RESULT = new InStateQuery(x); 
+    :}
+| Contains LPAREN expression:x COMMA expression:y RPAREN                                             
+    {: 
+        RESULT = new ContainsList(x, y); 
     :}
 | Timeout LPAREN expression:x RPAREN                                                
     {: 

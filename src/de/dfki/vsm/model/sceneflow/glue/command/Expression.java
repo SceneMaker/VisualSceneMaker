@@ -10,6 +10,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.LiteralExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.VariableExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.ContainsList;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryContains;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.InStateQuery;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.PrologQuery;
@@ -92,6 +93,10 @@ public abstract class Expression extends Command {
         } else if (tag.equals("RandomQuery")) {
             exp = new RandomQuery();
             exp.parseXML(element);
+        } else if (tag.equals("ContainsList")) {
+            exp = new ContainsList();
+            exp.parseXML(element);
+            System.err.println(exp);
         } else if (tag.equals("StructExpression")) {
             exp = new StructExpression();
             exp.parseXML(element);
