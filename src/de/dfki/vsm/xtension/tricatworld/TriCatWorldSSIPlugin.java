@@ -4,6 +4,7 @@ import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.FloatValue;
+import de.dfki.vsm.runtime.interpreter.value.ListValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
@@ -15,6 +16,7 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,6 +35,8 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
     private final boolean mUseJPL;
     // The flag for executables
     private final boolean mUseExe;
+    // The flag for keyword list
+    private final boolean mUseLst;
     // The flag if we use SSI superevents 
     private final boolean mUseSuperEvent;
 
@@ -41,6 +45,9 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
             final PluginConfig config,
             final RunTimeProject project) {
         super(config, project);
+        // Get the list flag value
+        mUseLst = Boolean.parseBoolean(
+                mConfig.getProperty("uselst"));
         // Get the JPL flag value
         mUseJPL = Boolean.parseBoolean(
                 mConfig.getProperty("usejpl"));
@@ -144,7 +151,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                     }
                     if (variable != null) {
                         if (event.getState().equalsIgnoreCase("completed")) {
-                            mLogger.message("User stopped " + variable);
+                            //mLogger.message("User stopped " + variable);
                             if (mUseJPL) {
                                 // TODO 
                             } else {
@@ -155,7 +162,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                                 }
                             }
                         } else if (event.getState().equalsIgnoreCase("continued")) {
-                            mLogger.message("User started " + variable);
+                            //mLogger.message("User started " + variable);
                             if (mUseJPL) {
                                 // TODO 
                             } else {
@@ -186,7 +193,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                 } else if (event.getSender().equalsIgnoreCase("shore")
                         && event.getEvent().equalsIgnoreCase("smile")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
-                        mLogger.message("User stopped smiling (Shore)");
+                        //mLogger.message("User stopped smiling (Shore)");
                         if (mUseJPL) {
                             // TODO 
                         } else {
@@ -194,7 +201,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                             mProject.setVariable("UserSmilingShore", false);
                         }
                     } else if (event.getState().equalsIgnoreCase("continued")) {
-                        mLogger.message("User started smiling (Shore)");
+                        //mLogger.message("User started smiling (Shore)");
                         if (mUseJPL) {
                             // TODO 
                         } else {
@@ -205,7 +212,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                 } else if (event.getSender().equalsIgnoreCase("kinect")
                         && event.getEvent().equalsIgnoreCase("smile")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
-                        mLogger.message("User stopped smiling (Kinect)");
+                        //mLogger.message("User stopped smiling (Kinect)");
                         if (mUseJPL) {
                             // TODO 
                         } else {
@@ -213,7 +220,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                             mProject.setVariable("UserSmilingKinect", false);
                         }
                     } else if (event.getState().equalsIgnoreCase("continued")) {
-                        mLogger.message("User started smiling (Kinect)");
+                        //mLogger.message("User started smiling (Kinect)");
 
                         if (mUseJPL) {
                             // TODO 
@@ -226,7 +233,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                         && event.getEvent().equalsIgnoreCase("vad")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
                         // User stopped speaking
-                        mLogger.message("User stopped speaking");
+                        //mLogger.message("User stopped speaking");
                         if (mUseJPL) {
                             JPLEngine.query("now(Time), "
                                     + "jdd(["
@@ -245,7 +252,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                         }
                     } else if (event.getState().equalsIgnoreCase("continued")) {
                         // User started speaking
-                        mLogger.message("User started speaking");
+                        //mLogger.message("User started speaking");
                         if (mUseJPL) {
                             JPLEngine.query("now(Time), "
                                     + "jdd(["
@@ -285,6 +292,24 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                     } else {
                         // Set keyword variable
                         mProject.setVariable("UserSaidKeyword", keyword);
+
+                        if (mUseLst) {
+                            final AbstractValue value = mProject.getValueOf("KeywordList");
+                            if (value instanceof ListValue) {
+                                final ListValue listValue = (ListValue) value;
+                                final LinkedList list = listValue.getValueList();
+                                if (list != null) {
+                                    list.add(new StringValue(keyword));
+                                    mProject.setVariable("KeywordList", listValue);
+                                } else {
+                                     mLogger.failure("No internal list available");
+                                }
+                            } else {
+                                mLogger.failure("No keyword list variable");
+                            }
+
+                        }
+
                     }
                     // This condition is used to receive structure sent by SSI
                 } else {
