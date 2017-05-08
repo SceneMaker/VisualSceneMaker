@@ -23,7 +23,7 @@ public class ShowNote extends TriCatWorldActObject implements XMLParseable, XMLW
 
     public ShowNote(String text) {
         mName = "ShowNote";
-        mText = text.replaceAll("\\'", "");;
+        mText = text.replaceAll("\\'", "");
     }
 
     @Override
