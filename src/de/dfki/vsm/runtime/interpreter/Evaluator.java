@@ -440,7 +440,8 @@ public class Evaluator {
                     return new BooleanValue(false);
                 }
             } else {
-                return new BooleanValue(false);
+                return new BooleanValue(true);
+                //return new BooleanValue(false);
             }
         } else if (exp instanceof InStateQuery) {
             return new BooleanValue(mInterpreter.getConfiguration().isInState(((InStateQuery) exp).getState()));
