@@ -35,6 +35,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.ContainsList;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -450,6 +451,19 @@ public class Evaluator {
             } else {
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
+        } else if (exp instanceof ContainsList) {
+            final AbstractValue listValue = evaluate(((ContainsList) exp).getListExp(), env);
+            if (listValue instanceof ListValue) {
+                final LinkedList<AbstractValue> list = ((ListValue)listValue).getValueList();
+                //
+                final AbstractValue itemValue = evaluate(((ContainsList) exp).getItemExp(), env);
+                for(final AbstractValue value : list) {
+                    if(value.equalsValue(itemValue)) {
+                        return new BooleanValue(true);
+                    }
+                }
+            }
+            return new BooleanValue(false);            
         } else if (exp instanceof HistoryContains) {
             SystemHistory.Entry entry = mInterpreter.getSystemHistory().get(((HistoryContains) exp).getState(),
                     ((HistoryContains) exp).getDepth());

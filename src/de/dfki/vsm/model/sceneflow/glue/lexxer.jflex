@@ -74,6 +74,7 @@ object      = (null)
 "HistoryValueOf"        { return new Symbol(GlueFields.HistoryValueOf); }
 "Timeout"               { return new Symbol(GlueFields.Timeout); }
 "Random"                { return new Symbol(GlueFields.Random); }
+"Contains"              { return new Symbol(GlueFields.Contains); }
 "In"                    { return new Symbol(GlueFields.InState); }
 
 "int"                   { return new Symbol(GlueFields.INT); }

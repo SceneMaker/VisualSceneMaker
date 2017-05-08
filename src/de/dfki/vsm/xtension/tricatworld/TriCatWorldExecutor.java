@@ -337,10 +337,11 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Say")) {
-                String url = "file:///" + mProject.getProjectPath()
-                        + File.separator + mProject.getAgentConfig(
-                                activity_actor).getProperty(activity.get("value"));
-                url = url.replace("\\", "/");
+//                String url = "file:///" + mProject.getProjectPath()
+//                        + File.separator + mProject.getAgentConfig(
+//                                activity_actor).getProperty(activity.get("value"));
+//                url = url.replace("\\", "/");
+                String url = activity.get("value");
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("PlayStream")) { // added pg 23.3.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
@@ -438,6 +439,12 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("WorldPosition")) {
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                        activity.get("x"), activity.get("y"), activity.get("z"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
+                }
+            } else if (activity_name.equalsIgnoreCase("MoveToWorldPosition")) { // added pg 5.5.2017
                 triCatWorldAct = mActionLoader.loadAnimation(activity_name,
                         activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {

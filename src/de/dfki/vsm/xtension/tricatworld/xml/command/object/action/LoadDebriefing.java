@@ -25,9 +25,9 @@ public class LoadDebriefing extends TriCatWorldActObject implements XMLParseable
 
     public LoadDebriefing(String eventlog, String screenvideo, String cameravideo) {
         mName = "load";
-        mEventLog = eventlog;
-        mScreenVideo = screenvideo;
-        mCameraVideo = cameravideo;
+        mEventLog = eventlog.replaceAll("\\'", "");
+        mScreenVideo = screenvideo.replaceAll("\\'", "");
+        mCameraVideo = cameravideo.replaceAll("\\'", "");
     }
 
     @Override
