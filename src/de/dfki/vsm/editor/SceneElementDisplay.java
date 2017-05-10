@@ -415,7 +415,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
 //              setText("Gesticon");
 //              setToolTipText("Gesticon");
 //          }
-                // render the cell
+                // execute the cell
                 setText(text);
 
                 if (icon != null) {

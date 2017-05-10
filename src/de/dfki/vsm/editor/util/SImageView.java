@@ -538,7 +538,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * Paints the image.
      *
      * @param g the rendering surface to use
-     * @param a the allocated region to render into
+     * @param a the allocated region to execute into
      * @see View#paint
      */
     public void paint(Graphics g, Shape a) {
@@ -784,7 +784,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      *
      * @param axis may be either X_AXIS or Y_AXIS
      * @return the span the view would like to be rendered into. Typically the
-     * view is told to render into the span that is returned, although there is
+     * view is told to execute into the span that is returned, although there is
      * no guarantee. The parent may choose to resize or break the view.
      */
     public float getPreferredSpan(int axis) {
@@ -830,7 +830,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      * coordinate space of the view mapped to it.
      *
      * @param pos the position to convert
-     * @param a the allocated region to render into
+     * @param a the allocated region to execute into
      * @return the bounding box of the given position
      * @exception BadLocationException if the given position does not represent
      * a valid location in the associated document
@@ -861,7 +861,7 @@ public class SImageView extends ImageView implements ImageObserver, MouseListene
      *
      * @param x the X coordinate
      * @param y the Y coordinate
-     * @param a the allocated region to render into
+     * @param a the allocated region to execute into
      * @return the location within the model that best represents the given
      * point of view
      * @see View#viewToModel
