@@ -317,6 +317,14 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("ReleaseLookAt")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("DisableNPCMeeting")) {
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("EnableNPCMeeting")) {
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("DisableAmbientSound")) {
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
+            } else if (activity_name.equalsIgnoreCase("EnableAmbientSound")) {
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("AmbientLight")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"));
             } else if (activity_name.equalsIgnoreCase("AmbientSound")) {
