@@ -341,8 +341,8 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
 //                        + File.separator + mProject.getAgentConfig(
 //                                activity_actor).getProperty(activity.get("value"));
 //                url = url.replace("\\", "/");
-                String url = activity.get("value");
-                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
+                String url = activity.get("value" );
+                triCatWorldAct = mActionLoader.loadAnimation(activity_name, url, activity.get("2d"));
             } else if (activity_name.equalsIgnoreCase("PlayStream")) { // added pg 23.3.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
                 if (!activity_actor.equalsIgnoreCase("debriefing")) {
