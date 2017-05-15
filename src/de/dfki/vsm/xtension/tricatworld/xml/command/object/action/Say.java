@@ -20,10 +20,12 @@ import org.w3c.dom.Element;
 public class Say extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     String mUrl = "";
+    String mParam = "";
 
-    public Say(String url) {
+    public Say(String url, String param) {
         mName = "say";
         mUrl = url.replaceAll("\\'", "");
+        mParam = param;
     }
 
     public Say() {
@@ -31,7 +33,7 @@ public class Say extends TriCatWorldActObject implements XMLParseable, XMLWritea
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" url=\"" + mUrl + "\"/>");
+        out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\" url=\"" + mUrl + "\" two_d=\"" + mParam + "\"/>");
     }
 
     @Override
