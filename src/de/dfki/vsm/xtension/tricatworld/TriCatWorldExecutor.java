@@ -327,6 +327,8 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                                 activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
+            } else if (activity_name.equalsIgnoreCase("RotateCharacter")) {
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("degree"));
             } else if (activity_name.equalsIgnoreCase("LookAt")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
