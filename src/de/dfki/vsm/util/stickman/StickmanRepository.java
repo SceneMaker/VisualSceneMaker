@@ -20,7 +20,7 @@ public class StickmanRepository {
         } else if(config.getProperty("stickman")!= null && config.getProperty("stickman").equals("Pinocchio")){
             factory = new Stickman3DFactory(config);
         } else if(config.getProperty("stickman")!= null && config.getProperty("stickman").equals("Reeti")){
-//            factories = new Stickman3DFactory(config);
+            factory = new ReetiFactory(config);
         } else {
             factory = new StickmanFxFactory(config);
         }
