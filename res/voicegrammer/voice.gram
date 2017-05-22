@@ -8,7 +8,8 @@ grammar voice;
 public <basicCmd> = <startPolite> <command> <endPolite>;
 
 <command> = <action>;
- <action> =             angry|engri|aengri|angri|engry|
+ <action> =             glass|
+                        angry|engri|aengri|angri|engry|
                         smail|smaili|smaily|smile|
                         sad|saad|saed|sed|seed|
                         fear|feear|fea|feea|feer|

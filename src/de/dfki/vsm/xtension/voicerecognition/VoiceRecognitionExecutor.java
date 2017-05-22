@@ -9,6 +9,9 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
+import javax.sound.sampled.LineUnavailableException;
+import java.io.IOException;
+
 /**
  *
  * @author EmpaT
@@ -17,7 +20,7 @@ public class VoiceRecognitionExecutor extends RunTimePlugin
 {
    
     RunTimeProject mProject;
-    VoiceRecognition vr;
+    VoiceRecognizer vr;
     public VoiceRecognitionExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
         this.mProject = project;
@@ -26,13 +29,14 @@ public class VoiceRecognitionExecutor extends RunTimePlugin
     @Override
     public void launch() 
     {
-        vr = new VoiceRecognition(mProject);
-        vr.start();
+        vr = new GoogleVoiceRecognition(mProject);
+        Thread voiceThread = new Thread(vr);
+        voiceThread.start();
     }
 
     @Override
     public void unload() 
     {
-        vr.stopVoiceRecognition = false;
+        vr.stopRecording();
     } 
 }

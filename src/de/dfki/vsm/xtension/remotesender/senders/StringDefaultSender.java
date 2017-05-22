@@ -15,7 +15,7 @@ public class StringDefaultSender implements DataSendable {
 
     @Override
     public String buildDataToSent() {
-        return message;
+        return message + "\n";
     }
 
     @Override

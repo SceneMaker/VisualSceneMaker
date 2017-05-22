@@ -25,7 +25,7 @@ import javafx.scene.paint.Color;
  *
  * @author EmpaT
  */
-public class VoiceRecognition extends Thread {
+public class VoiceRecognition implements VoiceRecognizer{
 
     RunTimeProject mProject;
     URL url;
@@ -51,6 +51,32 @@ public class VoiceRecognition extends Thread {
 
     @Override
     public void run() {
+        startRecording();
+    }
+
+    private void switchBackground(String background) {
+        HBox stickmanBox = null;
+        for (Map.Entry<String, Stickman3D> e : StickmanExecutor.stickmanContainer.entrySet()) {
+            String stageID = e.getValue().getStickmanStageController().getStageIdentifier();
+            try {
+                stickmanBox = e.getValue().getStickmanStageController().getStickmanStage()
+                        .getStickmanBox(stageID);
+            } catch (Exception ex) {
+                Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        if (background.equalsIgnoreCase("zero")) {
+            stickmanBox.setStyle("-fx-background-color: white");
+        } else {
+            String pathTobackground = getClass().getClassLoader().getResource("res/img/background/" + background + ".jpg").toExternalForm();
+            stickmanBox.setStyle("-fx-background-image: url('" + pathTobackground + "'); "
+                    + "-fx-background-position: center center; " + "-fx-background-repeat: stretch;");
+        }
+    }
+
+    @Override
+    public void startRecording() {
         if (microphone.startRecording()) {
             System.out.println("Recording started. Start speaking");
         }
@@ -64,6 +90,10 @@ public class VoiceRecognition extends Thread {
                 System.out.println(resultText);
                 String[] splitResultText = resultText.split(" ");
                 String name = splitResultText[0];
+
+                if (resultText.contains("glass")){
+                    mProject.setVariable("action", "Glass");
+                }
 
                 if (resultText.contains("engri")
                         || resultText.contains("angry")
@@ -173,25 +203,8 @@ public class VoiceRecognition extends Thread {
         }
     }
 
-    private void switchBackground(String background) {
-        HBox stickmanBox = null;
-        for (Map.Entry<String, Stickman3D> e : StickmanExecutor.stickmanContainer.entrySet()) {
-            String stageID = e.getValue().getStickmanStageController().getStageIdentifier();
-            try {
-                stickmanBox = e.getValue().getStickmanStageController().getStickmanStage()
-                        .getStickmanBox(stageID);
-            } catch (Exception ex) {
-                Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        if (background.equalsIgnoreCase("zero")) {
-            stickmanBox.setStyle("-fx-background-color: white");
-        } else {
-            String pathTobackground = getClass().getClassLoader().getResource("res/img/background/" + background + ".jpg").toExternalForm();
-            stickmanBox.setStyle("-fx-background-image: url('" + pathTobackground + "'); "
-                    + "-fx-background-position: center center; " + "-fx-background-repeat: stretch;");
-        }
+    @Override
+    public void stopRecording() {
+        stopVoiceRecognition = false;
     }
-
 }

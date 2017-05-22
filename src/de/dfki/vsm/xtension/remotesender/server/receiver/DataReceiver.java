@@ -31,7 +31,6 @@ public class DataReceiver implements Receiver {
         } catch (InvalidValue | NoValueProvided | ParserConfigurationException | SAXException | IOException invalidValue) {
             invalidValue.printStackTrace();
         }
-
     }
 
     private void processReceivedData(String data) throws InvalidValue, NoValueProvided, ParserConfigurationException, SAXException, IOException {

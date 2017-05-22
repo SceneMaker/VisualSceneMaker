@@ -24,8 +24,8 @@ public abstract class ParserFactory {
 
     public Parser createParser(String data) {
         this.data = data;
-        getXMLParser(data);
-        parser = buildParser(data);
+        String type = getXMLParser(data);
+        parser = buildParser(type);
         return parser;
     }
 

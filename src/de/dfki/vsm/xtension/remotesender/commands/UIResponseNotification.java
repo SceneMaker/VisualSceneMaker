@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtension.remotesender.commands;
 
 
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.remotesender.server.notifications.NotifiableCommand;
 
 /**
@@ -8,11 +9,24 @@ import de.dfki.vsm.xtension.remotesender.server.notifications.NotifiableCommand;
  */
 public class UIResponseNotification implements NotifiableCommand {
 
+    private final RunTimeProject project;
+    private final String variableName;
     private String selectedOption;
+
+
+    public UIResponseNotification(RunTimeProject project, String variableName) {
+        this.project = project;
+        this.variableName = variableName;
+    }
 
     @Override
     public void execute() {
+        project.setVariable(variableName, selectedOption);
+    }
 
+    @Override
+    public void setValue(Object value) {
+        selectedOption = (String) value;
     }
 
     public void setSelectedOption(String selectedOption) {

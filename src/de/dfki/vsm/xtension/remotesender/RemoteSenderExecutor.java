@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.remotesender;
 
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -14,8 +15,11 @@ import de.dfki.vsm.xtension.remotesender.factories.SenderTypeFactory;
 import de.dfki.vsm.xtension.remotesender.properties.RemoteSenderProjectProperty;
 import de.dfki.vsm.xtension.remotesender.sender.Clientable;
 import de.dfki.vsm.xtension.remotesender.sender.DataSendable;
+import de.dfki.vsm.xtension.remotesender.senders.StringDefaultSender;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -27,6 +31,7 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
     private ClientsFactory clientsFactory;
     private SenderTypeFactory senderTypeFactory;
     private ExportableProperties exportableProperties = new RemoteSenderProjectProperty();
+    private String clientId;
 
     public RemoteSenderExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -46,11 +51,21 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
     private void startClient() throws IOException {
         client = clientsFactory.buildClient();
         client.connect();
+
+        BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
+        clientId = input.readLine();
+        System.out.println(clientId);
     }
 
     @Override
     public void unload() {
-
+        DataSendable closeSender = new StringDefaultSender("QUIT " + clientId);
+        client.setDataCreator(closeSender);
+        try {
+            client.send();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -80,6 +95,10 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
 
     private DataSendable buildSendable(AbstractActivity activity) {
         String message = clip(activity.get("message"));
+        if(message.startsWith("$")){
+            String variable = message.substring(1);
+            message = String.valueOf(mProject.getValueOf(variable).getValue());
+        }
         String separator = clip(activity.get("separator"));
         String senderType = clip(activity.get("type"));
         return senderTypeFactory.buildSendable(senderType, message, separator);

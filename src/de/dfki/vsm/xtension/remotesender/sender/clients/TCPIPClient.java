@@ -5,6 +5,7 @@ import de.dfki.vsm.xtension.remotesender.sender.DataSendable;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 
 /**
@@ -45,5 +46,10 @@ public class TCPIPClient implements Clientable {
     public void send() throws IOException {
         String dataToSend = dataCreator.buildDataToSent();
         os.writeBytes(dataToSend);
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        return client.getInputStream();
     }
 }

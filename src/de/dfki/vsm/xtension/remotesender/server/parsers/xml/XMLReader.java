@@ -1,7 +1,6 @@
 package de.dfki.vsm.xtension.remotesender.server.parsers.xml;
 
 
-import de.dfki.vsm.xtension.remotesender.server.notifications.DataNotification;
 import de.dfki.vsm.xtension.remotesender.server.parsers.xml.exceptions.NoTagFound;
 import de.dfki.vsm.xtension.remotesender.server.parsers.xml.exceptions.NoValueProvided;
 import org.w3c.dom.Document;
@@ -22,7 +21,6 @@ import java.util.LinkedList;
 public class XMLReader {
     protected DocumentBuilder builder;
     ByteArrayInputStream byteData;
-    private DataNotification notification;
     private Element root;
     private Document doc;
     private LinkedList<String> valuesOfTag = new LinkedList<>();

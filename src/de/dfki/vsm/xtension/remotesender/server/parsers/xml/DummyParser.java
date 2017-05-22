@@ -1,8 +1,6 @@
 package de.dfki.vsm.xtension.remotesender.server.parsers.xml;
 
 
-import de.dfki.vsm.xtension.remotesender.server.notifications.DataNotification;
-import de.dfki.vsm.xtension.remotesender.commands.DummyNotification;
 import de.dfki.vsm.xtension.remotesender.server.notifications.NotifiableCommand;
 import de.dfki.vsm.xtension.remotesender.server.parsers.Parser;
 
@@ -18,6 +16,11 @@ public class DummyParser implements Parser {
         return new NotifiableCommand() {
             @Override
             public void execute() {
+
+            }
+
+            @Override
+            public void setValue(Object value) {
 
             }
         };

@@ -16,8 +16,11 @@ import java.io.IOException;
 public class VariableSetterParser extends ParserFactory {
 
     private final RunTimeProject project;
+    private final String variableName;
 
-    public VariableSetterParser(RunTimeProject project){
+    public VariableSetterParser(RunTimeProject project, String variableName)
+    {
+        this.variableName = variableName;
         this.project = project;
     }
     @Override
@@ -32,7 +35,7 @@ public class VariableSetterParser extends ParserFactory {
 
     private Parser getUiResponseParser() {
         try {
-            return new UIResponseParser(data, project);
+            return new UIResponseParser(data, project, variableName);
         } catch (IOException | SAXException | ParserConfigurationException e) {
             return new DummyParser(data);
         }

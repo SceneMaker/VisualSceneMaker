@@ -16,9 +16,9 @@ import java.io.IOException;
  */
 public class UIResponseParser extends ResponseParser {
 
-    public UIResponseParser(String data, RunTimeProject project) throws IOException, SAXException, ParserConfigurationException {
+    public UIResponseParser(String data, RunTimeProject project, String variableName) throws IOException, SAXException, ParserConfigurationException {
         super(data);
-        notification = new UIResponseNotification();
+        notification = new UIResponseNotification(project, variableName);
     }
 
     @Override

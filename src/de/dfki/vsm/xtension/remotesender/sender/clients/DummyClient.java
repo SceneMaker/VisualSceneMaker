@@ -4,6 +4,7 @@ import de.dfki.vsm.xtension.remotesender.sender.Clientable;
 import de.dfki.vsm.xtension.remotesender.sender.DataSendable;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by alvaro on 5/2/17.
@@ -22,6 +23,11 @@ public class DummyClient implements Clientable {
     @Override
     public void send() throws IOException {
 
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        return null;
     }
 
 }

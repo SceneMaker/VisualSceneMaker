@@ -8,8 +8,8 @@
       <Feature key="stickman" val="Pinocchio"/>
       <Feature key="test" val="test"/>
       <Feature key="mary.base" val="/home/alvaro/Documents/WorkHiwi/VSM_Master/VisualSceneMaker/doc"/>
-      <Feature key="tts" val="cereproc"/>
-      <Feature key="fullscreen" val="true"/>
+      <Feature key="tts" val="marytts"/>
+      <Feature key="fullscreen" val="false"/>
       <Feature key="yStage" val="3"/>
       <Feature key="xStage" val="3"/>
     </Plugin>

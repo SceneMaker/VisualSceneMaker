@@ -5,4 +5,5 @@ package de.dfki.vsm.xtension.remotesender.server.notifications;
  */
 public interface NotifiableCommand {
     void execute();
+    void setValue(Object value);
 }

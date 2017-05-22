@@ -222,7 +222,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                             //} catch (final InterpreterError exc) {
                             //    exc.printStackTrace();
                             //}
-                            //    } 
+                            //    }
                             else {
                                 // Append the text to the activity
                                 textBuilder.add(element.getText(substitutions));
