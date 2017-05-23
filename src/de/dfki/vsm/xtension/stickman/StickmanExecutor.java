@@ -9,7 +9,6 @@ import de.dfki.common.interfaces.StageRoom;
 import de.dfki.stickman3D.Stickman3D;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.util.xml.XMLUtilities;
-import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -30,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
+import java.io.File;
 import javafx.scene.paint.Color;
 
 /**
@@ -122,12 +122,32 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
             if (stickmanAnimation != null) {
                 if (features != null && !(features.isEmpty())) {
                     for (final ActionFeature feature : features) {
-                        stickmanAnimation.setParameter(feature.getVal());
+                        if (!feature.getVal().isEmpty()) {
+                            if (isFloat(feature.getVal())) {
+                                stickmanAnimation.setParameter(feature.getVal().replace("'", ""));
+                            } else if (feature.getVal().contains(".")) {
+                                String filepath = "res" + File.separator + "background";
+                                String fileAbsolutePath = new File(filepath).getAbsolutePath();
+                                String sfileAbsolutePath = fileAbsolutePath + File.separator + feature.getVal().replace("'", "");
+                                stickmanAnimation.setParameter(sfileAbsolutePath);
+                            } else {
+                                stickmanAnimation.setParameter(feature.getVal().replace("'", ""));
+                            }
+                        }
                     }
                 }
                 System.out.println("de.dfki.vsm.xtension.stickman.StickmanExecutor.execute()");
                 executeAnimation(stickmanAnimation);
             }
+        }
+    }
+
+    private boolean isFloat(String input) {
+        try {
+            Float.parseFloat(input);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
