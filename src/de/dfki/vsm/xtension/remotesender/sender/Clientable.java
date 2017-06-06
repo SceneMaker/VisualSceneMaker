@@ -13,5 +13,6 @@ public interface Clientable {
     void send() throws IOException;
 
     InputStream getInputStream() throws IOException;
+    boolean isConnected();
 
 }

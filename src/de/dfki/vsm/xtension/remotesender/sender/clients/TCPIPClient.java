@@ -52,4 +52,11 @@ public class TCPIPClient implements Clientable {
     public InputStream getInputStream() throws IOException {
         return client.getInputStream();
     }
+
+    @Override
+    public boolean isConnected() {
+        if(client == null)
+            return false;
+        return client.isConnected();
+    }
 }

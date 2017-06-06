@@ -15,6 +15,12 @@ public abstract class AvatarSender implements DataSendable {
     protected final LinkedList<String> options;
     protected StringBuilder xmlBuilder;
 
+    public AvatarSender(){
+        message = "";
+        separator = "";
+        options = new LinkedList<>();
+    }
+
     public AvatarSender(String message, String separator) {
         this.message = message;
         this.separator = separator;
@@ -60,5 +66,9 @@ public abstract class AvatarSender implements DataSendable {
 
     public String buildCloseConnectionCommand(){
         return QUIT_COMMAND;
+    }
+
+    public LinkedList<String> getOptions(){
+        return options;
     }
 }

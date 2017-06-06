@@ -30,4 +30,9 @@ public class DummyClient implements Clientable {
         return null;
     }
 
+    @Override
+    public boolean isConnected() {
+        return false;
+    }
+
 }

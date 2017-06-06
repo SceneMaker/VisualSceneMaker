@@ -16,10 +16,9 @@ import de.dfki.vsm.xtension.remotesender.properties.RemoteSenderProjectProperty;
 import de.dfki.vsm.xtension.remotesender.sender.Clientable;
 import de.dfki.vsm.xtension.remotesender.sender.DataSendable;
 import de.dfki.vsm.xtension.remotesender.senders.StringDefaultSender;
+import de.dfki.vsm.xtension.remotesender.senders.uiavatarsender.SpeechRecognitionSender;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -27,6 +26,7 @@ import java.util.LinkedList;
  * Created by alvaro on 5/2/17.
  */
 public class RemoteSenderExecutor extends ActivityExecutor implements ExportableProperties{
+    private  SpeechRecognitionSender speechRecognitionSender;
     private Clientable client;
     private ClientsFactory clientsFactory;
     private SenderTypeFactory senderTypeFactory;
@@ -37,24 +37,49 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
         super(config, project);
         clientsFactory = new ClientsFactory(mConfig);
         senderTypeFactory = new SenderTypeFactory();
+
     }
 
     @Override
     public void launch() {
         try {
+            startUIServer();
             startClient();
+            int a= 0;
+        }  catch (InterruptedException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void startClient() throws IOException {
-        client = clientsFactory.buildClient();
-        client.connect();
+    private void startUIServer() {
+        JarRunner jarRunner = new JarRunner("/home/alvaro/Documents/WorkHiwi/AvatarControl/out/artifacts/AvatarControl_jar/AvatarControl.jar");
+        jarRunner.run();
 
+    }
+
+    private void startClient() throws InterruptedException, IOException {
+        client = clientsFactory.buildClient();
+        boolean connected = false;
+        tryToConnectToServer(connected);
         BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
         clientId = input.readLine();
         System.out.println(clientId);
+        speechRecognitionSender = new SpeechRecognitionSender(client);
+        senderTypeFactory.setSpeechRecognitionSender(speechRecognitionSender);
+    }
+
+    private void tryToConnectToServer(boolean connected) throws InterruptedException {
+        while (!connected){
+            try {
+                client.connect();
+            } catch (IOException e) {
+                continue;
+            }
+            connected = client.isConnected();
+            Thread.sleep(200);
+        }
     }
 
     @Override
@@ -134,5 +159,45 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
     @Override
     public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return null;
+    }
+
+    private class JarRunner {
+        private final String filename;
+        private final File file;
+
+        public JarRunner(String filename){
+            this.filename = filename;
+            this.file = new File(filename);
+        }
+        public  void run() {
+            ProcessBuilder pb = new ProcessBuilder("java", "-jar", this.filename);
+            pb.directory(new File(file.getParent()));
+            try {
+                Process p = pb.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class LogStreamReader implements Runnable {
+
+        private BufferedReader reader;
+        public LogStreamReader(InputStream is) {
+            this.reader = new BufferedReader(new InputStreamReader(is));
+        }
+
+        public void run() {
+            try {
+                String line = reader.readLine();
+                while (line != null) {
+                    System.out.println(line);
+                    line = reader.readLine();
+                }
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

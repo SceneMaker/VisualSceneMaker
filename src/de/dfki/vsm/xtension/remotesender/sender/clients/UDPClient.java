@@ -29,4 +29,9 @@ public class UDPClient implements Clientable{
     public InputStream getInputStream() throws IOException {
         return null;
     }
+
+    @Override
+    public boolean isConnected() {
+        return false;
+    }
 }

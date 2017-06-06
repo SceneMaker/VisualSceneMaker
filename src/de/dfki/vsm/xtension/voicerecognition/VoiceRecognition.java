@@ -8,6 +8,7 @@ package de.dfki.vsm.xtension.voicerecognition;
 import de.dfki.stickman3D.Stickman3D;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.stickman.StickmanExecutor;
+import de.dfki.vsm.xtension.voicerecognition.observers.Observer;
 import edu.cmu.sphinx.frontend.util.Microphone;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
@@ -206,5 +207,20 @@ public class VoiceRecognition implements VoiceRecognizer{
     @Override
     public void stopRecording() {
         stopVoiceRecognition = false;
+    }
+
+    @Override
+    public void register(Observer observer) {
+
+    }
+
+    @Override
+    public void unregister(Observer observer) {
+
+    }
+
+    @Override
+    public void notifyAll(String message) {
+
     }
 }
