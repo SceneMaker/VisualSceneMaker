@@ -27,7 +27,10 @@ public final class SSICmdExecutor extends ActivityExecutor {
     private final String mLogVar;
     private final boolean mBroadcasting; // 9.6.17 add by PG
     private final String mBroadCastPort;  // 9.6.17 add by PG
+    private final boolean mListenToStudyMaster; // 9.6.17 add by PG
+    private final String mStudyMasterPort;  // 9.6.17 add by PG
     private final String[] mSSIPipe;
+    private StudyMasterReceiverThread mSMReceiver;
 
     // Construct executor
     public SSICmdExecutor(
@@ -39,6 +42,8 @@ public final class SSICmdExecutor extends ActivityExecutor {
         mLogPort = mConfig.getProperty("logport");
         mBroadcasting = Boolean.valueOf(mConfig.getProperty("broadcast")); // 9.6.17 add by PG
         mBroadCastPort = mConfig.getProperty("broadcastport"); // 9.6.17 add by PG
+        mListenToStudyMaster = Boolean.valueOf(mConfig.getProperty("listentostudymaster")); // 9.6.17 add by PG
+        mStudyMasterPort = mConfig.getProperty("studymasterport"); // 9.6.17 add by PG
         mSSIPipe = mConfig.getProperty("pipes").split(",");
     }
 
@@ -50,10 +55,17 @@ public final class SSICmdExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
+        if (mListenToStudyMaster) {
+            mSMReceiver = new StudyMasterReceiverThread(this, Integer.parseInt(mStudyMasterPort));
+            mSMReceiver.start();
+        }
     }
 
     @Override
     public void unload() {
+        if (mListenToStudyMaster) {
+            mSMReceiver.stopServer();
+        }
     }
 
     // Execute activity
@@ -107,7 +119,7 @@ public final class SSICmdExecutor extends ActivityExecutor {
                 // Send the event message
                 //mSSILog.sendString(message.toString());
                 log(message.toString());
-                
+
                 // 9.6. added by PG
                 if (mBroadcasting) {
                     mLogger.warning("Broadcasting '" + message.toString() + ":" + mBroadCastPort);
@@ -221,7 +233,7 @@ public final class SSICmdExecutor extends ActivityExecutor {
                     }
 
                     if (packetSend) {
-                         mLogger.message("Message successfully send");
+                        mLogger.message("Message successfully send");
                     }
                 }
             }
@@ -243,5 +255,14 @@ public final class SSICmdExecutor extends ActivityExecutor {
         } catch (IOException ex) {
             mLogger.message(ex.toString());
         }
+    }
+
+    public boolean hasProjectVar(String var) {
+        return mProject.hasVariable(var);
+    }
+
+    public void setSceneFlowVariable(String var, String value) {
+        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
+        mProject.setVariable(var, new StringValue(value));
     }
 }
