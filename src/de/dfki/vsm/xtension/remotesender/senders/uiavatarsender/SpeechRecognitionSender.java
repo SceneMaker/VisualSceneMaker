@@ -4,6 +4,7 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.xtension.remotesender.sender.Clientable;
+import de.dfki.vsm.xtension.voicerecognition.VoiceRecognition;
 import de.dfki.vsm.xtension.voicerecognition.observers.VoiceRecognitionEvent;
 
 import java.io.IOException;
@@ -43,9 +44,15 @@ public class SpeechRecognitionSender extends AvatarSender implements EventListen
 
     @Override
     public void update(EventObject event) {
-        if(event instanceof VoiceRecognitionEvent){
+        if(event instanceof VoiceRecognitionEvent && getAsVoiceRecognitionEvent(event).getText() != null){
+            VoiceRecognitionEvent vrEvent = getAsVoiceRecognitionEvent(event);
+            this.option = vrEvent.getText();
             sendToServer();
         }
+    }
+
+    private VoiceRecognitionEvent getAsVoiceRecognitionEvent(EventObject event) {
+        return (VoiceRecognitionEvent)event;
     }
 
     private void sendToServer() {

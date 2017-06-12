@@ -45,6 +45,7 @@ public class TCPIPClient implements Clientable {
     @Override
     public void send() throws IOException {
         String dataToSend = dataCreator.buildDataToSent();
+        System.out.println(dataToSend);
         os.writeBytes(dataToSend);
     }
 
