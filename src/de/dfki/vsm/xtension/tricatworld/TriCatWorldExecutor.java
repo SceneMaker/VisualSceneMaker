@@ -348,6 +348,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("MoveTo")) {
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("locname"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
