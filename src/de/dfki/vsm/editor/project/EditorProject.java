@@ -9,19 +9,25 @@ import java.io.File;
  */
 public class EditorProject extends RunTimeProject {
 
+
+    // The editor configuration
+    private final EditorConfig mEditorConfig
+            = new EditorConfig();
     // The file of the project
     private File mProjectFile;
     // The hash of the project
     private int mInitialHash;
-    // The editor configuration
-    private final EditorConfig mEditorConfig
-            = new EditorConfig();
-
     // Construct an editor project
     public EditorProject() {
         // Initialize the project file
         mProjectFile = null;
+        isNewProject = false;
     }
+
+    public EditorProject(boolean isNewProject) {
+        this.isNewProject = isNewProject;
+    }
+
 
     @Override
     public final boolean parse(final String path) {

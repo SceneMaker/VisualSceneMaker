@@ -313,7 +313,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     public final boolean newProject(String projectName) {
         // Create a new project editor
-        final ProjectEditor editor = new ProjectEditor();
+        final ProjectEditor editor = new ProjectEditor(true);
 
         // Set default name  main superNode
         editor.getSceneFlowEditor().getSceneFlow().setName(editor.getEditorProject().getEditorConfig().sMAINSUPERNODENAME);
@@ -882,6 +882,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     // Play the execution of the current project
     public final boolean play(final EditorProject project) {
         // Check State Of Execution
+
         if (/*mRunTime.isRunning(project)*/project.isRunning()) {
             if (/*mRunTime.isPaused(project)*/project.isPaused()) {
                 if (/*mRunTime.proceed(project)*/project.proceed()) {
