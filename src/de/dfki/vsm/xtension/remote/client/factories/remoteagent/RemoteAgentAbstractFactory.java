@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.remote.client.factories.remoteagent;
 
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.xtension.remote.client.agents.RemoteAgent;
 import de.dfki.vsm.xtension.remote.client.factories.SenderTypeFactory;
@@ -17,7 +18,18 @@ public abstract class RemoteAgentAbstractFactory {
         this.activity = activity;
     }
 
+    public static RemoteAgent createRemoteAgent(AgentConfig agentConfig, AbstractActivity activity){
+        RemoteAgentAbstractFactory factory;
+        if(agentConfig.getProperty("remote_type").equals("uiavatar")){
+            factory = new UIAvatarAgentFactory(activity);
+        }else{
+            factory = new DefaultRemoteFactory(activity);
+        }
+        return factory.createRemoteAgent();
+    }
+
     public abstract RemoteAgent createRemoteAgent();
+
     public abstract DataSendable getDataSendable();
 
     String clip(String message) {
